@@ -1,0 +1,61 @@
+# Luật: Truy vết nguồn
+
+Luật này áp dụng cho `01-spec` và được `04-review` kiểm tra lại.
+
+## Vì sao có luật này
+
+Khi yêu cầu đến từ tài liệu thượng nguồn (BRD/PRD/Jira/Confluence), thất bại
+nguy hiểm nhất của agent **không phải** viết sai code — mà là **tự nghĩ ra yêu
+cầu rồi trình bày như thể tài liệu đã nói**. Lỗi này rất khó phát hiện: nó đọc
+trôi chảy, hợp lý, và chỉ lộ ra khi BA/PO đọc lại ở cuối sprint.
+
+Luật truy vết biến nó từ lỗi ngữ nghĩa (phải có người đọc mới thấy) thành lỗi
+cú pháp (máy kiểm được).
+
+## Nội dung luật
+
+Mỗi yêu cầu trong `spec.md` phải có đúng một dòng `Nguồn:` mang một nhãn:
+
+| Nhãn | Nghĩa | Bắt buộc kèm theo |
+|---|---|---|
+| `[CONFLUENCE]` | Trích từ page Confluence | URL page + tên heading |
+| `[JIRA]` | Trích từ issue Jira | Mã issue + URL |
+| `[FILE]` | Trích từ tài liệu trong repo | Đường dẫn + heading |
+| `[SUY-RA]` | Quyết định kỹ thuật tự suy ra | Lý do, và yêu cầu gốc nó phục vụ |
+| `[CẦN-HỎI]` | Chưa có nguồn, đang dùng giả định | Mục tương ứng trong `open-questions.md` |
+
+**Yêu cầu không có nhãn = fail.** Không có nhãn thứ sáu. Nếu một mục không
+xếp được vào năm nhãn trên thì nó không phải yêu cầu — nó là ý tưởng của agent,
+và chỗ của nó là `open-questions.md`.
+
+## Ranh giới dễ nhầm giữa `[SUY-RA]` và `[CẦN-HỎI]`
+
+Đây là chỗ agent hay lách luật, nên phân định rõ:
+
+- `[SUY-RA]` — **quyết định kỹ thuật** mà tài liệu nghiệp vụ không cần nói, và
+  người khác đọc xong sẽ đồng ý là hiển nhiên. Ví dụ: "dùng index trên cột
+  `created_at`" khi BRD yêu cầu lọc theo ngày.
+- `[CẦN-HỎI]` — **quyết định nghiệp vụ** mà tài liệu bỏ trống, và người khác có
+  thể chọn khác. Ví dụ: BRD nói "thông báo cho người dùng" nhưng không nói qua
+  email hay in-app.
+
+Phép thử: *nếu BA/PO đọc mục này mà có thể trả lời "không, ý tôi khác" thì nó là
+`[CẦN-HỎI]`, không phải `[SUY-RA]`.*
+
+Gắn `[SUY-RA]` cho một quyết định nghiệp vụ là cách agent che giấu điểm mù —
+và là vi phạm nặng hơn việc bỏ trống nhãn, vì nó không kiểm được bằng máy.
+
+## Kiểm tra
+
+```
+sh tools/kiem-tra-truy-vet.sh <thư-mục-artifact>
+```
+
+Kiểm bốn điều:
+1. Mọi `### YC-NNN` trong `spec.md` có đúng một dòng `Nguồn:` với nhãn hợp lệ.
+2. Mọi mục gắn `[CẦN-HỎI]` có mục tương ứng cùng mã trong `open-questions.md`.
+3. Không có mã `YC-NNN` trùng nhau.
+4. Mục `[CẦN-HỎI]` trong `open-questions.md` có dòng "Giả định tạm" — không có thì phase sau không đi tiếp được.
+
+Điều thứ 2 quan trọng: không có nó thì agent chỉ cần gắn `[CẦN-HỎI]` là qua được
+kiểm tra mà chẳng phải hỏi ai.

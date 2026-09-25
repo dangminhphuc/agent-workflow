@@ -1,0 +1,53 @@
+# Manifest trung lập của quy trình — NGUỒN SỰ THẬT DUY NHẤT.
+#
+# Adapter đọc file này + workflow/phases/*.md rồi biên dịch ra artifact riêng
+# của từng agent. Không sửa trực tiếp file được sinh ra trong repo đích.
+#
+# Quy ước: định danh (khoá, id, đường dẫn) dùng tiếng Anh ASCII cho an toàn
+# tooling; mọi nội dung người và agent đọc đều bằng tiếng Việt.
+
+version: 1
+name: Quy trình phát triển phần mềm dựa trên AI agent
+language: vi
+
+# Thư mục chứa artifact bàn giao TRONG REPO ĐÍCH (không phải repo này).
+# Đây là cơ chế duy nhất làm nên tính không-phụ-thuộc-agent: phase N đọc file
+# do phase N-1 ghi ra, và agent nào cũng đọc/ghi được file.
+artifact_dir: .agent-workflow
+
+phases:
+  - id: ideation
+    file: workflow/phases/00-ideation.md
+    required: false
+    when: không có tài liệu thượng nguồn (BRD/PRD/ticket)
+  - id: spec
+    file: workflow/phases/01-spec.md
+    required: true
+  - id: plan
+    file: workflow/phases/02-plan.md
+    required: true
+  - id: implement
+    file: workflow/phases/03-implement.md
+    required: true
+  - id: review
+    file: workflow/phases/04-review.md
+    required: true
+  - id: ship
+    file: workflow/phases/05-ship.md
+    required: false
+    when: repo đích có hạ tầng phát hành muốn đưa vào quy trình
+
+rules:
+  - workflow/rules/nguyen-tac-chung.md
+  - workflow/rules/truy-vet-nguon.md
+
+adapters:
+  - id: claude-code
+    dir: adapters/claude-code
+    status: active
+  - id: cursor
+    dir: adapters/cursor
+    status: planned
+  - id: copilot
+    dir: adapters/copilot
+    status: planned

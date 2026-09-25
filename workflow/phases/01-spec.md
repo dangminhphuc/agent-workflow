@@ -1,0 +1,100 @@
+---
+id: spec
+name: Đặc tả
+summary: Chưng cất BRD/PRD/ticket thành đặc tả kiểm chứng được và soi ra điểm mù
+required: true
+inputs:
+  - confluence
+  - jira
+  - file
+  - brief
+outputs:
+  - spec.md
+  - open-questions.md
+exit_machine:
+  - sh tools/kiem-tra-truy-vet.sh
+exit_human:
+  - Chủ repo xác nhận phần "Ngoài phạm vi"
+needs_clean_context: true
+---
+
+# Phase 01 — Đặc tả
+
+## Mục tiêu
+
+Chưng cất yêu cầu nghiệp vụ thành đặc tả kỹ thuật **kiểm chứng được**, và soi ra
+những chỗ tài liệu thượng nguồn nói chưa rõ hoặc tự mâu thuẫn.
+
+Phase này **không sinh ra yêu cầu mới**. Nó dịch và làm sắc yêu cầu đã có. Mọi
+thứ không truy về được nguồn đều phải lộ ra chứ không được trộn lẫn vào.
+
+## Đầu vào
+
+Ít nhất một trong:
+
+| Nguồn | Cách lấy | Định danh ghi lại |
+|---|---|---|
+| Confluence | MCP Atlassian, đọc page | URL page + tên heading |
+| Jira | MCP Atlassian, đọc issue | Mã issue + URL |
+| File cục bộ | Đọc trực tiếp | Đường dẫn + heading |
+| `brief.md` | Do `00-ideation` sinh ra | Tên mục |
+
+Nếu không có nguồn nào: dừng lại và chạy `00-ideation` trước. Không tự bịa
+yêu cầu để có cái mà làm.
+
+## Việc phải làm
+
+1. **Thu thập nguồn.** Đọc hết tài liệu được trỏ tới. Ghi lại định danh chính
+   xác của từng nguồn — sẽ dùng làm nhãn truy vết. Không đọc lướt rồi tóm tắt.
+
+2. **Trích yêu cầu thô.** Trích *nguyên văn* các câu mang yêu cầu, chưa diễn
+   giải. Bước này tách riêng để phân biệt rõ "tài liệu nói gì" với "ta hiểu thế
+   nào" — hai thứ này trộn vào nhau là gốc của phần lớn sai lệch về sau.
+
+3. **Chuyển thành yêu cầu kiểm chứng được.** Mỗi yêu cầu nhận mã `YC-NNN` và
+   phải có tiêu chí chấp nhận **quan sát được từ bên ngoài**. "Hệ thống phải
+   nhanh" không đạt; "trả kết quả tìm kiếm dưới 300ms với 10k bản ghi" thì đạt.
+
+4. **Gắn nhãn nguồn** cho từng yêu cầu theo `workflow/rules/truy-vet-nguon.md`.
+
+5. **Tách điểm mù.** Chỗ nào tài liệu không nói rõ: gắn `[CẦN-HỎI]`, ghi vào
+   `open-questions.md` kèm **giả định tạm** đang dùng để đi tiếp, và ghi rõ
+   *điều gì sẽ phải làm lại nếu giả định sai*. Câu cuối này mới là thứ giúp
+   người quyết định có nên chặn lại ngay hay cho chạy tiếp.
+
+6. **Rà mâu thuẫn.** Đối chiếu các nguồn với nhau. Mâu thuẫn giữa BRD và ticket
+   là chuyện thường; phát hiện ở đây rẻ hơn phát hiện lúc đang code rất nhiều.
+
+7. **Xác định "Ngoài phạm vi".** Liệt kê thẳng những thứ *không* làm lần này.
+   Mục này tồn tại để chặn `02-plan` và `03-implement` làm quá tay — không có
+   nó, agent sẽ coi mọi thứ liền kề là "hợp lý nên làm luôn".
+
+## Đầu ra
+
+- `spec.md` — theo `workflow/templates/spec.md`
+- `open-questions.md` — theo `workflow/templates/open-questions.md`.
+  Phải tồn tại kể cả khi rỗng, và khi rỗng phải ghi rõ "Không có điểm mù".
+  File rỗng và file thiếu là hai chuyện khác nhau: một cái nghĩa là đã rà và
+  không thấy gì, cái kia nghĩa là chưa rà.
+
+## Cấm
+
+- Bịa yêu cầu không truy được về nguồn.
+- **Chọn giải pháp kỹ thuật** (chọn thư viện, thiết kế bảng, chia module) —
+  việc của `02-plan`.
+- Tự chọn một cách hiểu cho chỗ mơ hồ rồi đi tiếp mà không ghi `[CẦN-HỎI]`.
+- Gắn `[SUY-RA]` cho một quyết định nghiệp vụ để né việc phải hỏi.
+- Viết code, kể cả code minh hoạ.
+
+## Điều kiện ra
+
+**Máy:**
+- `sh tools/kiem-tra-truy-vet.sh` trả về 0.
+
+**Người:**
+- Chủ repo xác nhận phần "Ngoài phạm vi" — đây là chỗ hiểu lệch nhau nhiều
+  nhất và máy không kiểm thay được.
+
+Các mục `[CẦN-HỎI]` **không chặn** việc sang `02-plan`, miễn là đã có giả định
+tạm. Chặn ở đây thì quy trình đứng im mỗi lần BRD thiếu một dòng — mà BRD thì
+luôn thiếu. Chúng chỉ chặn `04-review` kết luận "đạt".
