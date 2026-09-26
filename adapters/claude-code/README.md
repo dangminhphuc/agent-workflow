@@ -13,11 +13,16 @@ luật/mẫu/công cụ vào repo đích.
 
 | Nguồn trung lập | Artifact Claude Code |
 |---|---|
-| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command |
-| `04-review.md` + cờ `requires_fresh_agent` | `.claude/agents/ra-soat-doc-lap.md` — subagent |
+| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/ideation`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
+| `05-review.md` + cờ `requires_fresh_agent` | `.claude/agents/ra-soat-doc-lap.md` — subagent |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
-Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: `05-ship`).
+Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: `06-ship`).
+
+Mỗi command sinh ra đều bắt đầu bằng bước **xác định feature**: suy từ tên branch
+theo `conventions.md` → không khớp thì lấy tham số lệnh (vd `/spec feat_tao-todo`)
+→ không có thì dừng hỏi. Command in `Đang làm với: …` rồi mới đọc/ghi trong
+`.agent-workflow/<tên-branch>/`.
 
 Mỗi command sinh ra gồm hai phần: **hợp đồng phase** (đọc gì, ghi ra đâu, mẫu
 nào, điều kiện ra là lệnh gì) do adapter dựng từ frontmatter, và **mô tả phase**
@@ -25,13 +30,13 @@ lấy nguyên văn từ thân file nguồn.
 
 ## Cái gì KHÔNG biên dịch portable được
 
-Đây là phần quan trọng nhất của tài liệu này. Bốn thứ dưới đây là đặc thù agent,
+Đây là phần quan trọng nhất của tài liệu này. Năm thứ dưới đây là đặc thù agent,
 và adapter tương lai cho Cursor/Copilot sẽ phải tự xử lý — hoặc **nói rõ là
 không làm được** chứ không im lặng bỏ qua.
 
 ### 1. Ngữ cảnh sạch cho phase rà soát
 
-`04-review` khai `requires_fresh_agent: true`. Ràng buộc thật là: *không được rà
+`05-review` khai `requires_fresh_agent: true`. Ràng buộc thật là: *không được rà
 soát bằng chính phiên vừa viết code* — agent vừa viết sẽ rà soát chính lập luận
 của nó.
 
@@ -58,8 +63,16 @@ kèm đường dẫn, thay vì `[CONFLUENCE]` kèm URL.
 Slash command là quy ước của Claude Code. Cursor dùng rules, Copilot dùng
 `copilot-instructions.md`. Nội dung chuyển được; *cách kích hoạt* thì không.
 
-Những gì **luôn** portable: file artifact trong `.agent-workflow/`, các mẫu, và
-các script kiểm tra. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
+### 5. Checker LLM
+
+`02-design` (và những chỗ khác dùng checker LLM) cần một lượt gọi LLM để tìm lệch
+D-xx và quyết định ngầm. *Cách gọi* lượt đó là đặc thù agent. Phần portable là
+**hợp đồng**: checker ghi phát hiện ra file, và một script fail nếu còn mục
+`Chặn` chưa xử lý. Adapter nào không tự gọi được checker thì phải ghi rõ người
+dùng tự chạy — không được coi "không có file phát hiện" là đạt.
+
+Những gì **luôn** portable: file artifact trong `.agent-workflow/<tên-branch>/`,
+`conventions.md`, các mẫu, và các script kiểm tra. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
 trong prompt.
 
 ## Hook — vì sao adapter không tự ghi settings.json
@@ -79,7 +92,7 @@ của repo đích. Nó nhắc khi một artifact vừa bị sửa mà cổng ch�
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'case \"$CLAUDE_FILE_PATHS\" in *.agent-workflow/spec.md*) sh .agent-workflow/.quy-trinh/tools/kiem-tra-truy-vet.sh .agent-workflow >&2 ;; esac' || true"
+            "command": "sh -c 'for f in $CLAUDE_FILE_PATHS; do case \"$f\" in *.agent-workflow/*/spec.md) sh .agent-workflow/.quy-trinh/tools/kiem-tra-truy-vet.sh \"$(dirname \"$f\")\" >&2 ;; esac; done' || true"
           }
         ]
       }
@@ -111,7 +124,9 @@ giá là đã đạt.
 
 1. Tạo `adapters/<id>/build.sh`, nhận `--out <thư-mục>`.
 2. `. "$ROOT/tools/lib/md.sh"` rồi dùng `wf_phases`, `fm_scalar`, `fm_list`, `md_body`.
-3. Đọc `workflow.yaml` lấy `artifact_dir`; giữ nguyên đường dẫn artifact — đây là
-   giao diện chung giữa các adapter.
-4. Với mỗi khả năng không dịch được, **ghi rõ trong output** thay vì bỏ qua.
+3. Đọc `workflow.yaml` lấy `artifact_dir`; giữ nguyên đường dẫn artifact
+   `<artifact_dir>/<tên-branch>/` và thứ tự xác định feature (branch →
+   tham số → hỏi) — đây là giao diện chung giữa các adapter.
+4. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
+   LLM), **ghi rõ trong output** thay vì bỏ qua.
 5. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.

@@ -16,16 +16,27 @@ nhất, và mẫu số chung nhỏ nhất thì quá yếu để làm được vi
 Quy trình được chia thành phase, và **phase chỉ nối nhau qua file**:
 
 ```
-BRD/Jira ──▶ 01-spec ──▶ spec.md ──▶ 02-plan ──▶ plan.md ──▶ 03-implement ──▶ diff
-                            │                                                   │
-                            └────────────────────┬──────────────────────────────┘
-                                                 ▼
-                                             04-review ──▶ review.md
+[00-ideation] ──▶ brief.md
+                     │
+BRD/Jira/incident ───┴─▶ 01-spec ──▶ spec.md ──▶ 02-design ──▶ tdd.md
+                                        │                        │
+                                        ▼                        ▼
+                                     03-plan ◀───────────────────┘
+                                        │
+                                        ▼
+                                     plan.md ──▶ 04-implement ──▶ diff + ket-qua-kiem-thu.md
+                                                                        │
+             spec.md + tdd.md + plan.md + diff ─────────────────────────┤
+                                                                        ▼
+                                                                    05-review ──▶ review.md
+                                                                        │
+                                                                        ▼
+                                                                   [06-ship]
 ```
 
 File là thứ mọi agent đều đọc và ghi được. Không cần API chung, không cần trừu
-tượng hoá khả năng. Khi `02-plan` chỉ cần `spec.md` để làm việc, nó chạy được
-bằng Claude Code, bằng Cursor, hay bằng một người.
+tượng hoá khả năng. Khi `03-plan` chỉ cần `spec.md` + `tdd.md` để làm việc, nó
+chạy được bằng Claude Code, bằng Cursor, hay bằng một người.
 
 Tính chất kiểm chứng được rút ra từ đó: **mỗi phase phải chạy được từ phiên
 trắng.** Đây không phải khuyến nghị cho gọn — nó là phép thử xem thiết kế có
@@ -36,6 +47,37 @@ ngữ cảnh. Ràng buộc đó phá cả tính portable lẫn tính lặp lại
 Adapter vì thế chỉ làm một việc nhỏ: dịch định nghĩa phase sang dạng native cho
 tiện gọi. Nếu ngày mai mọi adapter biến mất, quy trình vẫn chạy được — chỉ là
 phải copy-paste nội dung phase vào chat bằng tay.
+
+### Vào quy trình ở phase nào cũng được
+
+Đây là **mục đích gốc** của tính trung lập, không chỉ là hệ quả phụ. Mỗi phase là
+một hộp input → output; người dùng có thể tạo artifact bằng tool bất kỳ (AI khác,
+Confluence, viết tay…) rồi đưa vào đúng phase cần.
+
+Để việc này không thành đường tắt vòng qua cổng chặn:
+
+- **Entry check của phase N = checker của phase N-1 chạy lại trên input.** Input
+  là cả bộ file được tham chiếu, không chỉ file liền trước.
+- **Artifact từ ngoài vẫn phải qua gate người của phase lẽ ra sinh ra nó.** Một
+  `tdd.md` viết tay vẫn cần người duyệt từng D-xx như khi agent viết.
+- **Input không đúng mẫu đi qua bước import có kiểm soát** — lệnh riêng, không
+  phải phase. Nó chỉ sắp xếp lại theo mẫu, **không thêm nội dung**; gắn nhãn
+  nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[CẦN-HỎI]`. Kết quả qua checker và
+  người xác nhận bản chuyển đổi.
+
+Import không được thêm nội dung vì nếu được, agent sẽ lặng lẽ lấp chỗ trống bằng
+suy đoán, và suy đoán đó mang nhãn nguồn như thể có trong tài liệu gốc.
+
+### Artifact theo feature
+
+Artifact nằm trong `.agent-workflow/<tên-branch>/`, dùng tên branch **đầy đủ**
+(`feat_tao-todo`, `refactor_tao-todo`) để hai loại việc cùng tên không đè nhau.
+Quy ước tên branch nằm trong `conventions.md` của repo đích vì nó tuỳ hoàn cảnh
+từng team; bộ cài chỉ tạo mẫu và không ghi đè.
+
+Thứ tự xác định feature: suy từ branch theo `conventions.md` → không khớp thì lấy
+tham số lệnh → không có thì dừng hỏi. Agent luôn in `Đang làm với: …` — ghi nhầm
+artifact sang feature khác là lỗi im lặng, khó phát hiện về sau.
 
 ## Hai loại điều kiện ra
 
@@ -51,7 +93,91 @@ của một tiêu chí.
 Adapter thực thi nguyên tắc này bằng cách **từ chối build** nếu một mục
 `exit_machine` không phải lệnh chạy được (mã thoát 4). Không có chốt này, một
 dòng mô tả bằng chữ sẽ lọt vào mục MÁY và agent sẽ tự duyệt — đã xảy ra một lần
-trong chính quá trình xây repo này, ở phase `04-review`.
+trong chính quá trình xây repo này, ở phase `review`.
+
+### Người ở đâu
+
+Gate người cố định ở `spec`, `design`, `review` (và `ideation`, `ship` nếu dùng).
+`plan` và `implement` **không có người**: chúng chỉ thực thi những gì đã duyệt
+ở `spec` và `design`. Đặt người ở đó chỉ tạo thêm một chỗ duyệt văn xuôi mà
+không có quyết định thật nào để duyệt.
+
+### Checker LLM: chỉ được chặn, không được duyệt
+
+Có những điều kiện script không kiểm được — ví dụ một mục trong `tdd.md` có lệch
+khỏi D-xx đã duyệt không, hay có quyết định ngầm nào chưa được nêu thành D.
+Những chỗ đó dùng checker LLM, với một ràng buộc cứng:
+
+- Checker ghi phát hiện ra **file**; script **fail nếu còn mục `Chặn`** chưa xử lý.
+- LLM **không bao giờ** là bên nói "đạt". Không có phát hiện ≠ đạt; nó chỉ nghĩa
+  là không có gì bị chặn.
+- Người là **trọng tài theo ngoại lệ**: xác nhận phát hiện, hoặc bác bỏ kèm lý do.
+
+Lý do: nếu LLM được duyệt, ta quay lại đúng chỗ "agent tự đánh giá là đã đạt".
+Cho nó chỉ chặn thì sai sót của nó chỉ tốn thời gian người, không lọt lỗi.
+Đây là mở rộng cách `review` vốn đã chạy.
+
+### Chặn hay cảnh báo
+
+Không phải checker nào cũng nên chặn. Chặn nhầm làm tắc flow, và người sẽ học
+cách lách cổng.
+
+| Loại checker | Ví dụ | Hành vi |
+|---|---|---|
+| **Chính xác** — hợp đồng output của chính phase | truy vết nguồn, phủ YC, test xanh | **Chặn** |
+| **Kiểm chéo giữa phase**, hay báo nhầm | artifact lỗi thời, test ↔ YC, phạm vi diff | **Cảnh báo** |
+
+Mọi cảnh báo dồn về `review`, là **cổng chặn cuối**: cảnh báo nào chưa xử lý thì
+`review` chặn. Như vậy flow đi tiếp được ở giữa, nhưng không có gì lọt qua cuối.
+
+Tiêu chí xếp một checker mới vào cột nào: **độ chính xác**, **chi phí nếu lọt**,
+và **nơi sửa rẻ nhất**.
+
+### Artifact lỗi thời
+
+Mỗi artifact ghi `based_on` là hash **cả file** của đầu vào, dạng phẳng
+(`- spec.md@<hash>`) để đọc được bằng tập con YAML. Hash cả file thay vì từng
+mục vì đơn giản và không bỏ sót — đổi lại nó báo cả khi chỉ sửa chính tả, nên
+lệch hash chỉ là **cảnh báo**; `review` chặn nếu còn artifact lỗi thời.
+
+## Quyết định là thứ người duyệt, không phải văn xuôi
+
+Người duyệt một tài liệu thiết kế dài thường lướt, vì văn xuôi không cho thấy
+chỗ nào là lựa chọn thật. Vì vậy `design` tách các lựa chọn thành mục **D-xx**
+riêng trong `tdd.md`; người duyệt từng D, phần còn lại là hệ quả.
+
+- Mục chi tiết ghi `Dựa trên: D-xx`; checker LLM chặn chỗ lệch D và quyết định
+  ngầm. Mục D **được phép rỗng** — thay đổi nhỏ có thể không có quyết định nào.
+- `tdd.md` là **output duy nhất** của `design`, không có file quyết định riêng:
+  tách ra thì hai file sẽ lệch nhau.
+
+### Chống neo: Mode 2
+
+Khi agent đưa phương án trước, người duyệt có xu hướng neo vào nó. Với thay đổi
+`Mức rủi ro: cao` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
+đề xuất nhãn, người duyệt ở gate spec), `design` **chặn** nếu chưa có bản phác
+mục D-xx do người viết (`tac_gia: nguoi`). Có bản phác thì agent chỉ phản biện.
+Rủi ro thường dùng Mode 1: agent viết cả `tdd.md`, người duyệt.
+
+### Mở lại một quyết định
+
+Mở lại **đúng một D-xx**, sửa tại chỗ; lịch sử để git giữ, không giữ bản cũ trong
+file. D đó mang trạng thái `mở lại` + lý do. Grep `Dựa trên: D-xx` ra task và test
+bị ảnh hưởng; chỉ các task đó đặt lại `[ ]`, người chỉ duyệt lại D đang mở.
+
+### Vì sao `plan` vẫn tách khỏi `tdd.md`
+
+`plan.md` chỉ còn quản lý thực thi: task, phụ thuộc, `Phủ: YC`, `Dựa trên: D-xx`,
+`Theo: tdd.md § …`, File dự kiến, Cách kiểm chứng, trạng thái, Phát sinh, Hoãn
+lại. Giữ riêng vì hai lẽ: plan là ranh giới do **phiên khác** đặt cho
+`implement`, và tick task không được phép sửa vào `tdd.md` đã duyệt.
+
+## Giả định chưa xác nhận
+
+Chỗ chưa rõ trong spec ghi `[CẦN-HỎI]` kèm **mức ảnh hưởng**; agent đề xuất,
+người duyệt nhãn ở gate spec. Mặc định **không chặn** — ưu tiên flow đi tiếp. Chỉ
+mục ảnh hưởng toàn bộ thiết kế phải được trả lời trước khi vào `design`. Mục còn
+mở thì `review` không được kết luận "đạt".
 
 ### Vì sao checker tự chạy test thay vì đọc kết quả
 
@@ -59,6 +185,21 @@ trong chính quá trình xây repo này, ở phase `04-review`.
 `ket-qua-kiem-thu.md`. Nếu để agent chạy rồi dán kết quả vào, ta chỉ kiểm được
 *cái agent nói*, không kiểm được *cái đã xảy ra*. Tự chạy thì bỏ hẳn khoảng cách
 đó — agent không có chỗ nào để bịa.
+
+### Test ↔ YC và phạm vi diff
+
+Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặn):
+
+- Test gắn tag `covers: YC-xxx`. YC chưa có test thì cảnh báo; YC không test tự
+  động được ghi `Kiểm chứng: thủ công` + lý do.
+- So `git diff --name-only <nhánh-gốc>...HEAD` với "File dự kiến" (cho phép glob)
+  và "Phát sinh" trong plan.
+
+Mẫu file test, cú pháp tag, nhánh gốc và danh sách file bỏ qua khai trong
+`conventions.md` của repo đích — phần máy đọc phải parse được bằng sh/awk.
+
+Không có phase test riêng: test là điều kiện ra của `implement`. Một phase test
+đặt phía sau sẽ biến "code xong" thành trạng thái hợp lệ dù chưa ai chạy gì.
 
 ## Định dạng file phase
 
@@ -86,8 +227,8 @@ Thân file có các mục cố định: **Mục tiêu**, **Đầu vào**, **Vi�
 
 Mục **Cấm** không phải trang trí. Nó liệt kê việc thuộc phase khác, và là chỗ
 chặn thất bại đặc trưng nhất của agent trong quy trình có phase: `01-spec` chọn
-luôn giải pháp kỹ thuật, `03-implement` sửa thêm những thứ "tiện tay thấy chưa
-đẹp". Cả hai đều xoá mất điểm dừng để người xem lại.
+luôn giải pháp kỹ thuật (việc của `02-design`), `04-implement` sửa thêm những thứ
+"tiện tay thấy chưa đẹp". Cả hai đều xoá mất điểm dừng để người xem lại.
 
 ## Tập con YAML
 
@@ -121,7 +262,7 @@ buộc này chỉ áp dụng cho *cấu hình*, không áp dụng cho repo đíc
 6. Chạy lại `sh tools/cai-dat.sh <repo-đích>`.
 
 Không phase nào khác phải sửa — vì không phase nào biết gì về phase đứng sau nó.
-Đó là lý do `05-ship` thêm được sau mà không phải viết lại.
+Đó là lý do `06-ship` thêm được sau mà không phải viết lại.
 
 ## Cách thêm một adapter
 
@@ -135,7 +276,7 @@ một ràng buộc.
 
 Nói thẳng để người đọc sau khỏi phải tự phát hiện:
 
-1. **`05-ship` chưa có nội dung.** Phát hành đặc thù CI từng repo, không đặc thù
+1. **`06-ship` chưa có nội dung.** Phát hành đặc thù CI từng repo, không đặc thù
    agent — đây là chỗ mô hình "một spec, nhiều adapter" ít giá trị nhất.
 
 2. **Ràng buộc "ngữ cảnh sạch" không tự cưỡng chế được ở agent không có
@@ -144,7 +285,16 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
 3. **Cổng chặn kiểm được *hình thức*, không kiểm được *nội dung*.** Checker biết
    mọi `YC` đều có nhãn nguồn; nó không biết nội dung yêu cầu có phản ánh đúng
    BRD hay không. Đó vẫn là việc của người — mục `exit_human` tồn tại vì vậy.
-   Đừng nhầm "qua hết checker" với "làm đúng".
+   Đừng nhầm "qua hết checker" với "làm đúng". Checker LLM thu hẹp khoảng trống
+   này một phần, nhưng vì nó chỉ được chặn, những gì nó bỏ sót vẫn lọt qua.
+
+5. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Mức rủi ro` do agent đề xuất; nếu
+   người duyệt ở gate spec cho qua nhãn `thường` sai, `design` sẽ chạy Mode 1 và
+   hiện tượng neo quay lại.
+
+6. **Hash cả file báo cả thay đổi vô hại.** Sửa chính tả trong `spec.md` cũng làm
+   mọi artifact sau thành "lỗi thời". Đây là lý do nó chỉ cảnh báo — và cũng là
+   lý do người có thể quen tay bỏ qua cảnh báo này.
 
 4. **Tập con YAML dễ vỡ nếu ai đó viết manifest theo kiểu khác.** Trình đọc
    không báo lỗi cú pháp; nó chỉ trả về giá trị rỗng, và lỗi sẽ lộ ra muộn ở
