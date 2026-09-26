@@ -13,6 +13,10 @@
 - **Hỏi ai:** <BA / PO / tên người>
 - **Giả định tạm đang dùng:** <...>
 - **Nếu giả định sai thì phải làm lại gì:** <task/module cụ thể>
+- **Mức ảnh hưởng:** `<toàn bộ thiết kế | cục bộ>`   <!-- agent đề xuất, người duyệt -->
+- **Trạng thái:** `mở`   <!-- mở | đã trả lời -->
+- **Trả lời:** <người trả lời ghi vào đây; khi đó sửa luôn nhãn nguồn trong spec.md>
 
-> Dòng cuối là dòng quan trọng nhất. Nó cho người đọc quyết định được: chặn lại
-> hỏi ngay, hay cứ cho chạy tiếp rồi sửa sau.
+> "Nếu giả định sai" và "Mức ảnh hưởng" cho người đọc quyết định được: chặn lại
+> hỏi ngay, hay cứ cho chạy tiếp rồi sửa sau. Mục `toàn bộ thiết kế` còn `mở`
+> thì `/design` chặn; mục `cục bộ` thì không.

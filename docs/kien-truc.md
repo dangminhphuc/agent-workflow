@@ -219,8 +219,28 @@ exit_machine: [sh tools/kiem-tra-truy-vet.sh]
 exit_human: [...]
 needs_clean_context: true   # phải chạy được từ phiên trắng
 requires_fresh_agent: true  # không được dùng chính phiên vừa làm việc trước đó
+llm_checker: workflow/checkers/thiet-ke.md   # có checker LLM; adapter từ chối build nếu file không có
 ---
 ```
+
+Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`,
+`output` (tên file phát hiện). Adapter Claude Code biến nó thành subagent
+`soat-<id>`. Script của phase đọc file phát hiện; thiếu file là fail.
+
+## Hiện thực các cơ chế
+
+| Cơ chế | Nằm ở | Ghi chú |
+|---|---|---|
+| Xác định feature | `tools/xac-dinh-feature.sh` | Script nằm ở `<repo>/.agent-workflow/.quy-trinh/tools/`, suy ra thư mục artifact từ vị trí của chính nó |
+| Đọc `conventions.md` | `conv_get` trong `tools/lib/md.sh` | Chỉ đọc khối ` ```conventions `; phần còn lại là văn xuôi cho người |
+| Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` — POSIX, CRLF/LF cho cùng kết quả |
+| Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
+| Entry check | Đầu mỗi `kiem-tra-*.sh` | Gọi checker phase trước; chuỗi `ra-soat → ke-hoach → thiet-ke → truy-vet` |
+| Cấu hình lệnh test | `.agent-workflow/.quy-trinh/cau-hinh.sh` | Checker tìm ở `<thư-mục-feature>/../.quy-trinh/` |
+
+Phạm vi diff so với `git merge-base <nhanh_goc> HEAD` **tới cây làm việc**, cộng
+file mới chưa track — rộng hơn `<nhanh_goc>...HEAD`, để thay đổi chưa commit
+trong lúc `implement` cũng bị thấy. Thư mục `.agent-workflow/` luôn được bỏ qua.
 
 Thân file có các mục cố định: **Mục tiêu**, **Đầu vào**, **Việc phải làm**,
 **Đầu ra**, **Cấm**, **Điều kiện ra**.
@@ -288,14 +308,26 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    Đừng nhầm "qua hết checker" với "làm đúng". Checker LLM thu hẹp khoảng trống
    này một phần, nhưng vì nó chỉ được chặn, những gì nó bỏ sót vẫn lọt qua.
 
-5. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Mức rủi ro` do agent đề xuất; nếu
+4. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Mức rủi ro` do agent đề xuất; nếu
    người duyệt ở gate spec cho qua nhãn `thường` sai, `design` sẽ chạy Mode 1 và
    hiện tượng neo quay lại.
 
-6. **Hash cả file báo cả thay đổi vô hại.** Sửa chính tả trong `spec.md` cũng làm
+5. **Hash cả file báo cả thay đổi vô hại.** Sửa chính tả trong `spec.md` cũng làm
    mọi artifact sau thành "lỗi thời". Đây là lý do nó chỉ cảnh báo — và cũng là
    lý do người có thể quen tay bỏ qua cảnh báo này.
 
-4. **Tập con YAML dễ vỡ nếu ai đó viết manifest theo kiểu khác.** Trình đọc
+6. **Tập con YAML dễ vỡ nếu ai đó viết manifest theo kiểu khác.** Trình đọc
    không báo lỗi cú pháp; nó chỉ trả về giá trị rỗng, và lỗi sẽ lộ ra muộn ở
    chỗ khác.
+
+7. **"Duyệt" là một dòng chữ trong file.** Máy phân biệt được `đề xuất` với
+   `đã duyệt`, và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
+   dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được — chỉ `git
+   blame`/review diff của `tdd.md` mới thấy.
+
+8. **`review` không chạy lại test.** Nó đọc mã thoát trong `ket-qua-kiem-thu.md`;
+   sửa code sau lần chạy `kiem-tra-hien-thuc.sh` cuối cùng thì kết quả đó đã cũ.
+   Chạy lại `implement` checker trước khi review là việc của người/agent.
+
+9. **Glob trong `conventions.md` và "File dự kiến" dùng `case` của shell**, nên
+   `*` khớp cả `/` và không có `**`. `src/*` vì vậy rộng hơn người đọc tưởng.

@@ -3,6 +3,9 @@
 > Sinh bởi phase `01-spec`. Người sửa tay được; chạy lại phase sẽ cập nhật,
 > không ghi đè trắng.
 
+- **Mức rủi ro:** `<cao | thường>`
+- **Lý do:** <cao khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
+
 ## Nguồn
 
 | # | Loại | Định danh | Ngày đọc |

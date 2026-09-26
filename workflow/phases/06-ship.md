@@ -15,7 +15,7 @@ exit_human: []
 needs_clean_context: false
 ---
 
-# Phase 05 — Phát hành  *(tuỳ chọn, chưa hiện thực)*
+# Phase 06 — Phát hành  *(tuỳ chọn, chưa hiện thực)*
 
 ## Trạng thái
 
@@ -33,10 +33,10 @@ biết, và sẽ phải viết lại khi gặp repo thật đầu tiên.
 
 ## Vì sao thêm sau được mà không phải sửa gì
 
-Vì các phase chỉ nối nhau qua file trong `artifact_dir`. Thêm `05-ship` chỉ cần:
+Vì các phase chỉ nối nhau qua file trong thư mục feature. Thêm `06-ship` chỉ cần:
 
 1. Viết nội dung file này với `inputs: [review.md, diff]`.
-2. Đổi `status` trong `workflow.yaml` và bật `required` nếu muốn.
-3. Chạy lại adapter.
+2. Bỏ dòng `status`, bật `required` trong `workflow.yaml` nếu muốn.
+3. Chạy lại bộ cài.
 
 Không phase nào khác phải đổi, vì không phase nào biết gì về phase đứng sau nó.

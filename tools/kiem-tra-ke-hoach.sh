@@ -1,35 +1,50 @@
 #!/usr/bin/env sh
-# Kiểm tra kế hoạch phủ đúng đặc tả — điều kiện ra của phase 02-plan.
+# Kiểm tra điều kiện ra của phase 03-plan.
 #
-#   sh tools/kiem-tra-ke-hoach.sh <thư-mục-artifact>
+#   sh tools/kiem-tra-ke-hoach.sh <thư-mục-feature>
 #
-# Kiểm HAI CHIỀU:
-#   xuôi   — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
-#   ngược  — mọi mã YC được task phủ, hoặc nằm ở "Hoãn lại" (bắt yêu cầu sót)
-# Kiểm một chiều chỉ bắt được lỗi thừa; lỗi sót mới là lỗi đắt.
+# Chặn:
+#   - Đầu vào: tdd.md không qua kiem-tra-thiet-ke.sh (entry check = checker phase trước).
+#   - Đầu vào: còn D-xx chưa "đã duyệt". plan và implement không có người —
+#     chúng chỉ được thực thi những gì người đã duyệt.
+#   - Kiểm HAI CHIỀU phủ YC:
+#       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
+#       ngược — mọi mã YC được task phủ, hoặc nằm ở "Hoãn lại" (bắt yêu cầu sót)
+#   - Task thiếu "Cách kiểm chứng", "File dự kiến"; "Dựa trên: D-xx" trỏ về D không có.
+# Cảnh báo: artifact lỗi thời.
 #
 # Mã thoát: 0 = đạt, 1 = có vi phạm, 2 = thiếu file đầu vào.
 
-DIR="${1:-.agent-workflow}"
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/md.sh"
+. "$HERE/lib/kiem-cheo.sh"
+
+DIR="${1:-.}"
 SPEC="$DIR/spec.md"
+TDD="$DIR/tdd.md"
 PLAN="$DIR/plan.md"
 
-[ -f "$SPEC" ] || { echo "LỖI: không tìm thấy $SPEC" >&2; exit 2; }
-[ -f "$PLAN" ] || { echo "LỖI: không tìm thấy $PLAN" >&2; exit 2; }
+for f in "$SPEC" "$TDD" "$PLAN"; do
+  [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
+done
 
-awk '
+n_loi=0
+if ! sh "$HERE/kiem-tra-thiet-ke.sh" "$DIR" >/dev/null 2>&1; then
+  n_loi=1
+  echo "  [LỖI] Đầu vào chưa đạt: tdd.md không qua kiem-tra-thiet-ke.sh — chạy nó để xem chi tiết."
+fi
+
+awk -v loi_truoc="$n_loi" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
-  function thu_ma(dong, _tmp, _c, _dem) {
-    _dem = 0; _tmp = dong
-    while (match(_tmp, /YC-[0-9]+/)) {
-      _c = substr(_tmp, RSTART, RLENGTH)
-      ma_tim[++n_tim] = _c; _dem++
-      _tmp = substr(_tmp, RSTART + RLENGTH)
-    }
-    return _dem
+  function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); return trim(s) }
+  function thu_ma(dong, re, _tmp) {
+    n_tim = 0; _tmp = dong
+    while (match(_tmp, re)) { ma_tim[++n_tim] = substr(_tmp, RSTART, RLENGTH); _tmp = substr(_tmp, RSTART + RLENGTH) }
+    return n_tim
   }
 
+  BEGIN { n_loi = loi_truoc }
   { sub(/\r$/, "") }
   FNR==1 { idx++; sect=""; cur="" }
 
@@ -42,7 +57,15 @@ awk '
     next
   }
 
-  # ---- File 2: plan.md ----
+  # ---- File 2: tdd.md — thu mọi D-xx và trạng thái ----
+  idx==2 {
+    if ($0 ~ /^###[ \t]+D-[0-9]+/) { match($0, /D-[0-9]+/); d = substr($0, RSTART, RLENGTH); co_d[d] = 1; ds_d[++n_d] = d; next }
+    if ($0 ~ /^##?[ \t]/) d = ""
+    if (d != "" && $0 ~ /Trạng thái[^:]*:/) d_tt[d] = gia_tri($0)
+    next
+  }
+
+  # ---- File 3: plan.md ----
   $0 ~ /^##[ \t]+Hoãn lại/ { sect = "hoan"; cur = ""; next }
   $0 ~ /^##[ \t]/          { sect = "";     cur = ""; next }
 
@@ -66,20 +89,34 @@ awk '
   }
 
   cur != "" && $0 ~ /Phủ:/ {
-    n_tim = 0; delete ma_tim
-    thu_ma($0)
+    thu_ma($0, "YC-[0-9]+")
     if (n_tim == 0) {
       loi(cur ": dòng \"Phủ:\" không trỏ về mã YC nào")
     } else {
       for (i = 1; i <= n_tim; i++) {
         c = ma_tim[i]
-        if (!(c in co_yc))
-          loi(cur ": trỏ về " c " nhưng spec.md không có mã này")
-        else
-          duoc_phu[c] = duoc_phu[c] " " cur
+        if (!(c in co_yc)) loi(cur ": trỏ về " c " nhưng spec.md không có mã này")
+        else               duoc_phu[c] = duoc_phu[c] " " cur
       }
       co_phu[cur] = 1
     }
+    next
+  }
+
+  cur != "" && $0 ~ /Dựa trên:/ {
+    thu_ma($0, "D-[0-9]+")
+    for (i = 1; i <= n_tim; i++) {
+      d = ma_tim[i]
+      if (!(d in co_d)) loi(cur ": \"Dựa trên: " d "\" nhưng tdd.md không có " d)
+      else dua_tren[d] = dua_tren[d] " " cur
+    }
+    next
+  }
+
+  cur != "" && $0 ~ /File dự kiến:/ {
+    v = $0; sub(/^.*File dự kiến:[ \t]*/, "", v); v = trim(v)
+    co_fdk_dong[cur] = 1
+    if (v == "" || v ~ /<[^>]*>/) loi(cur ": \"File dự kiến\" trống hoặc còn chỗ giữ chỗ — implement dùng nó để kiểm phạm vi diff")
     next
   }
 
@@ -88,7 +125,6 @@ awk '
     co_kc_dong[cur] = 1
     if (v == "")            loi(cur ": \"Cách kiểm chứng\" để trống")
     else if (v ~ /<[^>]*>/) loi(cur ": \"Cách kiểm chứng\" còn chỗ giữ chỗ chưa điền — " v)
-    else                    co_kc[cur] = 1
     next
   }
 
@@ -96,22 +132,29 @@ awk '
     if (n_yc == 0)   loi("spec.md không có mã YC nào")
     if (n_task == 0) loi("plan.md không có task nào (không thấy heading \"### T-NN\")")
 
-    # chiều xuôi: task thiếu thông tin bắt buộc
-    for (i = 1; i <= n_task; i++) {
-      t = dsach_task[i]
-      if (!(t in co_phu)) loi(t ": thiếu dòng \"Phủ:\" — task không ánh xạ được về yêu cầu nào")
-      if (!(t in co_kc) && !(t in co_kc_dong)) loi(t ": thiếu dòng \"Cách kiểm chứng:\"")
+    # D-xx phải được người duyệt trước khi lập kế hoạch
+    for (i = 1; i <= n_d; i++) {
+      d = ds_d[i]
+      if (d_tt[d] != "đã duyệt")
+        loi(d ": chưa được người duyệt (Trạng thái: " (d_tt[d] == "" ? "trống" : d_tt[d]) ")" \
+            (d in dua_tren ? " — task bị ảnh hưởng:" dua_tren[d] " (đặt lại `[ ]`)" : ""))
     }
 
-    # chiều ngược: yêu cầu bị bỏ sót
+    for (i = 1; i <= n_task; i++) {
+      t = dsach_task[i]
+      if (!(t in co_phu))      loi(t ": thiếu dòng \"Phủ:\" — task không ánh xạ được về yêu cầu nào")
+      if (!(t in co_kc_dong))  loi(t ": thiếu dòng \"Cách kiểm chứng:\"")
+      if (!(t in co_fdk_dong)) loi(t ": thiếu dòng \"File dự kiến:\"")
+    }
+
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
-      if (!(c in duoc_phu) && !(c in hoan) && !(c in co_mat_hoan))
+      if (!(c in duoc_phu) && !(c in co_mat_hoan))
         loi(c ": không task nào phủ, cũng không nằm ở mục \"Hoãn lại\"")
     }
 
     print ""
-    printf "Tổng: %d yêu cầu, %d task\n", n_yc, n_task
+    printf "Tổng: %d yêu cầu, %d task, %d quyết định\n", n_yc, n_task, n_d
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
       if (c in duoc_phu)   printf "  %s ←%s\n", c, duoc_phu[c]
@@ -120,6 +163,15 @@ awk '
     }
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
-    print "ĐẠT — kế hoạch phủ đúng đặc tả theo cả hai chiều."
+    print "ĐẠT — kế hoạch phủ đúng đặc tả theo cả hai chiều, mọi quyết định đã duyệt."
   }
-' "$SPEC" "$PLAN"
+' "$SPEC" "$TDD" "$PLAN"
+ma=$?
+
+cb=$(kc_loi_thoi "$DIR")
+if [ -n "$cb" ]; then
+  echo ""
+  echo "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  echo "  (cảnh báo không chặn ở đây; review sẽ chặn nếu còn)"
+fi
+exit $ma

@@ -1,6 +1,6 @@
 # Luật: Truy vết nguồn
 
-Luật này áp dụng cho `01-spec` và được `04-review` kiểm tra lại.
+Luật này áp dụng cho `01-spec` và được `02-design`, `05-review` kiểm tra lại (checker của phase sau chạy lại checker của spec trên đầu vào).
 
 ## Vì sao có luật này
 
@@ -51,11 +51,14 @@ và là vi phạm nặng hơn việc bỏ trống nhãn, vì nó không kiểm �
 sh tools/kiem-tra-truy-vet.sh <thư-mục-artifact>
 ```
 
-Kiểm bốn điều:
+Kiểm sáu điều:
 1. Mọi `### YC-NNN` trong `spec.md` có đúng một dòng `Nguồn:` với nhãn hợp lệ.
 2. Mọi mục gắn `[CẦN-HỎI]` có mục tương ứng cùng mã trong `open-questions.md`.
 3. Không có mã `YC-NNN` trùng nhau.
 4. Mục `[CẦN-HỎI]` trong `open-questions.md` có dòng "Giả định tạm" — không có thì phase sau không đi tiếp được.
+5. Mục `[CẦN-HỎI]` có `Mức ảnh hưởng: toàn bộ thiết kế | cục bộ`. Mục `toàn bộ
+   thiết kế` còn `Trạng thái: mở` thì `kiem-tra-thiet-ke.sh` chặn vào design.
+6. `spec.md` có `Mức rủi ro: cao | thường`.
 
 Điều thứ 2 quan trọng: không có nó thì agent chỉ cần gắn `[CẦN-HỎI]` là qua được
 kiểm tra mà chẳng phải hỏi ai.

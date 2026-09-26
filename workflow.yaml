@@ -13,7 +13,13 @@ language: vi
 # Thư mục chứa artifact bàn giao TRONG REPO ĐÍCH (không phải repo này).
 # Đây là cơ chế duy nhất làm nên tính không-phụ-thuộc-agent: phase N đọc file
 # do phase N-1 ghi ra, và agent nào cũng đọc/ghi được file.
+# Artifact của từng feature nằm ở <artifact_dir>/<tên-branch>/ (xem
+# conventions.md của repo đích).
 artifact_dir: .agent-workflow
+
+# Lệnh tiện ích — không phải phase. Đưa artifact làm bằng tool khác vào giữa
+# quy trình: chỉ sắp xếp lại theo mẫu, không thêm nội dung.
+import: workflow/import.md
 
 phases:
   - id: ideation
@@ -23,17 +29,20 @@ phases:
   - id: spec
     file: workflow/phases/01-spec.md
     required: true
+  - id: design
+    file: workflow/phases/02-design.md
+    required: true
   - id: plan
-    file: workflow/phases/02-plan.md
+    file: workflow/phases/03-plan.md
     required: true
   - id: implement
-    file: workflow/phases/03-implement.md
+    file: workflow/phases/04-implement.md
     required: true
   - id: review
-    file: workflow/phases/04-review.md
+    file: workflow/phases/05-review.md
     required: true
   - id: ship
-    file: workflow/phases/05-ship.md
+    file: workflow/phases/06-ship.md
     required: false
     when: repo đích có hạ tầng phát hành muốn đưa vào quy trình
 

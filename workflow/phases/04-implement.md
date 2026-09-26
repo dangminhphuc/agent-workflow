@@ -1,0 +1,113 @@
+---
+id: implement
+name: Hiện thực
+summary: Thực thi từng task trong kế hoạch; test xanh mới tính là xong
+required: true
+inputs:
+  - plan.md
+  - tdd.md
+  - spec.md
+outputs:
+  - diff
+  - plan.md (cập nhật trạng thái task)
+  - ket-qua-kiem-thu.md
+exit_machine:
+  - sh tools/kiem-tra-hien-thuc.sh
+exit_human: []
+needs_clean_context: false
+---
+
+# Phase 04 — Hiện thực
+
+## Mục tiêu
+
+Thực thi từng task trong `plan.md` theo `tdd.md`, không vượt ra ngoài phạm vi
+của chúng.
+
+Đây là phase agent cần **ít hướng dẫn nhất về cách viết code** và **nhiều ràng
+buộc nhất về phạm vi**. Agent viết code khá tốt; thứ nó làm hỏng là tự ý mở
+rộng phạm vi — sửa thêm chỗ "tiện tay thấy chưa đẹp", đổi thêm vài chữ ký hàm,
+dọn thêm vài file. Kết quả là một diff không ai review nổi.
+
+## Đầu vào
+
+- `plan.md` — nguồn duy nhất của việc phải làm; phải qua `kiem-tra-ke-hoach.sh`
+- `tdd.md` — *làm thế nào*: contract, mô hình dữ liệu, flow, quyết định D-xx
+- `spec.md` — tra khi cần hiểu *vì sao* một task tồn tại
+- `../conventions.md` — mẫu file test, cú pháp tag `covers:`, nhánh gốc
+
+## Việc phải làm
+
+1. **Làm từng task một.** Không gộp nhiều task vào một lượt, kể cả khi chúng
+   trông giống nhau. Gộp lại thì mất điểm dừng để kiểm tra giữa chừng.
+   Đánh `[~]` khi bắt đầu, `[x]` khi xong kèm danh sách file đã đụng tới.
+
+2. **Viết test gắn tag** theo cú pháp trong `conventions.md`, ví dụ
+   `// covers: YC-001`. YC không test tự động được thì ghi vào mục
+   "Kiểm chứng thủ công" của `plan.md` kèm lý do.
+
+3. **Chạy kiểm chứng đã khai trong task** ngay sau khi làm xong task đó — không
+   dồn tới cuối.
+
+4. **Dừng và báo khi gặp điều kế hoạch chưa lường.** Không tự quyết rồi đi
+   tiếp. Ghi vào `plan.md` mục "Phát sinh" và nêu ra. Nếu nó đụng một quyết định
+   D-xx thì đó là việc mở lại D ở `02-design`, không phải việc của phase này.
+
+   Task gặp bất ngờ là tín hiệu thiết kế hoặc kế hoạch thiếu sót, và thông tin
+   đó phải chảy ngược về chứ không bị agent âm thầm xử lý.
+
+5. **Giữ diff trong phạm vi.** File ngoài "File dự kiến" chỉ được đụng khi task
+   không thể hoàn thành nếu không đụng — và phải ghi file đó (trong backtick)
+   kèm lý do vào mục "Phát sinh".
+
+6. **Chạy `kiem-tra-hien-thuc.sh`.** Script tự chạy lệnh test và tự ghi
+   `ket-qua-kiem-thu.md` — không tự viết file đó.
+
+## Kiểm chéo — cảnh báo, `review` chặn
+
+`kiem-tra-hien-thuc.sh` in **cảnh báo** (không chặn phase này) cho:
+
+| Kiểm chéo | Xử lý |
+|---|---|
+| YC chưa có test gắn tag `covers:` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do |
+| File thay đổi so với nhánh gốc nằm ngoài "File dự kiến"/"Phát sinh" | Hoàn tác, hoặc ghi vào "Phát sinh" + lý do |
+| Artifact lỗi thời (`based_on` lệch hash) | Chạy lại phase sinh ra artifact đó |
+
+Cảnh báo không chặn ở đây để flow không tắc vì checker hay báo nhầm. Nhưng
+`05-review` là cổng chặn cuối: cảnh báo nào còn thì review **không đạt**. Xử lý
+luôn ở đây là rẻ nhất.
+
+## Đầu ra
+
+- Thay đổi code trong repo đích
+- `plan.md` đã cập nhật trạng thái (và "Phát sinh", "Kiểm chứng thủ công" nếu có)
+- `ket-qua-kiem-thu.md` — do script ghi, output thật của lệnh kiểm thử
+
+## Cấm
+
+- Làm việc không có trong `plan.md`.
+- Sửa `tdd.md` hay `spec.md`. Thấy sai thì dừng và nêu ra.
+- **Tuyên bố xong khi chưa chạy kiểm thử.** Đây là thất bại phổ biến nhất của
+  agent trong toàn quy trình.
+- Sửa hoặc vô hiệu hoá test để test xanh. Test đỏ là thông tin, không phải
+  chướng ngại. Nếu test cũ thực sự sai, đó là một mục "Phát sinh" cần nêu ra,
+  không phải việc sửa lặng lẽ.
+- Gắn tag `covers:` cho test không thực sự kiểm YC đó để tắt cảnh báo.
+- Bỏ qua lỗi lint/type với lý do "không liên quan tới task".
+
+## Điều kiện ra — `test` nằm ở đây
+
+Quy trình này **không có phase test riêng**. Một phase test riêng không có đầu
+vào riêng — nó ăn đúng cái diff mà `05-review` ăn — và đặt nó ở phía sau sẽ biến
+"code xong" thành một trạng thái hợp lệ dù chưa ai chạy gì.
+
+Đặt ở đây thì ràng buộc mạnh hơn: **chưa xanh nghĩa là chưa xong.**
+
+**Máy:**
+- `sh tools/kiem-tra-hien-thuc.sh` trả về 0: đầu vào qua `kiem-tra-ke-hoach.sh`;
+  lệnh kiểm thử của repo đích trả về 0 và output thật nằm trong
+  `ket-qua-kiem-thu.md`; không còn task `[~]`.
+
+Nếu repo đích chưa có lệnh kiểm thử, phải khai báo lúc cài đặt. Không khai thì
+điều kiện ra này coi như **fail**, không phải "bỏ qua" — im lặng bỏ qua sẽ làm
+cả ràng buộc trên mất tác dụng ở đúng những repo cần nó nhất.

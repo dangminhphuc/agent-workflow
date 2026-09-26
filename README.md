@@ -46,7 +46,7 @@ flowchart TD
     IDEA["00-ideation · tuỳ chọn<br/>→ brief.md<br/><i>NGƯỜI: duyệt brief</i>"]
     SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: kiem-tra-truy-vet.sh</i><br/><i>NGƯỜI: duyệt YC, mức ảnh hưởng, Mức rủi ro</i>"]
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Mức rủi ro: cao)"/]
-    DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: checker LLM — chỉ chặn</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
+    DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: kiem-tra-thiet-ke.sh + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: kiem-tra-ke-hoach.sh</i>"]
     IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: kiem-tra-hien-thuc.sh (tự chạy test)</i>"]
     REVIEW["05-review · ngữ cảnh trắng<br/>đọc mọi artifact + diff → review.md<br/><i>MÁY: kiem-tra-ra-soat.sh</i><br/><i>NGƯỜI: xác nhận kết luận</i>"]
@@ -118,10 +118,10 @@ Cách đọc:
 ### `01-spec` — yêu cầu
 
 Mỗi yêu cầu `YC-xxx` phải truy được về tài liệu nguồn (Confluence, Jira, file cục
-bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **mức ảnh hưởng** do agent đề xuất, người
-duyệt ở gate spec. Mặc định **không chặn** — chỉ mục ảnh hưởng toàn bộ thiết kế
-mới phải được trả lời trước khi vào `design`. Mục còn mở thì `review` không được
-kết luận "đạt".
+bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **mức ảnh hưởng** (`toàn bộ thiết kế` |
+`cục bộ`) do agent đề xuất, người duyệt ở gate spec. Mặc định **không chặn** — chỉ
+mục `toàn bộ thiết kế` mới phải có `Trạng thái: đã trả lời` trước khi vào
+`design`. Mục còn mở thì `review` không được kết luận "đạt".
 
 Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.
@@ -144,6 +144,9 @@ Mục không áp dụng ghi `Không áp dụng: <lý do>` chứ không bỏ tr�
 ghi `Dựa trên: D-xx`; checker LLM tìm chỗ lệch D-xx và các quyết định ngầm chưa
 được nêu thành D.
 
+Mỗi D-xx có `tac_gia: nguoi | agent` và `Trạng thái: đề xuất | đã duyệt | mở lại`.
+**Chỉ người** đổi sang `đã duyệt`; `/plan` chặn nếu còn D chưa duyệt.
+
 Hai cách làm:
 
 - **Mode 1** — agent viết cả `tdd.md` một lần, người duyệt.
@@ -153,7 +156,7 @@ Hai cách làm:
   phương án agent đưa ra.
 
 **Mở lại quyết định:** mở lại đúng một D-xx, sửa tại chỗ (lịch sử để git giữ), ghi
-trạng thái `mở lại` + lý do. Grep `Dựa trên: D-xx` ra các task bị ảnh hưởng, chỉ
+trạng thái `mở lại` + dòng `Lý do mở lại:`. Grep `Dựa trên: D-xx` ra các task bị ảnh hưởng, chỉ
 các task đó đặt lại `[ ]`; người chỉ duyệt lại D đang mở.
 
 ### `03-plan` — quản lý thực thi
@@ -184,10 +187,10 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
 | `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu |
-| `design` | checker LLM | Lệch D-xx, quyết định ngầm, YC chưa được ánh xạ |
-| `plan` | `kiem-tra-ke-hoach.sh` | Task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
+| `design` | `kiem-tra-thiet-ke.sh` | Thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `plan` | `kiem-tra-ke-hoach.sh` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `kiem-tra-hien-thuc.sh` | Test chưa xanh, task còn dở |
-| `review` | `kiem-tra-ra-soat.sh` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận hoặc cảnh báo chưa xử lý |
+| `review` | `kiem-tra-ra-soat.sh` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, test chưa xanh, hoặc **còn cảnh báo** |
 
 `kiem-tra-hien-thuc.sh` **tự chạy lệnh test và tự ghi output** vào
 `ket-qua-kiem-thu.md`. Agent không có cơ hội viết lại kết quả bằng lời hay bịa
@@ -195,6 +198,10 @@ một dòng "tất cả test đã xanh".
 
 Adapter tự từ chối build nếu một mục `exit_machine` không phải lệnh chạy được —
 nếu không, điều kiện loại NGƯỜI sẽ đội lốt loại MÁY và agent sẽ tự duyệt.
+
+**Entry check:** checker của mỗi phase chạy lại checker của phase trước trên
+đầu vào (`thiet-ke` → `truy-vet`, `ke-hoach` → `thiet-ke`, …). Artifact đưa từ
+tool khác vào cũng phải qua đúng cổng đó.
 
 ### Chặn hay cảnh báo
 
@@ -207,9 +214,12 @@ Tiêu chí xếp một checker mới: độ chính xác, chi phí nếu lọt, v
 
 ### Checker LLM: chỉ được chặn, không được duyệt
 
-Checker dùng LLM ghi phát hiện ra file; script fail nếu còn mục `Chặn` chưa xử
-lý. Người là **trọng tài theo ngoại lệ**: xác nhận, hoặc bác bỏ kèm lý do. LLM
-không bao giờ là bên nói "đạt".
+Checker dùng LLM (subagent `soat-thiet-ke`, định nghĩa ở
+`workflow/checkers/thiet-ke.md`) ghi phát hiện ra `phat-hien-thiet-ke.md`;
+`kiem-tra-thiet-ke.sh` fail nếu còn mục `Mức: Chặn` mà `Xử lý` chưa là `đã sửa`
+hoặc `bác bỏ: <lý do>`. **Không có file phát hiện cũng là fail** — nghĩa là
+checker chưa chạy. Người là **trọng tài theo ngoại lệ**: xác nhận, hoặc bác bỏ
+kèm lý do. LLM không bao giờ là bên nói "đạt".
 
 ### Artifact lỗi thời
 
@@ -220,7 +230,21 @@ based_on:
   - spec.md@<hash>
 ```
 
-Lệch hash chỉ **cảnh báo** ở các phase sau; `review` chặn nếu còn artifact lỗi thời.
+Hash do máy ghi (`tools/cap-nhat-based-on.sh`, dùng `cksum`, bỏ `\r`), không để
+agent tự chép. `tdd.md` dựa trên `spec.md` + `open-questions.md`; `plan.md` dựa
+trên `spec.md` + `tdd.md`. Lệch hash chỉ **cảnh báo** ở các phase sau; `review`
+chặn nếu còn artifact lỗi thời.
+
+### Kiểm chéo ở `implement`
+
+`kiem-tra-hien-thuc.sh` in **cảnh báo**, `kiem-tra-ra-soat.sh` coi cùng phát hiện đó là **lỗi**
+(chung một thư viện `tools/lib/kiem-cheo.sh`, nên hai nơi không lệch nhau):
+
+| Kiểm chéo | Cách kiểm | Xử lý |
+|---|---|---|
+| Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do trong `plan.md` |
+| Phạm vi diff | File đổi so với merge-base của `nhanh_goc` (kể cả chưa commit, file mới) so với "File dự kiến" + "Phát sinh" + `bo_qua` | Hoàn tác, hoặc ghi vào "Phát sinh" |
+| Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
 
 ## Đưa artifact từ ngoài vào
 
@@ -230,6 +254,9 @@ kiểm soát** — một lệnh riêng, không phải phase:
 - Chỉ sắp xếp lại theo mẫu, **không thêm nội dung**.
 - Gắn nhãn nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[CẦN-HỎI]`.
 - Kết quả chạy qua checker của phase tương ứng, và người xác nhận bản chuyển đổi.
+
+Với Claude Code: `/import <file-nguồn> <spec.md|tdd.md|plan.md>`. Định nghĩa trung
+lập ở `workflow/import.md`.
 
 Entry check của phase N chính là checker của phase N-1 chạy lại trên input, nên
 không có đường tắt nào bỏ qua cổng chặn.
@@ -244,18 +271,20 @@ Sinh ra trong repo đích:
 
 ```
 .claude/
-  commands/{ideation,spec,design,plan,implement,review}.md
-  agents/ra-soat-doc-lap.md
+  commands/{ideation,spec,design,plan,implement,review,import}.md
+  agents/ra-soat-doc-lap.md                        ← rà soát ngữ cảnh sạch
+  agents/soat-thiet-ke.md                          ← checker LLM của design
   skills/quy-trinh-agent/SKILL.md
 .agent-workflow/
-  .quy-trinh/{rules,templates,tools,cau-hinh.sh}   ← bộ cài, cài lại sẽ ghi đè
-  conventions.md                                   ← bạn viết; bộ cài chỉ tạo mẫu, không ghi đè
+  .quy-trinh/{rules,templates,checkers,tools}      ← bộ cài, cài lại sẽ ghi đè
+  .quy-trinh/cau-hinh.sh                           ← lệnh test; cài lại không ghi đè
+  conventions.md                                   ← bạn viết; bộ cài chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
   <tên-branch>/                                    ← artifact của từng feature, commit vào git
-    spec.md, open-questions.md, tdd.md, plan.md,
-    ket-qua-kiem-thu.md, review.md, ...
+    spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
+    plan.md, ket-qua-kiem-thu.md, review.md, ...
 ```
 
-Rồi mở Claude Code trong repo đích:
+Rồi sửa `.agent-workflow/conventions.md`, tạo branch theo quy ước, mở Claude Code:
 `/spec` → `/design` → `/plan` → `/implement` → `/review`.
 
 Cài lại sau khi sửa quy trình: chạy lại đúng lệnh trên. Adapter **từ chối ghi đè**
@@ -273,15 +302,22 @@ Cách xác định feature đang làm:
 2. không khớp thì lấy tham số của lệnh;
 3. không có tham số thì dừng lại hỏi.
 
-Agent luôn in `Đang làm với: …` trước khi bắt đầu.
+Agent luôn in `Đang làm với: …` trước khi bắt đầu. Thứ tự này nằm trong script
+`tools/xac-dinh-feature.sh` (mã 0 = có thư mục, 3 = phải hỏi), không nằm trong
+prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành `_`.
 
-`conventions.md` là của repo đích, do bạn viết, và khai:
+`conventions.md` là của repo đích, do bạn viết. Phần máy đọc là một khối
+` ```conventions ` gồm các dòng `khoá: giá trị`:
 
-- quy ước tên branch (`feat_xxx`, `refactor_xxx`… — `xxx` không nhất thiết là mã Jira);
-- nhánh gốc để so diff, và danh sách file bỏ qua;
-- mẫu file test và cú pháp tag `covers:`.
+| Khoá | Ví dụ | Dùng cho |
+|---|---|---|
+| `mau_branch` | `feat_* fix_* refactor_*` | Quy ước tên branch; `xxx` không nhất thiết là mã Jira |
+| `nhanh_goc` | `main` | Nhánh gốc để so diff |
+| `bo_qua` | `package-lock.json` | File đổi không cần nằm trong plan |
+| `mau_file_test` | `*.test.* test/*` | File nào là test |
+| `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
 
-Phần máy đọc của file này phải parse được bằng sh/awk.
+Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
 
 ## Cấu trúc repo
 
@@ -289,15 +325,20 @@ Phần máy đọc của file này phải parse được bằng sh/awk.
 workflow.yaml            manifest trung lập — nguồn sự thật duy nhất
 workflow/
   phases/*.md            định nghĩa phase (frontmatter + mô tả)
+  checkers/*.md          định nghĩa checker LLM (chỉ được chặn)
+  import.md              lệnh import artifact từ ngoài (không phải phase)
   rules/*.md             luật áp dụng cho mọi phase
-  templates/*.md         mẫu cho từng artifact
+  templates/*.md         mẫu cho từng artifact + conventions.md
 adapters/
   claude-code/build.sh   biên dịch sang .claude/**
 tools/
   cai-dat.sh             cài vào repo đích
   kiem-tra-*.sh          các cổng chặn bằng máy
+  xac-dinh-feature.sh    branch → tham số → hỏi; in thư mục feature
+  cap-nhat-based-on.sh   ghi hash đầu vào vào frontmatter artifact
   chay-thu.sh            test hồi quy cho chính các cổng chặn
-  lib/md.sh              đọc frontmatter (tập con YAML)
+  lib/md.sh              đọc frontmatter (tập con YAML), conventions, hash
+  lib/kiem-cheo.sh       kiểm chéo dùng chung: lỗi thời, test ↔ YC, phạm vi diff
 docs/kien-truc.md        vì sao thiết kế như vậy, cách thêm phase/adapter
 ```
 

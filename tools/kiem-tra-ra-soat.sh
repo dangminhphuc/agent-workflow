@@ -1,25 +1,57 @@
 #!/usr/bin/env sh
-# Kiem tra dieu kien ra cua phase 04-review.
+# Kiem tra dieu kien ra cua phase 05-review — CONG CHAN CUOI.
 #
-#   sh tools/kiem-tra-ra-soat.sh <thu-muc-artifact>
+#   sh tools/kiem-tra-ra-soat.sh <thu-muc-feature>
 #
-# Kiem hai dieu:
-#   1. Moi ma YC trong spec.md deu co ket luan trong review.md.
-#      Chan kieu "nhin qua thay on" — bo sot mot yeu cau la khong dat.
+# Chan:
+#   1. Moi ma YC trong spec.md deu co ket luan hop le trong review.md.
 #   2. Yeu cau gan [CAN-HOI] khong duoc ket luan "dat".
-#      Gia dinh tam chua ai xac nhan thi chua the ket luan la dung.
+#   3. Dau vao khong qua kiem-tra-ke-hoach.sh (keo theo design va spec).
+#   4. ket-qua-kiem-thu.md thieu hoac ma thoat khac 0.
+#   5. Moi CANH BAO don tu cac phase truoc con ton tai: YC chua co test,
+#      diff ngoai pham vi, artifact loi thoi. Giua flow chung chi canh bao
+#      de flow khong tac; o day thi khong con cho nao phia sau de bat lai.
 #
 # Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file dau vao.
 
-DIR="${1:-.agent-workflow}"
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/md.sh"
+. "$HERE/lib/kiem-cheo.sh"
+
+DIR="${1:-.}"
 SPEC="$DIR/spec.md"
 REVIEW="$DIR/review.md"
+KQ="$DIR/ket-qua-kiem-thu.md"
 
 [ -f "$SPEC" ]   || { echo "LỖI: không tìm thấy $SPEC" >&2; exit 2; }
 [ -f "$REVIEW" ] || { echo "LỖI: không tìm thấy $REVIEW" >&2; exit 2; }
 
-awk '
+n_truoc=0
+loi_truoc() { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $1"; }
+
+if ! sh "$HERE/kiem-tra-ke-hoach.sh" "$DIR" >/dev/null 2>&1; then
+  loi_truoc "Đầu vào chưa đạt: plan.md/tdd.md/spec.md không qua kiem-tra-ke-hoach.sh — chạy nó để xem chi tiết."
+fi
+
+if [ ! -f "$KQ" ]; then
+  loi_truoc "Không có ket-qua-kiem-thu.md — /implement chưa chạy kiem-tra-hien-thuc.sh."
+elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
+  loi_truoc "ket-qua-kiem-thu.md ghi mã thoát khác 0 — test chưa xanh."
+fi
+
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; } )
+if [ -n "$cb" ]; then
+  # vòng lặp ở shell chính (không pipe) để đếm được
+  while IFS= read -r l; do
+    [ -n "$l" ] && loi_truoc "Cảnh báo chưa xử lý — $l"
+  done <<CB
+$cb
+CB
+fi
+
+awk -v loi_truoc="$n_truoc" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
+  BEGIN { n_loi = loi_truoc }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
 
   { sub(/\r$/, "") }

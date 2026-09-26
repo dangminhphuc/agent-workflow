@@ -1,27 +1,41 @@
 #!/usr/bin/env sh
-# Kiem tra dieu kien ra cua phase 03-implement.
+# Kiem tra dieu kien ra cua phase 04-implement.
 #
-#   sh tools/kiem-tra-hien-thuc.sh <thu-muc-artifact>
+#   sh tools/kiem-tra-hien-thuc.sh <thu-muc-feature>
 #
 # Diem quan trong: script NAY TU CHAY lenh kiem thu va TU GHI output vao
 # ket-qua-kiem-thu.md. Agent khong co co hoi viet lai ket qua bang loi hay
-# bia mot dong "tat ca test da xanh". Do la ly do phase 03 khong de agent
-# tu dan output.
+# bia mot dong "tat ca test da xanh".
 #
-# Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file/cau hinh.
+# Chan:  dau vao khong qua kiem-tra-ke-hoach.sh, chua khai lenh kiem thu,
+#        test do, con task dang lam do.
+# Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi.
+#
+# Cau hinh: <thu-muc-feature>/../.quy-trinh/cau-hinh.sh
+# Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file.
 
-DIR="${1:-.agent-workflow}"
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/md.sh"
+. "$HERE/lib/kiem-cheo.sh"
+
+DIR="${1:-.}"
 PLAN="$DIR/plan.md"
 KQ="$DIR/ket-qua-kiem-thu.md"
-CAUHINH="$DIR/.quy-trinh/cau-hinh.sh"
+CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
 
 [ -f "$PLAN" ] || { echo "LỖI: không tìm thấy $PLAN" >&2; exit 2; }
 
 LENH_KIEM_THU=""
+# shellcheck disable=SC1090
 [ -f "$CAUHINH" ] && . "$CAUHINH"
 
 n_loi=0
 loi() { n_loi=$((n_loi + 1)); echo "  [LỖI] $1"; }
+
+# ---- 0. Dau vao ----
+if ! sh "$HERE/kiem-tra-ke-hoach.sh" "$DIR" >/dev/null 2>&1; then
+  loi "Đầu vào chưa đạt: plan.md không qua kiem-tra-ke-hoach.sh — chạy nó để xem chi tiết."
+fi
 
 # ---- 1. Phai khai bao lenh kiem thu ----
 if [ -z "$LENH_KIEM_THU" ]; then
@@ -43,11 +57,9 @@ dang_do=$(awk '
   cur != "" && /Trạng thái:/ && /\[~\]/ { print cur }
 ' "$PLAN")
 
-if [ -n "$dang_do" ]; then
-  for t in $dang_do; do
-    loi "$t còn ở trạng thái đang làm dở \`[~]\`"
-  done
-fi
+for t in $dang_do; do
+  loi "$t còn ở trạng thái đang làm dở \`[~]\`"
+done
 
 # ---- 3. Chay that lenh kiem thu ----
 echo ""
@@ -64,7 +76,7 @@ echo "Mã thoát: $ma_thoat"
 {
   echo "# Kết quả kiểm thử"
   echo ""
-  echo "> File này do \`tools/kiem-tra-hien-thuc.sh\` ghi tự động."
+  echo "> File này do \`kiem-tra-hien-thuc.sh\` ghi tự động."
   echo "> Đây là output thật của lệnh, không phải mô tả lại bằng lời."
   echo ""
   echo "- Lệnh: \`$LENH_KIEM_THU\`"
@@ -80,9 +92,24 @@ echo "Đã ghi output thật vào $KQ"
 
 [ "$ma_thoat" -ne 0 ] && loi "Lệnh kiểm thử trả về mã $ma_thoat — chưa xanh thì chưa xong"
 
+# ---- 5. Kiem cheo — chi canh bao ----
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; } )
+n_cb=0
+if [ -n "$cb" ]; then
+  echo ""
+  n_cb=$(printf '%s\n' "$cb" | wc -l | tr -d ' ')
+  printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  echo "  Cảnh báo không chặn implement, nhưng /review sẽ CHẶN nếu còn."
+  echo "  Xử lý: thêm test gắn tag, ghi \"Kiểm chứng thủ công\", ghi file vào \"Phát sinh\", hoặc chạy lại phase lỗi thời."
+fi
+
 echo ""
 if [ "$n_loi" -gt 0 ]; then
   echo "KHÔNG ĐẠT — $n_loi vi phạm."
   exit 1
 fi
-echo "ĐẠT — test xanh, không còn task dở."
+if [ "$n_cb" -gt 0 ]; then
+  echo "ĐẠT — test xanh, không còn task dở. Còn $n_cb cảnh báo chuyển cho review."
+else
+  echo "ĐẠT — test xanh, không còn task dở, không có cảnh báo."
+fi

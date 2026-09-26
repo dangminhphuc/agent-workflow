@@ -74,3 +74,34 @@ wf_phases() {
     END { if (inp==1 && id != "") print id "|" file "|" req "|" when }
   ' "$1"
 }
+
+# conv_get <conventions.md> <khoá> -> giá trị trong khối ```conventions
+# Khối máy đọc của conventions.md: mỗi dòng "khoá: giá trị", danh sách cách
+# nhau bằng dấu cách. File không tồn tại hoặc thiếu khoá -> in rỗng.
+conv_get() {
+  [ -f "$1" ] || return 0
+  awk -v key="$2" '
+    { sub(/\r$/, "") }
+    /^```conventions[ \t]*$/ { inb=1; next }
+    inb==1 && /^```/ { exit }
+    inb==1 && $0 ~ "^" key ":" {
+      v=$0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/[ \t]+$/, "", v)
+      print v; exit
+    }
+  ' "$1"
+}
+
+# file_hash <file> -> hash cả file (cksum, bỏ \r để CRLF/LF cho cùng kết quả)
+file_hash() {
+  tr -d '\r' < "$1" | cksum | awk '{ print $1 }'
+}
+
+# khop_glob <chuỗi> <mẫu...> -> 0 nếu khớp một mẫu. Trong mẫu, * khớp cả "/".
+khop_glob() {
+  _s="$1"; shift
+  for _p in "$@"; do
+    # shellcheck disable=SC2254
+    case "$_s" in $_p) return 0 ;; esac
+  done
+  return 1
+}

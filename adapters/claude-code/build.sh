@@ -5,7 +5,9 @@
 #
 # Sinh ra trong repo dich:
 #   .claude/commands/<id>.md            slash command cho tung phase
+#   .claude/commands/import.md          lenh import artifact tu ngoai
 #   .claude/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
+#   .claude/agents/soat-<checker>.md    subagent cho tung checker LLM
 #   .claude/skills/quy-trinh-agent/SKILL.md
 #
 # KHONG tu ghi .claude/settings.json — xem README.md muc "Hook".
@@ -38,9 +40,19 @@ kiem_tra_ghi_de() {
   exit 3
 }
 
+# ghi_file <dich> — doc stdin vao file tam roi moi chuyen vao cho. Build that
+# bai giua chung khong duoc de lai mot file viet do: no trong nhu hop le nhung bi cut.
+ghi_file() {
+  _tmp="$(dirname "$1")/.$(basename "$1").tmp"
+  if cat > "$_tmp"; then mv "$_tmp" "$1"; echo "  sinh    ${1#"$OUT"/}"; else rm -f "$_tmp"; exit 4; fi
+}
+
 MANIFEST="$ROOT/workflow.yaml"
-ART=$(awk '/^artifact_dir:/ { sub(/^artifact_dir:[ \t]*/, ""); print; exit }' "$MANIFEST")
+man_scalar() { awk -v k="$1" '{ sub(/\r$/, "") } $0 ~ "^" k ":" { sub("^" k ":[ \t]*", ""); print; exit }' "$MANIFEST"; }
+ART=$(man_scalar artifact_dir)
+IMPORT=$(man_scalar import)
 QT="$ART/.quy-trinh"
+FD='<thư-mục-feature>'
 
 mkdir -p "$OUT/.claude/commands" "$OUT/.claude/agents" "$OUT/.claude/skills/quy-trinh-agent"
 
@@ -49,7 +61,7 @@ canh_bao() {
   printf '> Đừng sửa trực tiếp — sửa file nguồn rồi chạy lại adapter, nếu không thay đổi sẽ mất.\n\n'
 }
 
-# Kiem tra exit_machine TRUOC khi sinh file, va o SHELL CHINH.
+# Kiem tra exit_machine va llm_checker TRUOC khi sinh file, va o SHELL CHINH.
 #
 # Dieu kien ra loai MAY phai la LENH CHAY DUOC. Neu no chi la cau chu thi no
 # la dieu kien loai NGUOI dang doi lot — agent se "tu danh gia la dat", dung
@@ -59,7 +71,7 @@ canh_bao() {
 # pipeline chay trong subshell — `exit` o do chi thoat subshell, build van
 # tiep tuc va van ghi ra file thieu mat muc dieu kien ra. Doc tu file bang
 # redirect thi van o shell chinh.
-kiem_tra_exit_machine() {
+kiem_tra_nguon() {
   _src="$1"; _file="$2"
   _tmp="${TMPDIR:-/tmp}/em.$$"
   fm_list "$_src" exit_machine > "$_tmp"
@@ -81,23 +93,27 @@ kiem_tra_exit_machine() {
     esac
   done < "$_tmp"
   rm -f "$_tmp"
+  _lc=$(fm_scalar "$_src" llm_checker)
+  if [ -n "$_lc" ] && [ ! -f "$ROOT/$_lc" ]; then
+    echo "LỖI: $_file khai llm_checker \"$_lc\" nhưng không có file đó." >&2
+    _bad=1
+  fi
   [ "$_bad" = "0" ]
 }
 
-# Chi dinh dang — moi kiem tra da lam o kiem_tra_exit_machine.
 dich_lenh() {
   _s=${1#sh tools/}
-  printf '  - `sh %s/tools/%s %s` → phải trả mã thoát 0\n' "$QT" "$_s" "$ART"
+  printf '  - `sh %s/tools/%s %s` → phải trả mã thoát 0\n' "$QT" "$_s" "$FD"
 }
 
 mo_ta_input() {
   case "$1" in
     confluence) printf '  - Confluence qua MCP Atlassian — ghi lại URL page + tên heading\n' ;;
     jira)       printf '  - Jira qua MCP Atlassian — ghi lại mã issue + URL\n' ;;
-    file)       printf '  - Tài liệu trong repo — ghi lại đường dẫn + heading\n' ;;
-    brief)      printf '  - `%s/brief.md` (nếu đã chạy `/ideation`)\n' "$ART" ;;
-    diff)       printf '  - Diff hiện tại của repo (`git diff`, `git status`)\n' ;;
-    *.md)       printf '  - `%s/%s`\n' "$ART" "$1" ;;
+    file)       printf '  - Tài liệu trong repo (kể cả incident note) — ghi lại đường dẫn + heading\n' ;;
+    brief)      printf '  - `%s/brief.md` (nếu đã chạy `/ideation`)\n' "$FD" ;;
+    diff)       printf '  - Diff so với nhánh gốc (`git diff`, `git status`; nhánh gốc khai trong `%s/conventions.md`)\n' "$ART" ;;
+    *.md)       printf '  - `%s/%s`\n' "$FD" "$1" ;;
     *)          printf '  - %s\n' "$1" ;;
   esac
 }
@@ -105,9 +121,22 @@ mo_ta_input() {
 mo_ta_output() {
   case "$1" in
     diff) printf '  - Thay đổi code trong repo\n' ;;
-    *)    printf '  - `%s/%s`\n' "$ART" "$1" ;;
+    *)    printf '  - `%s/%s`\n' "$FD" "$1" ;;
   esac
 }
+
+# Buoc 0 cua moi command: xac dinh feature. Thu tu branch -> tham so -> hoi la
+# giao dien chung giua cac adapter, nen no nam trong script, khong trong prompt.
+buoc_xac_dinh_feature() {
+  printf '## Bước 0 — Xác định feature (luôn làm trước)\n\n'
+  printf 'Chạy `sh %s/tools/xac-dinh-feature.sh %s`.\n\n' "$QT" "$1"
+  printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
+  printf -- '- **Mã 3:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
+  printf -- '- **Mã 2:** tên không hợp lệ → báo lại cho người dùng.\n\n'
+  printf 'Đường dẫn `tools/`, `templates/`, `rules/`, `checkers/` trong mô tả phase nằm trong `%s/`.\n\n' "$QT"
+}
+
+ten_agent_checker() { printf 'soat-%s' "$(basename "$1" .md)"; }
 
 sinh_command() {
   id="$1"; file="$2"; req="$3"; when="$4"
@@ -116,11 +145,14 @@ sinh_command() {
   summary=$(fm_scalar "$src" summary)
   clean=$(fm_scalar "$src" needs_clean_context)
   fresh=$(fm_scalar "$src" requires_fresh_agent)
+  lc=$(fm_scalar "$src" llm_checker)
 
   printf -- '---\n'
   printf 'description: %s — %s\n' "$name" "$summary"
+  printf 'argument-hint: [tên-feature]\n'
   printf -- '---\n\n'
   canh_bao "$file"
+  buoc_xac_dinh_feature '$ARGUMENTS'
 
   printf '## Hợp đồng phase\n\n'
   if [ "$req" = "true" ]; then
@@ -149,6 +181,12 @@ sinh_command() {
     esac
   done
 
+  if [ -n "$lc" ]; then
+    lco=$(fm_scalar "$ROOT/$lc" output)
+    printf -- '- **Checker LLM — chỉ được CHẶN, không được DUYỆT.** Sau khi viết xong, gọi subagent `%s` (ngữ cảnh sạch) với `%s`; nó ghi `%s/%s`. Không có file đó = KHÔNG ĐẠT, không phải "không có gì để báo".\n' \
+      "$(ten_agent_checker "$lc")" "$FD" "$FD" "$lco"
+  fi
+
   em=$(fm_list "$src" exit_machine)
   if [ -n "$em" ]; then
     printf -- '- **Điều kiện ra — MÁY kiểm.** Bạn KHÔNG được tự tuyên bố đạt; phải chạy lệnh và dán kết quả thật:\n'
@@ -165,18 +203,23 @@ sinh_command() {
     printf -- '- **Ngữ cảnh:** phase này phải chạy được từ phiên trắng. Chỉ nhận đầu vào từ file, không từ hội thoại phía trên.\n'
   fi
   if [ "$fresh" = "true" ]; then
-    printf -- '- **Bắt buộc:** chạy qua subagent `ra-soat-doc-lap`. KHÔNG rà soát bằng chính phiên vừa viết code.\n'
+    printf -- '- **Bắt buộc:** chạy qua subagent `ra-soat-doc-lap`, truyền cho nó `%s`. KHÔNG rà soát bằng chính phiên vừa viết code.\n' "$FD"
   fi
 
   printf '\n### Đọc trước khi làm\n\n'
   printf -- '- `%s/rules/nguyen-tac-chung.md`\n' "$QT"
-  printf -- '- `%s/rules/truy-vet-nguon.md`\n\n' "$QT"
+  printf -- '- `%s/rules/truy-vet-nguon.md`\n' "$QT"
+  printf -- '- `%s/conventions.md`\n\n' "$ART"
   printf -- '---\n'
   md_body "$src"
 }
 
-# ---------- slash command ----------
-wf_phases "$MANIFEST" > /tmp/.wf_phases.$$
+# ---------- slash command cho tung phase ----------
+PH_LIST="${TMPDIR:-/tmp}/.wf_phases.$$"
+trap 'rm -f "$PH_LIST"' EXIT
+wf_phases "$MANIFEST" > "$PH_LIST"
+REV_SRC=""; REV_FILE=""
+CHECKERS=""
 while IFS='|' read -r id file req when; do
   [ -n "$id" ] || continue
   src="$ROOT/$file"
@@ -188,48 +231,79 @@ while IFS='|' read -r id file req when; do
     echo "  bỏ qua  /$id (status: chưa hiện thực)"
     continue
   fi
-  kiem_tra_exit_machine "$src" "$file" || exit 4
+  kiem_tra_nguon "$src" "$file" || exit 4
   kiem_tra_ghi_de "$OUT/.claude/commands/$id.md"
-  # Ghi ra file tam roi moi chuyen vao cho: build that bai giua chung khong duoc
-  # de lai mot command file viet do — no trong nhu hop le nhung bi cut.
-  tmpf="$OUT/.claude/commands/.$id.md.tmp"
-  if sinh_command "$id" "$file" "$req" "$when" > "$tmpf"; then
-    mv "$tmpf" "$OUT/.claude/commands/$id.md"
-    echo "  sinh    .claude/commands/$id.md"
-  else
-    rm -f "$tmpf"
-    exit 4
-  fi
-done < /tmp/.wf_phases.$$
+  sinh_command "$id" "$file" "$req" "$when" | ghi_file "$OUT/.claude/commands/$id.md"
+  if [ "$(fm_scalar "$src" requires_fresh_agent)" = "true" ]; then REV_SRC="$src"; REV_FILE="$file"; fi
+  lc=$(fm_scalar "$src" llm_checker)
+  [ -n "$lc" ] && CHECKERS="$CHECKERS $lc"
+done < "$PH_LIST"
 
-# ---------- subagent ra soat ----------
-REV="$ROOT/workflow/phases/04-review.md"
-kiem_tra_ghi_de "$OUT/.claude/agents/ra-soat-doc-lap.md"
-{
-  printf -- '---\n'
-  printf 'name: ra-soat-doc-lap\n'
-  printf 'description: Rà soát độc lập diff theo spec.md và plan.md bằng ngữ cảnh sạch. Dùng cho phase 04-review. Không dùng chính phiên vừa hiện thực để rà soát.\n'
-  printf -- '---\n\n'
-  canh_bao "workflow/phases/04-review.md"
-  printf 'Bạn là người rà soát độc lập. Bạn CHƯA từng nhìn thấy code này và không biết\n'
-  printf 'gì về lập luận đã dẫn tới nó — đó chính là giá trị của bạn. Đừng suy đoán ý\n'
-  printf 'định của người viết; chỉ đối chiếu code với đặc tả.\n\n'
-  printf 'Đọc vào:\n'
-  printf -- '- `%s/spec.md`\n' "$ART"
-  printf -- '- `%s/plan.md`\n' "$ART"
-  printf -- '- Diff hiện tại (`git diff`)\n\n'
-  printf 'Ghi ra `%s/review.md` theo mẫu `%s/templates/review.md`.\n\n' "$ART" "$QT"
-  printf -- '---\n'
-  md_body "$REV"
-} > "$OUT/.claude/agents/ra-soat-doc-lap.md"
-echo "  sinh    .claude/agents/ra-soat-doc-lap.md"
+# ---------- subagent ra soat (phase co requires_fresh_agent) ----------
+if [ -n "$REV_SRC" ]; then
+  kiem_tra_ghi_de "$OUT/.claude/agents/ra-soat-doc-lap.md"
+  {
+    printf -- '---\n'
+    printf 'name: ra-soat-doc-lap\n'
+    printf 'description: Rà soát độc lập diff theo spec.md, tdd.md và plan.md bằng ngữ cảnh sạch. Dùng cho phase review. Không dùng chính phiên vừa hiện thực để rà soát. Người gọi phải truyền thư mục feature.\n'
+    printf -- '---\n\n'
+    canh_bao "$REV_FILE"
+    printf 'Bạn là người rà soát độc lập. Bạn CHƯA từng nhìn thấy code này và không biết\n'
+    printf 'gì về lập luận đã dẫn tới nó — đó chính là giá trị của bạn. Đừng suy đoán ý\n'
+    printf 'định của người viết; chỉ đối chiếu code với đặc tả và thiết kế đã duyệt.\n\n'
+    printf 'Người gọi truyền cho bạn `%s` (vd `%s/feat_tao-todo`). Không có thì dừng lại hỏi.\n\n' "$FD" "$ART"
+    printf 'Đọc vào:\n'
+    fm_list "$REV_SRC" inputs | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
+    printf '\nGhi ra `%s/review.md` theo mẫu `%s/templates/review.md`, rồi chạy\n' "$FD" "$QT"
+    printf '`sh %s/tools/kiem-tra-ra-soat.sh %s` và dán kết quả thật.\n' "$QT" "$FD"
+    printf 'Đường dẫn `tools/`, `templates/`, `rules/` bên dưới nằm trong `%s/`.\n\n' "$QT"
+    printf -- '---\n'
+    md_body "$REV_SRC"
+  } | ghi_file "$OUT/.claude/agents/ra-soat-doc-lap.md"
+fi
+
+# ---------- subagent cho tung checker LLM ----------
+for lc in $CHECKERS; do
+  csrc="$ROOT/$lc"; ten=$(ten_agent_checker "$lc")
+  kiem_tra_ghi_de "$OUT/.claude/agents/$ten.md"
+  {
+    printf -- '---\n'
+    printf 'name: %s\n' "$ten"
+    printf 'description: %s Người gọi phải truyền thư mục feature.\n' "$(fm_scalar "$csrc" summary)"
+    printf -- '---\n\n'
+    canh_bao "$lc"
+    printf 'Người gọi truyền cho bạn `%s`. Không có thì dừng lại hỏi.\n\n' "$FD"
+    printf 'Đọc vào:\n'
+    fm_list "$csrc" inputs | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
+    printf '\nGhi ra `%s/%s` theo mẫu `%s/templates/%s`.\n\n' "$FD" "$(fm_scalar "$csrc" output)" "$QT" "$(fm_scalar "$csrc" output)"
+    printf -- '---\n'
+    md_body "$csrc"
+  } | ghi_file "$OUT/.claude/agents/$ten.md"
+done
+
+# ---------- lenh import ----------
+if [ -n "$IMPORT" ]; then
+  [ -f "$ROOT/$IMPORT" ] || { echo "LỖI: workflow.yaml khai import \"$IMPORT\" nhưng không có file đó." >&2; exit 4; }
+  kiem_tra_ghi_de "$OUT/.claude/commands/import.md"
+  {
+    printf -- '---\n'
+    printf 'description: %s — %s\n' "$(fm_scalar "$ROOT/$IMPORT" name)" "$(fm_scalar "$ROOT/$IMPORT" summary)"
+    printf 'argument-hint: <file-nguồn> <spec.md|tdd.md|plan.md> [tên-feature]\n'
+    printf -- '---\n\n'
+    canh_bao "$IMPORT"
+    printf 'Tham số: `$ARGUMENTS`\n\n'
+    buoc_xac_dinh_feature '<tên-feature nếu người dùng truyền>'
+    printf -- '---\n'
+    md_body "$ROOT/$IMPORT"
+  } | ghi_file "$OUT/.claude/commands/import.md"
+fi
 
 # ---------- skill tong ----------
 kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
 {
   printf -- '---\n'
   printf 'name: quy-trinh-agent\n'
-  printf 'description: Quy trình phát triển dựa trên AI agent của repo này. Dùng khi bắt đầu một tính năng mới, khi viết đặc tả từ BRD/PRD hoặc ticket Jira/Confluence, khi lập kế hoạch kỹ thuật, khi hiện thực theo kế hoạch, khi rà soát thay đổi, hoặc khi được hỏi quy trình làm việc của repo này là gì.\n'
+  printf 'description: Quy trình phát triển dựa trên AI agent của repo này. Dùng khi bắt đầu một tính năng mới, khi viết đặc tả từ BRD/PRD hoặc ticket Jira/Confluence, khi thiết kế kỹ thuật, khi lập kế hoạch, khi hiện thực theo kế hoạch, khi rà soát thay đổi, khi đưa tài liệu từ tool khác vào quy trình, hoặc khi được hỏi quy trình làm việc của repo này là gì.\n'
   printf -- '---\n\n'
   printf '# Quy trình phát triển dựa trên AI agent\n\n'
   canh_bao "workflow.yaml"
@@ -248,18 +322,18 @@ kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
     oo=$(fm_list "$src" outputs | tr '\n' ',' | sed 's/,$//; s/,/, /g')
     if [ "$req" = "true" ]; then bb="có"; else bb="không"; fi
     printf '| `/%s` | %s | %s | %s |\n' "$id" "$nm" "${oo:-—}" "$bb"
-  done < /tmp/.wf_phases.$$
+  done < "$PH_LIST"
+  [ -n "$IMPORT" ] && printf '| `/import` | Đưa artifact từ tool khác vào (không phải phase) | spec.md / tdd.md / plan.md | — |\n'
   printf '\n## Luật không được vi phạm\n\n'
   printf '1. **Bàn giao bằng file.** Phase không được nhận đầu vào từ hội thoại phía trên.\n'
   printf '2. **Không tự tuyên bố đạt** với điều kiện ra loại MÁY — phải chạy lệnh và dán kết quả thật.\n'
-  printf '3. **Không vượt phạm vi phase.** Việc thuộc phase khác thì ghi lại, không làm luôn.\n'
-  printf '4. **Không xoá artifact của phase trước.** Chạy lại là cập nhật, không viết đè trắng.\n'
-  printf '5. **Mọi yêu cầu phải truy được về nguồn.**\n\n'
+  printf '3. **Agent không tự duyệt.** Không tự đổi D-xx sang `đã duyệt`; checker LLM chỉ được chặn.\n'
+  printf '4. **Không vượt phạm vi phase.** Việc thuộc phase khác thì ghi lại, không làm luôn.\n'
+  printf '5. **Không xoá artifact của phase trước.** Chạy lại là cập nhật, không viết đè trắng.\n'
+  printf '6. **Mọi yêu cầu phải truy được về nguồn.**\n\n'
   printf 'Bản đầy đủ: `%s/rules/nguyen-tac-chung.md` và `%s/rules/truy-vet-nguon.md`.\n\n' "$QT" "$QT"
   printf '## Artifact\n\n'
-  printf -- '- Artifact bàn giao: `%s/`\n' "$ART"
+  printf -- '- Artifact của từng feature: `%s/<tên-branch>/` — xác định bằng `sh %s/tools/xac-dinh-feature.sh`\n' "$ART" "$QT"
+  printf -- '- Quy ước của repo (branch, nhánh gốc, file test, tag `covers:`): `%s/conventions.md`\n' "$ART"
   printf -- '- Bộ cài của quy trình (luật, mẫu, công cụ kiểm tra): `%s/`\n' "$QT"
-} > "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
-echo "  sinh    .claude/skills/quy-trinh-agent/SKILL.md"
-
-rm -f /tmp/.wf_phases.$$
+} | ghi_file "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"

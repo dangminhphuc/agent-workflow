@@ -1,6 +1,6 @@
 # Rà soát — <TÊN TÍNH NĂNG>
 
-> Sinh bởi phase `04-review`, chạy bằng ngữ cảnh sạch.
+> Sinh bởi phase `05-review`, chạy bằng ngữ cảnh sạch.
 
 ## Lăng kính 1 — Đúng đặc tả
 
@@ -13,9 +13,10 @@ Mọi mã `YC` trong `spec.md` phải có mặt ở bảng này.
 
 Kết luận hợp lệ: `đạt` / `đạt một phần` / `chưa đạt` / `chờ xác nhận`.
 
-## Lăng kính 2 — Đúng phạm vi
+## Lăng kính 2 — Đúng thiết kế và phạm vi
 
-- Thay đổi không thuộc task nào: <liệt kê, hoặc "không có">
+- Lệch D-xx / contract / mô hình dữ liệu trong `tdd.md`: <liệt kê, hoặc "không có">
+- Thay đổi không thuộc task nào: <...>
 - Task đánh dấu xong nhưng diff không có dấu vết: <...>
 - Phát sinh bị xử lý lặng lẽ: <...>
 
@@ -32,6 +33,13 @@ Kết luận hợp lệ: `đạt` / `đạt một phần` / `chưa đạt` / `ch
 
 ### [Góp ý] <tiêu đề>
 - Vị trí: `file:dòng`
+
+## Cảnh báo dồn về
+
+Lỗi "Cảnh báo chưa xử lý" từ `kiem-tra-ra-soat.sh` (YC chưa có test, diff ngoài
+phạm vi, artifact lỗi thời). Còn mục nào thì review không đạt.
+
+- <...>
 
 ## Kết luận
 
