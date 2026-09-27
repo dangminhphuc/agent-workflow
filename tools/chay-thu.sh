@@ -64,9 +64,9 @@ LOAI=feature
 R="$TMP/repo"
 F="$R/.agent-workflow/feat_x"
 
-viet_muc_dich() {
-  cat > "$F/muc-dich.md" <<EOF
-# Mục đích — x
+viet_intake() {
+  cat > "$F/intake.md" <<EOF
+# Tiếp nhận — x
 
 - **Loại việc:** \`$LOAI\`   <!-- người xác nhận -->
 - **Mục tiêu:** làm x
@@ -250,7 +250,7 @@ tao_fixture() {
   printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
   g add src test; g commit -q -m goc
   g checkout -q -b "$_br"
-  viet_muc_dich; viet_spec; viet_tdd; viet_plan; viet_review
+  viet_intake; viet_spec; viet_tdd; viet_plan; viet_review
   ghi_based_on
   case "$LOAI" in
     bugfix)
@@ -522,7 +522,7 @@ O="$TMP/out1"; mkdir -p "$O"
 ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
-for f in commands/idea.md commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
+for f in commands/intake.md commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
          commands/import.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
@@ -535,6 +535,13 @@ printf '# tôi tự viết\n' > "$O/.claude/commands/spec.md"
 ky_vong 3 "từ chối ghi đè file người viết tay" sh "$BUILD" --out "$O"
 dung "nội dung người viết còn nguyên" sh -c "head -1 '$O/.claude/commands/spec.md' | grep -q 'tôi tự viết'"
 ky_vong 0 "--force thì cho phép ghi đè" sh "$BUILD" --out "$O" --force
+
+# lenh do lan cai truoc sinh ra ma nay khong con (vd /ideation -> /intake)
+printf -- '---\n---\n> **File này được SINH TỰ ĐỘNG** từ `workflow/phases/00-ideation.md`\n' > "$O/.claude/commands/ideation.md"
+printf '# lệnh tôi tự viết\n' > "$O/.claude/commands/cua-toi.md"
+sh "$BUILD" --out "$O" >/dev/null 2>&1
+dung "cài lại xoá lệnh sinh tự động không còn trong manifest" test ! -f "$O/.claude/commands/ideation.md"
+dung "…nhưng giữ lệnh người viết tay" test -f "$O/.claude/commands/cua-toi.md"
 
 FAKE="$TMP/fake"
 tao_fake() {
@@ -599,50 +606,59 @@ ky_vong 2 "từ chối tên feature có ../" sh "$XD" "../x"
 
 # ---------------------------------------------------------------- muc dich (00)
 echo ""
-echo "kiem-tra-muc-dich.sh"
-CHK="$T/kiem-tra-muc-dich.sh"
+echo "kiem-tra-tiep-nhan.sh"
+CHK="$T/kiem-tra-tiep-nhan.sh"
 tao_fixture feature feat_x
 
-ky_vong 0 "mục đích hợp lệ thì cho qua" sh "$CHK" "$F"
+ky_vong 0 "tiếp nhận hợp lệ thì cho qua" sh "$CHK" "$F"
 
-thay "$F/muc-dich.md" '`feature`' '`utils`'
+thay "$F/intake.md" '`feature`' '`utils`'
 ky_vong 1 "chặn loại việc ngoài 5 loại" sh "$CHK" "$F"
-ky_vong 1 "spec chặn khi muc-dich.md không đạt (entry check)" sh "$T/kiem-tra-truy-vet.sh" "$F"
-viet_muc_dich
+ky_vong 1 "spec chặn khi intake.md không đạt (entry check)" sh "$T/kiem-tra-truy-vet.sh" "$F"
+viet_intake
 
-thay "$F/muc-dich.md" '- **Mục tiêu:** làm x' '- **Mục tiêu:** <một câu>'
+thay "$F/intake.md" '- **Mục tiêu:** làm x' '- **Mục tiêu:** <một câu>'
 ky_vong 1 "chặn mục tiêu còn chỗ giữ chỗ" sh "$CHK" "$F"
-viet_muc_dich
+viet_intake
 
-thay "$F/muc-dich.md" '- `[JIRA]` ABC-1
+thay "$F/intake.md" '- `[JIRA]` ABC-1
 - `[NGƯỜI-DÙNG]`
   > cần làm x cho màn hình y
 ' ''
 ky_vong 1 "chặn khi không có input nào" sh "$CHK" "$F"
-viet_muc_dich
+viet_intake
 
-thay "$F/muc-dich.md" '`[JIRA]` ABC-1' '`[SUY-RA]` chắc người dùng muốn x'
+thay "$F/intake.md" '`[JIRA]` ABC-1' '`[SUY-RA]` chắc người dùng muốn x'
 ky_vong 1 "chặn [SUY-RA] trong input" sh "$CHK" "$F"
-viet_muc_dich
+viet_intake
 
-thay "$F/muc-dich.md" '  > cần làm x cho màn hình y' ''
+thay "$F/intake.md" '  > cần làm x cho màn hình y' ''
 ky_vong 1 "chặn [NGƯỜI-DÙNG] không kèm nguyên văn" sh "$CHK" "$F"
-viet_muc_dich
+viet_intake
 
-rm -f "$F/muc-dich.md"
-ky_vong 2 "chặn khi chưa có muc-dich.md" sh "$CHK" "$F"
-viet_muc_dich
+rm -f "$F/intake.md"
+ky_vong 2 "chặn khi chưa có intake.md" sh "$CHK" "$F"
+viet_intake
 
-thay "$F/muc-dich.md" '`feature`' '`chore`'
-ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /idea" sh "$CHK" "$F"
+# mau chua sua: dong input vi du khong duoc thanh mot nguon gia
+cp "$ROOT/workflow/templates/intake.md" "$F/intake.md"
+thay "$F/intake.md" '`<feature | bugfix | refactor | perf | chore>`' '`feature`'
+thay "$F/intake.md" '<một câu>' 'làm x'
+thay "$F/intake.md" '  > <chép nguyên văn lời người dùng>' '  > cần làm x'
+ky_vong 1 "chặn dòng input mẫu chưa sửa (nguồn giả)" sh "$CHK" "$F"
+dung "…đúng lý do: chỗ giữ chỗ" sh -c "sh '$CHK' '$F' | grep -q 'chỗ giữ chỗ'"
+viet_intake
+
+thay "$F/intake.md" '`feature`' '`chore`'
+ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /intake" sh "$CHK" "$F"
 dung "…và có in cảnh báo lệch tiền tố" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*feat_'"
-viet_muc_dich
+viet_intake
 
 # ---------------------------------------------------------------- bugfix
 echo ""
 echo "loại việc: bugfix"
 tao_fixture bugfix fix_y
-for c in muc-dich truy-vet thiet-ke ke-hoach hien-thuc ra-soat; do
+for c in tiep-nhan truy-vet thiet-ke ke-hoach hien-thuc ra-soat; do
   ky_vong 0 "bugfix đầy đủ qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
 done
 dung "tai-hien.md ghi output THẬT, mã thoát khác 0" sh -c "grep -q 'Mã thoát: \`1\`' '$F/tai-hien.md'"
@@ -764,10 +780,10 @@ git -C "$R5" init -q; git -C "$R5" checkout -q -b main
 sh "$T/cai-dat.sh" "$R5" --lenh-kiem-thu true >/dev/null 2>&1
 git -C "$R5" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
 git -C "$R5" checkout -q -b fix_sai-loai
-mkdir -p "$R5/.agent-workflow/fix_sai-loai"; printf 'x\n' > "$R5/.agent-workflow/fix_sai-loai/muc-dich.md"
+mkdir -p "$R5/.agent-workflow/fix_sai-loai"; printf 'x\n' > "$R5/.agent-workflow/fix_sai-loai/intake.md"
 ky_vong 0 "đổi tên branch thành công" sh "$R5/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_dung-loai
 dung "branch đã đổi tên" test "$(git -C "$R5" rev-parse --abbrev-ref HEAD)" = "feat_dung-loai"
-dung "thư mục artifact dời theo" sh -c "[ -f '$R5/.agent-workflow/feat_dung-loai/muc-dich.md' ] && [ ! -d '$R5/.agent-workflow/fix_sai-loai' ]"
+dung "thư mục artifact dời theo" sh -c "[ -f '$R5/.agent-workflow/feat_dung-loai/intake.md' ] && [ ! -d '$R5/.agent-workflow/fix_sai-loai' ]"
 mkdir -p "$R5/.agent-workflow/feat_khac"
 ky_vong 2 "từ chối khi thư mục đích đã tồn tại" sh "$R5/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_khac
 

@@ -4,7 +4,7 @@ name: Rà soát
 summary: Rà soát độc lập bằng ngữ cảnh sạch — cổng chặn cuối
 required: true
 inputs:
-  - muc-dich.md
+  - intake.md
   - spec.md
   - open-questions.md
   - tdd.md

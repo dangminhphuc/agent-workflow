@@ -12,7 +12,7 @@
 #      diff ngoai pham vi, artifact loi thoi, loai viec lech branch, test cu
 #      bi sua chua khai. Giua flow chung chi canh bao de flow khong tac; o day
 #      thi khong con cho nao phia sau de bat lai.
-#   6. Luat theo loai viec (muc-dich.md) — nhu implement; bugfix con phai co
+#   6. Luat theo loai viec (intake.md) — nhu implement; bugfix con phai co
 #      dong "Test tai hien do vi: ..." do nguoi ra soat viet.
 #
 # Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file dau vao.

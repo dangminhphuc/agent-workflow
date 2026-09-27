@@ -42,7 +42,7 @@ văn xuôi.
 
 ```mermaid
 flowchart TD
-    IDEA["00-idea · bắt buộc<br/>→ muc-dich.md (loại việc + input)<br/><i>MÁY: kiem-tra-muc-dich.sh</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
+    INTAKE["00-intake · bắt buộc<br/>→ intake.md (loại việc + input)<br/><i>MÁY: kiem-tra-tiep-nhan.sh</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
     SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: kiem-tra-truy-vet.sh</i><br/><i>NGƯỜI: duyệt YC, mức ảnh hưởng, Mức rủi ro</i>"]
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Mức rủi ro: cao)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: kiem-tra-thiet-ke.sh + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
@@ -54,7 +54,7 @@ flowchart TD
     NGOAI[/"Artifact làm bằng tool khác<br/>(AI khác, Confluence, viết tay)"/]
     IMPORT["Import có kiểm soát<br/>lệnh riêng, không thêm nội dung"]
 
-    IDEA --> SPEC --> DESIGN
+    INTAKE --> SPEC --> DESIGN
     PHAC -.-> DESIGN
     DESIGN --> PLAN --> IMPL --> REVIEW --> SHIP
     SPEC -. "chore: bỏ design" .-> PLAN
@@ -68,7 +68,7 @@ flowchart TD
 
     classDef nguoi stroke-width:3px
     classDef tuychon stroke-dasharray:5 5
-    class IDEA,SPEC,DESIGN,REVIEW nguoi
+    class INTAKE,SPEC,DESIGN,REVIEW nguoi
     class SHIP tuychon
 ```
 
@@ -84,8 +84,8 @@ Cách đọc:
   checker và gate người của phase lẽ ra đã sinh ra nó.
 
 ```
-00-idea       [bắt buộc]  tài liệu có định danh, hoặc lời người dùng  →  muc-dich.md
-01-spec       [bắt buộc]  muc-dich.md + các input nó liệt kê →  spec.md + open-questions.md
+00-intake     [bắt buộc]  tài liệu hoặc lời người dùng     →  intake.md
+01-spec       [bắt buộc]  intake.md + các input nó liệt kê →  spec.md + open-questions.md
 02-design     [bắt buộc*] spec.md                            →  tdd.md          (*chore bỏ qua)
 03-plan       [bắt buộc]  spec.md + tdd.md                   →  plan.md
 04-implement  [bắt buộc]  plan.md + tdd.md                   →  diff + ket-qua-kiem-thu.md
@@ -102,7 +102,7 @@ Cách đọc:
 
 | Phase | Người | Người làm gì |
 |---|---|---|
-| `idea` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
+| `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
 | `spec` | có | Duyệt yêu cầu, nhãn mức ảnh hưởng của `[CẦN-HỎI]`, và `Mức rủi ro` |
 | `design` | có | Duyệt **từng D-xx** trong `tdd.md` |
 | `plan` | không | — |
@@ -113,13 +113,13 @@ Cách đọc:
 `plan` và `implement` không có người vì chúng chỉ thực thi những gì đã được duyệt
 ở `spec` và `design`.
 
-### `00-idea` — mục đích và loại việc
+### `00-intake` — tiếp nhận: loại việc và input
 
-Điểm xuất phát bắt buộc của mọi việc. `muc-dich.md` trả lời đúng ba câu:
+Điểm xuất phát bắt buộc của mọi việc. `intake.md` trả lời đúng ba câu:
 
 1. **Loại việc** — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
    branch (`loai_theo_tien_to` trong `conventions.md`), **người xác nhận**, và
-   `muc-dich.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
+   `intake.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
    chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên branch bằng
    `tools/doi-ten-feature.sh` (dời luôn thư mục artifact).
 2. **Input** — tài liệu có định danh (`[JIRA]`, `[CONFLUENCE]`, `[FILE]`), hoặc
@@ -156,7 +156,7 @@ Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bu
 
 ### `01-spec` — yêu cầu
 
-Mỗi yêu cầu `YC-xxx` phải truy được về một input trong `muc-dich.md` (Confluence, Jira, file cục
+Mỗi yêu cầu `YC-xxx` phải truy được về một input trong `intake.md` (Confluence, Jira, file cục
 bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **mức ảnh hưởng** (`toàn bộ thiết kế` |
 `cục bộ`) do agent đề xuất, người duyệt ở gate spec. Mặc định **không chặn** — chỉ
 mục `toàn bộ thiết kế` mới phải có `Trạng thái: đã trả lời` trước khi vào
@@ -225,7 +225,7 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
-| `idea` | `kiem-tra-muc-dich.sh` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
+| `intake` | `kiem-tra-tiep-nhan.sh` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
 | `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc |
 | `design` | `kiem-tra-thiet-ke.sh` | Thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `kiem-tra-ke-hoach.sh` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
@@ -311,7 +311,7 @@ Sinh ra trong repo đích:
 
 ```
 .claude/
-  commands/{idea,spec,design,plan,implement,review,import}.md
+  commands/{intake,spec,design,plan,implement,review,import}.md
   agents/ra-soat-doc-lap.md                        ← rà soát ngữ cảnh sạch
   agents/soat-thiet-ke.md                          ← checker LLM của design
   skills/quy-trinh-agent/SKILL.md
@@ -320,16 +320,18 @@ Sinh ra trong repo đích:
   .quy-trinh/cau-hinh.sh                           ← LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf); cài lại không ghi đè
   conventions.md                                   ← bạn viết; bộ cài chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
   <tên-branch>/                                    ← artifact của từng feature, commit vào git
-    muc-dich.md, spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
+    intake.md, spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
     plan.md, ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf), review.md
 ```
 
 Rồi sửa `.agent-workflow/conventions.md`, tạo branch theo quy ước, mở Claude Code:
-`/idea` → `/spec` → `/design` → `/plan` → `/implement` → `/review`.
+`/intake` → `/spec` → `/design` → `/plan` → `/implement` → `/review`.
 
 Cài lại sau khi sửa quy trình: chạy lại đúng lệnh trên. Adapter **từ chối ghi đè**
 file bạn viết tay (file do nó sinh ra đều mang dấu "SINH TỰ ĐỘNG"); dùng `--force`
-nếu thật sự muốn mất nội dung cũ.
+nếu thật sự muốn mất nội dung cũ. Ngược lại, file mang dấu "SINH TỰ ĐỘNG" mà bản
+mới không sinh nữa (vd `/ideation` cũ sau khi đổi thành `/intake`) thì bị **xoá**
+khi cài lại — để agent không còn gọi được lệnh cũ với luật cũ.
 
 ### Artifact theo feature và `conventions.md`
 
@@ -356,7 +358,7 @@ prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành
 | `bo_qua` | `package-lock.json` | File đổi không cần nằm trong plan |
 | `mau_file_test` | `*.test.* test/*` | File nào là test |
 | `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
-| `loai_theo_tien_to` | `feat_=feature fix_=bugfix` | Tiền tố branch → loại việc (gợi ý ở `/idea`, đối chiếu ở review) |
+| `loai_theo_tien_to` | `feat_=feature fix_=bugfix` | Tiền tố branch → loại việc (gợi ý ở `/intake`, đối chiếu ở review) |
 | `mau_code_production` | `src/*` | Code production — `chore` không được đụng; bugfix/perf đo "trước" khi chưa đụng |
 | `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Nâng dependency" |
 

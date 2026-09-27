@@ -9,7 +9,7 @@
 #
 # Chan:  dau vao khong qua kiem-tra-ke-hoach.sh, chua khai lenh kiem thu,
 #        test do, con task dang lam do.
-#        Theo loai viec (muc-dich.md): bugfix thieu tai-hien.md do; refactor/perf
+#        Theo loai viec (intake.md): bugfix thieu tai-hien.md do; refactor/perf
 #        xoa test cu; perf thieu so do truoc/sau; chore dung code production
 #        hoac nang dependency khong khai.
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,

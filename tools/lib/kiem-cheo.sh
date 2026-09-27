@@ -128,20 +128,20 @@ kc_pham_vi() {
 }
 
 # ------------------------------------------------------------------ theo loại việc
-# Loại việc có MỘT nguồn sự thật: dòng "Loại việc:" trong muc-dich.md.
+# Loại việc có MỘT nguồn sự thật: dòng "Loại việc:" trong intake.md.
 
 LOAI_HOP_LE="feature bugfix refactor perf chore"
 
 # kc_loai <thư-mục-feature> -> loại việc (rỗng nếu chưa có)
 kc_loai() {
-  [ -f "$1/muc-dich.md" ] || return 0
+  [ -f "$1/intake.md" ] || return 0
   awk '
     { sub(/\r$/, "") }
     /Loại việc[^:]*:/ {
       s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
       gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
     }
-  ' "$1/muc-dich.md"
+  ' "$1/intake.md"
 }
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
@@ -198,7 +198,7 @@ kc_loai_branch() {
   for _cap in $(conv_get "$(kc_conventions "$1")" loai_theo_tien_to); do
     _tt=${_cap%%=*}; _lt=${_cap#*=}
     case "$_b" in
-      "$_tt"*) [ "$_lt" = "$_l" ] || echo "muc-dich.md ghi loại \"$_l\" nhưng branch \"$_b\" mang tiền tố \"$_tt\" (= $_lt). Sửa loại, hoặc đổi tên branch bằng doi-ten-feature.sh"
+      "$_tt"*) [ "$_lt" = "$_l" ] || echo "intake.md ghi loại \"$_l\" nhưng branch \"$_b\" mang tiền tố \"$_tt\" (= $_lt). Sửa loại, hoặc đổi tên branch bằng doi-ten-feature.sh"
                return 0 ;;
     esac
   done

@@ -4,7 +4,7 @@ name: Thiết kế kỹ thuật
 summary: Viết Technical Design Document — tách lựa chọn thành quyết định D-xx để người duyệt
 required: true
 inputs:
-  - muc-dich.md
+  - intake.md
   - spec.md
   - open-questions.md
 outputs:

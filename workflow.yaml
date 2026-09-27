@@ -22,8 +22,8 @@ artifact_dir: .agent-workflow
 import: workflow/import.md
 
 phases:
-  - id: idea
-    file: workflow/phases/00-idea.md
+  - id: intake
+    file: workflow/phases/00-intake.md
     required: true
   - id: spec
     file: workflow/phases/01-spec.md

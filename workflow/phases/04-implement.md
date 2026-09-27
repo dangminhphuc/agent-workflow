@@ -4,7 +4,7 @@ name: Hiện thực
 summary: Thực thi từng task trong kế hoạch; test xanh mới tính là xong
 required: true
 inputs:
-  - muc-dich.md
+  - intake.md
   - plan.md
   - tdd.md
   - spec.md
@@ -66,7 +66,7 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
 
 ## Theo loại việc — chặn
 
-Loại việc lấy từ `muc-dich.md`. Các luật dưới là **chặn** ngay ở phase này:
+Loại việc lấy từ `intake.md`. Các luật dưới là **chặn** ngay ở phase này:
 
 | Loại | Thứ tự bắt buộc / luật | Máy ghi / kiểm |
 |---|---|---|
@@ -88,7 +88,7 @@ khi sửa" chỉ có giá trị khi nó thật sự được lấy trước khi 
 | YC chưa có test gắn tag `covers:` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do |
 | File thay đổi so với nhánh gốc nằm ngoài "File dự kiến"/"Phát sinh" | Hoàn tác, hoặc ghi vào "Phát sinh" + lý do |
 | Artifact lỗi thời (`based_on` lệch hash) | Chạy lại phase sinh ra artifact đó |
-| Loại việc lệch tiền tố branch | Sửa loại trong `muc-dich.md`, hoặc `tools/doi-ten-feature.sh` |
+| Loại việc lệch tiền tố branch | Sửa loại trong `intake.md`, hoặc `tools/doi-ten-feature.sh` |
 | refactor/perf: test cũ bị sửa mà chưa khai | Khai ở "Test cũ bị sửa" + lý do, hoặc hoàn tác |
 
 Cảnh báo không chặn ở đây để flow không tắc vì checker hay báo nhầm. Nhưng

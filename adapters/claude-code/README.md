@@ -13,7 +13,7 @@ luật/mẫu/công cụ vào repo đích.
 
 | Nguồn trung lập | Artifact Claude Code |
 |---|---|
-| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/idea`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
+| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
 | `import:` trong `workflow.yaml` → `workflow/import.md` | `.claude/commands/import.md` — `/import` |
@@ -36,7 +36,7 @@ Mỗi command sinh ra gồm ba phần:
 ## Loại việc không cần gì từ adapter
 
 Luật theo loại việc (`feature | bugfix | refactor | perf | chore`, ghi trong
-`muc-dich.md` ở `/idea`) nằm **hoàn toàn** trong thân file phase và trong các
+`intake.md` ở `/intake`) nằm **hoàn toàn** trong thân file phase và trong các
 script kiểm tra — adapter không sinh nhánh nào theo loại. `/design` với `chore`
 vẫn được sinh ra; chính `kiem-tra-thiet-ke.sh` chặn khi chạy design cho chore.
 Adapter mới vì thế không phải biết gì về loại việc.
@@ -92,6 +92,14 @@ khi viết xong `tdd.md`. `kiem-tra-thiet-ke.sh` fail nếu chưa có
 Những gì **luôn** portable: file artifact trong `.agent-workflow/<tên-branch>/`,
 `conventions.md`, các mẫu, và các script kiểm tra. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
 trong prompt.
+
+## Dọn file cũ khi cài lại
+
+Sau khi sinh xong, adapter xoá mọi file trong `.claude/commands/` và
+`.claude/agents/` **mang dấu "SINH TỰ ĐỘNG"** mà lần build này không sinh ra — tức
+lệnh của phase đã đổi tên hoặc bị bỏ. Không dọn thì repo đích vẫn còn lệnh cũ
+(vd `/ideation` sau khi đổi thành `/intake`) chạy theo luật cũ. File không có dấu
+đó là do người viết, adapter không đụng tới.
 
 ## Hook — vì sao adapter không tự ghi settings.json
 

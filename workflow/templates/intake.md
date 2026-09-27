@@ -1,6 +1,6 @@
-# Mục đích — <TÊN VIỆC>
+# Tiếp nhận — <TÊN VIỆC>
 
-> Sinh bởi phase `00-idea`. Điểm xuất phát của mọi phase sau.
+> Sinh bởi phase `00-intake`. Điểm xuất phát của mọi phase sau.
 > Chỉ **trỏ tới** tài liệu nguồn — không tóm tắt, không diễn giải.
 
 - **Loại việc:** `<feature | bugfix | refactor | perf | chore>`   <!-- người xác nhận -->
@@ -11,6 +11,7 @@ issue, đường dẫn); lời người dùng thì chép **nguyên văn** ở d�
 
 ## Input
 
-- `[JIRA]` [ABC-123](URL)
+- `[JIRA]` <mã issue + URL, vd [ABC-123](https://…)>   <!-- hoặc [CONFLUENCE] / [FILE]; không dùng thì xoá dòng -->
+
 - `[NGƯỜI-DÙNG]`
   > <chép nguyên văn lời người dùng>

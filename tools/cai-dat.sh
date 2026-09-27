@@ -112,7 +112,7 @@ if [ ! -f "$ARTDIR/README.md" ] || grep -q 'SINH TỰ ĐỘNG' "$ARTDIR/README.m
     echo ""
     echo "| File trong \`<tên-branch>/\` | Do phase nào ghi |"
     echo "|---|---|"
-    echo "| \`muc-dich.md\` | \`/idea\` — loại việc + input, điểm xuất phát bắt buộc |"
+    echo "| \`intake.md\` | \`/intake\` — loại việc + input, điểm xuất phát bắt buộc |"
     echo "| \`spec.md\`, \`open-questions.md\` | \`/spec\` |"
     echo "| \`tdd.md\`, \`phat-hien-thiet-ke.md\` | \`/design\` (phát hiện do checker LLM ghi) |"
     echo "| \`plan.md\` | \`/plan\`, cập nhật bởi \`/implement\` |"
@@ -141,7 +141,7 @@ if [ -z "$LENH" ] && ! grep -q 'LENH_KIEM_THU="[^"]' "$CH" 2>/dev/null; then
 fi
 echo "  $n. Sửa $ART/conventions.md: mẫu tên branch, nhánh gốc, mẫu file test, tag covers:"
 n=$((n + 1))
-echo "  $n. Mở Claude Code trong repo đích, tạo branch theo quy ước, chạy /idea"
+echo "  $n. Mở Claude Code trong repo đích, tạo branch theo quy ước, chạy /intake"
 echo ""
-echo "  Chuỗi phase: /idea → /spec → /design → /plan → /implement → /review"
+echo "  Chuỗi phase: /intake → /spec → /design → /plan → /implement → /review"
 echo "  Tài liệu làm bằng tool khác: /import <file> <spec.md|tdd.md|plan.md>"

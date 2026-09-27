@@ -22,7 +22,7 @@ DIR="${1:-.}"
 OUT="$DIR/tai-hien.md"
 CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
 
-[ "$(kc_loai "$DIR")" = "bugfix" ] || { echo "LỖI: chỉ dùng cho loại việc bugfix (muc-dich.md)." >&2; exit 2; }
+[ "$(kc_loai "$DIR")" = "bugfix" ] || { echo "LỖI: chỉ dùng cho loại việc bugfix (intake.md)." >&2; exit 2; }
 LENH_KIEM_THU=""
 # shellcheck disable=SC1090
 [ -f "$CAUHINH" ] && . "$CAUHINH"

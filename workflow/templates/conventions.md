@@ -26,7 +26,7 @@ mau_file_dependency: package.json package-lock.json yarn.lock pnpm-lock.yaml
 | `bo_qua` | File thay đổi mà không cần nằm trong "File dự kiến" (lockfile, file sinh tự động…) |
 | `mau_file_test` | File nào là file test — để tìm tag `covers:` |
 | `the_covers` | Chuỗi đứng trước mã YC trong test, vd `// covers: YC-001, YC-002` |
-| `loai_theo_tien_to` | Tiền tố branch → loại việc. `/idea` dùng để gợi ý; loại trong `muc-dich.md` lệch tiền tố thì cảnh báo, `review` chặn |
+| `loai_theo_tien_to` | Tiền tố branch → loại việc. `/intake` dùng để gợi ý; loại trong `intake.md` lệch tiền tố thì cảnh báo, `review` chặn |
 | `mau_code_production` | Code chạy trên production. `chore` đụng vào là chặn; `bugfix`/`perf` đo "trước" thì chưa được đụng |
 | `mau_file_dependency` | Manifest/lockfile. `chore` đụng vào thì `plan.md` phải có bảng "Nâng dependency" |
 

@@ -16,7 +16,7 @@ nhất, và mẫu số chung nhỏ nhất thì quá yếu để làm được vi
 Quy trình được chia thành phase, và **phase chỉ nối nhau qua file**:
 
 ```
-tài liệu / lời người dùng ─▶ 00-idea ──▶ muc-dich.md (loại việc + input)
+tài liệu / lời người dùng ─▶ 00-intake ──▶ intake.md (loại việc + input)
                                             │
                                             ▼
                              01-spec ──▶ spec.md ──▶ 02-design ──▶ tdd.md   (chore: bỏ design)
@@ -69,9 +69,9 @@ Confluence, viết tay…) rồi đưa vào đúng phase cần.
 Import không được thêm nội dung vì nếu được, agent sẽ lặng lẽ lấp chỗ trống bằng
 suy đoán, và suy đoán đó mang nhãn nguồn như thể có trong tài liệu gốc.
 
-### `00-idea`: một gốc cho mọi việc
+### `00-intake`: một gốc cho mọi việc
 
-Mọi việc bắt đầu bằng `muc-dich.md`: **loại việc**, **input**, **một câu mục
+Mọi việc bắt đầu bằng `intake.md`: **loại việc**, **input**, **một câu mục
 tiêu**. Trước đây `ideation` chỉ chạy khi không có BRD; giờ nó bắt buộc, vì hai lẽ:
 
 - **Loại việc đổi luật.** Bugfix cần test tái hiện, refactor cấm hành vi mới,
@@ -82,9 +82,9 @@ tiêu**. Trước đây `ideation` chỉ chạy khi không có BRD; giờ nó b�
 Điều giữ cho `00` không thành một lớp diễn giải chen giữa BRD và spec: nó chỉ
 **trỏ tới** tài liệu, và input chỉ nhận tài liệu có định danh hoặc lời người dùng
 **chép nguyên văn** (`[NGƯỜI-DÙNG]`). `[SUY-RA]` bị cấm ở input — nếu không, điều
-agent tự suy ra sẽ sang spec với nhãn `[FILE] muc-dich.md` như có nguồn thật.
+agent tự suy ra sẽ sang spec với nhãn `[FILE] intake.md` như có nguồn thật.
 
-**Nguồn sự thật của loại việc** là `muc-dich.md` (người xác nhận). Tiền tố branch
+**Nguồn sự thật của loại việc** là `intake.md` (người xác nhận). Tiền tố branch
 chỉ để gợi ý và đối chiếu; lệch thì cảnh báo, `review` chặn, không có ngoại lệ
 "ghi lý do chấp nhận lệch" — vì ngoại lệ dễ ghi hơn sửa, và tiền tố sẽ mất nghĩa.
 `tools/doi-ten-feature.sh` đổi tên branch và dời thư mục artifact trong một lệnh.
@@ -135,7 +135,7 @@ trong chính quá trình xây repo này, ở phase `review`.
 
 ### Người ở đâu
 
-Gate người cố định ở `idea`, `spec`, `design`, `review` (và `ship` nếu dùng).
+Gate người cố định ở `intake`, `spec`, `design`, `review` (và `ship` nếu dùng).
 `plan` và `implement` **không có người**: chúng chỉ thực thi những gì đã duyệt
 ở `spec` và `design`. Đặt người ở đó chỉ tạo thêm một chỗ duyệt văn xuôi mà
 không có quyết định thật nào để duyệt.
@@ -251,7 +251,7 @@ summary: ...                # một dòng, dùng cho mô tả lệnh
 required: true              # false = phase tuỳ chọn
 when: ...                   # điều kiện kích hoạt, chỉ khi required: false
 status: chưa hiện thực      # có mặt = adapter bỏ qua phase này
-inputs: [muc-dich.md, confluence, jira, file]
+inputs: [intake.md, confluence, jira, file]
 outputs: [spec.md, open-questions.md]
 exit_machine: [sh tools/kiem-tra-truy-vet.sh]
 exit_human: [...]

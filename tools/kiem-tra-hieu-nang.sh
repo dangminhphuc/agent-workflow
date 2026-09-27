@@ -24,7 +24,7 @@ esac
 OUT="$DIR/do-hieu-nang.md"
 CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
 
-[ "$(kc_loai "$DIR")" = "perf" ] || { echo "LỖI: chỉ dùng cho loại việc perf (muc-dich.md)." >&2; exit 2; }
+[ "$(kc_loai "$DIR")" = "perf" ] || { echo "LỖI: chỉ dùng cho loại việc perf (intake.md)." >&2; exit 2; }
 LENH_DO_HIEU_NANG=""
 # shellcheck disable=SC1090
 [ -f "$CAUHINH" ] && . "$CAUHINH"

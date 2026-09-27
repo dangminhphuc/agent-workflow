@@ -4,7 +4,7 @@ name: Đặc tả
 summary: Chưng cất BRD/PRD/ticket thành đặc tả kiểm chứng được và soi ra điểm mù
 required: true
 inputs:
-  - muc-dich.md
+  - intake.md
   - confluence
   - jira
   - file
@@ -32,18 +32,18 @@ thứ không truy về được nguồn đều phải lộ ra chứ không đư�
 
 ## Đầu vào
 
-`muc-dich.md` — phải qua `kiem-tra-muc-dich.sh` (checker của spec chạy lại nó).
+`intake.md` — phải qua `kiem-tra-tiep-nhan.sh` (checker của spec chạy lại nó).
 Nó cho biết **loại việc** và **danh sách input**. Đọc hết từng input:
 
-| Input trong `muc-dich.md` | Cách lấy | Nhãn nguồn trong spec |
+| Input trong `intake.md` | Cách lấy | Nhãn nguồn trong spec |
 |---|---|---|
 | `[CONFLUENCE]` | MCP Atlassian, đọc page | `[CONFLUENCE]` URL page + tên heading |
 | `[JIRA]` | MCP Atlassian, đọc issue | `[JIRA]` mã issue + URL |
 | `[FILE]` (kể cả incident note) | Đọc trực tiếp | `[FILE]` đường dẫn + heading |
-| `[NGƯỜI-DÙNG]` | Đọc nguyên văn trong `muc-dich.md` | `[FILE] muc-dich.md § Input` |
+| `[NGƯỜI-DÙNG]` | Đọc nguyên văn trong `intake.md` | `[FILE] intake.md § Input` |
 
-Chưa có `muc-dich.md`: dừng lại và chạy `/idea` trước. Không đọc nguồn nào nằm
-ngoài danh sách input — muốn thêm nguồn thì thêm vào `muc-dich.md` trước.
+Chưa có `intake.md`: dừng lại và chạy `/intake` trước. Không đọc nguồn nào nằm
+ngoài danh sách input — muốn thêm nguồn thì thêm vào `intake.md` trước.
 
 ## Theo loại việc
 

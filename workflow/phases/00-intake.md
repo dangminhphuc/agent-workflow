@@ -1,6 +1,6 @@
 ---
-id: idea
-name: Mục đích
+id: intake
+name: Tiếp nhận
 summary: Điểm xuất phát bắt buộc — ghi loại việc và input làm gốc cho mọi phase sau
 required: true
 inputs:
@@ -8,16 +8,16 @@ inputs:
   - jira
   - file
 outputs:
-  - muc-dich.md
+  - intake.md
 exit_machine:
-  - sh tools/kiem-tra-muc-dich.sh
+  - sh tools/kiem-tra-tiep-nhan.sh
 exit_human:
   - Người xác nhận LOẠI VIỆC (chọn sai loại là sai luật cả chuỗi phía sau)
   - Người xác nhận danh sách input, và lời mình được chép đúng nguyên văn
 needs_clean_context: true
 ---
 
-# Phase 00 — Mục đích
+# Phase 00 — Tiếp nhận
 
 ## Mục tiêu
 
@@ -73,14 +73,14 @@ luật của hai loại xung đột nhau.
 
 3. **Ghi mục tiêu** một câu.
 
-4. Chạy `kiem-tra-muc-dich.sh` rồi dừng lại cho người xác nhận.
+4. Chạy `kiem-tra-tiep-nhan.sh` rồi dừng lại cho người xác nhận.
 
 ## Đầu ra
 
-- `muc-dich.md` — theo `templates/muc-dich.md`.
+- `intake.md` — theo `templates/intake.md`.
 
 `01-spec` đọc các tài liệu được liệt kê, và trích lời người dùng bằng nhãn
-`[FILE] muc-dich.md § Input`.
+`[FILE] intake.md § Input`.
 
 ## Cấm
 
@@ -95,7 +95,7 @@ luật của hai loại xung đột nhau.
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-muc-dich.sh` trả về 0 — loại việc hợp lệ, có mục tiêu, có ít
+- `sh tools/kiem-tra-tiep-nhan.sh` trả về 0 — loại việc hợp lệ, có mục tiêu, có ít
   nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.
 

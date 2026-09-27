@@ -44,8 +44,14 @@ kiem_tra_ghi_de() {
 # bai giua chung khong duoc de lai mot file viet do: no trong nhu hop le nhung bi cut.
 ghi_file() {
   _tmp="$(dirname "$1")/.$(basename "$1").tmp"
-  if cat > "$_tmp"; then mv "$_tmp" "$1"; echo "  sinh    ${1#"$OUT"/}"; else rm -f "$_tmp"; exit 4; fi
+  if cat > "$_tmp"; then mv "$_tmp" "$1"; echo "$1" >> "$DA_SINH"; echo "  sinh    ${1#"$OUT"/}"; else rm -f "$_tmp"; exit 4; fi
 }
+
+# Danh sach file sinh ra LAN NAY — de don file do lan cai truoc sinh ra ma nay
+# khong con trong manifest (vd phase doi ten). Ghi ra file vi ghi_file chay
+# trong subshell cua pipeline, bien shell khong song sot.
+DA_SINH="${TMPDIR:-/tmp}/.aw_da_sinh.$$"
+: > "$DA_SINH"
 
 MANIFEST="$ROOT/workflow.yaml"
 man_scalar() { awk -v k="$1" '{ sub(/\r$/, "") } $0 ~ "^" k ":" { sub("^" k ":[ \t]*", ""); print; exit }' "$MANIFEST"; }
@@ -216,7 +222,7 @@ sinh_command() {
 
 # ---------- slash command cho tung phase ----------
 PH_LIST="${TMPDIR:-/tmp}/.wf_phases.$$"
-trap 'rm -f "$PH_LIST"' EXIT
+trap 'rm -f "$PH_LIST" "$DA_SINH"' EXIT
 wf_phases "$MANIFEST" > "$PH_LIST"
 REV_SRC=""; REV_FILE=""
 CHECKERS=""
@@ -337,3 +343,15 @@ kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
   printf -- '- Quy ước của repo (branch, nhánh gốc, file test, tag `covers:`): `%s/conventions.md`\n' "$ART"
   printf -- '- Bộ cài của quy trình (luật, mẫu, công cụ kiểm tra): `%s/`\n' "$QT"
 } | ghi_file "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
+
+# ---------- don file cu ----------
+# File mang dau "SINH TỰ ĐỘNG" ma lan build nay khong sinh ra la cua mot phase /
+# lenh da doi ten hoac bi bo (vd /ideation -> /intake). De lai thi agent van goi
+# duoc lenh cu voi luat cu. File NGUOI viet (khong co dau) thi khong dung toi.
+for _f in "$OUT"/.claude/commands/*.md "$OUT"/.claude/agents/*.md; do
+  [ -f "$_f" ] || continue
+  grep -q 'SINH TỰ ĐỘNG' "$_f" 2>/dev/null || continue
+  grep -qxF "$_f" "$DA_SINH" && continue
+  rm -f "$_f"
+  echo "  xoá     ${_f#"$OUT"/} (không còn trong manifest)"
+done

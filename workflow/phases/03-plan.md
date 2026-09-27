@@ -4,7 +4,7 @@ name: Kế hoạch
 summary: Chia thiết kế đã duyệt thành task thực thi được — chỉ quản lý thực thi
 required: true
 inputs:
-  - muc-dich.md
+  - intake.md
   - spec.md
   - tdd.md
   - open-questions.md

@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
-# Kiểm tra điều kiện ra của phase 00-idea.
+# Kiểm tra điều kiện ra của phase 00-intake.
 #
-#   sh tools/kiem-tra-muc-dich.sh <thư-mục-feature>
+#   sh tools/kiem-tra-tiep-nhan.sh <thư-mục-feature>
 #
 # Chặn:
-#   - muc-dich.md thiếu, hoặc "Loại việc" không thuộc feature|bugfix|refactor|perf|chore.
+#   - intake.md thiếu, hoặc "Loại việc" không thuộc feature|bugfix|refactor|perf|chore.
 #   - "Mục tiêu" trống hoặc còn chỗ giữ chỗ.
 #   - Mục "Input" không có nguồn nào, nhãn không hợp lệ, hay có [SUY-RA].
 #     Input chỉ nhận tài liệu có định danh hoặc lời người dùng CHÉP NGUYÊN VĂN —
@@ -19,8 +19,8 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/kiem-cheo.sh"
 
 DIR="${1:-.}"
-MD="$DIR/muc-dich.md"
-[ -f "$MD" ] || { echo "LỖI: không tìm thấy $MD — chạy /idea trước" >&2; exit 2; }
+MD="$DIR/intake.md"
+[ -f "$MD" ] || { echo "LỖI: không tìm thấy $MD — chạy /intake trước" >&2; exit 2; }
 
 awk -v loai_hl="$LOAI_HOP_LE" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
@@ -48,9 +48,11 @@ awk -v loai_hl="$LOAI_HOP_LE" '
     n_in++
     if (t == "SUY-RA") { loi("Input #" n_in ": [SUY-RA] không được là input — input chỉ là tài liệu hoặc lời người dùng nguyên văn"); next }
     if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | FILE | NGƯỜI-DÙNG)"); next }
-    gsub(/^[`* \t]+|[ \t]+$/, "", rest)
+    gsub(/<!--.*-->/, "", rest); gsub(/^[`* \t]+|[ \t]+$/, "", rest)
     if (t == "NGƯỜI-DÙNG" && (rest == "" || rest ~ /^<.*>$/)) cho_nv = 1
-    else if (t != "NGƯỜI-DÙNG" && (rest == "" || rest ~ /^<.*>$/)) loi("Input #" n_in ": [" t "] thiếu định danh (URL, mã issue, đường dẫn)")
+    else if (t != "NGƯỜI-DÙNG" && rest == "") loi("Input #" n_in ": [" t "] thiếu định danh (URL, mã issue, đường dẫn)")
+    # Chỗ giữ chỗ còn sót (vd dòng mẫu chưa sửa) — nếu lọt, spec sẽ truy về một nguồn không có thật
+    else if (t != "NGƯỜI-DÙNG" && (rest ~ /<[^>]*>/ || rest ~ /\((URL|https?:\/\/…)\)/)) loi("Input #" n_in ": [" t "] còn chỗ giữ chỗ chưa điền — " rest)
     dem[t]++
     next
   }
