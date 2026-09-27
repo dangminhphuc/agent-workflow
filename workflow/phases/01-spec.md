@@ -4,10 +4,10 @@ name: Đặc tả
 summary: Chưng cất BRD/PRD/ticket thành đặc tả kiểm chứng được và soi ra điểm mù
 required: true
 inputs:
+  - muc-dich.md
   - confluence
   - jira
   - file
-  - brief
 outputs:
   - spec.md
   - open-questions.md
@@ -32,17 +32,32 @@ thứ không truy về được nguồn đều phải lộ ra chứ không đư�
 
 ## Đầu vào
 
-Ít nhất một trong:
+`muc-dich.md` — phải qua `kiem-tra-muc-dich.sh` (checker của spec chạy lại nó).
+Nó cho biết **loại việc** và **danh sách input**. Đọc hết từng input:
 
-| Nguồn | Cách lấy | Định danh ghi lại |
+| Input trong `muc-dich.md` | Cách lấy | Nhãn nguồn trong spec |
 |---|---|---|
-| Confluence | MCP Atlassian, đọc page | URL page + tên heading |
-| Jira | MCP Atlassian, đọc issue | Mã issue + URL |
-| File cục bộ (kể cả incident note) | Đọc trực tiếp | Đường dẫn + heading |
-| `brief.md` | Do `00-ideation` sinh ra | Tên mục |
+| `[CONFLUENCE]` | MCP Atlassian, đọc page | `[CONFLUENCE]` URL page + tên heading |
+| `[JIRA]` | MCP Atlassian, đọc issue | `[JIRA]` mã issue + URL |
+| `[FILE]` (kể cả incident note) | Đọc trực tiếp | `[FILE]` đường dẫn + heading |
+| `[NGƯỜI-DÙNG]` | Đọc nguyên văn trong `muc-dich.md` | `[FILE] muc-dich.md § Input` |
 
-Nếu không có nguồn nào: dừng lại và chạy `00-ideation` trước. Không tự bịa
-yêu cầu để có cái mà làm.
+Chưa có `muc-dich.md`: dừng lại và chạy `/idea` trước. Không đọc nguồn nào nằm
+ngoài danh sách input — muốn thêm nguồn thì thêm vào `muc-dich.md` trước.
+
+## Theo loại việc
+
+| Loại | Spec phải có thêm |
+|---|---|
+| `feature` | — |
+| `bugfix` | Mục `## Tái hiện lỗi`: `Cách tái hiện:`, `Hành vi sai:`, `Hành vi đúng:` |
+| `refactor` | Mỗi YC có `Loại YC: giữ nguyên \| cấu trúc` — **không có YC hành vi mới**. YC giữ nguyên có `Được bảo vệ bởi: \`<file test>\`` và file đó phải **có sẵn trên nhánh gốc** |
+| `perf` | Như refactor, thêm `Loại YC: hiệu năng` (ít nhất một) với `Mục tiêu:` có số liệu |
+| `chore` | — |
+
+Refactor mà vùng sắp đụng tới chưa có test bảo vệ: checker chặn. Viết test cho
+vùng đó thành một việc riêng trước, hoặc thu hẹp phạm vi — refactor một vùng
+không có test rồi tưởng là an toàn là rủi ro lớn nhất của refactor.
 
 ## Việc phải làm
 

@@ -111,9 +111,9 @@ mo_ta_input() {
     confluence) printf '  - Confluence qua MCP Atlassian — ghi lại URL page + tên heading\n' ;;
     jira)       printf '  - Jira qua MCP Atlassian — ghi lại mã issue + URL\n' ;;
     file)       printf '  - Tài liệu trong repo (kể cả incident note) — ghi lại đường dẫn + heading\n' ;;
-    brief)      printf '  - `%s/brief.md` (nếu đã chạy `/ideation`)\n' "$FD" ;;
     diff)       printf '  - Diff so với nhánh gốc (`git diff`, `git status`; nhánh gốc khai trong `%s/conventions.md`)\n' "$ART" ;;
     *.md)       printf '  - `%s/%s`\n' "$FD" "$1" ;;
+    *".md ("*)  printf '  - `%s/%s` (%s\n' "$FD" "${1%% (*}" "${1#* (}" ;;
     *)          printf '  - %s\n' "$1" ;;
   esac
 }

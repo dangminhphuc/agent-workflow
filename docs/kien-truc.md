@@ -16,9 +16,10 @@ nhất, và mẫu số chung nhỏ nhất thì quá yếu để làm được vi
 Quy trình được chia thành phase, và **phase chỉ nối nhau qua file**:
 
 ```
-[00-ideation] ──▶ brief.md
-                     │
-BRD/Jira/incident ───┴─▶ 01-spec ──▶ spec.md ──▶ 02-design ──▶ tdd.md
+tài liệu / lời người dùng ─▶ 00-idea ──▶ muc-dich.md (loại việc + input)
+                                            │
+                                            ▼
+                             01-spec ──▶ spec.md ──▶ 02-design ──▶ tdd.md   (chore: bỏ design)
                                         │                        │
                                         ▼                        ▼
                                      03-plan ◀───────────────────┘
@@ -68,6 +69,43 @@ Confluence, viết tay…) rồi đưa vào đúng phase cần.
 Import không được thêm nội dung vì nếu được, agent sẽ lặng lẽ lấp chỗ trống bằng
 suy đoán, và suy đoán đó mang nhãn nguồn như thể có trong tài liệu gốc.
 
+### `00-idea`: một gốc cho mọi việc
+
+Mọi việc bắt đầu bằng `muc-dich.md`: **loại việc**, **input**, **một câu mục
+tiêu**. Trước đây `ideation` chỉ chạy khi không có BRD; giờ nó bắt buộc, vì hai lẽ:
+
+- **Loại việc đổi luật.** Bugfix cần test tái hiện, refactor cấm hành vi mới,
+  perf cần số đo, chore không được đụng production. Một bộ luật chung cho tất cả
+  là sai; loại việc phải là dữ liệu máy đọc được.
+- **Mọi YC có đúng một gốc.** `spec` chỉ đọc những input được liệt kê.
+
+Điều giữ cho `00` không thành một lớp diễn giải chen giữa BRD và spec: nó chỉ
+**trỏ tới** tài liệu, và input chỉ nhận tài liệu có định danh hoặc lời người dùng
+**chép nguyên văn** (`[NGƯỜI-DÙNG]`). `[SUY-RA]` bị cấm ở input — nếu không, điều
+agent tự suy ra sẽ sang spec với nhãn `[FILE] muc-dich.md` như có nguồn thật.
+
+**Nguồn sự thật của loại việc** là `muc-dich.md` (người xác nhận). Tiền tố branch
+chỉ để gợi ý và đối chiếu; lệch thì cảnh báo, `review` chặn, không có ngoại lệ
+"ghi lý do chấp nhận lệch" — vì ngoại lệ dễ ghi hơn sửa, và tiền tố sẽ mất nghĩa.
+`tools/doi-ten-feature.sh` đổi tên branch và dời thư mục artifact trong một lệnh.
+
+Phân loại theo **thay đổi gì về hành vi**, không theo "xây cái gì": một loại chỉ
+đáng tồn tại khi nó đổi luật. Vì vậy không có `utils`, `hotfix`, `security`;
+`spike` nằm ngoài quy trình (output là kết luận, không phải code để merge).
+
+Cùng một mẫu cho mọi bằng chứng theo loại: **máy tự chạy và tự ghi** (không để
+agent chép kết quả), **máy chặn phần chính xác**, **người phán phần mơ hồ**:
+
+| Loại | Máy chặn (chính xác) | Người phán (mơ hồ) | Vì sao không để máy phán |
+|---|---|---|---|
+| `bugfix` | Có `tai-hien.md` ghi lúc diff chỉ đụng file test, mã thoát ≠ 0 | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
+| `refactor` | Xoá test cũ; sửa test cũ không khai; YC giữ nguyên không có test trên nhánh gốc | Diff test cũ chỉ đổi import | Heuristic "chỉ đổi import" phụ thuộc ngôn ngữ, hay báo nhầm |
+| `perf` | Thiếu số đo trước hoặc sau (`do-hieu-nang.md`) | Đạt mục tiêu chưa | Số đo dao động; chặn theo ngưỡng sẽ chặn nhầm |
+| `chore` | Đụng `mau_code_production`; đụng dependency mà không khai; khai `major` | Mức phiên bản khai đúng | Cú pháp phiên bản mỗi hệ sinh thái mỗi khác |
+
+Không dựng lại code cũ trong worktree để chạy test tái hiện: trông chặt hơn nhưng
+cho kết luận sai mà tự tin (đỏ vì thiếu hàm vẫn tính là "tái hiện được").
+
 ### Artifact theo feature
 
 Artifact nằm trong `.agent-workflow/<tên-branch>/`, dùng tên branch **đầy đủ**
@@ -97,7 +135,7 @@ trong chính quá trình xây repo này, ở phase `review`.
 
 ### Người ở đâu
 
-Gate người cố định ở `spec`, `design`, `review` (và `ideation`, `ship` nếu dùng).
+Gate người cố định ở `idea`, `spec`, `design`, `review` (và `ship` nếu dùng).
 `plan` và `implement` **không có người**: chúng chỉ thực thi những gì đã duyệt
 ở `spec` và `design`. Đặt người ở đó chỉ tạo thêm một chỗ duyệt văn xuôi mà
 không có quyết định thật nào để duyệt.
@@ -213,7 +251,7 @@ summary: ...                # một dòng, dùng cho mô tả lệnh
 required: true              # false = phase tuỳ chọn
 when: ...                   # điều kiện kích hoạt, chỉ khi required: false
 status: chưa hiện thực      # có mặt = adapter bỏ qua phase này
-inputs: [confluence, jira, file, brief]
+inputs: [muc-dich.md, confluence, jira, file]
 outputs: [spec.md, open-questions.md]
 exit_machine: [sh tools/kiem-tra-truy-vet.sh]
 exit_human: [...]

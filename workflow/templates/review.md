@@ -13,6 +13,18 @@ Mọi mã `YC` trong `spec.md` phải có mặt ở bảng này.
 
 Kết luận hợp lệ: `đạt` / `đạt một phần` / `chưa đạt` / `chờ xác nhận`.
 
+## Theo loại việc
+
+<!-- bugfix — BẮT BUỘC, máy chặn nếu thiếu. Máy chỉ biết test tái hiện đã đỏ;
+     bạn xác nhận nó đỏ ĐÚNG VÌ BUG, không phải vì lỗi biên dịch / thiếu hàm. -->
+- Test tái hiện đỏ vì: <trích dòng lỗi trong tai-hien.md>
+
+<!-- refactor / perf: với từng file ở "Test cũ bị sửa" của plan.md, xác nhận diff chỉ
+     đổi import/cấu trúc, không đổi assertion.
+     perf: đọc do-hieu-nang.md, kết luận YC hiệu năng đạt/chưa đạt theo số đo.
+     chore: xác nhận mức "vá | minor" ở "Nâng dependency" là đúng.
+     Loại việc khác: xoá mục này. -->
+
 ## Lăng kính 2 — Đúng thiết kế và phạm vi
 
 - Lệch D-xx / contract / mô hình dữ liệu trong `tdd.md`: <liệt kê, hoặc "không có">

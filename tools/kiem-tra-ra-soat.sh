@@ -9,8 +9,11 @@
 #   3. Dau vao khong qua kiem-tra-ke-hoach.sh (keo theo design va spec).
 #   4. ket-qua-kiem-thu.md thieu hoac ma thoat khac 0.
 #   5. Moi CANH BAO don tu cac phase truoc con ton tai: YC chua co test,
-#      diff ngoai pham vi, artifact loi thoi. Giua flow chung chi canh bao
-#      de flow khong tac; o day thi khong con cho nao phia sau de bat lai.
+#      diff ngoai pham vi, artifact loi thoi, loai viec lech branch, test cu
+#      bi sua chua khai. Giua flow chung chi canh bao de flow khong tac; o day
+#      thi khong con cho nao phia sau de bat lai.
+#   6. Luat theo loai viec (muc-dich.md) — nhu implement; bugfix con phai co
+#      dong "Test tai hien do vi: ..." do nguoi ra soat viet.
 #
 # Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file dau vao.
 
@@ -39,7 +42,13 @@ elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
   loi_truoc "ket-qua-kiem-thu.md ghi mã thoát khác 0 — test chưa xanh."
 fi
 
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; } )
+cb=$( { kc_chan_theo_loai "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; } )
+
+# bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.
+if [ "$(kc_loai "$DIR")" = "bugfix" ]; then
+  v=$(awk '{ sub(/\r$/, "") } /Test tái hiện đỏ vì[^:]*:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }' "$REVIEW")
+  case "$v" in ""|"<"*">") loi_truoc "bugfix: review.md thiếu \"Test tái hiện đỏ vì: <trích output tai-hien.md>\"" ;; esac
+fi
 if [ -n "$cb" ]; then
   # vòng lặp ở shell chính (không pipe) để đếm được
   while IFS= read -r l; do

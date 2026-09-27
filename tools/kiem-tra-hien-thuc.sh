@@ -9,7 +9,11 @@
 #
 # Chan:  dau vao khong qua kiem-tra-ke-hoach.sh, chua khai lenh kiem thu,
 #        test do, con task dang lam do.
-# Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi.
+#        Theo loai viec (muc-dich.md): bugfix thieu tai-hien.md do; refactor/perf
+#        xoa test cu; perf thieu so do truoc/sau; chore dung code production
+#        hoac nang dependency khong khai.
+# Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
+#        loai viec lech tien to branch, refactor/perf sua test cu chua khai.
 #
 # Cau hinh: <thu-muc-feature>/../.quy-trinh/cau-hinh.sh
 # Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file.
@@ -92,8 +96,17 @@ echo "Đã ghi output thật vào $KQ"
 
 [ "$ma_thoat" -ne 0 ] && loi "Lệnh kiểm thử trả về mã $ma_thoat — chưa xanh thì chưa xong"
 
-# ---- 5. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; } )
+# ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----
+chan=$(kc_chan_theo_loai "$DIR")
+if [ -n "$chan" ]; then
+  echo ""
+  while IFS= read -r l; do [ -n "$l" ] && loi "[$(kc_loai "$DIR")] $l"; done <<EOF
+$chan
+EOF
+fi
+
+# ---- 5b. Kiem cheo — chi canh bao ----
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""

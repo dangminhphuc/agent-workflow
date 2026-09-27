@@ -13,7 +13,7 @@ luật/mẫu/công cụ vào repo đích.
 
 | Nguồn trung lập | Artifact Claude Code |
 |---|---|
-| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/ideation`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
+| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/idea`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
 | `import:` trong `workflow.yaml` → `workflow/import.md` | `.claude/commands/import.md` — `/import` |
@@ -32,6 +32,14 @@ Mỗi command sinh ra gồm ba phần:
 2. **Hợp đồng phase** (đọc gì, ghi ra đâu, mẫu nào, checker LLM nào, điều kiện
    ra là lệnh gì) do adapter dựng từ frontmatter.
 3. **Mô tả phase** lấy nguyên văn từ thân file nguồn.
+
+## Loại việc không cần gì từ adapter
+
+Luật theo loại việc (`feature | bugfix | refactor | perf | chore`, ghi trong
+`muc-dich.md` ở `/idea`) nằm **hoàn toàn** trong thân file phase và trong các
+script kiểm tra — adapter không sinh nhánh nào theo loại. `/design` với `chore`
+vẫn được sinh ra; chính `kiem-tra-thiet-ke.sh` chặn khi chạy design cho chore.
+Adapter mới vì thế không phải biết gì về loại việc.
 
 ## Cái gì KHÔNG biên dịch portable được
 

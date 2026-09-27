@@ -4,6 +4,7 @@ name: Hiện thực
 summary: Thực thi từng task trong kế hoạch; test xanh mới tính là xong
 required: true
 inputs:
+  - muc-dich.md
   - plan.md
   - tdd.md
   - spec.md
@@ -63,6 +64,21 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
 6. **Chạy `kiem-tra-hien-thuc.sh`.** Script tự chạy lệnh test và tự ghi
    `ket-qua-kiem-thu.md` — không tự viết file đó.
 
+## Theo loại việc — chặn
+
+Loại việc lấy từ `muc-dich.md`. Các luật dưới là **chặn** ngay ở phase này:
+
+| Loại | Thứ tự bắt buộc / luật | Máy ghi / kiểm |
+|---|---|---|
+| `bugfix` | Viết test tái hiện → chạy `sh tools/kiem-tra-tai-hien.sh <thư-mục-feature>` **trước khi sửa code** → mới sửa | `tai-hien.md`: test đỏ khi diff mới chỉ đụng file test. Thiếu, hoặc ghi xanh → chặn |
+| `refactor` | Không xoá test cũ. Sửa test cũ thì khai ở "Test cũ bị sửa" | Xoá test cũ → chặn; sửa chưa khai → cảnh báo |
+| `perf` | Như refactor; `kiem-tra-hieu-nang.sh <thư-mục-feature> --truoc` **trước khi sửa**, `--sau` sau khi sửa | `do-hieu-nang.md` thiếu một trong hai số đo → chặn |
+| `chore` | Không đụng code production. Nâng dependency thì khai ở "Nâng dependency" | Đụng `mau_code_production` → chặn; đụng `mau_file_dependency` mà không khai, hoặc khai major → chặn |
+
+Quên chạy `tai-hien` / `--truoc` mà đã sửa code: script **từ chối**. Hoàn tác phần
+sửa (`git stash`), chạy lại, rồi `git stash pop`. Đây là chủ ý: bằng chứng "trước
+khi sửa" chỉ có giá trị khi nó thật sự được lấy trước khi sửa.
+
 ## Kiểm chéo — cảnh báo, `review` chặn
 
 `kiem-tra-hien-thuc.sh` in **cảnh báo** (không chặn phase này) cho:
@@ -72,6 +88,8 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
 | YC chưa có test gắn tag `covers:` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do |
 | File thay đổi so với nhánh gốc nằm ngoài "File dự kiến"/"Phát sinh" | Hoàn tác, hoặc ghi vào "Phát sinh" + lý do |
 | Artifact lỗi thời (`based_on` lệch hash) | Chạy lại phase sinh ra artifact đó |
+| Loại việc lệch tiền tố branch | Sửa loại trong `muc-dich.md`, hoặc `tools/doi-ten-feature.sh` |
+| refactor/perf: test cũ bị sửa mà chưa khai | Khai ở "Test cũ bị sửa" + lý do, hoặc hoàn tác |
 
 Cảnh báo không chặn ở đây để flow không tắc vì checker hay báo nhầm. Nhưng
 `05-review` là cổng chặn cuối: cảnh báo nào còn thì review **không đạt**. Xử lý

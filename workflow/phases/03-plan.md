@@ -4,6 +4,7 @@ name: Kế hoạch
 summary: Chia thiết kế đã duyệt thành task thực thi được — chỉ quản lý thực thi
 required: true
 inputs:
+  - muc-dich.md
   - spec.md
   - tdd.md
   - open-questions.md
@@ -35,6 +36,9 @@ duyệt.
   được người duyệt**. Còn D `đề xuất` hay `mở lại` thì dừng lại.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
 
+Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
+`kiem-tra-truy-vet.sh`), và task không có `Dựa trên: D-xx`.
+
 ## Việc phải làm
 
 1. **Chia task.** Mỗi task phải có:
@@ -57,7 +61,16 @@ duyệt.
    "Kiểm chứng thủ công" kèm lý do — nếu không, `/implement` cảnh báo và
    `/review` chặn vì YC chưa có test.
 
-5. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> plan.md spec.md tdd.md`.
+5. **Theo loại việc:**
+   - `bugfix`: task đầu tiên là **viết test tái hiện**, tách khỏi task sửa code —
+     `/implement` phải chạy `kiem-tra-tai-hien.sh` giữa hai task đó.
+   - `perf`: task đầu tiên là **đo trước** (`kiem-tra-hieu-nang.sh --truoc`).
+   - `refactor`/`perf`: test cũ nào dự kiến phải sửa (vd đổi import khi dời module)
+     thì khai sẵn ở "Test cũ bị sửa".
+   - `chore`: có nâng dependency thì khai ở "Nâng dependency" (chỉ `vá | minor`).
+
+6. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> plan.md spec.md tdd.md`
+   (chore: bỏ `tdd.md`).
 
 ## Đầu ra
 

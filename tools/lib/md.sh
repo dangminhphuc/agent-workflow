@@ -98,10 +98,12 @@ file_hash() {
 
 # khop_glob <chuỗi> <mẫu...> -> 0 nếu khớp một mẫu. Trong mẫu, * khớp cả "/".
 khop_glob() {
-  _s="$1"; shift
-  for _p in "$@"; do
+  # Tên biến riêng: sh không có biến cục bộ, dùng _s/_p ở đây sẽ ghi đè biến
+  # cùng tên của hàm gọi (đã từng làm kc_test_cu_sua báo sai tên file).
+  __kg_s="$1"; shift
+  for __kg_p in "$@"; do
     # shellcheck disable=SC2254
-    case "$_s" in $_p) return 0 ;; esac
+    case "$__kg_s" in $__kg_p) return 0 ;; esac
   done
   return 1
 }

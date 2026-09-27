@@ -4,6 +4,7 @@ name: Thiết kế kỹ thuật
 summary: Viết Technical Design Document — tách lựa chọn thành quyết định D-xx để người duyệt
 required: true
 inputs:
+  - muc-dich.md
   - spec.md
   - open-questions.md
 outputs:
@@ -27,6 +28,10 @@ llm_checker: workflow/checkers/thiet-ke.md
 Viết ra mọi thông tin `04-implement` cần để làm đúng kỹ thuật, **nằm trong kiến
 trúc sẵn có của repo đích**, và tách các lựa chọn thật thành mục **D-xx** để
 người *quyết định* chứ không phải đọc duyệt cả một bài văn xuôi.
+
+**Loại việc `chore` không có phase này** — đi thẳng `/plan`. Checker chặn nếu
+chạy design cho chore. Với `refactor`/`perf`, design là phần việc chính: cấu trúc
+đích và quyết định D-xx về cách chuyển sang đó.
 
 ## Đầu vào
 

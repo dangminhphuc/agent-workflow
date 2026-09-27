@@ -55,10 +55,29 @@ thay() {
 g() { git -C "$R" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
 
 # ------------------------------------------------------------------ fixture
-# Mot repo git day du, feature feat_x di het cac phase va DAT moi cong chan.
+# Mot repo git day du, mot feature di het cac phase va DAT moi cong chan.
 # Moi ca kiem lam hong dung mot cho roi ky vong checker bat duoc.
+#
+# LOAI quyet dinh luat theo loai viec; tao_fixture <loai> <branch> dung lai
+# R, F, LOAI cho tung loai. Test "bao ve" test/a.test.js co san tren main.
+LOAI=feature
 R="$TMP/repo"
 F="$R/.agent-workflow/feat_x"
+
+viet_muc_dich() {
+  cat > "$F/muc-dich.md" <<EOF
+# Mục đích — x
+
+- **Loại việc:** \`$LOAI\`   <!-- người xác nhận -->
+- **Mục tiêu:** làm x
+
+## Input
+
+- \`[JIRA]\` ABC-1
+- \`[NGƯỜI-DÙNG]\`
+  > cần làm x cho màn hình y
+EOF
+}
 
 viet_spec() {
   cat > "$F/spec.md" <<'EOF'
@@ -74,9 +93,21 @@ viet_spec() {
 ### YC-002 — b
 - Nguồn: `[CẦN-HỎI]` → open-questions.md § YC-002
 - Giả định tạm: y
-
-## Ngoài phạm vi
 EOF
+  case "$LOAI" in
+    refactor|perf)
+      thay "$F/spec.md" '- Nguồn: `[JIRA]` ABC-1' '- Nguồn: `[JIRA]` ABC-1
+- Loại YC: `giữ nguyên`
+- Được bảo vệ bởi: `test/a.test.js`' ;;
+  esac
+  case "$LOAI" in
+    refactor) printf -- '- Loại YC: `cấu trúc`\n' >> "$F/spec.md" ;;
+    perf)     printf -- '- Loại YC: `hiệu năng`\n- Mục tiêu: dưới 10 ms\n' >> "$F/spec.md" ;;
+  esac
+  if [ "$LOAI" = "bugfix" ]; then
+    printf '\n## Tái hiện lỗi\n\n- Cách tái hiện: mở a\n- Hành vi sai: ra goc\n- Hành vi đúng: ra moi\n' >> "$F/spec.md"
+  fi
+  printf '\n## Ngoài phạm vi\n' >> "$F/spec.md"
   cat > "$F/open-questions.md" <<'EOF'
 # Điểm mù
 
@@ -88,6 +119,7 @@ EOF
 }
 
 viet_tdd() {
+  [ "$LOAI" = "chore" ] && { rm -f "$F/tdd.md" "$F/phat-hien-thiet-ke.md"; return 0; }
   cat > "$F/tdd.md" <<'EOF'
 ---
 based_on: []
@@ -164,36 +196,76 @@ viet_plan() {
 | Mã | Lý do |
 |---|---|
 
+## Test cũ bị sửa
+
+| File test | Lý do sửa |
+|---|---|
+
+## Nâng dependency
+
+| Thư viện | Cũ → mới | Mức |
+|---|---|---|
+
 ## Phát sinh
 
 | Task | Phát sinh gì | File | Xử lý |
 |---|---|---|---|
 EOF
+  if [ "$LOAI" = "chore" ]; then
+    thay "$F/plan.md" '- Dựa trên: `D-01`
+' ''
+    thay "$F/plan.md" '`src/*` `test/*`' '`docs/*`'
+  fi
 }
 
 viet_review() {
   printf '| Mã | Kết luận |\n|---|---|\n| YC-001 | đạt |\n| YC-002 | chờ xác nhận |\n' > "$F/review.md"
+  [ "$LOAI" = "bugfix" ] && printf '\n- Test tái hiện đỏ vì: grep không thấy "moi" trong src/a.txt\n' >> "$F/review.md"
+  return 0
 }
 
 ghi_based_on() {
-  sh "$T/cap-nhat-based-on.sh" "$F" tdd.md spec.md open-questions.md >/dev/null
-  sh "$T/cap-nhat-based-on.sh" "$F" plan.md spec.md tdd.md >/dev/null
+  if [ "$LOAI" = "chore" ]; then
+    sh "$T/cap-nhat-based-on.sh" "$F" plan.md spec.md >/dev/null
+  else
+    sh "$T/cap-nhat-based-on.sh" "$F" tdd.md spec.md open-questions.md >/dev/null
+    sh "$T/cap-nhat-based-on.sh" "$F" plan.md spec.md tdd.md >/dev/null
+  fi
 }
 
+# tao_fixture [loai] [branch]
 tao_fixture() {
+  LOAI="${1:-feature}"; _br="${2:-feat_x}"
+  R="$TMP/repo-$LOAI"; F="$R/.agent-workflow/$_br"
   rm -rf "$R"
-  mkdir -p "$F" "$R/.agent-workflow/.quy-trinh" "$R/src" "$R/test"
+  mkdir -p "$F" "$R/.agent-workflow/.quy-trinh" "$R/src" "$R/test" "$R/docs"
   g init -q
   g checkout -q -b main
   cp "$ROOT/workflow/templates/conventions.md" "$R/.agent-workflow/conventions.md"
-  printf 'LENH_KIEM_THU="true"\n' > "$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
+  {
+    printf 'LENH_KIEM_THU="grep -q moi %s/src/a.txt"\n' "$R"
+    printf 'LENH_DO_HIEU_NANG="echo KET_QUA: 5 ms"\n'
+  } > "$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
   printf 'goc\n' > "$R/src/a.txt"
-  g add -A; g commit -q -m goc
-  g checkout -q -b feat_x
-  viet_spec; viet_tdd; viet_plan; viet_review
-  ghi_based_on
-  printf 'moi\n' > "$R/src/a.txt"
   printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
+  g add src test; g commit -q -m goc
+  g checkout -q -b "$_br"
+  viet_muc_dich; viet_spec; viet_tdd; viet_plan; viet_review
+  ghi_based_on
+  case "$LOAI" in
+    bugfix)
+      printf '// covers: YC-001\n' > "$R/test/b.test.js"
+      sh "$T/kiem-tra-tai-hien.sh" "$F" >/dev/null 2>&1 ;;
+    perf)
+      sh "$T/kiem-tra-hieu-nang.sh" "$F" --truoc >/dev/null 2>&1 ;;
+  esac
+  if [ "$LOAI" = "chore" ]; then
+    printf 'LENH_KIEM_THU="true"\n' > "$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
+    printf 'huong dan\n' > "$R/docs/huong-dan.md"
+  else
+    printf 'moi\n' > "$R/src/a.txt"
+  fi
+  [ "$LOAI" = "perf" ] && sh "$T/kiem-tra-hieu-nang.sh" "$F" --sau >/dev/null 2>&1
   sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 }
 
@@ -450,7 +522,7 @@ O="$TMP/out1"; mkdir -p "$O"
 ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
-for f in commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
+for f in commands/idea.md commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
          commands/import.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
@@ -523,6 +595,181 @@ dung "branch khớp thì thắng tham số" test "$(sh "$XD" khac 2>/dev/null)" 
 dung "in 'Đang làm với:'" sh -c "sh '$XD' 2>&1 >/dev/null | grep -q 'Đang làm với: .agent-workflow/job-them-todo'"
 git -C "$R4" checkout -q main
 ky_vong 2 "từ chối tên feature có ../" sh "$XD" "../x"
+
+
+# ---------------------------------------------------------------- muc dich (00)
+echo ""
+echo "kiem-tra-muc-dich.sh"
+CHK="$T/kiem-tra-muc-dich.sh"
+tao_fixture feature feat_x
+
+ky_vong 0 "mục đích hợp lệ thì cho qua" sh "$CHK" "$F"
+
+thay "$F/muc-dich.md" '`feature`' '`utils`'
+ky_vong 1 "chặn loại việc ngoài 5 loại" sh "$CHK" "$F"
+ky_vong 1 "spec chặn khi muc-dich.md không đạt (entry check)" sh "$T/kiem-tra-truy-vet.sh" "$F"
+viet_muc_dich
+
+thay "$F/muc-dich.md" '- **Mục tiêu:** làm x' '- **Mục tiêu:** <một câu>'
+ky_vong 1 "chặn mục tiêu còn chỗ giữ chỗ" sh "$CHK" "$F"
+viet_muc_dich
+
+thay "$F/muc-dich.md" '- `[JIRA]` ABC-1
+- `[NGƯỜI-DÙNG]`
+  > cần làm x cho màn hình y
+' ''
+ky_vong 1 "chặn khi không có input nào" sh "$CHK" "$F"
+viet_muc_dich
+
+thay "$F/muc-dich.md" '`[JIRA]` ABC-1' '`[SUY-RA]` chắc người dùng muốn x'
+ky_vong 1 "chặn [SUY-RA] trong input" sh "$CHK" "$F"
+viet_muc_dich
+
+thay "$F/muc-dich.md" '  > cần làm x cho màn hình y' ''
+ky_vong 1 "chặn [NGƯỜI-DÙNG] không kèm nguyên văn" sh "$CHK" "$F"
+viet_muc_dich
+
+rm -f "$F/muc-dich.md"
+ky_vong 2 "chặn khi chưa có muc-dich.md" sh "$CHK" "$F"
+viet_muc_dich
+
+thay "$F/muc-dich.md" '`feature`' '`chore`'
+ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /idea" sh "$CHK" "$F"
+dung "…và có in cảnh báo lệch tiền tố" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*feat_'"
+viet_muc_dich
+
+# ---------------------------------------------------------------- bugfix
+echo ""
+echo "loại việc: bugfix"
+tao_fixture bugfix fix_y
+for c in muc-dich truy-vet thiet-ke ke-hoach hien-thuc ra-soat; do
+  ky_vong 0 "bugfix đầy đủ qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
+done
+dung "tai-hien.md ghi output THẬT, mã thoát khác 0" sh -c "grep -q 'Mã thoát: \`1\`' '$F/tai-hien.md'"
+
+ky_vong 1 "kiem-tra-tai-hien từ chối khi đã sửa code production" sh "$T/kiem-tra-tai-hien.sh" "$F"
+dung "…và giữ nguyên tai-hien.md cũ" grep -q 'Mã thoát: `1`' "$F/tai-hien.md"
+
+thay "$F/spec.md" '- Hành vi đúng: ra moi' ''
+ky_vong 1 "spec bugfix chặn khi thiếu Hành vi đúng" sh "$T/kiem-tra-truy-vet.sh" "$F"
+viet_spec; ghi_based_on
+
+mv "$F/tai-hien.md" "$F/tai-hien.bak"
+ky_vong 1 "implement chặn bugfix không có tai-hien.md" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+ky_vong 1 "review chặn bugfix không có tai-hien.md" sh "$T/kiem-tra-ra-soat.sh" "$F"
+mv "$F/tai-hien.bak" "$F/tai-hien.md"
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+
+viet_review; thay "$F/review.md" '- Test tái hiện đỏ vì: grep không thấy "moi" trong src/a.txt' '- Test tái hiện đỏ vì: <trích>'
+ky_vong 1 "review chặn bugfix thiếu \"Test tái hiện đỏ vì\"" sh "$T/kiem-tra-ra-soat.sh" "$F"
+viet_review
+
+# test xanh tren code chua sua -> khong tai hien duoc
+g stash -q
+printf 'LENH_KIEM_THU="true"\n' > "$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
+ky_vong 1 "kiem-tra-tai-hien chặn khi test XANH trên code chưa sửa" sh "$T/kiem-tra-tai-hien.sh" "$F"
+dung "…đúng lý do: test xanh, không phải vì đã sửa code" sh -c "sh '$T/kiem-tra-tai-hien.sh' '$F' | grep -q 'XANH'"
+
+# ---------------------------------------------------------------- refactor
+echo ""
+echo "loại việc: refactor"
+tao_fixture refactor refactor_z
+for c in truy-vet thiet-ke ke-hoach hien-thuc ra-soat; do
+  ky_vong 0 "refactor đầy đủ qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
+done
+
+thay "$F/spec.md" '- Loại YC: `cấu trúc`' ''
+ky_vong 1 "spec refactor chặn YC không có Loại YC (hành vi mới)" sh "$T/kiem-tra-truy-vet.sh" "$F"
+viet_spec
+
+thay "$F/spec.md" '`test/a.test.js`' '`test/moi.test.js`'
+printf '// covers: YC-001\n' > "$R/test/moi.test.js"
+ky_vong 1 "spec refactor chặn test bảo vệ không có sẵn trên nhánh gốc" sh "$T/kiem-tra-truy-vet.sh" "$F"
+rm -f "$R/test/moi.test.js"; viet_spec; ghi_based_on
+
+printf '// covers: YC-001, YC-002\n// doi import\n' > "$R/test/a.test.js"
+ky_vong 0 "sửa test cũ chưa khai chỉ CẢNH BÁO ở implement" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+ky_vong 1 "…nhưng review chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
+thay "$F/plan.md" '| File test | Lý do sửa |
+|---|---|
+' '| File test | Lý do sửa |
+|---|---|
+| `test/a.test.js` | đổi import do dời module |
+'
+ky_vong 0 "khai ở \"Test cũ bị sửa\" thì review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
+g checkout -q -- test/a.test.js; viet_plan; ghi_based_on
+
+rm -f "$R/test/a.test.js"
+ky_vong 1 "implement chặn refactor XOÁ test cũ" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+g checkout -q -- test/a.test.js
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+
+# ---------------------------------------------------------------- perf
+echo ""
+echo "loại việc: perf"
+tao_fixture perf perf_w
+for c in truy-vet thiet-ke ke-hoach hien-thuc ra-soat; do
+  ky_vong 0 "perf đầy đủ qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
+done
+# Mỗi mục "## Trước" / "## Sau" phải có dòng KET_QUA (dòng này còn lặp lại
+# trong khối output thật, nên đếm theo mục chứ không đếm dòng).
+dung "do-hieu-nang.md có số đo trước và sau" sh -c "[ \"\$(awk '/^## /{m=\$2} /^KET_QUA:/ && m!=\"\" && !(m in c) {c[m]=1; n++} END{print n+0}' '$F/do-hieu-nang.md')\" = 2 ]"
+ky_vong 1 "đo \"trước\" bị từ chối khi đã sửa code production" sh "$T/kiem-tra-hieu-nang.sh" "$F" --truoc
+
+thay "$F/spec.md" '- Mục tiêu: dưới 10 ms' '- Mục tiêu: nhanh hơn'
+ky_vong 1 "spec perf chặn YC hiệu năng không có số liệu" sh "$T/kiem-tra-truy-vet.sh" "$F"
+viet_spec; ghi_based_on
+
+mv "$F/do-hieu-nang.md" "$F/do-hieu-nang.bak"
+ky_vong 1 "implement chặn perf không có số đo" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+ky_vong 1 "đo \"sau\" bị từ chối khi chưa có số đo trước" sh "$T/kiem-tra-hieu-nang.sh" "$F" --sau
+mv "$F/do-hieu-nang.bak" "$F/do-hieu-nang.md"
+
+# ---------------------------------------------------------------- chore
+echo ""
+echo "loại việc: chore"
+tao_fixture chore chore_v
+for c in truy-vet ke-hoach hien-thuc ra-soat; do
+  ky_vong 0 "chore đầy đủ (không có tdd.md) qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
+done
+ky_vong 1 "chore chạy design thì bị chặn" sh "$T/kiem-tra-thiet-ke.sh" "$F"
+
+printf 'moi\n' > "$R/src/a.txt"
+ky_vong 1 "chore đụng code production thì chặn" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+g checkout -q -- src/a.txt
+
+printf '{"dependencies":{"lodash":"4.17.21"}}\n' > "$R/package.json"
+ky_vong 1 "chore nâng dependency không khai thì chặn" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+thay "$F/plan.md" '| Thư viện | Cũ → mới | Mức |
+|---|---|---|
+' '| Thư viện | Cũ → mới | Mức |
+|---|---|---|
+| lodash | 4.17.20 → 4.17.21 | vá |
+'
+ky_vong 0 "khai nâng bản vá thì cho qua" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+thay "$F/plan.md" '| vá |' '| major |'
+ky_vong 1 "nâng major không được là chore" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+rm -f "$R/package.json"; viet_plan; ghi_based_on
+
+thay "$F/plan.md" '- File dự kiến: `docs/*`' '- Dựa trên: `D-01`
+- File dự kiến: `docs/*`'
+ky_vong 1 "chore: task Dựa trên D-xx bị chặn (không có tdd.md)" sh "$T/kiem-tra-ke-hoach.sh" "$F"
+viet_plan; ghi_based_on
+
+# ---------------------------------------------------------------- doi ten feature
+echo ""
+echo "doi-ten-feature.sh"
+R5="$TMP/repo5"; mkdir -p "$R5"
+git -C "$R5" init -q; git -C "$R5" checkout -q -b main
+sh "$T/cai-dat.sh" "$R5" --lenh-kiem-thu true >/dev/null 2>&1
+git -C "$R5" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
+git -C "$R5" checkout -q -b fix_sai-loai
+mkdir -p "$R5/.agent-workflow/fix_sai-loai"; printf 'x\n' > "$R5/.agent-workflow/fix_sai-loai/muc-dich.md"
+ky_vong 0 "đổi tên branch thành công" sh "$R5/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_dung-loai
+dung "branch đã đổi tên" test "$(git -C "$R5" rev-parse --abbrev-ref HEAD)" = "feat_dung-loai"
+dung "thư mục artifact dời theo" sh -c "[ -f '$R5/.agent-workflow/feat_dung-loai/muc-dich.md' ] && [ ! -d '$R5/.agent-workflow/fix_sai-loai' ]"
+mkdir -p "$R5/.agent-workflow/feat_khac"
+ky_vong 2 "từ chối khi thư mục đích đã tồn tại" sh "$R5/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_khac
 
 # ---------------------------------------------------------------- tong ket
 echo ""

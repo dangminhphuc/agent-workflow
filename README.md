@@ -42,8 +42,7 @@ văn xuôi.
 
 ```mermaid
 flowchart TD
-    START{"Có BRD / PRD /<br/>Jira / Confluence / incident?"}
-    IDEA["00-ideation · tuỳ chọn<br/>→ brief.md<br/><i>NGƯỜI: duyệt brief</i>"]
+    IDEA["00-idea · bắt buộc<br/>→ muc-dich.md (loại việc + input)<br/><i>MÁY: kiem-tra-muc-dich.sh</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
     SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: kiem-tra-truy-vet.sh</i><br/><i>NGƯỜI: duyệt YC, mức ảnh hưởng, Mức rủi ro</i>"]
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Mức rủi ro: cao)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: kiem-tra-thiet-ke.sh + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
@@ -55,11 +54,10 @@ flowchart TD
     NGOAI[/"Artifact làm bằng tool khác<br/>(AI khác, Confluence, viết tay)"/]
     IMPORT["Import có kiểm soát<br/>lệnh riêng, không thêm nội dung"]
 
-    START -- có --> SPEC
-    START -- không --> IDEA --> SPEC
-    SPEC --> DESIGN
+    IDEA --> SPEC --> DESIGN
     PHAC -.-> DESIGN
     DESIGN --> PLAN --> IMPL --> REVIEW --> SHIP
+    SPEC -. "chore: bỏ design" .-> PLAN
 
     IMPL -. "cảnh báo dồn về: artifact lỗi thời,<br/>test ↔ YC, phạm vi diff" .-> REVIEW
 
@@ -86,9 +84,9 @@ Cách đọc:
   checker và gate người của phase lẽ ra đã sinh ra nó.
 
 ```
-00-ideation   [tuỳ chọn]  chỉ khi KHÔNG có BRD/PRD/ticket     →  brief.md
-01-spec       [bắt buộc]  BRD/PRD/Jira/Confluence/incident   →  spec.md + open-questions.md
-02-design     [bắt buộc]  spec.md                            →  tdd.md
+00-idea       [bắt buộc]  tài liệu có định danh, hoặc lời người dùng  →  muc-dich.md
+01-spec       [bắt buộc]  muc-dich.md + các input nó liệt kê →  spec.md + open-questions.md
+02-design     [bắt buộc*] spec.md                            →  tdd.md          (*chore bỏ qua)
 03-plan       [bắt buộc]  spec.md + tdd.md                   →  plan.md
 04-implement  [bắt buộc]  plan.md + tdd.md                   →  diff + ket-qua-kiem-thu.md
 05-review     [bắt buộc]  mọi artifact + diff                →  review.md
@@ -104,7 +102,7 @@ Cách đọc:
 
 | Phase | Người | Người làm gì |
 |---|---|---|
-| `ideation` | có | Duyệt `brief.md` |
+| `idea` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
 | `spec` | có | Duyệt yêu cầu, nhãn mức ảnh hưởng của `[CẦN-HỎI]`, và `Mức rủi ro` |
 | `design` | có | Duyệt **từng D-xx** trong `tdd.md` |
 | `plan` | không | — |
@@ -115,9 +113,50 @@ Cách đọc:
 `plan` và `implement` không có người vì chúng chỉ thực thi những gì đã được duyệt
 ở `spec` và `design`.
 
+### `00-idea` — mục đích và loại việc
+
+Điểm xuất phát bắt buộc của mọi việc. `muc-dich.md` trả lời đúng ba câu:
+
+1. **Loại việc** — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
+   branch (`loai_theo_tien_to` trong `conventions.md`), **người xác nhận**, và
+   `muc-dich.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
+   chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên branch bằng
+   `tools/doi-ten-feature.sh` (dời luôn thư mục artifact).
+2. **Input** — tài liệu có định danh (`[JIRA]`, `[CONFLUENCE]`, `[FILE]`), hoặc
+   lời người dùng **chép nguyên văn** (`[NGƯỜI-DÙNG]`). Không có `[SUY-RA]` ở đây:
+   suy đoán của agent mà vào input thì mọi phase sau truy về nó như có nguồn.
+3. **Mục tiêu** một câu.
+
+`00` chỉ **trỏ tới** tài liệu, không tóm tắt hay diễn giải BRD — nếu không nó
+thành một lớp diễn giải chen giữa tài liệu thật và spec.
+
+Xếp loại theo **thay đổi gì về hành vi**, không theo "xây cái gì":
+
+```
+Có sửa code chạy trên production không?
+├─ Không → chore
+└─ Có → Hành vi quan sát từ bên ngoài có đổi không?
+        ├─ Không → mục tiêu là nhanh hơn? → có: perf / không: refactor
+        └─ Có → Hành vi hiện tại đang SAI so với tài liệu/ý định? → có: bugfix / không: feature
+```
+
+Loại việc **đổi luật** của các phase sau:
+
+| Loại | Phase | Máy ghi / chặn thêm | Người phán |
+|---|---|---|---|
+| `feature` | đủ | — | — |
+| `bugfix` | đủ | Spec có "Tái hiện lỗi". `kiem-tra-tai-hien.sh` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
+| `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Được bảo vệ bởi:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Test cũ bị sửa" | Diff test cũ chỉ đổi import/cấu trúc |
+| `perf` | đủ | Như refactor + YC `hiệu năng` có số liệu; `kiem-tra-hieu-nang.sh --truoc/--sau` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
+| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Nâng dependency" (chỉ `vá \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
+
+Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bugfix gấp),
+`security` (= bugfix/feature + rủi ro cao). `spike` nằm ngoài quy trình. Việc lai
+(refactor kèm sửa bug) thì **tách branch** — luật hai loại xung đột nhau.
+
 ### `01-spec` — yêu cầu
 
-Mỗi yêu cầu `YC-xxx` phải truy được về tài liệu nguồn (Confluence, Jira, file cục
+Mỗi yêu cầu `YC-xxx` phải truy được về một input trong `muc-dich.md` (Confluence, Jira, file cục
 bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **mức ảnh hưởng** (`toàn bộ thiết kế` |
 `cục bộ`) do agent đề xuất, người duyệt ở gate spec. Mặc định **không chặn** — chỉ
 mục `toàn bộ thiết kế` mới phải có `Trạng thái: đã trả lời` trước khi vào
@@ -186,7 +225,8 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
-| `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu |
+| `idea` | `kiem-tra-muc-dich.sh` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
+| `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc |
 | `design` | `kiem-tra-thiet-ke.sh` | Thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `kiem-tra-ke-hoach.sh` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `kiem-tra-hien-thuc.sh` | Test chưa xanh, task còn dở |
@@ -271,21 +311,21 @@ Sinh ra trong repo đích:
 
 ```
 .claude/
-  commands/{ideation,spec,design,plan,implement,review,import}.md
+  commands/{idea,spec,design,plan,implement,review,import}.md
   agents/ra-soat-doc-lap.md                        ← rà soát ngữ cảnh sạch
   agents/soat-thiet-ke.md                          ← checker LLM của design
   skills/quy-trinh-agent/SKILL.md
 .agent-workflow/
   .quy-trinh/{rules,templates,checkers,tools}      ← bộ cài, cài lại sẽ ghi đè
-  .quy-trinh/cau-hinh.sh                           ← lệnh test; cài lại không ghi đè
+  .quy-trinh/cau-hinh.sh                           ← LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf); cài lại không ghi đè
   conventions.md                                   ← bạn viết; bộ cài chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
   <tên-branch>/                                    ← artifact của từng feature, commit vào git
-    spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
-    plan.md, ket-qua-kiem-thu.md, review.md, ...
+    muc-dich.md, spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
+    plan.md, ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf), review.md
 ```
 
 Rồi sửa `.agent-workflow/conventions.md`, tạo branch theo quy ước, mở Claude Code:
-`/spec` → `/design` → `/plan` → `/implement` → `/review`.
+`/idea` → `/spec` → `/design` → `/plan` → `/implement` → `/review`.
 
 Cài lại sau khi sửa quy trình: chạy lại đúng lệnh trên. Adapter **từ chối ghi đè**
 file bạn viết tay (file do nó sinh ra đều mang dấu "SINH TỰ ĐỘNG"); dùng `--force`
@@ -316,6 +356,9 @@ prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành
 | `bo_qua` | `package-lock.json` | File đổi không cần nằm trong plan |
 | `mau_file_test` | `*.test.* test/*` | File nào là test |
 | `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
+| `loai_theo_tien_to` | `feat_=feature fix_=bugfix` | Tiền tố branch → loại việc (gợi ý ở `/idea`, đối chiếu ở review) |
+| `mau_code_production` | `src/*` | Code production — `chore` không được đụng; bugfix/perf đo "trước" khi chưa đụng |
+| `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Nâng dependency" |
 
 Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
 
@@ -335,6 +378,9 @@ tools/
   cai-dat.sh             cài vào repo đích
   kiem-tra-*.sh          các cổng chặn bằng máy
   xac-dinh-feature.sh    branch → tham số → hỏi; in thư mục feature
+  kiem-tra-tai-hien.sh   bugfix: ghi bằng chứng test tái hiện đỏ trên code chưa sửa
+  kiem-tra-hieu-nang.sh  perf: ghi số đo trước / sau
+  doi-ten-feature.sh     đổi tên branch + dời thư mục artifact
   cap-nhat-based-on.sh   ghi hash đầu vào vào frontmatter artifact
   chay-thu.sh            test hồi quy cho chính các cổng chặn
   lib/md.sh              đọc frontmatter (tập con YAML), conventions, hash

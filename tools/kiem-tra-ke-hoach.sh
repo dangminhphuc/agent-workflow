@@ -24,14 +24,28 @@ SPEC="$DIR/spec.md"
 TDD="$DIR/tdd.md"
 PLAN="$DIR/plan.md"
 
-for f in "$SPEC" "$TDD" "$PLAN"; do
-  [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
-done
-
+LOAI=$(kc_loai "$DIR")
 n_loi=0
-if ! sh "$HERE/kiem-tra-thiet-ke.sh" "$DIR" >/dev/null 2>&1; then
-  n_loi=1
-  echo "  [LỖI] Đầu vào chưa đạt: tdd.md không qua kiem-tra-thiet-ke.sh — chạy nó để xem chi tiết."
+
+# chore không có design: entry check lùi về checker của spec, và không có tdd.md
+# (task nào ghi "Dựa trên: D-xx" sẽ bị chặn vì không có D nào).
+if [ "$LOAI" = "chore" ]; then
+  for f in "$SPEC" "$PLAN"; do
+    [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
+  done
+  TDD=/dev/null
+  if ! sh "$HERE/kiem-tra-truy-vet.sh" "$DIR" >/dev/null 2>&1; then
+    n_loi=1
+    echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua kiem-tra-truy-vet.sh — chạy nó để xem chi tiết."
+  fi
+else
+  for f in "$SPEC" "$TDD" "$PLAN"; do
+    [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
+  done
+  if ! sh "$HERE/kiem-tra-thiet-ke.sh" "$DIR" >/dev/null 2>&1; then
+    n_loi=1
+    echo "  [LỖI] Đầu vào chưa đạt: tdd.md không qua kiem-tra-thiet-ke.sh — chạy nó để xem chi tiết."
+  fi
 fi
 
 awk -v loi_truoc="$n_loi" '
@@ -46,7 +60,7 @@ awk -v loi_truoc="$n_loi" '
 
   BEGIN { n_loi = loi_truoc }
   { sub(/\r$/, "") }
-  FNR==1 { idx++; sect=""; cur="" }
+  FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : 3; sect=""; cur="" }
 
   # ---- File 1: spec.md — thu mọi mã yêu cầu ----
   idx==1 {

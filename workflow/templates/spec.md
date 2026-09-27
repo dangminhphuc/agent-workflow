@@ -34,6 +34,20 @@
 - Tiêu chí chấp nhận:
   - [ ] <...>
 
+<!-- CHỈ refactor / perf: mỗi YC có thêm
+- Loại YC: `giữ nguyên | cấu trúc | hiệu năng`   (hiệu năng: chỉ perf)
+- Được bảo vệ bởi: `test/<file>.test.ts`         (YC giữ nguyên — file có sẵn trên nhánh gốc)
+- Mục tiêu: p95 < 150 ms với 10k bản ghi         (YC hiệu năng — có số liệu)
+Không có YC hành vi mới. -->
+
+<!-- CHỈ bugfix: thêm mục dưới, bỏ comment
+## Tái hiện lỗi
+
+- Cách tái hiện: <các bước / đầu vào cụ thể>
+- Hành vi sai: <điều đang xảy ra>
+- Hành vi đúng: <điều phải xảy ra, theo nguồn nào>
+-->
+
 ## Ngoài phạm vi
 
 Những thứ **không** làm lần này. Mục này chặn phase sau làm quá tay.

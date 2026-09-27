@@ -4,11 +4,14 @@ name: Rà soát
 summary: Rà soát độc lập bằng ngữ cảnh sạch — cổng chặn cuối
 required: true
 inputs:
+  - muc-dich.md
   - spec.md
   - open-questions.md
   - tdd.md
   - plan.md
   - ket-qua-kiem-thu.md
+  - tai-hien.md (bugfix)
+  - do-hieu-nang.md (perf)
   - diff
 outputs:
   - review.md
@@ -79,6 +82,17 @@ Mỗi finding phải có `file:dòng` và mức độ.
 | `Nên sửa` | Đúng nhưng có vấn đề thật về chất lượng. |
 | `Góp ý` | Tuỳ người viết quyết định. |
 
+## Theo loại việc
+
+Máy kiểm lại mọi luật chặn của `implement`. Phần người phải phán:
+
+| Loại | Người rà soát làm gì |
+|---|---|
+| `bugfix` | Đọc `tai-hien.md`: test đỏ **đúng vì bug**, không phải vì lỗi biên dịch/thiếu hàm. Ghi `Test tái hiện đỏ vì: <trích output>` — thiếu dòng này thì máy chặn |
+| `refactor`/`perf` | Với từng file ở "Test cũ bị sửa": diff chỉ đổi import/cấu trúc, **không đổi assertion** |
+| `perf` | Đọc `do-hieu-nang.md`, kết luận YC hiệu năng `đạt`/`chưa đạt` theo số đo — tính cả độ dao động |
+| `chore` | Mức `vá | minor` khai ở "Nâng dependency" là đúng (major phải là refactor riêng) |
+
 ## Đầu ra
 
 - `review.md` — theo `templates/review.md`
@@ -99,7 +113,9 @@ Mỗi finding phải có `file:dòng` và mức độ.
   - mọi `YC-NNN` có kết luận hợp lệ, không `[CẦN-HỎI]` nào bị kết luận `đạt`;
   - đầu vào qua `kiem-tra-ke-hoach.sh` (kéo theo design và spec);
   - `ket-qua-kiem-thu.md` có và mã thoát `0`;
-  - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi thời.
+  - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
+    thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai;
+  - luật theo loại việc (như `implement`), và bugfix có dòng `Test tái hiện đỏ vì:`.
 
 **Người:**
 - Xác nhận kết luận; quyết định xử lý các finding mức `Chặn`.

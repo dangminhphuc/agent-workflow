@@ -51,6 +51,25 @@ tag `covers:` thì `/implement` cảnh báo, `/review` chặn.
 |---|---|
 | | |
 
+## Test cũ bị sửa
+
+CHỈ refactor / perf. Test có sẵn trên nhánh gốc mà bị sửa hay đổi tên phải khai ở
+đây (đường dẫn trong backtick) kèm lý do — người rà soát đọc diff để xác nhận chỉ
+đổi import/cấu trúc, không đổi assertion. **Xoá** test cũ thì bị chặn, không khai được.
+
+| File test | Lý do sửa |
+|---|---|
+| | |
+
+## Nâng dependency
+
+CHỈ chore. Diff đụng `mau_file_dependency` thì phải khai từng thư viện. Chỉ
+`vá | minor`; nâng major là việc `refactor` riêng.
+
+| Thư viện | Cũ → mới | Mức |
+|---|---|---|
+| | | |
+
 ## Phát sinh
 
 Do `04-implement` ghi khi gặp điều kế hoạch chưa lường. File ngoài "File dự

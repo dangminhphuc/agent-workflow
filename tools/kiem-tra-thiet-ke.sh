@@ -29,6 +29,13 @@ OQ="$DIR/open-questions.md"
 TDD="$DIR/tdd.md"
 PH="$DIR/phat-hien-thiet-ke.md"
 
+if [ "$(kc_loai "$DIR")" = "chore" ]; then
+  echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /plan."
+  echo ""
+  echo "KHÔNG ĐẠT."
+  exit 1
+fi
+
 for f in "$SPEC" "$OQ" "$TDD"; do
   [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
 done
