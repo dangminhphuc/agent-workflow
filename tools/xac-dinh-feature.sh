@@ -42,7 +42,8 @@ fi
 if [ -z "$ten" ]; then
   echo "KHÔNG XÁC ĐỊNH ĐƯỢC FEATURE." >&2
   echo "  Branch \"${branch:-?}\" không khớp mau_branch trong $ART/conventions.md, và không có tham số." >&2
-  echo "  Agent: DỪNG LẠI hỏi người dùng tên feature. Không tự đặt tên." >&2
+  echo "  Agent: làm theo Bước 0 của lệnh đang chạy — /intake: đề xuất branch bằng" >&2
+  echo "  tao-branch.sh cho người xác nhận; lệnh khác: DỪNG LẠI hỏi tên feature. Không tự đặt tên." >&2
   exit 3
 fi
 

@@ -29,6 +29,12 @@ Mỗi command sinh ra gồm ba phần:
    `/spec feat_tao-todo`) → không có thì trả mã 3 và command bảo agent dừng hỏi.
    Agent in `Đang làm với: …` rồi mới đọc/ghi trong `.agent-workflow/<tên-branch>/`.
    Logic nằm trong script chứ không trong prompt, để mọi adapter dùng chung.
+
+   Ngoại lệ: phase khai `arguments: input` (hiện chỉ `00-intake`). Khi đó tham số
+   lệnh là **input** (`/intake JIRA-123 …`), adapter **không** truyền nó vào
+   `xac-dinh-feature.sh`, và mã 3 dẫn tới bước đề xuất branch bằng `tao-branch.sh`
+   thay vì hỏi tên feature. Adapter từ chối build (mã 4) nếu `arguments` mang giá
+   trị khác `input`.
 2. **Hợp đồng phase** (đọc gì, ghi ra đâu, mẫu nào, checker LLM nào, điều kiện
    ra là lệnh gì) do adapter dựng từ frontmatter.
 3. **Mô tả phase** lấy nguyên văn từ thân file nguồn.

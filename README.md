@@ -130,6 +130,13 @@ Cách đọc:
 `00` chỉ **trỏ tới** tài liệu, không tóm tắt hay diễn giải BRD — nếu không nó
 thành một lớp diễn giải chen giữa tài liệu thật và spec.
 
+**Cách gọi:** `/intake JIRA-123 https://confluence/…` — tham số là **input**, không
+phải tên feature (các lệnh khác thì tham số là tên feature). Tên feature luôn lấy
+từ branch. Đang ở branch không khớp quy ước (vd `main`) thì agent chốt loại việc
+với bạn, đề xuất tên branch bằng `tools/tao-branch.sh <loại-việc> <mô-tả>` (tiền
+tố theo `loai_theo_tien_to`, vd `bugfix` + `phi-hoan-tien` → `fix_phi-hoan-tien`),
+bạn xác nhận rồi mới tạo branch.
+
 Xếp loại theo **thay đổi gì về hành vi**, không theo "xây cái gì":
 
 ```
@@ -324,7 +331,7 @@ Sinh ra trong repo đích:
     plan.md, ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf), review.md
 ```
 
-Rồi sửa `.agent-workflow/conventions.md`, tạo branch theo quy ước, mở Claude Code:
+Rồi sửa `.agent-workflow/conventions.md`, mở Claude Code (chưa có branch thì `/intake` đề xuất tạo):
 `/intake` → `/spec` → `/design` → `/plan` → `/implement` → `/review`.
 
 Cài lại sau khi sửa quy trình: chạy lại đúng lệnh trên. Adapter **từ chối ghi đè**
@@ -383,6 +390,7 @@ tools/
   kiem-tra-tai-hien.sh   bugfix: ghi bằng chứng test tái hiện đỏ trên code chưa sửa
   kiem-tra-hieu-nang.sh  perf: ghi số đo trước / sau
   doi-ten-feature.sh     đổi tên branch + dời thư mục artifact
+  tao-branch.sh          /intake: đề xuất / tạo branch theo loại việc
   cap-nhat-based-on.sh   ghi hash đầu vào vào frontmatter artifact
   chay-thu.sh            test hồi quy cho chính các cổng chặn
   lib/md.sh              đọc frontmatter (tập con YAML), conventions, hash

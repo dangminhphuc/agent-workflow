@@ -15,6 +15,7 @@ exit_human:
   - Người xác nhận LOẠI VIỆC (chọn sai loại là sai luật cả chuỗi phía sau)
   - Người xác nhận danh sách input, và lời mình được chép đúng nguyên văn
 needs_clean_context: true
+arguments: input
 ---
 
 # Phase 00 — Tiếp nhận
@@ -57,6 +58,28 @@ refactor), `hotfix` (= bugfix gấp), `security` (= bugfix/feature + rủi ro ca
 `spike` nằm ngoài quy trình — output của nó là kết luận, không phải code để merge.
 Việc vừa là loại này vừa là loại kia (vd refactor kèm sửa bug) thì **tách branch**:
 luật của hai loại xung đột nhau.
+
+## Tham số của lệnh là input
+
+`/intake JIRA-123 https://confluence/…` — tham số là **danh sách input**, không
+phải tên feature. Tên feature luôn lấy từ branch (xem mục dưới). Không có tham số
+thì hỏi người dùng input.
+
+## Branch chưa đúng quy ước
+
+Khi `xac-dinh-feature.sh` trả mã 3 (vd đang ở `main`), **không** hỏi tên feature
+tự do. Làm theo thứ tự:
+
+1. Đọc input, **chốt loại việc với người** (cây phân loại ở trên).
+2. Chọn một mô tả ngắn: chữ thường ASCII, số, dấu `-` (vd `phi-hoan-tien`).
+3. Chạy `tools/tao-branch.sh <loại-việc> <mô-tả>` — nó in **tên đề xuất** theo
+   `loai_theo_tien_to` (vd `fix_phi-hoan-tien`). Không tự ghép tiền tố.
+4. Hỏi người xác nhận tên đó. Người muốn tên khác thì đổi `<mô-tả>` và chạy lại.
+5. Người đồng ý rồi mới chạy lại với `--tao` để tạo và chuyển sang branch, rồi
+   chạy lại Bước 0.
+
+Tạo branch trước khi ghi `intake.md` để thư mục artifact mang đúng tên branch
+ngay từ đầu, và loại việc khớp tiền tố branch.
 
 ## Việc phải làm
 

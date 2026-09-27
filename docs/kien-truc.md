@@ -258,6 +258,7 @@ exit_human: [...]
 needs_clean_context: true   # phải chạy được từ phiên trắng
 requires_fresh_agent: true  # không được dùng chính phiên vừa làm việc trước đó
 llm_checker: workflow/checkers/thiet-ke.md   # có checker LLM; adapter từ chối build nếu file không có
+arguments: input            # tham số lệnh là input, không phải tên feature (chỉ 00-intake)
 ---
 ```
 

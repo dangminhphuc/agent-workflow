@@ -99,6 +99,11 @@ kiem_tra_nguon() {
     esac
   done < "$_tmp"
   rm -f "$_tmp"
+  _ar=$(fm_scalar "$_src" arguments)
+  case "$_ar" in
+    ""|input) ;;
+    *) echo "LỖI: $_file khai arguments \"$_ar\" — chỉ nhận \"input\" (bỏ trống = tên feature)." >&2; _bad=1 ;;
+  esac
   _lc=$(fm_scalar "$_src" llm_checker)
   if [ -n "$_lc" ] && [ ! -f "$ROOT/$_lc" ]; then
     echo "LỖI: $_file khai llm_checker \"$_lc\" nhưng không có file đó." >&2
@@ -135,10 +140,18 @@ mo_ta_output() {
 # giao dien chung giua cac adapter, nen no nam trong script, khong trong prompt.
 buoc_xac_dinh_feature() {
   printf '## Bước 0 — Xác định feature (luôn làm trước)\n\n'
-  printf 'Chạy `sh %s/tools/xac-dinh-feature.sh %s`.\n\n' "$QT" "$1"
-  printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
-  printf -- '- **Mã 3:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
-  printf -- '- **Mã 2:** tên không hợp lệ → báo lại cho người dùng.\n\n'
+  if [ "${2:-}" = "input" ]; then
+    # Tham so cua lenh la INPUT, khong phai ten feature: khong truyen vao script,
+    # neu khong "/intake JIRA-123" se tao thu muc artifact ten JIRA-123.
+    printf 'Chạy `sh %s/tools/xac-dinh-feature.sh` — **không** truyền tham số của lệnh: tham số là input, không phải tên feature.\n\n' "$QT"
+    printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
+    printf -- '- **Mã 3:** branch hiện tại không khớp quy ước → làm theo mục "Branch chưa đúng quy ước" trong mô tả phase: chốt loại việc với người, đề xuất tên branch bằng `tao-branch.sh`, người xác nhận rồi mới tạo. Sau đó chạy lại bước này.\n\n'
+  else
+    printf 'Chạy `sh %s/tools/xac-dinh-feature.sh %s`.\n\n' "$QT" "$1"
+    printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
+    printf -- '- **Mã 3:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
+    printf -- '- **Mã 2:** tên không hợp lệ → báo lại cho người dùng.\n\n'
+  fi
   printf 'Đường dẫn `tools/`, `templates/`, `rules/`, `checkers/` trong mô tả phase nằm trong `%s/`.\n\n' "$QT"
 }
 
@@ -152,13 +165,21 @@ sinh_command() {
   clean=$(fm_scalar "$src" needs_clean_context)
   fresh=$(fm_scalar "$src" requires_fresh_agent)
   lc=$(fm_scalar "$src" llm_checker)
+  args=$(fm_scalar "$src" arguments)
 
   printf -- '---\n'
   printf 'description: %s — %s\n' "$name" "$summary"
-  printf 'argument-hint: [tên-feature]\n'
+  if [ "$args" = "input" ]; then
+    printf 'argument-hint: [mã-issue | URL | đường-dẫn …]\n'
+  else
+    printf 'argument-hint: [tên-feature]\n'
+  fi
   printf -- '---\n\n'
   canh_bao "$file"
-  buoc_xac_dinh_feature '$ARGUMENTS'
+  if [ "$args" = "input" ]; then
+    printf 'Input người dùng truyền kèm lệnh: `$ARGUMENTS` — mỗi mục là một nguồn (mã issue Jira, URL Confluence, đường dẫn file). Trống thì hỏi người dùng.\n\n'
+  fi
+  buoc_xac_dinh_feature '$ARGUMENTS' "$args"
 
   printf '## Hợp đồng phase\n\n'
   if [ "$req" = "true" ]; then

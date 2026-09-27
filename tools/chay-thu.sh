@@ -567,6 +567,10 @@ tao_fake
 rm -f "$FAKE/workflow/checkers/thiet-ke.md"
 ky_vong 4 "từ chối build khi llm_checker trỏ tới file không tồn tại" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out4"
 
+tao_fake
+thay "$FAKE/workflow/phases/00-intake.md" 'arguments: input' 'arguments: gi-cung-duoc'
+ky_vong 4 "từ chối build khi arguments không phải \"input\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5"
+
 # ---------------------------------------------------------------- cai dat
 echo ""
 echo "tools/cai-dat.sh"
@@ -602,6 +606,26 @@ dung "branch khớp thì thắng tham số" test "$(sh "$XD" khac 2>/dev/null)" 
 dung "in 'Đang làm với:'" sh -c "sh '$XD' 2>&1 >/dev/null | grep -q 'Đang làm với: .agent-workflow/job-them-todo'"
 git -C "$R4" checkout -q main
 ky_vong 2 "từ chối tên feature có ../" sh "$XD" "../x"
+
+# ---------------------------------------------------------------- tao branch (/intake)
+echo ""
+echo "tao-branch.sh"
+TB="$QT4/tools/tao-branch.sh"
+cp "$ROOT/workflow/templates/conventions.md" "$R4/.agent-workflow/conventions.md"
+
+dung "đề xuất tên theo tiền tố của loại việc" test "$(sh "$TB" bugfix phi-hoan-tien 2>/dev/null)" = "fix_phi-hoan-tien"
+dung "…chỉ đề xuất, chưa tạo branch" test "$(git -C "$R4" rev-parse --abbrev-ref HEAD)" = "main"
+ky_vong 2 "từ chối loại việc không có tiền tố" sh "$TB" utils x
+ky_vong 2 "từ chối mô tả không phải chữ thường ASCII" sh "$TB" bugfix "Phi Hoan"
+ky_vong 0 "--tao thì tạo branch" sh "$TB" bugfix phi-hoan-tien --tao
+dung "…và xac-dinh-feature suy được feature từ branch mới" test "$(sh "$XD" 2>/dev/null)" = ".agent-workflow/fix_phi-hoan-tien"
+git -C "$R4" checkout -q main
+ky_vong 2 "từ chối khi branch đã tồn tại" sh "$TB" bugfix phi-hoan-tien --tao
+
+IN="$R4/.claude/commands/intake.md"
+dung "/intake: tham số là input, không truyền vào xac-dinh-feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'xac-dinh-feature.sh \$ARGUMENTS' '$IN'"
+dung "/intake: branch sai quy ước thì dẫn tới tao-branch.sh" grep -q 'tao-branch.sh' "$IN"
+dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'xac-dinh-feature.sh \$ARGUMENTS' "$R4/.claude/commands/spec.md"
 
 
 # ---------------------------------------------------------------- muc dich (00)
