@@ -591,6 +591,8 @@ sh "$T/cai-dat.sh" "$R4" --force >/dev/null 2>&1
 dung "KHÔNG ghi đè conventions.md, kể cả --force" grep -q 'của tôi' "$R4/.agent-workflow/conventions.md"
 
 ky_vong 2 "từ chối cài vào chính repo agent-workflow" sh "$T/cai-dat.sh" "$ROOT"
+ky_vong 2 "từ chối cài vào thư mục con của repo agent-workflow" sh "$T/cai-dat.sh" "$ROOT/adapters"
+ky_vong 2 "build.sh từ chối --out nằm trong repo agent-workflow" sh "$BUILD" --out "$ROOT/adapters"
 
 # ---------------------------------------------------------------- xac dinh feature
 echo ""

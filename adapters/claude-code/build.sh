@@ -27,6 +27,14 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -n "$OUT" ] || { echo "Thieu --out <thu-muc-repo-dich>" >&2; exit 2; }
+if [ -d "$OUT" ]; then
+  case "$(CDPATH= cd -- "$OUT" && pwd)/" in
+    "$ROOT"/*)
+      echo "LỖI: --out nằm trong repo agent-workflow ($OUT)." >&2
+      echo "      Sinh vào đây sẽ lẫn .claude/ vào mã nguồn; hãy trỏ tới repo đích." >&2
+      exit 2 ;;
+  esac
+fi
 
 # Khong ghi de file do NGUOI viet. File do adapter sinh ra deu mang dau
 # "SINH TU DONG"; file dich khong co dau do nghia la co nguoi da viet tay.

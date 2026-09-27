@@ -314,6 +314,11 @@ không có đường tắt nào bỏ qua cổng chặn.
 sh tools/cai-dat.sh /đường/dẫn/repo-của-bạn --lenh-kiem-thu "npm test"
 ```
 
+Repo đích phải nằm **ngoài** repo agent-workflow: cài vào chính repo này hay bất
+kỳ thư mục con nào (vd `adapters/`) đều bị từ chối (mã 2), vì `.claude/` và
+`.agent-workflow/` sinh ra sẽ lẫn vào mã nguồn — và Claude Code sẽ nhận nhầm
+chúng là lệnh/skill của chính repo này.
+
 Sinh ra trong repo đích:
 
 ```

@@ -9,6 +9,8 @@ sh adapters/claude-code/build.sh --out /đường/dẫn/repo-đích [--force]
 Thường bạn không gọi trực tiếp — `tools/cai-dat.sh` gọi nó sau khi đã chép bộ
 luật/mẫu/công cụ vào repo đích.
 
+`--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (mã 2).
+
 ## Biên dịch ra gì
 
 | Nguồn trung lập | Artifact Claude Code |
@@ -154,7 +156,8 @@ giá là đã đạt.
 
 ## Viết adapter mới
 
-1. Tạo `adapters/<id>/build.sh`, nhận `--out <thư-mục>`.
+1. Tạo `adapters/<id>/build.sh`, nhận `--out <thư-mục>`; từ chối `--out` nằm
+   trong repo agent-workflow (mã 2), như adapter Claude Code.
 2. `. "$ROOT/tools/lib/md.sh"` rồi dùng `wf_phases`, `fm_scalar`, `fm_list`, `md_body`.
 3. Đọc `workflow.yaml` lấy `artifact_dir`; giữ nguyên đường dẫn artifact
    `<artifact_dir>/<tên-branch>/` và thứ tự xác định feature (branch →

@@ -318,7 +318,8 @@ buộc này chỉ áp dụng cho *cấu hình*, không áp dụng cho repo đíc
    chối build nếu script không tồn tại.
 4. Nếu phase sinh artifact mới, thêm mẫu vào `workflow/templates/`.
 5. Thêm ca kiểm vào `tools/chay-thu.sh`.
-6. Chạy lại `sh tools/cai-dat.sh <repo-đích>`.
+6. Chạy lại `sh tools/cai-dat.sh <repo-đích>` — repo đích phải nằm ngoài repo
+   agent-workflow; đích là repo này hoặc thư mục con của nó sẽ bị từ chối.
 
 Không phase nào khác phải sửa — vì không phase nào biết gì về phase đứng sau nó.
 Đó là lý do `06-ship` thêm được sau mà không phải viết lại.

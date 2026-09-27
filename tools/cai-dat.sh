@@ -39,11 +39,14 @@ fi
 [ -d "$DICH" ] || { echo "LỖI: không tìm thấy thư mục $DICH" >&2; exit 2; }
 
 DICH=$(CDPATH= cd -- "$DICH" && pwd)
-if [ "$DICH" = "$ROOT" ]; then
-  echo "LỖI: không cài quy trình vào chính repo agent-workflow." >&2
-  echo "      Repo này là nguồn; repo đích mới là nơi tiêu thụ." >&2
-  exit 2
-fi
+# Chan ca thu muc CON cua repo nguon (vd adapters/), khong chi chinh no:
+# cai vao do se rai .agent-workflow/ va .claude/ lan vao ma nguon.
+case "$DICH/" in
+  "$ROOT"/*)
+    echo "LỖI: không cài quy trình vào repo agent-workflow hay thư mục con của nó." >&2
+    echo "      Repo này là nguồn; repo đích mới là nơi tiêu thụ." >&2
+    exit 2 ;;
+esac
 
 MANIFEST="$ROOT/workflow.yaml"
 ART=$(awk '/^artifact_dir:/ { sub(/^artifact_dir:[ \t]*/, ""); print; exit }' "$MANIFEST")
