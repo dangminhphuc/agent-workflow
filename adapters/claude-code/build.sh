@@ -163,6 +163,21 @@ buoc_xac_dinh_feature() {
   printf 'Đường dẫn `tools/`, `templates/`, `rules/`, `checkers/` trong mô tả phase nằm trong `%s/`.\n\n' "$QT"
 }
 
+# Buoc 0b cua /intake: tham so -> dong "## Input". Nhan do script gan, khong do
+# agent doan; nguyen van di qua heredoc co nhay de khong bi shell dien giai.
+buoc_phan_loai_input() {
+  printf '## Bước 0b — Phân loại tham số thành input\n\n'
+  printf 'Tham số của lệnh: `$ARGUMENTS`\n\n'
+  printf 'Bước này không cần thư mục feature: khi Bước 0 trả mã 3, chạy nó trước để có input mà chốt loại việc với người.\n\n'
+  printf '**Không tự gán nhãn.** Chạy đúng như dưới, giữ nguyên văn tham số (kể cả dấu nháy, xuống dòng). Thêm `--tru %s/intake.md` khi file đó **đã có** (chạy lại = gộp thêm, xem mục "Chạy lại" trong mô tả phase):\n\n' "$FD"
+  printf '```sh\nsh %s/tools/phan-loai-input.sh [--tru %s/intake.md] - <<'"'"'HET_INPUT'"'"'\n$ARGUMENTS\nHET_INPUT\n```\n\n' "$QT" "$FD"
+  printf 'Stdout là **đúng các dòng** ghi vào `## Input` — chép nguyên, không sửa. Theo mã thoát:\n\n'
+  printf -- '- **0:** các tham số đều là nguồn. Stdout rỗng = không có input mới.\n'
+  printf -- '- **4:** tham số là lời người dùng → stdout là một mục `[NGƯỜI-DÙNG]` nguyên văn. Nếu stderr có "Đề xuất tách thêm": hỏi người, chỉ ghi các dòng đó khi người đồng ý.\n'
+  printf -- '- **3:** không có tham số → hỏi người dùng input, rồi chạy lại lệnh trên với **nguyên văn câu trả lời**.\n'
+  printf -- '- **1:** có đường dẫn không tồn tại → hỏi lại người dùng. Không tự đoán đường dẫn.\n\n'
+}
+
 ten_agent_checker() { printf 'soat-%s' "$(basename "$1" .md)"; }
 
 sinh_command() {
@@ -184,10 +199,8 @@ sinh_command() {
   fi
   printf -- '---\n\n'
   canh_bao "$file"
-  if [ "$args" = "input" ]; then
-    printf 'Input người dùng truyền kèm lệnh: `$ARGUMENTS` — mỗi mục là một nguồn (mã issue Jira, URL Confluence, đường dẫn file). Trống thì hỏi người dùng.\n\n'
-  fi
   buoc_xac_dinh_feature '$ARGUMENTS' "$args"
+  [ "$args" = "input" ] && buoc_phan_loai_input
 
   printf '## Hợp đồng phase\n\n'
   if [ "$req" = "true" ]; then

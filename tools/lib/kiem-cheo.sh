@@ -134,6 +134,13 @@ kc_pham_vi() {
 
 LOAI_HOP_LE="feature bugfix refactor perf chore"
 
+# kc_mau_jira <conventions.md> -> regex (ERE, không dùng {n}: mawk không hỗ trợ)
+# của mã issue Jira. Repo cài từ trước chưa có khoá này -> mặc định.
+kc_mau_jira() {
+  _mj=$(conv_get "$1" mau_jira)
+  printf '%s\n' "${_mj:-[A-Z][A-Z0-9]*-[0-9]+}"
+}
+
 # kc_loai <thư-mục-feature> -> loại việc (rỗng nếu chưa có)
 kc_loai() {
   [ -f "$1/intake.md" ] || return 0

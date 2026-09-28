@@ -101,8 +101,9 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
 
 10. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
-    `intake.md` đổi sau đó (thêm input, đổi loại việc) thì spec thành lỗi thời —
-    cảnh báo ở các phase sau, `review` chặn.
+    `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì
+    spec thành lỗi thời — cảnh báo ở các phase sau, `review` chặn; phải chạy lại
+    phase này để đọc input mới.
 
 Khi một điểm mù được trả lời: ghi `Trả lời:`, đổi `Trạng thái` sang `đã trả lời`,
 **và** đổi nhãn nguồn của YC trong spec (vd `[FILE]` open-questions.md § YC-002).

@@ -62,8 +62,51 @@ luật của hai loại xung đột nhau.
 ## Tham số của lệnh là input
 
 `/intake JIRA-123 https://confluence/…` — tham số là **danh sách input**, không
-phải tên feature. Tên feature luôn lấy từ branch (xem mục dưới). Không có tham số
-thì hỏi người dùng input.
+phải tên feature. Tên feature luôn lấy từ branch (xem mục dưới).
+
+**Nhãn do máy gán.** Luôn chạy `tools/phan-loai-input.sh`, truyền nguyên văn tham
+số qua stdin (`-`), rồi chép **đúng stdout** vào `## Input`. Không tự gán nhãn,
+không sửa dòng nó in ra. Luật (mẫu khai trong `conventions.md`):
+
+| Token | Nhãn |
+|---|---|
+| Khớp `mau_jira`, hoặc URL `…/browse/<mã>` | `[JIRA]` |
+| URL khớp `mien_confluence` (chưa khai: mọi URL còn lại, có cảnh báo) | `[CONFLUENCE]` |
+| File có thật trong repo | `[FILE]` |
+| Trông như đường dẫn nhưng không có file | lỗi — mã 1 |
+| Còn lại | không nhận ra |
+
+**Lời người dùng.** Chỉ cần **một** token không nhận ra, **cả chuỗi** là lời
+người dùng: một mục `[NGƯỜI-DÙNG]` chép nguyên văn (mã 4). Tách từng từ sẽ biến
+một câu thành vài "input" rác và làm mất câu gốc. Nguồn nhận ra được nằm trong
+câu (vd `ABC-123` trong "sửa phí hoàn tiền ABC-123") chỉ là **đề xuất tách thêm**:
+hỏi người, người đồng ý mới ghi thành dòng riêng.
+
+| Mã thoát | Làm gì |
+|---|---|
+| 0 | Chép stdout (rỗng = không có input mới) |
+| 4 | Chép mục `[NGƯỜI-DÙNG]`; hỏi người về "đề xuất tách thêm" nếu có |
+| 3 | Không có tham số: hỏi người dùng, chạy lại script với **nguyên văn** câu trả lời |
+| 1 | Đường dẫn không tồn tại: hỏi lại, không tự đoán |
+
+## Chạy lại `/intake`
+
+Đã có `intake.md` thì chạy lại là **gộp thêm input**, không viết lại:
+
+1. Không tạo lại từ mẫu. **Giữ nguyên** `Loại việc` và `Mục tiêu`.
+2. Chạy `phan-loai-input.sh --tru <thư-mục-feature>/intake.md -` — nó bỏ các
+   input đã có (so theo định danh: `ABC-1` và `…/browse/ABC-1` là một nguồn).
+   **Thêm** stdout vào cuối `## Input`.
+3. Input mới làm loại việc có vẻ khác đi (vd thêm incident note vào việc
+   `feature`): **nêu ra cho người**, không tự sửa `Loại việc`. Người đổi loại
+   thì xác nhận lại như lần đầu (và đổi tên branch nếu lệch tiền tố).
+4. Chạy checker, dừng cho người xác nhận **các input mới**.
+
+Không có đường xoá input qua lệnh — muốn bỏ thì người sửa tay `intake.md`. Chỉ
+gộp thêm để agent không lặng lẽ làm mất một nguồn.
+
+`intake.md` đổi thì `spec.md` (ghi `based_on: intake.md`) thành **lỗi thời**:
+chạy lại `/spec` để đọc input mới. Các phase sau cảnh báo, `review` chặn nếu còn.
 
 ## Branch chưa đúng quy ước
 
@@ -89,10 +132,9 @@ ngay từ đầu, và loại việc khớp tiền tố branch.
    Loại người chốt lệch tiền tố branch thì **không có ngoại lệ**: sửa loại, hoặc
    đổi tên branch bằng `tools/doi-ten-feature.sh` (dời luôn thư mục artifact).
 
-2. **Ghi input.** Mỗi input một dòng trong mục `## Input`:
+2. **Ghi input** bằng `phan-loai-input.sh` (mục "Tham số của lệnh là input"):
    - tài liệu: `[CONFLUENCE]` / `[JIRA]` / `[FILE]` + định danh (URL, mã issue, đường dẫn);
-   - không có tài liệu: hỏi người dùng rồi ghi `[NGƯỜI-DÙNG]` và **chép nguyên văn**
-     câu trả lời ở dòng `>` bên dưới.
+   - lời người dùng: `[NGƯỜI-DÙNG]`, **chép nguyên văn** ở dòng `>` bên dưới.
 
 3. **Ghi mục tiêu** một câu.
 
@@ -110,7 +152,9 @@ ngay từ đầu, và loại việc khớp tiền tố branch.
 - **Tóm tắt, diễn giải hay trích yêu cầu từ tài liệu nguồn.** Chỉ trỏ tới nó.
   Viết lại BRD ở đây là tạo một lớp diễn giải chen giữa tài liệu thật và spec —
   và sai lệch của lớp đó sẽ được spec gắn nhãn như có nguồn đàng hoàng.
+- Tự gán nhãn input, hay sửa dòng `phan-loai-input.sh` in ra.
 - Ghi `[SUY-RA]` vào input, hay ghi lời người dùng mà không phải nguyên văn.
+- Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi `Loại việc`.
   Suy đoán của agent vào input thì mọi phase sau truy về nó như thể có nguồn.
 - Tự chốt loại việc thay người.
 - Chốt phạm vi hoặc giải pháp kỹ thuật.
@@ -119,7 +163,8 @@ ngay từ đầu, và loại việc khớp tiền tố branch.
 
 **Máy:**
 - `sh tools/kiem-tra-tiep-nhan.sh` trả về 0 — loại việc hợp lệ, có mục tiêu, có ít
-  nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn.
+  nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
+  `[JIRA]` có mã khớp `mau_jira`.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.
 
 **Người:**
