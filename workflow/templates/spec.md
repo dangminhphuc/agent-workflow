@@ -1,10 +1,15 @@
+---
+based_on: []
+---
+
 # Đặc tả — <TÊN TÍNH NĂNG>
 
 > Sinh bởi phase `01-spec`. Người sửa tay được; chạy lại phase sẽ cập nhật,
-> không ghi đè trắng.
+> không ghi đè trắng. `based_on` do `tools/cap-nhat-based-on.sh` ghi — không sửa tay.
 
 - **Mức rủi ro:** `<cao | thường>`
 - **Lý do:** <cao khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
+- **Trạng thái spec:** `đề xuất`   <!-- đề xuất | đã duyệt — CHỈ NGƯỜI đổi sang đã duyệt; sửa nội dung thì agent đặt lại đề xuất -->
 
 ## Nguồn
 
@@ -18,6 +23,9 @@
 <2–4 câu: vấn đề nghiệp vụ đang giải, cho ai.>
 
 ## Yêu cầu
+
+<!-- Nguồn, Loại YC, Được bảo vệ bởi, Mục tiêu phải nằm ngay dưới "### YC-NNN".
+Heading "###" khác (vd "### Ghi chú") đóng vùng YC; muốn chia nhỏ một YC thì dùng "####". -->
 
 ### YC-001 — <tiêu đề ngắn>
 

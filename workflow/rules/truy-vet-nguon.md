@@ -51,14 +51,22 @@ và là vi phạm nặng hơn việc bỏ trống nhãn, vì nó không kiểm �
 sh tools/kiem-tra-truy-vet.sh <thư-mục-artifact>
 ```
 
-Kiểm sáu điều:
+Kiểm tám điều:
 1. Mọi `### YC-NNN` trong `spec.md` có đúng một dòng `Nguồn:` với nhãn hợp lệ.
+   Vùng của một YC kết thúc ở heading `##` hoặc `###` kế tiếp — dòng `Nguồn:`
+   dưới `### Ghi chú` không được tính cho YC phía trên.
 2. Mọi mục gắn `[CẦN-HỎI]` có mục tương ứng cùng mã trong `open-questions.md`.
 3. Không có mã `YC-NNN` trùng nhau.
 4. Mục `[CẦN-HỎI]` trong `open-questions.md` có dòng "Giả định tạm" — không có thì phase sau không đi tiếp được.
 5. Mục `[CẦN-HỎI]` có `Mức ảnh hưởng: toàn bộ thiết kế | cục bộ`. Mục `toàn bộ
    thiết kế` còn `Trạng thái: mở` thì `kiem-tra-thiet-ke.sh` chặn vào design.
-6. `spec.md` có `Mức rủi ro: cao | thường`.
+6. `spec.md` có `Mức rủi ro: cao | thường` và `Trạng thái spec: đề xuất | đã duyệt`.
+7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
+   có thật; `Trạng thái` là `mở | đã trả lời`; `mở` thì spec phải còn `[CẦN-HỎI]`;
+   `đã trả lời` thì phải có dòng "Trả lời" và spec đã đổi nhãn nguồn.
+8. `open-questions.md` 0 byte là hợp lệ (đã rà, không có điểm mù).
 
 Điều thứ 2 quan trọng: không có nó thì agent chỉ cần gắn `[CẦN-HỎI]` là qua được
-kiểm tra mà chẳng phải hỏi ai.
+kiểm tra mà chẳng phải hỏi ai. Điều thứ 7 giữ cho hai file không lệch nhau khi
+điểm mù được trả lời — lệch thì `review` buộc "chờ xác nhận" cho một YC đã có
+câu trả lời, hoặc design chặn vì một mục mồ côi.

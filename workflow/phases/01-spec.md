@@ -17,6 +17,7 @@ exit_human:
   - Chủ repo duyệt danh sách yêu cầu và phần "Ngoài phạm vi"
   - Chủ repo duyệt nhãn "Mức ảnh hưởng" của từng [CẦN-HỎI]
   - Chủ repo duyệt "Mức rủi ro" (cao → design chạy Mode 2, người phác D-xx trước)
+  - Duyệt xong, chủ repo tự đổi "Trạng thái spec" sang "đã duyệt" — design (chore thì plan) chặn tới lúc đó
 needs_clean_context: true
 ---
 
@@ -96,6 +97,17 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    lõi, hoặc thay đổi khó đảo ngược; còn lại `thường`. Ghi lý do một dòng.
    Nhãn này quyết định `02-design` chạy Mode 1 hay Mode 2.
 
+9. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
+   phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
+
+10. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
+    `intake.md` đổi sau đó (thêm input, đổi loại việc) thì spec thành lỗi thời —
+    cảnh báo ở các phase sau, `review` chặn.
+
+Khi một điểm mù được trả lời: ghi `Trả lời:`, đổi `Trạng thái` sang `đã trả lời`,
+**và** đổi nhãn nguồn của YC trong spec (vd `[FILE]` open-questions.md § YC-002).
+Checker chặn nếu hai file lệch nhau.
+
 ## Đầu ra
 
 - `spec.md` — theo `templates/spec.md`
@@ -112,6 +124,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 - Tự chọn một cách hiểu cho chỗ mơ hồ rồi đi tiếp mà không ghi `[CẦN-HỎI]`.
 - Gắn `[SUY-RA]` cho một quyết định nghiệp vụ để né việc phải hỏi.
 - Hạ `Mức rủi ro` hoặc `Mức ảnh hưởng` xuống để khỏi bị chặn.
+- **Tự đổi `Trạng thái spec` sang `đã duyệt`.** Chỉ người làm việc này.
 - Viết code, kể cả code minh hoạ.
 
 ## Điều kiện ra
@@ -119,11 +132,14 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 **Máy:**
 - `sh tools/kiem-tra-truy-vet.sh` trả về 0 — mọi YC có đúng một nhãn nguồn hợp
   lệ; mọi `[CẦN-HỎI]` có mục trong `open-questions.md` với giả định tạm và mức
-  ảnh hưởng; spec có `Mức rủi ro` hợp lệ.
+  ảnh hưởng; trạng thái hai file khớp nhau; spec có `Mức rủi ro` và
+  `Trạng thái spec` hợp lệ.
 
 **Người:**
 - Duyệt yêu cầu và "Ngoài phạm vi" — chỗ hiểu lệch nhau nhiều nhất, máy không
   kiểm thay được.
 - Duyệt nhãn `Mức ảnh hưởng` và `Mức rủi ro` do agent đề xuất.
+- Đổi `Trạng thái spec` sang `đã duyệt`. `02-design` (chore: `03-plan`) chặn
+  cho tới lúc đó — gate người để lại dấu vết trong file, như D-xx.
 
 Mục `[CẦN-HỎI]` còn mở không được để `05-review` kết luận "đạt" cho YC đó.

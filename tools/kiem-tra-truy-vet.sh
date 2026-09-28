@@ -43,21 +43,25 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
 
   { sub(/\r$/, "") }
 
-  FNR==1 { idx++ }
+  # Theo tên file, không đếm FNR==1: file 0 byte không có dòng nào nên sẽ làm lệch thứ tự.
+  FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : 2 }
 
   # ---- File 1: open-questions.md ----
   idx==1 {
     if ($0 ~ /^##[ \t]+YC-[0-9]+/) {
       match($0, /YC-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
-      co_muc[cur_oq] = 1
+      co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "mở"
     }
     if (cur_oq != "" && $0 ~ /Giả định tạm/) co_gia_dinh[cur_oq] = 1
     if (cur_oq != "" && $0 ~ /Mức ảnh hưởng[^:]*:/) muc_ah[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /Trạng thái[^:]*:/)    tt_oq[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /Trả lời[^:]*:/) { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) tra_loi[cur_oq] = 1 }
     next
   }
 
   # ---- File 2: spec.md ----
   rui_ro == "" && $0 ~ /Mức rủi ro[^:]*:/ { rui_ro = gia_tri($0); co_rui_ro = 1 }
+  tt_spec == "" && $0 ~ /Trạng thái spec[^:]*:/ { tt_spec = gia_tri($0); co_tt_spec = 1 }
 
   $0 ~ /^###[ \t]+YC-[0-9]+/ {
     match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
@@ -67,6 +71,9 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
     so_nguon[cur] = 0
     next
   }
+  # Heading "###" khác (vd "### Ghi chú") cũng đóng vùng YC — nếu không, dòng Nguồn
+  # nằm dưới nó bị tính cho YC phía trên. "####" trở xuống vẫn thuộc YC.
+  $0 ~ /^###[ \t]/ { cur = ""; next }
   # Heading cấp 2 kết thúc vùng yêu cầu (ví dụ "## Ngoài phạm vi")
   $0 ~ /^##[ \t]/ { cur = ""; sec = ($0 ~ /^##[ \t]+Tái hiện lỗi/) ? "th" : ""; if (sec == "th") co_th = 1; next }
 
@@ -103,6 +110,12 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       loi("spec.md thiếu dòng \"Mức rủi ro:\" (cao | thường). `design` cần nó để biết có phải chạy Mode 2.")
     else if (rui_ro != "cao" && rui_ro != "thường")
       loi("\"Mức rủi ro: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: cao | thường")
+
+    # Người duyệt spec bằng cách đổi dòng này; design (và plan của chore) chặn khi chưa duyệt.
+    if (!co_tt_spec)
+      loi("spec.md thiếu dòng \"Trạng thái spec:\" (đề xuất | đã duyệt). Agent ghi \"đề xuất\"; chỉ người đổi sang \"đã duyệt\".")
+    else if (tt_spec != "đề xuất" && tt_spec != "đã duyệt")
+      loi("\"Trạng thái spec: " tt_spec "\" không hợp lệ. Chỉ chấp nhận: đề xuất | đã duyệt")
 
     if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### YC-NNN\")")
 
@@ -142,6 +155,27 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       dem_nhan[t]++
     }
 
+    # ---- open-questions.md phải khớp spec.md ----
+    for (i = 1; i <= n_oq; i++) {
+      q = ds_oq[i]; s = tt_oq[q]
+      if (!(q in da_gap)) {
+        loi("open-questions.md có mục \"## " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
+        continue
+      }
+      if (s != "mở" && s != "đã trả lời") {
+        loi(q ": \"Trạng thái: " s "\" trong open-questions.md không hợp lệ. Chỉ chấp nhận: mở | đã trả lời")
+        continue
+      }
+      if (s == "đã trả lời" && !(q in tra_loi))
+        loi(q ": điểm mù ghi \"đã trả lời\" nhưng dòng \"Trả lời:\" còn trống.")
+      else if (s == "đã trả lời" && nhan[q] == "CẦN-HỎI")
+        loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [CẦN-HỎI]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
+            "(vd `[FILE]` open-questions.md § " q ").")
+      else if (s == "mở" && so_nguon[q] == 1 && nhan[q] != "CẦN-HỎI")
+        loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng điểm mù trong open-questions.md vẫn \"mở\". " \
+            "Hoặc ghi câu trả lời và đổi sang \"đã trả lời\", hoặc trả nhãn về [CẦN-HỎI].")
+    }
+
     # ---- luật theo loại việc ----
     if (loai == "bugfix") {
       if (!co_th) loi("bugfix: spec thiếu mục \"## Tái hiện lỗi\" (Cách tái hiện, Hành vi sai, Hành vi đúng)")
@@ -166,7 +200,8 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
     }
 
     print ""
-    print "Tổng: " n " yêu cầu — Loại việc: " (loai == "" ? "?" : loai) " — Mức rủi ro: " (co_rui_ro ? rui_ro : "?")
+    print "Tổng: " n " yêu cầu — Loại việc: " (loai == "" ? "?" : loai) " — Mức rủi ro: " (co_rui_ro ? rui_ro : "?") \
+          " — Trạng thái spec: " (co_tt_spec ? tt_spec : "?")
     for (t in dem_nhan) printf "  [%s] %d\n", t, dem_nhan[t]
     if (n_loi > 0) exit 1
   }
