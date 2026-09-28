@@ -10,6 +10,7 @@
 #     Input chỉ nhận tài liệu có định danh hoặc lời người dùng CHÉP NGUYÊN VĂN —
 #     suy đoán của agent mà vào đây thì mọi phase sau sẽ truy về nó như có nguồn.
 #   - [NGƯỜI-DÙNG] không kèm nguyên văn.
+#   - [JIRA] mà định danh không có mã khớp mau_jira (conventions.md).
 # Cảnh báo (review chặn): loại việc lệch tiền tố branch.
 #
 # Mã thoát: 0 = đạt, 1 = có vi phạm, 2 = thiếu file.
@@ -22,7 +23,9 @@ DIR="${1:-.}"
 MD="$DIR/intake.md"
 [ -f "$MD" ] || { echo "LỖI: không tìm thấy $MD — chạy /intake trước" >&2; exit 2; }
 
-awk -v loai_hl="$LOAI_HOP_LE" '
+MJ=$(kc_mau_jira "$(kc_conventions "$DIR")")
+
+awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function gia_tri(s) {
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
@@ -53,6 +56,7 @@ awk -v loai_hl="$LOAI_HOP_LE" '
     else if (t != "NGƯỜI-DÙNG" && rest == "") loi("Input #" n_in ": [" t "] thiếu định danh (URL, mã issue, đường dẫn)")
     # Chỗ giữ chỗ còn sót (vd dòng mẫu chưa sửa) — nếu lọt, spec sẽ truy về một nguồn không có thật
     else if (t != "NGƯỜI-DÙNG" && (rest ~ /<[^>]*>/ || rest ~ /\((URL|https?:\/\/…)\)/)) loi("Input #" n_in ": [" t "] còn chỗ giữ chỗ chưa điền — " rest)
+    else if (t == "JIRA" && rest !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)")) loi("Input #" n_in ": [JIRA] không có mã issue khớp mau_jira (" mj ") — " rest)
     dem[t]++
     next
   }

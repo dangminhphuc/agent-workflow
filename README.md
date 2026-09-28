@@ -137,6 +137,14 @@ với bạn, đề xuất tên branch bằng `tools/tao-branch.sh <loại-việc
 tố theo `loai_theo_tien_to`, vd `bugfix` + `phi-hoan-tien` → `fix_phi-hoan-tien`),
 bạn xác nhận rồi mới tạo branch.
 
+Nhãn input do **máy** gán: `tools/phan-loai-input.sh` nhận mã Jira (`mau_jira`),
+URL Confluence (`mien_confluence`), file có thật trong repo. Chỉ cần một từ không
+nhận ra thì **cả chuỗi** là lời người dùng, chép nguyên văn thành một mục
+`[NGƯỜI-DÙNG]` — vd `/intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
+câu chỉ là đề xuất tách thêm, bạn đồng ý mới thành input riêng. Chạy lại `/intake`
+trên branch đã có `intake.md` thì **gộp thêm** input mới (bỏ trùng), giữ nguyên
+loại việc; `spec.md` khi đó thành lỗi thời và phải chạy lại `/spec`.
+
 Xếp loại theo **thay đổi gì về hành vi**, không theo "xây cái gì":
 
 ```
@@ -278,7 +286,7 @@ based_on:
 ```
 
 Hash do máy ghi (`tools/cap-nhat-based-on.sh`, dùng `cksum`, bỏ `\r`), không để
-agent tự chép. `tdd.md` dựa trên `spec.md` + `open-questions.md`; `plan.md` dựa
+agent tự chép. `spec.md` dựa trên `intake.md`; `tdd.md` dựa trên `spec.md` + `open-questions.md`; `plan.md` dựa
 trên `spec.md` + `tdd.md`. Lệch hash chỉ **cảnh báo** ở các phase sau; `review`
 chặn nếu còn artifact lỗi thời.
 
@@ -396,6 +404,7 @@ tools/
   kiem-tra-hieu-nang.sh  perf: ghi số đo trước / sau
   doi-ten-feature.sh     đổi tên branch + dời thư mục artifact
   tao-branch.sh          /intake: đề xuất / tạo branch theo loại việc
+  phan-loai-input.sh     /intake: tham số → dòng "## Input" (nhãn do máy gán, gộp khi chạy lại)
   cap-nhat-based-on.sh   ghi hash đầu vào vào frontmatter artifact
   chay-thu.sh            test hồi quy cho chính các cổng chặn
   lib/md.sh              đọc frontmatter (tập con YAML), conventions, hash

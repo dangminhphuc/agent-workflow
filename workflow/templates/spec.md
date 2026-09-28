@@ -1,7 +1,12 @@
+---
+based_on: []
+---
+
 # Đặc tả — <TÊN TÍNH NĂNG>
 
 > Sinh bởi phase `01-spec`. Người sửa tay được; chạy lại phase sẽ cập nhật,
 > không ghi đè trắng.
+> `based_on` do `tools/cap-nhat-based-on.sh` ghi — không sửa tay.
 
 - **Mức rủi ro:** `<cao | thường>`
 - **Lý do:** <cao khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>

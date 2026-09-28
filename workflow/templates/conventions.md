@@ -17,6 +17,8 @@ mau_file_test: *.test.* *.spec.* *_test.* test/* tests/*
 the_covers: covers:
 mau_code_production: src/*
 mau_file_dependency: package.json package-lock.json yarn.lock pnpm-lock.yaml
+mau_jira: [A-Z][A-Z0-9]*-[0-9]+
+mien_confluence:
 ```
 
 | Khoá | Dùng cho |
@@ -29,6 +31,8 @@ mau_file_dependency: package.json package-lock.json yarn.lock pnpm-lock.yaml
 | `loai_theo_tien_to` | Tiền tố branch → loại việc. `/intake` dùng để gợi ý; loại trong `intake.md` lệch tiền tố thì cảnh báo, `review` chặn |
 | `mau_code_production` | Code chạy trên production. `chore` đụng vào là chặn; `bugfix`/`perf` đo "trước" thì chưa được đụng |
 | `mau_file_dependency` | Manifest/lockfile. `chore` đụng vào thì `plan.md` phải có bảng "Nâng dependency" |
+| `mau_jira` | Regex (ERE, không dùng `{n}`) của mã issue Jira. `phan-loai-input.sh` dùng để nhận `[JIRA]` trong tham số `/intake`; `kiem-tra-tiep-nhan.sh` chặn dòng `[JIRA]` không có mã khớp |
+| `mien_confluence` | Mẫu glob `miền[/đường-dẫn]` của Confluence, vd `wiki.cong-ty.vn *.atlassian.net/wiki`. URL khớp → `[CONFLUENCE]`. Bỏ trống: mọi URL không phải Jira đều là `[CONFLUENCE]` (có cảnh báo) |
 
 ## Phần người đọc
 

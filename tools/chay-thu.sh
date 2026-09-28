@@ -628,6 +628,76 @@ IN="$R4/.claude/commands/intake.md"
 dung "/intake: tham số là input, không truyền vào xac-dinh-feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'xac-dinh-feature.sh \$ARGUMENTS' '$IN'"
 dung "/intake: branch sai quy ước thì dẫn tới tao-branch.sh" grep -q 'tao-branch.sh' "$IN"
 dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'xac-dinh-feature.sh \$ARGUMENTS' "$R4/.claude/commands/spec.md"
+dung "/intake: tham số đi qua phan-loai-input.sh bằng heredoc nguyên văn" sh -c "grep -q 'phan-loai-input.sh .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
+
+# ---------------------------------------------------------------- phan loai input (/intake)
+echo ""
+echo "phan-loai-input.sh"
+PL="$QT4/tools/phan-loai-input.sh"
+mkdir -p "$R4/docs"; printf 'x\n' > "$R4/docs/a.md"
+# ra <tham-số...> -> stdout của script (bỏ stderr); ma <tham-số...> -> mã thoát
+ra() { sh "$PL" "$@" 2>/dev/null; }
+loi() { sh "$PL" "$@" 2>&1 >/dev/null; }
+bang() { test "$1" = "$2"; }
+BT='`'
+
+ky_vong 0 "mã Jira + file có thật → nguồn" sh "$PL" "ABC-123 docs/a.md"
+dung "…đúng nhãn [JIRA] và [FILE]" bang "$(ra 'ABC-123 docs/a.md')" "- ${BT}[JIRA]${BT} ABC-123
+- ${BT}[FILE]${BT} docs/a.md"
+dung "URL …/browse/<mã> → [JIRA] với mã tách ra" bang "$(ra 'https://x.atlassian.net/browse/ABC-9')" "- ${BT}[JIRA]${BT} ABC-9 — https://x.atlassian.net/browse/ABC-9"
+dung "chưa khai mien_confluence: URL khác → [CONFLUENCE]" bang "$(ra 'https://wiki.co/p/1')" "- ${BT}[CONFLUENCE]${BT} https://wiki.co/p/1"
+dung "…kèm cảnh báo chưa khai mien_confluence" sh -c "sh '$PL' 'https://wiki.co/p/1' 2>&1 >/dev/null | grep -q mien_confluence"
+dung "bỏ dấu câu / ngoặc bọc ngoài: (ABC-1), \`docs/a.md\`" bang "$(ra '(ABC-1), `docs/a.md`.')" "- ${BT}[JIRA]${BT} ABC-1
+- ${BT}[FILE]${BT} docs/a.md"
+dung "cùng một nguồn gõ nhiều cách → một dòng" bang "$(ra 'ABC-1 ABC-1 https://x.atlassian.net/browse/ABC-1' | wc -l | tr -d ' ')" 1
+ky_vong 1 "đường dẫn không tồn tại → mã 1 (không tự đoán)" sh "$PL" "ABC-1 docs/khong-co.md"
+dung "…và không in dòng input nào" test -z "$(ra 'ABC-1 docs/khong-co.md')"
+ky_vong 3 "không có tham số → mã 3 (hỏi người dùng)" sh "$PL" ""
+ky_vong 3 "tham số chỉ có khoảng trắng / dòng trống → mã 3" sh "$PL" "
+  "
+ky_vong 4 "câu chữ tự do → mã 4" sh "$PL" "sửa phí hoàn tiền bị âm ABC-123"
+dung "…cả chuỗi là MỘT mục [NGƯỜI-DÙNG] nguyên văn" bang "$(ra 'sửa phí hoàn tiền bị âm ABC-123')" "- ${BT}[NGƯỜI-DÙNG]${BT}
+  > sửa phí hoàn tiền bị âm ABC-123"
+dung "…mã Jira trong câu chỉ là ĐỀ XUẤT (stderr)" sh -c "sh '$PL' 'sửa phí hoàn tiền bị âm ABC-123' 2>&1 >/dev/null | grep -A3 'Đề xuất tách thêm' | grep -q 'ABC-123'"
+ky_vong 4 "đường dẫn không có file nằm trong câu chữ thì không chặn" sh "$PL" "sửa lỗi trong src/khong-co.js"
+
+cp "$R4/.agent-workflow/conventions.md" "$TMP/conv.bak"
+sed 's#^mien_confluence:.*#mien_confluence: *.atlassian.net/wiki#' "$TMP/conv.bak" > "$R4/.agent-workflow/conventions.md"
+dung "khai mien_confluence: URL khớp → [CONFLUENCE]" bang "$(ra 'https://x.atlassian.net/wiki/spaces/A/pages/1')" "- ${BT}[CONFLUENCE]${BT} https://x.atlassian.net/wiki/spaces/A/pages/1"
+ky_vong 4 "khai mien_confluence: URL lạ → lời người dùng" sh "$PL" "https://github.com/a/b"
+printf '%s\n' '```conventions' 'mau_branch: feat_*' '```' > "$R4/.agent-workflow/conventions.md"
+ky_vong 0 "conventions.md cũ chưa có mau_jira → dùng mặc định" sh "$PL" "ABC-1"
+cp "$TMP/conv.bak" "$R4/.agent-workflow/conventions.md"
+
+# nguyen van qua stdin: dau nhay, $, backtick, nhieu dong khong bi shell dien giai
+sh "$PL" - > "$TMP/nv.out" 2>/dev/null <<'HET_INPUT'
+
+Sửa "phí" khi $amount < 0 — xem `x`
+dòng hai
+HET_INPUT
+dung "stdin: nguyên văn giữ dấu nháy, \$, backtick, nhiều dòng" bang "$(cat "$TMP/nv.out")" "- ${BT}[NGƯỜI-DÙNG]${BT}
+  > Sửa \"phí\" khi \$amount < 0 — xem ${BT}x${BT}
+  > dòng hai"
+
+# --tru: chay lai /intake = gop them
+cat > "$TMP/intake-cu.md" <<'HET'
+- **Loại việc:** `feature`
+- **Mục tiêu:** x
+
+## Input
+
+- `[JIRA]` [ABC-123](https://x.atlassian.net/browse/ABC-123)
+- `[FILE]` ./docs/a.md
+- `[NGƯỜI-DÙNG]`
+  > sửa phí   hoàn tiền
+  > bị âm
+HET
+dung "--tru: bỏ input đã có, chỉ in input mới" bang "$(ra --tru "$TMP/intake-cu.md" 'ABC-123 docs/a.md ABC-7')" "- ${BT}[JIRA]${BT} ABC-7"
+ky_vong 0 "--tru: không có gì mới vẫn là mã 0" sh "$PL" --tru "$TMP/intake-cu.md" "https://x.atlassian.net/browse/ABC-123"
+dung "…URL …/browse/ABC-123 trùng với ABC-123 đã có → stdout rỗng" test -z "$(ra --tru "$TMP/intake-cu.md" 'https://x.atlassian.net/browse/ABC-123')"
+dung "--tru: lời người dùng đã có (khác khoảng trắng / xuống dòng) → bỏ" test -z "$(ra --tru "$TMP/intake-cu.md" 'sửa phí hoàn tiền bị âm')"
+dung "--tru: lời người dùng mới thì vẫn in" bang "$(ra --tru "$TMP/intake-cu.md" 'thêm xuất CSV' | tail -1)" "  > thêm xuất CSV"
+ky_vong 2 "--tru trỏ tới file không có → mã 2" sh "$PL" --tru "$TMP/khong-co.md" "ABC-1"
 
 
 # ---------------------------------------------------------------- muc dich (00)
@@ -674,6 +744,21 @@ thay "$F/intake.md" '  > <chép nguyên văn lời người dùng>' '  > cần l
 ky_vong 1 "chặn dòng input mẫu chưa sửa (nguồn giả)" sh "$CHK" "$F"
 dung "…đúng lý do: chỗ giữ chỗ" sh -c "sh '$CHK' '$F' | grep -q 'chỗ giữ chỗ'"
 viet_intake
+
+thay "$F/intake.md" '`[JIRA]` ABC-1' '`[JIRA]` abc'
+ky_vong 1 "chặn [JIRA] không có mã khớp mau_jira" sh "$CHK" "$F"
+viet_intake
+thay "$F/intake.md" '`[JIRA]` ABC-1' '`[JIRA]` [ABC-1](https://x.atlassian.net/browse/ABC-1)'
+ky_vong 0 "[JIRA] dạng link markdown có mã thì cho qua" sh "$CHK" "$F"
+viet_intake
+
+# spec ghi based_on intake.md: gop them input -> spec loi thoi, review chan
+sh "$T/cap-nhat-based-on.sh" "$F" spec.md intake.md >/dev/null
+ky_vong 0 "spec ghi based_on intake.md vẫn qua kiem-tra-truy-vet" sh "$T/kiem-tra-truy-vet.sh" "$F"
+printf -- '- `[JIRA]` ABC-2\n' >> "$F/intake.md"
+ky_vong 1 "gộp thêm input sau khi có spec → review chặn (spec lỗi thời)" sh "$T/kiem-tra-ra-soat.sh" "$F"
+dung "…đúng lý do: spec.md lỗi thời vì intake.md" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'spec.md: lỗi thời — intake.md'"
+viet_intake; viet_spec
 
 thay "$F/intake.md" '`feature`' '`chore`'
 ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /intake" sh "$CHK" "$F"

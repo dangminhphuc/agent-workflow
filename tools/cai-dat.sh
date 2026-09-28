@@ -69,7 +69,7 @@ cp "$ROOT"/workflow/rules/*.md      "$QT/rules/"
 cp "$ROOT"/workflow/templates/*.md  "$QT/templates/"
 cp "$ROOT"/workflow/checkers/*.md   "$QT/checkers/"
 cp "$ROOT"/tools/kiem-tra-*.sh "$ROOT"/tools/xac-dinh-feature.sh "$ROOT"/tools/cap-nhat-based-on.sh \
-   "$ROOT"/tools/doi-ten-feature.sh "$ROOT"/tools/tao-branch.sh "$QT/tools/"
+   "$ROOT"/tools/doi-ten-feature.sh "$ROOT"/tools/tao-branch.sh "$ROOT"/tools/phan-loai-input.sh "$QT/tools/"
 cp "$ROOT"/tools/lib/*.sh           "$QT/tools/lib/"
 chmod +x "$QT"/tools/*.sh 2>/dev/null || true
 echo "  chép    $ART/.quy-trinh/{rules,templates,checkers,tools}"

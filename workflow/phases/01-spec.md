@@ -96,6 +96,10 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    lõi, hoặc thay đổi khó đảo ngược; còn lại `thường`. Ghi lý do một dòng.
    Nhãn này quyết định `02-design` chạy Mode 1 hay Mode 2.
 
+9. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
+   `/intake` chạy lại (gộp thêm input) thì `spec.md` thành lỗi thời — phải chạy
+   lại phase này để đọc input mới.
+
 ## Đầu ra
 
 - `spec.md` — theo `templates/spec.md`
