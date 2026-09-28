@@ -62,7 +62,9 @@ kc_test_yc() {
 
   awk -v tag="$_tag" '
     { sub(/\r$/, "") }
-    FNR==1 { idx++; sect="" }
+    # Theo tên file: khi chưa test nào gắn tag, file đầu 0 byte — đếm FNR==1 sẽ
+    # đọc spec.md như file test và kiểm chéo im lặng đúng lúc tệ nhất.
+    FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : 3; sect="" }
     idx==1 {                                   # dòng chứa tag trong file test
       s=$0; i=index(s, tag); if (i==0) next
       s=substr(s, i + length(tag))
@@ -142,6 +144,20 @@ kc_loai() {
       gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
     }
   ' "$1/intake.md"
+}
+
+# kc_spec_chua_duyet <thư-mục-feature> -> in lý do nếu spec.md chưa được NGƯỜI duyệt
+# ("Trạng thái spec: đã duyệt"). Dùng làm cổng vào phase ngay sau spec.
+kc_spec_chua_duyet() {
+  [ -f "$1/spec.md" ] || return 0
+  _tt=$(awk '
+    { sub(/\r$/, "") }
+    /Trạng thái spec[^:]*:/ {
+      s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
+      gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
+    }
+  ' "$1/spec.md")
+  [ "$_tt" = "đã duyệt" ] || echo "spec.md chưa được người duyệt (Trạng thái spec: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
 }
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }

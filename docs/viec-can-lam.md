@@ -1,73 +1,43 @@
-# Việc cần làm — sửa checker (chưa làm)
+# Việc cần làm — phase 01-spec
 
-> Ghi chú tạm. Xoá file này khi cả ba mục đã xong.
-> Nguồn: chạy thử lỗ hổng của `kiem-tra-truy-vet.sh` ngày 2026-09-28.
+> Ghi chú tạm. Xoá file này khi các mục dưới đã xong hoặc đã quyết định bỏ.
 
-Đã chốt: làm **cả 3 mục**. Mỗi mục: viết ca kiểm trong `tools/chay-thu.sh`
-trước, chạy trên code cũ thấy **đỏ**, rồi mới sửa; cuối cùng `sh tools/chay-thu.sh`
-xanh toàn bộ.
+## Đã làm (2026-09-28)
 
-## 1. YC không có `Nguồn:` vẫn qua spec (heading `###` phụ)
+- YC không có `Nguồn:` lọt qua khi có heading `###` phụ bên dưới.
+- `open-questions.md` 0 byte làm lệch thứ tự file (spec, design; review đồng bộ).
+- Kiểm chéo test ↔ YC im lặng khi chưa test nào gắn `covers:` (`kiem-cheo.sh`).
+- `spec.md` ghi `based_on: intake.md` → đổi intake sau khi viết spec thì review chặn.
+- `Trạng thái spec: đề xuất | đã duyệt` — design (chore: plan) chặn khi chưa duyệt.
+- Đối chiếu hai chiều `open-questions.md` ↔ `spec.md` (mục mồ côi, trạng thái lệch,
+  đã trả lời mà trống "Trả lời").
 
-- **Chỗ:** `tools/kiem-tra-truy-vet.sh:62-71` — chỉ `##` đóng vùng YC.
-- **Tái hiện (đã chạy, ĐẠT sai):**
-  ```md
-  ### YC-001 — x
-  - Mô tả: x
+## Còn lại
 
-  ### Ghi chú về nguồn
-  - Nguồn: `[JIRA]` ABC-9
-  ```
-  Biến thể: YC-001 có `Nguồn:` và `### Ghi chú` cũng có `Nguồn:` → báo oan
-  "có 2 dòng Nguồn".
-- **Sửa:** mọi heading `###` không phải `### YC-NNN` cũng đặt `cur = ""`.
-  `####` trở xuống vẫn thuộc YC.
-- **Kèm:** ghi quy ước vào `workflow/templates/spec.md` — `Nguồn`, `Loại YC`,
-  `Được bảo vệ bởi`, `Mục tiêu` phải nằm ngay dưới `### YC-NNN`, không dưới
-  `###` phụ.
-- **Rủi ro:** spec cũ đặt các dòng đó dưới `###` phụ sẽ chuyển sang không đạt.
+### 4. Lưu câu trích nguyên văn cho mỗi YC — cần chốt định dạng trước
 
-## 2. `open-questions.md` 0 byte làm lệch thứ tự file
+Bước 2 của phase ("trích nguyên văn") không để lại dấu vết: mẫu spec không có chỗ
+ghi câu trích. Đề xuất thêm `- Trích: > "…"` dưới mỗi YC.
 
-- **Chỗ:** `tools/kiem-tra-truy-vet.sh:46` (`FNR==1 { idx++ }`) — file rỗng không
-  có dòng nào nên không tăng `idx`; `spec.md` bị đọc như OQ.
-- **Tái hiện (đã chạy):** OQ `: > open-questions.md` + spec hợp lệ → báo
-  "thiếu Mức rủi ro", "không có YC nào". OQ chỉ chứa `\n` thì ĐẠT.
-- **Sửa:** xác định file theo tên, như `kiem-tra-ke-hoach.sh:63`:
-  `FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : 2 }`
-- **Bắt buộc sửa kèm** `tools/kiem-tra-thiet-ke.sh:74` (thứ tự
-  `SPEC OQ TDD PHF`) — không thì OQ rỗng qua spec rồi lại làm design đọc
-  `tdd.md` như OQ và chặn oan.
-- Đồng bộ luôn `tools/kiem-tra-ra-soat.sh:67` (không phải lỗi thật: file đầu là
-  `spec.md`, rỗng đã bị chặn trước).
+- Người duyệt so YC với câu gốc ngay trong spec.
+- Nguồn `[FILE]` (kể cả `[NGƯỜI-DÙNG]` nằm trong `intake.md`): máy kiểm được câu
+  trích có thật trong file nguồn bằng `grep -F` → thu hẹp điểm yếu 3 trong
+  `docs/kien-truc.md`. Confluence/Jira: chỉ giúp người đọc.
+- Cần quyết: bắt buộc hay tuỳ chọn; một hay nhiều câu trích; chuẩn hoá khoảng
+  trắng/xuống dòng khi so khớp thế nào.
 
-## 3. Kiểm chéo test ↔ YC im lặng khi chưa có test nào gắn `covers:`
+### 5. Phiên bản của nguồn ngoài
 
-- **Chỗ:** `tools/lib/kiem-cheo.sh:63-88`, awk đọc `"$_ds" spec.md plan.md` với
-  `FNR==1 { idx++ }`. `$_ds` rỗng khi không test nào có tag → `spec.md` thành
-  idx 1 → danh sách YC rỗng → **không cảnh báo gì**.
-- **Trạng thái:** suy ra từ code, **chưa chạy tái hiện** — việc đầu tiên là viết
-  ca kiểm chứng minh nó.
-- **Sửa:** cùng cách mục 2 (theo `FILENAME`/`ARGV`).
-- **Tác động:** `implement` xuất hiện cảnh báo mới, `review` chặn mới — đúng ý
-  thiết kế, nhưng feature trước giờ "sạch" có thể đột nhiên bị chặn.
+Bảng nguồn chỉ có "Ngày đọc". Ghi thêm version page Confluence / `updated` của
+issue Jira (MCP Atlassian trả về sẵn) để biết spec dựa trên bản nào.
 
-## Tác động theo phase
+### 6. Gợi ý nhãn `Mức rủi ro` bằng từ khoá
 
-| Phase | Mục 1 | Mục 2 | Mục 3 |
-|---|---|---|---|
-| intake | — | — | — |
-| spec | chặt hơn | chấp nhận OQ 0 byte (đúng tài liệu) | — |
-| design | gián tiếp (entry check) | phải sửa kèm | — |
-| plan | gián tiếp | gián tiếp | — |
-| implement | — | — | cảnh báo mới |
-| review | gián tiếp | gián tiếp | chặn mới |
+Khoá mới `tu_khoa_rui_ro_cao` trong `conventions.md`; spec ghi `thường` mà chứa
+từ khoá thì **cảnh báo** (không chặn — từ khoá hay báo nhầm).
 
-Repo đích nhận bản sửa bằng cách chạy lại `tools/cai-dat.sh`.
+## Ngoài phạm vi (luật mới, cần quyết định độ chặt)
 
-## Ngoài phạm vi (luật mới, tách việc riêng)
-
-Checker hiện **cho qua** các ca sau (đã chạy): `Nguồn: [JIRA]` không mã issue;
-`[SUY-RA]` không lý do; nguồn không có trong `intake.md`; spec thiếu "Ngoài phạm
-vi"/"Tiêu chí chấp nhận"/bảng mâu thuẫn; mục mồ côi trong OQ (design sẽ chặn với
-thông báo khó hiểu); OQ còn nguyên mẫu. Cần quyết định độ chặt trước khi làm.
+Checker hiện vẫn **cho qua**: `Nguồn: [JIRA]` không mã issue; `[SUY-RA]` không
+lý do; nguồn không có trong `intake.md`; spec thiếu "Ngoài phạm vi" / "Tiêu chí
+chấp nhận" / bảng mâu thuẫn.

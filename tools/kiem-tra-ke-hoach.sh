@@ -38,6 +38,12 @@ if [ "$LOAI" = "chore" ]; then
     n_loi=1
     echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua kiem-tra-truy-vet.sh — chạy nó để xem chi tiết."
   fi
+  # Với feature/bugfix/... cổng duyệt spec nằm ở design; chore bỏ design nên nằm ở đây.
+  cd_duyet=$(kc_spec_chua_duyet "$DIR")
+  if [ -n "$cd_duyet" ]; then
+    n_loi=$((n_loi + 1))
+    echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
+  fi
 else
   for f in "$SPEC" "$TDD" "$PLAN"; do
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }

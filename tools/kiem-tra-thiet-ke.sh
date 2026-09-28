@@ -45,6 +45,11 @@ if ! sh "$HERE/kiem-tra-truy-vet.sh" "$DIR" >/dev/null 2>&1; then
   n_loi=1
   echo "  [LỖI] Đầu vào chưa đạt: spec.md/open-questions.md không qua kiem-tra-truy-vet.sh — chạy nó để xem chi tiết."
 fi
+cd_duyet=$(kc_spec_chua_duyet "$DIR")
+if [ -n "$cd_duyet" ]; then
+  n_loi=$((n_loi + 1))
+  echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
+fi
 
 PHF="$PH"; PH_THIEU=0
 [ -f "$PH" ] || { PH_THIEU=1; PHF=/dev/null; }
@@ -71,7 +76,9 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
   }
 
   { sub(/\r$/, "") }
-  FNR==1 { idx++; sect = ""; cur = ""; fm = 0 }
+  # Theo tên file: open-questions.md 0 byte (không có điểm mù) không được làm lệch thứ tự.
+  FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : (FILENAME == ARGV[3]) ? 3 : 4
+           sect = ""; cur = ""; fm = 0 }
 
   # ---- File 1: spec.md ----
   idx==1 {

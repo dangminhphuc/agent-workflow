@@ -35,7 +35,8 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 
 ## Đầu vào
 
-- `spec.md`, `open-questions.md` — phải qua được `kiem-tra-truy-vet.sh`
+- `spec.md`, `open-questions.md` — phải qua được `kiem-tra-truy-vet.sh`, và
+  `Trạng thái spec: đã duyệt` (người đã duyệt spec). Còn `đề xuất` thì dừng lại.
 - Code hiện có của repo đích
 
 Checker của phase này chạy lại checker của `spec` trên đầu vào. Không có đường

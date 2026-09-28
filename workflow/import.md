@@ -36,6 +36,6 @@ Thiếu một trong hai thì dừng lại hỏi.
 
 - **Thêm nội dung** không có trong nguồn — kể cả khi "hiển nhiên". Nếu được
   thêm, suy đoán của agent sẽ mang nhãn nguồn như thể có trong tài liệu gốc.
-- Đổi `Trạng thái` của D-xx sang `đã duyệt`, kể cả khi tài liệu nguồn nói đã duyệt:
-  duyệt ở tool khác không phải duyệt trong quy trình này.
+- Đổi `Trạng thái` của D-xx hay `Trạng thái spec` sang `đã duyệt`, kể cả khi tài
+  liệu nguồn nói đã duyệt: duyệt ở tool khác không phải duyệt trong quy trình này.
 - Bỏ qua checker vì "tài liệu đã được duyệt ở chỗ khác".
