@@ -57,8 +57,7 @@ fi
 
 MJ=$(kc_mau_jira "$CONV")
 MC=$(conv_get "$CONV" mien_confluence)
-TMPD="${TMPDIR:-/tmp}/pli.$$"
-mkdir -p "$TMPD"
+TMPD=$(mktemp -d 2>/dev/null) || { TMPD="${TMPDIR:-/tmp}/pli.$$"; mkdir -p "$TMPD"; }
 trap 'rm -rf "$TMPD"' EXIT
 : > "$TMPD/nguon"; : > "$TMPD/thieu"; : > "$TMPD/da-co"; : > "$TMPD/khoa"
 
@@ -130,7 +129,12 @@ for tk in $VAN; do
         if [ -z "$MC" ]; then
           khop=1; canh_bao_conf=1
         else
-          for p in $MC; do khop_glob "$con" "$p" "$p/*" "$p?*" "$p#*" && { khop=1; break; }; done
+          # Bỏ query/fragment trước khi so: mẫu "$p?*" từng khớp cả wiki.cty.vn.evil.com
+          # (? của glob là một ký tự bất kỳ). set -f: mẫu có * không được nở thành tên file.
+          con=${con%%[?#]*}
+          set -f
+          for p in $MC; do khop_glob "$con" "$p" "$p/*" && { khop=1; break; }; done
+          set +f
         fi
         if [ "$khop" = 1 ]; then
           printf 'CONFLUENCE\t%s\t- `[CONFLUENCE]` %s\n' "$u" "$t" >> "$TMPD/nguon"
