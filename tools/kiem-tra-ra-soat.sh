@@ -64,7 +64,7 @@ awk -v loi_truoc="$n_truoc" '
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
 
   { sub(/\r$/, "") }
-  FNR==1 { idx++ }
+  FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : 2 }
 
   # ---- File 1: spec.md ----
   idx==1 {
@@ -73,6 +73,7 @@ awk -v loi_truoc="$n_truoc" '
       co_yc[cur] = 1; dsach[++n_yc] = cur
       next
     }
+    if ($0 ~ /^##[#]?[ \t]/) { cur = ""; next }   # cùng ranh giới vùng YC với kiem-tra-truy-vet.sh
     if (cur != "" && $0 ~ /Nguồn/ && $0 ~ /CẦN-HỎI/) can_hoi[cur] = 1
     next
   }

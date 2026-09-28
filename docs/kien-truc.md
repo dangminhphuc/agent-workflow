@@ -144,6 +144,9 @@ trong chính quá trình xây repo này, ở phase `review`.
 ### Người ở đâu
 
 Gate người cố định ở `intake`, `spec`, `design`, `review` (và `ship` nếu dùng).
+Gate nào có phase máy chạy ngay sau thì phải để lại **dấu vết trong file** để
+phase sau chặn được: D-xx có `Trạng thái`, spec có `Trạng thái spec`. Gate chỉ
+nằm trong tài liệu thì agent chạy tiếp được trên một spec chưa ai đọc.
 `plan` và `implement` **không có người**: chúng chỉ thực thi những gì đã duyệt
 ở `spec` và `design`. Đặt người ở đó chỉ tạo thêm một chỗ duyệt văn xuôi mà
 không có quyết định thật nào để duyệt.
@@ -185,6 +188,10 @@ Mỗi artifact ghi `based_on` là hash **cả file** của đầu vào, dạng p
 (`- spec.md@<hash>`) để đọc được bằng tập con YAML. Hash cả file thay vì từng
 mục vì đơn giản và không bỏ sót — đổi lại nó báo cả khi chỉ sửa chính tả, nên
 lệch hash chỉ là **cảnh báo**; `review` chặn nếu còn artifact lỗi thời.
+
+Chuỗi phụ thuộc: `spec.md` ← `intake.md`; `tdd.md` ← `spec.md` + `open-questions.md`;
+`plan.md` ← `spec.md` + `tdd.md`. Thiếu một mắt xích (trước đây spec không ghi
+`based_on`) thì đổi input sau khi viết spec sẽ lọt qua im lặng.
 
 ## Quyết định là thứ người duyệt, không phải văn xuôi
 
@@ -284,6 +291,7 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
 | Entry check | Đầu mỗi `kiem-tra-*.sh` | Gọi checker phase trước; chuỗi `ra-soat → ke-hoach → thiet-ke → truy-vet` |
 | Cấu hình lệnh test | `.agent-workflow/.quy-trinh/cau-hinh.sh` | Checker tìm ở `<thư-mục-feature>/../.quy-trinh/` |
+| Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |
 
 Phạm vi diff so với `git merge-base <nhanh_goc> HEAD` **tới cây làm việc**, cộng
 file mới chưa track — rộng hơn `<nhanh_goc>...HEAD`, để thay đổi chưa commit
@@ -368,10 +376,13 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    không báo lỗi cú pháp; nó chỉ trả về giá trị rỗng, và lỗi sẽ lộ ra muộn ở
    chỗ khác.
 
-7. **"Duyệt" là một dòng chữ trong file.** Máy phân biệt được `đề xuất` với
+7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Trạng thái spec`
+   trong `spec.md`). Máy phân biệt được `đề xuất` với
    `đã duyệt`, và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
    dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được — chỉ `git
-   blame`/review diff của `tdd.md` mới thấy.
+   blame`/review diff của `tdd.md` / `spec.md` mới thấy. `Trạng thái spec` còn yếu
+   hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `đề xuất` thì bản
+   "đã duyệt" không còn là bản người đọc — máy không phát hiện được.
 
 8. **`review` không chạy lại test.** Nó đọc mã thoát trong `ket-qua-kiem-thu.md`;
    sửa code sau lần chạy `kiem-tra-hien-thuc.sh` cuối cùng thì kết quả đó đã cũ.

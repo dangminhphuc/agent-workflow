@@ -20,3 +20,7 @@
 > "Nếu giả định sai" và "Mức ảnh hưởng" cho người đọc quyết định được: chặn lại
 > hỏi ngay, hay cứ cho chạy tiếp rồi sửa sau. Mục `toàn bộ thiết kế` còn `mở`
 > thì `/design` chặn; mục `cục bộ` thì không.
+>
+> Checker đối chiếu hai chiều với `spec.md`: mỗi mục phải trỏ về một YC có thật;
+> `mở` ↔ spec gắn `[CẦN-HỎI]`; `đã trả lời` ↔ có dòng "Trả lời" và spec đã đổi
+> nhãn nguồn (vd `[FILE]` open-questions.md § YC-002).

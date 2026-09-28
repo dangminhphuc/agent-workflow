@@ -103,7 +103,7 @@ Cách đọc:
 | Phase | Người | Người làm gì |
 |---|---|---|
 | `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
-| `spec` | có | Duyệt yêu cầu, nhãn mức ảnh hưởng của `[CẦN-HỎI]`, và `Mức rủi ro` |
+| `spec` | có | Duyệt yêu cầu, nhãn mức ảnh hưởng của `[CẦN-HỎI]`, và `Mức rủi ro`; rồi đổi `Trạng thái spec` sang `đã duyệt` |
 | `design` | có | Duyệt **từng D-xx** trong `tdd.md` |
 | `plan` | không | — |
 | `implement` | không | — |
@@ -180,6 +180,11 @@ mục `toàn bộ thiết kế` mới phải có `Trạng thái: đã trả lờ
 Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.
 
+Gate người để lại dấu vết trong file: `Trạng thái spec: đề xuất | đã duyệt`, chỉ
+người đổi sang `đã duyệt`; `design` (chore: `plan`) chặn tới lúc đó. Khi một
+`[CẦN-HỎI]` được trả lời, `open-questions.md` và nhãn nguồn trong spec phải đổi
+cùng nhau — checker đối chiếu hai chiều.
+
 ### `02-design` — Technical Design Document
 
 Output duy nhất: `tdd.md` (Technical Design Document, **không phải** Test-Driven
@@ -241,8 +246,8 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
 | `intake` | `kiem-tra-tiep-nhan.sh` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
-| `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc |
-| `design` | `kiem-tra-thiet-ke.sh` | Thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec |
+| `design` | `kiem-tra-thiet-ke.sh` | Spec chưa được người duyệt, thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `kiem-tra-ke-hoach.sh` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `kiem-tra-hien-thuc.sh` | Test chưa xanh, task còn dở |
 | `review` | `kiem-tra-ra-soat.sh` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, test chưa xanh, hoặc **còn cảnh báo** |
@@ -286,8 +291,8 @@ based_on:
 ```
 
 Hash do máy ghi (`tools/cap-nhat-based-on.sh`, dùng `cksum`, bỏ `\r`), không để
-agent tự chép. `spec.md` dựa trên `intake.md`; `tdd.md` dựa trên `spec.md` + `open-questions.md`; `plan.md` dựa
-trên `spec.md` + `tdd.md`. Lệch hash chỉ **cảnh báo** ở các phase sau; `review`
+agent tự chép. `spec.md` dựa trên `intake.md`; `tdd.md` dựa trên `spec.md` +
+`open-questions.md`; `plan.md` dựa trên `spec.md` + `tdd.md`. Lệch hash chỉ **cảnh báo** ở các phase sau; `review`
 chặn nếu còn artifact lỗi thời.
 
 ### Kiểm chéo ở `implement`

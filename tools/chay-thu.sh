@@ -84,6 +84,7 @@ viet_spec() {
 # Đặc tả — x
 
 - **Mức rủi ro:** `thường`
+- **Trạng thái spec:** `đã duyệt`
 
 ## Yêu cầu
 
@@ -225,6 +226,7 @@ viet_review() {
 }
 
 ghi_based_on() {
+  sh "$T/cap-nhat-based-on.sh" "$F" spec.md intake.md >/dev/null
   if [ "$LOAI" = "chore" ]; then
     sh "$T/cap-nhat-based-on.sh" "$F" plan.md spec.md >/dev/null
   else
@@ -311,6 +313,51 @@ ky_vong 1 "chặn mã YC trùng nhau" sh "$CHK" "$F"
 
 viet_spec; rm -f "$F/open-questions.md"
 ky_vong 2 "chặn khi thiếu hẳn open-questions.md" sh "$CHK" "$F"
+
+# "### " không phải YC đóng vùng YC: Nguồn nằm dưới nó không thuộc YC phía trên
+viet_spec; thay "$F/spec.md" '### YC-001 — a
+- Nguồn: `[JIRA]` ABC-1' '### YC-001 — a
+- Mô tả: a
+
+### Ghi chú
+- Nguồn: `[JIRA]` ABC-1'
+ky_vong 1 "chặn YC không có Nguồn dù \"### phụ\" bên dưới có Nguồn" sh "$CHK" "$F"
+dung "…đúng lý do: YC-001 thiếu Nguồn" sh -c "sh '$CHK' '$F' | grep -q 'YC-001: thiếu dòng'"
+viet_spec; thay "$F/spec.md" '### YC-002' '### Ghi chú
+- Nguồn: `[JIRA]` ABC-9
+
+### YC-002'
+ky_vong 0 "Nguồn dưới \"### phụ\" không bị cộng vào YC phía trên" sh "$CHK" "$F"
+
+# open-questions.md 0 byte = đã rà, không có điểm mù (không được làm lệch thứ tự file)
+viet_spec; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002
+- Giả định tạm: y' '`[JIRA]` ABC-1'
+: > "$F/open-questions.md"
+ky_vong 0 "open-questions.md 0 byte thì cho qua" sh "$CHK" "$F"
+
+# Trạng thái spec: chỉ người đổi sang "đã duyệt"; spec vẫn qua checker khi còn "đề xuất"
+viet_spec; thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
+ky_vong 0 "spec \"đề xuất\" vẫn qua checker của spec" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- **Trạng thái spec:** `đã duyệt`' ''
+ky_vong 1 "chặn spec thiếu Trạng thái spec" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '`đã duyệt`' '`ok`'
+ky_vong 1 "chặn Trạng thái spec tự chế" sh "$CHK" "$F"
+
+# open-questions.md <-> spec.md phải khớp trạng thái
+viet_spec; printf '\n## YC-099 — mồ côi\n- **Giả định tạm đang dùng:** z\n- **Mức ảnh hưởng:** `cục bộ`\n- **Trạng thái:** `mở`\n' >> "$F/open-questions.md"
+ky_vong 1 "chặn mục open-questions trỏ về YC không có trong spec" sh "$CHK" "$F"
+dung "…đúng lý do: mục mồ côi YC-099" sh -c "sh '$CHK' '$F' | grep -q 'spec.md không có YC-099'"
+viet_spec; thay "$F/open-questions.md" '`mở`' '`xong`'
+ky_vong 1 "chặn Trạng thái điểm mù tự chế" sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
+printf -- '- **Trả lời:** qua email\n' >> "$F/open-questions.md"
+ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [CẦN-HỎI]" sh "$CHK" "$F"
+thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+ky_vong 0 "đã trả lời + spec đổi nhãn nguồn thì cho qua" sh "$CHK" "$F"
+thay "$F/open-questions.md" '- **Trả lời:** qua email' '- **Trả lời:** <người trả lời ghi vào đây>'
+ky_vong 1 "chặn đã trả lời mà Trả lời còn trống/chỗ giữ chỗ" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[JIRA]` ABC-2'
+ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
 viet_spec
 
 # ---------------------------------------------------------------- thiet ke
@@ -334,7 +381,20 @@ ky_vong 0 "bác bỏ có lý do + cảnh báo chưa xử lý thì cho qua" sh "$
 viet_tdd; thay "$F/open-questions.md" '`cục bộ`' '`toàn bộ thiết kế`'
 ky_vong 1 "chặn [CẦN-HỎI] ảnh hưởng toàn bộ thiết kế còn mở" sh "$CHK" "$F"
 thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
+printf -- '- **Trả lời:** qua email\n' >> "$F/open-questions.md"
+thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
 ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
+viet_spec
+
+viet_tdd; thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
+ky_vong 1 "chặn vào design khi người chưa duyệt spec" sh "$CHK" "$F"
+dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'chưa được người duyệt'"
+viet_spec
+
+viet_tdd; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002
+- Giả định tạm: y' '`[JIRA]` ABC-1'
+: > "$F/open-questions.md"
+ky_vong 0 "open-questions.md 0 byte không làm design đọc lệch file" sh "$CHK" "$F"
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '- Nguồn: `[JIRA]` ABC-1' ''
@@ -489,6 +549,19 @@ thay "$F/plan.md" '| Mã | Lý do |
 '
 ky_vong 0 "ghi Kiểm chứng thủ công có lý do thì cho qua" sh "$CHK" "$F"
 printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"; viet_plan; ghi_based_on
+
+# Không test nào gắn tag: danh sách dòng tag rỗng không được làm kiểm chéo câm
+printf '// chua gan tag\n' > "$R/test/a.test.js"
+ky_vong 1 "CỔNG CUỐI: chặn khi CHƯA test nào gắn tag covers" sh "$CHK" "$F"
+dung "…đúng lý do: YC chưa có test" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: chưa có test'"
+dung "…và implement có in cảnh báo YC chưa có test" sh -c "sh '$T/kiem-tra-hien-thuc.sh' '$F' | grep -q 'CẢNH BÁO.*YC-001'"
+printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+
+printf '\n<!-- sửa sau khi đã viết spec -->\n' >> "$F/intake.md"
+ky_vong 1 "CỔNG CUỐI: chặn spec lỗi thời khi intake.md đổi" sh "$CHK" "$F"
+dung "…đúng lý do: spec.md lỗi thời theo intake.md" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: lỗi thời — intake.md'"
+viet_intake
 
 printf '\n<!-- sửa sau khi đã có tdd -->\n' >> "$F/spec.md"
 ky_vong 1 "CỔNG CUỐI: chặn artifact lỗi thời" sh "$CHK" "$F"
@@ -862,6 +935,10 @@ for c in truy-vet ke-hoach hien-thuc ra-soat; do
   ky_vong 0 "chore đầy đủ (không có tdd.md) qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
 done
 ky_vong 1 "chore chạy design thì bị chặn" sh "$T/kiem-tra-thiet-ke.sh" "$F"
+
+thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
+ky_vong 1 "chore: plan chặn khi người chưa duyệt spec" sh "$T/kiem-tra-ke-hoach.sh" "$F"
+viet_spec; ghi_based_on
 
 printf 'moi\n' > "$R/src/a.txt"
 ky_vong 1 "chore đụng code production thì chặn" sh "$T/kiem-tra-hien-thuc.sh" "$F"
