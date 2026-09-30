@@ -12,6 +12,7 @@ outputs:
 exit_machine:
   - sh tools/kiem-tra-tiep-nhan.sh
 exit_human:
+  - Người CHỌN BASE cho worktree (agent chỉ đưa đề xuất của tao-worktree.sh)
   - Người xác nhận LOẠI VIỆC (chọn sai loại là sai luật cả chuỗi phía sau)
   - Người xác nhận danh sách input, và lời mình được chép đúng nguyên văn
 needs_clean_context: true
@@ -56,7 +57,7 @@ Có sửa code chạy trên production không?
 Không phải loại riêng: `utils` (thêm hàm dùng chung = feature, gom code trùng =
 refactor), `hotfix` (= bugfix gấp), `security` (= bugfix/feature + rủi ro cao).
 `spike` nằm ngoài quy trình — output của nó là kết luận, không phải code để merge.
-Việc vừa là loại này vừa là loại kia (vd refactor kèm sửa bug) thì **tách branch**:
+Việc vừa là loại này vừa là loại kia (vd refactor kèm sửa bug) thì **tách thành hai việc** (hai worktree):
 luật của hai loại xung đột nhau.
 
 ## Tham số của lệnh là input
@@ -99,7 +100,7 @@ hỏi người, người đồng ý mới ghi thành dòng riêng.
    **Thêm** stdout vào cuối `## Input`.
 3. Input mới làm loại việc có vẻ khác đi (vd thêm incident note vào việc
    `feature`): **nêu ra cho người**, không tự sửa `Loại việc`. Người đổi loại
-   thì xác nhận lại như lần đầu (và đổi tên branch nếu lệch tiền tố).
+   thì xác nhận lại như lần đầu (và đổi tên bằng `doi-ten-feature.sh` nếu lệch tiền tố).
 4. Chạy checker, dừng cho người xác nhận **các input mới**.
 
 Không có đường xoá input qua lệnh — muốn bỏ thì người sửa tay `intake.md`. Chỉ
@@ -108,35 +109,56 @@ gộp thêm để agent không lặng lẽ làm mất một nguồn.
 `intake.md` đổi thì `spec.md` (ghi `based_on: intake.md`) thành **lỗi thời**:
 chạy lại `/spec` để đọc input mới. Các phase sau cảnh báo, `review` chặn nếu còn.
 
-## Branch chưa đúng quy ước
+## Tạo worktree
 
-Khi `xac-dinh-feature.sh` trả mã 3 (vd đang ở `main`), **không** hỏi tên feature
-tự do. Làm theo thứ tự:
+Worktree là **bắt buộc**. Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
+chạy `/intake`; mỗi việc làm trong một worktree riêng, một phiên agent riêng.
+`xac-dinh-feature.sh` trả mã 6 khi đang ở checkout chính — với `/intake` nghĩa là
+"tạo worktree", với mọi lệnh khác nghĩa là "dừng lại".
+
+Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Làm theo thứ tự:
 
 1. Đọc input, **chốt loại việc với người** (cây phân loại ở trên).
 2. Chọn một mô tả ngắn: chữ thường ASCII, số, dấu `-` (vd `phi-hoan-tien`).
-3. Chạy `tools/tao-branch.sh <loại-việc> <mô-tả>` — nó in **tên đề xuất** theo
-   `loai_theo_tien_to` (vd `fix_phi-hoan-tien`). Không tự ghép tiền tố.
-4. Hỏi người xác nhận tên đó. Người muốn tên khác thì đổi `<mô-tả>` và chạy lại.
-5. Người đồng ý rồi mới chạy lại với `--tao` để tạo và chuyển sang branch, rồi
-   chạy lại Bước 0.
+3. Chạy `tools/tao-worktree.sh <loại-việc> <mô-tả>` — nó **chỉ in đề xuất**:
+   - tên theo `loai_theo_tien_to` (vd `fix_phi-hoan-tien`) — branch, thư mục
+     worktree và thư mục artifact dùng **cùng một tên**;
+   - đường dẫn theo `thu_muc_worktree` (mặc định `../{repo}.wt/{ten}`);
+   - danh sách **base** kèm dữ kiện: `nhanh_goc` local, `origin/<nhanh_goc>`,
+     nhánh khớp `mau_nhanh_phat_hanh`, hoặc ref khác do người nhập. Dấu ★ là
+     gợi ý của **máy** theo một luật cố định, không phải của agent.
+4. Đưa **nguyên văn** đề xuất cho người, hỏi người **chọn base** (và xác nhận
+   tên). Người muốn tên khác thì đổi `<mô-tả>` và chạy lại bước 3.
+5. Người chọn rồi mới chạy `tao-worktree.sh <loại-việc> <mô-tả> --tao --goc <ref>`
+   với **đúng ref người chọn**. Script in dòng `Base:` — chép nguyên vào `intake.md`.
+6. Ghi `intake.md` vào `<worktree>/.agent-workflow/<tên>/`, chạy checker trên
+   thư mục đó, rồi **dừng**: người chuẩn bị môi trường (lệnh `LENH_CHUAN_BI_WT`
+   script in ra) và mở phiên agent **mới** trong worktree để chạy `/spec`.
 
-Tạo branch trước khi ghi `intake.md` để thư mục artifact mang đúng tên branch
-ngay từ đầu, và loại việc khớp tiền tố branch.
+Mã 5 (branch đã có worktree): không tạo gì — bảo người mở phiên ở đường dẫn
+script in ra, rồi chạy lại `/intake` ở đó nếu cần gộp thêm input.
+
+**Vì sao ghi Base.** Checker phía sau so diff với điểm rẽ nhánh khỏi base này.
+So với `nhanh_goc` khi base là `origin/main` (local đang chậm) hay `release/*`
+sẽ quy commit của người khác cho việc này: phạm vi diff báo sai, review đọc code
+không phải của mình. Base là branch việc khác (xếp chồng) thì được, nhưng review
+cảnh báo: việc này dựa trên code chưa được review.
 
 ## Việc phải làm
 
-1. **Gợi ý loại việc** từ tiền tố branch (`loai_theo_tien_to` trong
-   `conventions.md`), đối chiếu với input, rồi hỏi người xác nhận.
+1. **Chốt loại việc** với người. Đang ở checkout chính: tạo worktree theo mục
+   trên. Đang trong worktree (chạy lại để gộp input): gợi ý loại từ tiền tố
+   branch (`loai_theo_tien_to`), đối chiếu với input, rồi hỏi người xác nhận.
 
    Loại người chốt lệch tiền tố branch thì **không có ngoại lệ**: sửa loại, hoặc
-   đổi tên branch bằng `tools/doi-ten-feature.sh` (dời luôn thư mục artifact).
+   đổi tên bằng `tools/doi-ten-feature.sh` — nó đổi cả branch, thư mục artifact
+   và thư mục worktree; người phải mở phiên mới ở đường dẫn mới.
 
 2. **Ghi input** bằng `phan-loai-input.sh` (mục "Tham số của lệnh là input"):
    - tài liệu: `[CONFLUENCE]` / `[JIRA]` / `[FILE]` + định danh (URL, mã issue, đường dẫn);
    - lời người dùng: `[NGƯỜI-DÙNG]`, **chép nguyên văn** ở dòng `>` bên dưới.
 
-3. **Ghi mục tiêu** một câu.
+3. **Ghi mục tiêu** một câu, và dòng **Base** đúng như `tao-worktree.sh` in ra.
 
 4. Chạy `kiem-tra-tiep-nhan.sh` rồi dừng lại cho người xác nhận.
 
@@ -157,6 +179,8 @@ ngay từ đầu, và loại việc khớp tiền tố branch.
 - Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi `Loại việc`.
   Suy đoán của agent vào input thì mọi phase sau truy về nó như thể có nguồn.
 - Tự chốt loại việc thay người.
+- Tự chọn base, tự điền `--goc`, hay tạo worktree trước khi người chọn.
+- Tự chuyển phiên sang worktree mới — người mở phiên mới ở đó.
 - Chốt phạm vi hoặc giải pháp kỹ thuật.
 
 ## Điều kiện ra
@@ -164,8 +188,8 @@ ngay từ đầu, và loại việc khớp tiền tố branch.
 **Máy:**
 - `sh tools/kiem-tra-tiep-nhan.sh` trả về 0 — loại việc hợp lệ, có mục tiêu, có ít
   nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
-  `[JIRA]` có mã khớp `mau_jira`.
+  `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.
 
 **Người:**
-- Xác nhận loại việc và input.
+- Chọn base, xác nhận loại việc và input.

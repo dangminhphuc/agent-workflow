@@ -69,7 +69,8 @@ cp "$ROOT"/workflow/rules/*.md      "$QT/rules/"
 cp "$ROOT"/workflow/templates/*.md  "$QT/templates/"
 cp "$ROOT"/workflow/checkers/*.md   "$QT/checkers/"
 cp "$ROOT"/tools/kiem-tra-*.sh "$ROOT"/tools/xac-dinh-feature.sh "$ROOT"/tools/cap-nhat-based-on.sh \
-   "$ROOT"/tools/doi-ten-feature.sh "$ROOT"/tools/tao-branch.sh "$ROOT"/tools/phan-loai-input.sh "$QT/tools/"
+   "$ROOT"/tools/doi-ten-feature.sh "$ROOT"/tools/tao-worktree.sh "$ROOT"/tools/don-worktree.sh \
+   "$ROOT"/tools/phan-loai-input.sh "$QT/tools/"
 cp "$ROOT"/tools/lib/*.sh           "$QT/tools/lib/"
 chmod +x "$QT"/tools/*.sh 2>/dev/null || true
 echo "  chép    $ART/.quy-trinh/{rules,templates,checkers,tools}"
@@ -90,6 +91,11 @@ else
     echo "# Lệnh đo hiệu năng — chỉ dùng cho loại việc perf. Phải in một dòng"
     echo "# \"KET_QUA: <số> <đơn vị>\", vd: KET_QUA: 138 ms"
     echo "LENH_DO_HIEU_NANG=\"\""
+    echo ""
+    echo "# Lệnh chuẩn bị worktree mới (cài dependency…) — tao-worktree.sh IN RA cho"
+    echo "# người chạy, không tự chạy. Worktree mới chỉ có file đã commit: không có"
+    echo "# node_modules, .env… Vd: LENH_CHUAN_BI_WT=\"npm ci\""
+    echo "LENH_CHUAN_BI_WT=\"\""
   } > "$CH"
   echo "  ghi     $ART/.quy-trinh/cau-hinh.sh"
 fi
@@ -142,9 +148,11 @@ if [ -z "$LENH" ] && ! grep -q 'LENH_KIEM_THU="[^"]' "$CH" 2>/dev/null; then
   echo "     (chưa khai thì phase /implement sẽ không đạt điều kiện ra)"
   n=$((n + 1))
 fi
-echo "  $n. Sửa $ART/conventions.md: mẫu tên branch, nhánh gốc, mẫu file test, tag covers:"
+echo "  $n. Sửa $ART/conventions.md: mẫu tên branch, nhánh gốc, vị trí worktree, mẫu file test, tag covers:"
 n=$((n + 1))
-echo "  $n. Mở Claude Code trong repo đích, tạo branch theo quy ước, chạy /intake"
+echo "  $n. COMMIT bộ cài ($ART/) vào nhánh gốc — worktree chỉ có file đã commit"
+n=$((n + 1))
+echo "  $n. Mở Claude Code ở checkout chính (đứng ở nhánh gốc), chạy /intake — nó đề xuất worktree cho việc"
 echo ""
 echo "  Chuỗi phase: /intake → /spec → /design → /plan → /implement → /review"
 echo "  Tài liệu làm bằng tool khác: /import <file> <spec.md|tdd.md|plan.md>"

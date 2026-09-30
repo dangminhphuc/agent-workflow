@@ -19,6 +19,7 @@ exit_machine:
   - sh tools/kiem-tra-ra-soat.sh
 exit_human:
   - Người xác nhận kết luận rà soát và quyết định xử lý các finding mức Chặn
+  - Người xác nhận base có chủ ý nếu checker cảnh báo base lạ (xếp chồng)
 needs_clean_context: true
 requires_fresh_agent: true
 ---
@@ -116,6 +117,10 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
   - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
     thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai;
   - luật theo loại việc (như `implement`), và bugfix có dòng `Test tái hiện đỏ vì:`.
+- Diff được so với **base ghi trong `intake.md`**, không phải `nhanh_goc`. Base
+  không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)
+  thì checker **chỉ cảnh báo** — nêu ra cho người.
 
 **Người:**
 - Xác nhận kết luận; quyết định xử lý các finding mức `Chặn`.
+- Có cảnh báo base: xác nhận việc dựa trên code của branch khác là có chủ ý.

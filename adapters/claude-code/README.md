@@ -29,13 +29,15 @@ Mỗi command sinh ra gồm ba phần:
    `sh .agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh $ARGUMENTS`. Script suy
    từ tên branch theo `conventions.md` → không khớp thì lấy tham số lệnh (vd
    `/spec feat_tao-todo`) → không có thì trả mã 3 và command bảo agent dừng hỏi.
+   Đang ở checkout chính thì mã 6: worktree là bắt buộc, command bảo agent dừng
+   và nhờ người mở phiên mới trong worktree của việc.
    Agent in `Đang làm với: …` rồi mới đọc/ghi trong `.agent-workflow/<tên-branch>/`.
    Logic nằm trong script chứ không trong prompt, để mọi adapter dùng chung.
 
    Ngoại lệ: phase khai `arguments: input` (hiện chỉ `00-intake`). Khi đó tham số
    lệnh là **input** (`/intake JIRA-123 …`), adapter **không** truyền nó vào
-   `xac-dinh-feature.sh`, và mã 3 dẫn tới bước đề xuất branch bằng `tao-branch.sh`
-   thay vì hỏi tên feature. Adapter từ chối build (mã 4) nếu `arguments` mang giá
+   `xac-dinh-feature.sh`, và mã 6 (đang ở checkout chính) dẫn tới bước đề xuất
+   worktree bằng `tao-worktree.sh` — người chọn base rồi mới tạo. Adapter từ chối build (mã 4) nếu `arguments` mang giá
    trị khác `input`.
 2. **Hợp đồng phase** (đọc gì, ghi ra đâu, mẫu nào, checker LLM nào, điều kiện
    ra là lệnh gì) do adapter dựng từ frontmatter.

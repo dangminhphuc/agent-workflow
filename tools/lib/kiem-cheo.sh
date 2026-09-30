@@ -92,16 +92,15 @@ kc_test_yc() {
 }
 
 # kc_pham_vi <thư-mục-feature>
-# File thay đổi so với nhánh gốc mà không nằm trong "File dự kiến" hay
+# File thay đổi so với base của việc mà không nằm trong "File dự kiến" hay
 # "Phát sinh" của plan.md, và không thuộc danh sách bỏ qua.
 kc_pham_vi() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/plan.md" ] || return 0
   _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
     echo "Không kiểm được phạm vi diff: thư mục không nằm trong git repo"; return 0; }
-  _goc=$(conv_get "$_conv" nhanh_goc); [ -n "$_goc" ] || _goc="main"
-  _mb=$(git -C "$_top" merge-base "$_goc" HEAD 2>/dev/null) || {
-    echo "Không kiểm được phạm vi diff: không tìm thấy nhánh gốc \"$_goc\" (khai nhanh_goc trong conventions.md)"; return 0; }
+  _mb=$(kc_mb "$_d") || {
+    echo "Không kiểm được phạm vi diff: không tìm thấy base \"$(kc_base "$_d")\" (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)"; return 0; }
   _bo=$(conv_get "$_conv" bo_qua)
 
   # Mẫu được phép: token trong backtick ở dòng "File dự kiến:" và mục "Phát sinh".
@@ -169,15 +168,59 @@ kc_spec_chua_duyet() {
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
 
-# kc_mb <thư-mục-feature> -> merge-base của HEAD với nhánh gốc
+# kc_base_dong <thư-mục-feature> -> "<ref> <sha>" từ dòng "Base:" của intake.md
+# (thiếu phần nào thì phần đó rỗng; không có dòng Base thì không in gì).
+kc_base_dong() {
+  [ -f "$1/intake.md" ] || return 0
+  awk '
+    { sub(/\r$/, "") }
+    /^[ \t]*-[ \t]*\*\*Base:\*\*/ || /^[ \t]*-?[ \t]*Base:/ {
+      s = $0; sub(/^[^:]*:/, "", s); r = ""; h = ""
+      if (match(s, /`[^`]+`/)) { r = substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) }
+      if (match(s, /`[^`]+`/)) { h = substr(s, RSTART + 1, RLENGTH - 2) }
+      print r " " h; exit
+    }
+  ' "$1/intake.md"
+}
+
+# kc_base <thư-mục-feature> -> ref để so diff: base NGƯỜI chọn lúc tạo worktree
+# (dòng "Base:" của intake.md). Ref không còn (vd branch cha đã xoá) thì dùng sha
+# ghi kèm. intake.md cũ chưa có dòng Base thì quay về nhanh_goc.
+# So với nhanh_goc khi base là origin/main hay release/* sẽ quy commit không
+# thuộc việc này cho việc này — phạm vi diff sai, review đọc code không phải của mình.
+kc_base() {
+  set -- "$1" $(kc_base_dong "$1")
+  if [ -n "${2:-}" ] && git -C "$1" rev-parse --verify --quiet "$2^{commit}" >/dev/null; then echo "$2"; return 0; fi
+  if [ -n "${3:-}" ] && git -C "$1" rev-parse --verify --quiet "$3^{commit}" >/dev/null; then echo "$3"; return 0; fi
+  _g=$(conv_get "$(kc_conventions "$1")" nhanh_goc); echo "${_g:-main}"
+}
+
+# kc_mb <thư-mục-feature> -> merge-base của HEAD với base của việc
 kc_mb() {
-  _g=$(conv_get "$(kc_conventions "$1")" nhanh_goc); [ -n "$_g" ] || _g="main"
-  git -C "$1" merge-base "$_g" HEAD 2>/dev/null
+  git -C "$1" merge-base "$(kc_base "$1")" HEAD 2>/dev/null
+}
+
+# kc_base_la <thư-mục-feature> -> in cảnh báo nếu base không phải nhánh gốc
+# (local hay origin/) hoặc nhánh phát hành. Vd xếp chồng lên branch việc khác:
+# review dựa trên code chưa được review. Chỉ cảnh báo — người xác nhận có chủ ý.
+kc_base_la() {
+  set -- "$1" $(kc_base_dong "$1")
+  [ -n "${2:-}" ] || return 0
+  _conv=$(kc_conventions "$1")
+  _g=$(conv_get "$_conv" nhanh_goc); _g=${_g:-main}
+  _b=${2#origin/}
+  [ "$_b" = "$_g" ] && return 0
+  set -f
+  for _m in $(conv_get "$_conv" mau_nhanh_phat_hanh); do
+    case "$_b" in $_m) set +f; return 0 ;; esac
+  done
+  set +f
+  echo "Base \"$2\" không phải nhánh gốc ($_g) hay nhánh phát hành (mau_nhanh_phat_hanh). Nếu là branch việc khác (xếp chồng): việc này dựa trên code chưa được review — người xác nhận đây là chủ ý"
 }
 
 # kc_doi <thư-mục-feature> -> file thay đổi so với merge-base (kể cả chưa commit,
 # chưa track), mỗi dòng "S<TAB>đường-dẫn[<TAB>đường-dẫn-mới]", S ∈ A M D R.
-# Bỏ qua thư mục artifact. Mã 1 nếu không xác định được nhánh gốc.
+# Bỏ qua thư mục artifact. Mã 1 nếu không xác định được base.
 kc_doi() {
   _top=$(kc_top "$1") || return 1
   _mb=$(kc_mb "$1") || return 1

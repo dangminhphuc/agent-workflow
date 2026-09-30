@@ -95,7 +95,7 @@ việc), và `spec.md` ghi `based_on: intake.md` để input mới làm spec l�
 **Nguồn sự thật của loại việc** là `intake.md` (người xác nhận). Tiền tố branch
 chỉ để gợi ý và đối chiếu; lệch thì cảnh báo, `review` chặn, không có ngoại lệ
 "ghi lý do chấp nhận lệch" — vì ngoại lệ dễ ghi hơn sửa, và tiền tố sẽ mất nghĩa.
-`tools/doi-ten-feature.sh` đổi tên branch và dời thư mục artifact trong một lệnh.
+`tools/doi-ten-feature.sh` đổi tên branch, dời thư mục artifact và dời worktree trong một lệnh.
 
 Phân loại theo **thay đổi gì về hành vi**, không theo "xây cái gì": một loại chỉ
 đáng tồn tại khi nó đổi luật. Vì vậy không có `utils`, `hotfix`, `security`;
@@ -124,6 +124,38 @@ từng team; bộ cài chỉ tạo mẫu và không ghi đè.
 Thứ tự xác định feature: suy từ branch theo `conventions.md` → không khớp thì lấy
 tham số lệnh → không có thì dừng hỏi. Agent luôn in `Đang làm với: …` — ghi nhầm
 artifact sang feature khác là lỗi im lặng, khó phát hiện về sau.
+
+### Worktree bắt buộc, base do người chọn
+
+Mỗi việc làm trong một worktree riêng; checkout chính chỉ đứng ở `nhanh_goc` và
+chỉ chạy `/intake`. Mọi lệnh khác chạy ở checkout chính bị `xac-dinh-feature.sh`
+chặn (mã 6) — chốt đặt ở script mọi phase đều gọi, không phải trong từng phase.
+Hệ quả mong muốn: "mỗi phase chạy được từ phiên trắng" không còn là khuyến nghị
+mà là cấu trúc — tạo worktree xong thì người **phải** mở phiên mới ở đó.
+
+Worktree đặt **ngoài** repo (`../{repo}.wt/{ten}`): đặt bên trong thì jest, tsc,
+grep quét trùng code, và agent ở worktree này đọc nhầm artifact của worktree khác
+— đúng lỗi "ghi nhầm feature" mà quy trình cố chặn. Branch, thư mục worktree và
+thư mục artifact dùng một tên: nhìn đường dẫn là biết đang ở việc nào.
+
+Agent không chọn base. `tao-worktree.sh` liệt kê ứng viên kèm dữ kiện và gợi ý ★
+theo một luật máy duy nhất (giữa `main` và `origin/main`, bản nào chứa bản kia);
+phân kỳ thì không gợi ý. `--tao` thiếu `--goc` bị từ chối. Script không tự fetch:
+thao tác mạng làm kết quả phụ thuộc thời điểm chạy — nó in thời điểm fetch cuối
+để người tự cân nhắc. Branch tạo `--no-track`: mặc định git đặt upstream là
+`origin/main`, và `git push` trơn trong worktree sẽ đẩy thẳng lên `main`.
+
+Base được ghi vào `intake.md` (`ref @ sha`) và checker so diff với điểm rẽ nhánh
+khỏi base đó thay vì `nhanh_goc`. Đo trên repo thử: việc chỉ sửa một file, tạo từ
+`origin/main` trong khi `main` local chậm 2 commit — so với `main` thì phạm vi
+diff thấy thêm file của đồng nghiệp; tạo từ `release/1.2` thì thấy thêm commit
+bump version của nhánh phát hành. Ref không còn (branch cha đã xoá) thì dùng sha.
+Xếp chồng lên branch việc khác không bị cấm (nhập qua "ref khác") nhưng không nằm
+trong danh sách gợi ý, và review cảnh báo: việc dựa trên code chưa được review.
+
+Dọn worktree (`don-worktree.sh`) không bao giờ `--force` hay `branch -D`: gỡ
+worktree không mất commit; xoá branch dùng `git branch -d` để git tự từ chối khi
+chưa merge. Squash-merge git không nhận ra — script dừng, người tự quyết.
 
 ## Hai loại điều kiện ra
 
@@ -293,8 +325,9 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Cấu hình lệnh test | `.agent-workflow/.quy-trinh/cau-hinh.sh` | Checker tìm ở `<thư-mục-feature>/../.quy-trinh/` |
 | Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |
 
-Phạm vi diff so với `git merge-base <nhanh_goc> HEAD` **tới cây làm việc**, cộng
-file mới chưa track — rộng hơn `<nhanh_goc>...HEAD`, để thay đổi chưa commit
+Phạm vi diff so với `git merge-base <base> HEAD` **tới cây làm việc** (`<base>` là
+dòng Base của `intake.md`, thiếu thì `nhanh_goc`), cộng file mới chưa track —
+rộng hơn `<base>...HEAD`, để thay đổi chưa commit
 trong lúc `implement` cũng bị thấy. Thư mục `.agent-workflow/` luôn được bỏ qua.
 
 Thân file có các mục cố định: **Mục tiêu**, **Đầu vào**, **Việc phải làm**,
