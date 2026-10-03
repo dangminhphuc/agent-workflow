@@ -380,7 +380,8 @@ kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
   printf '3. **Agent không tự duyệt.** Không tự đổi D-xx sang `đã duyệt`; checker LLM chỉ được chặn.\n'
   printf '4. **Không vượt phạm vi phase.** Việc thuộc phase khác thì ghi lại, không làm luôn.\n'
   printf '5. **Không xoá artifact của phase trước.** Chạy lại là cập nhật, không viết đè trắng.\n'
-  printf '6. **Mọi yêu cầu phải truy được về nguồn.**\n\n'
+  printf '6. **Mọi yêu cầu phải truy được về nguồn.**\n'
+  printf '7. **Artifact viết cho NGƯỜI đọc.** Phân cấp rõ (heading, danh sách, bảng); câu ngắn, từ đơn giản.\n\n'
   printf 'Bản đầy đủ: `%s/rules/nguyen-tac-chung.md` và `%s/rules/truy-vet-nguon.md`.\n\n' "$QT" "$QT"
   printf '## Artifact\n\n'
   printf -- '- Artifact của từng feature: `%s/<tên-branch>/` — xác định bằng `sh %s/tools/xac-dinh-feature.sh`\n' "$ART" "$QT"
