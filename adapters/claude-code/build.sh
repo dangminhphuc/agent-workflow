@@ -153,10 +153,12 @@ buoc_xac_dinh_feature() {
     # neu khong "/intake JIRA-123" se tao thu muc artifact ten JIRA-123.
     printf 'Chạy `sh %s/tools/xac-dinh-feature.sh` — **không** truyền tham số của lệnh: tham số là input, không phải tên feature.\n\n' "$QT"
     printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
-    printf -- '- **Mã 3:** branch hiện tại không khớp quy ước → làm theo mục "Branch chưa đúng quy ước" trong mô tả phase: chốt loại việc với người, đề xuất tên branch bằng `tao-branch.sh`, người xác nhận rồi mới tạo. Sau đó chạy lại bước này.\n\n'
+    printf -- '- **Mã 6:** đang ở checkout chính → làm theo mục "Tạo worktree" trong mô tả phase: chốt loại việc với người, chạy `tao-worktree.sh` để **đề xuất**, NGƯỜI chọn base, rồi mới `--tao --goc <ref>`. Ghi `intake.md` vào worktree mới, rồi dừng: người mở phiên mới ở đó.\n'
+    printf -- '- **Mã 3:** đang trong worktree nhưng branch không khớp quy ước → dừng lại hỏi người. Không tự đặt tên.\n\n'
   else
     printf 'Chạy `sh %s/tools/xac-dinh-feature.sh %s`.\n\n' "$QT" "$1"
     printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
+    printf -- '- **Mã 6:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/intake` ở checkout chính). Không tự chuyển thư mục.\n'
     printf -- '- **Mã 3:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
     printf -- '- **Mã 2:** tên không hợp lệ → báo lại cho người dùng.\n\n'
   fi

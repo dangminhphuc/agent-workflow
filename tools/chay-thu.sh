@@ -69,6 +69,7 @@ viet_intake() {
 # Tiếp nhận — x
 
 - **Loại việc:** \`$LOAI\`   <!-- người xác nhận -->
+- **Base:** \`main\` @ \`$(git -C "$R" rev-parse --short main 2>/dev/null)\`
 - **Mục tiêu:** làm x
 
 ## Input
@@ -670,36 +671,97 @@ ky_vong 2 "build.sh từ chối --out nằm trong repo agent-workflow" sh "$BUIL
 # ---------------------------------------------------------------- xac dinh feature
 echo ""
 echo "xac-dinh-feature.sh"
+g4() { git -C "$R4" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
+g4 commit -q --allow-empty -m truoc-cai
+g4 tag truoc-cai
 XD="$QT4/tools/xac-dinh-feature.sh"
-git -C "$R4" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
+ky_vong 6 "checkout chính → mã 6 (worktree bắt buộc)" sh "$XD"
+ky_vong 6 "…kể cả khi có tham số" sh "$XD" feat_abc
+dung "…và in danh sách việc cần làm: mở worktree / chạy /intake" sh -c "sh '$XD' 2>&1 | grep -q 'CHECKOUT CHÍNH'"
 
-ky_vong 3 "branch không khớp, không tham số → mã 3 (phải hỏi)" sh "$XD"
-dung "branch không khớp → lấy tham số" test "$(sh "$XD" feat_abc 2>/dev/null)" = ".agent-workflow/feat_abc"
-git -C "$R4" checkout -q -b job-them-todo
-dung "branch khớp quy ước → tên branch đầy đủ" test "$(sh "$XD" 2>/dev/null)" = ".agent-workflow/job-them-todo"
-dung "branch khớp thì thắng tham số" test "$(sh "$XD" khac 2>/dev/null)" = ".agent-workflow/job-them-todo"
-dung "in 'Đang làm với:'" sh -c "sh '$XD' 2>&1 >/dev/null | grep -q 'Đang làm với: .agent-workflow/job-them-todo'"
-git -C "$R4" checkout -q main
-ky_vong 2 "từ chối tên feature có ../" sh "$XD" "../x"
+# worktree chỉ có file đã commit: commit bộ cài trước
+g4 add -A; g4 commit -q -m bo-cai
+W4="$TMP/repo4.wt/khong-khop"
+g4 worktree add -q -b khong-khop "$W4" main
+XDW="$W4/.agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh"
+ky_vong 3 "trong worktree, branch không khớp, không tham số → mã 3 (phải hỏi)" sh "$XDW"
+dung "branch không khớp → lấy tham số" test "$(sh "$XDW" feat_abc 2>/dev/null)" = ".agent-workflow/feat_abc"
+ky_vong 2 "từ chối tên feature có ../" sh "$XDW" "../x"
+git -C "$W4" checkout -q -b job-them-todo
+dung "branch khớp quy ước → tên branch đầy đủ" test "$(sh "$XDW" 2>/dev/null)" = ".agent-workflow/job-them-todo"
+dung "branch khớp thì thắng tham số" test "$(sh "$XDW" khac 2>/dev/null)" = ".agent-workflow/job-them-todo"
+dung "in 'Đang làm với:'" sh -c "sh '$XDW' 2>&1 >/dev/null | grep -q 'Đang làm với: .agent-workflow/job-them-todo'"
+g4 worktree remove --force "$W4"
 
-# ---------------------------------------------------------------- tao branch (/intake)
+# ---------------------------------------------------------------- tao worktree (/intake)
 echo ""
-echo "tao-branch.sh"
-TB="$QT4/tools/tao-branch.sh"
+echo "tao-worktree.sh"
+TW="$QT4/tools/tao-worktree.sh"
 cp "$ROOT/workflow/templates/conventions.md" "$R4/.agent-workflow/conventions.md"
+thay "$R4/.agent-workflow/conventions.md" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: release/*'
+g4 add -A; g4 commit -q -m conventions
+g4 branch release/1.2
+DX=$(sh "$TW" bugfix phi-hoan-tien 2>/dev/null)
+dung "đề xuất tên theo tiền tố của loại việc" sh -c "printf '%s' \"\$1\" | grep -q 'Tên        fix_phi-hoan-tien'" _ "$DX"
+dung "…đường dẫn theo thu_muc_worktree (ngoài repo)" sh -c "printf '%s' \"\$1\" | grep -qF '$TMP/repo4.wt/fix_phi-hoan-tien'" _ "$DX"
+dung "…liệt kê nhánh phát hành làm ứng viên base" sh -c "printf '%s' \"\$1\" | grep -q 'release/1.2'" _ "$DX"
+dung "…gợi ý ★ nhanh_goc khi không có remote" sh -c "printf '%s' \"\$1\" | grep -q '★ \[1\] main'" _ "$DX"
+dung "…chỉ đề xuất: chưa tạo branch, chưa tạo worktree" sh -c "! git -C '$R4' rev-parse --verify --quiet refs/heads/fix_phi-hoan-tien && [ ! -e '$TMP/repo4.wt/fix_phi-hoan-tien' ]"
+ky_vong 2 "từ chối loại việc không có tiền tố" sh "$TW" utils x
+ky_vong 2 "từ chối mô tả không phải chữ thường ASCII" sh "$TW" bugfix "Phi Hoan"
+ky_vong 2 "--tao thiếu --goc → từ chối (agent không tự chọn base)" sh "$TW" bugfix phi-hoan-tien --tao
+ky_vong 2 "từ chối base chưa có bộ cài" sh "$TW" bugfix phi-hoan-tien --tao --goc truoc-cai
+ky_vong 2 "từ chối ref không tồn tại" sh "$TW" bugfix phi-hoan-tien --tao --goc khong-co
+AW_THU_MUC_WORKTREE='.worktrees/{ten}' ky_vong 2 "từ chối worktree nằm trong repo" sh "$TW" bugfix phi-hoan-tien
+dung "AW_THU_MUC_WORKTREE ghi đè vị trí theo máy" sh -c "AW_THU_MUC_WORKTREE='$TMP/rieng/{repo}/{ten}' sh '$TW' bugfix phi-hoan-tien 2>/dev/null | grep -qF '$TMP/rieng/repo4/fix_phi-hoan-tien'"
 
-dung "đề xuất tên theo tiền tố của loại việc" test "$(sh "$TB" bugfix phi-hoan-tien 2>/dev/null)" = "fix_phi-hoan-tien"
-dung "…chỉ đề xuất, chưa tạo branch" test "$(git -C "$R4" rev-parse --abbrev-ref HEAD)" = "main"
-ky_vong 2 "từ chối loại việc không có tiền tố" sh "$TB" utils x
-ky_vong 2 "từ chối mô tả không phải chữ thường ASCII" sh "$TB" bugfix "Phi Hoan"
-ky_vong 0 "--tao thì tạo branch" sh "$TB" bugfix phi-hoan-tien --tao
-dung "…và xac-dinh-feature suy được feature từ branch mới" test "$(sh "$XD" 2>/dev/null)" = ".agent-workflow/fix_phi-hoan-tien"
-git -C "$R4" checkout -q main
-ky_vong 2 "từ chối khi branch đã tồn tại" sh "$TB" bugfix phi-hoan-tien --tao
+ky_vong 0 "--tao --goc <ref người chọn> thì tạo worktree" sh "$TW" bugfix phi-hoan-tien --tao --goc main
+W5="$TMP/repo4.wt/fix_phi-hoan-tien"
+dung "…worktree ở đúng chỗ, đúng branch" test "$(git -C "$W5" rev-parse --abbrev-ref HEAD 2>/dev/null)" = "fix_phi-hoan-tien"
+dung "…branch không có upstream (git push trơn không đẩy lên nhánh gốc)" sh -c "! git -C '$W5' rev-parse --abbrev-ref '@{upstream}' 2>/dev/null"
+dung "…checkout chính vẫn đứng ở main" test "$(git -C "$R4" rev-parse --abbrev-ref HEAD)" = "main"
+dung "…in dòng Base để chép vào intake.md" sh -c "sh '$TW' chore in-base --tao --goc main 2>&1 >/dev/null | grep -q '\*\*Base:\*\* \`main\` @ \`'"
+dung "…và xac-dinh-feature trong worktree suy được feature" test "$(sh "$W5/.agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh" 2>/dev/null)" = ".agent-workflow/fix_phi-hoan-tien"
+ky_vong 5 "chạy lại cho việc đã có worktree → mã 5, không tạo gì" sh "$TW" bugfix phi-hoan-tien
+dung "…stdout là đường dẫn worktree đã có" test "$(sh "$TW" bugfix phi-hoan-tien 2>/dev/null)" = "$W5"
+
+# remote: main local chậm hơn origin/main -> ★ origin/main
+RM="$TMP/remote4.git"; git init -q --bare "$RM"
+g4 remote add origin "$RM"; g4 push -q origin main
+KH="$TMP/khac4"; git clone -q -b main "$RM" "$KH" 2>/dev/null
+git -C "$KH" -c user.name=t -c user.email=t@t commit -q --allow-empty -m "cua dong nghiep" && git -C "$KH" push -q origin HEAD:main 2>/dev/null
+g4 fetch -q origin
+DX=$(sh "$TW" feature co-remote 2>/dev/null)
+dung "main chậm origin/main → ★ gợi ý origin/main" sh -c "printf '%s' \"\$1\" | grep -q '★ \[2\] origin/main'" _ "$DX"
+dung "…và ghi rõ main chậm bao nhiêu commit" sh -c "printf '%s' \"\$1\" | grep -q 'chậm 1 commit so với origin/main'" _ "$DX"
+g4 commit -q --allow-empty -m "local chua push"
+dung "main và origin/main phân kỳ → không gợi ý ★" sh -c "sh '$TW' feature co-remote 2>/dev/null | grep -q 'PHÂN KỲ' && ! sh '$TW' feature co-remote 2>/dev/null | grep -q '★ \['"
+g4 reset -q --hard HEAD~1
+
+# ---------------------------------------------------------------- don worktree
+echo ""
+echo "don-worktree.sh"
+DW="$QT4/tools/don-worktree.sh"
+ky_vong 0 "không --xoa: chỉ in trạng thái" sh "$DW" fix_phi-hoan-tien
+dung "…worktree còn nguyên" test -d "$W5"
+printf 'nhap\n' > "$W5/nhap.txt"
+ky_vong 7 "còn file chưa track → chặn --xoa" sh "$DW" fix_phi-hoan-tien --xoa
+dung "…worktree còn nguyên" test -f "$W5/nhap.txt"
+rm -f "$W5/nhap.txt"
+ky_vong 7 "đứng trong chính worktree cần dọn → chặn" sh -c "cd '$W5' && sh '$DW' fix_phi-hoan-tien --xoa"
+ky_vong 2 "--ca-branch không kèm --xoa → sai tham số" sh "$DW" fix_phi-hoan-tien --ca-branch
+ky_vong 2 "branch không có worktree → sai tham số" sh "$DW" release/1.2
+git -C "$W5" -c user.name=t -c user.email=t@t commit -q --allow-empty -m "sua phi"
+ky_vong 7 "chưa merge: gỡ worktree nhưng git từ chối xoá branch" sh "$DW" fix_phi-hoan-tien --xoa --ca-branch
+dung "…worktree đã gỡ, branch còn nguyên (không mất commit)" sh -c "[ ! -e '$W5' ] && git -C '$R4' rev-parse --verify --quiet refs/heads/fix_phi-hoan-tien"
+W6="$TMP/repo4.wt/chore_in-base"
+ky_vong 0 "đã merge: --xoa --ca-branch gỡ worktree và xoá branch" sh "$DW" chore_in-base --xoa --ca-branch
+dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] && ! git -C '$R4' rev-parse --verify --quiet refs/heads/chore_in-base"
 
 IN="$R4/.claude/commands/intake.md"
 dung "/intake: tham số là input, không truyền vào xac-dinh-feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'xac-dinh-feature.sh \$ARGUMENTS' '$IN'"
-dung "/intake: branch sai quy ước thì dẫn tới tao-branch.sh" grep -q 'tao-branch.sh' "$IN"
+dung "/intake: đang ở checkout chính thì dẫn tới tao-worktree.sh" grep -q 'Mã 6.*tao-worktree.sh' "$IN"
+dung "lệnh khác: checkout chính (mã 6) thì dừng lại" grep -q 'Mã 6.*dừng lại' "$R4/.claude/commands/spec.md"
 dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'xac-dinh-feature.sh \$ARGUMENTS' "$R4/.claude/commands/spec.md"
 dung "/intake: tham số đi qua phan-loai-input.sh bằng heredoc nguyên văn" sh -c "grep -q 'phan-loai-input.sh .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
 
@@ -840,6 +902,40 @@ ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /intake" sh "$
 dung "…và có in cảnh báo lệch tiền tố" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*feat_'"
 viet_intake
 
+# Base: dong do tao-worktree.sh in ra, checker phia sau so diff voi no
+SHA_MAIN=$(git -C "$R" rev-parse --short main)
+thay "$F/intake.md" "- **Base:** \`main\` @ \`$SHA_MAIN\`
+" ''
+ky_vong 1 "chặn khi thiếu dòng Base" sh "$CHK" "$F"
+dung "…đúng lý do: thiếu Base" sh -c "sh '$CHK' '$F' | grep -q 'Thiếu dòng .*Base'"
+viet_intake
+thay "$F/intake.md" "@ \`$SHA_MAIN\`" '@ `khongphaisha`'
+ky_vong 1 "chặn Base có sha không phải commit" sh "$CHK" "$F"
+viet_intake
+g checkout -q -b nhanh-khac main; g commit -q --allow-empty -m khac; SHA_KHAC=$(git -C "$R" rev-parse --short HEAD); g checkout -q feat_x
+thay "$F/intake.md" "@ \`$SHA_MAIN\`" "@ \`$SHA_KHAC\`"
+ky_vong 1 "chặn Base có sha không phải tổ tiên của HEAD" sh "$CHK" "$F"
+viet_intake
+thay "$F/intake.md" "\`main\` @" '`da-xoa` @'
+ky_vong 0 "ref của Base không còn nhưng sha đúng → chỉ cảnh báo" sh "$CHK" "$F"
+dung "…và có in cảnh báo ref không còn" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*da-xoa.*không còn'"
+viet_intake
+
+# Base khac nhanh goc: so voi main thi commit cua nguoi khac bi tinh cho viec nay
+g checkout -q -b moi-hon main
+printf 'x\n' > "$R/docs/cua-nguoi-khac.txt"; g add docs/cua-nguoi-khac.txt; g commit -q -m "cua nguoi khac"
+g checkout -q feat_x; g merge -q --no-edit moi-hon
+ky_vong 1 "base ghi main mà branch tạo từ bản mới hơn → review thấy file của người khác" sh "$T/kiem-tra-ra-soat.sh" "$F"
+dung "…đúng lý do: file của người khác bị tính ngoài phạm vi" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'docs/cua-nguoi-khac.txt: thay đổi ngoài phạm vi'"
+SHA_MH=$(git -C "$R" rev-parse --short moi-hon)
+thay "$F/intake.md" "\`main\` @ \`$SHA_MAIN\`" "\`moi-hon\` @ \`$SHA_MH\`"
+ghi_based_on
+ky_vong 0 "ghi đúng base → diff chỉ còn việc của mình, review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
+dung "…nhưng base lạ (xếp chồng) thì review CẢNH BÁO" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base \"moi-hon\"'"
+thay "$R/.agent-workflow/conventions.md" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: moi-*'
+dung "base khớp mau_nhanh_phat_hanh → không cảnh báo" sh -c "! sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base'"
+thay "$R/.agent-workflow/conventions.md" 'mau_nhanh_phat_hanh: moi-*' 'mau_nhanh_phat_hanh:'
+
 # ---------------------------------------------------------------- bugfix
 echo ""
 echo "loại việc: bugfix"
@@ -968,14 +1064,19 @@ echo "doi-ten-feature.sh"
 R5="$TMP/repo5"; mkdir -p "$R5"
 git -C "$R5" init -q; git -C "$R5" checkout -q -b main
 sh "$T/cai-dat.sh" "$R5" --lenh-kiem-thu true >/dev/null 2>&1
-git -C "$R5" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
-git -C "$R5" checkout -q -b fix_sai-loai
-mkdir -p "$R5/.agent-workflow/fix_sai-loai"; printf 'x\n' > "$R5/.agent-workflow/fix_sai-loai/intake.md"
-ky_vong 0 "đổi tên branch thành công" sh "$R5/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_dung-loai
-dung "branch đã đổi tên" test "$(git -C "$R5" rev-parse --abbrev-ref HEAD)" = "feat_dung-loai"
-dung "thư mục artifact dời theo" sh -c "[ -f '$R5/.agent-workflow/feat_dung-loai/intake.md' ] && [ ! -d '$R5/.agent-workflow/fix_sai-loai' ]"
-mkdir -p "$R5/.agent-workflow/feat_khac"
-ky_vong 2 "từ chối khi thư mục đích đã tồn tại" sh "$R5/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_khac
+git -C "$R5" add -A; git -C "$R5" -c user.name=t -c user.email=t@t commit -q -m goc
+ky_vong 2 "từ chối chạy ở checkout chính" sh "$R5/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_x
+W7="$TMP/repo5.wt/fix_sai-loai"
+git -C "$R5" worktree add -q -b fix_sai-loai "$W7" main
+mkdir -p "$W7/.agent-workflow/fix_sai-loai"; printf 'x\n' > "$W7/.agent-workflow/fix_sai-loai/intake.md"
+mkdir -p "$TMP/repo5.wt/feat_khac"
+ky_vong 2 "từ chối khi thư mục worktree đích đã tồn tại" sh "$W7/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_khac
+dung "…và không đổi gì" sh -c "[ -d '$W7' ] && git -C '$R5' rev-parse --verify --quiet refs/heads/fix_sai-loai"
+ky_vong 0 "đổi tên thành công (chạy trong worktree)" sh "$W7/.agent-workflow/.quy-trinh/tools/doi-ten-feature.sh" feat_dung-loai
+W8="$TMP/repo5.wt/feat_dung-loai"
+dung "branch đã đổi tên" sh -c "git -C '$R5' rev-parse --verify --quiet refs/heads/feat_dung-loai && ! git -C '$R5' rev-parse --verify --quiet refs/heads/fix_sai-loai"
+dung "worktree dời sang tên mới, cùng thư mục cha" sh -c "[ ! -e '$W7' ] && [ \"\$(git -C '$W8' rev-parse --abbrev-ref HEAD)\" = feat_dung-loai ]"
+dung "thư mục artifact dời theo" sh -c "[ -f '$W8/.agent-workflow/feat_dung-loai/intake.md' ] && [ ! -d '$W8/.agent-workflow/fix_sai-loai' ]"
 
 # ---------------------------------------------------------------- tong ket
 echo ""

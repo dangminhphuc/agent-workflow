@@ -192,7 +192,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
         c = thu_tu[i]; lt = loai_yc[c]
         if (lt == "")              { loi(c ": " loai " — thiếu \"Loại YC:\" (" ds "). Không được có YC hành vi mới."); continue }
         if (!(lt in hl_yc))        { loi(c ": \"Loại YC: " lt "\" không hợp lệ cho " loai " (" ds ")"); continue }
-        if (lt == "giữ nguyên" && !(c in bv)) loi(c ": YC giữ nguyên phải có \"Được bảo vệ bởi: `<file test>`\" — test có sẵn trên nhánh gốc")
+        if (lt == "giữ nguyên" && !(c in bv)) loi(c ": YC giữ nguyên phải có \"Được bảo vệ bởi: `<file test>`\" — test có sẵn trên base của việc")
         if (lt == "hiệu năng" && !(c in co_mt)) loi(c ": YC hiệu năng phải có \"Mục tiêu:\" kèm số liệu")
         if (lt == "hiệu năng") n_hn++
       }
@@ -208,16 +208,16 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
 ' "$OQ" "$SPEC"
 ma=$?
 
-# Test bảo vệ YC giữ nguyên phải CÓ SẴN trên nhánh gốc: test thêm trong chính việc
+# Test bảo vệ YC giữ nguyên phải CÓ SẴN trên base của việc (điểm rẽ nhánh): test thêm trong chính việc
 # refactor không chứng minh được hành vi cũ.
 n_bv=0
 if [ -s "$BV" ]; then
   MB=$(kc_mb "$DIR")
   while IFS="$(printf '\t')" read -r yc f; do
     if [ -z "$MB" ]; then
-      echo "  [LỖI] $yc: không xác định được nhánh gốc để kiểm \"$f\" (khai nhanh_goc trong conventions.md)"; n_bv=$((n_bv + 1))
+      echo "  [LỖI] $yc: không xác định được base để kiểm \"$f\" (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)"; n_bv=$((n_bv + 1))
     elif ! git -C "$DIR" cat-file -e "$MB:$f" 2>/dev/null; then
-      echo "  [LỖI] $yc: \"$f\" không tồn tại trên nhánh gốc — vùng này chưa có test bảo vệ. Viết test thành việc riêng trước, hoặc thu hẹp phạm vi."
+      echo "  [LỖI] $yc: \"$f\" không tồn tại trên base của việc — vùng này chưa có test bảo vệ. Viết test thành việc riêng trước, hoặc thu hẹp phạm vi."
       n_bv=$((n_bv + 1))
     fi
   done < "$BV"

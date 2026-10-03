@@ -11,7 +11,11 @@
 #     suy đoán của agent mà vào đây thì mọi phase sau sẽ truy về nó như có nguồn.
 #   - [NGƯỜI-DÙNG] không kèm nguyên văn.
 #   - [JIRA] mà định danh không có mã khớp mau_jira (conventions.md).
+#   - Thiếu dòng "Base:" dạng `<ref>` @ `<sha>` (tao-worktree.sh in ra), hoặc sha
+#     không phải tổ tiên của HEAD. Checker phía sau so diff với base này — base
+#     sai thì phạm vi diff, test bảo vệ, tái hiện lỗi đều kiểm trên nền sai.
 # Cảnh báo (review chặn): loại việc lệch tiền tố branch.
+# Cảnh báo (không chặn): ref của Base không còn — checker dùng sha thay.
 #
 # Mã thoát: 0 = đạt, 1 = có vi phạm, 2 = thiếu file.
 
@@ -25,7 +29,24 @@ MD="$DIR/intake.md"
 
 MJ=$(kc_mau_jira "$(kc_conventions "$DIR")")
 
-awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" '
+# ---- Base: base NGƯỜI chọn lúc tạo worktree (kiểm trước, đếm vào tổng vi phạm) ----
+n_base=0
+set -- $(kc_base_dong "$DIR")
+b_ref="${1:-}"; b_sha="${2:-}"
+if [ -z "$b_ref" ] || [ -z "$b_sha" ]; then
+  echo "  [LỖI] Thiếu dòng \"- **Base:** \`<ref>\` @ \`<sha>\`\" — chép đúng dòng tao-worktree.sh in ra khi tạo worktree"
+  n_base=1
+elif ! git -C "$DIR" rev-parse --verify --quiet "$b_sha^{commit}" >/dev/null; then
+  echo "  [LỖI] Base: sha \"$b_sha\" không phải commit trong repo"
+  n_base=1
+elif ! git -C "$DIR" merge-base --is-ancestor "$b_sha" HEAD 2>/dev/null; then
+  echo "  [LỖI] Base: \"$b_sha\" không phải tổ tiên của HEAD — branch này không tạo từ base đã ghi"
+  n_base=1
+elif ! git -C "$DIR" rev-parse --verify --quiet "$b_ref^{commit}" >/dev/null; then
+  echo "  [CẢNH BÁO] Base: ref \"$b_ref\" không còn — checker so diff với sha $b_sha"
+fi
+
+awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function gia_tri(s) {
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
@@ -34,7 +55,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" '
     if (cho_nv) loi("Input #" n_in ": [NGƯỜI-DÙNG] không kèm lời người dùng chép nguyên văn")
     cho_nv = 0
   }
-  BEGIN { n = split(loai_hl, a, " "); for (i = 1; i <= n; i++) hl[a[i]] = 1
+  BEGIN { n_loi = n_base; n = split(loai_hl, a, " "); for (i = 1; i <= n; i++) hl[a[i]] = 1
           nhan["CONFLUENCE"]=1; nhan["JIRA"]=1; nhan["FILE"]=1; nhan["NGƯỜI-DÙNG"]=1 }
   { sub(/\r$/, "") }
 

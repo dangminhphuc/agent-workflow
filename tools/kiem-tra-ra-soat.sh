@@ -14,6 +14,8 @@
 #      thi khong con cho nao phia sau de bat lai.
 #   6. Luat theo loai viec (intake.md) — nhu implement; bugfix con phai co
 #      dong "Test tai hien do vi: ..." do nguoi ra soat viet.
+# Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
+# hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
 # Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file dau vao.
 
@@ -57,6 +59,10 @@ if [ -n "$cb" ]; then
 $cb
 CB
 fi
+
+# Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.
+cb_base=$(kc_base_la "$DIR")
+[ -z "$cb_base" ] || echo "  [CẢNH BÁO] $cb_base"
 
 awk -v loi_truoc="$n_truoc" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }

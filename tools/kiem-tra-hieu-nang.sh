@@ -31,7 +31,7 @@ LENH_DO_HIEU_NANG=""
 [ -n "$LENH_DO_HIEU_NANG" ] || { echo "LỖI: chưa khai LENH_DO_HIEU_NANG trong $CAUHINH" >&2; exit 2; }
 
 if [ "$PHA" = "--truoc" ]; then
-  DOI=$(kc_doi "$DIR") || { echo "LỖI: không xác định được nhánh gốc." >&2; exit 2; }
+  DOI=$(kc_doi "$DIR") || { echo "LỖI: không xác định được base (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)." >&2; exit 2; }
   ngoai=$(printf '%s\n' "$DOI" | while IFS="$(printf '\t')" read -r s p q; do
     [ -n "$p" ] && kc_khop_khoa "$DIR" mau_code_production "${q:-$p}" && echo "  - ${q:-$p}"; done)
   if [ -n "$ngoai" ]; then

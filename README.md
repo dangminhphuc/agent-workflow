@@ -120,29 +120,73 @@ Cách đọc:
 1. **Loại việc** — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
    branch (`loai_theo_tien_to` trong `conventions.md`), **người xác nhận**, và
    `intake.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
-   chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên branch bằng
-   `tools/doi-ten-feature.sh` (dời luôn thư mục artifact).
+   chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên bằng
+   `tools/doi-ten-feature.sh` (đổi cả branch, thư mục artifact và thư mục worktree).
 2. **Input** — tài liệu có định danh (`[JIRA]`, `[CONFLUENCE]`, `[FILE]`), hoặc
    lời người dùng **chép nguyên văn** (`[NGƯỜI-DÙNG]`). Không có `[SUY-RA]` ở đây:
    suy đoán của agent mà vào input thì mọi phase sau truy về nó như có nguồn.
 3. **Mục tiêu** một câu.
+
+Kèm dòng **Base** — base người chọn khi tạo worktree (xem dưới); checker phía sau
+so diff với base này.
 
 `00` chỉ **trỏ tới** tài liệu, không tóm tắt hay diễn giải BRD — nếu không nó
 thành một lớp diễn giải chen giữa tài liệu thật và spec.
 
 **Cách gọi:** `/intake JIRA-123 https://confluence/…` — tham số là **input**, không
 phải tên feature (các lệnh khác thì tham số là tên feature). Tên feature luôn lấy
-từ branch. Đang ở branch không khớp quy ước (vd `main`) thì agent chốt loại việc
-với bạn, đề xuất tên branch bằng `tools/tao-branch.sh <loại-việc> <mô-tả>` (tiền
-tố theo `loai_theo_tien_to`, vd `bugfix` + `phi-hoan-tien` → `fix_phi-hoan-tien`),
-bạn xác nhận rồi mới tạo branch.
+từ branch.
+
+**Worktree là bắt buộc.** Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
+chạy `/intake`; mọi lệnh khác chạy ở đó đều bị chặn (mã 6). `/intake` ở checkout
+chính: agent chốt loại việc với bạn, rồi chạy `tools/tao-worktree.sh <loại-việc>
+<mô-tả>` — script **chỉ đề xuất**:
+
+```
+  Tên        fix_phi-hoan-tien   (tiền tố fix_ ← bugfix)
+  Đường dẫn  /home/dev/shop.wt/fix_phi-hoan-tien
+             (thu_muc_worktree: ../{repo}.wt/{ten})
+
+  Base — chọn một:
+     [1] main               c629505  2 hours ago  "…"
+         nhanh_goc local — ⚠ chậm 2 commit so với origin/main
+   ★ [2] origin/main        80dc1bf  1 hour ago   "…"
+         bản remote tính tới lần fetch cuối: 2026-09-29 17:25 (script không tự fetch)
+     [3] release/1.2        c629505  3 days ago   "…"
+         khớp mau_nhanh_phat_hanh — hợp với bugfix gấp trên bản đã phát hành
+     [4] ref khác — người nhập (branch, tag, commit). Branch việc khác (xếp chồng): review sẽ cảnh báo
+```
+
+**Bạn chọn base**; ★ là gợi ý của máy theo một luật cố định (giữa `main` và
+`origin/main`, bản nào chứa bản kia; phân kỳ thì không gợi ý), không phải của
+agent. Agent chạy lại với `--tao --goc <ref bạn chọn>` — thiếu `--goc` là bị từ
+chối. Script tạo worktree (branch `--no-track`, để `git push` trơn không đẩy lên
+`main`), in dòng `Base:` để ghi vào `intake.md`, và nhắc bạn chuẩn bị môi trường
+(`LENH_CHUAN_BI_WT`) rồi **mở phiên agent mới** trong worktree để chạy `/spec`.
+
+Branch, thư mục worktree và thư mục artifact dùng **cùng một tên**. Worktree đặt
+**ngoài** repo (mặc định `../{repo}.wt/{ten}`), để tool không quét trùng code và
+agent không đọc nhầm artifact của worktree khác; mỗi máy ghi đè được bằng biến
+môi trường `AW_THU_MUC_WORKTREE`.
+
+**Vì sao ghi Base.** Checker so diff với điểm rẽ nhánh khỏi base, không phải
+`nhanh_goc`. Tạo từ `origin/main` khi `main` local đang chậm, hay từ `release/*`,
+mà so với `main` local thì commit của người khác bị tính cho việc này. Base là
+branch việc khác (xếp chồng) vẫn được — nhập qua "ref khác" — nhưng `review`
+cảnh báo để bạn xác nhận có chủ ý: việc dựa trên code chưa được review.
+
+**Dọn dẹp.** `tools/don-worktree.sh <tên-branch>` chạy từ checkout chính: mặc định
+chỉ in trạng thái; `--xoa` gỡ worktree (branch giữ nguyên); `--xoa --ca-branch`
+xoá thêm branch local bằng `git branch -d`. Không bao giờ `--force` hay `-D`: còn
+thay đổi chưa commit thì chặn; squash-merge làm git từ chối xoá branch thì bạn tự
+quyết `git branch -D`. Phase nào gọi lệnh này sẽ định sau.
 
 Nhãn input do **máy** gán: `tools/phan-loai-input.sh` nhận mã Jira (`mau_jira`),
 URL Confluence (`mien_confluence`), file có thật trong repo. Chỉ cần một từ không
 nhận ra thì **cả chuỗi** là lời người dùng, chép nguyên văn thành một mục
 `[NGƯỜI-DÙNG]` — vd `/intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
 câu chỉ là đề xuất tách thêm, bạn đồng ý mới thành input riêng. Chạy lại `/intake`
-trên branch đã có `intake.md` thì **gộp thêm** input mới (bỏ trùng), giữ nguyên
+trong worktree đã có `intake.md` thì **gộp thêm** input mới (bỏ trùng), giữ nguyên
 loại việc; `spec.md` khi đó thành lỗi thời và phải chạy lại `/spec`.
 
 Xếp loại theo **thay đổi gì về hành vi**, không theo "xây cái gì":
@@ -303,7 +347,7 @@ chặn nếu còn artifact lỗi thời.
 | Kiểm chéo | Cách kiểm | Xử lý |
 |---|---|---|
 | Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do trong `plan.md` |
-| Phạm vi diff | File đổi so với merge-base của `nhanh_goc` (kể cả chưa commit, file mới) so với "File dự kiến" + "Phát sinh" + `bo_qua` | Hoàn tác, hoặc ghi vào "Phát sinh" |
+| Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "File dự kiến" + "Phát sinh" + `bo_qua` | Hoàn tác, hoặc ghi vào "Phát sinh" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
 
 ## Đưa artifact từ ngoài vào
@@ -342,14 +386,16 @@ Sinh ra trong repo đích:
   skills/quy-trinh-agent/SKILL.md
 .agent-workflow/
   .quy-trinh/{rules,templates,checkers,tools}      ← bộ cài, cài lại sẽ ghi đè
-  .quy-trinh/cau-hinh.sh                           ← LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf); cài lại không ghi đè
+  .quy-trinh/cau-hinh.sh                           ← LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; cài lại không ghi đè
   conventions.md                                   ← bạn viết; bộ cài chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
   <tên-branch>/                                    ← artifact của từng feature, commit vào git
     intake.md, spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
     plan.md, ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf), review.md
 ```
 
-Rồi sửa `.agent-workflow/conventions.md`, mở Claude Code (chưa có branch thì `/intake` đề xuất tạo):
+Rồi sửa `.agent-workflow/conventions.md`, **commit bộ cài vào nhánh gốc** (worktree
+chỉ có file đã commit), mở Claude Code ở checkout chính và chạy `/intake` — nó đề
+xuất worktree cho việc. Các phase sau chạy trong worktree:
 `/intake` → `/spec` → `/design` → `/plan` → `/implement` → `/review`.
 
 Cài lại sau khi sửa quy trình: chạy lại đúng lệnh trên. Adapter **từ chối ghi đè**
@@ -365,12 +411,13 @@ branch đầy đủ** (vd `feat_tao-todo`) để feat và refactor cùng tên kh
 
 Cách xác định feature đang làm:
 
+0. Đang ở checkout chính → mã 6 (worktree là bắt buộc);
 1. Suy từ tên branch hiện tại theo quy ước trong `conventions.md`;
 2. không khớp thì lấy tham số của lệnh;
 3. không có tham số thì dừng lại hỏi.
 
 Agent luôn in `Đang làm với: …` trước khi bắt đầu. Thứ tự này nằm trong script
-`tools/xac-dinh-feature.sh` (mã 0 = có thư mục, 3 = phải hỏi), không nằm trong
+`tools/xac-dinh-feature.sh` (mã 0 = có thư mục, 3 = phải hỏi, 6 = checkout chính), không nằm trong
 prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành `_`.
 
 `conventions.md` là của repo đích, do bạn viết. Phần máy đọc là một khối
@@ -379,7 +426,9 @@ prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành
 | Khoá | Ví dụ | Dùng cho |
 |---|---|---|
 | `mau_branch` | `feat_* fix_* refactor_*` | Quy ước tên branch; `xxx` không nhất thiết là mã Jira |
-| `nhanh_goc` | `main` | Nhánh gốc để so diff |
+| `nhanh_goc` | `main` | Nhánh checkout chính đứng; ứng viên base chính. Diff so với base trong `intake.md`, chỉ quay về khoá này khi intake chưa có Base |
+| `thu_muc_worktree` | `../{repo}.wt/{ten}` | Vị trí worktree (ngoài repo); ghi đè theo máy bằng `AW_THU_MUC_WORKTREE` |
+| `mau_nhanh_phat_hanh` | `release/*` | Nhánh phát hành — ứng viên base; base khớp thì review không cảnh báo |
 | `bo_qua` | `package-lock.json` | File đổi không cần nằm trong plan |
 | `mau_file_test` | `*.test.* test/*` | File nào là test |
 | `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
@@ -404,16 +453,18 @@ adapters/
 tools/
   cai-dat.sh             cài vào repo đích
   kiem-tra-*.sh          các cổng chặn bằng máy
-  xac-dinh-feature.sh    branch → tham số → hỏi; in thư mục feature
+  xac-dinh-feature.sh    checkout chính → chặn; branch → tham số → hỏi; in thư mục feature
   kiem-tra-tai-hien.sh   bugfix: ghi bằng chứng test tái hiện đỏ trên code chưa sửa
   kiem-tra-hieu-nang.sh  perf: ghi số đo trước / sau
-  doi-ten-feature.sh     đổi tên branch + dời thư mục artifact
-  tao-branch.sh          /intake: đề xuất / tạo branch theo loại việc
+  doi-ten-feature.sh     đổi tên branch + dời thư mục artifact + dời worktree
+  tao-worktree.sh        /intake: đề xuất worktree (tên, vị trí, base) — người chọn base rồi mới tạo
+  don-worktree.sh        dọn worktree sau khi merge (không --force, không -D)
   phan-loai-input.sh     /intake: tham số → dòng "## Input" (nhãn do máy gán, gộp khi chạy lại)
   cap-nhat-based-on.sh   ghi hash đầu vào vào frontmatter artifact
   chay-thu.sh            test hồi quy cho chính các cổng chặn
   lib/md.sh              đọc frontmatter (tập con YAML), conventions, hash
-  lib/kiem-cheo.sh       kiểm chéo dùng chung: lỗi thời, test ↔ YC, phạm vi diff
+  lib/kiem-cheo.sh       kiểm chéo dùng chung: lỗi thời, test ↔ YC, phạm vi diff, base
+  lib/worktree.sh        nhận diện checkout chính / worktree, đường dẫn
 docs/kien-truc.md        vì sao thiết kế như vậy, cách thêm phase/adapter
 ```
 
