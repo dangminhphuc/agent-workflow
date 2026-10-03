@@ -91,10 +91,16 @@ viet_spec() {
 
 ### YC-001 — a
 - Nguồn: `[JIRA]` ABC-1
+- Ưu tiên: `bắt buộc`
+- Tiêu chí chấp nhận:
+  - [ ] mở y thấy a
 
 ### YC-002 — b
 - Nguồn: `[CẦN-HỎI]` → open-questions.md § YC-002
 - Giả định tạm: y
+- Ưu tiên: `nên có`
+- Tiêu chí chấp nhận:
+  - [ ] mở y thấy b
 EOF
   case "$LOAI" in
     refactor|perf)
@@ -109,7 +115,24 @@ EOF
   if [ "$LOAI" = "bugfix" ]; then
     printf '\n## Tái hiện lỗi\n\n- Cách tái hiện: mở a\n- Hành vi sai: ra goc\n- Hành vi đúng: ra moi\n' >> "$F/spec.md"
   fi
-  printf '\n## Ngoài phạm vi\n' >> "$F/spec.md"
+  cat >> "$F/spec.md" <<'EOF'
+
+## Ràng buộc & phụ thuộc
+
+Không có ràng buộc hay phụ thuộc ngoài.
+
+## Ngoài phạm vi
+
+- màn hình z — lý do: đợt sau
+
+## Mâu thuẫn giữa các nguồn
+
+| Nguồn A nói | Nguồn B nói | Xử lý |
+|---|---|---|
+| | | |
+
+Không phát hiện mâu thuẫn.
+EOF
   cat > "$F/open-questions.md" <<'EOF'
 # Điểm mù
 
@@ -361,6 +384,55 @@ viet_spec; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '
 ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
 viet_spec
 
+# Tiêu chí chấp nhận, Ưu tiên
+viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' ''
+ky_vong 1 "chặn YC không có tiêu chí chấp nhận" sh "$CHK" "$F"
+dung "…đúng lý do: YC-001 thiếu tiêu chí" sh -c "sh '$CHK' '$F' | grep -q 'YC-001: thiếu tiêu chí chấp nhận'"
+viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] <quan sát được từ bên ngoài>'
+ky_vong 1 "chặn tiêu chí chấp nhận còn chỗ giữ chỗ" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [x] mở y thấy a'
+ky_vong 0 "tiêu chí đã tick [x] vẫn tính" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Ưu tiên: `bắt buộc`' ''
+ky_vong 1 "chặn YC thiếu Ưu tiên" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '`bắt buộc`' '`cao`'
+ky_vong 1 "chặn Ưu tiên tự chế" sh "$CHK" "$F"
+
+# Các mục bắt buộc ngoài YC
+viet_spec; thay "$F/spec.md" '## Ngoài phạm vi' '## Ghi chú'
+ky_vong 1 "chặn spec thiếu mục Ngoài phạm vi" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- màn hình z — lý do: đợt sau' '- <...> — lý do: <...>'
+ky_vong 1 "chặn Ngoài phạm vi chỉ có chỗ giữ chỗ" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- màn hình z — lý do: đợt sau' 'Không có.'
+ky_vong 0 "Ngoài phạm vi ghi \"Không có.\" thì cho qua" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Ràng buộc & phụ thuộc' '## Khác'
+ky_vong 1 "chặn spec thiếu mục Ràng buộc & phụ thuộc" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" 'Không có ràng buộc hay phụ thuộc ngoài.' '<!-- chưa rà -->'
+ky_vong 1 "chặn Ràng buộc rỗng (chỉ có comment)" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Mâu thuẫn giữa các nguồn' '## Khác'
+ky_vong 1 "chặn spec thiếu mục Mâu thuẫn giữa các nguồn" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" 'Không phát hiện mâu thuẫn.' '<Không có thì ghi "Không phát hiện mâu thuẫn.">'
+ky_vong 1 "chặn bảng mâu thuẫn rỗng, chỉ có chỗ giữ chỗ" sh "$CHK" "$F"
+
+# Mâu thuẫn: agent không tự phân xử
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | chọn 30 ngày cho an toàn |'
+ky_vong 1 "chặn mâu thuẫn do agent tự phân xử" sh "$CHK" "$F"
+dung "…đúng lý do: cột Xử lý" sh -c "sh '$CHK' '$F' | grep -q 'Agent không tự phân xử'"
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | open-questions.md § YC-002 |'
+ky_vong 0 "mâu thuẫn trỏ tới điểm mù có thật thì cho qua" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | open-questions.md § YC-099 |'
+ky_vong 1 "chặn mâu thuẫn trỏ tới điểm mù không có" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | `[JIRA]` ABC-1 comment PO chốt 60 |'
+ky_vong 0 "mâu thuẫn trỏ tới nguồn đã chốt thì cho qua" sh "$CHK" "$F"
+
+# Comment HTML nhiều dòng trong mẫu không phải nội dung
+viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '<!--
+  - [ ] mở y thấy a
+-->'
+ky_vong 1 "tiêu chí nằm trong comment không được tính" sh "$CHK" "$F"
+cp "$ROOT/workflow/templates/spec.md" "$F/spec.md"
+ky_vong 1 "mẫu spec chưa điền thì không qua" sh "$CHK" "$F"
+viet_spec
+
 # ---------------------------------------------------------------- thiet ke
 echo ""
 echo "kiem-tra-thiet-ke.sh"
@@ -460,6 +532,13 @@ thay "$F/plan.md" '|---|---|
 | YC-002 | chờ BA |
 '
 ky_vong 0 "hoãn lại có lý do thì cho qua" sh "$CHK" "$F"
+dung "…không cảnh báo khi hoãn YC nên có" sh -c "! sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: Ưu tiên bắt buộc'"
+thay "$F/plan.md" '| YC-002 | chờ BA |' '| YC-002 | chờ BA |
+| YC-001 | để sau |'
+ky_vong 0 "hoãn YC bắt buộc không chặn" sh "$CHK" "$F"
+dung "…nhưng cảnh báo giao thiếu" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-001: Ưu tiên bắt buộc'"
+thay "$F/plan.md" '
+| YC-001 | để sau |' ''
 thay "$F/plan.md" '| YC-002 | chờ BA |' '| YC-002 | |'
 ky_vong 1 "chặn hoãn lại bỏ trống lý do" sh "$CHK" "$F"
 

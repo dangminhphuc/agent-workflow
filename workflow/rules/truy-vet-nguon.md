@@ -51,7 +51,7 @@ và là vi phạm nặng hơn việc bỏ trống nhãn, vì nó không kiểm �
 sh tools/kiem-tra-truy-vet.sh <thư-mục-artifact>
 ```
 
-Kiểm tám điều:
+Kiểm mười một điều:
 1. Mọi `### YC-NNN` trong `spec.md` có đúng một dòng `Nguồn:` với nhãn hợp lệ.
    Vùng của một YC kết thúc ở heading `##` hoặc `###` kế tiếp — dòng `Nguồn:`
    dưới `### Ghi chú` không được tính cho YC phía trên.
@@ -65,6 +65,15 @@ Kiểm tám điều:
    có thật; `Trạng thái` là `mở | đã trả lời`; `mở` thì spec phải còn `[CẦN-HỎI]`;
    `đã trả lời` thì phải có dòng "Trả lời" và spec đã đổi nhãn nguồn.
 8. `open-questions.md` 0 byte là hợp lệ (đã rà, không có điểm mù).
+9. Mọi YC có `Ưu tiên: bắt buộc | nên có` và ít nhất một tiêu chí chấp nhận
+   `- [ ] …` có nội dung thật (không phải `<...>`, không nằm trong comment HTML).
+10. `spec.md` có đủ `## Ràng buộc & phụ thuộc`, `## Ngoài phạm vi`,
+    `## Mâu thuẫn giữa các nguồn`, mỗi mục có nội dung thật — không có gì thì
+    ghi thẳng "Không có…" / "Không phát hiện mâu thuẫn.".
+11. Mỗi dòng trong bảng mâu thuẫn có cột "Xử lý" trỏ tới một điểm mù có thật
+    (`open-questions.md § YC-NNN`) hoặc một nguồn đã chốt (`[CONFLUENCE]`
+    `[JIRA]` `[FILE]`). Mâu thuẫn nghiệp vụ mà agent tự phân xử cũng là tự nghĩ
+    ra yêu cầu — chỉ khác là có hai câu trích để che.
 
 Điều thứ 2 quan trọng: không có nó thì agent chỉ cần gắn `[CẦN-HỎI]` là qua được
 kiểm tra mà chẳng phải hỏi ai. Điều thứ 7 giữ cho hai file không lệch nhau khi

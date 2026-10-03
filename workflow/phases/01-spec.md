@@ -63,19 +63,47 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 ## Việc phải làm
 
 1. **Thu thập nguồn.** Đọc hết tài liệu được trỏ tới. Ghi lại định danh chính
-   xác của từng nguồn — sẽ dùng làm nhãn truy vết. Không đọc lướt rồi tóm tắt.
+   xác của từng nguồn — sẽ dùng làm nhãn truy vết — và **phiên bản** đã đọc
+   (Confluence: số version của page; Jira: thời điểm `updated`; `[FILE]`: sha
+   commit). Ngày đọc không cho biết nguồn đã đổi sau đó chưa; phiên bản thì có.
+   Không đọc lướt rồi tóm tắt.
 
 2. **Trích yêu cầu thô.** Trích *nguyên văn* các câu mang yêu cầu, chưa diễn
    giải. Bước này tách riêng để phân biệt rõ "tài liệu nói gì" với "ta hiểu thế
    nào" — hai thứ này trộn vào nhau là gốc của phần lớn sai lệch về sau.
 
 3. **Chuyển thành yêu cầu kiểm chứng được.** Mỗi yêu cầu nhận mã `YC-NNN` và
-   phải có tiêu chí chấp nhận **quan sát được từ bên ngoài**. "Hệ thống phải
-   nhanh" không đạt; "trả kết quả tìm kiếm dưới 300ms với 10k bản ghi" thì đạt.
+   phải có ít nhất một tiêu chí chấp nhận `- [ ] …` **quan sát được từ bên
+   ngoài**. "Hệ thống phải nhanh" không đạt; "trả kết quả tìm kiếm dưới 300ms
+   với 10k bản ghi" thì đạt.
 
-4. **Gắn nhãn nguồn** cho từng yêu cầu theo `rules/truy-vet-nguon.md`.
+   Mỗi YC có `Ưu tiên: bắt buộc | nên có`. `nên có` **chỉ khi nguồn nói vậy**
+   (BRD ghi "nice to have", ticket ghi "phase 2 nếu kịp"…); nguồn im lặng thì
+   `bắt buộc`. `03-plan` cảnh báo khi hoãn một YC `bắt buộc`.
 
-5. **Tách điểm mù.** Chỗ nào tài liệu không nói rõ: gắn `[CẦN-HỎI]`, ghi vào
+4. **Rà yêu cầu phi chức năng.** BRD hiếm khi viết NFR, nên agent hay bỏ sót.
+   Với mỗi nhóm dưới đây, hỏi: việc này có đụng tới không, và nguồn nói gì?
+
+   | Nhóm | Câu hỏi gợi ý |
+   |---|---|
+   | Phân quyền | Ai được xem / sửa / duyệt? Vai trò nào bị chặn? |
+   | Audit / lịch sử | Thay đổi có phải lưu vết ai, lúc nào, giá trị cũ? |
+   | Hiệu năng / khối lượng | Bao nhiêu bản ghi, bao nhiêu người dùng đồng thời? |
+   | Dữ liệu nhạy cảm | Có dữ liệu cá nhân, tài chính? Che, mã hoá, thời hạn lưu? |
+   | Tương thích ngược | API / file / báo cáo nào bên ngoài đang dùng thứ sắp đổi? |
+   | Lỗi & khôi phục | Hệ thống ngoài lỗi thì sao? Có cần thử lại, đảo ngược? |
+
+   Nguồn có nói → thành YC như mọi YC khác. Việc **có đụng** tới nhóm đó mà
+   nguồn im lặng → `[CẦN-HỎI]` (thường `cục bộ`). Không đụng → bỏ qua, không
+   ghi gì. Không bịa con số NFR: số liệu phải từ nguồn hoặc từ câu trả lời.
+
+5. **Bối cảnh và thuật ngữ.** Ghi vai trò người dùng liên quan theo nguồn. Domain
+   có từ dễ hiểu lệch ("kỳ", "hạch toán", "khách hàng" vs "người dùng") thì thêm
+   mục `## Thuật ngữ` (tuỳ chọn) — mỗi thuật ngữ kèm nguồn định nghĩa nó.
+
+6. **Gắn nhãn nguồn** cho từng yêu cầu theo `rules/truy-vet-nguon.md`.
+
+7. **Tách điểm mù.** Chỗ nào tài liệu không nói rõ: gắn `[CẦN-HỎI]`, ghi vào
    `open-questions.md` kèm:
    - **giả định tạm** đang dùng để đi tiếp;
    - *điều gì sẽ phải làm lại nếu giả định sai*;
@@ -86,21 +114,30 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    thiết kế` phải được trả lời (Trạng thái: `đã trả lời`) trước khi vào
    `02-design`.
 
-6. **Rà mâu thuẫn.** Đối chiếu các nguồn với nhau. Mâu thuẫn giữa BRD và ticket
+8. **Rà mâu thuẫn.** Đối chiếu các nguồn với nhau. Mâu thuẫn giữa BRD và ticket
    là chuyện thường; phát hiện ở đây rẻ hơn phát hiện lúc đang code rất nhiều.
+   Cột "Xử lý" **chỉ** được trỏ tới một điểm mù (`open-questions.md § YC-NNN`)
+   hoặc một nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới
+   hơn…). Chọn bên nào "hợp lý hơn" là quyết định nghiệp vụ — không phải việc
+   của agent. Không có mâu thuẫn thì ghi "Không phát hiện mâu thuẫn."
 
-7. **Xác định "Ngoài phạm vi".** Liệt kê thẳng những thứ *không* làm lần này.
+9. **Xác định "Ngoài phạm vi".** Liệt kê thẳng những thứ *không* làm lần này.
    Mục này tồn tại để chặn các phase sau làm quá tay — không có nó, agent sẽ coi
-   mọi thứ liền kề là "hợp lý nên làm luôn".
+   mọi thứ liền kề là "hợp lý nên làm luôn". Thật sự không có thì ghi "Không có."
 
-8. **Đề xuất `Mức rủi ro`**: `cao` khi đụng tiền/hạch toán, tích hợp mới, schema
-   lõi, hoặc thay đổi khó đảo ngược; còn lại `thường`. Ghi lý do một dòng.
-   Nhãn này quyết định `02-design` chạy Mode 1 hay Mode 2.
+10. **Ghi "Ràng buộc & phụ thuộc".** Điều kiện bên ngoài việc này phải chịu: hệ
+    thống ngoài, quy định pháp lý–kế toán, deadline, việc của team khác — mỗi
+    mục kèm nguồn. Đây là đầu vào của `Mức rủi ro` (bước sau) và của D-xx ở
+    `02-design`. Không có thì ghi "Không có ràng buộc hay phụ thuộc ngoài."
 
-9. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
-   phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
+11. **Đề xuất `Mức rủi ro`**: `cao` khi đụng tiền/hạch toán, tích hợp mới, schema
+    lõi, hoặc thay đổi khó đảo ngược (xem cả "Ràng buộc & phụ thuộc"); còn lại
+    `thường`. Ghi lý do một dòng. Nhãn này quyết định `02-design` chạy Mode 1 hay Mode 2.
 
-10. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
+12. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
+    phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
+
+13. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
     `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì
     spec thành lỗi thời — cảnh báo ở các phase sau, `review` chặn; phải chạy lại
     phase này để đọc input mới.
@@ -125,6 +162,8 @@ Checker chặn nếu hai file lệch nhau.
 - Tự chọn một cách hiểu cho chỗ mơ hồ rồi đi tiếp mà không ghi `[CẦN-HỎI]`.
 - Gắn `[SUY-RA]` cho một quyết định nghiệp vụ để né việc phải hỏi.
 - Hạ `Mức rủi ro` hoặc `Mức ảnh hưởng` xuống để khỏi bị chặn.
+- Ghi `Ưu tiên: nên có` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
+- Tự phân xử mâu thuẫn giữa các nguồn ("chọn bên an toàn hơn").
 - **Tự đổi `Trạng thái spec` sang `đã duyệt`.** Chỉ người làm việc này.
 - Viết code, kể cả code minh hoạ.
 
@@ -132,9 +171,11 @@ Checker chặn nếu hai file lệch nhau.
 
 **Máy:**
 - `sh tools/kiem-tra-truy-vet.sh` trả về 0 — mọi YC có đúng một nhãn nguồn hợp
-  lệ; mọi `[CẦN-HỎI]` có mục trong `open-questions.md` với giả định tạm và mức
-  ảnh hưởng; trạng thái hai file khớp nhau; spec có `Mức rủi ro` và
-  `Trạng thái spec` hợp lệ.
+  lệ, `Ưu tiên` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[CẦN-HỎI]` có mục
+  trong `open-questions.md` với giả định tạm và mức ảnh hưởng; trạng thái hai
+  file khớp nhau; spec có `Mức rủi ro` và `Trạng thái spec` hợp lệ; có đủ các mục
+  "Ràng buộc & phụ thuộc", "Ngoài phạm vi", "Mâu thuẫn giữa các nguồn" với nội
+  dung thật; mỗi mâu thuẫn trỏ tới điểm mù hoặc nguồn đã chốt.
 
 **Người:**
 - Duyệt yêu cầu và "Ngoài phạm vi" — chỗ hiểu lệch nhau nhiều nhất, máy không

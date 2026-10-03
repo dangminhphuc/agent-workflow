@@ -57,6 +57,8 @@ nằm ở design), và task không có `Dựa trên: D-xx`.
    người cần biết ngay phải làm lại task nào.
 
 3. **Hoãn lại có lý do.** YC không có task nào phủ thì ghi vào "Hoãn lại" kèm lý do.
+   Ưu tiên hoãn YC `nên có`. Hoãn YC `bắt buộc` thì checker cảnh báo (không chặn)
+   — nói rõ với người duyệt plan rằng lần giao này thiếu yêu cầu đó.
 
 4. **Kiểm chứng thủ công.** YC không test tự động được thì ghi vào mục
    "Kiểm chứng thủ công" kèm lý do — nếu không, `/implement` cảnh báo và

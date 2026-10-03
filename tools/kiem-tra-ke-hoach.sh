@@ -11,7 +11,7 @@
 #       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
 #       ngược — mọi mã YC được task phủ, hoặc nằm ở "Hoãn lại" (bắt yêu cầu sót)
 #   - Task thiếu "Cách kiểm chứng", "File dự kiến"; "Dựa trên: D-xx" trỏ về D không có.
-# Cảnh báo: artifact lỗi thời.
+# Cảnh báo: artifact lỗi thời; YC "Ưu tiên: bắt buộc" nằm ở "Hoãn lại".
 #
 # Mã thoát: 0 = đạt, 1 = có vi phạm, 2 = thiếu file đầu vào.
 
@@ -73,7 +73,8 @@ awk -v loi_truoc="$n_loi" '
     if ($0 ~ /^###[ \t]+YC-[0-9]+/) {
       match($0, /YC-[0-9]+/); c = substr($0, RSTART, RLENGTH)
       co_yc[c] = 1; dsach_yc[++n_yc] = c
-    }
+    } else if ($0 ~ /^##/) c = ""
+    if (c != "" && $0 ~ /^[ \t]*-[ \t]*\*{0,2}Ưu tiên[^:]*:/) uu_tien[c] = gia_tri($0)
     next
   }
 
@@ -180,6 +181,12 @@ awk -v loi_truoc="$n_loi" '
       if (c in duoc_phu)   printf "  %s ←%s\n", c, duoc_phu[c]
       else if (c in hoan)  printf "  %s ← (hoãn lại)\n", c
       else                 printf "  %s ← KHÔNG PHỦ\n", c
+    }
+    # Hoãn YC "bắt buộc" không sai cú pháp, nhưng nghĩa là giao thiếu: người phải thấy.
+    for (i = 1; i <= n_yc; i++) {
+      c = dsach_yc[i]
+      if ((c in hoan) && uu_tien[c] != "nên có")
+        print "  [CẢNH BÁO] " c ": Ưu tiên bắt buộc nhưng nằm ở \"Hoãn lại\" — người duyệt plan phải đồng ý giao thiếu."
     }
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
