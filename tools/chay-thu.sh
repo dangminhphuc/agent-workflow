@@ -668,6 +668,53 @@ ky_vong 2 "từ chối cài vào chính repo agent-workflow" sh "$T/cai-dat.sh" 
 ky_vong 2 "từ chối cài vào thư mục con của repo agent-workflow" sh "$T/cai-dat.sh" "$ROOT/adapters"
 ky_vong 2 "build.sh từ chối --out nằm trong repo agent-workflow" sh "$BUILD" --out "$ROOT/adapters"
 
+# ---------------------------------------------------------------- dong bo
+echo ""
+echo "tools/dong-bo.sh"
+# Nguon: ban chep repo nay (ca thay doi chua commit) thanh mot repo git rieng.
+SRC="$TMP/nguon"; mkdir -p "$SRC"
+(cd "$ROOT" && tar cf - --exclude=.git .) | (cd "$SRC" && tar xf -)
+gs() { git -C "$SRC" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
+gs init -q; gs checkout -q -b main; gs add -A; gs commit -q -m v1
+R6="$TMP/repo6"; mkdir -p "$R6"
+git -C "$R6" init -q; git -C "$R6" checkout -q -b main
+sh "$SRC/tools/cai-dat.sh" "$R6" --lenh-kiem-thu true >/dev/null 2>&1
+QT6="$R6/.agent-workflow/.quy-trinh"; DB="$QT6/tools/dong-bo.sh"
+dung "cài ghi nguon.txt: nguồn, nhánh, commit" sh -c \
+  "grep -qx 'url=$SRC' '$QT6/nguon.txt' && grep -qx 'nhanh=main' '$QT6/nguon.txt' && grep -qx \"commit=\$(git -C '$SRC' rev-parse HEAD)\" '$QT6/nguon.txt'"
+mkdir -p "$TMP/repo6b"; git -C "$TMP/repo6b" init -q
+sh "$SRC/tools/cai-dat.sh" "$TMP/repo6b" --nguon 'https://u:bi-mat@example.com/x.git' >/dev/null 2>&1
+dung "nguon.txt bỏ user:token trong URL" sh -c \
+  "grep -qx 'url=https://example.com/x.git' '$TMP/repo6b/.agent-workflow/.quy-trinh/nguon.txt'"
+g6() { git -C "$R6" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
+g6 add -A; g6 commit -q -m cai
+
+ky_vong 0 "--kiem-tra: đã mới nhất → 0" sh "$DB" --kiem-tra
+printf '# luật mới\n' > "$SRC/workflow/rules/luat-moi.md"; gs add -A; gs commit -q -m v2
+ky_vong 1 "--kiem-tra: nguồn có commit mới → 1" sh "$DB" --kiem-tra
+dung "--kiem-tra không đổi gì trong repo đích" sh -c "[ -z \"\$(git -C '$R6' status --porcelain)\" ]"
+
+printf 'x\n' >> "$QT6/rules/nguyen-tac-chung.md"
+ky_vong 7 "chặn khi bộ cài có thay đổi chưa commit" sh "$DB"
+git -C "$R6" checkout -q -- .
+W9="$TMP/repo6.wt/feat_x"; git -C "$R6" worktree add -q -b feat_x "$W9" main
+ky_vong 7 "chặn khi chạy trong worktree" sh "$W9/.agent-workflow/.quy-trinh/tools/dong-bo.sh"
+
+printf 'LENH_KIEM_THU="make test"\n' > "$QT6/cau-hinh.sh"; g6 commit -q -am cau-hinh
+ky_vong 0 "đồng bộ thành công" sh "$DB"
+dung "kéo về file mới của nguồn" test -f "$QT6/rules/luat-moi.md"
+dung "nguon.txt ghi commit mới, giữ url" sh -c \
+  "grep -qx \"commit=\$(git -C '$SRC' rev-parse HEAD)\" '$QT6/nguon.txt' && grep -qx 'url=$SRC' '$QT6/nguon.txt'"
+dung "giữ cau-hinh.sh của người" grep -q 'make test' "$QT6/cau-hinh.sh"
+g6 add -A; g6 commit -q -m dong-bo
+ky_vong 0 "chạy lại khi đã mới nhất → 0" sh "$DB"
+dung "…và không đổi gì" sh -c "[ -z \"\$(git -C '$R6' status --porcelain)\" ]"
+
+gs rm -q workflow/rules/luat-moi.md; gs commit -q -m v3
+sh "$DB" >/dev/null 2>&1
+dung "xoá file mà nguồn đã bỏ" test ! -e "$QT6/rules/luat-moi.md"
+ky_vong 2 "thiếu nguon.txt và không có --nguon → 2" sh -c "rm -f '$QT6/nguon.txt' && sh '$DB'"
+
 # ---------------------------------------------------------------- xac dinh feature
 echo ""
 echo "xac-dinh-feature.sh"
