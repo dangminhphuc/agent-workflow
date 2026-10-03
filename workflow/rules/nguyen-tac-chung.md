@@ -54,3 +54,22 @@ ra sau khi người đã sửa tay vào file.
 
 Nội dung người và agent đọc: tiếng Việt. Định danh trong code (mã yêu cầu, tên
 file, khoá cấu hình): tiếng Anh ASCII, không dấu.
+
+## 6. Artifact viết cho NGƯỜI đọc — BẮT BUỘC
+
+Artifact là để người đọc và duyệt. Người đọc không nổi thì không duyệt được.
+
+**Phân cấp rõ ràng:**
+
+- Heading theo cấp (`#` → `##` → `###`), không nhảy cấp.
+- Mỗi mục một ý. Nhiều ý ngang hàng → danh sách hoặc bảng, không gộp thành đoạn văn.
+- Điều quan trọng nhất (kết luận, quyết định, việc người cần làm) đặt lên đầu mục.
+
+**Ngắn gọn, đơn giản:**
+
+- Câu ngắn, từ thông dụng. Viết như nói với đồng nghiệp, không viết như văn bản hành chính.
+- Bỏ câu rào đón, câu nhắc lại, câu giải thích điều ai cũng biết.
+- Một câu nói được thì không dùng hai.
+
+Heading, bảng và cú pháp mà mẫu hoặc checker yêu cầu vẫn giữ nguyên — nguyên tắc
+này áp dụng cho phần nội dung agent viết vào.
