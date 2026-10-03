@@ -7,9 +7,12 @@
 #   --adapter <id>        mac dinh: claude-code
 #   --lenh-kiem-thu <s>   vi du: "npm test" — dung cho dieu kien ra phase 04-implement
 #   --force               cho phep ghi de file nguoi viet tay
+#   --nguon <url|thu-muc> repo nguon ghi vao nguon.txt (mac dinh: origin cua repo nay)
+#   --nhanh <ten>         nhanh nguon de dong-bo.sh theo doi (mac dinh: nhanh hien tai)
 #
 # Cai vao repo dich:
 #   .agent-workflow/.quy-trinh/{rules,templates,checkers,tools}   bo cai (cai lai se ghi de)
+#   .agent-workflow/.quy-trinh/nguon.txt   cai tu dau, commit nao — dong-bo.sh doc de cap nhat
 #   .agent-workflow/conventions.md    quy uoc cua repo — NGUOI viet, khong bao gio ghi de
 #   .agent-workflow/<ten-branch>/     artifact cua tung feature
 #   .claude/**                                           do adapter sinh ra
@@ -21,12 +24,16 @@ DICH=""
 ADAPTER="claude-code"
 LENH=""
 FORCE=""
+NGUON=""
+NHANH=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --adapter)       ADAPTER="$2"; shift 2 ;;
     --lenh-kiem-thu) LENH="$2";    shift 2 ;;
     --force)         FORCE="--force"; shift ;;
+    --nguon)         NGUON="$2";   shift 2 ;;
+    --nhanh)         NHANH="$2";   shift 2 ;;
     -*) echo "Tham số lạ: $1" >&2; exit 2 ;;
     *)  DICH="$1"; shift ;;
   esac
@@ -64,16 +71,44 @@ echo "Adapter:           $ADAPTER"
 echo ""
 
 # ---- 1. Bo cai (luat, mau, checker LLM, cong cu) ----
+# Xoa truoc khi chep: file ma ban moi bo di (doi ten, gop) khong duoc nam lai,
+# neu khong agent van goi duoc cong cu cu. Cac thu muc nay hoan toan cua bo cai;
+# file NGUOI sua (cau-hinh.sh) nam ngoai chung.
+rm -rf "$QT/rules" "$QT/templates" "$QT/checkers" "$QT/tools"
 mkdir -p "$QT/rules" "$QT/templates" "$QT/checkers" "$QT/tools/lib"
 cp "$ROOT"/workflow/rules/*.md      "$QT/rules/"
 cp "$ROOT"/workflow/templates/*.md  "$QT/templates/"
 cp "$ROOT"/workflow/checkers/*.md   "$QT/checkers/"
 cp "$ROOT"/tools/kiem-tra-*.sh "$ROOT"/tools/xac-dinh-feature.sh "$ROOT"/tools/cap-nhat-based-on.sh \
    "$ROOT"/tools/doi-ten-feature.sh "$ROOT"/tools/tao-worktree.sh "$ROOT"/tools/don-worktree.sh \
-   "$ROOT"/tools/phan-loai-input.sh "$QT/tools/"
+   "$ROOT"/tools/phan-loai-input.sh "$ROOT"/tools/dong-bo.sh "$QT/tools/"
 cp "$ROOT"/tools/lib/*.sh           "$QT/tools/lib/"
 chmod +x "$QT"/tools/*.sh 2>/dev/null || true
 echo "  chép    $ART/.quy-trinh/{rules,templates,checkers,tools}"
+
+# ---- 1b. Nguon goc cua bo cai — de dong-bo.sh biet keo ban moi tu dau ----
+# Bo phan user:token@ trong URL: file nay duoc commit vao repo dich.
+if [ -z "$NGUON" ]; then
+  NGUON=$(git -C "$ROOT" remote get-url origin 2>/dev/null) || NGUON="$ROOT"
+fi
+NGUON=$(printf '%s' "$NGUON" | sed 's#://[^/@]*@#://#')
+if [ -z "$NHANH" ]; then
+  NHANH=$(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null) || NHANH=""
+  [ "$NHANH" = "HEAD" ] && NHANH=""
+fi
+COMMIT=$(git -C "$ROOT" rev-parse HEAD 2>/dev/null) || COMMIT=""
+SUA=""
+[ -n "$COMMIT" ] && [ -n "$(git -C "$ROOT" status --porcelain 2>/dev/null)" ] && SUA=1
+{
+  echo "# SINH TỰ ĐỘNG bởi tools/cai-dat.sh — nguồn của bộ cài này."
+  echo "# tools/dong-bo.sh đọc file này để kéo bản mới. Đổi nguồn: dong-bo.sh --nguon <url>."
+  echo "url=$NGUON"
+  echo "nhanh=$NHANH"
+  echo "commit=$COMMIT"
+  echo "co_thay_doi_chua_commit=${SUA:-khong}"
+  echo "adapter=$ADAPTER"
+} > "$QT/nguon.txt"
+echo "  ghi     $ART/.quy-trinh/nguon.txt (nguồn: $NGUON${NHANH:+ @ $NHANH})"
 
 # ---- 2. Cau hinh rieng cua repo dich ----
 CH="$QT/cau-hinh.sh"
@@ -156,3 +191,4 @@ echo "  $n. Mở Claude Code ở checkout chính (đứng ở nhánh gốc), ch�
 echo ""
 echo "  Chuỗi phase: /intake → /spec → /design → /plan → /implement → /review"
 echo "  Tài liệu làm bằng tool khác: /import <file> <spec.md|tdd.md|plan.md>"
+echo "  Cập nhật khi repo agent-workflow có bản mới: sh $ART/.quy-trinh/tools/dong-bo.sh"
