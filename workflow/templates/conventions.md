@@ -46,3 +46,13 @@ mien_confluence:
 Worktree là bắt buộc: checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để chạy
 `/intake`; mỗi việc làm trong worktree riêng (`tao-worktree.sh`), dọn bằng
 `don-worktree.sh` sau khi merge.
+
+### Commit message
+
+<Chưa định nghĩa. Quy ước viết commit message của team: định dạng tiêu đề,
+có gắn mã Jira hay không, phần thân, ví dụ.>
+
+### Merge request
+
+<Chưa định nghĩa. Quy ước tạo MR: tiêu đề, mô tả (mẫu), người review, nhánh
+đích, điều kiện trước khi merge.>
