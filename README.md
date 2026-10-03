@@ -387,6 +387,7 @@ Sinh ra trong repo đích:
 .agent-workflow/
   .quy-trinh/{rules,templates,checkers,tools}      ← bộ cài, cài lại sẽ ghi đè
   .quy-trinh/cau-hinh.sh                           ← LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; cài lại không ghi đè
+  .quy-trinh/nguon.txt                             ← cài từ repo nào, nhánh nào, commit nào — dong-bo.sh đọc
   conventions.md                                   ← bạn viết; bộ cài chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
   <tên-branch>/                                    ← artifact của từng feature, commit vào git
     intake.md, spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
@@ -403,6 +404,29 @@ file bạn viết tay (file do nó sinh ra đều mang dấu "SINH TỰ ĐỘNG"
 nếu thật sự muốn mất nội dung cũ. Ngược lại, file mang dấu "SINH TỰ ĐỘNG" mà bản
 mới không sinh nữa (vd `/ideation` cũ sau khi đổi thành `/intake`) thì bị **xoá**
 khi cài lại — để agent không còn gọi được lệnh cũ với luật cũ.
+
+### Đồng bộ khi repo agent-workflow có bản mới
+
+Bộ cài ghi nguồn của nó vào `.agent-workflow/.quy-trinh/nguon.txt` (URL `origin`
+của repo agent-workflow — đã bỏ `user:token` — nhánh, commit). Từ **checkout
+chính** của repo đích, đứng ở nhánh gốc:
+
+```sh
+sh .agent-workflow/.quy-trinh/tools/dong-bo.sh --kiem-tra   # 0 = mới nhất, 1 = có bản mới
+sh .agent-workflow/.quy-trinh/tools/dong-bo.sh              # kéo bản mới + cài lại
+```
+
+Script clone nguồn vào thư mục tạm, in các commit mới, rồi chạy `cai-dat.sh`
+**của bản mới** vào repo đích — nên mọi luật của cài lại vẫn giữ: `cau-hinh.sh`,
+`conventions.md`, file viết tay không bị ghi đè; file trong `.quy-trinh/` mà bản
+mới bỏ đi thì bị xoá. Script **không tự commit**: xem diff rồi commit vào nhánh
+gốc; worktree đang làm nhận bản mới khi merge nhánh gốc vào.
+
+- Chặn (mã 7) khi chạy trong worktree, hoặc khi `.quy-trinh/`/`.claude/` có thay
+  đổi chưa commit — đè lên thì không còn xem được diff.
+- `--nguon <url|thư-mục>` / `--nhanh <tên>`: đổi nguồn hay nhánh theo dõi (được
+  ghi lại cho lần sau). Bộ cài cũ chưa có `nguon.txt` thì lần đầu phải truyền `--nguon`.
+- `--cai-lai`: cài lại kể cả khi đã ở commit mới nhất.
 
 ### Artifact theo feature và `conventions.md`
 
@@ -452,6 +476,7 @@ adapters/
   claude-code/build.sh   biên dịch sang .claude/**
 tools/
   cai-dat.sh             cài vào repo đích
+  dong-bo.sh             repo đích: kéo bản mới của agent-workflow và cài lại
   kiem-tra-*.sh          các cổng chặn bằng máy
   xac-dinh-feature.sh    checkout chính → chặn; branch → tham số → hỏi; in thư mục feature
   kiem-tra-tai-hien.sh   bugfix: ghi bằng chứng test tái hiện đỏ trên code chưa sửa
