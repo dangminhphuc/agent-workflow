@@ -112,7 +112,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 
      | Mức | Khi nào | Chặn gì |
      |---|---|---|
-     | `chặn` | Sai thì cả thiết kế đổi hướng | `02-design` (chore: `03-plan`) và mọi phase sau, tới khi người duyệt (`đã duyệt`) |
+     | `chặn` | Sai thì cả thiết kế đổi hướng | `02-design` (chore: `03-plan`) và mọi phase sau, tới khi `đã trả lời` |
      | `chặn review` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `04-implement` cảnh báo, `05-review` chặn |
      | `không chặn` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; review ghi YC đó `chờ xác nhận` |
 
@@ -149,8 +149,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 
 Khi một điểm mù được trả lời: ghi `Trả lời:`, đổi `Trạng thái` sang `đã trả lời`,
 **và** đổi nhãn nguồn của YC trong spec (vd `[FILE]` open-questions.md § YC-002).
-Checker chặn nếu hai file lệch nhau. Điểm mù chỉ gỡ chặn khi **người tự sửa tay**
-`Trạng thái` sang `đã duyệt` — agent không bao giờ ghi giá trị này.
+Checker chặn nếu hai file lệch nhau.
 
 ## Đầu ra
 
@@ -171,7 +170,6 @@ Checker chặn nếu hai file lệch nhau. Điểm mù chỉ gỡ chặn khi **n
 - Ghi `Ưu tiên: nên có` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
 - Tự phân xử mâu thuẫn giữa các nguồn ("chọn bên an toàn hơn").
 - **Tự đổi `Trạng thái spec` sang `đã duyệt`.** Chỉ người làm việc này.
-- **Tự đổi `Trạng thái` của điểm mù sang `đã duyệt`.** Chỉ người sửa tay.
 - Viết code, kể cả code minh hoạ.
 
 ## Điều kiện ra

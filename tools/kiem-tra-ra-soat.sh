@@ -5,7 +5,7 @@
 #
 # Chan:
 #   1. Moi ma YC trong spec.md deu co ket luan hop le trong review.md.
-#   2. Yeu cau gan [CAN-HOI], hoac diem mu chua "da duyet", khong duoc ket luan "dat".
+#   2. Yeu cau gan [CAN-HOI] khong duoc ket luan "dat".
 #   3. Dau vao khong qua kiem-tra-ke-hoach.sh (keo theo design va spec).
 #   4. ket-qua-kiem-thu.md thieu hoac ma thoat khac 0.
 #   5. Moi CANH BAO don tu cac phase truoc con ton tai: YC chua co test,
@@ -70,12 +70,9 @@ fi
 cb_base=$(kc_base_la "$DIR")
 [ -z "$cb_base" ] || echo "  [CẢNH BÁO] $cb_base"
 
-# Điểm mù chưa được NGƯỜI duyệt (mở, hoặc đã trả lời mà chưa duyệt): YC đó chưa xác nhận.
-chua_duyet=$(kc_diem_mu "$DIR" | awk -F'|' '$3 != "đã duyệt" { printf "%s ", $1 }')
-
-awk -v loi_truoc="$n_truoc" -v chua_duyet="$chua_duyet" '
+awk -v loi_truoc="$n_truoc" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
-  BEGIN { n_loi = loi_truoc; n_cd = split(chua_duyet, cd, " "); for (i = 1; i <= n_cd; i++) can_hoi[cd[i]] = 1 }
+  BEGIN { n_loi = loi_truoc }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
 
   { sub(/\r$/, "") }
@@ -123,8 +120,8 @@ awk -v loi_truoc="$n_truoc" -v chua_duyet="$chua_duyet" '
         continue
       }
       if ((c in can_hoi) && kl == "đạt") {
-        loi(c ": đứng trên điểm mù chưa được người duyệt nhưng kết luận \"đạt\". " \
-            "Chưa ai xác nhận thì phải là \"chờ xác nhận\".")
+        loi(c ": gắn [CẦN-HỎI] trong spec nhưng kết luận \"đạt\". " \
+            "Giả định tạm chưa ai xác nhận thì phải là \"chờ xác nhận\".")
         continue
       }
       dem[kl]++

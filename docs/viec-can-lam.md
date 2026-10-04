@@ -30,8 +30,6 @@
 - Lệnh tiện ích `/open-questions` + `tools/liet-ke-cau-hoi.sh`: liệt kê điểm mù
   theo thứ tự phải chốt, agent dẫn người trả lời từng mục. Manifest đổi `import:`
   thành danh sách `commands:`.
-- Trạng thái điểm mù thêm `đã duyệt`: agent ghi tới `đã trả lời`, chỉ người sửa
-  tay sang `đã duyệt`, và chỉ `đã duyệt` mới gỡ chặn (design, review, YC "đạt").
 
 ## Còn lại
 

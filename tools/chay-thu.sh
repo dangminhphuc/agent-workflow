@@ -144,7 +144,7 @@ EOF
 ## YC-002 — b
 - **Giả định tạm đang dùng:** y
 - **Mức chặn:** `không chặn`   <!-- chặn | chặn review | không chặn -->
-- **Trạng thái:** `mở`   <!-- mở | đã trả lời | đã duyệt -->
+- **Trạng thái:** `mở`   <!-- mở | đã trả lời -->
 EOF
 }
 
@@ -395,9 +395,6 @@ printf -- '- **Trả lời:** qua email\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [CẦN-HỎI]" sh "$CHK" "$F"
 thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
 ky_vong 0 "đã trả lời + spec đổi nhãn nguồn thì cho qua" sh "$CHK" "$F"
-thay "$F/open-questions.md" '`đã trả lời`' '`đã duyệt`'
-ky_vong 0 "đã duyệt là trạng thái hợp lệ" sh "$CHK" "$F"
-thay "$F/open-questions.md" '`đã duyệt`' '`đã trả lời`'
 thay "$F/open-questions.md" '- **Trả lời:** qua email' '- **Trả lời:** <người trả lời ghi vào đây>'
 ky_vong 1 "chặn đã trả lời mà Trả lời còn trống/chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[JIRA]` ABC-2'
@@ -479,10 +476,7 @@ dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC
 thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
 printf -- '- **Trả lời:** qua email\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
-ky_vong 1 "đã trả lời mà người chưa duyệt thì vẫn chặn" sh "$CHK" "$F"
-dung "…đúng lý do: chờ người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: .*NGƯỜI chưa duyệt'"
-thay "$F/open-questions.md" '`đã trả lời`' '`đã duyệt`'
-ky_vong 0 "người sửa tay sang đã duyệt thì cho qua" sh "$CHK" "$F"
+ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
@@ -639,22 +633,8 @@ thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
 printf -- '- **Trả lời:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
 ghi_based_on
-ky_vong 1 "CỔNG CUỐI: \"chặn review\" đã trả lời mà người chưa duyệt vẫn chặn" sh "$CHK" "$F"
-thay "$F/open-questions.md" '`đã trả lời`' '`đã duyệt`'; ghi_based_on
-ky_vong 0 "điểm mù \"chặn review\" người đã duyệt thì cho qua" sh "$CHK" "$F"
+ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec; ghi_based_on
-
-# "không chặn" đã trả lời nhưng chưa duyệt: không chặn review, nhưng YC không được "đạt"
-thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
-printf -- '- **Trả lời:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
-ghi_based_on
-ky_vong 0 "\"không chặn\" đã trả lời chưa duyệt: review vẫn qua với \"chờ xác nhận\"" sh "$CHK" "$F"
-printf '| Mã | Kết luận |\n|---|---|\n| YC-001 | đạt |\n| YC-002 | đạt |\n' > "$F/review.md"
-ky_vong 1 "chặn kết luận \"đạt\" cho YC có điểm mù chưa được người duyệt" sh "$CHK" "$F"
-thay "$F/open-questions.md" '`đã trả lời`' '`đã duyệt`'; ghi_based_on
-ky_vong 0 "…người duyệt rồi thì được \"đạt\"" sh "$CHK" "$F"
-viet_spec; viet_review; ghi_based_on
 
 printf '| Mã | Kết luận |\n|---|---|\n| YC-001 | đạt |\n' > "$F/review.md"
 ky_vong 1 "chặn khi bỏ sót một yêu cầu" sh "$CHK" "$F"
@@ -753,9 +733,9 @@ cat > "$LQ/open-questions.md" <<'EOF'
 - **Mức chặn:** `chặn`
 - **Trạng thái:** `mở`
 
-## YC-006 — đã duyệt
+## YC-006 — đã trả lời
 - **Mức chặn:** `chặn`
-- **Trạng thái:** `đã duyệt`
+- **Trạng thái:** `đã trả lời`
 - **Trả lời:** có
 EOF
 thu_tu() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \(YC-[0-9]*\).*/\1/p' | tr '\n' ' '; }
@@ -764,26 +744,13 @@ dung "xếp: chặn → chặn review → không chặn; bắt buộc trước n
 printf '### T-01\n- Đứng trên giả định tạm: **có** — `open-questions.md` § YC-003\n### T-02\n- Đứng trên giả định tạm: **có** — § YC-003\n' > "$LQ/plan.md"
 dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định hơn thì trước" bang "$(thu_tu)" "YC-005 YC-004 YC-003 YC-002 YC-001 "
 dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task đứng trên giả định: 2 (T-01 T-02)'"
-dung "mục đã duyệt không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
+dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
 dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-005.*ĐANG CHẶN /implement'"
 dung "khối Kết quả: [x] CÓ ĐIỂM MÙ ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ ĐIỂM MÙ ĐANG CHẶN'"
 thay "$LQ/open-questions.md" '`chặn`
 - **Trạng thái:** `mở`' '`không chặn`
 - **Trạng thái:** `mở`'
 ky_vong 3 "chỉ còn chặn review (chưa tới review) + không chặn → chưa chặn" sh "$CHK" "$LQ"
-# Đã trả lời nhưng người chưa duyệt: vẫn liệt kê, vẫn chặn, xếp trước trong cùng mức
-cp "$LQ/open-questions.md" "$LQ/oq.bak"
-thay "$LQ/open-questions.md" '## YC-002 — chặn review, bắt buộc, không task
-- **Mức chặn:** `chặn review`
-- **Trạng thái:** `mở`' '## YC-002 — chặn review, đã trả lời
-- **Mức chặn:** `chặn review`
-- **Trạng thái:** `đã trả lời`
-- **Trả lời:** "60 ngày" — PO'
-dung "đã trả lời chưa duyệt: vẫn liệt kê, kèm nhắc người sửa tay" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'CHỜ NGƯỜI DUYỆT: \"60 ngày\" — PO'"
-dung "…xếp trước trong cùng mức (gỡ chặn rẻ nhất)" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -A1 '^\[CHẶN REVIEW\]' | grep -q 'YC-002'"
-thay "$LQ/open-questions.md" '`đã trả lời`' '`đã duyệt`'
-dung "…người sửa tay sang đã duyệt thì không liệt kê nữa" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-002'"
-mv "$LQ/oq.bak" "$LQ/open-questions.md"
 : > "$LQ/ket-qua-kiem-thu.md"
 ky_vong 1 "…tới review thì chặn review thành ĐANG CHẶN" sh "$CHK" "$LQ"
 rm -f "$LQ/ket-qua-kiem-thu.md"

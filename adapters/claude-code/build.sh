@@ -413,7 +413,7 @@ kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
   printf '\n## Luật không được vi phạm\n\n'
   printf '1. **Bàn giao bằng file.** Phase không được nhận đầu vào từ hội thoại phía trên.\n'
   printf '2. **Không tự tuyên bố đạt** với điều kiện ra loại MÁY — phải chạy lệnh và dán kết quả thật.\n'
-  printf '3. **Agent không tự duyệt.** Không tự đổi D-xx, `Trạng thái spec` hay điểm mù trong `open-questions.md` sang `đã duyệt` — chỉ người sửa tay; checker LLM chỉ được chặn.\n'
+  printf '3. **Agent không tự duyệt.** Không tự đổi D-xx sang `đã duyệt`; checker LLM chỉ được chặn.\n'
   printf '4. **Không vượt phạm vi phase.** Việc thuộc phase khác thì ghi lại, không làm luôn.\n'
   printf '5. **Không xoá artifact của phase trước.** Chạy lại là cập nhật, không viết đè trắng.\n'
   printf '6. **Mọi yêu cầu phải truy được về nguồn.**\n'

@@ -63,9 +63,8 @@ Kiểm mười một điều:
    mở thì `implement` cảnh báo, `review` chặn.
 6. `spec.md` có `Mức rủi ro: cao | thường` và `Trạng thái spec: đề xuất | đã duyệt`.
 7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
-   có thật; `Trạng thái` là `mở | đã trả lời | đã duyệt`; `mở` thì spec phải còn
-   `[CẦN-HỎI]`; `đã trả lời` / `đã duyệt` thì phải có dòng "Trả lời" và spec đã
-   đổi nhãn nguồn. Chỉ `đã duyệt` — người sửa tay — mới gỡ chặn của điểm mù.
+   có thật; `Trạng thái` là `mở | đã trả lời`; `mở` thì spec phải còn `[CẦN-HỎI]`;
+   `đã trả lời` thì phải có dòng "Trả lời" và spec đã đổi nhãn nguồn.
 8. `open-questions.md` 0 byte là hợp lệ (đã rà, không có điểm mù).
 9. Mọi YC có `Ưu tiên: bắt buộc | nên có` và ít nhất một tiêu chí chấp nhận
    `- [ ] …` có nội dung thật (không phải `<...>`, không nằm trong comment HTML).

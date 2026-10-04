@@ -221,7 +221,7 @@ bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **Mức chặn** do agent đề 
 
 | Mức chặn | Sai giả định thì | Chặn gì |
 |---|---|---|
-| `chặn` | Cả thiết kế đổi hướng | `design` (chore: `plan`) và mọi phase sau, tới khi người duyệt |
+| `chặn` | Cả thiết kế đổi hướng | `design` (chore: `plan`) và mọi phase sau, tới khi `đã trả lời` |
 | `chặn review` | Làm lại một phần code | Flow đi tiếp trên giả định tạm; `implement` cảnh báo, `review` chặn |
 | `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận`, không được `đạt` |
 
@@ -231,13 +231,8 @@ mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhi�
 định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Agent dẫn bạn đi **từng
 mục một**: câu hỏi, tài liệu nói gì, giả định đang dùng, hệ quả nếu sai, vài
 phương án lấy từ nguồn. Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
-spec, chạy lại checker, đặt `Trạng thái: đã trả lời`. Chưa trả lời được → agent
-soạn sẵn tin nhắn gửi người cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
-
-**Chỉ bạn đóng một điểm mù:** đọc câu trả lời agent đã ghi và chỗ spec đã sửa,
-rồi **tự sửa tay** `Trạng thái` sang `đã duyệt` trong `open-questions.md`. Chỉ
-`đã duyệt` mới gỡ chặn — `đã trả lời` vẫn chặn như `mở`. Cùng cơ chế với
-`Trạng thái spec` và D-xx: gate người để lại dấu vết trong file.
+spec, chạy lại checker. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
+cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
 
 Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.

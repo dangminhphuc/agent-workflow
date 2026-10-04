@@ -28,8 +28,7 @@ Tiêu chí nào diễn đạt được dưới dạng máy thì phải để má
 giá là đã đạt" không phải tiêu chí.
 
 **Agent không tự duyệt.** Không tự đổi quyết định D-xx sang `đã duyệt`, không tự
-trả lời `[CẦN-HỎI]` thay người, không tự đổi điểm mù trong `open-questions.md`
-sang `đã duyệt` — chỉ người sửa tay. Checker dùng LLM chỉ được **chặn**, không bao
+đổi `[CẦN-HỎI]` sang `đã trả lời`. Checker dùng LLM chỉ được **chặn**, không bao
 giờ là bên nói "đạt" — không có file phát hiện nghĩa là checker chưa chạy.
 
 **Flow không tắc.** Checker chính xác (hợp đồng output của chính phase) thì chặn.

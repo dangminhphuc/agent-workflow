@@ -63,9 +63,8 @@ Duyệt **từng mã `YC-NNN`** trong `spec.md`, chỉ ra code nào thoả nó, 
 `đạt` / `chưa đạt` / `đạt một phần`. Không có mã nào được bỏ trống.
 
 Nếu một `YC` gắn `[CẦN-HỎI]` và giả định tạm chưa được xác nhận, kết luận là
-`chờ xác nhận` — không phải `đạt`. Điểm mù chưa được người duyệt (`mở` hoặc `đã
-trả lời`) cũng vậy. Chỉ điểm mù `Mức chặn: không chặn` chưa duyệt được tới đây;
-`chặn` / `chặn review` chưa duyệt thì máy chặn.
+`chờ xác nhận` — không phải `đạt`. Chỉ điểm mù `Mức chặn: không chặn` còn mở được
+tới đây; `chặn` / `chặn review` còn mở thì máy chặn.
 
 ### 2. Đúng thiết kế và phạm vi
 - Code có theo đúng các D-xx đã duyệt và contract/mô hình dữ liệu trong `tdd.md`?
