@@ -138,7 +138,7 @@ phải tên feature (các lệnh khác thì tham số là tên feature). Tên fe
 từ branch.
 
 **Worktree là bắt buộc.** Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
-chạy `/intake`; mọi lệnh khác chạy ở đó đều bị chặn (mã 6). `/intake` ở checkout
+chạy `/intake`; mọi lệnh khác chạy ở đó đều bị chặn (`ĐANG Ở CHECKOUT CHÍNH`). `/intake` ở checkout
 chính: agent chốt loại việc với bạn, rồi chạy `tools/tao-worktree.sh <loại-việc>
 <mô-tả>` — script **chỉ đề xuất**:
 
@@ -296,6 +296,19 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | `implement` | `kiem-tra-hien-thuc.sh` | Test chưa xanh, task còn dở |
 | `review` | `kiem-tra-ra-soat.sh` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, test chưa xanh, hoặc **còn cảnh báo** |
 
+Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
+một nhãn — người và agent đọc nhãn, không đọc mã số:
+
+```
+Kết quả: kiem-tra-ke-hoach.sh
+  [ ] ĐẠT — được sang phase sau
+  [x] KHÔNG ĐẠT — có vi phạm, sửa trong phase này
+  [ ] THIẾU ĐẦU VÀO — chưa có file cần kiểm
+```
+
+Mã thoát vẫn còn — script gọi lẫn nhau cần nó — nhưng chỉ là chi tiết của máy.
+Nhãn của từng script khai ở dòng `kq_khai` đầu script (`tools/lib/ket-qua.sh`).
+
 `kiem-tra-hien-thuc.sh` **tự chạy lệnh test và tự ghi output** vào
 `ket-qua-kiem-thu.md`. Agent không có cơ hội viết lại kết quả bằng lời hay bịa
 một dòng "tất cả test đã xanh".
@@ -372,7 +385,7 @@ sh tools/cai-dat.sh /đường/dẫn/repo-của-bạn --lenh-kiem-thu "npm test"
 ```
 
 Repo đích phải nằm **ngoài** repo agent-workflow: cài vào chính repo này hay bất
-kỳ thư mục con nào (vd `adapters/`) đều bị từ chối (mã 2), vì `.claude/` và
+kỳ thư mục con nào (vd `adapters/`) đều bị từ chối (`SAI THAM SỐ HOẶC THƯ MỤC ĐÍCH KHÔNG HỢP LỆ`), vì `.claude/` và
 `.agent-workflow/` sinh ra sẽ lẫn vào mã nguồn — và Claude Code sẽ nhận nhầm
 chúng là lệnh/skill của chính repo này.
 
@@ -422,7 +435,7 @@ Script clone nguồn vào thư mục tạm, in các commit mới, rồi chạy `
 mới bỏ đi thì bị xoá. Script **không tự commit**: xem diff rồi commit vào nhánh
 gốc; worktree đang làm nhận bản mới khi merge nhánh gốc vào.
 
-- Chặn (mã 7) khi chạy trong worktree, hoặc khi `.quy-trinh/`/`.claude/` có thay
+- Chặn (`BỊ CHẶN`) khi chạy trong worktree, hoặc khi `.quy-trinh/`/`.claude/` có thay
   đổi chưa commit — đè lên thì không còn xem được diff.
 - `--nguon <url|thư-mục>` / `--nhanh <tên>`: đổi nguồn hay nhánh theo dõi (được
   ghi lại cho lần sau). Bộ cài cũ chưa có `nguon.txt` thì lần đầu phải truyền `--nguon`.
@@ -435,13 +448,13 @@ branch đầy đủ** (vd `feat_tao-todo`) để feat và refactor cùng tên kh
 
 Cách xác định feature đang làm:
 
-0. Đang ở checkout chính → mã 6 (worktree là bắt buộc);
+0. Đang ở checkout chính → `ĐANG Ở CHECKOUT CHÍNH` (worktree là bắt buộc);
 1. Suy từ tên branch hiện tại theo quy ước trong `conventions.md`;
 2. không khớp thì lấy tham số của lệnh;
 3. không có tham số thì dừng lại hỏi.
 
 Agent luôn in `Đang làm với: …` trước khi bắt đầu. Thứ tự này nằm trong script
-`tools/xac-dinh-feature.sh` (mã 0 = có thư mục, 3 = phải hỏi, 6 = checkout chính), không nằm trong
+`tools/xac-dinh-feature.sh` (kết quả `ĐÃ XÁC ĐỊNH`, `CẦN HỎI NGƯỜI` hoặc `ĐANG Ở CHECKOUT CHÍNH`), không nằm trong
 prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành `_`.
 
 `conventions.md` là của repo đích, do bạn viết. Phần máy đọc là một khối

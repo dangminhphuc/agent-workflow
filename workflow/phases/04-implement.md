@@ -122,8 +122,8 @@ vào riêng — nó ăn đúng cái diff mà `05-review` ăn — và đặt nó 
 Đặt ở đây thì ràng buộc mạnh hơn: **chưa xanh nghĩa là chưa xong.**
 
 **Máy:**
-- `sh tools/kiem-tra-hien-thuc.sh` trả về 0: đầu vào qua `kiem-tra-ke-hoach.sh`;
-  lệnh kiểm thử của repo đích trả về 0 và output thật nằm trong
+- `sh tools/kiem-tra-hien-thuc.sh` ra `[x] ĐẠT`: đầu vào qua `kiem-tra-ke-hoach.sh`;
+  lệnh kiểm thử của repo đích chạy **XANH** và output thật nằm trong
   `ket-qua-kiem-thu.md`; không còn task `[~]`.
 
 Nếu repo đích chưa có lệnh kiểm thử, phải khai báo lúc cài đặt. Không khai thì

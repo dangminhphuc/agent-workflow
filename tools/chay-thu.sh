@@ -11,7 +11,9 @@ set -u
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 TMP="${TMPDIR:-/tmp}/aw-chay-thu.$$"
 mkdir -p "$TMP"
-trap 'rm -rf "$TMP"' EXIT
+. "$ROOT/tools/lib/ket-qua.sh"
+kq_khai chay-thu.sh "0=MỌI CA ĐẠT" "1=CÓ CA HỎNG — xem các dòng FAIL phía trên"
+kq_don 'rm -rf "$TMP"'
 T="$ROOT/tools"
 
 n_ok=0
@@ -801,7 +803,7 @@ g4() { git -C "$R4" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
 g4 commit -q --allow-empty -m truoc-cai
 g4 tag truoc-cai
 XD="$QT4/tools/xac-dinh-feature.sh"
-ky_vong 6 "checkout chính → mã 6 (worktree bắt buộc)" sh "$XD"
+ky_vong 6 "checkout chính → ĐANG Ở CHECKOUT CHÍNH (worktree bắt buộc)" sh "$XD"
 ky_vong 6 "…kể cả khi có tham số" sh "$XD" feat_abc
 dung "…và in danh sách việc cần làm: mở worktree / chạy /intake" sh -c "sh '$XD' 2>&1 | grep -q 'CHECKOUT CHÍNH'"
 
@@ -810,7 +812,7 @@ g4 add -A; g4 commit -q -m bo-cai
 W4="$TMP/repo4.wt/khong-khop"
 g4 worktree add -q -b khong-khop "$W4" main
 XDW="$W4/.agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh"
-ky_vong 3 "trong worktree, branch không khớp, không tham số → mã 3 (phải hỏi)" sh "$XDW"
+ky_vong 3 "trong worktree, branch không khớp, không tham số → CẦN HỎI NGƯỜI" sh "$XDW"
 dung "branch không khớp → lấy tham số" test "$(sh "$XDW" feat_abc 2>/dev/null)" = ".agent-workflow/feat_abc"
 ky_vong 2 "từ chối tên feature có ../" sh "$XDW" "../x"
 git -C "$W4" checkout -q -b job-them-todo
@@ -848,7 +850,7 @@ dung "…branch không có upstream (git push trơn không đẩy lên nhánh g�
 dung "…checkout chính vẫn đứng ở main" test "$(git -C "$R4" rev-parse --abbrev-ref HEAD)" = "main"
 dung "…in dòng Base để chép vào intake.md" sh -c "sh '$TW' chore in-base --tao --goc main 2>&1 >/dev/null | grep -q '\*\*Base:\*\* \`main\` @ \`'"
 dung "…và xac-dinh-feature trong worktree suy được feature" test "$(sh "$W5/.agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh" 2>/dev/null)" = ".agent-workflow/fix_phi-hoan-tien"
-ky_vong 5 "chạy lại cho việc đã có worktree → mã 5, không tạo gì" sh "$TW" bugfix phi-hoan-tien
+ky_vong 5 "chạy lại cho việc đã có worktree → ĐÃ CÓ WORKTREE, không tạo gì" sh "$TW" bugfix phi-hoan-tien
 dung "…stdout là đường dẫn worktree đã có" test "$(sh "$TW" bugfix phi-hoan-tien 2>/dev/null)" = "$W5"
 
 # remote: main local chậm hơn origin/main -> ★ origin/main
@@ -886,8 +888,8 @@ dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] &&
 
 IN="$R4/.claude/commands/intake.md"
 dung "/intake: tham số là input, không truyền vào xac-dinh-feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'xac-dinh-feature.sh \$ARGUMENTS' '$IN'"
-dung "/intake: đang ở checkout chính thì dẫn tới tao-worktree.sh" grep -q 'Mã 6.*tao-worktree.sh' "$IN"
-dung "lệnh khác: checkout chính (mã 6) thì dừng lại" grep -q 'Mã 6.*dừng lại' "$R4/.claude/commands/spec.md"
+dung "/intake: đang ở checkout chính thì dẫn tới tao-worktree.sh" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*tao-worktree.sh' "$IN"
+dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$R4/.claude/commands/spec.md"
 dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'xac-dinh-feature.sh \$ARGUMENTS' "$R4/.claude/commands/spec.md"
 dung "/intake: tham số đi qua phan-loai-input.sh bằng heredoc nguyên văn" sh -c "grep -q 'phan-loai-input.sh .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
 
@@ -911,12 +913,12 @@ dung "…kèm cảnh báo chưa khai mien_confluence" sh -c "sh '$PL' 'https://w
 dung "bỏ dấu câu / ngoặc bọc ngoài: (ABC-1), \`docs/a.md\`" bang "$(ra '(ABC-1), `docs/a.md`.')" "- ${BT}[JIRA]${BT} ABC-1
 - ${BT}[FILE]${BT} docs/a.md"
 dung "cùng một nguồn gõ nhiều cách → một dòng" bang "$(ra 'ABC-1 ABC-1 https://x.atlassian.net/browse/ABC-1' | wc -l | tr -d ' ')" 1
-ky_vong 1 "đường dẫn không tồn tại → mã 1 (không tự đoán)" sh "$PL" "ABC-1 docs/khong-co.md"
+ky_vong 1 "đường dẫn không tồn tại → ĐƯỜNG DẪN KHÔNG TỒN TẠI (không tự đoán)" sh "$PL" "ABC-1 docs/khong-co.md"
 dung "…và không in dòng input nào" test -z "$(ra 'ABC-1 docs/khong-co.md')"
-ky_vong 3 "không có tham số → mã 3 (hỏi người dùng)" sh "$PL" ""
-ky_vong 3 "tham số chỉ có khoảng trắng / dòng trống → mã 3" sh "$PL" "
+ky_vong 3 "không có tham số → KHÔNG CÓ THAM SỐ (hỏi người dùng)" sh "$PL" ""
+ky_vong 3 "tham số chỉ có khoảng trắng / dòng trống → KHÔNG CÓ THAM SỐ" sh "$PL" "
   "
-ky_vong 4 "câu chữ tự do → mã 4" sh "$PL" "sửa phí hoàn tiền bị âm ABC-123"
+ky_vong 4 "câu chữ tự do → LỜI NGƯỜI DÙNG" sh "$PL" "sửa phí hoàn tiền bị âm ABC-123"
 dung "…cả chuỗi là MỘT mục [NGƯỜI-DÙNG] nguyên văn" bang "$(ra 'sửa phí hoàn tiền bị âm ABC-123')" "- ${BT}[NGƯỜI-DÙNG]${BT}
   > sửa phí hoàn tiền bị âm ABC-123"
 dung "…mã Jira trong câu chỉ là ĐỀ XUẤT (stderr)" sh -c "sh '$PL' 'sửa phí hoàn tiền bị âm ABC-123' 2>&1 >/dev/null | grep -A3 'Đề xuất tách thêm' | grep -q 'ABC-123'"
@@ -956,11 +958,11 @@ cat > "$TMP/intake-cu.md" <<'HET'
   > bị âm
 HET
 dung "--tru: bỏ input đã có, chỉ in input mới" bang "$(ra --tru "$TMP/intake-cu.md" 'ABC-123 docs/a.md ABC-7')" "- ${BT}[JIRA]${BT} ABC-7"
-ky_vong 0 "--tru: không có gì mới vẫn là mã 0" sh "$PL" --tru "$TMP/intake-cu.md" "https://x.atlassian.net/browse/ABC-123"
+ky_vong 0 "--tru: không có gì mới vẫn là NGUỒN" sh "$PL" --tru "$TMP/intake-cu.md" "https://x.atlassian.net/browse/ABC-123"
 dung "…URL …/browse/ABC-123 trùng với ABC-123 đã có → stdout rỗng" test -z "$(ra --tru "$TMP/intake-cu.md" 'https://x.atlassian.net/browse/ABC-123')"
 dung "--tru: lời người dùng đã có (khác khoảng trắng / xuống dòng) → bỏ" test -z "$(ra --tru "$TMP/intake-cu.md" 'sửa phí hoàn tiền bị âm')"
 dung "--tru: lời người dùng mới thì vẫn in" bang "$(ra --tru "$TMP/intake-cu.md" 'thêm xuất CSV' | tail -1)" "  > thêm xuất CSV"
-ky_vong 2 "--tru trỏ tới file không có → mã 2" sh "$PL" --tru "$TMP/khong-co.md" "ABC-1"
+ky_vong 2 "--tru trỏ tới file không có → SAI CÁCH GỌI" sh "$PL" --tru "$TMP/khong-co.md" "ABC-1"
 
 
 # ---------------------------------------------------------------- muc dich (00)
@@ -1203,6 +1205,28 @@ W8="$TMP/repo5.wt/feat_dung-loai"
 dung "branch đã đổi tên" sh -c "git -C '$R5' rev-parse --verify --quiet refs/heads/feat_dung-loai && ! git -C '$R5' rev-parse --verify --quiet refs/heads/fix_sai-loai"
 dung "worktree dời sang tên mới, cùng thư mục cha" sh -c "[ ! -e '$W7' ] && [ \"\$(git -C '$W8' rev-parse --abbrev-ref HEAD)\" = feat_dung-loai ]"
 dung "thư mục artifact dời theo" sh -c "[ -f '$W8/.agent-workflow/feat_dung-loai/intake.md' ] && [ ! -d '$W8/.agent-workflow/fix_sai-loai' ]"
+
+# ---------------------------------------------------------------- khoi "Ket qua"
+# Nguoi va agent doc NHAN, khong doc ma so: moi script in khoi nay ra stderr.
+echo ""
+echo "lib/ket-qua.sh"
+KQT="$TMP/kq-thu.sh"
+cat > "$KQT" <<EOF
+. "$T/lib/ket-qua.sh"
+kq_khai thu.sh "0=ĐẠT" "1=KHÔNG ĐẠT" "2=THIẾU ĐẦU VÀO"
+kq_don 'echo don >&2'
+echo du-lieu
+exit "\$1"
+EOF
+ky_vong 1 "mã thoát giữ nguyên sau khi in khối" sh "$KQT" 1
+dung "đánh dấu đúng nhãn của lần chạy" sh -c "sh '$KQT' 1 2>&1 >/dev/null | grep -qx '  \[x\] KHÔNG ĐẠT'"
+dung "…các nhãn còn lại để trống" sh -c "o=\$(sh '$KQT' 1 2>&1 >/dev/null); printf '%s\n' \"\$o\" | grep -qx '  \[ \] ĐẠT' && printf '%s\n' \"\$o\" | grep -qx '  \[ \] THIẾU ĐẦU VÀO'"
+dung "mã ngoài danh sách → LỖI NGOÀI DỰ KIẾN" sh -c "sh '$KQT' 9 2>&1 >/dev/null | grep -q '\[x\] LỖI NGOÀI DỰ KIẾN'"
+dung "khối ra stderr, stdout giữ nguyên dữ liệu" bang "$(sh "$KQT" 0 2>/dev/null)" "du-lieu"
+dung "việc dọn dẹp (kq_don) vẫn chạy" sh -c "sh '$KQT' 0 2>&1 >/dev/null | grep -qx don"
+dung "checker thiếu file → [x] THIẾU ĐẦU VÀO" sh -c "sh '$T/kiem-tra-ke-hoach.sh' '$TMP/khong-co' 2>&1 | grep -q '\[x\] THIẾU ĐẦU VÀO'"
+dung "xac-dinh-feature ở checkout chính → [x] ĐANG Ở CHECKOUT CHÍNH" sh -c "sh '$XD' 2>&1 | grep -q '\[x\] ĐANG Ở CHECKOUT CHÍNH'"
+dung "…stdout không lẫn khối Kết quả" sh -c "! sh '$XD' 2>/dev/null | grep -q 'Kết quả'"
 
 # ---------------------------------------------------------------- tong ket
 echo ""

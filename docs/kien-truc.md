@@ -106,7 +106,7 @@ agent chép kết quả), **máy chặn phần chính xác**, **người phán p
 
 | Loại | Máy chặn (chính xác) | Người phán (mơ hồ) | Vì sao không để máy phán |
 |---|---|---|---|
-| `bugfix` | Có `tai-hien.md` ghi lúc diff chỉ đụng file test, mã thoát ≠ 0 | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
+| `bugfix` | Có `tai-hien.md` ghi lúc diff chỉ đụng file test, `Kết quả: ĐỎ` | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
 | `refactor` | Xoá test cũ; sửa test cũ không khai; YC giữ nguyên không có test trên nhánh gốc | Diff test cũ chỉ đổi import | Heuristic "chỉ đổi import" phụ thuộc ngôn ngữ, hay báo nhầm |
 | `perf` | Thiếu số đo trước hoặc sau (`do-hieu-nang.md`) | Đạt mục tiêu chưa | Số đo dao động; chặn theo ngưỡng sẽ chặn nhầm |
 | `chore` | Đụng `mau_code_production`; đụng dependency mà không khai; khai `major` | Mức phiên bản khai đúng | Cú pháp phiên bản mỗi hệ sinh thái mỗi khác |
@@ -129,7 +129,7 @@ artifact sang feature khác là lỗi im lặng, khó phát hiện về sau.
 
 Mỗi việc làm trong một worktree riêng; checkout chính chỉ đứng ở `nhanh_goc` và
 chỉ chạy `/intake`. Mọi lệnh khác chạy ở checkout chính bị `xac-dinh-feature.sh`
-chặn (mã 6) — chốt đặt ở script mọi phase đều gọi, không phải trong từng phase.
+chặn (`ĐANG Ở CHECKOUT CHÍNH`) — chốt đặt ở script mọi phase đều gọi, không phải trong từng phase.
 Hệ quả mong muốn: "mỗi phase chạy được từ phiên trắng" không còn là khuyến nghị
 mà là cấu trúc — tạo worktree xong thì người **phải** mở phiên mới ở đó.
 
@@ -161,7 +161,7 @@ chưa merge. Squash-merge git không nhận ra — script dừng, người tự 
 
 Mỗi phase khai `exit_machine` và `exit_human`.
 
-- **MÁY** — lệnh trả mã thoát 0/1. Agent không được tự tuyên bố đạt.
+- **MÁY** — lệnh in khối `Kết quả` đánh `[x] ĐẠT` hoặc `[x] KHÔNG ĐẠT`. Agent không được tự tuyên bố đạt.
 - **NGƯỜI** — cần người xác nhận. Agent nêu ra và dừng.
 
 Nguyên tắc: tiêu chí nào diễn đạt được dưới dạng máy thì **phải** để máy kiểm.
@@ -169,7 +169,7 @@ Nguyên tắc: tiêu chí nào diễn đạt được dưới dạng máy thì *
 của một tiêu chí.
 
 Adapter thực thi nguyên tắc này bằng cách **từ chối build** nếu một mục
-`exit_machine` không phải lệnh chạy được (mã thoát 4). Không có chốt này, một
+`exit_machine` không phải lệnh chạy được (`ĐỊNH NGHĨA QUY TRÌNH LỖI`). Không có chốt này, một
 dòng mô tả bằng chữ sẽ lọt vào mục MÁY và agent sẽ tự duyệt — đã xảy ra một lần
 trong chính quá trình xây repo này, ở phase `review`.
 
@@ -417,7 +417,7 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `đề xuất` thì bản
    "đã duyệt" không còn là bản người đọc — máy không phát hiện được.
 
-8. **`review` không chạy lại test.** Nó đọc mã thoát trong `ket-qua-kiem-thu.md`;
+8. **`review` không chạy lại test.** Nó đọc dòng kết quả trong `ket-qua-kiem-thu.md`;
    sửa code sau lần chạy `kiem-tra-hien-thuc.sh` cuối cùng thì kết quả đó đã cũ.
    Chạy lại `implement` checker trước khi review là việc của người/agent.
 

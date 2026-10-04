@@ -3,7 +3,16 @@
 #
 #   sh tools/kiem-tra-truy-vet.sh <thư-mục-feature>
 #
-# Mã thoát: 0 = đạt, 1 = có vi phạm, 2 = thiếu file đầu vào.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/md.sh"
+. "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/ket-qua.sh"
+kq_khai kiem-tra-truy-vet.sh \
+  "0=ĐẠT — được sang phase sau" \
+  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
+  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -19,10 +28,6 @@ if [ ! -f "$OQ" ]; then
   echo "      Rỗng = đã rà và không thấy gì. Thiếu = chưa rà." >&2
   exit 2
 fi
-
-HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$HERE/lib/md.sh"
-. "$HERE/lib/kiem-cheo.sh"
 
 # Entry check: input của spec là intake.md — phải qua checker của phase 00.
 n_truoc=0

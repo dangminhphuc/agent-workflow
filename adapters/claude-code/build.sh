@@ -16,6 +16,12 @@
 set -e
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/tools/lib/md.sh"
+. "$ROOT/tools/lib/ket-qua.sh"
+kq_khai build.sh \
+  "0=ĐÃ SINH" \
+  "2=SAI THAM SỐ" \
+  "3=CÓ FILE VIẾT TAY — không ghi đè; dời file đó đi hoặc dùng --force" \
+  "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow"
 
 OUT=""
 FORCE=0
@@ -101,7 +107,7 @@ kiem_tra_nguon() {
         fi ;;
       *)
         echo "LỖI: $_file khai exit_machine \"$_c\" — đây không phải lệnh chạy được." >&2
-        echo "      Điều kiện ra loại MÁY phải là lệnh trả mã thoát 0/1." >&2
+        echo "      Điều kiện ra loại MÁY phải là lệnh in khối Kết quả ĐẠT / KHÔNG ĐẠT." >&2
         echo "      Nếu chỉ người kiểm được thì chuyển xuống exit_human." >&2
         _bad=1 ;;
     esac
@@ -122,7 +128,7 @@ kiem_tra_nguon() {
 
 dich_lenh() {
   _s=${1#sh tools/}
-  printf '  - `sh %s/tools/%s %s` → phải trả mã thoát 0\n' "$QT" "$_s" "$FD"
+  printf '  - `sh %s/tools/%s %s` → khối `Kết quả` cuối output phải đánh dấu `[x] ĐẠT`\n' "$QT" "$_s" "$FD"
 }
 
 mo_ta_input() {
@@ -152,15 +158,17 @@ buoc_xac_dinh_feature() {
     # Tham so cua lenh la INPUT, khong phai ten feature: khong truyen vao script,
     # neu khong "/intake JIRA-123" se tao thu muc artifact ten JIRA-123.
     printf 'Chạy `sh %s/tools/xac-dinh-feature.sh` — **không** truyền tham số của lệnh: tham số là input, không phải tên feature.\n\n' "$QT"
-    printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
-    printf -- '- **Mã 6:** đang ở checkout chính → làm theo mục "Tạo worktree" trong mô tả phase: chốt loại việc với người, chạy `tao-worktree.sh` để **đề xuất**, NGƯỜI chọn base, rồi mới `--tao --goc <ref>`. Ghi `intake.md` vào worktree mới, rồi dừng: người mở phiên mới ở đó.\n'
-    printf -- '- **Mã 3:** đang trong worktree nhưng branch không khớp quy ước → dừng lại hỏi người. Không tự đặt tên.\n\n'
+    printf 'Đọc khối `Kết quả` cuối output — làm theo nhãn được đánh `[x]`:\n\n'
+    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
+    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → làm theo mục "Tạo worktree" trong mô tả phase: chốt loại việc với người, chạy `tao-worktree.sh` để **đề xuất**, NGƯỜI chọn base, rồi mới `--tao --goc <ref>`. Ghi `intake.md` vào worktree mới, rồi dừng: người mở phiên mới ở đó.\n'
+    printf -- '- **CẦN HỎI NGƯỜI:** đang trong worktree nhưng branch không khớp quy ước → dừng lại hỏi người. Không tự đặt tên.\n\n'
   else
     printf 'Chạy `sh %s/tools/xac-dinh-feature.sh %s`.\n\n' "$QT" "$1"
-    printf -- '- **Mã 0:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
-    printf -- '- **Mã 6:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/intake` ở checkout chính). Không tự chuyển thư mục.\n'
-    printf -- '- **Mã 3:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
-    printf -- '- **Mã 2:** tên không hợp lệ → báo lại cho người dùng.\n\n'
+    printf 'Đọc khối `Kết quả` cuối output — làm theo nhãn được đánh `[x]`:\n\n'
+    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
+    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/intake` ở checkout chính). Không tự chuyển thư mục.\n'
+    printf -- '- **CẦN HỎI NGƯỜI:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
+    printf -- '- **TÊN KHÔNG HỢP LỆ:** tên không hợp lệ → báo lại cho người dùng.\n\n'
   fi
   printf 'Đường dẫn `tools/`, `templates/`, `rules/`, `checkers/` trong mô tả phase nằm trong `%s/`.\n\n' "$QT"
 }
@@ -170,14 +178,14 @@ buoc_xac_dinh_feature() {
 buoc_phan_loai_input() {
   printf '## Bước 0b — Phân loại tham số thành input\n\n'
   printf 'Tham số của lệnh: `$ARGUMENTS`\n\n'
-  printf 'Bước này không cần thư mục feature: khi Bước 0 trả mã 3, chạy nó trước để có input mà chốt loại việc với người.\n\n'
+  printf 'Bước này không cần thư mục feature: khi Bước 0 ra `CẦN HỎI NGƯỜI`, chạy nó trước để có input mà chốt loại việc với người.\n\n'
   printf '**Không tự gán nhãn.** Chạy đúng như dưới, giữ nguyên văn tham số (kể cả dấu nháy, xuống dòng). Thêm `--tru %s/intake.md` khi file đó **đã có** (chạy lại = gộp thêm, xem mục "Chạy lại" trong mô tả phase):\n\n' "$FD"
   printf '```sh\nsh %s/tools/phan-loai-input.sh [--tru %s/intake.md] - <<'"'"'HET_INPUT'"'"'\n$ARGUMENTS\nHET_INPUT\n```\n\n' "$QT" "$FD"
-  printf 'Stdout là **đúng các dòng** ghi vào `## Input` — chép nguyên, không sửa. Theo mã thoát:\n\n'
-  printf -- '- **0:** các tham số đều là nguồn. Stdout rỗng = không có input mới.\n'
-  printf -- '- **4:** tham số là lời người dùng → stdout là một mục `[NGƯỜI-DÙNG]` nguyên văn. Nếu stderr có "Đề xuất tách thêm": hỏi người, chỉ ghi các dòng đó khi người đồng ý.\n'
-  printf -- '- **3:** không có tham số → hỏi người dùng input, rồi chạy lại lệnh trên với **nguyên văn câu trả lời**.\n'
-  printf -- '- **1:** có đường dẫn không tồn tại → hỏi lại người dùng. Không tự đoán đường dẫn.\n\n'
+  printf 'Stdout là **đúng các dòng** ghi vào `## Input` — chép nguyên, không sửa. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:\n\n'
+  printf -- '- **NGUỒN:** các tham số đều là nguồn. Stdout rỗng = không có input mới.\n'
+  printf -- '- **LỜI NGƯỜI DÙNG:** tham số là lời người dùng → stdout là một mục `[NGƯỜI-DÙNG]` nguyên văn. Nếu stderr có "Đề xuất tách thêm": hỏi người, chỉ ghi các dòng đó khi người đồng ý.\n'
+  printf -- '- **KHÔNG CÓ THAM SỐ:** không có tham số → hỏi người dùng input, rồi chạy lại lệnh trên với **nguyên văn câu trả lời**.\n'
+  printf -- '- **ĐƯỜNG DẪN KHÔNG TỒN TẠI:** có đường dẫn không tồn tại → hỏi lại người dùng. Không tự đoán đường dẫn.\n\n'
 }
 
 ten_agent_checker() { printf 'soat-%s' "$(basename "$1" .md)"; }
@@ -266,7 +274,7 @@ sinh_command() {
 
 # ---------- slash command cho tung phase ----------
 PH_LIST="${TMPDIR:-/tmp}/.wf_phases.$$"
-trap 'rm -f "$PH_LIST" "$DA_SINH"' EXIT
+kq_don 'rm -f "$PH_LIST" "$DA_SINH"'
 wf_phases "$MANIFEST" > "$PH_LIST"
 REV_SRC=""; REV_FILE=""
 CHECKERS=""

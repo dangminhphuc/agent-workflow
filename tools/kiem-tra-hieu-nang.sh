@@ -9,9 +9,14 @@
 # Script chỉ GHI số; có đạt mục tiêu hay không thì người kết luận ở review —
 # số đo dao động nên máy chặn theo ngưỡng sẽ chặn nhầm.
 #
-# Mã thoát: 0 = đã ghi, 1 = không hợp lệ, 2 = sai tham số / thiếu cấu hình.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai kiem-tra-hieu-nang.sh \
+  "0=ĐÃ GHI SỐ ĐO" \
+  "1=KHÔNG HỢP LỆ — lý do in phía trên" \
+  "2=KHÔNG CHẠY ĐƯỢC — sai tham số, sai loại việc hoặc thiếu cấu hình"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 

@@ -18,10 +18,14 @@
 # "git push" trơn trong worktree sẽ đẩy thẳng lên main.
 #
 # Stdout: đề xuất (không --tao) hoặc đường dẫn worktree (--tao).
-# Mã thoát: 0 = được, 2 = tham số / trạng thái không hợp lệ, 5 = branch đã có
-#           worktree (stdout là đường dẫn — mở phiên ở đó, không tạo gì).
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai tao-worktree.sh \
+  "0=XONG — đã in đề xuất, hoặc đã tạo worktree" \
+  "2=KHÔNG HỢP LỆ — tham số hoặc trạng thái, lý do in phía trên" \
+  "5=ĐÃ CÓ WORKTREE — stdout là đường dẫn, mở phiên ở đó"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 

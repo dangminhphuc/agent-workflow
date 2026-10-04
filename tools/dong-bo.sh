@@ -16,9 +16,7 @@
 # Khong tu commit — nguoi xem diff roi commit vao nhanh goc; worktree dang lam
 # nhan ban moi khi merge nhanh goc vao.
 #
-# Ma thoat: 0 = xong / da moi nhat, 1 = (--kiem-tra) co ban moi,
-#           2 = sai tham so / khong biet nguon, 5 = khong lay duoc nguon,
-#           7 = bi chan (ly do in ra).
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 #
 # Toan bo nam trong main(): cai-dat.sh xoa roi chep lai thu muc tools/ — gom ca
 # file nay — nen shell phai doc het script truoc khi chay.
@@ -26,6 +24,14 @@
 main() {
   HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
   . "$HERE/lib/worktree.sh"
+  . "$HERE/lib/ket-qua.sh"
+  kq_khai dong-bo.sh \
+    "0=XONG — đã cập nhật, hoặc đã mới nhất" \
+    "1=CÓ BẢN MỚI — chạy lại không có --kiem-tra để cập nhật" \
+    "2=SAI THAM SỐ HOẶC KHÔNG BIẾT NGUỒN" \
+    "5=KHÔNG LẤY ĐƯỢC NGUỒN" \
+    "7=BỊ CHẶN — lý do in phía trên" \
+    "8=CÀI BẢN MỚI THẤT BẠI — xem lỗi phía trên, khôi phục bằng git checkout"
   QT=$(CDPATH= cd -- "$HERE/.." && pwd)
   DICH=$(CDPATH= cd -- "$QT/../.." && pwd)
   NT="$QT/nguon.txt"
@@ -85,7 +91,8 @@ main() {
 
   # ---- Lay ban moi ----
   TAM="${TMPDIR:-/tmp}/aw-dong-bo.$$"
-  trap 'rm -rf "$TAM"' EXIT INT TERM
+  kq_don 'rm -rf "$TAM"'
+  trap 'rm -rf "$TAM"; exit 1' INT TERM
   echo "Lấy bản mới: $URL${NHANH:+ @ $NHANH}"
   # blob:none: du lich su de in log cu..moi ma khong tai het noi dung cu.
   if ! git clone -q --filter=blob:none ${NHANH:+--branch "$NHANH"} "$URL" "$TAM" 2>/dev/null; then
@@ -112,11 +119,10 @@ main() {
   # Truyen --nguon/--nhanh de nguon.txt giu nguon nguoi da chon, khong ghi
   # duong dan thu muc tam (origin cua ban clone).
   sh "$TAM/tools/cai-dat.sh" "$DICH" --adapter "$ADAPTER" --nguon "$URL" ${NHANH:+--nhanh "$NHANH"} || {
-    rc=$?
     echo "" >&2
-    echo "LỖI: cài bản mới thất bại (mã $rc). Xem lỗi phía trên." >&2
+    echo "LỖI: cài bản mới thất bại. Xem lỗi phía trên." >&2
     echo "      Bộ cài có thể đã đổi một phần; khôi phục: git checkout -- $ART/.quy-trinh .claude" >&2
-    return "$rc"
+    return 8
   }
 
   if git -C "$DICH" rev-parse --git-dir >/dev/null 2>&1; then

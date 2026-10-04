@@ -19,6 +19,13 @@
 
 set -e
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+. "$ROOT/tools/lib/ket-qua.sh"
+# 3 và 4 đến từ adapter (build.sh) — cùng nghĩa.
+kq_khai cai-dat.sh \
+  "0=ĐÃ CÀI — làm theo các bước tiếp theo phía trên" \
+  "2=SAI THAM SỐ HOẶC THƯ MỤC ĐÍCH KHÔNG HỢP LỆ" \
+  "3=CÓ FILE VIẾT TAY — không ghi đè; dời file đó đi hoặc dùng --force" \
+  "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow"
 
 DICH=""
 ADAPTER="claude-code"

@@ -8,9 +8,13 @@
 # artifact bi bao loi thoi (hoac te hon, khong bao khi da loi thoi).
 # Chay lai la ghi de khoi based_on cu; cac khoa frontmatter khac giu nguyen.
 #
-# Ma thoat: 0 = da ghi, 2 = sai tham so / thieu file.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai cap-nhat-based-on.sh \
+  "0=ĐÃ GHI" \
+  "2=SAI THAM SỐ HOẶC THIẾU FILE"
 . "$HERE/lib/md.sh"
 
 [ $# -ge 3 ] || { echo "Dùng: sh cap-nhat-based-on.sh <thư-mục-feature> <artifact> <đầu-vào>..." >&2; exit 2; }

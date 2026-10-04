@@ -15,7 +15,7 @@
 #   - URL khớp mien_confluence               -> [CONFLUENCE]
 #     (chưa khai mien_confluence: mọi URL còn lại -> [CONFLUENCE], kèm cảnh báo)
 #   - file có thật trong repo                -> [FILE]
-#   - trông như đường dẫn mà không có file   -> lỗi (mã 1), không tự đoán
+#   - trông như đường dẫn mà không có file   -> lỗi (ĐƯỜNG DẪN KHÔNG TỒN TẠI), không tự đoán
 #   - còn lại                                -> không nhận ra
 # Có token KHÔNG NHẬN RA thì CẢ CHUỖI là lời người dùng: một mục [NGƯỜI-DÙNG]
 # chép nguyên văn. Tách từng token sẽ biến một câu thành vài "input" rác và làm
@@ -26,11 +26,16 @@
 #
 # Stdout: đúng các dòng ghi vào "## Input" (rỗng = không có input mới).
 # Stderr: giải thích, cảnh báo, đề xuất tách thêm.
-# Mã thoát: 0 = các token đều là nguồn; 1 = có đường dẫn không tồn tại;
-#           2 = sai cách gọi; 3 = không có tham số (hỏi người dùng);
-#           4 = lời người dùng (stdout là mục [NGƯỜI-DÙNG] nguyên văn).
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai phan-loai-input.sh \
+  "0=NGUỒN — các tham số đều là nguồn (stdout rỗng = không có input mới)" \
+  "1=ĐƯỜNG DẪN KHÔNG TỒN TẠI — hỏi lại người, không tự đoán" \
+  "2=SAI CÁCH GỌI" \
+  "3=KHÔNG CÓ THAM SỐ — hỏi người input" \
+  "4=LỜI NGƯỜI DÙNG — stdout là mục [NGƯỜI-DÙNG] nguyên văn"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
@@ -58,7 +63,7 @@ fi
 MJ=$(kc_mau_jira "$CONV")
 MC=$(conv_get "$CONV" mien_confluence)
 TMPD=$(mktemp -d 2>/dev/null) || { TMPD="${TMPDIR:-/tmp}/pli.$$"; mkdir -p "$TMPD"; }
-trap 'rm -rf "$TMPD"' EXIT
+kq_don 'rm -rf "$TMPD"'
 : > "$TMPD/nguon"; : > "$TMPD/thieu"; : > "$TMPD/da-co"; : > "$TMPD/khoa"
 
 la_jira() { printf '%s\n' "$1" | awk -v re="$MJ" '{ exit !($0 ~ ("^(" re ")$")) }'; }

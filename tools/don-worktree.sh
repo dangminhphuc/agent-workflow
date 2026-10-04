@@ -14,9 +14,14 @@
 #     bằng "git branch -d" — git tự từ chối nếu chưa merge. Squash/rebase merge
 #     git không nhận ra → dừng, NGƯỜI tự quyết "git branch -D". Không đoán "chắc merge rồi".
 #
-# Mã thoát: 0 = xong / chỉ in, 2 = sai tham số, 7 = bị chặn (lý do in ra).
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai don-worktree.sh \
+  "0=XONG" \
+  "2=SAI THAM SỐ" \
+  "7=BỊ CHẶN — lý do in phía trên"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 

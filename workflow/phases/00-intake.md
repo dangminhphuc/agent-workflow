@@ -74,21 +74,21 @@ không sửa dòng nó in ra. Luật (mẫu khai trong `conventions.md`):
 | Khớp `mau_jira`, hoặc URL `…/browse/<mã>` | `[JIRA]` |
 | URL khớp `mien_confluence` (chưa khai: mọi URL còn lại, có cảnh báo) | `[CONFLUENCE]` |
 | File có thật trong repo | `[FILE]` |
-| Trông như đường dẫn nhưng không có file | lỗi — mã 1 |
+| Trông như đường dẫn nhưng không có file | lỗi — `ĐƯỜNG DẪN KHÔNG TỒN TẠI` |
 | Còn lại | không nhận ra |
 
 **Lời người dùng.** Chỉ cần **một** token không nhận ra, **cả chuỗi** là lời
-người dùng: một mục `[NGƯỜI-DÙNG]` chép nguyên văn (mã 4). Tách từng từ sẽ biến
+người dùng: một mục `[NGƯỜI-DÙNG]` chép nguyên văn (`LỜI NGƯỜI DÙNG`). Tách từng từ sẽ biến
 một câu thành vài "input" rác và làm mất câu gốc. Nguồn nhận ra được nằm trong
 câu (vd `ABC-123` trong "sửa phí hoàn tiền ABC-123") chỉ là **đề xuất tách thêm**:
 hỏi người, người đồng ý mới ghi thành dòng riêng.
 
-| Mã thoát | Làm gì |
+| Kết quả `[x]` | Làm gì |
 |---|---|
-| 0 | Chép stdout (rỗng = không có input mới) |
-| 4 | Chép mục `[NGƯỜI-DÙNG]`; hỏi người về "đề xuất tách thêm" nếu có |
-| 3 | Không có tham số: hỏi người dùng, chạy lại script với **nguyên văn** câu trả lời |
-| 1 | Đường dẫn không tồn tại: hỏi lại, không tự đoán |
+| `NGUỒN` | Chép stdout (rỗng = không có input mới) |
+| `LỜI NGƯỜI DÙNG` | Chép mục `[NGƯỜI-DÙNG]`; hỏi người về "đề xuất tách thêm" nếu có |
+| `KHÔNG CÓ THAM SỐ` | Hỏi người dùng, chạy lại script với **nguyên văn** câu trả lời |
+| `ĐƯỜNG DẪN KHÔNG TỒN TẠI` | Hỏi lại, không tự đoán |
 
 ## Chạy lại `/intake`
 
@@ -113,7 +113,7 @@ chạy lại `/spec` để đọc input mới. Các phase sau cảnh báo, `revi
 
 Worktree là **bắt buộc**. Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
 chạy `/intake`; mỗi việc làm trong một worktree riêng, một phiên agent riêng.
-`xac-dinh-feature.sh` trả mã 6 khi đang ở checkout chính — với `/intake` nghĩa là
+`xac-dinh-feature.sh` ra `ĐANG Ở CHECKOUT CHÍNH` khi đang ở checkout chính — với `/intake` nghĩa là
 "tạo worktree", với mọi lệnh khác nghĩa là "dừng lại".
 
 Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Làm theo thứ tự:
@@ -135,7 +135,7 @@ Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Là
    thư mục đó, rồi **dừng**: người chuẩn bị môi trường (lệnh `LENH_CHUAN_BI_WT`
    script in ra) và mở phiên agent **mới** trong worktree để chạy `/spec`.
 
-Mã 5 (branch đã có worktree): không tạo gì — bảo người mở phiên ở đường dẫn
+`ĐÃ CÓ WORKTREE` (branch đã có worktree): không tạo gì — bảo người mở phiên ở đường dẫn
 script in ra, rồi chạy lại `/intake` ở đó nếu cần gộp thêm input.
 
 **Vì sao ghi Base.** Checker phía sau so diff với điểm rẽ nhánh khỏi base này.
@@ -186,7 +186,7 @@ cảnh báo: việc này dựa trên code chưa được review.
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-tiep-nhan.sh` trả về 0 — loại việc hợp lệ, có mục tiêu, có ít
+- `sh tools/kiem-tra-tiep-nhan.sh` ra `[x] ĐẠT` — loại việc hợp lệ, có mục tiêu, có ít
   nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
   `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.
