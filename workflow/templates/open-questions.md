@@ -16,9 +16,13 @@
      Lệnh `open-questions` liệt kê các mục còn mở theo thứ tự phải giải quyết trước
      (tools/liet-ke-cau-hoi.sh) và dẫn người trả lời từng mục.
 
+     Trạng thái: `mở` → `đã trả lời` (agent ghi nguyên văn lời người, sửa spec)
+     → `đã duyệt` (CHỈ NGƯỜI sửa tay dòng này). Chỉ `đã duyệt` mới gỡ chặn; agent
+     không bao giờ tự ghi `đã duyệt`.
+
      Checker đối chiếu hai chiều với `spec.md`: mỗi mục phải trỏ về một YC có thật;
-     `mở` ↔ spec gắn `[CẦN-HỎI]`; `đã trả lời` ↔ có dòng "Trả lời" và spec đã đổi
-     nhãn nguồn (vd `[FILE]` open-questions.md § YC-002). -->
+     `mở` ↔ spec gắn `[CẦN-HỎI]`; `đã trả lời` / `đã duyệt` ↔ có dòng "Trả lời" và
+     spec đã đổi nhãn nguồn (vd `[FILE]` open-questions.md § YC-002). -->
 
 <Nếu không có điểm mù nào, ghi đúng dòng dưới đây rồi xoá phần còn lại:>
 <Không có điểm mù.>
@@ -31,5 +35,5 @@
 - **Giả định tạm đang dùng:** <...>
 - **Nếu giả định sai thì phải làm lại gì:** <task/module cụ thể>
 - **Mức chặn:** `<chặn | chặn review | không chặn>`   <!-- agent đề xuất, người duyệt -->
-- **Trạng thái:** `mở`   <!-- mở | đã trả lời -->
+- **Trạng thái:** `mở`   <!-- mở | đã trả lời | đã duyệt — "đã duyệt" chỉ người sửa tay -->
 - **Trả lời:** <nguyên văn câu trả lời — ai trả lời, ngày; khi đó sửa luôn nhãn nguồn trong spec.md>

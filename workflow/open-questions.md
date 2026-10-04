@@ -20,6 +20,19 @@ câu hỏi, ghi lại câu trả lời. Việc **trả lời** là của ngườ
 
 Mức do agent đề xuất ở `/spec`, **người** duyệt. Chỉ người được đổi mức.
 
+## Trạng thái — chỉ người đóng một điểm mù
+
+| Trạng thái | Ai ghi | Gỡ chặn? |
+|---|---|---|
+| `mở` | agent (ở `/spec`) | không |
+| `đã trả lời` | agent, sau khi ghi **nguyên văn** câu trả lời của người | **không** — chờ người duyệt |
+| `đã duyệt` | **chỉ người, sửa tay** trong `open-questions.md` | có |
+
+Người duyệt là xác nhận hai việc agent vừa làm: câu trả lời được ghi đúng ý mình,
+và spec được sửa đúng theo câu trả lời. Giống `Trạng thái spec` và D-xx: agent
+ghi xong thì dừng, không bao giờ tự đổi sang `đã duyệt` — kể cả khi người nói
+"duyệt đi" trong hội thoại. Dấu vết duyệt phải là chính tay người sửa file.
+
 ## Việc phải làm
 
 ### 1. Liệt kê
@@ -31,9 +44,9 @@ mã YC), agent không tự xếp lại.
 
 Đọc nhãn được đánh `[x]` trong khối `Kết quả`:
 
-- **KHÔNG CÒN ĐIỂM MÙ MỞ:** báo người, dừng.
+- **KHÔNG CÒN ĐIỂM MÙ CHƯA DUYỆT:** báo người, dừng.
 - **CÓ ĐIỂM MÙ ĐANG CHẶN:** nói rõ phase nào đang bị chặn, rồi sang bước 2.
-- **CÒN ĐIỂM MÙ MỞ, CHƯA CHẶN:** nói rõ chưa có gì chặn phase kế tiếp; hỏi người
+- **CÒN ĐIỂM MÙ CHƯA DUYỆT, CHƯA CHẶN:** nói rõ chưa có gì chặn phase kế tiếp; hỏi người
   có muốn giải quyết luôn không. Không thì dừng.
 - **THIẾU ĐẦU VÀO:** chưa có `spec.md` / `open-questions.md` → chạy `/spec` trước.
 
@@ -58,6 +71,10 @@ Phương án (đề xuất của agent, người chọn hoặc trả lời khác
 
 - Phương án (a)/(b) chỉ lấy từ **nguồn** và giả định tạm đã ghi — không bịa thêm
   cách hiểu mới. Không có cách hiểu khác thì bỏ (b).
+- Mục `ĐÃ TRẢ LỜI, CHỜ NGƯỜI DUYỆT`: không hỏi lại. Cho người xem câu trả lời
+  đã ghi và chỗ spec đã sửa (trích đúng dòng), rồi nhắc: *mở
+  `open-questions.md`, tự sửa `Trạng thái` của mục này sang `đã duyệt`*. Ghi sai
+  thì người nói — agent sửa lại câu trả lời / spec, giữ `đã trả lời`.
 - Mục `CHƯA PHÂN MỨC` (thiếu hoặc sai `Mức chặn`): hỏi người chọn mức trước —
   checker của spec đang chặn vì nó. Đề xuất mức theo "Nếu sai", người quyết.
 - Hỏi xong thì **dừng chờ người**. Không trình bày mục kế khi mục này chưa xong.
@@ -68,7 +85,8 @@ Phương án (đề xuất của agent, người chọn hoặc trả lời khác
 
 1. Trong `open-questions.md`: `Trả lời:` = **nguyên văn** lời người kèm ai trả
    lời và ngày (vd `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Trạng thái:`
-   → `đã trả lời`. Người nói "đã hỏi PO, PO chốt…" thì ghi PO là người trả lời.
+   → `đã trả lời` (không phải `đã duyệt`). Người nói "đã hỏi PO, PO chốt…" thì
+   ghi PO là người trả lời.
 2. Trong `spec.md`, đổi nhãn nguồn của YC: `[FILE]` open-questions.md § YC-NNN —
    hoặc nguồn người chỉ ra (`[JIRA]` comment, `[CONFLUENCE]` page mới hơn).
    Bỏ dòng `Giả định tạm` của YC đó.
@@ -78,6 +96,8 @@ Phương án (đề xuất của agent, người chọn hoặc trả lời khác
    nhãn nguồn, giữ `Trạng thái spec`.
 4. Chạy `sh tools/kiem-tra-truy-vet.sh <thư-mục-feature>` và dán kết quả thật.
    Không `[x] ĐẠT` thì sửa ngay cho khớp hai file rồi mới sang mục kế.
+5. **Dừng cho người duyệt.** Nói rõ: mục này **vẫn chặn** cho tới khi người mở
+   `open-questions.md` và tự sửa `Trạng thái` sang `đã duyệt`.
 
 **Người chưa trả lời được** (chọn c): soạn sẵn một tin nhắn gửi `Hỏi ai` — tự đủ
 ngữ cảnh, đọc được mà không cần mở repo: câu hỏi, tài liệu đang nói gì, giả định
@@ -93,6 +113,8 @@ Sau mục cuối (hoặc khi người dừng), chạy lại `liet-ke-cau-hoi.sh`
 rồi nói rõ:
 
 - còn gì đang chặn phase nào;
+- mục nào `đã trả lời` đang chờ người sửa tay sang `đã duyệt` — liệt kê mã, đây
+  thường là cách gỡ chặn nhanh nhất;
 - câu hỏi nào đang chờ ai (các mục đã soạn tin nhắn);
 - `Trạng thái spec` có bị đặt lại `đề xuất` không — có thì người duyệt lại spec
   trước khi chạy phase sau;
@@ -105,6 +127,8 @@ rồi nói rõ:
 ## Cấm
 
 - **Tự trả lời** thay người, hoặc ghi `đã trả lời` khi người chưa nói gì.
+- **Tự đổi `Trạng thái` sang `đã duyệt`** — kể cả khi người bảo "duyệt giúp".
+  Chỉ người sửa tay.
 - Ghi câu trả lời đã diễn giải thay cho nguyên văn lời người.
 - Coi phương án agent đề xuất là câu trả lời khi người chưa chọn.
 - Tự hạ `Mức chặn`, hoặc tự đổi mức khi người chưa nói.

@@ -6,10 +6,11 @@
 #
 # Thứ tự:
 #   1. Mức chặn: thiếu/sai nhãn (checker spec đang chặn) → chặn → chặn review → không chặn
-#   2. Cùng mức: YC "Ưu tiên: bắt buộc" trước "nên có"
+#   2. Cùng mức: mục "đã trả lời" chờ người duyệt trước (gỡ chặn rẻ nhất), rồi
+#      YC "Ưu tiên: bắt buộc" trước "nên có"
 #   3. Nhiều task trong plan.md đứng trên giả định tạm hơn thì trước
-#   4. Mã YC
-# Mục "đã trả lời" chỉ được đếm, không liệt kê.
+#   4. Thứ tự trong file
+# Chỉ "đã duyệt" (người tự sửa tay) mới xong: mục đó chỉ được đếm, không liệt kê.
 #
 # Chỉ đọc, không sửa file nào. Không chấm đạt/không đạt: nhãn kết quả cho biết
 # có điểm mù nào đang chặn phase kế tiếp hay không.
@@ -19,9 +20,9 @@
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/ket-qua.sh"
 kq_khai liet-ke-cau-hoi.sh \
-  "0=KHÔNG CÒN ĐIỂM MÙ MỞ" \
+  "0=KHÔNG CÒN ĐIỂM MÙ CHƯA DUYỆT" \
   "1=CÓ ĐIỂM MÙ ĐANG CHẶN — giải quyết theo thứ tự trên trước khi chạy phase kế tiếp" \
-  "3=CÒN ĐIỂM MÙ MỞ, CHƯA CHẶN phase kế tiếp" \
+  "3=CÒN ĐIỂM MÙ CHƯA DUYỆT, CHƯA CHẶN phase kế tiếp" \
   "2=THIẾU ĐẦU VÀO — chưa có file cần đọc"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
@@ -70,6 +71,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
     else if ($0 ~ /Hỏi ai[^:]*:/)            ai[cur]  = gia_tri($0)
     else if ($0 ~ /Giả định tạm[^:]*:/)      gd[cur]  = gia_tri($0)
     else if ($0 ~ /Nếu giả định sai[^:]*:/)  sai[cur] = gia_tri($0)
+    else if ($0 ~ /Trả lời[^:]*:/)           tl[cur]  = gia_tri($0)
     next
   }
   idx==1 { next }
@@ -91,7 +93,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
     chan[0] = "spec"; chan[1] = csp; chan[2] = "review"; chan[3] = ""
     mo_ta[0] = "thiếu hoặc sai \"Mức chặn\" — checker của spec chặn; NGƯỜI gán: chặn | chặn review | không chặn"
     mo_ta[1] = "sai giả định thì cả thiết kế đổi hướng — chặn /" csp
-    mo_ta[2] = "flow đi tiếp trên giả định tạm; /review chặn tới khi có câu trả lời"
+    mo_ta[2] = "flow đi tiếp trên giả định tạm; /review chặn tới khi người duyệt"
     mo_ta[3] = "giao được trên giả định tạm; review ghi YC đó \"chờ xác nhận\""
     # Phase nào chặn "ngay": phase kế tiếp, hoặc mọi phase sau khi đã qua phase bị chặn
     # (checker mỗi phase chạy lại checker phase trước).
@@ -99,11 +101,13 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
 
     for (i = 1; i <= n; i++) {
       q = ds[i]
-      if (tt[q] == "đã trả lời") { n_xong++; continue }
+      if (tt[q] == "đã duyệt") { n_xong++; continue }
+      cho = (tt[q] == "đã trả lời") ? 0 : 1
+      if (!cho) n_cho++
       m = muc[q]
       g = (m == "chặn") ? 1 : (m == "chặn review") ? 2 : (m == "không chặn") ? 3 : 0
       # Khoá sắp xếp: mức, ưu tiên YC (bắt buộc trước), số task (nhiều trước), thứ tự trong file.
-      k = sprintf("%d %d %04d %04d", g, (ut[q] == "nên có") ? 1 : 0, 9999 - so_task[q], i)
+      k = sprintf("%d %d %d %04d %04d", g, cho, (ut[q] == "nên có") ? 1 : 0, 9999 - so_task[q], i)
       khoa[++n_mo] = k; ma_k[k] = q; nh[q] = g
       dem[g]++
       if (g == 0 || (g == 1 && thu[ke] >= thu[csp]) || (g == 2 && ke == "review")) { dang_chan[q] = 1; n_chan++ }
@@ -112,8 +116,8 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
     # sắp xếp chèn — vài chục mục, không cần hơn
     for (i = 2; i <= n_mo; i++) { k = khoa[i]; j = i - 1; while (j >= 1 && khoa[j] > k) { khoa[j+1] = khoa[j]; j-- } khoa[j+1] = k }
 
-    printf "Điểm mù: %d mở, %d đã trả lời — phase kế tiếp: /%s\n", n_mo, n_xong, ke
-    if (n_mo == 0) { print ""; print "Không còn điểm mù mở."; exit 0 }
+    printf "Điểm mù: %d chưa xong (%d chờ người duyệt), %d đã duyệt — phase kế tiếp: /%s\n", n_mo, n_cho, n_xong, ke
+    if (n_mo == 0) { print ""; print "Không còn điểm mù nào chưa duyệt."; exit 0 }
     printf "  chặn: %d · chặn review: %d · không chặn: %d", dem[1] + 0, dem[2] + 0, dem[3] + 0
     if (dem[0]) printf " · chưa phân mức: %d", dem[0]
     printf "\n"
@@ -132,6 +136,8 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
       printf "     Chỗ chưa rõ: %s\n", (co_nd(hoi[q]) ? hoi[q] : "<chưa ghi>")
       printf "     Giả định tạm: %s\n", (co_nd(gd[q]) ? gd[q] : "<chưa ghi>")
       printf "     Nếu sai phải làm lại: %s\n", (co_nd(sai[q]) ? sai[q] : "<chưa ghi>")
+      if (tt[q] == "đã trả lời")
+        printf "     ĐÃ TRẢ LỜI, CHỜ NGƯỜI DUYỆT: %s\n     → người tự sửa tay Trạng thái sang \"đã duyệt\" trong open-questions.md\n", (co_nd(tl[q]) ? tl[q] : "<trống>")
     }
     print ""
     if (n_chan) { printf "%d điểm mù đang chặn — giải quyết từ mục 1.\n", n_chan; exit 1 }

@@ -279,6 +279,12 @@ các mục còn mở: `tools/liet-ke-cau-hoi.sh` xếp thứ tự bằng máy (m
 đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
 
+Trạng thái điểm mù: `mở` → `đã trả lời` → `đã duyệt`. Agent được ghi tới `đã trả
+lời` (câu trả lời là của người, agent chỉ chép và sửa spec theo); **chỉ người sửa
+tay** sang `đã duyệt`, và chỉ `đã duyệt` mới gỡ chặn. Tách hai bước vì bước ghi
+lại là chỗ agent có thể hiểu sai lời người — người duyệt chính là kiểm bản ghi đó,
+như duyệt spec hay D-xx.
+
 ### Vì sao checker tự chạy test thay vì đọc kết quả
 
 `kiem-tra-hien-thuc.sh` tự chạy lệnh test và tự ghi output vào

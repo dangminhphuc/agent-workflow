@@ -235,13 +235,13 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
         loi("open-questions.md có mục \"## " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
         continue
       }
-      if (s != "mở" && s != "đã trả lời") {
-        loi(q ": \"Trạng thái: " s "\" trong open-questions.md không hợp lệ. Chỉ chấp nhận: mở | đã trả lời")
+      if (s != "mở" && s != "đã trả lời" && s != "đã duyệt") {
+        loi(q ": \"Trạng thái: " s "\" trong open-questions.md không hợp lệ. Chỉ chấp nhận: mở | đã trả lời | đã duyệt")
         continue
       }
-      if (s == "đã trả lời" && !(q in tra_loi))
-        loi(q ": điểm mù ghi \"đã trả lời\" nhưng dòng \"Trả lời:\" còn trống.")
-      else if (s == "đã trả lời" && nhan[q] == "CẦN-HỎI")
+      if (s != "mở" && !(q in tra_loi))
+        loi(q ": điểm mù ghi \"" s "\" nhưng dòng \"Trả lời:\" còn trống.")
+      else if (s != "mở" && nhan[q] == "CẦN-HỎI")
         loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [CẦN-HỎI]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
             "(vd `[FILE]` open-questions.md § " q ").")
       else if (s == "mở" && so_nguon[q] == 1 && nhan[q] != "CẦN-HỎI")

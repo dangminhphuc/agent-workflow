@@ -371,6 +371,9 @@ kc_canh_bao_theo_loai() {
 #   chặn         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore: plan)
 #   chặn review  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
 #   không chặn   sai thì sửa nhỏ                 → giao được; review ghi YC đó "chờ xác nhận"
+#
+# Trạng thái: mở → đã trả lời (agent ghi nguyên văn lời người) → đã duyệt (CHỈ người
+# tự sửa tay trong file). Chỉ "đã duyệt" mới gỡ chặn — như Trạng thái spec và D-xx.
 
 MUC_CHAN_HOP_LE="chặn|chặn review|không chặn"
 
@@ -389,15 +392,19 @@ kc_diem_mu() {
   ' "$1/open-questions.md"
 }
 
-# kc_diem_mu_mo <thư-mục-feature> <mức...> -> điểm mù CÒN MỞ thuộc các mức đã cho.
+# kc_diem_mu_mo <thư-mục-feature> <mức...> -> điểm mù CHƯA "đã duyệt" thuộc các mức đã cho.
 # Gọi với "chặn" làm cổng vào design (chore: plan); với "chặn" + "chặn review"
 # ở implement (cảnh báo) và review (chặn).
 kc_diem_mu_mo() {
   _dm_d="$1"; shift
   kc_diem_mu "$_dm_d" | while IFS='|' read -r _q _m _t; do
-    [ "$_t" = "đã trả lời" ] && continue
+    [ "$_t" = "đã duyệt" ] && continue
     for _w in "$@"; do
       [ "$_m" = "$_w" ] || continue
+      if [ "$_t" = "đã trả lời" ]; then
+        echo "$_q: điểm mù mức \"$_m\" đã có câu trả lời nhưng NGƯỜI chưa duyệt — người đọc câu trả lời và spec rồi tự sửa Trạng thái sang \"đã duyệt\" trong open-questions.md"
+        continue
+      fi
       case "$_m" in
         chặn) echo "$_q: điểm mù mức \"chặn\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh open-questions dẫn dắt việc này)" ;;
         *)    echo "$_q: điểm mù mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh open-questions dẫn dắt việc này)" ;;
