@@ -20,7 +20,8 @@ một phase không chạy nổi khi mở phiên trắng, phase trước đã ghi
 
 Mỗi phase khai báo `exit_machine` và `exit_human`:
 
-- **máy** — chạy được bằng lệnh, cho mã thoát 0/1. Agent không được tự tuyên bố đạt.
+- **máy** — chạy được bằng lệnh; cuối output có khối `Kết quả` đánh `[x]` vào
+  đúng một nhãn (`ĐẠT`, `KHÔNG ĐẠT`, …). Agent đọc nhãn, không tự tuyên bố đạt.
 - **người** — cần người xác nhận. Agent nêu ra và dừng, không tự duyệt thay.
 
 Tiêu chí nào diễn đạt được dưới dạng máy thì phải để máy kiểm. "Agent tự đánh

@@ -14,9 +14,13 @@
 #
 # Không đụng remote: branch đã push thì tự push tên mới / xoá tên cũ / mở lại PR.
 #
-# Mã thoát: 0 = xong, 2 = sai tham số / trạng thái không cho phép.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai doi-ten-feature.sh \
+  "0=ĐÃ ĐỔI TÊN" \
+  "2=KHÔNG ĐỔI ĐƯỢC — tham số hoặc trạng thái không cho phép"
 . "$HERE/lib/worktree.sh"
 ART_ABS=$(CDPATH= cd -- "$HERE/../.." && pwd)
 ART=$(basename "$ART_ABS")

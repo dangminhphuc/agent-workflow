@@ -13,10 +13,15 @@
 # In ra stdout: <artifact_dir>/<ten-feature>, vd .agent-workflow/feat_tao-todo
 # Ten branch co "/" duoc doi thanh "_" de khong tao thu muc long nhau.
 #
-# Ma thoat: 0 = xac dinh duoc, 2 = ten khong hop le, 3 = can hoi nguoi dung,
-#           6 = dang o checkout chinh (/intake: tao worktree; lenh khac: dung lai).
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai xac-dinh-feature.sh \
+  "0=ĐÃ XÁC ĐỊNH — stdout là thư mục feature" \
+  "2=TÊN KHÔNG HỢP LỆ — báo lại người dùng" \
+  "3=CẦN HỎI NGƯỜI — branch không khớp quy ước và không có tham số" \
+  "6=ĐANG Ở CHECKOUT CHÍNH — việc phải làm trong worktree"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 

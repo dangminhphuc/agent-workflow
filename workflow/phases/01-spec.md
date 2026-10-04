@@ -170,7 +170,7 @@ Checker chặn nếu hai file lệch nhau.
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-truy-vet.sh` trả về 0 — mọi YC có đúng một nhãn nguồn hợp
+- `sh tools/kiem-tra-truy-vet.sh` ra `[x] ĐẠT` — mọi YC có đúng một nhãn nguồn hợp
   lệ, `Ưu tiên` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[CẦN-HỎI]` có mục
   trong `open-questions.md` với giả định tạm và mức ảnh hưởng; trạng thái hai
   file khớp nhau; spec có `Mức rủi ro` và `Trạng thái spec` hợp lệ; có đủ các mục

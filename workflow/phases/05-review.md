@@ -110,10 +110,10 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-ra-soat.sh` trả về 0:
+- `sh tools/kiem-tra-ra-soat.sh` ra `[x] ĐẠT`:
   - mọi `YC-NNN` có kết luận hợp lệ, không `[CẦN-HỎI]` nào bị kết luận `đạt`;
   - đầu vào qua `kiem-tra-ke-hoach.sh` (kéo theo design và spec);
-  - `ket-qua-kiem-thu.md` có và mã thoát `0`;
+  - `ket-qua-kiem-thu.md` có và ghi `Kết quả: XANH`;
   - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
     thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai;
   - luật theo loại việc (như `implement`), và bugfix có dòng `Test tái hiện đỏ vì:`.

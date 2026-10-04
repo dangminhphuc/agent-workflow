@@ -16,9 +16,14 @@
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai.
 #
 # Cau hinh: <thu-muc-feature>/../.quy-trinh/cau-hinh.sh
-# Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai kiem-tra-hien-thuc.sh \
+  "0=ĐẠT — được sang phase sau" \
+  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
+  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
@@ -72,9 +77,10 @@ echo "────────────────────────�
 TMP="${TMPDIR:-/tmp}/kqkt.$$"
 sh -c "$LENH_KIEM_THU" > "$TMP" 2>&1
 ma_thoat=$?
+if [ "$ma_thoat" -eq 0 ]; then nhan_kt="XANH"; else nhan_kt="ĐỎ"; fi
 cat "$TMP"
 echo "────────────────────────────────────────────────────"
-echo "Mã thoát: $ma_thoat"
+echo "Lệnh kiểm thử: $nhan_kt"
 
 # ---- 4. Ghi output THAT vao artifact ----
 {
@@ -84,7 +90,8 @@ echo "Mã thoát: $ma_thoat"
   echo "> Đây là output thật của lệnh, không phải mô tả lại bằng lời."
   echo ""
   echo "- Lệnh: \`$LENH_KIEM_THU\`"
-  echo "- Mã thoát: \`$ma_thoat\`"
+  echo "- Kết quả: **$nhan_kt**"
+  echo "- Mã thoát: \`$ma_thoat\` (bằng chứng thô của lệnh)"
   echo ""
   echo '```'
   cat "$TMP"

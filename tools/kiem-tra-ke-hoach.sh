@@ -13,9 +13,14 @@
 #   - Task thiếu "Cách kiểm chứng", "File dự kiến"; "Dựa trên: D-xx" trỏ về D không có.
 # Cảnh báo: artifact lỗi thời; YC "Ưu tiên: bắt buộc" nằm ở "Hoãn lại".
 #
-# Mã thoát: 0 = đạt, 1 = có vi phạm, 2 = thiếu file đầu vào.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai kiem-tra-ke-hoach.sh \
+  "0=ĐẠT — được sang phase sau" \
+  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
+  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 

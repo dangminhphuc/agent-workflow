@@ -113,7 +113,7 @@ duyệt lại.
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-thiet-ke.sh` trả về 0 — đầu vào qua checker của spec; đủ
+- `sh tools/kiem-tra-thiet-ke.sh` ra `[x] ĐẠT` — đầu vào qua checker của spec; đủ
   mục; D-xx hợp lệ; `Dựa trên` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của
   người; có `phat-hien-thiet-ke.md` và không còn phát hiện `Chặn` chưa xử lý.
 

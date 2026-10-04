@@ -9,7 +9,7 @@ sh adapters/claude-code/build.sh --out /đường/dẫn/repo-đích [--force]
 Thường bạn không gọi trực tiếp — `tools/cai-dat.sh` gọi nó sau khi đã chép bộ
 luật/mẫu/công cụ vào repo đích.
 
-`--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (mã 2).
+`--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (`SAI THAM SỐ`).
 
 ## Biên dịch ra gì
 
@@ -28,16 +28,16 @@ Mỗi command sinh ra gồm ba phần:
 1. **Bước 0 — xác định feature:** chạy
    `sh .agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh $ARGUMENTS`. Script suy
    từ tên branch theo `conventions.md` → không khớp thì lấy tham số lệnh (vd
-   `/spec feat_tao-todo`) → không có thì trả mã 3 và command bảo agent dừng hỏi.
-   Đang ở checkout chính thì mã 6: worktree là bắt buộc, command bảo agent dừng
+   `/spec feat_tao-todo`) → không có thì ra `CẦN HỎI NGƯỜI` và command bảo agent dừng hỏi.
+   Đang ở checkout chính thì ra `ĐANG Ở CHECKOUT CHÍNH`: worktree là bắt buộc, command bảo agent dừng
    và nhờ người mở phiên mới trong worktree của việc.
    Agent in `Đang làm với: …` rồi mới đọc/ghi trong `.agent-workflow/<tên-branch>/`.
    Logic nằm trong script chứ không trong prompt, để mọi adapter dùng chung.
 
    Ngoại lệ: phase khai `arguments: input` (hiện chỉ `00-intake`). Khi đó tham số
    lệnh là **input** (`/intake JIRA-123 …`), adapter **không** truyền nó vào
-   `xac-dinh-feature.sh`, và mã 6 (đang ở checkout chính) dẫn tới bước đề xuất
-   worktree bằng `tao-worktree.sh` — người chọn base rồi mới tạo. Adapter từ chối build (mã 4) nếu `arguments` mang giá
+   `xac-dinh-feature.sh`, và `ĐANG Ở CHECKOUT CHÍNH` dẫn tới bước đề xuất
+   worktree bằng `tao-worktree.sh` — người chọn base rồi mới tạo. Adapter từ chối build (`ĐỊNH NGHĨA QUY TRÌNH LỖI`) nếu `arguments` mang giá
    trị khác `input`.
 2. **Hợp đồng phase** (đọc gì, ghi ra đâu, mẫu nào, checker LLM nào, điều kiện
    ra là lệnh gì) do adapter dựng từ frontmatter.
@@ -143,24 +143,27 @@ mặc định đặt cổng chặn ở **cuối phase** (agent tự chạy lện
 xong) thay vì ở mỗi lần ghi file. Chỉ thêm hook nếu bạn thấy agent hay bỏ qua
 bước chạy lệnh.
 
-## Mã thoát
+## Kết quả
 
-| Mã | Nghĩa |
+Cuối output có khối `Kết quả`, đánh `[x]` vào đúng một nhãn:
+
+| Nhãn | Nghĩa |
 |---|---|
-| 0 | Thành công |
-| 2 | Sai tham số |
-| 3 | Đích đã có file người viết tay — dùng `--force` để ghi đè |
-| 4 | Spec nguồn sai: `exit_machine` không phải lệnh chạy được / trỏ tới script không tồn tại, hoặc `llm_checker` / `import` trỏ tới file không tồn tại |
+| `ĐÃ SINH` | Thành công |
+| `SAI THAM SỐ` | Sai tham số |
+| `CÓ FILE VIẾT TAY` | Đích đã có file người viết tay — dùng `--force` để ghi đè |
+| `ĐỊNH NGHĨA QUY TRÌNH LỖI` | Spec nguồn sai: `exit_machine` không phải lệnh chạy được / trỏ tới script không tồn tại, hoặc `llm_checker` / `import` trỏ tới file không tồn tại |
 
-Mã 4 là chốt chặn quan trọng: nó giữ cho "điều kiện ra loại MÁY" luôn là lệnh
+`ĐỊNH NGHĨA QUY TRÌNH LỖI` là chốt chặn quan trọng: nó giữ cho "điều kiện ra loại MÁY" luôn là lệnh
 thật. Không có nó, một dòng mô tả bằng chữ sẽ lọt vào mục đó và agent sẽ tự đánh
 giá là đã đạt.
 
 ## Viết adapter mới
 
 1. Tạo `adapters/<id>/build.sh`, nhận `--out <thư-mục>`; từ chối `--out` nằm
-   trong repo agent-workflow (mã 2), như adapter Claude Code.
+   trong repo agent-workflow (`SAI THAM SỐ`), như adapter Claude Code.
 2. `. "$ROOT/tools/lib/md.sh"` rồi dùng `wf_phases`, `fm_scalar`, `fm_list`, `md_body`.
+   Nạp thêm `tools/lib/ket-qua.sh` và khai nhãn kết quả bằng `kq_khai`, như `build.sh`.
 3. Đọc `workflow.yaml` lấy `artifact_dir`; giữ nguyên đường dẫn artifact
    `<artifact_dir>/<tên-branch>/` và thứ tự xác định feature (branch →
    tham số → hỏi) — đây là giao diện chung giữa các adapter. Đừng viết lại

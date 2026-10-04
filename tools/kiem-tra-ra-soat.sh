@@ -17,9 +17,14 @@
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
 # hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
-# Ma thoat: 0 = dat, 1 = co vi pham, 2 = thieu file dau vao.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai kiem-tra-ra-soat.sh \
+  "0=ĐẠT — được sang phase sau" \
+  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
+  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 

@@ -12,9 +12,14 @@
 # Máy chỉ biết test ĐÃ đỏ, không biết nó đỏ ĐÚNG VÌ BUG (hay vì lỗi biên dịch):
 # phần đó người đọc output ở review ("Test tái hiện đỏ vì: …").
 #
-# Mã thoát: 0 = đã ghi bằng chứng đỏ, 1 = không hợp lệ, 2 = thiếu cấu hình / sai loại.
+# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/ket-qua.sh"
+kq_khai kiem-tra-tai-hien.sh \
+  "0=ĐẠT — test tái hiện đỏ trên code chưa sửa, giờ mới được sửa code" \
+  "1=KHÔNG HỢP LỆ — lý do in phía trên" \
+  "2=KHÔNG CHẠY ĐƯỢC — sai loại việc hoặc thiếu cấu hình"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
@@ -58,6 +63,7 @@ fi
 TMP="${TMPDIR:-/tmp}/taihien.$$"
 sh -c "$LENH_KIEM_THU" > "$TMP" 2>&1
 ma=$?
+if [ "$ma" -eq 0 ]; then nhan_kt="XANH"; else nhan_kt="ĐỎ"; fi
 hash=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null)
 {
   echo "# Tái hiện lỗi"
@@ -67,7 +73,8 @@ hash=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null)
   echo ""
   echo "- Lệnh: \`$LENH_KIEM_THU\`"
   echo "- Commit: \`$hash\` (+ thay đổi chưa commit, chỉ gồm file test)"
-  echo "- Mã thoát: \`$ma\`"
+  echo "- Kết quả: **$nhan_kt**"
+  echo "- Mã thoát: \`$ma\` (bằng chứng thô của lệnh)"
   echo "- File thay đổi lúc chạy:"
   printf '%s\n' "$DOI" | awk -F'\t' 'NF { print "  - `" ($3 != "" ? $3 : $2) "`" }'
   echo ""
@@ -78,7 +85,7 @@ hash=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null)
 cat "$TMP"
 rm -f "$TMP"
 echo ""
-echo "Đã ghi $OUT (mã thoát $ma)."
+echo "Đã ghi $OUT (test $nhan_kt)."
 
 if [ "$ma" -eq 0 ]; then
   echo "KHÔNG HỢP LỆ — test XANH trên code chưa sửa: nó không tái hiện được lỗi."

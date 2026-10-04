@@ -92,7 +92,7 @@ nằm ở design), và task không có `Dựa trên: D-xx`.
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-ke-hoach.sh` trả về 0:
+- `sh tools/kiem-tra-ke-hoach.sh` ra `[x] ĐẠT`:
   - đầu vào qua `kiem-tra-thiet-ke.sh`, mọi D-xx `đã duyệt`;
   - mọi task có `Phủ:` hợp lệ, `File dự kiến:`, `Cách kiểm chứng:` không rỗng;
     `Dựa trên:` trỏ về D có thật;
