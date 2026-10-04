@@ -70,7 +70,13 @@ main() {
   if git -C "$DICH" rev-parse --git-dir >/dev/null 2>&1; then
     if ! wt_la_chinh "$DICH"; then
       echo "BỊ CHẶN: đang ở worktree ($DICH)." >&2
-      echo "         Đồng bộ ở checkout chính (nhánh gốc), commit, rồi merge nhánh gốc vào worktree." >&2
+      CHINH=$(wt_chinh "$DICH")
+      echo "         Đồng bộ ở checkout chính (nhánh gốc), commit, rồi merge nhánh gốc vào worktree:" >&2
+      echo "" >&2
+      echo "           cd $CHINH" >&2
+      echo "           sh ${QT#"$DICH"/}/tools/dong-bo.sh" >&2
+      echo "           git add -A ${QT#"$DICH"/} .claude && git commit -m \"Đồng bộ agent-workflow\"" >&2
+      echo "           cd $DICH && git merge <nhánh-gốc>" >&2
       return 7
     fi
     ART=${QT#"$DICH"/}; ART=${ART%/.quy-trinh}
