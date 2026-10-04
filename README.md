@@ -43,7 +43,7 @@ văn xuôi.
 ```mermaid
 flowchart TD
     INTAKE["00-intake · bắt buộc<br/>→ intake.md (loại việc + input)<br/><i>MÁY: kiem-tra-tiep-nhan.sh</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: kiem-tra-truy-vet.sh</i><br/><i>NGƯỜI: duyệt YC, mức ảnh hưởng, Mức rủi ro</i>"]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: kiem-tra-truy-vet.sh</i><br/><i>NGƯỜI: duyệt YC, Mức chặn, Mức rủi ro</i>"]
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Mức rủi ro: cao)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: kiem-tra-thiet-ke.sh + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: kiem-tra-ke-hoach.sh</i>"]
@@ -103,7 +103,7 @@ Cách đọc:
 | Phase | Người | Người làm gì |
 |---|---|---|
 | `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
-| `spec` | có | Duyệt yêu cầu, nhãn mức ảnh hưởng của `[CẦN-HỎI]`, và `Mức rủi ro`; rồi đổi `Trạng thái spec` sang `đã duyệt` |
+| `spec` | có | Duyệt yêu cầu, nhãn `Mức chặn` của `[CẦN-HỎI]`, và `Mức rủi ro`; rồi đổi `Trạng thái spec` sang `đã duyệt`. Trả lời điểm mù qua `/open-questions` |
 | `design` | có | Duyệt **từng D-xx** trong `tdd.md` |
 | `plan` | không | — |
 | `implement` | không | — |
@@ -216,10 +216,23 @@ Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bu
 ### `01-spec` — yêu cầu
 
 Mỗi yêu cầu `YC-xxx` phải truy được về một input trong `intake.md` (Confluence, Jira, file cục
-bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **mức ảnh hưởng** (`toàn bộ thiết kế` |
-`cục bộ`) do agent đề xuất, người duyệt ở gate spec. Mặc định **không chặn** — chỉ
-mục `toàn bộ thiết kế` mới phải có `Trạng thái: đã trả lời` trước khi vào
-`design`. Mục còn mở thì `review` không được kết luận "đạt".
+bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **Mức chặn** do agent đề xuất, người duyệt
+ở gate spec — đúng ba mức:
+
+| Mức chặn | Sai giả định thì | Chặn gì |
+|---|---|---|
+| `chặn` | Cả thiết kế đổi hướng | `design` (chore: `plan`) và mọi phase sau, tới khi `đã trả lời` |
+| `chặn review` | Làm lại một phần code | Flow đi tiếp trên giả định tạm; `implement` cảnh báo, `review` chặn |
+| `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận`, không được `đạt` |
+
+**`/open-questions`** — lệnh tiện ích, chạy bất cứ lúc nào sau `/spec`. Máy
+(`tools/liet-ke-cau-hoi.sh`) liệt kê điểm mù còn mở theo thứ tự phải chốt trước —
+mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhiều task đứng trên giả
+định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Agent dẫn bạn đi **từng
+mục một**: câu hỏi, tài liệu nói gì, giả định đang dùng, hệ quả nếu sai, vài
+phương án lấy từ nguồn. Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
+spec, chạy lại checker. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
+cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
 
 Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.
@@ -290,11 +303,11 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
 | `intake` | `kiem-tra-tiep-nhan.sh` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
-| `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec |
-| `design` | `kiem-tra-thiet-ke.sh` | Spec chưa được người duyệt, thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Mức chặn` thiếu/sai |
+| `design` | `kiem-tra-thiet-ke.sh` | Spec chưa được người duyệt, điểm mù `chặn` còn mở, thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `kiem-tra-ke-hoach.sh` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `kiem-tra-hien-thuc.sh` | Test chưa xanh, task còn dở |
-| `review` | `kiem-tra-ra-soat.sh` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, test chưa xanh, hoặc **còn cảnh báo** |
+| `review` | `kiem-tra-ra-soat.sh` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, điểm mù `chặn`/`chặn review` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
 
 Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
 một nhãn — người và agent đọc nhãn, không đọc mã số:
@@ -362,6 +375,7 @@ chặn nếu còn artifact lỗi thời.
 | Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do trong `plan.md` |
 | Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "File dự kiến" + "Phát sinh" + `bo_qua` | Hoàn tác, hoặc ghi vào "Phát sinh" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
+| Điểm mù | `Mức chặn: chặn review` (hoặc `chặn`) còn `mở` trong `open-questions.md` | Chốt với người qua `/open-questions` |
 
 ## Đưa artifact từ ngoài vào
 
@@ -393,7 +407,8 @@ Sinh ra trong repo đích:
 
 ```
 .claude/
-  commands/{intake,spec,design,plan,implement,review,import}.md
+  commands/{intake,spec,design,plan,implement,review}.md   ← phase
+  commands/{import,open-questions}.md              ← lệnh tiện ích (không phải phase)
   agents/ra-soat-doc-lap.md                        ← rà soát ngữ cảnh sạch
   agents/soat-thiet-ke.md                          ← checker LLM của design
   skills/quy-trinh-agent/SKILL.md
@@ -478,11 +493,12 @@ Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
 ## Cấu trúc repo
 
 ```
-workflow.yaml            manifest trung lập — nguồn sự thật duy nhất
+workflow.yaml            manifest trung lập — nguồn sự thật duy nhất (phases:, commands:)
 workflow/
   phases/*.md            định nghĩa phase (frontmatter + mô tả)
   checkers/*.md          định nghĩa checker LLM (chỉ được chặn)
   import.md              lệnh import artifact từ ngoài (không phải phase)
+  open-questions.md      lệnh dẫn người chốt điểm mù theo thứ tự ưu tiên (không phải phase)
   rules/*.md             luật áp dụng cho mọi phase
   templates/*.md         mẫu cho từng artifact + conventions.md
 adapters/
@@ -498,6 +514,7 @@ tools/
   tao-worktree.sh        /intake: đề xuất worktree (tên, vị trí, base) — người chọn base rồi mới tạo
   don-worktree.sh        dọn worktree sau khi merge (không --force, không -D)
   phan-loai-input.sh     /intake: tham số → dòng "## Input" (nhãn do máy gán, gộp khi chạy lại)
+  liet-ke-cau-hoi.sh     /open-questions: điểm mù còn mở theo thứ tự phải chốt, mục nào đang chặn
   cap-nhat-based-on.sh   ghi hash đầu vào vào frontmatter artifact
   chay-thu.sh            test hồi quy cho chính các cổng chặn
   lib/md.sh              đọc frontmatter (tập con YAML), conventions, hash

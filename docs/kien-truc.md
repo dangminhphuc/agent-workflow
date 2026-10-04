@@ -259,10 +259,25 @@ lại. Giữ riêng vì hai lẽ: plan là ranh giới do **phiên khác** đặ
 
 ## Giả định chưa xác nhận
 
-Chỗ chưa rõ trong spec ghi `[CẦN-HỎI]` kèm **mức ảnh hưởng**; agent đề xuất,
-người duyệt nhãn ở gate spec. Mặc định **không chặn** — ưu tiên flow đi tiếp. Chỉ
-mục ảnh hưởng toàn bộ thiết kế phải được trả lời trước khi vào `design`. Mục còn
-mở thì `review` không được kết luận "đạt".
+Chỗ chưa rõ trong spec ghi `[CẦN-HỎI]` kèm **mức chặn**; agent đề xuất, người
+duyệt nhãn ở gate spec. Đúng ba mức — thêm mức nữa thì người duyệt phải phân
+biệt những ranh giới không ai đo được:
+
+| Mức | Sai giả định thì | Chặn |
+|---|---|---|
+| `chặn` | Cả thiết kế đổi hướng | Phase ngay sau spec (`design`; chore: `plan`) — và mọi phase sau, vì checker mỗi phase chạy lại checker phase trước |
+| `chặn review` | Làm lại một phần code | Như một kiểm chéo: `implement` cảnh báo, `review` chặn |
+| `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận` thay vì `đạt` |
+
+Ba mức đặt cổng chặn ở **phase rẻ nhất để sửa** nếu giả định sai: lật hướng thiết
+kế thì phải biết trước khi thiết kế; sai một phần code thì biết trước khi merge
+là đủ; còn lại thì chấp nhận giao trên giả định và ghi rõ là chưa xác nhận.
+
+Lệnh tiện ích `open-questions` (`workflow/open-questions.md`) dẫn người đi qua
+các mục còn mở: `tools/liet-ke-cau-hoi.sh` xếp thứ tự bằng máy (mức chặn → YC
+`bắt buộc` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
+đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
+ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
 
 ### Vì sao checker tự chạy test thay vì đọc kết quả
 
@@ -309,6 +324,10 @@ arguments: input            # tham số lệnh là input, không phải tên fea
 ---
 ```
 
+Lệnh tiện ích (`workflow/<id>.md`, khai ở `commands:` của manifest — hiện có
+`import`, `open-questions`) không phải phase: frontmatter chỉ có `id`, `name`,
+`summary`, tuỳ chọn `argument_hint` và `arguments: mixed`.
+
 Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`,
 `output` (tên file phát hiện). Adapter Claude Code biến nó thành subagent
 `soat-<id>`. Script của phase đọc file phát hiện; thiếu file là fail.
@@ -321,6 +340,8 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Đọc `conventions.md` | `conv_get` trong `tools/lib/md.sh` | Chỉ đọc khối ` ```conventions `; phần còn lại là văn xuôi cho người |
 | Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` — POSIX, CRLF/LF cho cùng kết quả |
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
+| Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `chặn`; `implement` cảnh báo, `review` chặn mức `chặn` + `chặn review` |
+| Thứ tự chốt điểm mù | `tools/liet-ke-cau-hoi.sh` | Máy xếp, agent không xếp lại; chỉ đọc, không sửa file |
 | Entry check | Đầu mỗi `kiem-tra-*.sh` | Gọi checker phase trước; chuỗi `ra-soat → ke-hoach → thiet-ke → truy-vet` |
 | Cấu hình lệnh test | `.agent-workflow/.quy-trinh/cau-hinh.sh` | Checker tìm ở `<thư-mục-feature>/../.quy-trinh/` |
 | Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |

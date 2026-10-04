@@ -58,8 +58,9 @@ Kiểm mười một điều:
 2. Mọi mục gắn `[CẦN-HỎI]` có mục tương ứng cùng mã trong `open-questions.md`.
 3. Không có mã `YC-NNN` trùng nhau.
 4. Mục `[CẦN-HỎI]` trong `open-questions.md` có dòng "Giả định tạm" — không có thì phase sau không đi tiếp được.
-5. Mục `[CẦN-HỎI]` có `Mức ảnh hưởng: toàn bộ thiết kế | cục bộ`. Mục `toàn bộ
-   thiết kế` còn `Trạng thái: mở` thì `kiem-tra-thiet-ke.sh` chặn vào design.
+5. Mục `[CẦN-HỎI]` có `Mức chặn: chặn | chặn review | không chặn`. Mục `chặn`
+   còn `Trạng thái: mở` thì chặn vào design (chore: plan); mục `chặn review` còn
+   mở thì `implement` cảnh báo, `review` chặn.
 6. `spec.md` có `Mức rủi ro: cao | thường` và `Trạng thái spec: đề xuất | đã duyệt`.
 7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
    có thật; `Trạng thái` là `mở | đã trả lời`; `mở` thì spec phải còn `[CẦN-HỎI]`;

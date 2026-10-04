@@ -42,8 +42,10 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 Checker của phase này chạy lại checker của `spec` trên đầu vào. Không có đường
 tắt: `spec.md` đưa từ tool khác vào cũng phải qua đúng cổng đó.
 
-`[CẦN-HỎI]` có `Mức ảnh hưởng: toàn bộ thiết kế` mà chưa `đã trả lời` thì
-**chặn** — thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
+Điểm mù `Mức chặn: chặn` mà chưa `đã trả lời` thì **chặn** — thiết kế trên một
+giả định sẽ lật cả hướng đi là phí công. Dừng lại, nhờ người chạy lệnh
+`open-questions` để chốt. Mục `chặn review` / `không chặn` thì thiết kế tiếp trên
+giả định tạm.
 
 ## Chọn Mode
 

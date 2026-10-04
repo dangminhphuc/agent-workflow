@@ -63,7 +63,8 @@ Duyệt **từng mã `YC-NNN`** trong `spec.md`, chỉ ra code nào thoả nó, 
 `đạt` / `chưa đạt` / `đạt một phần`. Không có mã nào được bỏ trống.
 
 Nếu một `YC` gắn `[CẦN-HỎI]` và giả định tạm chưa được xác nhận, kết luận là
-`chờ xác nhận` — không phải `đạt`.
+`chờ xác nhận` — không phải `đạt`. Chỉ điểm mù `Mức chặn: không chặn` còn mở được
+tới đây; `chặn` / `chặn review` còn mở thì máy chặn.
 
 ### 2. Đúng thiết kế và phạm vi
 - Code có theo đúng các D-xx đã duyệt và contract/mô hình dữ liệu trong `tdd.md`?
@@ -115,7 +116,8 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
   - đầu vào qua `kiem-tra-ke-hoach.sh` (kéo theo design và spec);
   - `ket-qua-kiem-thu.md` có và ghi `Kết quả: XANH`;
   - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
-    thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai;
+    thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai, điểm mù
+    `chặn` / `chặn review` còn mở;
   - luật theo loại việc (như `implement`), và bugfix có dòng `Test tái hiện đỏ vì:`.
 - Diff được so với **base ghi trong `intake.md`**, không phải `nhanh_goc`. Base
   không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)

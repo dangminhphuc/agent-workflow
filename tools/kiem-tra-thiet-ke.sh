@@ -5,7 +5,7 @@
 #
 # Chặn:
 #   1. Đầu vào: spec chưa qua checker của spec (entry check = checker phase trước).
-#   2. Đầu vào: còn [CẦN-HỎI] "toàn bộ thiết kế" chưa được trả lời.
+#   2. Đầu vào: còn điểm mù "Mức chặn: chặn" chưa được trả lời.
 #   3. tdd.md thiếu mục bắt buộc, hoặc mục bỏ trống mà không ghi "Không áp dụng: <lý do>".
 #   4. D-xx thiếu/ sai "Trạng thái" hoặc "tac_gia"; "mở lại" không có lý do; mã trùng.
 #   5. "Dựa trên: D-xx" trỏ về D không tồn tại.
@@ -55,6 +55,16 @@ if [ -n "$cd_duyet" ]; then
   n_loi=$((n_loi + 1))
   echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
 fi
+# Điểm mù mức "chặn": thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
+dm=$(kc_diem_mu_mo "$DIR" "chặn")
+if [ -n "$dm" ]; then
+  while IFS= read -r l; do
+    [ -n "$l" ] || continue
+    n_loi=$((n_loi + 1)); echo "  [LỖI] $l"
+  done <<EOF
+$dm
+EOF
+fi
 
 PHF="$PH"; PH_THIEU=0
 [ -f "$PH" ] || { PH_THIEU=1; PHF=/dev/null; }
@@ -81,8 +91,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
   }
 
   { sub(/\r$/, "") }
-  # Theo tên file: open-questions.md 0 byte (không có điểm mù) không được làm lệch thứ tự.
-  FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : (FILENAME == ARGV[3]) ? 3 : 4
+  # Theo tên file, không đếm FNR==1: file 0 byte không có dòng nào nên sẽ làm lệch thứ tự.
+  FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : 3
            sect = ""; cur = ""; fm = 0 }
 
   # ---- File 1: spec.md ----
@@ -92,16 +102,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     next
   }
 
-  # ---- File 2: open-questions.md ----
+  # ---- File 2: tdd.md ----
   idx==2 {
-    if ($0 ~ /^##[ \t]+YC-[0-9]+/) { match($0, /YC-[0-9]+/); oq = substr($0, RSTART, RLENGTH); ds_oq[++n_oq] = oq; tt[oq] = "mở" }
-    if (oq != "" && $0 ~ /Mức ảnh hưởng[^:]*:/) ah[oq] = gia_tri($0)
-    if (oq != "" && $0 ~ /Trạng thái[^:]*:/)    tt[oq] = gia_tri($0)
-    next
-  }
-
-  # ---- File 3: tdd.md ----
-  idx==3 {
     if (FNR == 1 && $0 == "---") { fm = 1; next }
     if (fm == 1) { if ($0 == "---") fm = 2; next }
 
@@ -142,23 +144,15 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     next
   }
 
-  # ---- File 4: phat-hien-thiet-ke.md (có thể là /dev/null) ----
-  idx==4 {
+  # ---- File 3: phat-hien-thiet-ke.md (có thể là /dev/null) ----
+  idx==3 {
     if ($0 ~ /^###[ \t]+PH-[0-9]+/) { match($0, /PH-[0-9]+/); ph = substr($0, RSTART, RLENGTH); ds_ph[++n_ph] = ph; ph_muc[ph] = ""; ph_xl[ph] = "" }
-    if (ph != "" && $0 ~ /Mức[^:]*:/ && $0 !~ /Mức ảnh hưởng/) ph_muc[ph] = gia_tri($0)
+    if (ph != "" && $0 ~ /Mức[^:]*:/) ph_muc[ph] = gia_tri($0)
     if (ph != "" && $0 ~ /Xử lý[^:]*:/) ph_xl[ph] = gia_tri($0)
     next
   }
 
   END {
-    # 2. điểm mù chặn thiết kế
-    for (i = 1; i <= n_oq; i++) {
-      q = ds_oq[i]
-      if (ah[q] == "toàn bộ thiết kế" && tt[q] != "đã trả lời")
-        loi(q ": [CẦN-HỎI] ảnh hưởng toàn bộ thiết kế nhưng chưa được trả lời " \
-            "(open-questions.md, Trạng thái: " tt[q] "). Phải trả lời trước khi vào design.")
-    }
-
     # 3. mục bắt buộc
     for (i = 1; i <= n_muc; i++) {
       m = muc[i]
@@ -214,7 +208,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện Chặn."
     print "Bước tiếp: NGƯỜI duyệt từng D-xx (đổi Trạng thái sang \"đã duyệt\"). /plan sẽ chặn nếu còn D chưa duyệt."
   }
-' "$SPEC" "$OQ" "$TDD" "$PHF"
+' "$SPEC" "$TDD" "$PHF"
 ma=$?
 
 cb=$(kc_loi_thoi "$DIR")

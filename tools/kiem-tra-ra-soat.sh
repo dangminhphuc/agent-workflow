@@ -10,7 +10,8 @@
 #   4. ket-qua-kiem-thu.md thieu hoac ma thoat khac 0.
 #   5. Moi CANH BAO don tu cac phase truoc con ton tai: YC chua co test,
 #      diff ngoai pham vi, artifact loi thoi, loai viec lech branch, test cu
-#      bi sua chua khai. Giua flow chung chi canh bao de flow khong tac; o day
+#      bi sua chua khai, diem mu muc "chan review" chua tra loi. Giua flow
+#      chung chi canh bao de flow khong tac; o day
 #      thi khong con cho nao phia sau de bat lai.
 #   6. Luat theo loai viec (intake.md) — nhu implement; bugfix con phai co
 #      dong "Test tai hien do vi: ..." do nguoi ra soat viet.
@@ -49,7 +50,7 @@ elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
   loi_truoc "ket-qua-kiem-thu.md ghi mã thoát khác 0 — test chưa xanh."
 fi
 
-cb=$( { kc_chan_theo_loai "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; } )
+cb=$( { kc_chan_theo_loai "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "chặn" "chặn review"; } )
 
 # bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.
 if [ "$(kc_loai "$DIR")" = "bugfix" ]; then

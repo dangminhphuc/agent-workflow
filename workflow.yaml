@@ -17,9 +17,17 @@ language: vi
 # conventions.md của repo đích).
 artifact_dir: .agent-workflow
 
-# Lệnh tiện ích — không phải phase. Đưa artifact làm bằng tool khác vào giữa
-# quy trình: chỉ sắp xếp lại theo mẫu, không thêm nội dung.
-import: workflow/import.md
+# Lệnh tiện ích — không phải phase, không có điều kiện ra riêng. Adapter sinh
+# mỗi mục thành một lệnh (Claude Code: /<id>).
+#   import          đưa artifact làm bằng tool khác vào giữa quy trình — chỉ sắp
+#                   xếp lại theo mẫu, không thêm nội dung
+#   open-questions  liệt kê điểm mù còn mở theo thứ tự phải chốt trước, dẫn người
+#                   trả lời từng mục
+commands:
+  - id: import
+    file: workflow/import.md
+  - id: open-questions
+    file: workflow/open-questions.md
 
 phases:
   - id: intake

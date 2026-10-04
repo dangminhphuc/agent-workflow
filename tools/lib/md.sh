@@ -75,6 +75,22 @@ wf_phases() {
   ' "$1"
 }
 
+# wf_commands <workflow.yaml> -> in "id|file" cho từng lệnh tiện ích (khoá commands:)
+wf_commands() {
+  awk '
+    { sub(/\r$/, "") }
+    /^[ \t]*#/ { next }
+    /^commands:[ \t]*$/ { inc=1; next }
+    inc==1 && /^[A-Za-z]/ { inc=0; next }
+    inc==1 && /^[ \t]*-[ \t]+id:[ \t]*/ {
+      if (id != "") print id "|" file
+      id=$0; sub(/^[ \t]*-[ \t]+id:[ \t]*/, "", id); file=""; next
+    }
+    inc==1 && /^[ \t]+file:[ \t]*/ { file=$0; sub(/^[ \t]+file:[ \t]*/, "", file); next }
+    END { if (id != "") print id "|" file }
+  ' "$1"
+}
+
 # conv_get <conventions.md> <khoá> -> giá trị trong khối ```conventions
 # Khối máy đọc của conventions.md: mỗi dòng "khoá: giá trị", danh sách cách
 # nhau bằng dấu cách. File không tồn tại hoặc thiếu khoá -> in rỗng.
