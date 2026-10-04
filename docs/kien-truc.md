@@ -278,6 +278,10 @@ các mục còn mở: `tools/liet-ke-cau-hoi.sh` xếp thứ tự bằng máy (m
 `bắt buộc` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
 đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
+Câu trả lời của người trong hội thoại **chính là** gate người của điểm mù: không
+có bước sửa tay `đề xuất` → `đã duyệt` nào thêm, kể cả khi YC phải sửa theo câu
+trả lời (người xác nhận các dòng sẽ đổi trước khi agent ghi; `Trạng thái spec`
+giữ nguyên). Dấu vết nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn.
 
 ### Vì sao checker tự chạy test thay vì đọc kết quả
 

@@ -141,6 +141,9 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 
 12. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
     phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
+    Ngoại lệ duy nhất: lệnh `open-questions` sửa một YC theo câu trả lời mà
+    người vừa xác nhận trong hội thoại — giữ nguyên trạng thái, người không phải
+    sửa tay lại.
 
 13. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
     `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì

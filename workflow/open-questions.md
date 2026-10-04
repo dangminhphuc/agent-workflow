@@ -73,9 +73,12 @@ Phương án (đề xuất của agent, người chọn hoặc trả lời khác
    hoặc nguồn người chỉ ra (`[JIRA]` comment, `[CONFLUENCE]` page mới hơn).
    Bỏ dòng `Giả định tạm` của YC đó.
 3. **Câu trả lời khác giả định tạm:** sửa mô tả / tiêu chí chấp nhận của YC đó
-   theo câu trả lời — chỉ YC đó — và đặt lại `Trạng thái spec: đề xuất`: spec đã
-   đổi nghĩa, người phải duyệt lại. Câu trả lời khớp giả định tạm thì chỉ đổi
-   nhãn nguồn, giữ `Trạng thái spec`.
+   theo câu trả lời — chỉ YC đó. Trước khi ghi, cho người xem đúng các dòng
+   sẽ đổi (trước → sau) và hỏi "ghi như vậy được không?"; người đồng ý trong hội
+   thoại là đủ. **Giữ nguyên `Trạng thái spec`** — người vừa trả lời và xác nhận
+   chính chỗ sửa này, không phải mở file sửa tay `đề xuất` → `đã duyệt` lần nữa.
+   Ghi vào cuối dòng `Trả lời:` `(đã xác nhận sửa YC-NNN)` để còn dấu vết.
+   Câu trả lời khớp giả định tạm thì chỉ đổi nhãn nguồn.
 4. Chạy `sh tools/kiem-tra-truy-vet.sh <thư-mục-feature>` và dán kết quả thật.
    Không `[x] ĐẠT` thì sửa ngay cho khớp hai file rồi mới sang mục kế.
 
@@ -94,8 +97,6 @@ rồi nói rõ:
 
 - còn gì đang chặn phase nào;
 - câu hỏi nào đang chờ ai (các mục đã soạn tin nhắn);
-- `Trạng thái spec` có bị đặt lại `đề xuất` không — có thì người duyệt lại spec
-  trước khi chạy phase sau;
 - artifact nào đã lỗi thời vì `spec.md` / `open-questions.md` đổi (`tdd.md`,
   `plan.md` ghi `based_on`): câu trả lời **khớp** giả định → chạy lại phase đó
   để ghi lại dấu đầu vào; **khác** giả định → phase đó phải làm lại phần ghi ở
@@ -108,7 +109,10 @@ rồi nói rõ:
 - Ghi câu trả lời đã diễn giải thay cho nguyên văn lời người.
 - Coi phương án agent đề xuất là câu trả lời khi người chưa chọn.
 - Tự hạ `Mức chặn`, hoặc tự đổi mức khi người chưa nói.
-- Đổi `Trạng thái spec` sang `đã duyệt`.
+- Đổi `Trạng thái spec` (cả `đề xuất` → `đã duyệt` lẫn ngược lại) — lệnh này
+  không đụng vào dòng đó.
+- Sửa YC khi người chưa xác nhận các dòng sẽ đổi, hoặc sửa YC khác ngoài YC của
+  điểm mù đang xử lý.
 - Trình bày nhiều mục một lúc rồi bắt người trả lời gộp.
 - Sửa `tdd.md`, `plan.md` hay code — việc của phase tương ứng; chỉ nói rõ cần
   chạy lại phase nào.

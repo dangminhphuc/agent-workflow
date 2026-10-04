@@ -231,7 +231,9 @@ mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhi�
 định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Agent dẫn bạn đi **từng
 mục một**: câu hỏi, tài liệu nói gì, giả định đang dùng, hệ quả nếu sai, vài
 phương án lấy từ nguồn. Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
-spec, chạy lại checker. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
+spec, chạy lại checker. Câu trả lời khác giả định thì agent cho bạn xem dòng YC
+sẽ sửa, bạn đồng ý trong hội thoại là xong — **không phải mở file sửa tay**
+`đề xuất` → `đã duyệt`. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
 cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
 
 Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
