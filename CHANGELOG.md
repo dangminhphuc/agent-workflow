@@ -25,6 +25,9 @@ phải commit vào repo đích — chạy được khi nhánh gốc là protecte
 - Đóng gói phát hành (`tools/dong-goi.sh`) và workflow `release` gắn
   `agent-workflow-X.Y.Z.tar.gz`, `aw`, `SHA256SUMS` vào GitHub Release.
 - `adapters/lib/chung.sh` và `adapters/README.md` (hợp đồng adapter, ghi chú Codex/Cursor).
+- Mẫu mô tả MR/PR `workflow/templates/merge-request.md` và quy ước mặc định ở
+  mục "Merge request" của `conventions.md` (tiêu đề, phạm vi, mục bắt buộc,
+  điều kiện trước khi review/merge).
 
 ### Đổi
 - Cấu hình nằm trong `$(git rev-parse --git-common-dir)/agent-workflow/`:
