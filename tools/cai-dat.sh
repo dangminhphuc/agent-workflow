@@ -91,7 +91,7 @@ cp "$ROOT"/tools/kiem-tra-*.sh "$ROOT"/tools/xac-dinh-feature.sh "$ROOT"/tools/c
    "$ROOT"/tools/phan-loai-input.sh "$ROOT"/tools/dong-bo.sh "$ROOT"/tools/liet-ke-cau-hoi.sh "$QT/tools/"
 cp "$ROOT"/tools/lib/*.sh           "$QT/tools/lib/"
 chmod +x "$QT"/tools/*.sh 2>/dev/null || true
-echo "  chép    $ART/.quy-trinh/{rules,templates,checkers,tools}"
+echo "  copy    $ART/.quy-trinh/{rules,templates,checkers,tools}"
 
 # ---- 1b. Nguon goc cua bo cai — de dong-bo.sh biet keo ban moi tu dau ----
 # Bo phan user:token@ trong URL: file nay duoc commit vao repo dich.
@@ -115,12 +115,12 @@ SUA=""
   echo "co_thay_doi_chua_commit=${SUA:-khong}"
   echo "adapter=$ADAPTER"
 } > "$QT/nguon.txt"
-echo "  ghi     $ART/.quy-trinh/nguon.txt (nguồn: $NGUON${NHANH:+ @ $NHANH})"
+echo "  write   $ART/.quy-trinh/nguon.txt (nguồn: $NGUON${NHANH:+ @ $NHANH})"
 
 # ---- 2. Cau hinh rieng cua repo dich ----
 CH="$QT/cau-hinh.sh"
 if [ -f "$CH" ] && [ -z "$FORCE" ]; then
-  echo "  giữ     $ART/.quy-trinh/cau-hinh.sh (đã có, không ghi đè)"
+  echo "  keep    $ART/.quy-trinh/cau-hinh.sh (đã có, không ghi đè)"
 else
   {
     echo "# Cấu hình của repo này cho quy trình agent-workflow."
@@ -139,16 +139,16 @@ else
     echo "# node_modules, .env… Vd: LENH_CHUAN_BI_WT=\"npm ci\""
     echo "LENH_CHUAN_BI_WT=\"\""
   } > "$CH"
-  echo "  ghi     $ART/.quy-trinh/cau-hinh.sh"
+  echo "  write   $ART/.quy-trinh/cau-hinh.sh"
 fi
 
 # ---- 3. conventions.md — cua NGUOI, khong bao gio ghi de (ke ca --force) ----
 ARTDIR="$DICH/$ART"
 if [ -f "$ARTDIR/conventions.md" ]; then
-  echo "  giữ     $ART/conventions.md (của bạn, không bao giờ ghi đè)"
+  echo "  keep    $ART/conventions.md (của bạn, không bao giờ ghi đè)"
 else
   cp "$ROOT/workflow/templates/conventions.md" "$ARTDIR/conventions.md"
-  echo "  tạo     $ART/conventions.md từ mẫu — hãy sửa cho đúng repo của bạn"
+  echo "  create  $ART/conventions.md từ mẫu — hãy sửa cho đúng repo của bạn"
 fi
 
 # ---- 4. README cua noi chua artifact (sinh tu dong, cai lai se cap nhat) ----
@@ -173,7 +173,7 @@ if [ ! -f "$ARTDIR/README.md" ] || grep -q 'SINH TỰ ĐỘNG' "$ARTDIR/README.m
     echo "- \`conventions.md\` — quy ước của repo, **bạn** viết; bộ cài không bao giờ ghi đè."
     echo "- \`.quy-trinh/\` — bộ cài, cài lại sẽ ghi đè; chỉ \`.quy-trinh/cau-hinh.sh\` là do người sửa."
   } > "$ARTDIR/README.md"
-  echo "  ghi     $ART/README.md"
+  echo "  write   $ART/README.md"
 fi
 
 # ---- 5. Chay adapter ----

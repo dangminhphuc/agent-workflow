@@ -59,7 +59,7 @@ kiem_tra_ghi_de() {
 # bai giua chung khong duoc de lai mot file viet do: no trong nhu hop le nhung bi cut.
 ghi_file() {
   _tmp="$(dirname "$1")/.$(basename "$1").tmp"
-  if cat > "$_tmp"; then mv "$_tmp" "$1"; echo "$1" >> "$DA_SINH"; echo "  sinh    ${1#"$OUT"/}"; else rm -f "$_tmp"; exit 4; fi
+  if cat > "$_tmp"; then mv "$_tmp" "$1"; echo "$1" >> "$DA_SINH"; echo "  build   ${1#"$OUT"/}"; else rm -f "$_tmp"; exit 4; fi
 }
 
 # Danh sach file sinh ra LAN NAY — de don file do lan cai truoc sinh ra ma nay
@@ -286,7 +286,7 @@ while IFS='|' read -r id file req when; do
     continue
   fi
   if [ "$(fm_scalar "$src" status)" = "chưa hiện thực" ]; then
-    echo "  bỏ qua  /$id (status: chưa hiện thực)"
+    echo "  skip    /$id (status: chưa hiện thực)"
     continue
   fi
   kiem_tra_nguon "$src" "$file" || exit 4
@@ -434,5 +434,5 @@ for _f in "$OUT"/.claude/commands/*.md "$OUT"/.claude/agents/*.md; do
   grep -q 'SINH TỰ ĐỘNG' "$_f" 2>/dev/null || continue
   grep -qxF "$_f" "$DA_SINH" && continue
   rm -f "$_f"
-  echo "  xoá     ${_f#"$OUT"/} (không còn trong manifest)"
+  echo "  remove  ${_f#"$OUT"/} (không còn trong manifest)"
 done
