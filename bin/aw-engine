@@ -1,0 +1,97 @@
+#!/usr/bin/env sh
+# Điểm vào của engine. Wrapper `aw` (cài global) chọn đúng version rồi gọi file
+# này với AW_REPO, AW_CONFIG đã đặt — xem tools/lib/moi-truong.sh.
+#
+#   aw-engine version
+#   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement review repro perf
+#   aw-engine feature [name]
+#   aw-engine input [--skip <intake.md>] <args|->
+#   aw-engine questions <feature-dir>
+#   aw-engine based-on <feature-dir> <artifact> <input>...
+#   aw-engine rename <new-branch>
+#   aw-engine worktree new <type> <desc> [--create --base <ref>]
+#   aw-engine worktree status <branch>
+#   aw-engine worktree remove <branch> [--delete-branch]
+#   aw-engine adapter build <agent> [--out <dir>] [--force]
+#
+# Engine tự biết thư mục của mình (AW_ENGINE) — đó là đường dẫn trong engine,
+# không phải đường dẫn repo hay cấu hình.
+
+AW_ENGINE=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+export AW_ENGINE
+T="$AW_ENGINE/tools"
+. "$T/lib/bang-lenh.sh"
+
+# Giao thức giữa wrapper và engine. Wrapper cũ/mới hơn mà khác giao thức thì
+# dừng: đừng để wrapper truyền thiếu biến mà engine vẫn chạy.
+AW_ENGINE_PROTOCOL=1
+
+sai() { # <mã> <thông báo...>
+  _m=$1; shift
+  . "$T/lib/ket-qua.sh"
+  kq_khai aw \
+    "2=SAI THAM SỐ — xem thông báo phía trên" \
+    "9=KHÔNG HỢP LỆ — engine không chạy được trong trạng thái này, lý do phía trên"
+  for _l in "$@"; do echo "$_l" >&2; done
+  exit "$_m"
+}
+
+if [ -n "${AW_PROTOCOL:-}" ] && [ "$AW_PROTOCOL" != "$AW_ENGINE_PROTOCOL" ]; then
+  sai 9 "LỖI: wrapper aw dùng giao thức $AW_PROTOCOL, engine $(cat "$AW_ENGINE/VERSION") dùng giao thức $AW_ENGINE_PROTOCOL." \
+        "      Cài lại wrapper aw cùng bản với engine (xem README, mục Cài aw)."
+fi
+
+can_repo() {
+  [ -n "${AW_REPO:-}" ] && [ -n "${AW_CONFIG:-}" ] ||
+    sai 9 "LỖI: thiếu AW_REPO hoặc AW_CONFIG — gọi qua wrapper aw, không gọi aw-engine trực tiếp."
+}
+
+LENH="${1:-}"; [ $# -gt 0 ] && shift
+case "$LENH" in
+  version)
+    cat "$AW_ENGINE/VERSION" ;;
+  check)
+    [ $# -ge 2 ] || sai 2 "Dùng: aw check <name> <feature-dir>   (name: $BL_CHECKERS)"
+    s=$(bl_checker "$1") || sai 2 "LỖI: không có checker \"$1\" (có: $BL_CHECKERS)."
+    can_repo; shift
+    exec sh "$T/$s" "$@" ;;
+  feature)   can_repo; exec sh "$T/xac-dinh-feature.sh" "$@" ;;
+  input)     can_repo; exec sh "$T/phan-loai-input.sh" "$@" ;;
+  questions) can_repo; exec sh "$T/liet-ke-cau-hoi.sh" "$@" ;;
+  based-on)  can_repo; exec sh "$T/cap-nhat-based-on.sh" "$@" ;;
+  rename)    can_repo; exec sh "$T/doi-ten-feature.sh" "$@" ;;
+  worktree)
+    can_repo
+    sub="${1:-}"; [ $# -gt 0 ] && shift
+    case "$sub" in
+      new)    exec sh "$T/tao-worktree.sh" "$@" ;;
+      status) exec sh "$T/don-worktree.sh" "$@" ;;
+      remove)
+        b="${1:-}"; [ $# -gt 0 ] && shift
+        ca=""
+        for a in "$@"; do
+          case "$a" in --delete-branch) ca=--ca-branch ;; *) sai 2 "LỖI: tham số lạ \"$a\" (chỉ nhận --delete-branch)." ;; esac
+        done
+        exec sh "$T/don-worktree.sh" "$b" --xoa $ca ;;
+      *) sai 2 "Dùng: aw worktree new|status|remove …" ;;
+    esac ;;
+  adapter)
+    [ "${1:-}" = build ] && [ -n "${2:-}" ] || sai 2 "Dùng: aw adapter build <agent> [--out <dir>] [--force]"
+    ag=$2; shift 2
+    [ -f "$AW_ENGINE/adapters/$ag/build.sh" ] ||
+      sai 2 "LỖI: không có adapter \"$ag\" (có: $(ls "$AW_ENGINE/adapters" | grep -v '^lib$' | tr '\n' ' '))."
+    out=""; force=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --out) [ -n "${2:-}" ] || sai 2 "LỖI: --out cần thư mục."; out=$2; shift 2 ;;
+        --force) force=--force; shift ;;
+        *) sai 2 "LỖI: tham số lạ \"$1\"." ;;
+      esac
+    done
+    if [ -z "$out" ]; then can_repo; out=$AW_REPO; fi
+    exec sh "$AW_ENGINE/adapters/$ag/build.sh" --out "$out" $force ;;
+  ""|-h|--help|help)
+    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+    [ -n "$LENH" ] || exit 2 ;;
+  *) sai 2 "LỖI: lệnh lạ \"$LENH\" — xem: aw help" ;;
+esac

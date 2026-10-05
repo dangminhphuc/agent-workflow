@@ -311,6 +311,23 @@ for c in truy-vet thiet-ke ke-hoach hien-thuc ra-soat; do
   ky_vong 0 "feature đầy đủ qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
 done
 
+# ---------------------------------------------------------------- aw-engine
+echo ""
+echo "bin/aw-engine"
+AWE="$ROOT/bin/aw-engine"
+dung "version in đúng VERSION" bang "$(sh "$AWE" version)" "$(cat "$ROOT/VERSION")"
+for c in intake spec design plan implement review; do
+  ky_vong 0 "aw-engine check $c → đúng checker, giữ mã thoát" sh "$AWE" check "$c" "$F"
+done
+dung "mọi tên trong bảng checker trỏ tới script có thật" sh -c ". '$T/lib/bang-lenh.sh'; for c in \$BL_CHECKERS; do [ -f '$T/'\$(bl_checker \$c) ] || exit 1; done"
+dung "check giữ khối Kết quả của checker" sh -c "sh '$AWE' check plan '$F' 2>&1 | grep -q 'Kết quả: kiem-tra-ke-hoach.sh'"
+ky_vong 2 "check tên lạ → SAI THAM SỐ" sh "$AWE" check khong-co "$F"
+ky_vong 2 "check thiếu thư mục → SAI THAM SỐ" sh "$AWE" check spec
+ky_vong 9 "thiếu AW_CONFIG → KHÔNG HỢP LỆ (không đoán đường dẫn)" env -u AW_CONFIG sh "$AWE" check spec "$F"
+ky_vong 9 "wrapper khác giao thức → KHÔNG HỢP LỆ" env AW_PROTOCOL=999 sh "$AWE" check spec "$F"
+ky_vong 2 "lệnh lạ → SAI THAM SỐ" sh "$AWE" lam-gi-do
+ky_vong 2 "adapter không có → SAI THAM SỐ" sh "$AWE" adapter build khong-co --out "$TMP/o-x"
+
 # ---------------------------------------------------------------- truy vet
 echo ""
 echo "kiem-tra-truy-vet.sh"
