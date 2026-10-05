@@ -1405,6 +1405,77 @@ ky_vong 2 "ref không tồn tại → sai tham số" sh "$NG/tools/dong-goi.sh" 
 dung "VERSION của repo là X.Y.Z" sh -c "grep -Eqx '[0-9]+\.[0-9]+\.[0-9]+' '$ROOT/VERSION'"
 dung "CHANGELOG.md có mục cho VERSION" grep -qF "## [$(cat "$ROOT/VERSION")]" "$ROOT/CHANGELOG.md"
 
+# ---------------------------------------------------------------- wrapper aw
+echo ""
+echo "bin/aw (wrapper)"
+unset AW_REPO AW_CONFIG
+AWH="$TMP/awhome"; MIR="$TMP/mirror"
+# Mirror giả (file://): mỗi version là một bản phát hành đóng gói từ repo này.
+for v in 9.0.1 9.0.2; do
+  tao_nguon "$TMP/nguon-$v" "$v"
+  sh "$TMP/nguon-$v/tools/dong-goi.sh" "$MIR/v$v" >/dev/null 2>&1
+done
+tao_nguon "$TMP/nguon-9.0.4" 9.0.4
+sh "$TMP/nguon-9.0.4/tools/dong-goi.sh" "$MIR/v9.0.4" >/dev/null 2>&1
+printf '%s  agent-workflow-9.0.4.tar.gz\n' "$(printf 0 | awk '{ for (i = 0; i < 64; i++) printf "0" }')" > "$MIR/v9.0.4/SHA256SUMS"
+
+R7="$TMP/repo7"; mkdir -p "$R7"
+git -C "$R7" init -q; git -C "$R7" checkout -q -b main
+git -C "$R7" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
+GOC7=$(git -C "$R7" rev-parse HEAD)
+# aw7 <args> — chạy aw trong repo7 với HOME/mirror riêng của test
+aw7() { (cd "$R7" && AW_HOME="$AWH" AW_MIRROR="file://$MIR" sh "$ROOT/bin/aw" "$@"); }
+C7="$R7/.git/agent-workflow"
+
+ky_vong 9 "ngoài git repo → KHÔNG HỢP LỆ" sh -c "cd '$TMP' && AW_HOME='$AWH' sh '$ROOT/bin/aw' check spec x"
+ky_vong 9 "chưa init → KHÔNG HỢP LỆ" aw7 check spec .agent-workflow/x
+ky_vong 2 "init --version sai dạng → SAI THAM SỐ" aw7 init --version 9.0
+ky_vong 0 "aw init --version 9.0.1 (cache thiếu → tải từ mirror)" aw7 init --version 9.0.1 --test-cmd true
+dung "…ghi version, checksums, conventions.md, config.sh vào .git/agent-workflow/" sh -c \
+  "grep -qx 9.0.1 '$C7/version' && grep -q ' agent-workflow-9.0.1.tar.gz' '$C7/checksums' && [ -f '$C7/conventions.md' ] && grep -q 'LENH_KIEM_THU=\"true\"' '$C7/config.sh'"
+dung "…engine vào cache theo version, có dấu sha256" sh -c "[ -f '$AWH/engine/9.0.1/bin/aw-engine' ] && [ -s '$AWH/engine/9.0.1/.aw-sha256' ]"
+dung "…sha ghim khớp SHA256SUMS của bản phát hành" sh -c "grep -qF \"\$(awk '\$2 == \"agent-workflow-9.0.1.tar.gz\" { print \$1 }' '$MIR/v9.0.1/SHA256SUMS')\" '$C7/checksums'"
+dung "…exclude /.agent-workflow/ và /.claude/" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qx '/.claude/' '$R7/.git/info/exclude'"
+dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/intake.md"
+dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)" "$GOC7"
+dung "…cây làm việc sạch: file sinh ra không lọt vào git status" sh -c "[ -z \"\$(git -C '$R7' status --porcelain)\" ]"
+aw7 init >/dev/null 2>&1
+dung "init lại: không nhân đôi dòng exclude" bang "$(grep -cx '/.claude/' "$R7/.git/info/exclude")" 1
+ky_vong 2 "init lại với version khác → SAI THAM SỐ (dùng aw upgrade)" aw7 init --version 9.0.2
+dung "aw version in engine đang dùng" sh -c "cd '$R7' && AW_HOME='$AWH' sh '$ROOT/bin/aw' version 2>/dev/null | grep -q 'engine       9.0.1'"
+ky_vong 0 "aw doctor: mọi mục ✓" aw7 doctor
+
+ky_vong 6 "cache có version → chạy không cần mạng (aw feature)" sh -c "cd '$R7' && AW_HOME='$AWH' AW_MIRROR='file://$TMP/khong-co' sh '$ROOT/bin/aw' feature"
+ky_vong 9 "version không có trong cache và không tải được → KHÔNG HỢP LỆ" aw7 upgrade 9.0.3
+dung "…version giữ nguyên" grep -qx 9.0.1 "$C7/version"
+ky_vong 9 "checksum sai → KHÔNG HỢP LỆ" aw7 upgrade 9.0.4
+dung "…không cài vào cache, version giữ nguyên" sh -c "[ ! -e '$AWH/engine/9.0.4' ] && grep -qx 9.0.1 '$C7/version'"
+
+cp "$C7/checksums" "$TMP/checksums.bak"
+sed 's/^[0-9a-f]*  agent-workflow-9.0.1/1111  agent-workflow-9.0.1/' "$TMP/checksums.bak" > "$C7/checksums"
+ky_vong 9 "cache lệch sha đã ghim → KHÔNG HỢP LỆ" aw7 feature
+mv "$AWH/engine/9.0.1" "$TMP/engine-9.0.1.bak"
+ky_vong 9 "tải lại mà khác sha đã ghim → KHÔNG HỢP LỆ (không tin SHA256SUMS)" aw7 feature
+cp "$TMP/checksums.bak" "$C7/checksums"; mv "$TMP/engine-9.0.1.bak" "$AWH/engine/9.0.1"
+
+ky_vong 9 "AW_ENGINE_DIR khác version → KHÔNG HỢP LỆ" sh -c "cd '$R7' && AW_HOME='$TMP/awhome-trong' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature"
+ky_vong 6 "AW_ENGINE_DIR đúng version → chạy, không cần cache/mạng" sh -c "cd '$R7' && AW_HOME='$TMP/awhome-trong' AW_MIRROR='file://$TMP/khong-co' AW_ENGINE_DIR='$TMP/nguon-9.0.1' sh '$ROOT/bin/aw' feature"
+dung "…không tạo cache" test ! -e "$TMP/awhome-trong/engine/9.0.1"
+
+ky_vong 0 "aw upgrade 9.0.2" aw7 upgrade 9.0.2
+dung "…version mới, ghim thêm sha của 9.0.2, giữ sha cũ" sh -c "grep -qx 9.0.2 '$C7/version' && grep -q 'agent-workflow-9.0.2' '$C7/checksums' && grep -q 'agent-workflow-9.0.1' '$C7/checksums'"
+dung "…vẫn không có commit nào, cây sạch" sh -c "[ \"\$(git -C '$R7' rev-parse HEAD)\" = '$GOC7' ] && [ -z \"\$(git -C '$R7' status --porcelain)\" ]"
+
+# cấu hình dùng chung của team: một repo riêng chứa version, checksums, conventions.md
+TEAM="$TMP/team-cfg"; mkdir -p "$TEAM"; git -C "$TEAM" init -q
+cp "$C7/version" "$C7/checksums" "$TEAM/"; printf '# của team\n' > "$TEAM/conventions.md"
+git -C "$TEAM" add -A; git -C "$TEAM" -c user.name=t -c user.email=t@t commit -q -m cfg
+R8="$TMP/repo8"; git clone -q "$R7" "$R8" 2>/dev/null
+ky_vong 0 "aw init --from <repo cấu hình team>" sh -c "cd '$R8' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' init --from '$TEAM'"
+dung "…lấy version, checksums, conventions.md của team" sh -c "grep -qx 9.0.2 '$R8/.git/agent-workflow/version' && grep -q 'của team' '$R8/.git/agent-workflow/conventions.md' && cmp -s '$TEAM/checksums' '$R8/.git/agent-workflow/checksums'"
+ky_vong 9 "--from repo không có file version → KHÔNG HỢP LỆ" sh -c "cd '$R8' && AW_HOME='$AWH' sh '$ROOT/bin/aw' init --from '$R7'"
+dung "wrapper và VERSION cùng version (đóng gói kiểm lại)" bang "$(awk -F'"' '/^AW_WRAPPER_VERSION=/ { print $2 }' "$ROOT/bin/aw")" "$(cat "$ROOT/VERSION")"
+
 # ---------------------------------------------------------------- tong ket
 echo ""
 echo "─────────────────────────────────────────"

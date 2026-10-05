@@ -1,0 +1,334 @@
+#!/usr/bin/env sh
+# aw — wrapper của agent-workflow. Cài một lần cho cả máy, vd ~/.local/bin/aw.
+# Chỉ cần sh, git, tar, gzip, curl hoặc wget, sha256sum hoặc shasum.
+#
+# Wrapper KHÔNG chứa quy trình. Nó chỉ:
+#   1. tìm repo đang đứng (git rev-parse) và thư mục cấu hình của bản clone:
+#      $(git rev-parse --git-common-dir)/agent-workflow/ — dùng chung mọi worktree
+#   2. chọn version engine: dòng "Engine:" trong intake.md của việc (aw check …),
+#      hoặc file version trong thư mục cấu hình
+#   3. lấy engine version đó vào cache (~/.agent-workflow/engine/<version>/),
+#      kiểm sha256 khi tải
+#   4. chuyển lệnh sang engine, kèm AW_REPO, AW_CONFIG, AW_ENGINE
+#
+# Lệnh:
+#   aw init [--version X.Y.Z] [--adapter <id>] [--test-cmd "<lệnh>"] [--from <url>] [--from-legacy] [--force]
+#   aw upgrade <X.Y.Z>
+#   aw version
+#   aw doctor
+#   aw check <name> <feature-dir>          name: intake spec design plan implement review repro perf
+#   aw worktree new <type> <desc> [--create --base <ref>]
+#   aw worktree status <branch>
+#   aw worktree remove <branch> [--delete-branch]
+#   aw adapter build <agent> [--out <dir>] [--force]
+#   aw feature [name] | aw input … | aw questions <dir> | aw based-on <dir> … | aw rename <branch>
+#
+# Biến môi trường:
+#   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);
+#                  VERSION của nó vẫn phải khớp chính xác version cần dùng
+#   AW_MIRROR      nơi tải engine thay cho GitHub; cấu trúc <AW_MIRROR>/v<X.Y.Z>/{agent-workflow-<X.Y.Z>.tar.gz,SHA256SUMS}
+#                  (nhận https://… và file://…)
+#   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
+
+AW_WRAPPER_VERSION="2.0.0"
+AW_PROTOCOL=1
+AW_MIRROR_MAC_DINH="https://github.com/dangminhphuc/agent-workflow/releases/download"
+
+AW_HOME="${AW_HOME:-${HOME:-}/.agent-workflow}"
+AW_CACHE="${AW_CACHE:-$AW_HOME/engine}"
+AW_MIRROR="${AW_MIRROR:-$AW_MIRROR_MAC_DINH}"
+
+# ------------------------------------------------------------------ Kết quả
+# Cùng dạng khối "Kết quả" của engine: người và agent đọc NHÃN, không đọc mã số.
+ket_thuc() {
+  _m=$1
+  {
+    printf '\nKết quả: aw\n'
+    for _d in "0=XONG" "1=CÓ VẤN ĐỀ — các dòng ✗ phía trên" "2=SAI THAM SỐ — xem thông báo phía trên" \
+              "9=KHÔNG HỢP LỆ — không chạy được engine đúng version, lý do phía trên"; do
+      if [ "${_d%%=*}" = "$_m" ]; then printf '  [x] %s\n' "${_d#*=}"; else printf '  [ ] %s\n' "${_d#*=}"; fi
+    done
+  } >&2
+  exit "$_m"
+}
+loi() { _m=$1; shift; for _l in "$@"; do echo "$_l" >&2; done; ket_thuc "$_m"; }
+
+# ------------------------------------------------------------------ tiện ích
+tuyet_doi() { # <thư-mục-gốc> <đường-dẫn git in ra> — git cũ không có --path-format
+  case "$2" in
+    /*) (CDPATH= cd -- "$2" 2>/dev/null && pwd) ;;
+    *)  (CDPATH= cd -- "$1" 2>/dev/null && CDPATH= cd -- "$2" 2>/dev/null && pwd) ;;
+  esac
+}
+
+version_hop_le() { # X.Y.Z, chỉ chữ số
+  case "$1" in ""|*[!0-9.]*|.*|*.|*..*) return 1 ;; esac
+  [ "$(printf '%s' "$1" | awk -F. '{ print NF }')" = 3 ]
+}
+
+sha256_file() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{ print $1 }'
+  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | awk '{ print $1 }'
+  elif command -v openssl >/dev/null 2>&1; then openssl dgst -sha256 "$1" | awk '{ print $NF }'
+  else return 1
+  fi
+}
+
+tai() { # <url> <file-đích>
+  case "$1" in
+    file://*) cp "${1#file://}" "$2" 2>/dev/null ;;
+    *)
+      if command -v curl >/dev/null 2>&1; then curl -fsSL "$1" -o "$2" 2>/dev/null
+      elif command -v wget >/dev/null 2>&1; then wget -q -O "$2" "$1" 2>/dev/null
+      else echo "LỖI: cần curl hoặc wget để tải engine." >&2; return 1
+      fi ;;
+  esac
+}
+
+# tim_repo -> đặt AW_REPO, AW_CONFIG, GIT_CHUNG
+tim_repo() {
+  AW_REPO=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+  _c=$(git rev-parse --git-common-dir 2>/dev/null) || return 1
+  GIT_CHUNG=$(tuyet_doi "$(pwd)" "$_c") || return 1
+  AW_CONFIG="$GIT_CHUNG/agent-workflow"
+}
+can_repo() {
+  tim_repo || loi 9 "LỖI: không đứng trong git repo nào — aw cần repo đích (git rev-parse thất bại)."
+}
+
+version_cau_hinh() { [ -f "$AW_CONFIG/version" ] && awk 'NF { gsub(/[ \t\r]/, ""); print; exit }' "$AW_CONFIG/version"; }
+
+# sha đã ghim cho version (checksums trong thư mục cấu hình, định dạng sha256sum)
+sha_ghim() {
+  [ -f "$AW_CONFIG/checksums" ] || return 0
+  awk -v f="agent-workflow-$1.tar.gz" '$2 == f { print $1; exit }' "$AW_CONFIG/checksums"
+}
+ghi_sha() { # <version> <sha>
+  [ -n "$2" ] || return 0
+  [ -n "$(sha_ghim "$1")" ] && return 0
+  printf '%s  agent-workflow-%s.tar.gz\n' "$2" "$1" >> "$AW_CONFIG/checksums"
+  echo "  write   checksums (agent-workflow-$1.tar.gz)"
+}
+
+# dam_bao_engine <version> -> đặt ENGINE (và SHA_MOI khi vừa tải). Không được
+# thì in lý do và trả 1 — người gọi báo KHÔNG HỢP LỆ, KHÔNG chạy version khác.
+dam_bao_engine() {
+  _v=$1; ENGINE=""; SHA_MOI=""
+  version_hop_le "$_v" || { echo "LỖI: version \"$_v\" không phải X.Y.Z." >&2; return 1; }
+
+  if [ -n "${AW_ENGINE_DIR:-}" ]; then
+    _ev=$(tr -d ' \r\n' < "$AW_ENGINE_DIR/VERSION" 2>/dev/null)
+    if [ "$_ev" != "$_v" ]; then
+      echo "LỖI: AW_ENGINE_DIR=$AW_ENGINE_DIR là engine \"${_ev:-?}\", cần đúng $_v." >&2
+      return 1
+    fi
+    ENGINE=$(CDPATH= cd -- "$AW_ENGINE_DIR" && pwd); return 0
+  fi
+
+  _d="$AW_CACHE/$_v"; _ghim=$(sha_ghim "$_v")
+  if [ -f "$_d/.aw-sha256" ] && [ -f "$_d/bin/aw-engine" ]; then
+    _co=$(cat "$_d/.aw-sha256")
+    if [ -n "$_ghim" ] && [ "$_co" != "$_ghim" ]; then
+      echo "LỖI: engine $_v trong cache ($_d) có sha256 $_co, khác sha đã ghim $_ghim." >&2
+      echo "      Xoá thư mục cache đó rồi chạy lại để tải lại." >&2
+      return 1
+    fi
+    ENGINE=$_d; return 0
+  fi
+
+  _goi="agent-workflow-$_v.tar.gz"; _url="${AW_MIRROR%/}/v$_v"
+  mkdir -p "$AW_CACHE" || { echo "LỖI: không tạo được $AW_CACHE" >&2; return 1; }
+  _tam="$AW_CACHE/.tai.$$"; rm -rf "$_tam"; mkdir -p "$_tam"
+  echo "Tải engine $_v: $_url/$_goi" >&2
+  if ! tai "$_url/$_goi" "$_tam/$_goi"; then
+    rm -rf "$_tam"
+    echo "LỖI: không tải được $_url/$_goi — engine $_v không có trong cache ($AW_CACHE)." >&2
+    echo "      Không có mạng: đặt AW_ENGINE_DIR trỏ tới engine $_v có sẵn, hoặc AW_MIRROR tới mirror khác." >&2
+    return 1
+  fi
+  if [ -n "$_ghim" ]; then _mong=$_ghim; _tu="sha đã ghim trong $AW_CONFIG/checksums"
+  else
+    tai "$_url/SHA256SUMS" "$_tam/SHA256SUMS" || { rm -rf "$_tam"; echo "LỖI: không tải được $_url/SHA256SUMS." >&2; return 1; }
+    _mong=$(awk -v f="$_goi" '$2 == f || $2 == "*" f { print $1; exit }' "$_tam/SHA256SUMS"); _tu="SHA256SUMS"
+    [ -n "$_mong" ] || { rm -rf "$_tam"; echo "LỖI: SHA256SUMS không có dòng cho $_goi." >&2; return 1; }
+  fi
+  _that=$(sha256_file "$_tam/$_goi") || { rm -rf "$_tam"; echo "LỖI: không có sha256sum/shasum/openssl để kiểm checksum." >&2; return 1; }
+  if [ "$_that" != "$_mong" ]; then
+    rm -rf "$_tam"
+    echo "LỖI: checksum sai cho $_goi — tải về $_that, mong đợi $_mong (theo $_tu)." >&2
+    echo "      Không cài. File có thể hỏng hoặc bị tráo." >&2
+    return 1
+  fi
+  if ! (cd "$_tam" && gzip -dc "$_goi" | tar xf -) || [ ! -f "$_tam/agent-workflow-$_v/bin/aw-engine" ]; then
+    rm -rf "$_tam"; echo "LỖI: $_goi không bung được hoặc không phải engine agent-workflow." >&2; return 1
+  fi
+  _ev=$(tr -d ' \r\n' < "$_tam/agent-workflow-$_v/VERSION" 2>/dev/null)
+  [ "$_ev" = "$_v" ] || { rm -rf "$_tam"; echo "LỖI: $_goi chứa engine \"$_ev\", không phải $_v." >&2; return 1; }
+  printf '%s\n' "$_that" > "$_tam/agent-workflow-$_v/.aw-sha256"
+  if [ ! -d "$_d" ]; then mv "$_tam/agent-workflow-$_v" "$_d" || { rm -rf "$_tam"; return 1; }; fi
+  rm -rf "$_tam"
+  echo "  copy    engine $_v → $_d" >&2
+  ENGINE=$_d; SHA_MOI=$_that
+}
+
+chuyen() { # <version> <lệnh engine...>
+  _v=$1; shift
+  dam_bao_engine "$_v" || ket_thuc 9
+  [ -n "$SHA_MOI" ] && ghi_sha "$_v" "$SHA_MOI" >&2
+  AW_ENGINE=$ENGINE
+  export AW_REPO AW_CONFIG AW_ENGINE AW_PROTOCOL
+  exec sh "$ENGINE/bin/aw-engine" "$@"
+}
+
+version_viec() { # version dùng cho lệnh thường: file version của bản clone
+  _v=$(version_cau_hinh)
+  [ -n "$_v" ] || loi 9 "LỖI: repo này chưa init ($AW_CONFIG/version không có) — chạy: aw init"
+  echo "$_v"
+}
+
+# ------------------------------------------------------------------ lệnh
+cmd_init() {
+  can_repo
+  _ver=""; _from=""; _force=""; _con=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --version) [ -n "${2:-}" ] || loi 2 "LỖI: --version cần X.Y.Z."; _ver=$2; shift 2 ;;
+      --from)    [ -n "${2:-}" ] || loi 2 "LỖI: --from cần url repo cấu hình."; _from=$2; shift 2 ;;
+      --force)   _force=1; _con="$_con --force"; shift ;;
+      --adapter|--test-cmd)
+        [ $# -ge 2 ] || loi 2 "LỖI: $1 cần giá trị."
+        _con="$_con $1 $(printf '%s' "$2" | sed "s/'/'\\\\''/g; s/^/'/; s/\$/'/")"; shift 2 ;;
+      --from-legacy) _con="$_con --from-legacy"; shift ;;
+      *) loi 2 "LỖI: tham số lạ \"$1\" — xem: aw help" ;;
+    esac
+  done
+  [ -z "$_ver" ] || version_hop_le "$_ver" || loi 2 "LỖI: --version \"$_ver\" không phải X.Y.Z."
+  mkdir -p "$AW_CONFIG" || loi 9 "LỖI: không tạo được $AW_CONFIG"
+  echo "Repo:      $AW_REPO"
+  echo "Cấu hình:  $AW_CONFIG   (không commit, dùng chung mọi worktree)"
+
+  if [ -n "$_from" ]; then
+    _t="${TMPDIR:-/tmp}/aw-from.$$"; rm -rf "$_t"
+    git clone -q --depth 1 "$_from" "$_t" 2>/dev/null || { rm -rf "$_t"; loi 9 "LỖI: không clone được repo cấu hình $_from"; }
+    [ -f "$_t/version" ] || { rm -rf "$_t"; loi 9 "LỖI: repo cấu hình $_from không có file version."; }
+    for _f in version checksums conventions.md config.sh; do
+      [ -f "$_t/$_f" ] || continue
+      if [ -f "$AW_CONFIG/$_f" ] && [ -z "$_force" ]; then echo "  keep    $_f (đã có; --force để lấy bản của team)"
+      else cp "$_t/$_f" "$AW_CONFIG/$_f"; echo "  copy    $_f ← $_from"; fi
+    done
+    rm -rf "$_t"
+  fi
+
+  _cu=$(version_cau_hinh)
+  if [ -n "$_cu" ]; then
+    version_hop_le "$_cu" || loi 9 "LỖI: $AW_CONFIG/version ghi \"$_cu\" — không phải X.Y.Z."
+    [ -z "$_ver" ] || [ "$_ver" = "$_cu" ] || loi 2 "LỖI: repo đang dùng engine $_cu. Đổi version bằng: aw upgrade $_ver"
+    _v=$_cu; echo "  keep    version ($_v)"
+  else
+    _v=${_ver:-$AW_WRAPPER_VERSION}
+  fi
+  dam_bao_engine "$_v" || ket_thuc 9
+  if [ -z "$_cu" ]; then printf '%s\n' "$_v" > "$AW_CONFIG/version"; echo "  write   version ($_v)"; fi
+  [ -n "$SHA_MOI" ] && ghi_sha "$_v" "$SHA_MOI"
+  echo ""
+  AW_ENGINE=$ENGINE
+  export AW_REPO AW_CONFIG AW_ENGINE AW_PROTOCOL
+  eval "exec sh \"\$ENGINE/bin/aw-engine\" init $_con"
+}
+
+cmd_upgrade() {
+  can_repo
+  [ $# = 1 ] || loi 2 "Dùng: aw upgrade <X.Y.Z>"
+  version_hop_le "$1" || loi 2 "LỖI: \"$1\" không phải X.Y.Z."
+  _cu=$(version_cau_hinh)
+  [ -n "$_cu" ] || loi 9 "LỖI: repo này chưa init — chạy: aw init --version $1"
+  dam_bao_engine "$1" || ket_thuc 9
+  [ -n "$SHA_MOI" ] && ghi_sha "$1" "$SHA_MOI"
+  if [ "$_cu" != "$1" ]; then printf '%s\n' "$1" > "$AW_CONFIG/version"; echo "  write   version ($_cu → $1)"
+  else echo "  keep    version ($1)"; fi
+  echo "  Việc đã bắt đầu vẫn chạy bằng version ghi trong intake.md của nó; việc mới dùng $1."
+  echo "  Dùng chung cho team: commit version + checksums vào repo cấu hình của team (aw init --from)."
+  echo ""
+  AW_ENGINE=$ENGINE
+  export AW_REPO AW_CONFIG AW_ENGINE AW_PROTOCOL
+  exec sh "$ENGINE/bin/aw-engine" init
+}
+
+cmd_version() {
+  echo "aw (wrapper) $AW_WRAPPER_VERSION — giao thức $AW_PROTOCOL"
+  if tim_repo; then
+    _v=$(version_cau_hinh)
+    echo "repo         $AW_REPO"
+    echo "cấu hình     $AW_CONFIG"
+    if [ -n "$_v" ]; then
+      echo "engine       $_v"
+      if [ -n "${AW_ENGINE_DIR:-}" ]; then echo "             AW_ENGINE_DIR=$AW_ENGINE_DIR"
+      elif [ -f "$AW_CACHE/$_v/bin/aw-engine" ]; then echo "             $AW_CACHE/$_v"
+      else echo "             chưa có trong cache — tải khi dùng (từ $AW_MIRROR)"; fi
+    else
+      echo "engine       (chưa init — chạy: aw init)"
+    fi
+  fi
+  ket_thuc 0
+}
+
+cmd_doctor() {
+  _x=0
+  co() { echo "  ✓ $1"; }
+  khong() { echo "  ✗ $1"; _x=1; }
+  echo "Công cụ"
+  for _c in git tar gzip; do command -v "$_c" >/dev/null 2>&1 && co "$_c" || khong "$_c — cần cài"; done
+  if command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1; then co "curl/wget"
+  elif [ -n "${AW_ENGINE_DIR:-}" ]; then co "không có curl/wget — dùng AW_ENGINE_DIR"
+  else khong "curl hoặc wget — cần để tải engine (hoặc đặt AW_ENGINE_DIR)"; fi
+  if command -v sha256sum >/dev/null 2>&1 || command -v shasum >/dev/null 2>&1 || command -v openssl >/dev/null 2>&1; then co "sha256"
+  else khong "sha256sum/shasum/openssl — cần để kiểm checksum"; fi
+  echo "Nguồn engine"
+  echo "  · AW_MIRROR=$AW_MIRROR"
+  echo "  · AW_CACHE=$AW_CACHE"
+  [ -n "${AW_ENGINE_DIR:-}" ] && echo "  · AW_ENGINE_DIR=$AW_ENGINE_DIR"
+  echo "Repo"
+  if ! tim_repo; then khong "không đứng trong git repo"; else
+    co "$AW_REPO"
+    _v=$(version_cau_hinh)
+    if [ -z "$_v" ]; then khong "chưa init ($AW_CONFIG/version không có) — chạy: aw init"
+    elif ! version_hop_le "$_v"; then khong "version \"$_v\" không phải X.Y.Z"
+    else
+      co "version $_v"
+      [ -n "$(sha_ghim "$_v")" ] || [ -n "${AW_ENGINE_DIR:-}" ] || khong "chưa ghim sha256 cho $_v trong checksums — chạy: aw upgrade $_v"
+      if [ -n "${AW_ENGINE_DIR:-}" ]; then
+        [ "$(tr -d ' \r\n' < "$AW_ENGINE_DIR/VERSION" 2>/dev/null)" = "$_v" ] && co "AW_ENGINE_DIR đúng version" || khong "AW_ENGINE_DIR không phải engine $_v"
+      elif [ -f "$AW_CACHE/$_v/.aw-sha256" ]; then
+        _g=$(sha_ghim "$_v")
+        if [ -z "$_g" ] || [ "$(cat "$AW_CACHE/$_v/.aw-sha256")" = "$_g" ]; then co "engine $_v trong cache"
+        else khong "engine $_v trong cache lệch sha đã ghim — xoá $AW_CACHE/$_v"; fi
+      else echo "  · engine $_v chưa có trong cache — tải khi dùng"; fi
+    fi
+    for _f in conventions.md config.sh; do [ -f "$AW_CONFIG/$_f" ] && co "$_f" || khong "$_f không có — chạy: aw init"; done
+    _ex="$GIT_CHUNG/info/exclude"
+    _ds="/.agent-workflow/"
+    _ad=$( [ -f "$AW_CONFIG/config.sh" ] && (. "$AW_CONFIG/config.sh" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}") )
+    _e=""; if [ -n "${AW_ENGINE_DIR:-}" ]; then _e=$AW_ENGINE_DIR; elif [ -n "$_v" ]; then _e="$AW_CACHE/$_v"; fi
+    [ -n "$_ad" ] && [ -f "$_e/adapters/$_ad/exclude" ] && _ds="$_ds $(grep -v '^#' "$_e/adapters/$_ad/exclude" | tr '\n' ' ')"
+    for _p in $_ds; do
+      grep -qxF "$_p" "$_ex" 2>/dev/null && co "info/exclude có $_p" || khong "info/exclude thiếu $_p — chạy: aw init"
+    done
+  fi
+  [ "$_x" = 0 ] && ket_thuc 0 || ket_thuc 1
+}
+
+LENH="${1:-}"; [ $# -gt 0 ] && shift
+case "$LENH" in
+  init)    cmd_init "$@" ;;
+  upgrade) cmd_upgrade "$@" ;;
+  version|--version) cmd_version ;;
+  doctor)  cmd_doctor ;;
+  check|feature|input|questions|based-on|rename|worktree|adapter)
+    can_repo
+    _v=$(version_viec) || exit $?
+    chuyen "$_v" "$LENH" "$@" ;;
+  ""|help|-h|--help)
+    awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
+    [ -n "$LENH" ] || exit 2 ;;
+  *) loi 2 "LỖI: lệnh lạ \"$LENH\" — xem: aw help" ;;
+esac

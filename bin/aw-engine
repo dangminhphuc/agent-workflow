@@ -3,6 +3,7 @@
 # này với AW_REPO, AW_CONFIG đã đặt — xem tools/lib/moi-truong.sh.
 #
 #   aw-engine version
+#   aw-engine init [--adapter <id>] [--test-cmd "<cmd>"] [--force]
 #   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement review repro perf
 #   aw-engine feature [name]
 #   aw-engine input [--skip <intake.md>] <args|->
@@ -55,6 +56,7 @@ case "$LENH" in
     s=$(bl_checker "$1") || sai 2 "LỖI: không có checker \"$1\" (có: $BL_CHECKERS)."
     can_repo; shift
     exec sh "$T/$s" "$@" ;;
+  init)      can_repo; exec sh "$T/khoi-tao.sh" "$@" ;;
   feature)   can_repo; exec sh "$T/xac-dinh-feature.sh" "$@" ;;
   input)     can_repo; exec sh "$T/phan-loai-input.sh" "$@" ;;
   questions) can_repo; exec sh "$T/liet-ke-cau-hoi.sh" "$@" ;;
@@ -91,7 +93,7 @@ case "$LENH" in
     if [ -z "$out" ]; then can_repo; out=$AW_REPO; fi
     exec sh "$AW_ENGINE/adapters/$ag/build.sh" --out "$out" $force ;;
   ""|-h|--help|help)
-    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+    awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
     [ -n "$LENH" ] || exit 2 ;;
   *) sai 2 "LỖI: lệnh lạ \"$LENH\" — xem: aw help" ;;
 esac

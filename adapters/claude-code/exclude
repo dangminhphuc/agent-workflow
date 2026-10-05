@@ -1,0 +1,2 @@
+# Đường dẫn adapter này sinh ra trong repo đích — aw init thêm vào .git/info/exclude.
+/.claude/
