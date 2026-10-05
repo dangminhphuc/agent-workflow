@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # bugfix: ghi bằng chứng test tái hiện ĐỎ trên code chưa sửa.
 #
-#   sh tools/kiem-tra-tai-hien.sh <thư-mục-feature>
+#   aw check repro <thư-mục-feature>
 #
 # Chạy SAU khi viết test tái hiện, TRƯỚC khi sửa code production:
 #   - diff so với base của việc (intake.md) chỉ được đụng file test (mau_file_test) và file bỏ qua;

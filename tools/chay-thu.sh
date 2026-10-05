@@ -833,10 +833,12 @@ for f in commands/intake.md commands/spec.md commands/design.md commands/plan.md
 done
 [ -f "$O/.claude/commands/ship.md" ] && du=0
 dung "sinh đúng bộ file, bỏ qua phase chưa hiện thực" test "$du" = 1
-dung "command có bước xác định feature" grep -q 'xac-dinh-feature.sh \$ARGUMENTS' "$O/.claude/commands/design.md"
+dung "command có bước xác định feature bằng aw feature" grep -q 'aw feature \$ARGUMENTS' "$O/.claude/commands/design.md"
+dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O/.claude/commands/design.md"
+dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
 dung "command design gọi checker LLM" grep -q 'soat-thiet-ke' "$O/.claude/commands/design.md"
-dung "lệnh /open-questions có bước xác định feature + chạy liet-ke-cau-hoi.sh" sh -c \
-  "grep -q 'xac-dinh-feature.sh \$ARGUMENTS' '$O/.claude/commands/open-questions.md' && grep -q 'liet-ke-cau-hoi.sh' '$O/.claude/commands/open-questions.md'"
+dung "lệnh /open-questions có bước xác định feature + chạy aw questions" sh -c \
+  "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/open-questions.md' && grep -q 'aw questions' '$O/.claude/commands/open-questions.md'"
 dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/open-questions' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 
@@ -859,18 +861,20 @@ tao_fake() {
   cp "$ROOT/workflow.yaml" "$FAKE/"
   cp -r "$ROOT/tools/lib" "$FAKE/tools/"
   cp "$ROOT"/tools/*.sh "$FAKE/tools/"
+  cp "$ROOT/VERSION" "$FAKE/"
+  cp -r "$ROOT/adapters/lib" "$FAKE/adapters/"
   cp "$BUILD" "$FAKE/adapters/claude-code/"
 }
 
 tao_fake
-thay "$FAKE/workflow/phases/03-plan.md" '  - sh tools/kiem-tra-ke-hoach.sh' '  - kế hoạch trông có vẻ hợp lý'
+thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - kế hoạch trông có vẻ hợp lý'
 O2="$TMP/out2"; mkdir -p "$O2"
 ky_vong 4 "từ chối build khi exit_machine không phải lệnh chạy được" sh "$FAKE/adapters/claude-code/build.sh" --out "$O2"
 dung "không để lại file viết dở khi build hỏng" sh -c "[ ! -f '$O2/.claude/commands/plan.md' ] && [ -z \"\$(find '$O2' -name '*.tmp')\" ]"
 
 tao_fake
-thay "$FAKE/workflow/phases/03-plan.md" '  - sh tools/kiem-tra-ke-hoach.sh' '  - sh tools/khong-ton-tai.sh'
-ky_vong 4 "từ chối build khi lệnh trỏ tới script không tồn tại" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out3"
+thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - aw check khong-ton-tai'
+ky_vong 4 "từ chối build khi aw check trỏ tới checker không có" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out3"
 
 tao_fake
 rm -f "$FAKE/workflow/checkers/thiet-ke.md"
@@ -1065,11 +1069,14 @@ ky_vong 0 "đã merge: remove --delete-branch gỡ worktree và xoá branch" awd
 dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] && ! git -C '$R9' rev-parse --verify --quiet refs/heads/chore_in-base"
 
 IN="$R9/.claude/commands/intake.md"
-dung "/intake: tham số là input, không truyền vào xac-dinh-feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'xac-dinh-feature.sh \$ARGUMENTS' '$IN'"
-dung "/intake: đang ở checkout chính thì dẫn tới tao-worktree.sh" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*tao-worktree.sh' "$IN"
+dung "/intake: tham số là input, không truyền vào aw feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'aw feature \$ARGUMENTS' '$IN'"
+dung "/intake: đang ở checkout chính thì dẫn tới aw worktree new" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*aw worktree new' "$IN"
 dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$R9/.claude/commands/spec.md"
-dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'xac-dinh-feature.sh \$ARGUMENTS' "$R9/.claude/commands/spec.md"
-dung "/intake: tham số đi qua phan-loai-input.sh bằng heredoc nguyên văn" sh -c "grep -q 'phan-loai-input.sh .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
+dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'aw feature \$ARGUMENTS' "$R9/.claude/commands/spec.md"
+dung "/intake: tham số đi qua aw input bằng heredoc nguyên văn" sh -c "grep -q 'aw input .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
+dung "aw init chép rules/templates/checkers của engine vào .agent-workflow/.engine/ (bị exclude)" sh -c "[ -f '$R9/.agent-workflow/.engine/templates/spec.md' ] && [ -f '$R9/.agent-workflow/.engine/rules/nguyen-tac-chung.md' ] && grep -qx '$VDEV' '$R9/.agent-workflow/.engine/VERSION'"
+dung "…conventions.md trong đó trỏ tới cấu hình của bản clone" sh -c "grep -q '^mau_branch:' '$R9/.agent-workflow/.engine/conventions.md'"
+dung "mọi đường dẫn .agent-workflow/.engine/… mà lệnh sinh ra nhắc tới đều có thật" sh -c "cd '$R9' && for p in \$(grep -rhoE '\.agent-workflow/\.engine/[A-Za-z0-9_./-]+\.md' .claude | sort -u); do [ -e \"\$p\" ] || { echo \$p; exit 1; }; done"
 
 # ---------------------------------------------------------------- phan loai input (/intake)
 echo ""

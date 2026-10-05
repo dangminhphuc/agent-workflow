@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Xac dinh thu muc artifact cua feature dang lam.
 #
-#   sh .agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh [ten-feature]
+#   aw feature [ten-feature]
 #
 # Thu tu (da chot, la giao dien chung giua cac adapter):
 #   0. Dang o checkout CHINH -> ma 6. Worktree la bat buoc: moi viec lam trong
@@ -37,7 +37,7 @@ if wt_la_chinh "$MT_REPO"; then
     echo "  Worktree đang có:" >&2
     printf '%s\n' "$ds" | sed 's/^/    /' >&2
   fi
-  echo "  Agent: /intake → đề xuất worktree bằng tao-worktree.sh cho NGƯỜI chọn base;" >&2
+  echo "  Agent: /intake → đề xuất worktree bằng aw worktree new cho NGƯỜI chọn base;" >&2
   echo "  lệnh khác → DỪNG LẠI, bảo người mở phiên mới trong worktree của việc. Không tự chuyển." >&2
   exit 6
 fi

@@ -11,7 +11,7 @@ outputs:
   - tdd.md
   - phat-hien-thiet-ke.md
 exit_machine:
-  - sh tools/kiem-tra-thiet-ke.sh
+  - aw check design
 exit_human:
   - Người duyệt TỪNG quyết định D-xx trong tdd.md (đổi Trạng thái sang "đã duyệt")
   - Người làm trọng tài cho phát hiện của checker LLM (xác nhận, hoặc bác bỏ kèm lý do)
@@ -35,7 +35,7 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 
 ## Đầu vào
 
-- `spec.md`, `open-questions.md` — phải qua được `kiem-tra-truy-vet.sh`, và
+- `spec.md`, `open-questions.md` — phải qua được `aw check spec`, và
   `Trạng thái spec: đã duyệt` (người đã duyệt spec). Còn `đề xuất` thì dừng lại.
 - Code hiện có của repo đích
 
@@ -79,14 +79,14 @@ nhờ người phác** — checker sẽ chặn.
    ánh xạ YC → mục. Mục nào dựa vào một quyết định thì ghi `Dựa trên: D-xx`.
    Mục không áp dụng ghi `Không áp dụng: <lý do>`, **không bỏ trống**.
 
-4. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> tdd.md spec.md open-questions.md`.
+4. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> tdd.md spec.md open-questions.md`.
 
 5. **Chạy checker LLM** (phiên/subagent riêng, theo `checkers/thiet-ke.md`). Nó
    tìm chỗ lệch D-xx và quyết định ngầm chưa nêu thành D, ghi ra
    `phat-hien-thiet-ke.md`. Sửa những gì bạn đồng ý (`Xử lý: đã sửa`); phần còn
    lại để người làm trọng tài.
 
-6. **Chạy `kiem-tra-thiet-ke.sh`**, rồi dừng lại cho người duyệt từng D-xx.
+6. **Chạy `aw check design`**, rồi dừng lại cho người duyệt từng D-xx.
 
 ## Mở lại một quyết định
 
@@ -115,7 +115,7 @@ duyệt lại.
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-thiet-ke.sh` ra `[x] ĐẠT` — đầu vào qua checker của spec; đủ
+- `aw check design` ra `[x] ĐẠT` — đầu vào qua checker của spec; đủ
   mục; D-xx hợp lệ; `Dựa trên` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của
   người; có `phat-hien-thiet-ke.md` và không còn phát hiện `Chặn` chưa xử lý.
 

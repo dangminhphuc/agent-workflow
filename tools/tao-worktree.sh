@@ -181,7 +181,7 @@ AD=""; [ -f "$CH" ] && AD=$(. "$CH" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}")
 AD=${AD:-claude-code}
 if [ -f "$ENG/adapters/$AD/build.sh" ]; then
   echo "" >&2
-  sh "$ENG/adapters/$AD/build.sh" --out "$DUONG" >&2 ||
+  sh "$ENG/tools/sinh-adapter.sh" "$AD" "$DUONG" >&2 ||
     echo "CẢNH BÁO: sinh adapter $AD vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build $AD" >&2
 fi
 echo "" >&2

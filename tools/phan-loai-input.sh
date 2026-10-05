@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 # Phân loại tham số của /intake thành các dòng của mục "## Input" trong intake.md.
 #
-#   sh .agent-workflow/.quy-trinh/tools/phan-loai-input.sh [--skip <intake.md>] <tham-số>
-#   sh .agent-workflow/.quy-trinh/tools/phan-loai-input.sh [--skip <intake.md>] - <<'HET_INPUT'
+#   aw input [--skip <intake.md>] <tham-số>
+#   aw input [--skip <intake.md>] - <<'HET_INPUT'
 #   <tham-số, nguyên văn>
 #   HET_INPUT
 #

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Đổi tên việc: branch + thư mục artifact + thư mục worktree, trong một lệnh.
 #
-#   sh .agent-workflow/.quy-trinh/tools/doi-ten-feature.sh <tên-branch-mới>
+#   aw rename <tên-branch-mới>
 #
 # Dùng khi loại việc lệch tiền tố branch (vd fix_ nhưng thực ra là feature) —
 # quy trình không có ngoại lệ "chấp nhận lệch", nên phải sửa cho khớp. Ba thứ
@@ -28,7 +28,7 @@ ART=$MT_ART_DIR
 ART_ABS=$MT_ART
 
 MOI="${1:-}"
-[ -n "$MOI" ] || { echo "Dùng: sh doi-ten-feature.sh <tên-branch-mới>" >&2; exit 2; }
+[ -n "$MOI" ] || { echo "Dùng: aw rename <tên-branch-mới>" >&2; exit 2; }
 if wt_la_chinh "$MT_REPO"; then
   echo "LỖI: đang ở checkout chính — chạy lệnh này trong worktree của việc cần đổi tên." >&2; exit 2
 fi

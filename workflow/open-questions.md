@@ -24,7 +24,7 @@ Mức do agent đề xuất ở `/spec`, **người** duyệt. Chỉ người đ
 
 ### 1. Liệt kê
 
-Chạy `sh tools/liet-ke-cau-hoi.sh <thư-mục-feature>` và dán **nguyên văn** stdout
+Chạy `aw questions <thư-mục-feature>` và dán **nguyên văn** stdout
 cho người — đó là danh sách theo thứ tự phải giải quyết trước. Thứ tự do máy xếp
 (mức chặn → YC `bắt buộc` trước `nên có` → nhiều task đứng trên giả định hơn →
 mã YC), agent không tự xếp lại.
@@ -79,7 +79,7 @@ Phương án (đề xuất của agent, người chọn hoặc trả lời khác
    chính chỗ sửa này, không phải mở file sửa tay `đề xuất` → `đã duyệt` lần nữa.
    Ghi vào cuối dòng `Trả lời:` `(đã xác nhận sửa YC-NNN)` để còn dấu vết.
    Câu trả lời khớp giả định tạm thì chỉ đổi nhãn nguồn.
-4. Chạy `sh tools/kiem-tra-truy-vet.sh <thư-mục-feature>` và dán kết quả thật.
+4. Chạy `aw check spec <thư-mục-feature>` và dán kết quả thật.
    Không `[x] ĐẠT` thì sửa ngay cho khớp hai file rồi mới sang mục kế.
 
 **Người chưa trả lời được** (chọn c): soạn sẵn một tin nhắn gửi `Hỏi ai` — tự đủ
@@ -92,7 +92,7 @@ tự hạ.
 
 ### 4. Tổng kết
 
-Sau mục cuối (hoặc khi người dừng), chạy lại `liet-ke-cau-hoi.sh`, dán kết quả,
+Sau mục cuối (hoặc khi người dừng), chạy lại `aw questions`, dán kết quả,
 rồi nói rõ:
 
 - còn gì đang chặn phase nào;

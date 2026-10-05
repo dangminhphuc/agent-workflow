@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiem tra dieu kien ra cua phase 04-implement.
 #
-#   sh tools/kiem-tra-hien-thuc.sh <thu-muc-feature>
+#   aw check implement <thu-muc-feature>
 #
 # Diem quan trong: script NAY TU CHAY lenh kiem thu va TU GHI output vao
 # ket-qua-kiem-thu.md. Agent khong co co hoi viet lai ket qua bang loi hay
@@ -44,7 +44,7 @@ loi() { n_loi=$((n_loi + 1)); echo "  [LỖI] $1"; }
 
 # ---- 0. Dau vao ----
 if ! sh "$HERE/kiem-tra-ke-hoach.sh" "$DIR" >/dev/null 2>&1; then
-  loi "Đầu vào chưa đạt: plan.md không qua kiem-tra-ke-hoach.sh — chạy nó để xem chi tiết."
+  loi "Đầu vào chưa đạt: plan.md không qua aw check plan — chạy nó để xem chi tiết."
 fi
 
 # ---- 1. Phai khai bao lenh kiem thu ----

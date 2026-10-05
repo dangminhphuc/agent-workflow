@@ -98,7 +98,7 @@ case "$LENH" in
       esac
     done
     if [ -z "$out" ]; then can_repo; out=$AW_REPO; fi
-    exec sh "$AW_ENGINE/adapters/$ag/build.sh" --out "$out" $force ;;
+    exec sh "$T/sinh-adapter.sh" "$ag" "$out" $force ;;
   ""|-h|--help|help)
     awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
     [ -n "$LENH" ] || exit 2 ;;

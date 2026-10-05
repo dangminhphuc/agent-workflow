@@ -11,7 +11,7 @@ inputs:
 outputs:
   - plan.md
 exit_machine:
-  - sh tools/kiem-tra-ke-hoach.sh
+  - aw check plan
 exit_human: []
 needs_clean_context: true
 ---
@@ -32,12 +32,12 @@ duyệt.
 
 ## Đầu vào
 
-- `spec.md`, `tdd.md` — phải qua được `kiem-tra-thiet-ke.sh`, và **mọi D-xx đã
+- `spec.md`, `tdd.md` — phải qua được `aw check design`, và **mọi D-xx đã
   được người duyệt**. Còn D `đề xuất` hay `mở lại` thì dừng lại.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
 
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
-`kiem-tra-truy-vet.sh`, có `Trạng thái spec: đã duyệt` và không còn điểm mù
+`aw check spec`, có `Trạng thái spec: đã duyệt` và không còn điểm mù
 `Mức chặn: chặn` đang mở — các cổng này vốn nằm ở design), và task không có
 `Dựa trên: D-xx`.
 
@@ -67,13 +67,13 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
 
 5. **Theo loại việc:**
    - `bugfix`: task đầu tiên là **viết test tái hiện**, tách khỏi task sửa code —
-     `/implement` phải chạy `kiem-tra-tai-hien.sh` giữa hai task đó.
-   - `perf`: task đầu tiên là **đo trước** (`kiem-tra-hieu-nang.sh --truoc`).
+     `/implement` phải chạy `aw check repro` giữa hai task đó.
+   - `perf`: task đầu tiên là **đo trước** (`aw check perf <thư-mục-feature> --before`).
    - `refactor`/`perf`: test cũ nào dự kiến phải sửa (vd đổi import khi dời module)
      thì khai sẵn ở "Test cũ bị sửa".
    - `chore`: có nâng dependency thì khai ở "Nâng dependency" (chỉ `vá | minor`).
 
-6. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> plan.md spec.md tdd.md`
+6. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md`
    (chore: bỏ `tdd.md`).
 
 ## Đầu ra
@@ -93,8 +93,8 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-ke-hoach.sh` ra `[x] ĐẠT`:
-  - đầu vào qua `kiem-tra-thiet-ke.sh`, mọi D-xx `đã duyệt`;
+- `aw check plan` ra `[x] ĐẠT`:
+  - đầu vào qua `aw check design`, mọi D-xx `đã duyệt`;
   - mọi task có `Phủ:` hợp lệ, `File dự kiến:`, `Cách kiểm chứng:` không rỗng;
     `Dựa trên:` trỏ về D có thật;
   - mọi YC được ít nhất một task phủ, **hoặc** nằm ở "Hoãn lại" kèm lý do. Kiểm

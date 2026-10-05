@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiểm tra điều kiện ra của phase 02-design.
 #
-#   sh tools/kiem-tra-thiet-ke.sh <thư-mục-feature>
+#   aw check design <thư-mục-feature>
 #
 # Chặn:
 #   1. Đầu vào: spec chưa qua checker của spec (entry check = checker phase trước).
@@ -48,7 +48,7 @@ done
 n_loi=0
 if ! sh "$HERE/kiem-tra-truy-vet.sh" "$DIR" >/dev/null 2>&1; then
   n_loi=1
-  echo "  [LỖI] Đầu vào chưa đạt: spec.md/open-questions.md không qua kiem-tra-truy-vet.sh — chạy nó để xem chi tiết."
+  echo "  [LỖI] Đầu vào chưa đạt: spec.md/open-questions.md không qua aw check spec — chạy nó để xem chi tiết."
 fi
 cd_duyet=$(kc_spec_chua_duyet "$DIR")
 if [ -n "$cd_duyet" ]; then

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiểm tra điều kiện ra của phase 00-intake.
 #
-#   sh tools/kiem-tra-tiep-nhan.sh <thư-mục-feature>
+#   aw check intake <thư-mục-feature>
 #
 # Chặn:
 #   - intake.md thiếu, hoặc "Loại việc" không thuộc feature|bugfix|refactor|perf|chore.
@@ -39,7 +39,7 @@ n_base=0
 set -- $(kc_base_dong "$DIR")
 b_ref="${1:-}"; b_sha="${2:-}"
 if [ -z "$b_ref" ] || [ -z "$b_sha" ]; then
-  echo "  [LỖI] Thiếu dòng \"- **Base:** \`<ref>\` @ \`<sha>\`\" — chép đúng dòng tao-worktree.sh in ra khi tạo worktree"
+  echo "  [LỖI] Thiếu dòng \"- **Base:** \`<ref>\` @ \`<sha>\`\" — chép đúng dòng aw worktree new in ra khi tạo worktree"
   n_base=1
 elif ! git -C "$DIR" rev-parse --verify --quiet "$b_sha^{commit}" >/dev/null; then
   echo "  [LỖI] Base: sha \"$b_sha\" không phải commit trong repo"

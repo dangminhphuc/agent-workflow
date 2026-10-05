@@ -48,7 +48,7 @@ và là vi phạm nặng hơn việc bỏ trống nhãn, vì nó không kiểm �
 ## Kiểm tra
 
 ```
-sh tools/kiem-tra-truy-vet.sh <thư-mục-artifact>
+aw check spec <thư-mục-artifact>
 ```
 
 Kiểm mười một điều:

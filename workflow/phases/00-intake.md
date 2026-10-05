@@ -10,9 +10,9 @@ inputs:
 outputs:
   - intake.md
 exit_machine:
-  - sh tools/kiem-tra-tiep-nhan.sh
+  - aw check intake
 exit_human:
-  - Người CHỌN BASE cho worktree (agent chỉ đưa đề xuất của tao-worktree.sh)
+  - Người CHỌN BASE cho worktree (agent chỉ đưa đề xuất của aw worktree new)
   - Người xác nhận LOẠI VIỆC (chọn sai loại là sai luật cả chuỗi phía sau)
   - Người xác nhận danh sách input, và lời mình được chép đúng nguyên văn
 needs_clean_context: true
@@ -49,9 +49,9 @@ Có sửa code chạy trên production không?
 | Loại | Luật khác biệt |
 |---|---|
 | `feature` | Quy trình chuẩn |
-| `bugfix` | Spec có mục "Tái hiện lỗi"; test tái hiện phải **đỏ trên code chưa sửa** (`kiem-tra-tai-hien.sh`) |
+| `bugfix` | Spec có mục "Tái hiện lỗi"; test tái hiện phải **đỏ trên code chưa sửa** (`aw check repro`) |
 | `refactor` | YC chỉ là `giữ nguyên` / `cấu trúc`, YC giữ nguyên phải có test bảo vệ sẵn trên nhánh gốc; không được xoá test cũ, sửa test cũ phải khai |
-| `perf` | Như refactor, cộng YC `hiệu năng` có số liệu và số đo trước/sau do máy ghi (`kiem-tra-hieu-nang.sh`) |
+| `perf` | Như refactor, cộng YC `hiệu năng` có số liệu và số đo trước/sau do máy ghi (`aw check perf`) |
 | `chore` | Không có phase design; không được đụng code production; nâng dependency phải khai (major thì là refactor) |
 
 Không phải loại riêng: `utils` (thêm hàm dùng chung = feature, gom code trùng =
@@ -65,7 +65,7 @@ luật của hai loại xung đột nhau.
 `/intake JIRA-123 https://confluence/…` — tham số là **danh sách input**, không
 phải tên feature. Tên feature luôn lấy từ branch (xem mục dưới).
 
-**Nhãn do máy gán.** Luôn chạy `tools/phan-loai-input.sh`, truyền nguyên văn tham
+**Nhãn do máy gán.** Luôn chạy `aw input`, truyền nguyên văn tham
 số qua stdin (`-`), rồi chép **đúng stdout** vào `## Input`. Không tự gán nhãn,
 không sửa dòng nó in ra. Luật (mẫu khai trong `conventions.md`):
 
@@ -95,12 +95,12 @@ hỏi người, người đồng ý mới ghi thành dòng riêng.
 Đã có `intake.md` thì chạy lại là **gộp thêm input**, không viết lại:
 
 1. Không tạo lại từ mẫu. **Giữ nguyên** `Loại việc` và `Mục tiêu`.
-2. Chạy `phan-loai-input.sh --tru <thư-mục-feature>/intake.md -` — nó bỏ các
+2. Chạy `aw input --skip <thư-mục-feature>/intake.md -` — nó bỏ các
    input đã có (so theo định danh: `ABC-1` và `…/browse/ABC-1` là một nguồn).
    **Thêm** stdout vào cuối `## Input`.
 3. Input mới làm loại việc có vẻ khác đi (vd thêm incident note vào việc
    `feature`): **nêu ra cho người**, không tự sửa `Loại việc`. Người đổi loại
-   thì xác nhận lại như lần đầu (và đổi tên bằng `doi-ten-feature.sh` nếu lệch tiền tố).
+   thì xác nhận lại như lần đầu (và đổi tên bằng `aw rename` nếu lệch tiền tố).
 4. Chạy checker, dừng cho người xác nhận **các input mới**.
 
 Không có đường xoá input qua lệnh — muốn bỏ thì người sửa tay `intake.md`. Chỉ
@@ -113,14 +113,14 @@ chạy lại `/spec` để đọc input mới. Các phase sau cảnh báo, `revi
 
 Worktree là **bắt buộc**. Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
 chạy `/intake`; mỗi việc làm trong một worktree riêng, một phiên agent riêng.
-`xac-dinh-feature.sh` ra `ĐANG Ở CHECKOUT CHÍNH` khi đang ở checkout chính — với `/intake` nghĩa là
+`aw feature` ra `ĐANG Ở CHECKOUT CHÍNH` khi đang ở checkout chính — với `/intake` nghĩa là
 "tạo worktree", với mọi lệnh khác nghĩa là "dừng lại".
 
 Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Làm theo thứ tự:
 
 1. Đọc input, **chốt loại việc với người** (cây phân loại ở trên).
 2. Chọn một mô tả ngắn: chữ thường ASCII, số, dấu `-` (vd `phi-hoan-tien`).
-3. Chạy `tools/tao-worktree.sh <loại-việc> <mô-tả>` — nó **chỉ in đề xuất**:
+3. Chạy `aw worktree new <loại-việc> <mô-tả>` — nó **chỉ in đề xuất**:
    - tên theo `loai_theo_tien_to` (vd `fix_phi-hoan-tien`) — branch, thư mục
      worktree và thư mục artifact dùng **cùng một tên**;
    - đường dẫn theo `thu_muc_worktree` (mặc định `../{repo}.wt/{ten}`);
@@ -129,7 +129,7 @@ Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Là
      gợi ý của **máy** theo một luật cố định, không phải của agent.
 4. Đưa **nguyên văn** đề xuất cho người, hỏi người **chọn base** (và xác nhận
    tên). Người muốn tên khác thì đổi `<mô-tả>` và chạy lại bước 3.
-5. Người chọn rồi mới chạy `tao-worktree.sh <loại-việc> <mô-tả> --tao --goc <ref>`
+5. Người chọn rồi mới chạy `aw worktree new <loại-việc> <mô-tả> --create --base <ref>`
    với **đúng ref người chọn**. Script in dòng `Base:` và dòng `Engine:` — chép
    nguyên cả hai vào `intake.md`.
 6. Ghi `intake.md` vào `<worktree>/.agent-workflow/<tên>/`, chạy checker trên
@@ -158,16 +158,16 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
    branch (`loai_theo_tien_to`), đối chiếu với input, rồi hỏi người xác nhận.
 
    Loại người chốt lệch tiền tố branch thì **không có ngoại lệ**: sửa loại, hoặc
-   đổi tên bằng `tools/doi-ten-feature.sh` — nó đổi cả branch, thư mục artifact
+   đổi tên bằng `aw rename` — nó đổi cả branch, thư mục artifact
    và thư mục worktree; người phải mở phiên mới ở đường dẫn mới.
 
-2. **Ghi input** bằng `phan-loai-input.sh` (mục "Tham số của lệnh là input"):
+2. **Ghi input** bằng `aw input` (mục "Tham số của lệnh là input"):
    - tài liệu: `[CONFLUENCE]` / `[JIRA]` / `[FILE]` + định danh (URL, mã issue, đường dẫn);
    - lời người dùng: `[NGƯỜI-DÙNG]`, **chép nguyên văn** ở dòng `>` bên dưới.
 
-3. **Ghi mục tiêu** một câu, và hai dòng **Base**, **Engine** đúng như `tao-worktree.sh` in ra.
+3. **Ghi mục tiêu** một câu, và hai dòng **Base**, **Engine** đúng như `aw worktree new` in ra.
 
-4. Chạy `kiem-tra-tiep-nhan.sh` rồi dừng lại cho người xác nhận.
+4. Chạy `aw check intake` rồi dừng lại cho người xác nhận.
 
 ## Đầu ra
 
@@ -181,12 +181,12 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 - **Tóm tắt, diễn giải hay trích yêu cầu từ tài liệu nguồn.** Chỉ trỏ tới nó.
   Viết lại BRD ở đây là tạo một lớp diễn giải chen giữa tài liệu thật và spec —
   và sai lệch của lớp đó sẽ được spec gắn nhãn như có nguồn đàng hoàng.
-- Tự gán nhãn input, hay sửa dòng `phan-loai-input.sh` in ra.
+- Tự gán nhãn input, hay sửa dòng `aw input` in ra.
 - Ghi `[SUY-RA]` vào input, hay ghi lời người dùng mà không phải nguyên văn.
 - Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi `Loại việc`.
   Suy đoán của agent vào input thì mọi phase sau truy về nó như thể có nguồn.
 - Tự chốt loại việc thay người.
-- Tự chọn base, tự điền `--goc`, hay tạo worktree trước khi người chọn.
+- Tự chọn base, tự điền `--base`, hay tạo worktree trước khi người chọn.
 - Tự sửa dòng `Engine:` — đổi version giữa chừng là đổi luật của việc.
 - Tự chuyển phiên sang worktree mới — người mở phiên mới ở đó.
 - Chốt phạm vi hoặc giải pháp kỹ thuật.
@@ -194,7 +194,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-tiep-nhan.sh` ra `[x] ĐẠT` — loại việc hợp lệ, có mục tiêu, có ít
+- `aw check intake` ra `[x] ĐẠT` — loại việc hợp lệ, có mục tiêu, có ít
   nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
   `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
   có dòng `Engine:` dạng `X.Y.Z` khớp engine đang chạy.

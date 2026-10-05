@@ -78,7 +78,7 @@ if [ -n "$them" ]; then echo "  write   .git/info/exclude (+$them)"; else echo "
 
 # ---- adapter ----
 echo ""
-sh "$ENG/adapters/$ADAPTER/build.sh" --out "$AW_REPO" $FORCE || exit $?
+sh "$ENG/tools/sinh-adapter.sh" "$ADAPTER" "$AW_REPO" $FORCE || exit $?
 
 echo ""
 echo "Xong. Không có file nào cần commit. Bước tiếp theo:"

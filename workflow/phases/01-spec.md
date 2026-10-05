@@ -12,7 +12,7 @@ outputs:
   - spec.md
   - open-questions.md
 exit_machine:
-  - sh tools/kiem-tra-truy-vet.sh
+  - aw check spec
 exit_human:
   - Chủ repo duyệt danh sách yêu cầu và phần "Ngoài phạm vi"
   - Chủ repo duyệt nhãn "Mức chặn" của từng [CẦN-HỎI] (chặn | chặn review | không chặn)
@@ -33,7 +33,7 @@ thứ không truy về được nguồn đều phải lộ ra chứ không đư�
 
 ## Đầu vào
 
-`intake.md` — phải qua `kiem-tra-tiep-nhan.sh` (checker của spec chạy lại nó).
+`intake.md` — phải qua `aw check intake` (checker của spec chạy lại nó).
 Nó cho biết **loại việc** và **danh sách input**. Đọc hết từng input:
 
 | Input trong `intake.md` | Cách lấy | Nhãn nguồn trong spec |
@@ -145,7 +145,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
     người vừa xác nhận trong hội thoại — giữ nguyên trạng thái, người không phải
     sửa tay lại.
 
-13. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
+13. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> spec.md intake.md`.
     `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì
     spec thành lỗi thời — cảnh báo ở các phase sau, `review` chặn; phải chạy lại
     phase này để đọc input mới.
@@ -178,7 +178,7 @@ Checker chặn nếu hai file lệch nhau.
 ## Điều kiện ra
 
 **Máy:**
-- `sh tools/kiem-tra-truy-vet.sh` ra `[x] ĐẠT` — mọi YC có đúng một nhãn nguồn hợp
+- `aw check spec` ra `[x] ĐẠT` — mọi YC có đúng một nhãn nguồn hợp
   lệ, `Ưu tiên` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[CẦN-HỎI]` có mục
   trong `open-questions.md` với giả định tạm và mức chặn hợp lệ; trạng thái hai
   file khớp nhau; spec có `Mức rủi ro` và `Trạng thái spec` hợp lệ; có đủ các mục

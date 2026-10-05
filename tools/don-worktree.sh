@@ -63,7 +63,7 @@ echo "Branch    $TEN — $tt_push"
 echo "Merge     $tt_merge"
 echo "Sạch      $([ "$bn" = 0 ] && echo có || echo KHÔNG)"
 LUU=""
-if [ -n "${AW_CONFIG:-}" ] && [ -d "$WT/$MT_ART_DIR" ] && [ -n "$(ls -A "$WT/$MT_ART_DIR" 2>/dev/null)" ]; then
+if [ -n "${AW_CONFIG:-}" ] && [ -d "$WT/$MT_ART_DIR" ] && [ -n "$(ls -A "$WT/$MT_ART_DIR" 2>/dev/null | grep -vx '.engine')" ]; then
   LUU="$AW_CONFIG/archive/$(printf '%s' "$TEN" | tr '/' '_')"
   [ -e "$LUU" ] && LUU="$LUU-$(date +%Y%m%d-%H%M%S)"
   echo "Artifact  $MT_ART_DIR/ → chép vào $LUU trước khi gỡ (không nằm trong commit nào)"
@@ -92,6 +92,7 @@ fi
 [ "$chan" = 0 ] || { echo "BỊ CHẶN — không gỡ gì."; exit 7; }
 if [ -n "$LUU" ]; then
   mkdir -p "$(dirname "$LUU")" && cp -R "$WT/$MT_ART_DIR" "$LUU" || { echo "BỊ CHẶN — không chép được artifact vào $LUU, không gỡ gì."; exit 7; }
+  rm -rf "$LUU/.engine"   # bản chép của engine, không phải artifact
   echo "  copy    $MT_ART_DIR/ → $LUU"
 fi
 git -C "$CHINH" worktree remove "$WT" || { echo "BỊ CHẶN — git từ chối gỡ worktree."; exit 7; }
