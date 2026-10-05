@@ -81,13 +81,7 @@ case "$LENH" in
     case "$sub" in
       new)    exec sh "$T/tao-worktree.sh" "$@" ;;
       status) exec sh "$T/don-worktree.sh" "$@" ;;
-      remove)
-        b="${1:-}"; [ $# -gt 0 ] && shift
-        ca=""
-        for a in "$@"; do
-          case "$a" in --delete-branch) ca=--ca-branch ;; *) sai 2 "LỖI: tham số lạ \"$a\" (chỉ nhận --delete-branch)." ;; esac
-        done
-        exec sh "$T/don-worktree.sh" "$b" --xoa $ca ;;
+      remove) exec sh "$T/don-worktree.sh" "$@" --remove ;;
       *) sai 2 "Dùng: aw worktree new|status|remove …" ;;
     esac ;;
   adapter)

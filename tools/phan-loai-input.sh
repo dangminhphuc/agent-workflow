@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 # Phân loại tham số của /intake thành các dòng của mục "## Input" trong intake.md.
 #
-#   sh .agent-workflow/.quy-trinh/tools/phan-loai-input.sh [--tru <intake.md>] <tham-số>
-#   sh .agent-workflow/.quy-trinh/tools/phan-loai-input.sh [--tru <intake.md>] - <<'HET_INPUT'
+#   sh .agent-workflow/.quy-trinh/tools/phan-loai-input.sh [--skip <intake.md>] <tham-số>
+#   sh .agent-workflow/.quy-trinh/tools/phan-loai-input.sh [--skip <intake.md>] - <<'HET_INPUT'
 #   <tham-số, nguyên văn>
 #   HET_INPUT
 #
@@ -21,7 +21,7 @@
 # chép nguyên văn. Tách từng token sẽ biến một câu thành vài "input" rác và làm
 # mất câu gốc. Nguồn nhận ra được trong câu chỉ là ĐỀ XUẤT (in ra stderr).
 #
-# --tru <intake.md>: bỏ các input đã có trong file đó (chạy lại /intake = gộp thêm).
+# --skip <intake.md>: bỏ các input đã có trong file đó (chạy lại /intake = gộp thêm).
 # So theo định danh đã chuẩn hoá: ABC-1 và .../browse/ABC-1 là một nguồn.
 #
 # Stdout: đúng các dòng ghi vào "## Input" (rỗng = không có input mới).
@@ -45,8 +45,8 @@ CONV="$MT_CONV"
 TOP=$(git -C "$MT_REPO" rev-parse --show-toplevel 2>/dev/null) || TOP="$MT_REPO"
 
 TRU=""
-if [ "${1:-}" = "--tru" ]; then
-  [ -n "${2:-}" ] || { echo "LỖI: --tru cần đường dẫn intake.md" >&2; exit 2; }
+if [ "${1:-}" = "--skip" ]; then
+  [ -n "${2:-}" ] || { echo "LỖI: --skip cần đường dẫn intake.md" >&2; exit 2; }
   TRU="$2"; shift 2
   [ -f "$TRU" ] || { echo "LỖI: không tìm thấy $TRU" >&2; exit 2; }
 fi
@@ -83,7 +83,7 @@ giong_duong_dan() {
 # Chuẩn hoá lời người dùng để so trùng: gộp khoảng trắng.
 chuan_hoa() { printf '%s\n' "$1" | awk '{ $1 = $1; if (NF) { o = o (o == "" ? "" : " ") $0 } } END { print o }'; }
 
-# ---- 1. Input đã có (--tru): khoá "NHÃN<TAB>định-danh" mỗi dòng ----
+# ---- 1. Input đã có (--skip): khoá "NHÃN<TAB>định-danh" mỗi dòng ----
 if [ -n "$TRU" ]; then
   awk -v re="$MJ" '
     function in_nv() { if (nv != "") print "NGƯỜI-DÙNG\t" nv; nv = ""; cho = 0 }
@@ -167,7 +167,7 @@ for tk in $VAN; do
 done
 set +f
 
-# in_nguon <file-nguồn> -> in dòng ra của nguồn chưa có (trong --tru hay trong lần gọi này)
+# in_nguon <file-nguồn> -> in dòng ra của nguồn chưa có (trong --skip hay trong lần gọi này)
 in_nguon() {
   while IFS="$(printf '\t')" read -r nh kh dong; do
     k="$nh	$kh"

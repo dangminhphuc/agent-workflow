@@ -2,13 +2,17 @@
 # Đề xuất / tạo worktree cho một việc — dùng ở /intake. Worktree là BẮT BUỘC:
 # checkout chính chỉ đứng ở nhánh gốc, mỗi việc một worktree, một phiên agent.
 #
-#   sh .agent-workflow/.quy-trinh/tools/tao-worktree.sh <loại-việc> <mô-tả>                  # chỉ in đề xuất
-#   sh .agent-workflow/.quy-trinh/tools/tao-worktree.sh <loại-việc> <mô-tả> --tao --goc <ref> # tạo (sau khi NGƯỜI chọn)
+#   aw worktree new <loại-việc> <mô-tả>                        # chỉ in đề xuất
+#   aw worktree new <loại-việc> <mô-tả> --create --base <ref>  # tạo (sau khi NGƯỜI chọn)
 #
 # Agent KHÔNG chọn base. Script liệt kê ứng viên kèm dữ kiện (commit, chậm/nhanh
-# so với remote, có bộ cài chưa) và gợi ý ★ theo MỘT luật máy: giữa nhanh_goc và
+# so với remote) và gợi ý ★ theo MỘT luật máy: giữa nhanh_goc và
 # origin/nhanh_goc, bản nào chứa bản kia thì gợi ý bản đó; phân kỳ thì không gợi ý.
-# NGƯỜI chọn, agent chạy lại với --goc <ref>. Script không tự fetch.
+# NGƯỜI chọn, agent chạy lại với --base <ref>. Script không tự fetch.
+#
+# Base tuỳ ý: không đòi base có gì của quy trình — engine nằm ngoài repo, cấu
+# hình nằm trong .git/agent-workflow/. Tạo xong, script sinh adapter (ADAPTER
+# trong config.sh) vào worktree mới; file sinh ra bị exclude, không vào commit.
 #
 # Tên: tiền tố theo loai_theo_tien_to + <mô-tả>. Branch, thư mục worktree và thư
 # mục artifact dùng CÙNG một tên. Vị trí: thu_muc_worktree trong conventions.md
@@ -17,7 +21,7 @@
 # Branch mới tạo --no-track: tạo từ origin/main mà để git tự đặt upstream thì
 # "git push" trơn trong worktree sẽ đẩy thẳng lên main.
 #
-# Stdout: đề xuất (không --tao) hoặc đường dẫn worktree (--tao).
+# Stdout: đề xuất (không --create) hoặc đường dẫn worktree (--create).
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -40,17 +44,17 @@ LOAI="${1:-}"; MOTA="${2:-}"
 TAO=""; GOC=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --tao) TAO=1 ;;
-    --goc) [ $# -ge 2 ] || { echo "LỖI: --goc cần một ref." >&2; exit 2; }; GOC="$2"; shift ;;
-    *) echo "LỖI: tham số lạ \"$1\" (chỉ nhận --tao, --goc <ref>)" >&2; exit 2 ;;
+    --create) TAO=1 ;;
+    --base) [ $# -ge 2 ] || { echo "LỖI: --base cần một ref." >&2; exit 2; }; GOC="$2"; shift ;;
+    *) echo "LỖI: tham số lạ \"$1\" (chỉ nhận --create, --base <ref>)" >&2; exit 2 ;;
   esac
   shift
 done
-[ -n "$LOAI" ] && [ -n "$MOTA" ] || { echo "Dùng: sh tao-worktree.sh <loại-việc> <mô-tả> [--tao --goc <ref>]" >&2; exit 2; }
+[ -n "$LOAI" ] && [ -n "$MOTA" ] || { echo "Dùng: aw worktree new <loại-việc> <mô-tả> [--create --base <ref>]" >&2; exit 2; }
 case "$MOTA" in
   *[!a-z0-9-]*|-*|*-) echo "LỖI: mô tả \"$MOTA\" phải là chữ thường ASCII, số và \"-\", không bắt đầu/kết thúc bằng \"-\" (vd phi-hoan-tien)." >&2; exit 2 ;;
 esac
-[ -z "$GOC" ] || [ -n "$TAO" ] || { echo "LỖI: --goc chỉ dùng cùng --tao." >&2; exit 2; }
+[ -z "$GOC" ] || [ -n "$TAO" ] || { echo "LỖI: --base chỉ dùng cùng --create." >&2; exit 2; }
 
 tien_to=""
 for _cap in $(conv_get "$CONV" loai_theo_tien_to); do
@@ -95,11 +99,6 @@ if git -C "$MT_REPO" rev-parse --verify --quiet "refs/heads/$TEN" >/dev/null; th
 fi
 [ ! -e "$DUONG" ] || { echo "LỖI: $DUONG đã tồn tại — không ghi đè." >&2; exit 2; }
 
-# base có bộ cài chưa: worktree chỉ có file đã commit — thiếu thì không chạy được checker nào
-co_bo_cai() {
-  git -C "$MT_REPO" cat-file -e "$1:$ART/conventions.md" 2>/dev/null &&
-  git -C "$MT_REPO" cat-file -e "$1:$ART/.quy-trinh/tools" 2>/dev/null
-}
 co_ref() { git -C "$MT_REPO" rev-parse --verify --quiet "$1^{commit}" >/dev/null; }
 
 # ======================================================================== đề xuất
@@ -131,7 +130,6 @@ if [ -z "$TAO" ]; then
     _dau="   "; [ "$_r" = "$goi_y" ] && _dau=" ★ "
     printf '  %s[%d] %-18s %s\n' "$_dau" "$n" "$_r" "$(git -C "$MT_REPO" log -1 --format='%h  %cr  "%s"' "$_r")"
     for _g in "$@"; do printf '         %s\n' "$_g"; done
-    co_bo_cai "$_r" || printf '         ✗ CHƯA có bộ cài (%s/) — chọn ref này sẽ bị từ chối\n' "$ART"
   }
 
   if [ -n "$co_l" ]; then
@@ -162,20 +160,30 @@ if [ -z "$TAO" ]; then
   fi
   echo ""
   echo "  Sau khi NGƯỜI chọn, agent chạy:"
-  echo "    sh $ART/.quy-trinh/tools/tao-worktree.sh $LOAI $MOTA --tao --goc <ref>"
+  echo "    aw worktree new $LOAI $MOTA --create --base <ref>"
   exit 0
 fi
 
 # ======================================================================== --tao
-[ -n "$GOC" ] || { echo "LỖI: --tao cần --goc <ref> do NGƯỜI chọn — agent không tự điền." >&2; exit 2; }
+[ -n "$GOC" ] || { echo "LỖI: --create cần --base <ref> do NGƯỜI chọn — agent không tự điền." >&2; exit 2; }
 co_ref "$GOC" || { echo "LỖI: không có ref \"$GOC\"." >&2; exit 2; }
-co_bo_cai "$GOC" || { echo "LỖI: \"$GOC\" chưa có bộ cài $ART/ (conventions.md, .quy-trinh/tools) — commit bộ cài vào base trước." >&2; exit 2; }
 
 mkdir -p "$(dirname "$DUONG")" || exit 2
 git -C "$MT_REPO" worktree add -q --no-track -b "$TEN" "$DUONG" "$GOC" || { echo "LỖI: git không tạo được worktree." >&2; exit 2; }
 sha=$(git -C "$MT_REPO" rev-parse --short=10 "$GOC")
 
 echo "Đã tạo worktree $DUONG (branch $TEN, base $GOC @ $sha)" >&2
+
+# Adapter cho worktree mới — file sinh ra nằm trong đường dẫn đã exclude (aw init).
+# Stdout của build chuyển sang stderr: stdout của script này chỉ là đường dẫn.
+ENG="${AW_ENGINE:-$(CDPATH= cd -- "$HERE/.." && pwd)}"
+AD=""; [ -f "$CH" ] && AD=$(. "$CH" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}")
+AD=${AD:-claude-code}
+if [ -f "$ENG/adapters/$AD/build.sh" ]; then
+  echo "" >&2
+  sh "$ENG/adapters/$AD/build.sh" --out "$DUONG" >&2 ||
+    echo "CẢNH BÁO: sinh adapter $AD vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build $AD" >&2
+fi
 echo "" >&2
 echo "Ghi vào intake.md, ngay dưới \"Loại việc\":" >&2
 echo "  - **Base:** \`$GOC\` @ \`$sha\`" >&2
@@ -183,7 +191,7 @@ ev=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
 [ -n "$ev" ] && echo "  - **Engine:** $ev" >&2
 echo "" >&2
 echo "Tiếp theo:" >&2
-echo "  1. Ghi intake.md vào $DUONG/$ART/$TEN_TM/ rồi chạy kiem-tra-tiep-nhan.sh trên thư mục đó" >&2
+echo "  1. Ghi intake.md vào $DUONG/$ART/$TEN_TM/ rồi chạy trong worktree: aw check intake $ART/$TEN_TM" >&2
 lenh=""; [ -f "$CH" ] && lenh=$(. "$CH" >/dev/null 2>&1; printf '%s' "${LENH_CHUAN_BI_WT:-}")
 if [ -n "$lenh" ]; then
   echo "  2. NGƯỜI chuẩn bị môi trường: cd \"$DUONG\" && $lenh" >&2
