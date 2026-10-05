@@ -8,12 +8,21 @@
 #
 # Yêu cầu: đã source tools/lib/md.sh.
 #
-# Thư mục feature có dạng <repo>/.agent-workflow/<tên-branch>; conventions.md
-# nằm ở thư mục cha của nó.
+# Thư mục feature có dạng <repo>/.agent-workflow/<tên-branch>. conventions.md và
+# config.sh nằm trong $AW_CONFIG (cấu hình của bản clone, wrapper aw truyền vào).
+if [ -z "${AW_CONFIG:-}" ]; then
+  echo "LỖI: thiếu AW_CONFIG — chạy qua wrapper aw (vd: aw check spec <thư-mục-feature>)." >&2
+  exit 9
+fi
 
 # kc_conventions <thư-mục-feature> -> đường dẫn conventions.md
 kc_conventions() {
-  printf '%s/../conventions.md\n' "$1"
+  printf '%s/conventions.md\n' "$AW_CONFIG"
+}
+
+# kc_cau_hinh <thư-mục-feature> -> đường dẫn config.sh (LENH_KIEM_THU…)
+kc_cau_hinh() {
+  printf '%s/config.sh\n' "$AW_CONFIG"
 }
 
 # kc_loi_thoi <thư-mục-feature>
@@ -168,6 +177,25 @@ kc_spec_chua_duyet() {
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
 
+# kc_engine_dong <thư-mục-feature> -> version ghi ở dòng "Engine:" của intake.md
+# (bỏ backtick, comment; không có dòng thì không in gì). Mọi `aw check` của việc
+# chạy đúng version này — xem bin/aw.
+kc_engine_dong() {
+  [ -f "$1/intake.md" ] || return 0
+  awk '
+    { sub(/\r$/, "") }
+    /^[ \t]*-[ \t]*\*\*Engine:\*\*/ || /^[ \t]*-?[ \t]*Engine:/ {
+      s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*` \t]/, "", s); print s; exit
+    }
+  ' "$1/intake.md"
+}
+
+# kc_version_hop_le <chuỗi> -> 0 nếu là X.Y.Z (chỉ chữ số)
+kc_version_hop_le() {
+  case "$1" in ""|*[!0-9.]*|.*|*.|*..*) return 1 ;; esac
+  [ "$(printf '%s' "$1" | awk -F. '{ print NF }')" = 3 ]
+}
+
 # kc_base_dong <thư-mục-feature> -> "<ref> <sha>" từ dòng "Base:" của intake.md
 # (thiếu phần nào thì phần đó rỗng; không có dòng Base thì không in gì).
 kc_base_dong() {
@@ -264,7 +292,7 @@ kc_loai_branch() {
   for _cap in $(conv_get "$(kc_conventions "$1")" loai_theo_tien_to); do
     _tt=${_cap%%=*}; _lt=${_cap#*=}
     case "$_b" in
-      "$_tt"*) [ "$_lt" = "$_l" ] || echo "intake.md ghi loại \"$_l\" nhưng branch \"$_b\" mang tiền tố \"$_tt\" (= $_lt). Sửa loại, hoặc đổi tên branch bằng doi-ten-feature.sh"
+      "$_tt"*) [ "$_lt" = "$_l" ] || echo "intake.md ghi loại \"$_l\" nhưng branch \"$_b\" mang tiền tố \"$_tt\" (= $_lt). Sửa loại, hoặc đổi tên branch bằng aw rename <tên-mới>"
                return 0 ;;
     esac
   done
@@ -324,7 +352,7 @@ kc_chore_dependency() {
 # kc_tai_hien <thư-mục-feature> — bugfix: phải có tai-hien.md do máy ghi, mã thoát ≠ 0
 kc_tai_hien() {
   _t="$1/tai-hien.md"
-  if [ ! -f "$_t" ]; then echo "Chưa có tai-hien.md — chạy kiem-tra-tai-hien.sh TRƯỚC khi sửa code"; return 0; fi
+  if [ ! -f "$_t" ]; then echo "Chưa có tai-hien.md — chạy aw check repro <thư-mục-feature> TRƯỚC khi sửa code"; return 0; fi
   grep -q 'Mã thoát: `0`' "$_t" && echo "tai-hien.md ghi test XANH trên code chưa sửa — test không tái hiện được lỗi"
   grep -q 'Mã thoát: `' "$_t" || echo "tai-hien.md không phải do kiem-tra-tai-hien.sh ghi (thiếu dòng mã thoát)"
 }
@@ -332,7 +360,7 @@ kc_tai_hien() {
 # kc_hieu_nang <thư-mục-feature> — perf: phải có số đo trước và sau do máy ghi
 kc_hieu_nang() {
   _t="$1/do-hieu-nang.md"
-  if [ ! -f "$_t" ]; then echo "Chưa có do-hieu-nang.md — chạy kiem-tra-hieu-nang.sh --truoc (trước khi sửa) và --sau"; return 0; fi
+  if [ ! -f "$_t" ]; then echo "Chưa có do-hieu-nang.md — chạy aw check perf <thư-mục-feature> --before (trước khi sửa) và --after"; return 0; fi
   awk '
     { sub(/\r$/, "") }
     /^##[ \t]+Trước/ { sec = "truoc"; next }

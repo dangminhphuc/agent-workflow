@@ -2,7 +2,7 @@
 # Liệt kê điểm mù (open-questions.md) theo thứ tự PHẢI GIẢI QUYẾT TRƯỚC — để không
 # phase nào bị chặn. Lệnh open-questions đọc output này rồi dẫn người đi từng mục.
 #
-#   sh tools/liet-ke-cau-hoi.sh <thư-mục-feature>
+#   aw questions <thư-mục-feature>
 #
 # Thứ tự:
 #   1. Mức chặn: thiếu/sai nhãn (checker spec đang chặn) → chặn → chặn review → không chặn

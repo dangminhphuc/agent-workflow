@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 # Ghi dong based_on (hash ca file dau vao) vao frontmatter cua mot artifact.
 #
-#   sh tools/cap-nhat-based-on.sh <thu-muc-feature> <artifact> <dau-vao>...
-#   vd: sh tools/cap-nhat-based-on.sh .agent-workflow/feat_x tdd.md spec.md open-questions.md
+#   aw based-on <thu-muc-feature> <artifact> <dau-vao>...
+#   vd: aw based-on .agent-workflow/feat_x tdd.md spec.md open-questions.md
 #
 # Hash do MAY tinh, khong de agent tu ghi — agent chep sai mot ky tu la
 # artifact bi bao loi thoi (hoac te hon, khong bao khi da loi thoi).
@@ -17,7 +17,7 @@ kq_khai cap-nhat-based-on.sh \
   "2=SAI THAM SỐ HOẶC THIẾU FILE"
 . "$HERE/lib/md.sh"
 
-[ $# -ge 3 ] || { echo "Dùng: sh cap-nhat-based-on.sh <thư-mục-feature> <artifact> <đầu-vào>..." >&2; exit 2; }
+[ $# -ge 3 ] || { echo "Dùng: aw based-on <thư-mục-feature> <artifact> <đầu-vào>..." >&2; exit 2; }
 DIR="$1"; ART="$2"; shift 2
 [ -f "$DIR/$ART" ] || { echo "LỖI: không tìm thấy $DIR/$ART" >&2; exit 2; }
 

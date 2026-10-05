@@ -1,7 +1,8 @@
 # Manifest trung lập của quy trình — NGUỒN SỰ THẬT DUY NHẤT.
 #
 # Adapter đọc file này + workflow/phases/*.md rồi biên dịch ra artifact riêng
-# của từng agent. Không sửa trực tiếp file được sinh ra trong repo đích.
+# của từng agent. Không sửa trực tiếp file được sinh ra trong repo đích (chúng bị
+# exclude và được sinh lại bởi aw adapter build).
 #
 # Quy ước: định danh (khoá, id, đường dẫn) dùng tiếng Anh ASCII cho an toàn
 # tooling; mọi nội dung người và agent đọc đều bằng tiếng Việt.
@@ -14,7 +15,8 @@ language: vi
 # Đây là cơ chế duy nhất làm nên tính không-phụ-thuộc-agent: phase N đọc file
 # do phase N-1 ghi ra, và agent nào cũng đọc/ghi được file.
 # Artifact của từng feature nằm ở <artifact_dir>/<tên-branch>/ (xem
-# conventions.md của repo đích).
+# conventions.md của repo đích). Cả thư mục bị .git/info/exclude (aw init):
+# artifact chỉ ở máy, không vào commit.
 artifact_dir: .agent-workflow
 
 # Lệnh tiện ích — không phải phase, không có điều kiện ra riêng. Adapter sinh
@@ -61,6 +63,9 @@ adapters:
   - id: claude-code
     dir: adapters/claude-code
     status: active
+  - id: codex
+    dir: adapters/codex
+    status: planned
   - id: cursor
     dir: adapters/cursor
     status: planned

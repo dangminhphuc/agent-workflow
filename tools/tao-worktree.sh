@@ -2,13 +2,17 @@
 # Đề xuất / tạo worktree cho một việc — dùng ở /intake. Worktree là BẮT BUỘC:
 # checkout chính chỉ đứng ở nhánh gốc, mỗi việc một worktree, một phiên agent.
 #
-#   sh .agent-workflow/.quy-trinh/tools/tao-worktree.sh <loại-việc> <mô-tả>                  # chỉ in đề xuất
-#   sh .agent-workflow/.quy-trinh/tools/tao-worktree.sh <loại-việc> <mô-tả> --tao --goc <ref> # tạo (sau khi NGƯỜI chọn)
+#   aw worktree new <loại-việc> <mô-tả>                        # chỉ in đề xuất
+#   aw worktree new <loại-việc> <mô-tả> --create --base <ref>  # tạo (sau khi NGƯỜI chọn)
 #
 # Agent KHÔNG chọn base. Script liệt kê ứng viên kèm dữ kiện (commit, chậm/nhanh
-# so với remote, có bộ cài chưa) và gợi ý ★ theo MỘT luật máy: giữa nhanh_goc và
+# so với remote) và gợi ý ★ theo MỘT luật máy: giữa nhanh_goc và
 # origin/nhanh_goc, bản nào chứa bản kia thì gợi ý bản đó; phân kỳ thì không gợi ý.
-# NGƯỜI chọn, agent chạy lại với --goc <ref>. Script không tự fetch.
+# NGƯỜI chọn, agent chạy lại với --base <ref>. Script không tự fetch.
+#
+# Base tuỳ ý: không đòi base có gì của quy trình — engine nằm ngoài repo, cấu
+# hình nằm trong .git/agent-workflow/. Tạo xong, script sinh adapter (ADAPTER
+# trong config.sh) vào worktree mới; file sinh ra bị exclude, không vào commit.
 #
 # Tên: tiền tố theo loai_theo_tien_to + <mô-tả>. Branch, thư mục worktree và thư
 # mục artifact dùng CÙNG một tên. Vị trí: thu_muc_worktree trong conventions.md
@@ -17,7 +21,7 @@
 # Branch mới tạo --no-track: tạo từ origin/main mà để git tự đặt upstream thì
 # "git push" trơn trong worktree sẽ đẩy thẳng lên main.
 #
-# Stdout: đề xuất (không --tao) hoặc đường dẫn worktree (--tao).
+# Stdout: đề xuất (không --create) hoặc đường dẫn worktree (--create).
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -29,28 +33,28 @@ kq_khai tao-worktree.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 
-# Script nằm ở <repo>/<artifact_dir>/.quy-trinh/tools/
-ART_ABS=$(CDPATH= cd -- "$HERE/../.." && pwd)
-ART=$(basename "$ART_ABS")
-CONV="$ART_ABS/conventions.md"
-CH="$ART_ABS/.quy-trinh/cau-hinh.sh"
+. "$HERE/lib/moi-truong.sh"
+mt_dat "$HERE"
+ART=$MT_ART_DIR
+CONV="$MT_CONV"
+CH="$MT_CH"
 
 LOAI="${1:-}"; MOTA="${2:-}"
 [ $# -ge 2 ] && shift 2 || shift $#
 TAO=""; GOC=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --tao) TAO=1 ;;
-    --goc) [ $# -ge 2 ] || { echo "LỖI: --goc cần một ref." >&2; exit 2; }; GOC="$2"; shift ;;
-    *) echo "LỖI: tham số lạ \"$1\" (chỉ nhận --tao, --goc <ref>)" >&2; exit 2 ;;
+    --create) TAO=1 ;;
+    --base) [ $# -ge 2 ] || { echo "LỖI: --base cần một ref." >&2; exit 2; }; GOC="$2"; shift ;;
+    *) echo "LỖI: tham số lạ \"$1\" (chỉ nhận --create, --base <ref>)" >&2; exit 2 ;;
   esac
   shift
 done
-[ -n "$LOAI" ] && [ -n "$MOTA" ] || { echo "Dùng: sh tao-worktree.sh <loại-việc> <mô-tả> [--tao --goc <ref>]" >&2; exit 2; }
+[ -n "$LOAI" ] && [ -n "$MOTA" ] || { echo "Dùng: aw worktree new <loại-việc> <mô-tả> [--create --base <ref>]" >&2; exit 2; }
 case "$MOTA" in
   *[!a-z0-9-]*|-*|*-) echo "LỖI: mô tả \"$MOTA\" phải là chữ thường ASCII, số và \"-\", không bắt đầu/kết thúc bằng \"-\" (vd phi-hoan-tien)." >&2; exit 2 ;;
 esac
-[ -z "$GOC" ] || [ -n "$TAO" ] || { echo "LỖI: --goc chỉ dùng cùng --tao." >&2; exit 2; }
+[ -z "$GOC" ] || [ -n "$TAO" ] || { echo "LỖI: --base chỉ dùng cùng --create." >&2; exit 2; }
 
 tien_to=""
 for _cap in $(conv_get "$CONV" loai_theo_tien_to); do
@@ -64,9 +68,9 @@ fi
 
 TEN="$tien_to$MOTA"
 TEN_TM=$(printf '%s' "$TEN" | tr '/' '_')
-git -C "$ART_ABS" check-ref-format --branch "$TEN" >/dev/null 2>&1 || { echo "LỖI: \"$TEN\" không phải tên branch hợp lệ." >&2; exit 2; }
+git -C "$MT_REPO" check-ref-format --branch "$TEN" >/dev/null 2>&1 || { echo "LỖI: \"$TEN\" không phải tên branch hợp lệ." >&2; exit 2; }
 
-CHINH=$(wt_chinh "$ART_ABS") || { echo "LỖI: $ART_ABS không nằm trong git repo." >&2; exit 2; }
+CHINH=$(wt_chinh "$MT_REPO") || { echo "LỖI: $MT_REPO không nằm trong git repo." >&2; exit 2; }
 REPO=$(basename "$CHINH")
 GOC_MD=$(conv_get "$CONV" nhanh_goc); GOC_MD=${GOC_MD:-main}
 MAU_PH=$(conv_get "$CONV" mau_nhanh_phat_hanh)
@@ -82,8 +86,8 @@ case "$DUONG/" in
 esac
 
 # ---- branch đã tồn tại? ----
-if git -C "$ART_ABS" rev-parse --verify --quiet "refs/heads/$TEN" >/dev/null; then
-  wt=$(wt_cua_branch "$ART_ABS" "$TEN")
+if git -C "$MT_REPO" rev-parse --verify --quiet "refs/heads/$TEN" >/dev/null; then
+  wt=$(wt_cua_branch "$MT_REPO" "$TEN")
   if [ -n "$wt" ]; then
     echo "Branch \"$TEN\" đã có worktree: $wt" >&2
     echo "→ Mở phiên agent mới ở đó. Không tạo gì thêm." >&2
@@ -95,12 +99,7 @@ if git -C "$ART_ABS" rev-parse --verify --quiet "refs/heads/$TEN" >/dev/null; th
 fi
 [ ! -e "$DUONG" ] || { echo "LỖI: $DUONG đã tồn tại — không ghi đè." >&2; exit 2; }
 
-# base có bộ cài chưa: worktree chỉ có file đã commit — thiếu thì không chạy được checker nào
-co_bo_cai() {
-  git -C "$ART_ABS" cat-file -e "$1:$ART/conventions.md" 2>/dev/null &&
-  git -C "$ART_ABS" cat-file -e "$1:$ART/.quy-trinh/tools" 2>/dev/null
-}
-co_ref() { git -C "$ART_ABS" rev-parse --verify --quiet "$1^{commit}" >/dev/null; }
+co_ref() { git -C "$MT_REPO" rev-parse --verify --quiet "$1^{commit}" >/dev/null; }
 
 # ======================================================================== đề xuất
 if [ -z "$TAO" ]; then
@@ -116,7 +115,7 @@ if [ -z "$TAO" ]; then
   co_ref "refs/heads/$GOC_MD" && co_l=1 || co_l=""
   co_ref "refs/remotes/origin/$GOC_MD" && co_r=1 || co_r=""
   if [ -n "$co_l" ] && [ -n "$co_r" ]; then
-    set -- $(git -C "$ART_ABS" rev-list --left-right --count "$GOC_MD...origin/$GOC_MD")
+    set -- $(git -C "$MT_REPO" rev-list --left-right --count "$GOC_MD...origin/$GOC_MD")
     truoc=$1; sau=$2
     if [ "$sau" = 0 ]; then goi_y="$GOC_MD"
     elif [ "$truoc" = 0 ]; then goi_y="origin/$GOC_MD"
@@ -129,9 +128,8 @@ if [ -z "$TAO" ]; then
   in_ung_vien() { # <ref> <ghi-chú...>
     _r=$1; shift; n=$((n + 1))
     _dau="   "; [ "$_r" = "$goi_y" ] && _dau=" ★ "
-    printf '  %s[%d] %-18s %s\n' "$_dau" "$n" "$_r" "$(git -C "$ART_ABS" log -1 --format='%h  %cr  "%s"' "$_r")"
+    printf '  %s[%d] %-18s %s\n' "$_dau" "$n" "$_r" "$(git -C "$MT_REPO" log -1 --format='%h  %cr  "%s"' "$_r")"
     for _g in "$@"; do printf '         %s\n' "$_g"; done
-    co_bo_cai "$_r" || printf '         ✗ CHƯA có bộ cài (%s/) — chọn ref này sẽ bị từ chối\n' "$ART"
   }
 
   if [ -n "$co_l" ]; then
@@ -140,15 +138,15 @@ if [ -z "$TAO" ]; then
     [ "$truoc" != 0 ] && g="$g — có $truoc commit chưa push"
     in_ung_vien "$GOC_MD" "$g"
   fi
-  if [ -n "$co_r" ] && [ "$(git -C "$ART_ABS" rev-parse "origin/$GOC_MD")" != "$(git -C "$ART_ABS" rev-parse "$GOC_MD" 2>/dev/null)" ]; then
-    fh="$(wt_tuyet_doi "$ART_ABS" "$(git -C "$ART_ABS" rev-parse --git-common-dir)")/FETCH_HEAD"
+  if [ -n "$co_r" ] && [ "$(git -C "$MT_REPO" rev-parse "origin/$GOC_MD")" != "$(git -C "$MT_REPO" rev-parse "$GOC_MD" 2>/dev/null)" ]; then
+    fh="$(wt_tuyet_doi "$MT_REPO" "$(git -C "$MT_REPO" rev-parse --git-common-dir)")/FETCH_HEAD"
     if [ -f "$fh" ]; then lan=$(date -r "$fh" '+%Y-%m-%d %H:%M' 2>/dev/null || echo "?"); else lan="chưa từng fetch"; fi
     in_ung_vien "origin/$GOC_MD" "bản remote tính tới lần fetch cuối: $lan (script không tự fetch)"
   fi
   if [ -n "$MAU_PH" ]; then
     set -f
     # shellcheck disable=SC2086
-    ph=$(for _m in $MAU_PH; do git -C "$ART_ABS" for-each-ref --format='%(refname:short)' "refs/heads/$_m"; done | sort -u | tail -3)
+    ph=$(for _m in $MAU_PH; do git -C "$MT_REPO" for-each-ref --format='%(refname:short)' "refs/heads/$_m"; done | sort -u | tail -3)
     set +f
     for r in $ph; do
       g="khớp mau_nhanh_phat_hanh"; [ "$LOAI" = bugfix ] && g="$g — hợp với bugfix gấp trên bản đã phát hành"
@@ -162,26 +160,38 @@ if [ -z "$TAO" ]; then
   fi
   echo ""
   echo "  Sau khi NGƯỜI chọn, agent chạy:"
-  echo "    sh $ART/.quy-trinh/tools/tao-worktree.sh $LOAI $MOTA --tao --goc <ref>"
+  echo "    aw worktree new $LOAI $MOTA --create --base <ref>"
   exit 0
 fi
 
 # ======================================================================== --tao
-[ -n "$GOC" ] || { echo "LỖI: --tao cần --goc <ref> do NGƯỜI chọn — agent không tự điền." >&2; exit 2; }
+[ -n "$GOC" ] || { echo "LỖI: --create cần --base <ref> do NGƯỜI chọn — agent không tự điền." >&2; exit 2; }
 co_ref "$GOC" || { echo "LỖI: không có ref \"$GOC\"." >&2; exit 2; }
-co_bo_cai "$GOC" || { echo "LỖI: \"$GOC\" chưa có bộ cài $ART/ (conventions.md, .quy-trinh/tools) — commit bộ cài vào base trước." >&2; exit 2; }
 
 mkdir -p "$(dirname "$DUONG")" || exit 2
-git -C "$ART_ABS" worktree add -q --no-track -b "$TEN" "$DUONG" "$GOC" || { echo "LỖI: git không tạo được worktree." >&2; exit 2; }
-sha=$(git -C "$ART_ABS" rev-parse --short=10 "$GOC")
+git -C "$MT_REPO" worktree add -q --no-track -b "$TEN" "$DUONG" "$GOC" || { echo "LỖI: git không tạo được worktree." >&2; exit 2; }
+sha=$(git -C "$MT_REPO" rev-parse --short=10 "$GOC")
 
 echo "Đã tạo worktree $DUONG (branch $TEN, base $GOC @ $sha)" >&2
+
+# Adapter cho worktree mới — file sinh ra nằm trong đường dẫn đã exclude (aw init).
+# Stdout của build chuyển sang stderr: stdout của script này chỉ là đường dẫn.
+ENG="${AW_ENGINE:-$(CDPATH= cd -- "$HERE/.." && pwd)}"
+AD=""; [ -f "$CH" ] && AD=$(. "$CH" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}")
+AD=${AD:-claude-code}
+if [ -f "$ENG/adapters/$AD/build.sh" ]; then
+  echo "" >&2
+  sh "$ENG/tools/sinh-adapter.sh" "$AD" "$DUONG" >&2 ||
+    echo "CẢNH BÁO: sinh adapter $AD vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build $AD" >&2
+fi
 echo "" >&2
 echo "Ghi vào intake.md, ngay dưới \"Loại việc\":" >&2
 echo "  - **Base:** \`$GOC\` @ \`$sha\`" >&2
+ev=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
+[ -n "$ev" ] && echo "  - **Engine:** $ev" >&2
 echo "" >&2
 echo "Tiếp theo:" >&2
-echo "  1. Ghi intake.md vào $DUONG/$ART/$TEN_TM/ rồi chạy kiem-tra-tiep-nhan.sh trên thư mục đó" >&2
+echo "  1. Ghi intake.md vào $DUONG/$ART/$TEN_TM/ rồi chạy trong worktree: aw check intake $ART/$TEN_TM" >&2
 lenh=""; [ -f "$CH" ] && lenh=$(. "$CH" >/dev/null 2>&1; printf '%s' "${LENH_CHUAN_BI_WT:-}")
 if [ -n "$lenh" ]; then
   echo "  2. NGƯỜI chuẩn bị môi trường: cd \"$DUONG\" && $lenh" >&2

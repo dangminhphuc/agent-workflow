@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiểm tra điều kiện ra của phase 03-plan.
 #
-#   sh tools/kiem-tra-ke-hoach.sh <thư-mục-feature>
+#   aw check plan <thư-mục-feature>
 #
 # Chặn:
 #   - Đầu vào: tdd.md không qua kiem-tra-thiet-ke.sh (entry check = checker phase trước).
@@ -42,7 +42,7 @@ if [ "$LOAI" = "chore" ]; then
   TDD=/dev/null
   if ! sh "$HERE/kiem-tra-truy-vet.sh" "$DIR" >/dev/null 2>&1; then
     n_loi=1
-    echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua kiem-tra-truy-vet.sh — chạy nó để xem chi tiết."
+    echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
   fi
   # Với feature/bugfix/... cổng duyệt spec nằm ở design; chore bỏ design nên nằm ở đây.
   cd_duyet=$(kc_spec_chua_duyet "$DIR")
@@ -66,7 +66,7 @@ else
   done
   if ! sh "$HERE/kiem-tra-thiet-ke.sh" "$DIR" >/dev/null 2>&1; then
     n_loi=1
-    echo "  [LỖI] Đầu vào chưa đạt: tdd.md không qua kiem-tra-thiet-ke.sh — chạy nó để xem chi tiết."
+    echo "  [LỖI] Đầu vào chưa đạt: tdd.md không qua aw check design — chạy nó để xem chi tiết."
   fi
 fi
 

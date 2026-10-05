@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # bugfix: ghi bằng chứng test tái hiện ĐỎ trên code chưa sửa.
 #
-#   sh tools/kiem-tra-tai-hien.sh <thư-mục-feature>
+#   aw check repro <thư-mục-feature>
 #
 # Chạy SAU khi viết test tái hiện, TRƯỚC khi sửa code production:
 #   - diff so với base của việc (intake.md) chỉ được đụng file test (mau_file_test) và file bỏ qua;
@@ -25,7 +25,7 @@ kq_khai kiem-tra-tai-hien.sh \
 
 DIR="${1:-.}"
 OUT="$DIR/tai-hien.md"
-CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
+CAUHINH=$(kc_cau_hinh "$DIR")
 
 [ "$(kc_loai "$DIR")" = "bugfix" ] || { echo "LỖI: chỉ dùng cho loại việc bugfix (intake.md)." >&2; exit 2; }
 LENH_KIEM_THU=""

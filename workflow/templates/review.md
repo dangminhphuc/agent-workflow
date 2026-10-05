@@ -48,7 +48,7 @@ Kết luận hợp lệ: `đạt` / `đạt một phần` / `chưa đạt` / `ch
 
 ## Cảnh báo dồn về
 
-Lỗi "Cảnh báo chưa xử lý" từ `kiem-tra-ra-soat.sh` (YC chưa có test, diff ngoài
+Lỗi "Cảnh báo chưa xử lý" từ `aw check review` (YC chưa có test, diff ngoài
 phạm vi, artifact lỗi thời). Còn mục nào thì review không đạt.
 
 - <...>

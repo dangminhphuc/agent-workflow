@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiểm tra điều kiện ra của phase 00-intake.
 #
-#   sh tools/kiem-tra-tiep-nhan.sh <thư-mục-feature>
+#   aw check intake <thư-mục-feature>
 #
 # Chặn:
 #   - intake.md thiếu, hoặc "Loại việc" không thuộc feature|bugfix|refactor|perf|chore.
@@ -39,7 +39,7 @@ n_base=0
 set -- $(kc_base_dong "$DIR")
 b_ref="${1:-}"; b_sha="${2:-}"
 if [ -z "$b_ref" ] || [ -z "$b_sha" ]; then
-  echo "  [LỖI] Thiếu dòng \"- **Base:** \`<ref>\` @ \`<sha>\`\" — chép đúng dòng tao-worktree.sh in ra khi tạo worktree"
+  echo "  [LỖI] Thiếu dòng \"- **Base:** \`<ref>\` @ \`<sha>\`\" — chép đúng dòng aw worktree new in ra khi tạo worktree"
   n_base=1
 elif ! git -C "$DIR" rev-parse --verify --quiet "$b_sha^{commit}" >/dev/null; then
   echo "  [LỖI] Base: sha \"$b_sha\" không phải commit trong repo"
@@ -49,6 +49,20 @@ elif ! git -C "$DIR" merge-base --is-ancestor "$b_sha" HEAD 2>/dev/null; then
   n_base=1
 elif ! git -C "$DIR" rev-parse --verify --quiet "$b_ref^{commit}" >/dev/null; then
   echo "  [CẢNH BÁO] Base: ref \"$b_ref\" không còn — checker so diff với sha $b_sha"
+fi
+
+# ---- Engine: version engine ghim cho việc này (aw check chạy đúng version đó) ----
+e_ver=$(kc_engine_dong "$DIR")
+e_dang=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
+if [ -z "$e_ver" ]; then
+  echo "  [LỖI] Thiếu dòng \"- **Engine:** X.Y.Z\" — chép đúng dòng aw worktree in ra khi tạo worktree"
+  n_base=$((n_base + 1))
+elif ! kc_version_hop_le "$e_ver"; then
+  echo "  [LỖI] Engine: \"$e_ver\" không phải X.Y.Z"
+  n_base=$((n_base + 1))
+elif [ -n "$e_dang" ] && [ "$e_ver" != "$e_dang" ]; then
+  echo "  [LỖI] Engine: việc ghim $e_ver nhưng checker đang chạy là $e_dang — chạy qua aw check, không gọi engine khác"
+  n_base=$((n_base + 1))
 fi
 
 awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
