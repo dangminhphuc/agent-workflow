@@ -1,87 +1,90 @@
-# <MÃ-JIRA>: <động từ> <cái gì> <ở đâu>
+# <JIRA-KEY>: <verb> <what> <where>
 
 <!--
 Mẫu mô tả MR/PR. Quy ước đi kèm: mục "Merge request" trong conventions.md.
+Heading và nhãn giữ tiếng Anh; nội dung viết tiếng Việt hoặc tiếng Anh tuỳ team.
 
 Viết cho người review CHƯA đọc ticket và CHƯA mở diff. Mỗi mục trả lời một câu
-hỏi họ sẽ hỏi; mục nào không áp dụng thì ghi "Không có" — đừng xoá, vì mục bị
-xoá trông giống mục bị quên.
+hỏi họ sẽ hỏi; mục nào không áp dụng thì ghi "None" — đừng xoá, vì mục bị xoá
+trông giống mục bị quên.
 
 Nguồn khi chạy theo quy trình (thư mục .agent-workflow/<branch>/):
-  Vấn đề         ← intake.md (mục tiêu, input), spec.md (Bối cảnh)
-  Thay đổi       ← tdd.md (D-xx đã duyệt), diff
-  Ngoài phạm vi  ← spec.md "Ngoài phạm vi", review.md lăng kính 2
-  Kiểm thử       ← ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf)
-Chỉ chép điều có trong artifact hoặc diff. Điều chưa chắc: ghi vào "Cần người
-review quyết", không viết như sự thật.
+  Problem          ← intake.md (mục tiêu, input), spec.md (Bối cảnh)
+  Changes          ← tdd.md (D-xx đã duyệt), diff
+  External Impact  ← review.md lăng kính 2
+  Out of Scope     ← spec.md "Ngoài phạm vi"
+  Testing          ← ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf)
+  Open Questions   ← open-questions.md
+Chỉ chép điều có trong artifact hoặc diff. Điều chưa chắc: ghi vào "Open
+Questions", không viết như sự thật.
 -->
 
-## Vấn đề
+## Problem
 
 <!-- Hành vi SAI hiện tại, quan sát được: ở đâu, với đầu vào nào, thấy gì, lẽ ra
      phải thấy gì. Có bằng chứng (request/response, log, ảnh). Nguyên nhân gốc
-     trong một-hai câu. Lỗi có nhiều nửa (BE + FE…) thì nói PR này sửa nửa nào. -->
+     trong một-hai câu. Lỗi có nhiều phần (BE + FE…) thì nói PR này sửa phần nào. -->
 
-- Hiện tại: <…>
-- Mong đợi: <…>
-- Nguyên nhân: <…>
+- **Current:** <…>
+- **Expected:** <…>
+- **Root cause:** <…>
 
-## Thay đổi
+## Changes
 
 <!-- Hành vi SAU khi merge, không phải danh sách file. Mỗi gạch một thay đổi
-     người dùng/hệ thống thấy được. Đánh dấu rõ:
-       **Đổi hợp đồng:** API, payload, schema, event, cấu hình — ai đang phụ thuộc
-       **Hành vi mới với dữ liệu thiếu/lạ:** null, rỗng, giá trị ngoài miền -->
+     người dùng/hệ thống thấy được. Đánh dấu rõ hai loại dưới. -->
 
 - <…>
+- **Breaking change:** <API, payload, schema, event, config đổi — ai đang phụ thuộc>, hoặc None
+- **Edge cases:** <xử lý null, rỗng, giá trị ngoài miền>, hoặc None
 
-## Ảnh hưởng ngoài phạm vi ticket
+## External Impact
 
 <!-- Hệ thống/consumer khác nhận khác đi vì PR này (service khác, job, SAP, báo
      cáo…). Mỗi mục: cái gì đổi, đã xác nhận với ai (link), rủi ro nếu sai.
      Đây là mục người review hay bỏ sót nhất — viết nổi bật. -->
 
-Không có.
+None
 
-## Không làm
+## Out of Scope
 
 <!-- Điều người đọc ticket sẽ tưởng PR này làm nhưng không làm: backfill dữ
-     liệu cũ, nửa FE, edge case hoãn… Kèm lý do hoặc ticket theo dõi. -->
+     liệu cũ, phần FE, edge case hoãn… Kèm lý do hoặc ticket theo dõi. -->
 
 - <…>
 
-## Triển khai
+## Deployment
 
 <!-- Thứ tự deploy (BE trước FE? migration trước code?), feature flag, cấu hình
      /secret mới, migration (có đảo ngược được không), cách rollback. -->
 
-- Phụ thuộc: <PR/MR liên quan, hoặc "Không có">
-- Thứ tự: <…>
-- Migration / cấu hình: <…>
-- Rollback: <revert MR là đủ / cần thêm bước …>
+- **Dependencies:** <PR/MR liên quan>, hoặc None
+- **Order:** <…>
+- **Migration / Config:** <…>, hoặc None
+- **Rollback:** <revert MR là đủ / cần thêm bước …>
 
-## Kiểm thử
+## Testing
 
 <!-- Test chứng minh điều gì, không chỉ tên test.
      bugfix: test tái hiện ĐỎ trước khi sửa, đỏ đúng vì bug.
      Test cũ bị đổi kỳ vọng: liệt kê riêng và nói vì sao — đó là đổi hành vi. -->
 
-- Tái hiện (đỏ trước khi sửa): <test> — <chứng minh gì>
-- Thêm: <test> — <chứng minh gì>
-- Đổi kỳ vọng: <test> — <vì sao>, hoặc "Không có"
-- Lệnh đã chạy: `<lệnh>` → <kết quả>
+- **Reproduction (red before fix):** <test> — <chứng minh gì>
+- **Added:** <test> — <chứng minh gì>
+- **Changed expectations:** <test> — <vì sao>, hoặc None
+- **Commands:** `<lệnh>` → <kết quả>
 
-### Cần kiểm sau deploy
+### Post-deploy Verification
 
 <!-- Điều chỉ kiểm được trên môi trường thật. Checkbox để đánh dấu sau deploy. -->
 
-- [ ] <môi trường>: <hành động> → <kết quả mong đợi>
+- [ ] **<env>:** <hành động> → <kết quả mong đợi>
 
-## Cần người review quyết
+## Open Questions
 
 <!-- Câu hỏi mở, giả định chưa xác nhận, D-xx đáng soi lại. Không có thì ghi
-     "Không có" — đừng để người review tự đoán chỗ nào yếu. -->
+     "None" — đừng để người review tự đoán chỗ nào yếu. -->
 
-Không có.
+None
 
-Refs: <MÃ-JIRA>
+Refs: <JIRA-KEY>
