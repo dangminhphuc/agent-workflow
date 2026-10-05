@@ -269,14 +269,17 @@ tao_fixture() {
   LOAI="${1:-feature}"; _br="${2:-feat_x}"
   R="$TMP/repo-$LOAI"; F="$R/.agent-workflow/$_br"
   rm -rf "$R"
-  mkdir -p "$F" "$R/.agent-workflow/.quy-trinh" "$R/src" "$R/test" "$R/docs"
+  mkdir -p "$F" "$R/src" "$R/test" "$R/docs"
   g init -q
   g checkout -q -b main
-  cp "$ROOT/workflow/templates/conventions.md" "$R/.agent-workflow/conventions.md"
+  # Cấu hình theo bản clone, không commit — wrapper aw truyền qua AW_REPO/AW_CONFIG.
+  CFG="$R/.git/agent-workflow"; mkdir -p "$CFG"
+  export AW_REPO="$R" AW_CONFIG="$CFG"
+  cp "$ROOT/workflow/templates/conventions.md" "$CFG/conventions.md"
   {
     printf 'LENH_KIEM_THU="grep -q moi %s/src/a.txt"\n' "$R"
     printf 'LENH_DO_HIEU_NANG="echo KET_QUA: 5 ms"\n'
-  } > "$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
+  } > "$CFG/config.sh"
   printf 'goc\n' > "$R/src/a.txt"
   printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
   g add src test; g commit -q -m goc
@@ -291,7 +294,7 @@ tao_fixture() {
       sh "$T/kiem-tra-hieu-nang.sh" "$F" --truoc >/dev/null 2>&1 ;;
   esac
   if [ "$LOAI" = "chore" ]; then
-    printf 'LENH_KIEM_THU="true"\n' > "$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
+    printf 'LENH_KIEM_THU="true"\n' > "$CFG/config.sh"
     printf 'huong dan\n' > "$R/docs/huong-dan.md"
   else
     printf 'moi\n' > "$R/src/a.txt"
@@ -585,7 +588,7 @@ viet_plan; ghi_based_on
 echo ""
 echo "kiem-tra-hien-thuc.sh"
 CHK="$T/kiem-tra-hien-thuc.sh"
-CH="$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
+CH="$CFG/config.sh"
 
 printf 'LENH_KIEM_THU=""\n' > "$CH"
 ky_vong 1 "chưa khai LENH_KIEM_THU là KHÔNG ĐẠT, không phải bỏ qua" sh "$CHK" "$F"
@@ -781,6 +784,7 @@ dung "thêm frontmatter khi file chưa có" sh -c "head -1 '$F/thu.md' | grep -q
 rm -f "$F/thu.md"
 
 # ---------------------------------------------------------------- adapter
+unset AW_REPO AW_CONFIG   # các mục dưới dùng bộ cài 1.x (cai-dat.sh) cho tới khi chuyển sang aw
 echo ""
 echo "adapters/claude-code/build.sh"
 BUILD="$ROOT/adapters/claude-code/build.sh"
@@ -1183,9 +1187,9 @@ thay "$F/intake.md" "\`main\` @ \`$SHA_MAIN\`" "\`moi-hon\` @ \`$SHA_MH\`"
 ghi_based_on
 ky_vong 0 "ghi đúng base → diff chỉ còn việc của mình, review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
 dung "…nhưng base lạ (xếp chồng) thì review CẢNH BÁO" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base \"moi-hon\"'"
-thay "$R/.agent-workflow/conventions.md" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: moi-*'
+thay "$CFG/conventions.md" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: moi-*'
 dung "base khớp mau_nhanh_phat_hanh → không cảnh báo" sh -c "! sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base'"
-thay "$R/.agent-workflow/conventions.md" 'mau_nhanh_phat_hanh: moi-*' 'mau_nhanh_phat_hanh:'
+thay "$CFG/conventions.md" 'mau_nhanh_phat_hanh: moi-*' 'mau_nhanh_phat_hanh:'
 
 # ---------------------------------------------------------------- bugfix
 echo ""
@@ -1215,7 +1219,7 @@ viet_review
 
 # test xanh tren code chua sua -> khong tai hien duoc
 g stash -q
-printf 'LENH_KIEM_THU="true"\n' > "$R/.agent-workflow/.quy-trinh/cau-hinh.sh"
+printf 'LENH_KIEM_THU="true"\n' > "$CFG/config.sh"
 ky_vong 1 "kiem-tra-tai-hien chặn khi test XANH trên code chưa sửa" sh "$T/kiem-tra-tai-hien.sh" "$F"
 dung "…đúng lý do: test xanh, không phải vì đã sửa code" sh -c "sh '$T/kiem-tra-tai-hien.sh' '$F' | grep -q 'XANH'"
 
@@ -1316,6 +1320,7 @@ viet_plan; ghi_based_on
 # ---------------------------------------------------------------- doi ten feature
 echo ""
 echo "doi-ten-feature.sh"
+unset AW_REPO AW_CONFIG
 R5="$TMP/repo5"; mkdir -p "$R5"
 git -C "$R5" init -q; git -C "$R5" checkout -q -b main
 sh "$T/cai-dat.sh" "$R5" --lenh-kiem-thu true >/dev/null 2>&1

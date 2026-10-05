@@ -25,7 +25,7 @@ kq_khai kiem-tra-tai-hien.sh \
 
 DIR="${1:-.}"
 OUT="$DIR/tai-hien.md"
-CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
+CAUHINH=$(kc_cau_hinh "$DIR")
 
 [ "$(kc_loai "$DIR")" = "bugfix" ] || { echo "LỖI: chỉ dùng cho loại việc bugfix (intake.md)." >&2; exit 2; }
 LENH_KIEM_THU=""

@@ -39,10 +39,10 @@ kq_khai phan-loai-input.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
-# Script nằm ở <repo>/<artifact_dir>/.quy-trinh/tools/
-ART_ABS=$(CDPATH= cd -- "$HERE/../.." && pwd)
-CONV="$ART_ABS/conventions.md"
-TOP=$(git -C "$ART_ABS" rev-parse --show-toplevel 2>/dev/null) || TOP=$(dirname "$ART_ABS")
+. "$HERE/lib/moi-truong.sh"
+mt_dat "$HERE"
+CONV="$MT_CONV"
+TOP=$(git -C "$MT_REPO" rev-parse --show-toplevel 2>/dev/null) || TOP="$MT_REPO"
 
 TRU=""
 if [ "${1:-}" = "--tru" ]; then

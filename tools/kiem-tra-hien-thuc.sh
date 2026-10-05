@@ -16,7 +16,7 @@
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
 #        diem mu muc "chan review" chua tra loi.
 #
-# Cau hinh: <thu-muc-feature>/../.quy-trinh/cau-hinh.sh
+# Cau hinh: $AW_CONFIG/config.sh (xem lib/moi-truong.sh)
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -31,7 +31,7 @@ kq_khai kiem-tra-hien-thuc.sh \
 DIR="${1:-.}"
 PLAN="$DIR/plan.md"
 KQ="$DIR/ket-qua-kiem-thu.md"
-CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
+CAUHINH=$(kc_cau_hinh "$DIR")
 
 [ -f "$PLAN" ] || { echo "LỖI: không tìm thấy $PLAN" >&2; exit 2; }
 

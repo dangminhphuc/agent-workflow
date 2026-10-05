@@ -25,8 +25,9 @@ kq_khai don-worktree.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 
-ART_ABS=$(CDPATH= cd -- "$HERE/../.." && pwd)
-CONV="$ART_ABS/conventions.md"
+. "$HERE/lib/moi-truong.sh"
+mt_dat "$HERE"
+CONV="$MT_CONV"
 
 TEN="${1:-}"; [ $# -ge 1 ] && shift
 XOA=""; CA=""
@@ -36,20 +37,20 @@ done
 [ -n "$TEN" ] || { echo "Dùng: sh don-worktree.sh <tên-branch> [--xoa [--ca-branch]]" >&2; exit 2; }
 [ -z "$CA" ] || [ -n "$XOA" ] || { echo "LỖI: --ca-branch phải đi kèm --xoa." >&2; exit 2; }
 
-WT=$(wt_cua_branch "$ART_ABS" "$TEN")
+WT=$(wt_cua_branch "$MT_REPO" "$TEN")
 [ -n "$WT" ] || { echo "LỖI: branch \"$TEN\" không có worktree nào (xem: git worktree list)." >&2; exit 2; }
-CHINH=$(wt_chinh "$ART_ABS")
+CHINH=$(wt_chinh "$MT_REPO")
 [ "$WT" != "$CHINH" ] || { echo "LỖI: \"$TEN\" đang ở checkout chính — không phải worktree để dọn." >&2; exit 2; }
 
-up=$(git -C "$ART_ABS" rev-parse --abbrev-ref "$TEN@{upstream}" 2>/dev/null)
+up=$(git -C "$MT_REPO" rev-parse --abbrev-ref "$TEN@{upstream}" 2>/dev/null)
 if [ -n "$up" ]; then
-  tt_push="upstream $up — $(git -C "$ART_ABS" rev-list --count "$up..$TEN") commit chưa push"
+  tt_push="upstream $up — $(git -C "$MT_REPO" rev-list --count "$up..$TEN") commit chưa push"
 else
   tt_push="chưa có upstream (chưa push lần nào)"
 fi
 g=$(conv_get "$CONV" nhanh_goc); g=${g:-main}
-goc=$g; git -C "$ART_ABS" rev-parse --verify --quiet "refs/remotes/origin/$g" >/dev/null && goc="origin/$g"
-if git -C "$ART_ABS" merge-base --is-ancestor "$TEN" "$goc" 2>/dev/null; then tt_merge="đã nằm trong $goc"
+goc=$g; git -C "$MT_REPO" rev-parse --verify --quiet "refs/remotes/origin/$g" >/dev/null && goc="origin/$g"
+if git -C "$MT_REPO" merge-base --is-ancestor "$TEN" "$goc" 2>/dev/null; then tt_merge="đã nằm trong $goc"
 else tt_merge="CHƯA nằm trong $goc (hoặc đã merge kiểu squash/rebase)"; fi
 bn=$(git -C "$WT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 

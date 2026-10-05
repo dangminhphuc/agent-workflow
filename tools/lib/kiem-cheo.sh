@@ -13,7 +13,14 @@
 
 # kc_conventions <thư-mục-feature> -> đường dẫn conventions.md
 kc_conventions() {
-  printf '%s/../conventions.md\n' "$1"
+  if [ -n "${AW_CONFIG:-}" ]; then printf '%s/conventions.md\n' "$AW_CONFIG"
+  else printf '%s/../conventions.md\n' "$1"; fi   # TẠM — bộ cài 1.x
+}
+
+# kc_cau_hinh <thư-mục-feature> -> đường dẫn config.sh (LENH_KIEM_THU…)
+kc_cau_hinh() {
+  if [ -n "${AW_CONFIG:-}" ]; then printf '%s/config.sh\n' "$AW_CONFIG"
+  else printf '%s/../.quy-trinh/cau-hinh.sh\n' "$1"; fi   # TẠM — bộ cài 1.x
 }
 
 # kc_loi_thoi <thư-mục-feature>

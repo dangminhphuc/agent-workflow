@@ -25,14 +25,14 @@ kq_khai xac-dinh-feature.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 
-# Script nam o <repo>/<artifact_dir>/.quy-trinh/tools/
-ART_ABS=$(CDPATH= cd -- "$HERE/../.." && pwd)
-ART=$(basename "$ART_ABS")
-CONV="$ART_ABS/conventions.md"
+. "$HERE/lib/moi-truong.sh"
+mt_dat "$HERE"
+ART=$MT_ART_DIR
+CONV="$MT_CONV"
 
-if wt_la_chinh "$ART_ABS"; then
-  echo "ĐANG Ở CHECKOUT CHÍNH ($(wt_chinh "$ART_ABS")) — quy trình bắt buộc làm trong worktree." >&2
-  ds=$(git -C "$ART_ABS" worktree list 2>/dev/null | tail -n +2)
+if wt_la_chinh "$MT_REPO"; then
+  echo "ĐANG Ở CHECKOUT CHÍNH ($(wt_chinh "$MT_REPO")) — quy trình bắt buộc làm trong worktree." >&2
+  ds=$(git -C "$MT_REPO" worktree list 2>/dev/null | tail -n +2)
   if [ -n "$ds" ]; then
     echo "  Worktree đang có:" >&2
     printf '%s\n' "$ds" | sed 's/^/    /' >&2
@@ -43,7 +43,7 @@ if wt_la_chinh "$ART_ABS"; then
 fi
 
 ten=""; tu=""
-branch=$(git -C "$ART_ABS" rev-parse --abbrev-ref HEAD 2>/dev/null)
+branch=$(git -C "$MT_REPO" rev-parse --abbrev-ref HEAD 2>/dev/null)
 if [ -n "$branch" ] && [ "$branch" != "HEAD" ]; then
   mau=$(conv_get "$CONV" mau_branch)
   set -f

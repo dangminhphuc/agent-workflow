@@ -27,7 +27,7 @@ case "$PHA" in
   *) echo "Dùng: sh kiem-tra-hieu-nang.sh <thư-mục-feature> --truoc|--sau" >&2; exit 2 ;;
 esac
 OUT="$DIR/do-hieu-nang.md"
-CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
+CAUHINH=$(kc_cau_hinh "$DIR")
 
 [ "$(kc_loai "$DIR")" = "perf" ] || { echo "LỖI: chỉ dùng cho loại việc perf (intake.md)." >&2; exit 2; }
 LENH_DO_HIEU_NANG=""
