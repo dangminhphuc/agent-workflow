@@ -1,7 +1,9 @@
 # Quy ước của repo
 
-> File này do **NGƯỜI** viết. Bộ cài chỉ tạo nó một lần từ mẫu và **không bao
-> giờ ghi đè**, kể cả với `--force`.
+> File này do **NGƯỜI** viết. Nằm ở `.git/agent-workflow/conventions.md` của bản
+> clone — không commit, dùng chung mọi worktree. `aw init` chỉ tạo nó một lần từ
+> mẫu và **không bao giờ ghi đè**, kể cả với `--force`. Chia sẻ cho team: repo
+> cấu hình riêng + `aw init --from <url>`.
 
 ## Phần máy đọc
 

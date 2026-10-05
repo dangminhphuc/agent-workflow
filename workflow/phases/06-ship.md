@@ -37,6 +37,6 @@ Vì các phase chỉ nối nhau qua file trong thư mục feature. Thêm `06-shi
 
 1. Viết nội dung file này với `inputs: [review.md, diff]`.
 2. Bỏ dòng `status`, bật `required` trong `workflow.yaml` nếu muốn.
-3. Chạy lại bộ cài.
+3. Phát hành engine bản mới (`aw upgrade` ở repo đích; việc đang làm giữ version cũ).
 
 Không phase nào khác phải đổi, vì không phase nào biết gì về phase đứng sau nó.
