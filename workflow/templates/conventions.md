@@ -56,5 +56,45 @@ có gắn mã Jira hay không, phần thân, ví dụ.>
 
 ### Merge request
 
-<Chưa định nghĩa. Quy ước tạo MR: tiêu đề, mô tả (mẫu), người review, nhánh
-đích, điều kiện trước khi merge.>
+> Mặc định của engine — sửa cho đúng team. Áp dụng như nhau cho MR (GitLab) và
+> PR (GitHub). Heading và nhãn trong mô tả MR viết tiếng Anh.
+
+**Scope.** Một MR = một việc = một branch theo `mau_branch`. Diff nên dưới ~400
+dòng (không tính lockfile, file sinh, test); lớn hơn thì tách theo task trong
+`plan.md` hoặc ghi lý do trong mô tả. Refactor đi kèm tính năng tách MR riêng.
+
+**Title.** `<JIRA-KEY>: <verb> <what> <where>`, dưới 72 ký tự, nói hành vi đổi
+chứ không nói việc đã làm.
+- Good: `VPAY-17318: lấy agentType từ bản ghi khi tạo ticket sửa Master Data`
+- Bad: `fix bug`, `update UpdateTicket`, `VPAY-17318`
+- Chưa sẵn sàng review: tiền tố `Draft:` (GitLab) / draft PR (GitHub).
+
+**Description.** Theo mẫu `.agent-workflow/.engine/templates/merge-request.md`
+(chép vào khi `aw adapter build`). Required: `Problem`, `Changes`, `Testing`.
+Các mục còn lại không xoá — không áp dụng thì ghi `None`. Phải nêu nổi bật:
+- **Breaking change:** API, payload, schema, event đổi và ai đang phụ thuộc;
+- **External impact:** hệ thống ngoài phạm vi ticket, kèm đã xác nhận với ai;
+- **Out of scope:** điều ticket kỳ vọng mà MR không làm (backfill, phần FE…);
+- **Deployment order:** khi có phụ thuộc;
+- **Changed expectations:** test cũ bị đổi kỳ vọng.
+
+**Target branch.** `nhanh_goc`. Hotfix vào nhánh khớp `mau_nhanh_phat_hanh` thì
+phải có MR cherry-pick ngược về `nhanh_goc`, link trong mô tả.
+
+**Reviewers.** Ít nhất <1> người ngoài tác giả; MR có breaking change hoặc
+external impact thêm người của bên phụ thuộc. Tác giả không tự duyệt.
+
+**Ready for review.**
+- `aw check review` đạt, `review.md` không còn mục `Chặn`.
+- CI xanh; branch đã cập nhật với target branch.
+- Tự đọc lại diff trên giao diện MR (không chỉ trong editor).
+
+**Ready to merge.**
+- Đủ approve; mọi thread đã trả lời hoặc resolve — không resolve thread của
+  người khác khi chưa trả lời.
+- CI xanh trên commit cuối.
+- Các mục trong `Deployment` đã sẵn sàng (hoặc ghi rõ đã thống nhất merge trước).
+- **Merge strategy:** <squash | merge commit> — <squash: commit title = MR title>.
+
+**After merge.** Đánh dấu checkbox ở `Post-deploy Verification`; mục nào hỏng thì
+mở ticket mới và link vào MR, không sửa lặng lẽ.
