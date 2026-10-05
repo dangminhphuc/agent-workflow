@@ -8,19 +8,21 @@
 #
 # Yêu cầu: đã source tools/lib/md.sh.
 #
-# Thư mục feature có dạng <repo>/.agent-workflow/<tên-branch>; conventions.md
-# nằm ở thư mục cha của nó.
+# Thư mục feature có dạng <repo>/.agent-workflow/<tên-branch>. conventions.md và
+# config.sh nằm trong $AW_CONFIG (cấu hình của bản clone, wrapper aw truyền vào).
+if [ -z "${AW_CONFIG:-}" ]; then
+  echo "LỖI: thiếu AW_CONFIG — chạy qua wrapper aw (vd: aw check spec <thư-mục-feature>)." >&2
+  exit 9
+fi
 
 # kc_conventions <thư-mục-feature> -> đường dẫn conventions.md
 kc_conventions() {
-  if [ -n "${AW_CONFIG:-}" ]; then printf '%s/conventions.md\n' "$AW_CONFIG"
-  else printf '%s/../conventions.md\n' "$1"; fi   # TẠM — bộ cài 1.x
+  printf '%s/conventions.md\n' "$AW_CONFIG"
 }
 
 # kc_cau_hinh <thư-mục-feature> -> đường dẫn config.sh (LENH_KIEM_THU…)
 kc_cau_hinh() {
-  if [ -n "${AW_CONFIG:-}" ]; then printf '%s/config.sh\n' "$AW_CONFIG"
-  else printf '%s/../.quy-trinh/cau-hinh.sh\n' "$1"; fi   # TẠM — bộ cài 1.x
+  printf '%s/config.sh\n' "$AW_CONFIG"
 }
 
 # kc_loi_thoi <thư-mục-feature>

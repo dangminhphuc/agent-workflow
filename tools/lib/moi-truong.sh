@@ -13,17 +13,13 @@
 
 MT_ART_DIR=".agent-workflow"
 
-# mt_dat <HERE> -> đặt MT_REPO, MT_ART (tuyệt đối), MT_CONV, MT_CH
+# mt_dat [HERE] -> đặt MT_REPO, MT_ART (tuyệt đối), MT_CONV, MT_CH. Thiếu biến
+# thì dừng (mã 9): không đoán đường dẫn từ vị trí của tool.
 mt_dat() {
-  if [ -n "${AW_REPO:-}" ]; then
-    MT_REPO="$AW_REPO"; MT_ART="$AW_REPO/$MT_ART_DIR"
-  else
-    # TẠM — bộ cài 1.x: tool nằm ở <repo>/.agent-workflow/.quy-trinh/tools/. Bỏ khi có aw init --from-legacy.
-    MT_ART=$(CDPATH= cd -- "$1/../.." && pwd); MT_REPO=$(dirname "$MT_ART")
+  if [ -z "${AW_REPO:-}" ] || [ -z "${AW_CONFIG:-}" ]; then
+    echo "LỖI: thiếu AW_REPO hoặc AW_CONFIG — chạy qua wrapper aw (vd: aw feature, aw check …)." >&2
+    exit 9
   fi
-  if [ -n "${AW_CONFIG:-}" ]; then
-    MT_CONV="$AW_CONFIG/conventions.md"; MT_CH="$AW_CONFIG/config.sh"
-  else
-    MT_CONV="$MT_ART/conventions.md"; MT_CH="$MT_ART/.quy-trinh/cau-hinh.sh"
-  fi
+  MT_REPO="$AW_REPO"; MT_ART="$AW_REPO/$MT_ART_DIR"
+  MT_CONV="$AW_CONFIG/conventions.md"; MT_CH="$AW_CONFIG/config.sh"
 }
