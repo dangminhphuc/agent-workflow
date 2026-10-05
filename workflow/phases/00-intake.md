@@ -130,7 +130,8 @@ Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Là
 4. Đưa **nguyên văn** đề xuất cho người, hỏi người **chọn base** (và xác nhận
    tên). Người muốn tên khác thì đổi `<mô-tả>` và chạy lại bước 3.
 5. Người chọn rồi mới chạy `tao-worktree.sh <loại-việc> <mô-tả> --tao --goc <ref>`
-   với **đúng ref người chọn**. Script in dòng `Base:` — chép nguyên vào `intake.md`.
+   với **đúng ref người chọn**. Script in dòng `Base:` và dòng `Engine:` — chép
+   nguyên cả hai vào `intake.md`.
 6. Ghi `intake.md` vào `<worktree>/.agent-workflow/<tên>/`, chạy checker trên
    thư mục đó, rồi **dừng**: người chuẩn bị môi trường (lệnh `LENH_CHUAN_BI_WT`
    script in ra) và mở phiên agent **mới** trong worktree để chạy `/spec`.
@@ -143,6 +144,12 @@ So với `nhanh_goc` khi base là `origin/main` (local đang chậm) hay `releas
 sẽ quy commit của người khác cho việc này: phạm vi diff báo sai, review đọc code
 không phải của mình. Base là branch việc khác (xếp chồng) thì được, nhưng review
 cảnh báo: việc này dựa trên code chưa được review.
+
+**Vì sao ghi Engine.** Mỗi việc chạy hết bằng **một** version engine — version
+của bản clone lúc tạo worktree. Nâng cấp (`aw upgrade`) giữa chừng không đổi
+luật của việc đang làm. Mọi checker của việc chạy đúng version ghi ở dòng
+`Engine:`; máy không có version đó và không tải được thì checker báo KHÔNG HỢP
+LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `X.Y.Z`.
 
 ## Việc phải làm
 
@@ -158,7 +165,7 @@ cảnh báo: việc này dựa trên code chưa được review.
    - tài liệu: `[CONFLUENCE]` / `[JIRA]` / `[FILE]` + định danh (URL, mã issue, đường dẫn);
    - lời người dùng: `[NGƯỜI-DÙNG]`, **chép nguyên văn** ở dòng `>` bên dưới.
 
-3. **Ghi mục tiêu** một câu, và dòng **Base** đúng như `tao-worktree.sh` in ra.
+3. **Ghi mục tiêu** một câu, và hai dòng **Base**, **Engine** đúng như `tao-worktree.sh` in ra.
 
 4. Chạy `kiem-tra-tiep-nhan.sh` rồi dừng lại cho người xác nhận.
 
@@ -180,6 +187,7 @@ cảnh báo: việc này dựa trên code chưa được review.
   Suy đoán của agent vào input thì mọi phase sau truy về nó như thể có nguồn.
 - Tự chốt loại việc thay người.
 - Tự chọn base, tự điền `--goc`, hay tạo worktree trước khi người chọn.
+- Tự sửa dòng `Engine:` — đổi version giữa chừng là đổi luật của việc.
 - Tự chuyển phiên sang worktree mới — người mở phiên mới ở đó.
 - Chốt phạm vi hoặc giải pháp kỹ thuật.
 
@@ -188,7 +196,8 @@ cảnh báo: việc này dựa trên code chưa được review.
 **Máy:**
 - `sh tools/kiem-tra-tiep-nhan.sh` ra `[x] ĐẠT` — loại việc hợp lệ, có mục tiêu, có ít
   nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
-  `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD.
+  `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
+  có dòng `Engine:` dạng `X.Y.Z` khớp engine đang chạy.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.
 
 **Người:**

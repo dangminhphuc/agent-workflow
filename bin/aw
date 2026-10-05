@@ -180,6 +180,24 @@ chuyen() { # <version> <lệnh engine...>
   exec sh "$ENGINE/bin/aw-engine" "$@"
 }
 
+# version_theo_viec <thư-mục-feature> -> Engine ghi trong intake.md của việc;
+# không có intake.md / không có dòng Engine thì dùng version của bản clone
+# (engine sẽ tự chặn khi thiếu dòng Engine).
+version_theo_viec() {
+  if [ -n "$1" ] && [ -f "$1/intake.md" ]; then
+    _e=$(awk '
+      { sub(/\r$/, "") }
+      /^[ \t]*-[ \t]*\*\*Engine:\*\*/ || /^[ \t]*-?[ \t]*Engine:/ {
+        s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*` \t]/, "", s); print s; exit
+      }' "$1/intake.md")
+    if [ -n "$_e" ]; then
+      version_hop_le "$_e" || loi 9 "LỖI: $1/intake.md ghi Engine \"$_e\" — không phải X.Y.Z."
+      echo "$_e"; return 0
+    fi
+  fi
+  version_viec
+}
+
 version_viec() { # version dùng cho lệnh thường: file version của bản clone
   _v=$(version_cau_hinh)
   [ -n "$_v" ] || loi 9 "LỖI: repo này chưa init ($AW_CONFIG/version không có) — chạy: aw init"
@@ -323,7 +341,15 @@ case "$LENH" in
   upgrade) cmd_upgrade "$@" ;;
   version|--version) cmd_version ;;
   doctor)  cmd_doctor ;;
-  check|feature|input|questions|based-on|rename|worktree|adapter)
+  check)
+    can_repo
+    _v=$(version_theo_viec "${2:-}") || exit $?
+    chuyen "$_v" check "$@" ;;
+  questions|based-on)
+    can_repo
+    _v=$(version_theo_viec "${1:-}") || exit $?
+    chuyen "$_v" "$LENH" "$@" ;;
+  feature|input|rename|worktree|adapter)
     can_repo
     _v=$(version_viec) || exit $?
     chuyen "$_v" "$LENH" "$@" ;;

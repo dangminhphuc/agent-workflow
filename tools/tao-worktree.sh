@@ -179,6 +179,8 @@ echo "Đã tạo worktree $DUONG (branch $TEN, base $GOC @ $sha)" >&2
 echo "" >&2
 echo "Ghi vào intake.md, ngay dưới \"Loại việc\":" >&2
 echo "  - **Base:** \`$GOC\` @ \`$sha\`" >&2
+ev=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
+[ -n "$ev" ] && echo "  - **Engine:** $ev" >&2
 echo "" >&2
 echo "Tiếp theo:" >&2
 echo "  1. Ghi intake.md vào $DUONG/$ART/$TEN_TM/ rồi chạy kiem-tra-tiep-nhan.sh trên thư mục đó" >&2

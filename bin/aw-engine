@@ -54,7 +54,20 @@ case "$LENH" in
   check)
     [ $# -ge 2 ] || sai 2 "Dùng: aw check <name> <feature-dir>   (name: $BL_CHECKERS)"
     s=$(bl_checker "$1") || sai 2 "LỖI: không có checker \"$1\" (có: $BL_CHECKERS)."
-    can_repo; shift
+    can_repo; ten=$1; shift
+    # Ghim version theo việc: intake.md ghi Engine nào thì chỉ engine đó được chấm.
+    if [ -f "$1/intake.md" ]; then
+      . "$T/lib/md.sh"; . "$T/lib/kiem-cheo.sh"
+      ev=$(kc_engine_dong "$1"); dang=$(cat "$AW_ENGINE/VERSION")
+      if [ -n "$ev" ] && [ "$ev" != "$dang" ]; then
+        sai 9 "LỖI: $1/intake.md ghim Engine $ev, đây là engine $dang — không chấm bằng version khác." \
+              "      Chạy qua wrapper: aw check $ten $1"
+      fi
+      if [ -z "$ev" ] && [ "$ten" != intake ]; then
+        sai 9 "LỖI: $1/intake.md thiếu dòng \"- **Engine:** X.Y.Z\" — không biết việc này dùng engine nào." \
+              "      Thêm dòng đó (version lúc tạo việc: aw version), rồi chạy: aw check intake $1"
+      fi
+    fi
     exec sh "$T/$s" "$@" ;;
   init)      can_repo; exec sh "$T/khoi-tao.sh" "$@" ;;
   feature)   can_repo; exec sh "$T/xac-dinh-feature.sh" "$@" ;;

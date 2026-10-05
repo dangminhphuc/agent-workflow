@@ -51,6 +51,20 @@ elif ! git -C "$DIR" rev-parse --verify --quiet "$b_ref^{commit}" >/dev/null; th
   echo "  [CẢNH BÁO] Base: ref \"$b_ref\" không còn — checker so diff với sha $b_sha"
 fi
 
+# ---- Engine: version engine ghim cho việc này (aw check chạy đúng version đó) ----
+e_ver=$(kc_engine_dong "$DIR")
+e_dang=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
+if [ -z "$e_ver" ]; then
+  echo "  [LỖI] Thiếu dòng \"- **Engine:** X.Y.Z\" — chép đúng dòng aw worktree in ra khi tạo worktree"
+  n_base=$((n_base + 1))
+elif ! kc_version_hop_le "$e_ver"; then
+  echo "  [LỖI] Engine: \"$e_ver\" không phải X.Y.Z"
+  n_base=$((n_base + 1))
+elif [ -n "$e_dang" ] && [ "$e_ver" != "$e_dang" ]; then
+  echo "  [LỖI] Engine: việc ghim $e_ver nhưng checker đang chạy là $e_dang — chạy qua aw check, không gọi engine khác"
+  n_base=$((n_base + 1))
+fi
+
 awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function gia_tri(s) {

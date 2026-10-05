@@ -5,6 +5,7 @@
 
 - **Loại việc:** `<feature | bugfix | refactor | perf | chore>`   <!-- người xác nhận -->
 - **Base:** `<ref>` @ `<sha>`   <!-- chép đúng dòng tao-worktree.sh in ra; người chọn base -->
+- **Engine:** <X.Y.Z>   <!-- chép đúng dòng tao-worktree.sh in ra; mọi aw check của việc chạy đúng version này -->
 - **Mục tiêu:** <một câu>
 
 Mỗi input là một dòng `-` bắt đầu bằng nhãn: tài liệu thì ghi định danh (URL, mã

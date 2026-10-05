@@ -75,6 +75,7 @@ viet_intake() {
 
 - **Loại việc:** \`$LOAI\`   <!-- người xác nhận -->
 - **Base:** \`main\` @ \`$(git -C "$R" rev-parse --short main 2>/dev/null)\`
+- **Engine:** $(cat "$ROOT/VERSION")
 - **Mục tiêu:** làm x
 
 ## Input
@@ -327,6 +328,22 @@ ky_vong 9 "thiếu AW_CONFIG → KHÔNG HỢP LỆ (không đoán đường dẫ
 ky_vong 9 "wrapper khác giao thức → KHÔNG HỢP LỆ" env AW_PROTOCOL=999 sh "$AWE" check spec "$F"
 ky_vong 2 "lệnh lạ → SAI THAM SỐ" sh "$AWE" lam-gi-do
 ky_vong 2 "adapter không có → SAI THAM SỐ" sh "$AWE" adapter build khong-co --out "$TMP/o-x"
+
+# Ghim version theo việc: dòng Engine trong intake.md
+cp "$F/intake.md" "$TMP/intake.bak"
+sed '/\*\*Engine:\*\*/d' "$TMP/intake.bak" > "$F/intake.md"
+ky_vong 1 "intake thiếu dòng Engine → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
+ky_vong 9 "…aw-engine check spec từ chối chấm (không biết engine nào)" sh "$AWE" check spec "$F"
+ky_vong 1 "…aw-engine check intake vẫn chạy để liệt kê lỗi" sh "$AWE" check intake "$F"
+sed 's/\*\*Engine:\*\* .*/**Engine:** 2.0/' "$TMP/intake.bak" > "$F/intake.md"
+ky_vong 1 "Engine sai dạng X.Y.Z → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
+sed 's/\*\*Engine:\*\* .*/**Engine:** 0.0.1/' "$TMP/intake.bak" > "$F/intake.md"
+ky_vong 1 "Engine lệch engine đang chạy → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
+for c in intake spec repro perf; do
+  ky_vong 9 "…aw-engine check $c lệch version → KHÔNG HỢP LỆ" sh "$AWE" check "$c" "$F"
+done
+cp "$TMP/intake.bak" "$F/intake.md"
+ky_vong 0 "Engine khớp → ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
 
 # ---------------------------------------------------------------- truy vet
 echo ""
@@ -1474,6 +1491,17 @@ R8="$TMP/repo8"; git clone -q "$R7" "$R8" 2>/dev/null
 ky_vong 0 "aw init --from <repo cấu hình team>" sh -c "cd '$R8' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' init --from '$TEAM'"
 dung "…lấy version, checksums, conventions.md của team" sh -c "grep -qx 9.0.2 '$R8/.git/agent-workflow/version' && grep -q 'của team' '$R8/.git/agent-workflow/conventions.md' && cmp -s '$TEAM/checksums' '$R8/.git/agent-workflow/checksums'"
 ky_vong 9 "--from repo không có file version → KHÔNG HỢP LỆ" sh -c "cd '$R8' && AW_HOME='$AWH' sh '$ROOT/bin/aw' init --from '$R7'"
+# aw check chạy đúng version ghi trong intake.md của việc, không theo version của bản clone
+mkdir -p "$R7/.agent-workflow/feat_a"
+printf -- '- **Loại việc:** `feature`\n- **Engine:** 9.0.1\n' > "$R7/.agent-workflow/feat_a/intake.md"
+ky_vong 1 "intake ghim 9.0.1, bản clone 9.0.2 → chấm bằng 9.0.1 (KHÔNG ĐẠT, không phải KHÔNG HỢP LỆ)" aw7 check intake .agent-workflow/feat_a
+printf -- '- **Loại việc:** `feature`\n- **Engine:** 9.0.3\n' > "$R7/.agent-workflow/feat_a/intake.md"
+ky_vong 9 "intake ghim version không có và không tải được → KHÔNG HỢP LỆ" aw7 check intake .agent-workflow/feat_a
+dung "…không âm thầm chạy bằng version khác" sh -c "cd '$R7' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' check intake .agent-workflow/feat_a 2>&1 | grep -q 'engine 9.0.3 không có trong cache'"
+printf -- '- **Engine:** v9\n' > "$R7/.agent-workflow/feat_a/intake.md"
+ky_vong 9 "intake ghi Engine sai dạng → KHÔNG HỢP LỆ" aw7 check intake .agent-workflow/feat_a
+ky_vong 9 "aw questions cũng theo version của việc" aw7 questions .agent-workflow/feat_a
+rm -rf "$R7/.agent-workflow"
 dung "wrapper và VERSION cùng version (đóng gói kiểm lại)" bang "$(awk -F'"' '/^AW_WRAPPER_VERSION=/ { print $2 }' "$ROOT/bin/aw")" "$(cat "$ROOT/VERSION")"
 
 # ---------------------------------------------------------------- tong ket

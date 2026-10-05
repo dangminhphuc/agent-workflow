@@ -175,6 +175,25 @@ kc_spec_chua_duyet() {
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
 
+# kc_engine_dong <thư-mục-feature> -> version ghi ở dòng "Engine:" của intake.md
+# (bỏ backtick, comment; không có dòng thì không in gì). Mọi `aw check` của việc
+# chạy đúng version này — xem bin/aw.
+kc_engine_dong() {
+  [ -f "$1/intake.md" ] || return 0
+  awk '
+    { sub(/\r$/, "") }
+    /^[ \t]*-[ \t]*\*\*Engine:\*\*/ || /^[ \t]*-?[ \t]*Engine:/ {
+      s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*` \t]/, "", s); print s; exit
+    }
+  ' "$1/intake.md"
+}
+
+# kc_version_hop_le <chuỗi> -> 0 nếu là X.Y.Z (chỉ chữ số)
+kc_version_hop_le() {
+  case "$1" in ""|*[!0-9.]*|.*|*.|*..*) return 1 ;; esac
+  [ "$(printf '%s' "$1" | awk -F. '{ print NF }')" = 3 ]
+}
+
 # kc_base_dong <thư-mục-feature> -> "<ref> <sha>" từ dòng "Base:" của intake.md
 # (thiếu phần nào thì phần đó rỗng; không có dòng Base thì không in gì).
 kc_base_dong() {
