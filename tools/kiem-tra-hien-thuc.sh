@@ -13,7 +13,8 @@
 #        xoa test cu; perf thieu so do truoc/sau; chore dung code production
 #        hoac nang dependency khong khai.
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
-#        loai viec lech tien to branch, refactor/perf sua test cu chua khai.
+#        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
+#        diem mu muc "chan review" chua tra loi.
 #
 # Cau hinh: <thu-muc-feature>/../.quy-trinh/cau-hinh.sh
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -113,14 +114,14 @@ EOF
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; } )
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "chặn" "chặn review"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""
   n_cb=$(printf '%s\n' "$cb" | wc -l | tr -d ' ')
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /review sẽ CHẶN nếu còn."
-  echo "  Xử lý: thêm test gắn tag, ghi \"Kiểm chứng thủ công\", ghi file vào \"Phát sinh\", hoặc chạy lại phase lỗi thời."
+  echo "  Xử lý: thêm test gắn tag, ghi \"Kiểm chứng thủ công\", ghi file vào \"Phát sinh\", chạy lại phase lỗi thời, hoặc trả lời điểm mù."
 fi
 
 echo ""

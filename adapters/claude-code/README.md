@@ -18,7 +18,7 @@ luật/mẫu/công cụ vào repo đích.
 | `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
-| `import:` trong `workflow.yaml` → `workflow/import.md` | `.claude/commands/import.md` — `/import` |
+| `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/<id>.md` — lệnh tiện ích `/import`, `/open-questions` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
 Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: `06-ship`).
@@ -42,6 +42,11 @@ Mỗi command sinh ra gồm ba phần:
 2. **Hợp đồng phase** (đọc gì, ghi ra đâu, mẫu nào, checker LLM nào, điều kiện
    ra là lệnh gì) do adapter dựng từ frontmatter.
 3. **Mô tả phase** lấy nguyên văn từ thân file nguồn.
+
+Lệnh tiện ích (`commands:` — không phải phase) chỉ có Bước 0 và thân file nguồn,
+không có hợp đồng vào/ra. Frontmatter: `name`, `summary`, tuỳ chọn
+`argument_hint` (mặc định `[tên-feature]`) và `arguments: mixed` khi tham số còn
+thứ khác ngoài tên feature (như `/import <file> <artifact> [tên-feature]`).
 
 ## Loại việc không cần gì từ adapter
 
@@ -152,7 +157,7 @@ Cuối output có khối `Kết quả`, đánh `[x]` vào đúng một nhãn:
 | `ĐÃ SINH` | Thành công |
 | `SAI THAM SỐ` | Sai tham số |
 | `CÓ FILE VIẾT TAY` | Đích đã có file người viết tay — dùng `--force` để ghi đè |
-| `ĐỊNH NGHĨA QUY TRÌNH LỖI` | Spec nguồn sai: `exit_machine` không phải lệnh chạy được / trỏ tới script không tồn tại, hoặc `llm_checker` / `import` trỏ tới file không tồn tại |
+| `ĐỊNH NGHĨA QUY TRÌNH LỖI` | Spec nguồn sai: `exit_machine` không phải lệnh chạy được / trỏ tới script không tồn tại, hoặc `llm_checker` / mục `commands:` trỏ tới file không tồn tại, hoặc `arguments` sai giá trị |
 
 `ĐỊNH NGHĨA QUY TRÌNH LỖI` là chốt chặn quan trọng: nó giữ cho "điều kiện ra loại MÁY" luôn là lệnh
 thật. Không có nó, một dòng mô tả bằng chữ sẽ lọt vào mục đó và agent sẽ tự đánh

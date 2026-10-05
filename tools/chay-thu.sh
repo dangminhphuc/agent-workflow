@@ -43,6 +43,9 @@ dung() {
   fi
 }
 
+# bang <a> <b> — so chuỗi, dùng với dung
+bang() { test "$1" = "$2"; }
+
 # thay <file> <tu> <thanh> — thay chuoi co dinh, khong dung regex
 thay() {
   # Tìm tiếp trên phần CHƯA xét, để chuỗi thay chứa chuỗi tìm không lặp vô hạn.
@@ -140,7 +143,7 @@ EOF
 
 ## YC-002 — b
 - **Giả định tạm đang dùng:** y
-- **Mức ảnh hưởng:** `cục bộ`   <!-- toàn bộ thiết kế | cục bộ -->
+- **Mức chặn:** `không chặn`   <!-- chặn | chặn review | không chặn -->
 - **Trạng thái:** `mở`   <!-- mở | đã trả lời -->
 EOF
 }
@@ -322,11 +325,23 @@ ky_vong 1 "chặn [CẦN-HỎI] không ghi vào open-questions" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" 'Giả định tạm đang dùng' 'Chỗ chưa rõ'
 ky_vong 1 "chặn mục điểm mù thiếu giả định tạm" sh "$CHK" "$F"
 
-viet_spec; thay "$F/open-questions.md" '- **Mức ảnh hưởng:** `cục bộ`' ''
-ky_vong 1 "chặn mục điểm mù thiếu mức ảnh hưởng" sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" '- **Mức chặn:** `không chặn`' ''
+ky_vong 1 "chặn mục điểm mù thiếu mức chặn" sh "$CHK" "$F"
 
-viet_spec; thay "$F/open-questions.md" '`cục bộ`' '`hơi hơi`'
-ky_vong 1 "chặn mức ảnh hưởng tự chế" sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" '`không chặn`' '`hơi hơi`'
+ky_vong 1 "chặn mức chặn tự chế" sh "$CHK" "$F"
+
+for m in "chặn" "chặn review" "không chặn"; do
+  viet_spec; thay "$F/open-questions.md" '`không chặn`' "\`$m\`"
+  ky_vong 0 "mức chặn hợp lệ: $m" sh "$CHK" "$F"
+done
+
+# Nhãn cũ (trước khi có 3 mức): chặn kèm hướng dẫn đổi — "cục bộ" có hai đích, người chọn
+viet_spec; thay "$F/open-questions.md" '- **Mức chặn:** `không chặn`' '- **Mức ảnh hưởng:** `cục bộ`'
+ky_vong 1 "chặn nhãn cũ \"Mức ảnh hưởng\"" sh "$CHK" "$F"
+dung "…kèm hướng dẫn đổi sang Mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'đã đổi thành \"Mức chặn'"
+viet_spec; thay "$F/open-questions.md" '`không chặn`' '`toàn bộ thiết kế`'
+ky_vong 1 "chặn giá trị cũ \"toàn bộ thiết kế\" dưới nhãn Mức chặn" sh "$CHK" "$F"
 
 viet_spec; thay "$F/spec.md" '- **Mức rủi ro:** `thường`' ''
 ky_vong 1 "chặn spec thiếu Mức rủi ro" sh "$CHK" "$F"
@@ -370,7 +385,7 @@ viet_spec; thay "$F/spec.md" '`đã duyệt`' '`ok`'
 ky_vong 1 "chặn Trạng thái spec tự chế" sh "$CHK" "$F"
 
 # open-questions.md <-> spec.md phải khớp trạng thái
-viet_spec; printf '\n## YC-099 — mồ côi\n- **Giả định tạm đang dùng:** z\n- **Mức ảnh hưởng:** `cục bộ`\n- **Trạng thái:** `mở`\n' >> "$F/open-questions.md"
+viet_spec; printf '\n## YC-099 — mồ côi\n- **Giả định tạm đang dùng:** z\n- **Mức chặn:** `không chặn`\n- **Trạng thái:** `mở`\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn mục open-questions trỏ về YC không có trong spec" sh "$CHK" "$F"
 dung "…đúng lý do: mục mồ côi YC-099" sh -c "sh '$CHK' '$F' | grep -q 'spec.md không có YC-099'"
 viet_spec; thay "$F/open-questions.md" '`mở`' '`xong`'
@@ -453,8 +468,11 @@ ky_vong 1 "chặn bác bỏ phát hiện mà không có lý do" sh "$CHK" "$F"
 printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: bác bỏ: D-01 đã nói rõ\n### PH-02 — y\n- Mức: `Cảnh báo`\n- Xử lý: chưa\n' > "$F/phat-hien-thiet-ke.md"
 ky_vong 0 "bác bỏ có lý do + cảnh báo chưa xử lý thì cho qua" sh "$CHK" "$F"
 
-viet_tdd; thay "$F/open-questions.md" '`cục bộ`' '`toàn bộ thiết kế`'
-ky_vong 1 "chặn [CẦN-HỎI] ảnh hưởng toàn bộ thiết kế còn mở" sh "$CHK" "$F"
+viet_tdd; thay "$F/open-questions.md" '`không chặn`' '`chặn review`'
+ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
+viet_spec; viet_tdd; thay "$F/open-questions.md" '`không chặn`' '`chặn`'
+ky_vong 1 "chặn điểm mù \"chặn\" còn mở" sh "$CHK" "$F"
+dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"chặn\"'"
 thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
 printf -- '- **Trả lời:** qua email\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
@@ -594,6 +612,11 @@ ky_vong 0 "file ngoài phạm vi chỉ CẢNH BÁO, không chặn implement" sh 
 dung "…nhưng có in cảnh báo phạm vi" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*README.md'"
 rm -f "$R/README.md"
 
+thay "$F/open-questions.md" '`không chặn`' '`chặn review`'; ghi_based_on
+ky_vong 0 "điểm mù \"chặn review\" còn mở chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
+dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: điểm mù mức \"chặn review\"'"
+viet_spec; ghi_based_on
+
 # ---------------------------------------------------------------- ra soat
 echo ""
 echo "kiem-tra-ra-soat.sh"
@@ -601,6 +624,17 @@ CHK="$T/kiem-tra-ra-soat.sh"
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 
 ky_vong 0 "rà soát đủ và đúng thì cho qua" sh "$CHK" "$F"
+
+# Điểm mù: "không chặn" còn mở thì giao được (YC chờ xác nhận); "chặn review" thì không
+thay "$F/open-questions.md" '`không chặn`' '`chặn review`'; ghi_based_on
+ky_vong 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" sh "$CHK" "$F"
+dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"chặn review\"'"
+thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
+printf -- '- **Trả lời:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
+thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+ghi_based_on
+ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"
+viet_spec; ghi_based_on
 
 printf '| Mã | Kết luận |\n|---|---|\n| YC-001 | đạt |\n' > "$F/review.md"
 ky_vong 1 "chặn khi bỏ sót một yêu cầu" sh "$CHK" "$F"
@@ -654,6 +688,84 @@ rm -f "$F/ket-qua-kiem-thu.md"
 ky_vong 1 "chặn khi chưa có ket-qua-kiem-thu.md" sh "$CHK" "$F"
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 
+# ---------------------------------------------------------------- liet ke cau hoi
+echo ""
+echo "liet-ke-cau-hoi.sh (/open-questions)"
+CHK="$T/liet-ke-cau-hoi.sh"
+LQ="$TMP/lq"; rm -rf "$LQ"; mkdir -p "$LQ"
+cat > "$LQ/spec.md" <<'EOF'
+### YC-001 — a
+- Ưu tiên: `nên có`
+### YC-002 — b
+- Ưu tiên: `bắt buộc`
+### YC-003 — c
+- Ưu tiên: `bắt buộc`
+### YC-004 — d
+- Ưu tiên: `nên có`
+### YC-005 — e
+- Ưu tiên: `bắt buộc`
+### YC-006 — f
+- Ưu tiên: `bắt buộc`
+EOF
+# Thứ tự trong file cố tình ngược với thứ tự phải giải quyết.
+cat > "$LQ/open-questions.md" <<'EOF'
+# Điểm mù
+
+## YC-001 — không chặn
+- **Chỗ chưa rõ:** hỏi 1
+- **Mức chặn:** `không chặn`
+- **Trạng thái:** `mở`
+
+## YC-002 — chặn review, bắt buộc, không task
+- **Mức chặn:** `chặn review`
+- **Trạng thái:** `mở`
+
+## YC-003 — chặn review, bắt buộc, 2 task
+- **Mức chặn:** `chặn review`
+- **Trạng thái:** `mở`
+
+## YC-004 — chặn, nên có
+- **Mức chặn:** `chặn`
+- **Trạng thái:** `mở`
+
+## YC-005 — chặn, bắt buộc
+- **Hỏi ai:** PO
+- **Mức chặn:** `chặn`
+- **Trạng thái:** `mở`
+
+## YC-006 — đã trả lời
+- **Mức chặn:** `chặn`
+- **Trạng thái:** `đã trả lời`
+- **Trả lời:** có
+EOF
+thu_tu() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \(YC-[0-9]*\).*/\1/p' | tr '\n' ' '; }
+ky_vong 1 "còn điểm mù \"chặn\" mở → ĐANG CHẶN" sh "$CHK" "$LQ"
+dung "xếp: chặn → chặn review → không chặn; bắt buộc trước nên có" bang "$(thu_tu)" "YC-005 YC-004 YC-002 YC-003 YC-001 "
+printf '### T-01\n- Đứng trên giả định tạm: **có** — `open-questions.md` § YC-003\n### T-02\n- Đứng trên giả định tạm: **có** — § YC-003\n' > "$LQ/plan.md"
+dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định hơn thì trước" bang "$(thu_tu)" "YC-005 YC-004 YC-003 YC-002 YC-001 "
+dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task đứng trên giả định: 2 (T-01 T-02)'"
+dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
+dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-005.*ĐANG CHẶN /implement'"
+dung "khối Kết quả: [x] CÓ ĐIỂM MÙ ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ ĐIỂM MÙ ĐANG CHẶN'"
+thay "$LQ/open-questions.md" '`chặn`
+- **Trạng thái:** `mở`' '`không chặn`
+- **Trạng thái:** `mở`'
+ky_vong 3 "chỉ còn chặn review (chưa tới review) + không chặn → chưa chặn" sh "$CHK" "$LQ"
+: > "$LQ/ket-qua-kiem-thu.md"
+ky_vong 1 "…tới review thì chặn review thành ĐANG CHẶN" sh "$CHK" "$LQ"
+rm -f "$LQ/ket-qua-kiem-thu.md"
+thay "$LQ/open-questions.md" '`chặn review`' '`toàn bộ thiết kế`'
+ky_vong 1 "mức thiếu/sai (nhãn cũ) → CHƯA PHÂN MỨC, đang chặn spec" sh "$CHK" "$LQ"
+dung "…xếp lên đầu" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -A1 '^\[CHƯA PHÂN MỨC\]' | grep -q '1\. YC-00'"
+printf '# Điểm mù\n\nKhông có điểm mù.\n' > "$LQ/open-questions.md"
+ky_vong 0 "không còn điểm mù mở" sh "$CHK" "$LQ"
+: > "$LQ/open-questions.md"
+ky_vong 0 "open-questions.md 0 byte không làm đọc lệch file" sh "$CHK" "$LQ"
+rm -f "$LQ/open-questions.md"
+ky_vong 2 "thiếu open-questions.md → THIẾU ĐẦU VÀO" sh "$CHK" "$LQ"
+tao_fixture
+ky_vong 3 "fixture: chỉ có điểm mù không chặn" sh "$CHK" "$F"
+
 # ---------------------------------------------------------------- based_on
 echo ""
 echo "cap-nhat-based-on.sh"
@@ -678,13 +790,17 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/intake.md commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
-         commands/import.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
+         commands/import.md commands/open-questions.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 [ -f "$O/.claude/commands/ship.md" ] && du=0
 dung "sinh đúng bộ file, bỏ qua phase chưa hiện thực" test "$du" = 1
 dung "command có bước xác định feature" grep -q 'xac-dinh-feature.sh \$ARGUMENTS' "$O/.claude/commands/design.md"
 dung "command design gọi checker LLM" grep -q 'soat-thiet-ke' "$O/.claude/commands/design.md"
+dung "lệnh /open-questions có bước xác định feature + chạy liet-ke-cau-hoi.sh" sh -c \
+  "grep -q 'xac-dinh-feature.sh \$ARGUMENTS' '$O/.claude/commands/open-questions.md' && grep -q 'liet-ke-cau-hoi.sh' '$O/.claude/commands/open-questions.md'"
+dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"
+dung "skill liệt kê lệnh tiện ích" grep -q '/open-questions' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 
 printf '# tôi tự viết\n' > "$O/.claude/commands/spec.md"
 ky_vong 3 "từ chối ghi đè file người viết tay" sh "$BUILD" --out "$O"
@@ -726,6 +842,14 @@ tao_fake
 thay "$FAKE/workflow/phases/00-intake.md" 'arguments: input' 'arguments: gi-cung-duoc'
 ky_vong 4 "từ chối build khi arguments không phải \"input\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5"
 
+tao_fake
+rm -f "$FAKE/workflow/open-questions.md"
+ky_vong 4 "từ chối build khi mục commands: trỏ tới file không tồn tại" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out6"
+
+tao_fake
+thay "$FAKE/workflow/import.md" 'arguments: mixed' 'arguments: input'
+ky_vong 4 "từ chối build khi lệnh tiện ích khai arguments khác \"mixed\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7"
+
 # ---------------------------------------------------------------- cai dat
 echo ""
 echo "tools/cai-dat.sh"
@@ -735,7 +859,7 @@ git -C "$R4" checkout -q -b main
 ky_vong 0 "cài vào repo đích thành công" sh "$T/cai-dat.sh" "$R4" --lenh-kiem-thu "true"
 QT4="$R4/.agent-workflow/.quy-trinh"
 dung "chép bộ cài, checker LLM, công cụ và ghi cấu hình" sh -c \
-  "[ -f '$QT4/tools/kiem-tra-thiet-ke.sh' ] && [ -f '$QT4/tools/lib/kiem-cheo.sh' ] && [ -f '$QT4/checkers/thiet-ke.md' ] && [ -f '$QT4/tools/xac-dinh-feature.sh' ] && grep -q 'LENH_KIEM_THU=\"true\"' '$QT4/cau-hinh.sh'"
+  "[ -f '$QT4/tools/kiem-tra-thiet-ke.sh' ] && [ -f '$QT4/tools/lib/kiem-cheo.sh' ] && [ -f '$QT4/checkers/thiet-ke.md' ] && [ -f '$QT4/tools/xac-dinh-feature.sh' ] && [ -f '$QT4/tools/liet-ke-cau-hoi.sh' ] && grep -q 'LENH_KIEM_THU=\"true\"' '$QT4/cau-hinh.sh'"
 dung "tạo conventions.md từ mẫu" grep -q '^mau_branch:' "$R4/.agent-workflow/conventions.md"
 
 printf 'LENH_KIEM_THU="npm test"\n' > "$QT4/cau-hinh.sh"
@@ -901,7 +1025,6 @@ mkdir -p "$R4/docs"; printf 'x\n' > "$R4/docs/a.md"
 # ra <tham-số...> -> stdout của script (bỏ stderr); ma <tham-số...> -> mã thoát
 ra() { sh "$PL" "$@" 2>/dev/null; }
 loi() { sh "$PL" "$@" 2>&1 >/dev/null; }
-bang() { test "$1" = "$2"; }
 BT='`'
 
 ky_vong 0 "mã Jira + file có thật → nguồn" sh "$PL" "ABC-123 docs/a.md"
@@ -1162,6 +1285,10 @@ ky_vong 1 "chore chạy design thì bị chặn" sh "$T/kiem-tra-thiet-ke.sh" "$
 
 thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
 ky_vong 1 "chore: plan chặn khi người chưa duyệt spec" sh "$T/kiem-tra-ke-hoach.sh" "$F"
+viet_spec; ghi_based_on
+
+thay "$F/open-questions.md" '`không chặn`' '`chặn`'
+ky_vong 1 "chore: điểm mù \"chặn\" còn mở thì plan chặn (chore không có design)" sh "$T/kiem-tra-ke-hoach.sh" "$F"
 viet_spec; ghi_based_on
 
 printf 'moi\n' > "$R/src/a.txt"

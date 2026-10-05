@@ -15,7 +15,7 @@ exit_machine:
   - sh tools/kiem-tra-truy-vet.sh
 exit_human:
   - Chủ repo duyệt danh sách yêu cầu và phần "Ngoài phạm vi"
-  - Chủ repo duyệt nhãn "Mức ảnh hưởng" của từng [CẦN-HỎI]
+  - Chủ repo duyệt nhãn "Mức chặn" của từng [CẦN-HỎI] (chặn | chặn review | không chặn)
   - Chủ repo duyệt "Mức rủi ro" (cao → design chạy Mode 2, người phác D-xx trước)
   - Duyệt xong, chủ repo tự đổi "Trạng thái spec" sang "đã duyệt" — design (chore thì plan) chặn tới lúc đó
 needs_clean_context: true
@@ -94,7 +94,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    | Lỗi & khôi phục | Hệ thống ngoài lỗi thì sao? Có cần thử lại, đảo ngược? |
 
    Nguồn có nói → thành YC như mọi YC khác. Việc **có đụng** tới nhóm đó mà
-   nguồn im lặng → `[CẦN-HỎI]` (thường `cục bộ`). Không đụng → bỏ qua, không
+   nguồn im lặng → `[CẦN-HỎI]` (thường `chặn review`). Không đụng → bỏ qua, không
    ghi gì. Không bịa con số NFR: số liệu phải từ nguồn hoặc từ câu trả lời.
 
 5. **Bối cảnh và thuật ngữ.** Ghi vai trò người dùng liên quan theo nguồn. Domain
@@ -107,12 +107,17 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    `open-questions.md` kèm:
    - **giả định tạm** đang dùng để đi tiếp;
    - *điều gì sẽ phải làm lại nếu giả định sai*;
-   - **Mức ảnh hưởng** do bạn đề xuất: `toàn bộ thiết kế` (sai thì cả thiết kế
-     đổi hướng) hoặc `cục bộ` (sai thì sửa vài chỗ). Người duyệt nhãn này.
+   - **Mức chặn** do bạn đề xuất — đúng một trong ba, chọn theo "nếu sai thì
+     phải làm lại gì". Người duyệt nhãn này.
 
-   Mặc định điểm mù **không chặn** — ưu tiên flow đi tiếp. Chỉ mục `toàn bộ
-   thiết kế` phải được trả lời (Trạng thái: `đã trả lời`) trước khi vào
-   `02-design`.
+     | Mức | Khi nào | Chặn gì |
+     |---|---|---|
+     | `chặn` | Sai thì cả thiết kế đổi hướng | `02-design` (chore: `03-plan`) và mọi phase sau, tới khi `đã trả lời` |
+     | `chặn review` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `04-implement` cảnh báo, `05-review` chặn |
+     | `không chặn` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; review ghi YC đó `chờ xác nhận` |
+
+   Ưu tiên flow đi tiếp: chỉ mục `chặn` dừng flow ngay. Lệnh `open-questions`
+   liệt kê các mục còn mở theo thứ tự phải chốt trước và dẫn người trả lời.
 
 8. **Rà mâu thuẫn.** Đối chiếu các nguồn với nhau. Mâu thuẫn giữa BRD và ticket
    là chuyện thường; phát hiện ở đây rẻ hơn phát hiện lúc đang code rất nhiều.
@@ -136,6 +141,9 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 
 12. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
     phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
+    Ngoại lệ duy nhất: lệnh `open-questions` sửa một YC theo câu trả lời mà
+    người vừa xác nhận trong hội thoại — giữ nguyên trạng thái, người không phải
+    sửa tay lại.
 
 13. **Ghi dấu đầu vào:** `sh tools/cap-nhat-based-on.sh <thư-mục-feature> spec.md intake.md`.
     `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì
@@ -161,7 +169,7 @@ Checker chặn nếu hai file lệch nhau.
   việc của `02-design`.
 - Tự chọn một cách hiểu cho chỗ mơ hồ rồi đi tiếp mà không ghi `[CẦN-HỎI]`.
 - Gắn `[SUY-RA]` cho một quyết định nghiệp vụ để né việc phải hỏi.
-- Hạ `Mức rủi ro` hoặc `Mức ảnh hưởng` xuống để khỏi bị chặn.
+- Hạ `Mức rủi ro` hoặc `Mức chặn` xuống để khỏi bị chặn.
 - Ghi `Ưu tiên: nên có` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
 - Tự phân xử mâu thuẫn giữa các nguồn ("chọn bên an toàn hơn").
 - **Tự đổi `Trạng thái spec` sang `đã duyệt`.** Chỉ người làm việc này.
@@ -172,7 +180,7 @@ Checker chặn nếu hai file lệch nhau.
 **Máy:**
 - `sh tools/kiem-tra-truy-vet.sh` ra `[x] ĐẠT` — mọi YC có đúng một nhãn nguồn hợp
   lệ, `Ưu tiên` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[CẦN-HỎI]` có mục
-  trong `open-questions.md` với giả định tạm và mức ảnh hưởng; trạng thái hai
+  trong `open-questions.md` với giả định tạm và mức chặn hợp lệ; trạng thái hai
   file khớp nhau; spec có `Mức rủi ro` và `Trạng thái spec` hợp lệ; có đủ các mục
   "Ràng buộc & phụ thuộc", "Ngoài phạm vi", "Mâu thuẫn giữa các nguồn" với nội
   dung thật; mỗi mâu thuẫn trỏ tới điểm mù hoặc nguồn đã chốt.
@@ -180,8 +188,9 @@ Checker chặn nếu hai file lệch nhau.
 **Người:**
 - Duyệt yêu cầu và "Ngoài phạm vi" — chỗ hiểu lệch nhau nhiều nhất, máy không
   kiểm thay được.
-- Duyệt nhãn `Mức ảnh hưởng` và `Mức rủi ro` do agent đề xuất.
+- Duyệt nhãn `Mức chặn` và `Mức rủi ro` do agent đề xuất.
 - Đổi `Trạng thái spec` sang `đã duyệt`. `02-design` (chore: `03-plan`) chặn
   cho tới lúc đó — gate người để lại dấu vết trong file, như D-xx.
 
-Mục `[CẦN-HỎI]` còn mở không được để `05-review` kết luận "đạt" cho YC đó.
+Mục `[CẦN-HỎI]` còn mở không được để `05-review` kết luận "đạt" cho YC đó; mục
+`chặn` hoặc `chặn review` còn mở thì `05-review` chặn hẳn.

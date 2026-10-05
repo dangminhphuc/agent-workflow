@@ -22,6 +22,15 @@
 - Phase 01 có bước rà NFR theo nhóm, mục tuỳ chọn `## Thuật ngữ`, vai trò người
   dùng trong Bối cảnh. Plan cảnh báo khi hoãn YC `bắt buộc`.
 
+## Đã làm (2026-10-04)
+
+- Điểm mù có đúng ba `Mức chặn: chặn | chặn review | không chặn` (thay cho
+  `Mức ảnh hưởng: toàn bộ thiết kế | cục bộ`; checker chặn nhãn cũ kèm hướng dẫn
+  đổi). Chore: mức `chặn` chặn `plan` — trước đây chore không có cổng nào cho nó.
+- Lệnh tiện ích `/open-questions` + `tools/liet-ke-cau-hoi.sh`: liệt kê điểm mù
+  theo thứ tự phải chốt, agent dẫn người trả lời từng mục. Manifest đổi `import:`
+  thành danh sách `commands:`.
+
 ## Còn lại
 
 ### 4. Lưu câu trích nguyên văn cho mỗi YC — cần chốt định dạng trước

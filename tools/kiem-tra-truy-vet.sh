@@ -58,7 +58,8 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "mở"
     }
     if (cur_oq != "" && $0 ~ /Giả định tạm/) co_gia_dinh[cur_oq] = 1
-    if (cur_oq != "" && $0 ~ /Mức ảnh hưởng[^:]*:/) muc_ah[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*Mức chặn[^:]*:/) muc_ch[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*Mức ảnh hưởng[^:]*:/) muc_cu[cur_oq] = gia_tri($0)
     if (cur_oq != "" && $0 ~ /Trạng thái[^:]*:/)    tt_oq[cur_oq] = gia_tri($0)
     if (cur_oq != "" && $0 ~ /Trả lời[^:]*:/) { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) tra_loi[cur_oq] = 1 }
     next
@@ -156,7 +157,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
   END {
     hop_le["CONFLUENCE"]=1; hop_le["JIRA"]=1; hop_le["FILE"]=1
     hop_le["SUY-RA"]=1;     hop_le["CẦN-HỎI"]=1
-    ah_hop_le["toàn bộ thiết kế"]=1; ah_hop_le["cục bộ"]=1
+    mc_hop_le["chặn"]=1; mc_hop_le["chặn review"]=1; mc_hop_le["không chặn"]=1
 
     if (!co_rui_ro)
       loi("spec.md thiếu dòng \"Mức rủi ro:\" (cao | thường). `design` cần nó để biết có phải chạy Mode 2.")
@@ -215,11 +216,14 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
         else if (!(c in co_gia_dinh))
           loi(c ": mục trong open-questions.md thiếu dòng \"Giả định tạm\". " \
               "Không có giả định tạm thì phase sau không đi tiếp được.")
-        else if (!(c in muc_ah))
-          loi(c ": mục trong open-questions.md thiếu dòng \"Mức ảnh hưởng:\" " \
-              "(toàn bộ thiết kế | cục bộ).")
-        else if (!(muc_ah[c] in ah_hop_le))
-          loi(c ": \"Mức ảnh hưởng: " muc_ah[c] "\" không hợp lệ. Chỉ chấp nhận: toàn bộ thiết kế | cục bộ")
+        else if (!(c in muc_ch) && (c in muc_cu))
+          loi(c ": \"Mức ảnh hưởng\" đã đổi thành \"Mức chặn: chặn | chặn review | không chặn\". " \
+              "\"toàn bộ thiết kế\" → chặn; \"cục bộ\" → NGƯỜI chọn chặn review hoặc không chặn.")
+        else if (!(c in muc_ch))
+          loi(c ": mục trong open-questions.md thiếu dòng \"Mức chặn:\" " \
+              "(chặn | chặn review | không chặn).")
+        else if (!(muc_ch[c] in mc_hop_le))
+          loi(c ": \"Mức chặn: " muc_ch[c] "\" không hợp lệ. Chỉ chấp nhận: chặn | chặn review | không chặn")
       }
       dem_nhan[t]++
     }

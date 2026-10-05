@@ -365,3 +365,43 @@ kc_canh_bao_theo_loai() {
     refactor|perf) kc_test_cu_sua "$1" ;;
   esac
 }
+
+# ------------------------------------------------------------------ điểm mù
+# Ba mức chặn của một điểm mù ([CẦN-HỎI]) — người duyệt nhãn ở gate spec:
+#   chặn         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore: plan)
+#   chặn review  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
+#   không chặn   sai thì sửa nhỏ                 → giao được; review ghi YC đó "chờ xác nhận"
+
+MUC_CHAN_HOP_LE="chặn|chặn review|không chặn"
+
+# kc_diem_mu <thư-mục-feature> -> mỗi mục trong open-questions.md một dòng
+# "<mã>|<mức chặn>|<trạng thái>". Thiếu dòng Mức chặn thì mức rỗng.
+kc_diem_mu() {
+  [ -s "$1/open-questions.md" ] || return 0
+  awk '
+    function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+    { sub(/\r$/, "") }
+    /^##[ \t]+YC-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /YC-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "mở"; next }
+    /^##?[ \t]/ { if (q != "") print q "|" m "|" t; q = ""; next }
+    q != "" && /^[ \t]*-[ \t]*[*]*Mức chặn[^:]*:/  { m = gia_tri($0) }
+    q != "" && /^[ \t]*-[ \t]*[*]*Trạng thái[^:]*:/ { t = gia_tri($0) }
+    END { if (q != "") print q "|" m "|" t }
+  ' "$1/open-questions.md"
+}
+
+# kc_diem_mu_mo <thư-mục-feature> <mức...> -> điểm mù CÒN MỞ thuộc các mức đã cho.
+# Gọi với "chặn" làm cổng vào design (chore: plan); với "chặn" + "chặn review"
+# ở implement (cảnh báo) và review (chặn).
+kc_diem_mu_mo() {
+  _dm_d="$1"; shift
+  kc_diem_mu "$_dm_d" | while IFS='|' read -r _q _m _t; do
+    [ "$_t" = "đã trả lời" ] && continue
+    for _w in "$@"; do
+      [ "$_m" = "$_w" ] || continue
+      case "$_m" in
+        chặn) echo "$_q: điểm mù mức \"chặn\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh open-questions dẫn dắt việc này)" ;;
+        *)    echo "$_q: điểm mù mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh open-questions dẫn dắt việc này)" ;;
+      esac
+    done
+  done
+}

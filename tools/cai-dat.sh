@@ -88,7 +88,7 @@ cp "$ROOT"/workflow/templates/*.md  "$QT/templates/"
 cp "$ROOT"/workflow/checkers/*.md   "$QT/checkers/"
 cp "$ROOT"/tools/kiem-tra-*.sh "$ROOT"/tools/xac-dinh-feature.sh "$ROOT"/tools/cap-nhat-based-on.sh \
    "$ROOT"/tools/doi-ten-feature.sh "$ROOT"/tools/tao-worktree.sh "$ROOT"/tools/don-worktree.sh \
-   "$ROOT"/tools/phan-loai-input.sh "$ROOT"/tools/dong-bo.sh "$QT/tools/"
+   "$ROOT"/tools/phan-loai-input.sh "$ROOT"/tools/dong-bo.sh "$ROOT"/tools/liet-ke-cau-hoi.sh "$QT/tools/"
 cp "$ROOT"/tools/lib/*.sh           "$QT/tools/lib/"
 chmod +x "$QT"/tools/*.sh 2>/dev/null || true
 echo "  chép    $ART/.quy-trinh/{rules,templates,checkers,tools}"
@@ -198,4 +198,5 @@ echo "  $n. Mở Claude Code ở checkout chính (đứng ở nhánh gốc), ch�
 echo ""
 echo "  Chuỗi phase: /intake → /spec → /design → /plan → /implement → /review"
 echo "  Tài liệu làm bằng tool khác: /import <file> <spec.md|tdd.md|plan.md>"
+echo "  Điểm mù còn mở đang chặn phase: /open-questions — liệt kê theo thứ tự phải chốt, dẫn bạn trả lời từng mục"
 echo "  Cập nhật khi repo agent-workflow có bản mới: sh $ART/.quy-trinh/tools/dong-bo.sh"

@@ -37,8 +37,9 @@ duyệt.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
 
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
-`kiem-tra-truy-vet.sh` và có `Trạng thái spec: đã duyệt` — cổng duyệt spec vốn
-nằm ở design), và task không có `Dựa trên: D-xx`.
+`kiem-tra-truy-vet.sh`, có `Trạng thái spec: đã duyệt` và không còn điểm mù
+`Mức chặn: chặn` đang mở — các cổng này vốn nằm ở design), và task không có
+`Dựa trên: D-xx`.
 
 ## Việc phải làm
 

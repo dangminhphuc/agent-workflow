@@ -5,7 +5,8 @@
 #
 # Sinh ra trong repo dich:
 #   .claude/commands/<id>.md            slash command cho tung phase
-#   .claude/commands/import.md          lenh import artifact tu ngoai
+#   .claude/commands/<id>.md            lenh tien ich (commands: trong manifest) —
+#                                       import, open-questions
 #   .claude/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
 #   .claude/agents/soat-<checker>.md    subagent cho tung checker LLM
 #   .claude/skills/quy-trinh-agent/SKILL.md
@@ -70,7 +71,6 @@ DA_SINH="${TMPDIR:-/tmp}/.aw_da_sinh.$$"
 MANIFEST="$ROOT/workflow.yaml"
 man_scalar() { awk -v k="$1" '{ sub(/\r$/, "") } $0 ~ "^" k ":" { sub("^" k ":[ \t]*", ""); print; exit }' "$MANIFEST"; }
 ART=$(man_scalar artifact_dir)
-IMPORT=$(man_scalar import)
 QT="$ART/.quy-trinh"
 FD='<thư-mục-feature>'
 
@@ -339,29 +339,51 @@ for lc in $CHECKERS; do
   } | ghi_file "$OUT/.claude/agents/$ten.md"
 done
 
-# ---------- lenh import ----------
-if [ -n "$IMPORT" ]; then
-  [ -f "$ROOT/$IMPORT" ] || { echo "LỖI: workflow.yaml khai import \"$IMPORT\" nhưng không có file đó." >&2; exit 4; }
-  kiem_tra_ghi_de "$OUT/.claude/commands/import.md"
+# ---------- lenh tien ich (commands: trong manifest) ----------
+# Khong phai phase: khong co hop dong vao/ra, chi co buoc xac dinh feature + than.
+# arguments: (bo trong) = tham so la ten feature; mixed = con tham so khac, ten
+# feature (neu co) nam lan trong do — agent tach ra.
+CMD_LIST="${TMPDIR:-/tmp}/.wf_cmds.$$"
+kq_don 'rm -f "$PH_LIST" "$DA_SINH" "$CMD_LIST"'
+wf_commands "$MANIFEST" > "$CMD_LIST"
+while IFS='|' read -r cid cfile; do
+  [ -n "$cid" ] || continue
+  csrc="$ROOT/$cfile"
+  [ -f "$csrc" ] || { echo "LỖI: workflow.yaml khai lệnh \"$cid\" → \"$cfile\" nhưng không có file đó." >&2; exit 4; }
+  cargs=$(fm_scalar "$csrc" arguments)
+  case "$cargs" in
+    ""|mixed) ;;
+    *) echo "LỖI: $cfile khai arguments \"$cargs\" — lệnh tiện ích chỉ nhận \"mixed\" (bỏ trống = tên feature)." >&2; exit 4 ;;
+  esac
+  kiem_tra_ghi_de "$OUT/.claude/commands/$cid.md"
   {
     printf -- '---\n'
-    printf 'description: %s — %s\n' "$(fm_scalar "$ROOT/$IMPORT" name)" "$(fm_scalar "$ROOT/$IMPORT" summary)"
-    printf 'argument-hint: <file-nguồn> <spec.md|tdd.md|plan.md> [tên-feature]\n'
+    printf 'description: %s — %s\n' "$(fm_scalar "$csrc" name)" "$(fm_scalar "$csrc" summary)"
+    _h=$(fm_scalar "$csrc" argument_hint)
+    printf 'argument-hint: %s\n' "${_h:-[tên-feature]}"
     printf -- '---\n\n'
-    canh_bao "$IMPORT"
-    printf 'Tham số: `$ARGUMENTS`\n\n'
-    buoc_xac_dinh_feature '<tên-feature nếu người dùng truyền>'
+    canh_bao "$cfile"
+    if [ "$cargs" = "mixed" ]; then
+      printf 'Tham số: `$ARGUMENTS`\n\n'
+      buoc_xac_dinh_feature '<tên-feature nếu người dùng truyền>'
+    else
+      buoc_xac_dinh_feature '$ARGUMENTS'
+    fi
+    printf '### Đọc trước khi làm\n\n'
+    printf -- '- `%s/rules/nguyen-tac-chung.md`\n' "$QT"
+    printf -- '- `%s/rules/truy-vet-nguon.md`\n' "$QT"
+    printf -- '- `%s/conventions.md`\n\n' "$ART"
     printf -- '---\n'
-    md_body "$ROOT/$IMPORT"
-  } | ghi_file "$OUT/.claude/commands/import.md"
-fi
+    md_body "$csrc"
+  } | ghi_file "$OUT/.claude/commands/$cid.md"
+done < "$CMD_LIST"
 
 # ---------- skill tong ----------
 kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
 {
   printf -- '---\n'
   printf 'name: quy-trinh-agent\n'
-  printf 'description: Quy trình phát triển dựa trên AI agent của repo này. Dùng khi bắt đầu một tính năng mới, khi viết đặc tả từ BRD/PRD hoặc ticket Jira/Confluence, khi thiết kế kỹ thuật, khi lập kế hoạch, khi hiện thực theo kế hoạch, khi rà soát thay đổi, khi đưa tài liệu từ tool khác vào quy trình, hoặc khi được hỏi quy trình làm việc của repo này là gì.\n'
+  printf 'description: Quy trình phát triển dựa trên AI agent của repo này. Dùng khi bắt đầu một tính năng mới, khi viết đặc tả từ BRD/PRD hoặc ticket Jira/Confluence, khi thiết kế kỹ thuật, khi lập kế hoạch, khi hiện thực theo kế hoạch, khi rà soát thay đổi, khi đưa tài liệu từ tool khác vào quy trình, khi cần chốt điểm mù (open questions) đang chặn phase, hoặc khi được hỏi quy trình làm việc của repo này là gì.\n'
   printf -- '---\n\n'
   printf '# Quy trình phát triển dựa trên AI agent\n\n'
   canh_bao "workflow.yaml"
@@ -381,7 +403,13 @@ kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
     if [ "$req" = "true" ]; then bb="có"; else bb="không"; fi
     printf '| `/%s` | %s | %s | %s |\n' "$id" "$nm" "${oo:-—}" "$bb"
   done < "$PH_LIST"
-  [ -n "$IMPORT" ] && printf '| `/import` | Đưa artifact từ tool khác vào (không phải phase) | spec.md / tdd.md / plan.md | — |\n'
+  if [ -s "$CMD_LIST" ]; then
+    printf '\n## Lệnh tiện ích (không phải phase)\n\n'
+    while IFS='|' read -r cid cfile; do
+      [ -n "$cid" ] || continue
+      printf -- '- `/%s` — %s\n' "$cid" "$(fm_scalar "$ROOT/$cfile" summary)"
+    done < "$CMD_LIST"
+  fi
   printf '\n## Luật không được vi phạm\n\n'
   printf '1. **Bàn giao bằng file.** Phase không được nhận đầu vào từ hội thoại phía trên.\n'
   printf '2. **Không tự tuyên bố đạt** với điều kiện ra loại MÁY — phải chạy lệnh và dán kết quả thật.\n'
