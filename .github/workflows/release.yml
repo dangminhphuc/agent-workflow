@@ -1,0 +1,46 @@
+# Phát hành engine khi push tag vX.Y.Z.
+#
+# Gắn vào GitHub Release: agent-workflow-X.Y.Z.tar.gz, aw (wrapper), SHA256SUMS.
+# Wrapper `aw` tải đúng các file này (mặc định từ releases/download/vX.Y.Z/).
+# Tarball tự sinh của GitHub (archive/refs/tags/...) KHÔNG dùng: GitHub không
+# hứa giữ nguyên byte của nó, checksum đã ghim có thể lệch.
+name: release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag khớp VERSION
+        run: |
+          v=$(tr -d ' \r\n' < VERSION)
+          [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME lệch VERSION ($v)"; exit 1; }
+
+      - name: Test
+        run: sh tools/chay-thu.sh
+
+      - name: Đóng gói
+        run: sh tools/dong-goi.sh dist "$GITHUB_REF_NAME"
+
+      - name: Ghi chú phát hành từ CHANGELOG.md
+        run: |
+          v=${GITHUB_REF_NAME#v}
+          awk -v v="$v" '
+            index($0, "## [" v "]") == 1 { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > dist-notes.md
+          [ -s dist-notes.md ] || { echo "CHANGELOG.md thiếu mục [$v]"; exit 1; }
+
+      - name: Tạo release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file dist-notes.md

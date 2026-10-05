@@ -1355,6 +1355,34 @@ dung "checker thiếu file → [x] THIẾU ĐẦU VÀO" sh -c "sh '$T/kiem-tra-k
 dung "xac-dinh-feature ở checkout chính → [x] ĐANG Ở CHECKOUT CHÍNH" sh -c "sh '$XD' 2>&1 | grep -q '\[x\] ĐANG Ở CHECKOUT CHÍNH'"
 dung "…stdout không lẫn khối Kết quả" sh -c "! sh '$XD' 2>/dev/null | grep -q 'Kết quả'"
 
+# ---------------------------------------------------------------- dong goi (phat hanh)
+echo ""
+echo "tools/dong-goi.sh"
+# tao_nguon <thư-mục> <X.Y.Z> — chép repo này (cả thay đổi chưa commit) thành một
+# repo git riêng mang version <X.Y.Z>. Dùng làm "bản phát hành" giả.
+tao_nguon() {
+  rm -rf "$1"; mkdir -p "$1"
+  (cd "$ROOT" && tar cf - --exclude=.git .) | (cd "$1" && tar xf -)
+  printf '%s\n' "$2" > "$1/VERSION"
+  [ -f "$1/bin/aw" ] && thay "$1/bin/aw" "AW_WRAPPER_VERSION=\"$(cat "$ROOT/VERSION")\"" "AW_WRAPPER_VERSION=\"$2\""
+  git -C "$1" init -q; git -C "$1" checkout -q -b main
+  git -C "$1" add -A; git -C "$1" -c user.name=t -c user.email=t@t commit -q -m "v$2"
+}
+NG="$TMP/nguon-goi"; tao_nguon "$NG" 9.9.1
+ky_vong 0 "đóng gói bản đúng" sh "$NG/tools/dong-goi.sh" "$TMP/goi1"
+dung "ra tarball đúng tên + SHA256SUMS khớp" sh -c "cd '$TMP/goi1' && [ -f agent-workflow-9.9.1.tar.gz ] && sha256sum -c SHA256SUMS >/dev/null 2>&1"
+dung "tarball có thư mục gốc agent-workflow-9.9.1/ và VERSION" sh -c "gzip -dc '$TMP/goi1/agent-workflow-9.9.1.tar.gz' | tar tf - | grep -qx 'agent-workflow-9.9.1/VERSION'"
+sh "$NG/tools/dong-goi.sh" "$TMP/goi2" >/dev/null 2>&1
+dung "đóng gói lại cùng commit → cùng checksum" cmp -s "$TMP/goi1/SHA256SUMS" "$TMP/goi2/SHA256SUMS"
+printf 'chua commit\n' > "$NG/chua-commit.txt"
+sh "$NG/tools/dong-goi.sh" "$TMP/goi3" >/dev/null 2>&1
+dung "file chưa commit không lọt vào gói" sh -c "! gzip -dc '$TMP/goi3/agent-workflow-9.9.1.tar.gz' | tar tf - | grep -q chua-commit"
+printf 'v2\n' > "$NG/VERSION"; git -C "$NG" -c user.name=t -c user.email=t@t commit -qam sai
+ky_vong 4 "VERSION sai dạng X.Y.Z → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4"
+ky_vong 2 "ref không tồn tại → sai tham số" sh "$NG/tools/dong-goi.sh" "$TMP/goi5" khong-co
+dung "VERSION của repo là X.Y.Z" sh -c "grep -Eqx '[0-9]+\.[0-9]+\.[0-9]+' '$ROOT/VERSION'"
+dung "CHANGELOG.md có mục cho VERSION" grep -qF "## [$(cat "$ROOT/VERSION")]" "$ROOT/CHANGELOG.md"
+
 # ---------------------------------------------------------------- tong ket
 echo ""
 echo "─────────────────────────────────────────"
