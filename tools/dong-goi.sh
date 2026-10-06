@@ -4,13 +4,13 @@
 #   sh tools/dong-goi.sh <thư-mục-ra> [ref]      # ref mặc định: HEAD
 #
 # Ra trong <thư-mục-ra>:
-#   agent-workflow-<YYYY.MM.DD>.tar.gz   toàn bộ file đã commit ở <ref>, thư mục gốc agent-workflow-<YYYY.MM.DD>/
+#   agent-workflow-<YYYY.M.D>.tar.gz   toàn bộ file đã commit ở <ref>, thư mục gốc agent-workflow-<YYYY.M.D>/
 #   aw                              wrapper — người cài vào ~/.local/bin/aw
 #   SHA256SUMS                      sha256 của hai file trên (định dạng sha256sum)
 #
 # Lấy từ git (git archive), không lấy từ thư mục làm việc: file chưa commit
 # không lọt vào bản phát hành. gzip -n: không ghi tên file và giờ vào gói.
-# <YYYY.MM.DD> đọc từ VERSION ở <ref>; wrapper bin/aw phải cùng version.
+# <YYYY.M.D> đọc từ VERSION ở <ref>; wrapper bin/aw phải cùng version.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -21,14 +21,14 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 kq_khai dong-goi.sh \
   "0=ĐÃ ĐÓNG GÓI" \
   "2=SAI THAM SỐ HOẶC REF" \
-  "4=VERSION LỖI — VERSION sai dạng YYYY.MM.DD hoặc lệch với bin/aw"
+  "4=VERSION LỖI — VERSION sai dạng YYYY.M.D hoặc lệch với bin/aw"
 
 OUT="${1:-}"; REF="${2:-HEAD}"
 [ -n "$OUT" ] || { echo "Dùng: sh tools/dong-goi.sh <thư-mục-ra> [ref]" >&2; exit 2; }
 git -C "$ROOT" rev-parse --verify --quiet "$REF^{commit}" >/dev/null || { echo "LỖI: không có ref \"$REF\"." >&2; exit 2; }
 
 V=$(git -C "$ROOT" show "$REF:VERSION" 2>/dev/null | tr -d ' \r\n')
-ver_hop_le "$V" || { echo "LỖI: VERSION ở $REF là \"$V\" — phải là ngày phát hành YYYY.MM.DD (vd 2026.10.06)." >&2; exit 4; }
+ver_hop_le "$V" || { echo "LỖI: VERSION ở $REF là \"$V\" — phải là ngày phát hành YYYY.M.D (vd 2026.10.6)." >&2; exit 4; }
 CO_AW=""
 if git -C "$ROOT" cat-file -e "$REF:bin/aw" 2>/dev/null; then
   CO_AW=1

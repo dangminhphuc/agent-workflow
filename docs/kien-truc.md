@@ -158,25 +158,25 @@ Dọn worktree (`aw worktree remove`) không bao giờ `--force` hay `branch -D`
 worktree không mất commit; xoá branch dùng `git branch -d` để git tự từ chối khi
 chưa merge. Squash-merge git không nhận ra — script dừng, người tự quyết.
 
-## Engine có version, cài ngoài repo (từ 2026.10.06)
+## Engine có version, cài ngoài repo (từ 2026.10.6)
 
 Bộ cài cũ chép cả quy trình vào repo đích (`.agent-workflow/.quy-trinh/`) và bắt
-commit vào nhánh gốc, vì worktree chỉ có file đã commit. Ba lý do khiến bản 2026.10.06 đổi
+commit vào nhánh gốc, vì worktree chỉ có file đã commit. Ba lý do khiến bản 2026.10.6 đổi
 sang **engine có version + cấu hình cục bộ**:
 
 1. **Protected branch.** Repo thật có `main`, `develop`, `uat` không ai được tự
    commit hay merge. Bộ cài phải vào base trước mới tạo được worktree — tức là
    mỗi lần cài hay nâng cấp quy trình phải qua một PR vào nhánh được bảo vệ. Bản mới
    không ghi gì vào cây làm việc mà git theo dõi: engine nằm trong
-   `~/.agent-workflow/engine/<YYYY.MM.DD>/`, cấu hình nằm trong
+   `~/.agent-workflow/engine/<YYYY.M.D>/`, cấu hình nằm trong
    `$(git rev-parse --git-common-dir)/agent-workflow/` (dùng chung mọi worktree,
    không bao giờ vào commit), file sinh ra bị `.git/info/exclude`. Vì vậy **base
    tuỳ ý**: điều kiện "base phải có bộ cài" bị bỏ.
 2. **Version theo việc.** Với bộ cài cũ, đồng bộ bộ cài giữa chừng đổi luật của mọi
-   việc đang làm cùng lúc. Bản mới ghi `- **Engine:** YYYY.MM.DD` vào `intake.md` lúc tạo
+   việc đang làm cùng lúc. Bản mới ghi `- **Engine:** YYYY.M.D` vào `intake.md` lúc tạo
    worktree; mọi `aw check` của việc chạy đúng version đó. Không có version đó
    và không tải được thì báo `KHÔNG HỢP LỆ` — chạy tạm bằng version khác là
-   chấm một việc theo luật nó không được đặt ra. Luật so: khớp chính xác `YYYY.MM.DD`,
+   chấm một việc theo luật nó không được đặt ra. Luật so: khớp chính xác `YYYY.M.D`,
    không suy "tương thích" từ số phiên bản.
 3. **Độc lập với agent.** Luật cứng nằm trong checker của engine (mã thoát +
    nhãn `Kết quả`), gọi bằng `aw …` — lệnh shell agent nào cũng chạy được.
@@ -192,7 +192,7 @@ Các mảnh:
 | `tools/lib/moi-truong.sh` | Tool đọc đường dẫn repo và cấu hình **chỉ** từ biến môi trường; thiếu thì dừng. Không tool nào tự suy chúng từ vị trí của chính nó |
 | `checksums` trong cấu hình | sha256 ghim lần đầu tải (`aw init`/`aw upgrade`). Lần tải sau phải khớp sha đã ghim, không tin lại `SHA256SUMS` — `SHA256SUMS` cùng nguồn với tarball chỉ bắt được file hỏng, không bắt được nguồn bị tráo. Chia sẻ qua repo cấu hình của team (`aw init --from`) |
 
-Kênh tải mặc định là GitHub Release của repo này: file `agent-workflow-YYYY.MM.DD.tar.gz`
+Kênh tải mặc định là GitHub Release của repo này: file `agent-workflow-YYYY.M.D.tar.gz`
 do workflow `release` đóng gói và gắn vào — không dùng tarball GitHub tự sinh từ
 tag, vì byte của nó không được hứa giữ nguyên. `AW_MIRROR` đổi nguồn,
 `AW_ENGINE_DIR` dùng engine có sẵn cho máy không có mạng.
@@ -492,7 +492,7 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
 7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Trạng thái spec`
    trong `spec.md`). Máy phân biệt được `đề xuất` với
    `đã duyệt`, và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
-   dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được. Từ bản 2026.10.06
+   dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được. Từ bản 2026.10.6
    artifact không nằm trong git nên cũng không còn `git blame` hay diff PR để
    soi — chỉ người đọc lại file ở máy mới thấy. `Trạng thái spec` còn yếu
    hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `đề xuất` thì bản

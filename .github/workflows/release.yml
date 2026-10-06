@@ -1,15 +1,16 @@
-# Phát hành engine khi push tag YYYY.MM.DD.
+# Phát hành engine khi push tag YYYY.M.D.
 #
-# Gắn vào GitHub Release: agent-workflow-YYYY.MM.DD.tar.gz, aw (wrapper), SHA256SUMS.
-# Wrapper `aw` tải đúng các file này (mặc định từ releases/download/YYYY.MM.DD/).
+# Gắn vào GitHub Release: agent-workflow-YYYY.M.D.tar.gz, aw (wrapper), SHA256SUMS.
+# Wrapper `aw` tải đúng các file này (mặc định từ releases/download/YYYY.M.D/).
 # Tarball tự sinh của GitHub (archive/refs/tags/...) KHÔNG dùng: GitHub không
 # hứa giữ nguyên byte của nó, checksum đã ghim có thể lệch.
 name: release
 
 on:
   push:
-    # Tag = ngày phát hành YYYY.MM.DD, không có tiền tố "v"
-    tags: ['[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]']
+    # Tag = ngày phát hành YYYY.M.D, không có tiền tố "v"
+    # (lọc thô ở đây; luật đầy đủ: tools/lib/version.sh, kiểm khi đóng gói)
+    tags: ['[0-9][0-9][0-9][0-9].[0-9]+.[0-9]+']
 
 permissions:
   contents: write
