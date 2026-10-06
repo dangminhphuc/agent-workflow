@@ -41,7 +41,19 @@ jobs:
           ' CHANGELOG.md > dist-notes.md
           [ -s dist-notes.md ] || { echo "CHANGELOG.md thiếu mục [$v]"; exit 1; }
 
-      - name: Tạo release
+      # Tag có thể đến từ hai đường:
+      #   - git push tag            → chưa có release: tạo mới, ghi chú lấy từ CHANGELOG.md
+      #   - giao diện GitHub (Releases → Draft a new release → tag mới) → release
+      #     đã có: chỉ gắn file vào; ghi chú chỉ điền khi người để trống
+      - name: Tạo release hoặc gắn file vào release đã có
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file dist-notes.md
+        run: |
+          tag=$GITHUB_REF_NAME
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/* --clobber
+            body=$(gh release view "$tag" --json body --jq .body)
+            [ -n "$body" ] || gh release edit "$tag" --notes-file dist-notes.md
+          else
+            gh release create "$tag" dist/* --title "$tag" --notes-file dist-notes.md
+          fi
