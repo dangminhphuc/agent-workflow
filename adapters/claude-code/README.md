@@ -114,10 +114,13 @@ khi viết xong `tdd.md`. `aw check design` fail nếu chưa có
 ### 6. Câu hỏi lựa chọn
 
 Lệnh khai `choice_ui: true` (hiện có `clarify`) mô tả việc hỏi người bằng
-**câu hỏi lựa chọn** — luôn kèm ô tự nhập và lựa chọn "Chat về câu này". Adapter
-này dịch nó sang tool `AskUserQuestion` (ô "Other" của tool là ô tự nhập).
+**câu hỏi lựa chọn** — lựa chọn là phương án giải pháp agent đã phân tích, phương
+án đề xuất đứng đầu với nhãn bắt đầu bằng `(Đề xuất)`; người luôn có lối tự nhập
+và "Chat về câu này". Adapter này dịch nó sang tool `AskUserQuestion`: hai lối
+đó là ô "Type something" và "Chat about this" có sẵn của tool, nên không thêm
+vào `options` — để đủ chỗ cho phương án thật.
 Agent không có giao diện lựa chọn thì in lựa chọn đánh số kèm "hoặc gõ câu trả
-lời khác" — mô tả trung lập đã nói cách lùi này.
+lời khác / hỏi lại để trao đổi" — mô tả trung lập đã nói cách lùi này.
 
 Những gì **luôn** portable: file artifact trong `.agent-workflow/<tên-branch>/`,
 `conventions.md`, các mẫu (chép vào `.agent-workflow/.engine/`), và lệnh `aw check`. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm

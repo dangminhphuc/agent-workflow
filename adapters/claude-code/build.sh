@@ -60,13 +60,14 @@ DA_SINH="${TMPDIR:-/tmp}/.aw_da_sinh.$$"
 # tool AskUserQuestion cua Claude Code. O "Other" cua tool la lua chon tu nhap.
 cach_hoi_lua_chon() {
   printf '## Cách hỏi lựa chọn trong Claude Code\n\n'
-  printf 'Mỗi "câu hỏi lựa chọn" trong mô tả bên dưới là **một lần gọi tool `AskUserQuestion`** — một câu hỏi mỗi lần, `multiSelect: false`. Không in lựa chọn thành văn bản rồi bắt người gõ chữ cái.\n\n'
-  printf -- '- Ngữ cảnh ngắn (tài liệu nói gì, nếu sai, hỏi ai) viết thành văn bản **ngay trước** lần gọi, tối đa 4 dòng.\n'
+  printf 'Mỗi lượt hỏi trong mô tả bên dưới là **một lần gọi tool `AskUserQuestion`**, `multiSelect: false`. Một mục gói nhiều quyết định thì mỗi quyết định là một phần tử của `questions` trong **cùng** lần gọi (tối đa 4). Không in lựa chọn thành văn bản rồi bắt người gõ chữ cái.\n\n'
+  printf -- '- **Phân tích trước khi gọi** (mục "Nghĩ kỹ trước khi hỏi"): lựa chọn là phương án giải pháp thật, không phải thủ tục.\n'
+  printf -- '- Ngữ cảnh ngắn (nguồn nói gì, vì sao đề xuất) viết thành văn bản **ngay trước** lần gọi, tối đa 4 dòng.\n'
   printf -- '- `question`: câu hỏi, một câu, kết thúc bằng dấu `?`.\n'
   printf -- '- `header` (≤ 12 ký tự): mã và vị trí, vd `YC-001 1/8`.\n'
-  printf -- '- `options` (tối đa 4), theo thứ tự: giữ giả định tạm · cách hiểu khác (nếu nguồn có) · `Chưa trả lời được` · `Chat về câu này`. `description` của mỗi lựa chọn là hệ quả một dòng.\n'
-  printf -- '- **Không** thêm lựa chọn "Khác": Claude Code luôn tự thêm ô "Other" — đó chính là lựa chọn tự nhập. Câu trả lời trả về là nhãn được chọn, hoặc nguyên văn người gõ vào "Other".\n'
-  printf -- '- Chọn `Chat về câu này` thì trả lời bằng văn bản thường; khi người đã rõ, gọi lại `AskUserQuestion` cho đúng câu đó.\n\n'
+  printf -- '- `options` (tối đa 4), theo thứ tự mô tả bên dưới; phương án đề xuất đứng đầu, `label` **bắt đầu bằng** `(Đề xuất)`. `description` là hệ quả/đánh đổi một dòng.\n'
+  printf -- '- **Không** thêm lựa chọn "Khác" hay "Chat về câu này": Claude Code tự thêm ô "Type something" (lối tự nhập) và "Chat about this" (lối Chat về câu này). Câu trả lời trả về là nhãn được chọn, hoặc nguyên văn người gõ.\n'
+  printf -- '- Người chọn "Chat about this" thì trả lời bằng văn bản thường; khi người đã rõ, gọi lại `AskUserQuestion` cho đúng câu đó.\n\n'
 }
 
 ten_agent_checker() { printf 'soat-%s' "$(basename "$1" .md)"; }

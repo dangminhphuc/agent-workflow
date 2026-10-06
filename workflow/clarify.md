@@ -66,70 +66,124 @@ Người hỏi "cho xem hết" thì mới in danh sách (mã + tiêu đề + nh�
 
 ### 2. Hỏi từng mục bằng câu hỏi lựa chọn — MỘT mục mỗi lượt, theo thứ tự
 
-Mỗi mục là **một câu hỏi lựa chọn**, ngữ cảnh ngắn, chỉ đủ để chọn. Dòng đầu
-luôn: mã · nhóm · đang chặn gì · vị trí trong hàng đợi.
+#### Nghĩ kỹ trước khi hỏi — lựa chọn là phương án giải pháp, không phải thủ tục
 
-Mọi câu hỏi, mọi nguồn, **luôn** có:
-- lựa chọn **Chat về câu này** — người muốn hỏi lại, trao đổi trước khi chốt;
-- ô để người **tự nhập** câu trả lời khác.
+Người không phải tự nghĩ ra lời giải từ một câu hỏi trống. Trước mỗi mục, agent
+**tự phân tích kỹ** rồi mới đặt lựa chọn:
 
-Cách hiện lựa chọn tuỳ agent: có giao diện hỏi lựa chọn thì dùng nó; không có
-thì in các lựa chọn đánh số kèm dòng "hoặc gõ câu trả lời khác".
+1. **Đọc đủ:** đoạn nguồn liên quan, YC trong `spec.md`, phần `tdd.md` / `plan.md`
+   / code đã có đụng tới mục này, `conventions.md`. Phát hiện LLM: đọc đúng chỗ
+   `Vị trí`.
+2. **Tách quyết định:** mục gói nhiều quyết định độc lập (vd "trả gì khi ngoài
+   allowlist" **và** "route chưa khai thì sao") thì mỗi quyết định là **một câu
+   hỏi riêng**, hỏi chung trong lượt của mục đó (tối đa 4 câu).
+3. **Tìm phương án thật:** 2–3 phương án **khác nhau về hệ quả** — lấy từ nguồn,
+   từ chuẩn/thực hành phổ biến của loại hệ thống đó, từ ràng buộc của code
+   hiện có. Không chêm phương án yếu cho đủ số; chỉ có một phương án hợp lý
+   thì đưa một.
+4. **Đánh giá và chọn đề xuất:** so đánh đổi (an toàn, chi phí làm lại, ảnh hưởng
+   bên ngoài, khả năng đảo ngược). Phương án agent đề xuất đứng **đầu**, nhãn
+   **bắt đầu bằng `(Đề xuất)`**.
+
+Mỗi lựa chọn:
+- **Nhãn:** ngắn, nói đúng phương án. Phương án đề xuất: `(Đề xuất) <phương án>`.
+- **Mô tả:** hệ quả/đánh đổi một dòng. Phương án khác giả định tạm thì nói luôn
+  phải làm lại gì. Phương án lấy từ nguồn thì ghi nguồn (vd `theo Input 2 § 4`);
+  không ghi thì là agent đề xuất.
+- Phương án trùng **giả định tạm** đang dùng thì ghi rõ trong mô tả
+  ("đang dùng làm giả định tạm") — để người biết chọn nó là không phải làm lại gì.
+
+Ngữ cảnh viết **ngay trước** câu hỏi, tối đa 4 dòng: mã · nhóm · đang chặn gì ·
+vị trí trong hàng đợi; nguồn nói gì; **vì sao đề xuất** (1–2 dòng).
+
+Mọi câu hỏi, mọi nguồn, người **luôn** có hai lối ra ngoài các lựa chọn:
+- **tự nhập** câu trả lời khác;
+- **Chat về câu này** — hỏi lại, trao đổi trước khi chốt.
+
+Hai lối này **luôn hiện ở cuối** danh sách, sau các phương án, đúng hai dòng:
+
+```
+  N.   Type something.  — tự nhập câu trả lời khác
+  N+1. Chat about this.  — trao đổi thêm trước khi chốt
+```
+
+Giao diện lựa chọn có sẵn hai lối này (vd Claude Code) thì chúng tự hiện —
+**không** thêm trùng vào danh sách phương án (để đủ chỗ cho phương án thật).
+Không có giao diện lựa chọn thì agent tự in hai dòng đó, đánh số tiếp sau các
+phương án.
 
 #### 2a. Điểm mù
 
 ```
-YC-001 · CHẶN · đang chặn /design · 1/6
-Cơ chế ký là HMAC (secret chung) hay chữ ký bất đối xứng (public key)?
-  Tài liệu: Input 1 "Apply HMAC…"; Input 2 § 4 "Dùng cặp key…"
-  Nếu sai:  làm lại xác minh chữ ký + cấu hình key (kéo theo YC-002, YC-006)
-  Hỏi ai:   Security + SAP/MuleSoft
+YC-006 · CHẶN REVIEW · 5/9 · 2 quyết định
+Nguồn: Input 1 chỉ nói "chỉ client trong allowlist được gọi"; không nói mã lỗi, không nói route chưa khai.
+Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu quyền chứ không sai key;
+  từ chối mặc định để route mới không lọt ra ngoài khi quên khai.
+
+(1/2) Credential hợp lệ nhưng ngoài allowlist thì trả gì?
+  1. (Đề xuất) 403 problem+json, mã lỗi riêng — đang dùng làm giả định tạm
+  2. 404 — giấu route khỏi bên dò quét; đối tác khó debug
+  3. 403 không body chi tiết — đơn giản; đối tác phải hỏi support
+  4. Chưa trả lời được — soạn tin gửi chủ admin-portal; /review sẽ chặn
+  5. Type something.  — tự nhập câu trả lời khác
+  6. Chat about this.  — trao đổi thêm trước khi chốt
+
+(2/2) Route chưa có definition thì chặn hay cho qua?
+  1. (Đề xuất) Từ chối mặc định — đang dùng làm giả định tạm; route mới phải khai mới chạy
+  2. Cho qua + log cảnh báo — chuyển đổi êm; hở tới khi khai đủ
+  3. Từ chối ở prod, cho qua ở non-prod — hai môi trường hành xử khác nhau
+  4. Chưa trả lời được
+  5. Type something.  — tự nhập câu trả lời khác
+  6. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
-Lựa chọn, theo đúng thứ tự này:
+Lựa chọn, theo đúng thứ tự này (tối đa 4):
 
-1. **Giữ giả định tạm** — `<giả định>`; mô tả: hệ quả nếu chọn.
-2. **`<cách hiểu khác có trong nguồn>`** — chỉ khi nguồn thật sự có cách hiểu
-   khác. Tối đa **một** lựa chọn loại này; nguồn có nhiều hơn thì nêu các cách
-   còn lại trong ngữ cảnh, người chọn qua ô tự nhập. Không bịa cách hiểu mới để
-   cho đủ lựa chọn.
+1. **`(Đề xuất) <phương án>`**.
+2. Các phương án khác (1–2), phương án có trong nguồn trước.
 3. **Chưa trả lời được** — agent soạn tin nhắn gửi `<Hỏi ai>`.
-4. **Chat về câu này**.
 
 Ô tự nhập nhận cả "đổi mức chặn sang …" hay "bỏ qua".
 
 Mục `CHƯA PHÂN MỨC` (thiếu hoặc sai `Mức chặn`): câu hỏi đầu tiên của mục là
-chọn mức (`chặn` / `chặn review` / `không chặn`, gợi ý theo "Nếu sai") — checker
-của spec đang chặn vì nó. Xong mới hỏi câu trả lời.
+chọn mức (`chặn` / `chặn review` / `không chặn`), mức đề xuất theo "Nếu sai"
+đứng đầu với `(Đề xuất)` — checker của spec đang chặn vì nó. Xong mới hỏi câu
+trả lời.
 
 #### 2b. Phát hiện của checker LLM
-
-Trước khi hỏi, **đọc đúng chỗ `Vị trí` trong `tdd.md`** (hoặc artifact checker
-đó soát) để ngữ cảnh nói được phát hiện chạm vào dòng nào.
 
 ```
 PH-03 · CHẶN · đang chặn /plan · 3/6 · quyết định ngầm
 tdd.md § Contract API: chọn gRPC cho webhook nội bộ nhưng không nêu thành D-xx.
   Checker nói: khó đảo ngược (contract ngoài); người khác có thể chọn REST.
-  Nếu đồng ý: thêm D-xx mới (đề xuất: gRPC, phương án loại: REST) — bạn duyệt sau.
+  Vì sao đề xuất: hai service gọi tới đều đã có client gRPC (src/clients/*); đổi REST là thêm việc.
+
+Xử lý phát hiện PH-03 thế nào?
+  1. (Đề xuất) Nêu thành D-xx: giữ gRPC, phương án loại REST — bạn duyệt D sau
+  2. Đổi sang REST cho khớp contract hiện có — sửa § Contract + § Flow
+  3. Bác bỏ — nhập lý do ở ô tự nhập
+  4. Type something.  — tự nhập cách xử lý khác
+  5. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
-Lựa chọn, theo đúng thứ tự này:
+Lựa chọn, theo đúng thứ tự này (tối đa 4):
 
-1. **Đồng ý — sửa** — mô tả: agent sẽ sửa gì (một câu) để hết phát hiện.
-2. **Bác bỏ** — mô tả: "nhập lý do ở ô tự nhập". Người chọn mà không kèm lý do
-   thì hỏi lý do — bác bỏ không lý do là `aw check` chặn.
-3. **Chat về câu này**.
-
-Mục `Cảnh báo` thêm lựa chọn **Để sau** (giữ `chưa`, sang mục kế).
+1. **`(Đề xuất) <cách sửa>`** — mô tả: sửa gì, ở mục nào.
+2. Cách sửa khác (0–1) — khác hướng thật, không phải cùng cách viết khác đi.
+3. **Bác bỏ** — mô tả: "nhập lý do ở ô tự nhập". Agent thấy phát hiện sai thì
+   **đề xuất bác bỏ**: đưa `(Đề xuất) Bác bỏ — <lý do agent thấy>` lên đầu;
+   người vẫn phải chọn/nhập lý do. Người chọn bác bỏ mà không kèm lý do thì hỏi
+   lý do — bác bỏ không lý do là `aw check` chặn.
+4. Mục `Cảnh báo`: **Để sau** (giữ `chưa`, sang mục kế) — khi đó chỉ một cách sửa.
 
 #### Chung cho mọi mục
 
 - Hỏi xong thì **dừng chờ người**. Không hỏi mục kế khi mục này chưa xong.
 - **Chat về câu này:** trả lời câu hỏi của người, giải thích hệ quả từng lựa chọn,
   trích thêm nguồn nếu cần — **không ghi gì vào file**. Người nói đã rõ (hoặc
-  sau vài lượt trao đổi) thì hỏi lại đúng câu đó bằng lựa chọn. Trong lúc chat mà
-  người nói ra quyết định thì xác nhận lại bằng lựa chọn trước khi ghi.
+  sau vài lượt trao đổi) thì hỏi lại đúng câu đó bằng lựa chọn — sửa phương án
+  theo những gì vừa trao đổi. Trong lúc chat mà người nói ra quyết định thì xác
+  nhận lại bằng lựa chọn trước khi ghi.
 
 ### 3. Ghi lại theo quyết định
 
@@ -140,6 +194,10 @@ Mục `Cảnh báo` thêm lựa chọn **Để sau** (giữ `chưa`, sang mục 
 1. Trong `open-questions.md`: `Trả lời:` = **nguyên văn** lời người kèm ai trả
    lời và ngày (vd `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Trạng thái:`
    → `đã trả lời`. Người nói "đã hỏi PO, PO chốt…" thì ghi PO là người trả lời.
+   Người **chọn** một phương án thì nguyên văn là nhãn phương án (bỏ `(Đề xuất)`),
+   kèm `(chọn từ phương án agent đề xuất)` — vd `"403 problem+json, mã lỗi riêng"
+   — chủ repo, 2026-10-06 (chọn từ phương án agent đề xuất)`. Mục tách nhiều câu
+   hỏi thì ghi từng câu trả lời, mỗi câu một ý.
 2. Trong `spec.md`, đổi nhãn nguồn của YC: `[FILE]` open-questions.md § YC-NNN —
    hoặc nguồn người chỉ ra (`[JIRA]` comment, `[CONFLUENCE]` page mới hơn).
    Bỏ dòng `Giả định tạm` của YC đó.
@@ -207,6 +265,10 @@ rồi nói ngắn gọn:
   hoặc ghi `đã trả lời` / `đã sửa` / `bác bỏ` khi người chưa nói gì.
 - Ghi câu trả lời hay lý do bác bỏ đã diễn giải thay cho nguyên văn lời người.
 - Coi phương án agent đề xuất là quyết định khi người chưa chọn.
+- Hỏi khi chưa phân tích: đưa lựa chọn chỉ có "giữ giả định / chưa trả lời được"
+  trong khi có phương án thật; chêm phương án yếu cho đủ số; gộp nhiều quyết
+  định độc lập vào một câu hỏi.
+- Đặt `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc cho nhiều hơn một lựa chọn.
 - Tự hạ `Mức chặn`, hoặc tự đổi mức khi người chưa nói. Đổi `Mức` của phát hiện.
 - Đổi `Trạng thái spec` (cả `đề xuất` → `đã duyệt` lẫn ngược lại), hay ghi
   `đã duyệt` cho D-xx — lệnh này không đụng vào các dòng đó.
@@ -214,6 +276,6 @@ rồi nói ngắn gọn:
   phạm vi của mục đang xử lý.
 - Trình bày nhiều mục một lúc rồi bắt người trả lời gộp.
 - Dán nguyên danh sách của `aw pending` cho người khi người không yêu cầu.
-- Bỏ lựa chọn tự nhập hoặc "Chat về câu này" khỏi câu hỏi.
+- Làm mất lối tự nhập hoặc "Chat về câu này" (giao diện không có sẵn thì phải in ra).
 - Sửa `plan.md` hay code, hoặc chạy lại checker LLM để "làm sạch" phát hiện —
   việc của phase tương ứng; chỉ nói rõ cần chạy lại phase nào.
