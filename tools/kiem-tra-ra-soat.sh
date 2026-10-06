@@ -15,6 +15,9 @@
 #      thi khong con cho nao phia sau de bat lai.
 #   6. Luat theo loai viec (intake.md) — nhu implement; bugfix con phai co
 #      dong "Test tai hien do vi: ..." do nguoi ra soat viet.
+#   7. Quy tac rieng cua repo (moi khoa quy_tac_* trong conventions.md): file
+#      khai khong co / chua commit / khoa go nham; review.md thieu muc
+#      "## Quy tac repo" hoac thieu ket luan hop le cho mot file.
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
 # hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
@@ -27,6 +30,7 @@ kq_khai kiem-tra-ra-soat.sh \
   "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
   "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
+. "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
 DIR="${1:-.}"
@@ -64,6 +68,47 @@ if [ -n "$cb" ]; then
   done <<CB
 $cb
 CB
+fi
+
+# Quy tắc riêng của repo (mọi khoá quy_tac_*): file khai phải dùng được, và
+# review.md có kết luận cho TỪNG file — thiếu là người rà soát chưa đối chiếu.
+qtl=$( { kc_quy_tac_khoa_la "$DIR"; kc_quy_tac_loi "$DIR" review; } )
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<QT
+$qtl
+QT
+qt=$(kc_quy_tac "$DIR" review)
+if [ -n "$qt" ]; then
+  # Mục "## Quy tắc repo": mỗi dòng bảng -> "<file>\t<kết luận>\t<bằng chứng / lý do>"
+  bang_qt=$(awk '
+    function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+    { sub(/\r$/, "") }
+    /^##[ \t]+Quy tắc repo/ { trong = 1; co = 1; next }
+    /^##[ \t]/ { trong = 0 }
+    trong && /^[ \t]*\|/ {
+      n = split($0, c, "|"); f = trim(c[2]); gsub(/`/, "", f)
+      if (f == "" || f ~ /^:?-+:?$/ || f == "File") next
+      print f "\t" trim(c[3]) "\t" (n >= 5 ? trim(c[4]) : "")
+    }
+    END { if (!co) print "\tKHÔNG CÓ MỤC" }
+  ' "$REVIEW")
+  if printf '%s\n' "$bang_qt" | grep -q "	KHÔNG CÓ MỤC"; then
+    loi_truoc "review.md thiếu mục \"## Quy tắc repo\" — repo khai $(printf '%s\n' "$qt" | wc -l | tr -d ' ') file quy tắc (aw rules review); mỗi file một dòng kết luận"
+  else
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      dong=$(printf '%s\n' "$bang_qt" | awk -F '	' -v f="$f" '$1 == f { print; exit }')
+      kl=$(printf '%s' "$dong" | cut -f2); gc=$(printf '%s' "$dong" | cut -f3)
+      case "$kl" in
+        "") loi_truoc "quy tắc repo \"$f\": không có kết luận trong mục \"Quy tắc repo\" của review.md" ;;
+        "đạt") ;;
+        "vi phạm"|"không áp dụng")
+          case "$gc" in ""|"<"*">") loi_truoc "quy tắc repo \"$f\": kết luận \"$kl\" mà thiếu vị trí / lý do" ;; esac ;;
+        *) loi_truoc "quy tắc repo \"$f\": kết luận \"$kl\" không hợp lệ. Chỉ chấp nhận: đạt / vi phạm / không áp dụng" ;;
+      esac
+    done <<QT
+$qt
+QT
+  fi
 fi
 
 # Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.

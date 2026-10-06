@@ -6,7 +6,7 @@
 # một logic cho ra "cảnh báo" ở giữa flow và "chặn" ở review — hai nơi không
 # thể lệch nhau về việc thế nào là vi phạm.
 #
-# Yêu cầu: đã source tools/lib/md.sh.
+# Yêu cầu: đã source tools/lib/md.sh (và tools/lib/bang-lenh.sh nếu dùng kc_quy_tac_*).
 #
 # Thư mục feature có dạng <repo>/.agent-workflow/<tên-branch>. conventions.md và
 # config.sh nằm trong $AW_CONFIG (cấu hình của bản clone, wrapper aw truyền vào).
@@ -425,5 +425,69 @@ kc_diem_mu_mo() {
         *)    echo "$_q: điểm mù mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh clarify dẫn dắt việc này)" ;;
       esac
     done
+  done
+}
+
+# ------------------------------------------------------------------ quy tắc riêng của repo
+# Khoá quy_tac_<phase> trong conventions.md: danh sách file (tương đối với gốc
+# repo, cách nhau bằng dấu cách) mà phase đó phải đọc và tuân theo — hướng dẫn
+# viết code, skill của agent, chuẩn kiến trúc… Phase có khoá: BL_QUY_TAC
+# (tools/lib/bang-lenh.sh — người gọi source trước).
+#
+# Nội dung quy tắc do agent đọc; máy chỉ kiểm phần chính xác: file khai có thật,
+# đã commit (worktree mới chỉ có file đã commit), và review có kết luận cho từng file.
+
+# kc_quy_tac <thư-mục-feature> <phase> -> mỗi dòng một file, bỏ trùng, giữ thứ tự.
+# review = hợp MỌI khoá quy_tac_*: cổng cuối đối chiếu diff với mọi quy tắc.
+kc_quy_tac() {
+  awk -v ph="$2" '
+    { sub(/\r$/, "") }
+    /^```conventions[ \t]*$/ { inb = 1; next }
+    inb == 1 && /^```/ { exit }
+    inb == 1 && /^quy_tac_[a-z]+:/ {
+      k = $0; sub(/:.*/, "", k); sub(/^quy_tac_/, "", k)
+      if (ph != "review" && k != ph) next
+      v = $0; sub(/^[^:]*:/, "", v)
+      n = split(v, ds, /[ \t]+/)
+      for (i = 1; i <= n; i++) if (ds[i] != "" && !(ds[i] in da)) { da[ds[i]] = 1; print ds[i] }
+    }
+  ' "$(kc_conventions "$1")" 2>/dev/null
+}
+
+# kc_quy_tac_khoa_la <thư-mục-feature> -> khoá quy_tac_<x> mà <x> không phải phase
+# có quy tắc (gõ nhầm thì phase không bao giờ đọc file đó).
+kc_quy_tac_khoa_la() {
+  awk '
+    { sub(/\r$/, "") }
+    /^```conventions[ \t]*$/ { inb = 1; next }
+    inb == 1 && /^```/ { exit }
+    inb == 1 && /^quy_tac_[^:]*:/ { k = $0; sub(/:.*/, "", k); print k }
+  ' "$(kc_conventions "$1")" 2>/dev/null | while IFS= read -r _k; do
+    case " $BL_QUY_TAC " in
+      *" ${_k#quy_tac_} "*) ;;
+      *) echo "conventions.md: khoá \"$_k\" không ứng với phase nào (có: $(printf 'quy_tac_%s ' $BL_QUY_TAC | sed 's/ $//'))" ;;
+    esac
+  done
+}
+
+# kc_quy_tac_loi <thư-mục-feature> <phase> -> file quy tắc khai mà không dùng được.
+kc_quy_tac_loi() {
+  _top=$(kc_top "$1")
+  kc_quy_tac "$1" "$2" | while IFS= read -r _f; do
+    case "$_f" in
+      /*|..|../*|*/..|*/../*)
+        echo "quy tắc repo \"$_f\": phải là đường dẫn tương đối, nằm trong repo — sửa khoá quy_tac_* trong conventions.md"
+        continue ;;
+    esac
+    if [ ! -f "$_top/$_f" ]; then
+      echo "quy tắc repo \"$_f\": không có file này trong repo — sửa khoá quy_tac_* trong conventions.md"
+    elif git -C "$_top" ls-files --error-unmatch -- "$_f" >/dev/null 2>&1; then
+      :
+    elif git -C "$_top" check-ignore -q -- "$_f" 2>/dev/null; then
+      # vd /.claude/ — aw init exclude cả thư mục file adapter sinh ra
+      echo "quy tắc repo \"$_f\": git đang bỏ qua file này ($(git -C "$_top" check-ignore -v -- "$_f" 2>/dev/null | cut -f1)) — commit bằng git add -f vào base, hoặc đặt nó ở thư mục khác"
+    else
+      echo "quy tắc repo \"$_f\": chưa commit — worktree khác và người rà soát không có file này; commit nó vào base"
+    fi
   done
 }

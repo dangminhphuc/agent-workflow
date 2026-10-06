@@ -148,6 +148,7 @@ sinh_command() {
 
   printf '\n'
   doc_truoc
+  case " $BL_QUY_TAC " in *" $id "*) buoc_quy_tac_repo "$id" ;; esac
   printf -- '---\n'
   md_body "$src"
 }
@@ -195,6 +196,7 @@ if [ -n "$REV_SRC" ]; then
     printf '\nGhi ra `%s/review.md` theo mẫu `%s/templates/review.md`, rồi chạy\n' "$FD" "$DOCS"
     printf '`aw check review %s` và dán kết quả thật.\n' "$FD"
     printf 'Đường dẫn `templates/`, `rules/` bên dưới nằm trong `%s/`.\n\n' "$DOCS"
+    buoc_quy_tac_repo review
     printf -- '---\n'
     md_body "$REV_SRC"
   } | ghi_file "$OUT/.claude/agents/ra-soat-doc-lap.md"
@@ -203,6 +205,14 @@ fi
 # ---------- subagent cho tung checker LLM ----------
 for lc in $CHECKERS; do
   csrc="$ROOT/$lc"; ten=$(ten_agent_checker "$lc")
+  # quy_tac: <phase> — checker đọc quy tắc riêng của repo cho phase đó
+  cqt=$(fm_scalar "$csrc" quy_tac)
+  if [ -n "$cqt" ]; then
+    case " $BL_QUY_TAC " in
+      *" $cqt "*) ;;
+      *) echo "LỖI: $lc khai quy_tac \"$cqt\" — chỉ nhận: $BL_QUY_TAC" >&2; exit 4 ;;
+    esac
+  fi
   kiem_tra_ghi_de "$OUT/.claude/agents/$ten.md"
   {
     printf -- '---\n'
@@ -214,6 +224,8 @@ for lc in $CHECKERS; do
     printf 'Đọc vào:\n'
     fm_list "$csrc" inputs | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
     printf '\nGhi ra `%s/%s` theo mẫu `%s/templates/%s`.\n\n' "$FD" "$(fm_scalar "$csrc" output)" "$DOCS" "$(fm_scalar "$csrc" output)"
+    cqt=$(fm_scalar "$csrc" quy_tac)
+    [ -n "$cqt" ] && buoc_quy_tac_repo "$cqt"
     printf -- '---\n'
     md_body "$csrc"
   } | ghi_file "$OUT/.claude/agents/$ten.md"
@@ -297,6 +309,7 @@ kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
   printf '## Artifact và lệnh\n\n'
   printf -- '- Artifact của từng feature: `%s/<tên-branch>/` — xác định bằng `aw feature`; nằm ngoài git (bị exclude)\n' "$ART"
   printf -- '- Quy ước của repo (branch, nhánh gốc, file test, tag `covers:`): `%s`\n' "$CONV_DOC"
+  printf -- '- Quy tắc riêng của repo cho từng phase (coding style, skill, chuẩn kiến trúc): `aw rules <phase>` — phase: %s\n' "$BL_QUY_TAC"
   printf -- '- Luật, mẫu, checker LLM của engine: `%s/`\n' "$DOCS"
   printf -- '- Checker máy: `aw check <tên> %s` — tên: %s\n' "$FD" "$BL_CHECKERS"
 } | ghi_file "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"

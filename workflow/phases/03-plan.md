@@ -35,6 +35,8 @@ duyệt.
 - `spec.md`, `tdd.md` — phải qua được `aw check design`, và **mọi D-xx đã
   được người duyệt**. Còn D `đề xuất` hay `mở lại` thì dừng lại.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
+- Quy tắc riêng của repo cho phase này — `aw rules plan`, đọc từng file nó in ra
+  (xem `rules/nguyen-tac-chung.md` § 7)
 
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
 `aw check spec`, có `Trạng thái spec: đã duyệt` và không còn điểm mù

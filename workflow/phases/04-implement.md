@@ -36,6 +36,8 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
 - `tdd.md` — *làm thế nào*: contract, mô hình dữ liệu, flow, quyết định D-xx
 - `spec.md` — tra khi cần hiểu *vì sao* một task tồn tại
 - `../conventions.md` — mẫu file test, cú pháp tag `covers:`, nhánh gốc
+- Quy tắc riêng của repo — `aw rules implement`: coding style, skill, pattern của
+  repo. Đọc hết **trước task đầu tiên** (xem `rules/nguyen-tac-chung.md` § 7)
 
 ## Việc phải làm
 
@@ -57,11 +59,16 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
    Task gặp bất ngờ là tín hiệu thiết kế hoặc kế hoạch thiếu sót, và thông tin
    đó phải chảy ngược về chứ không bị agent âm thầm xử lý.
 
-5. **Giữ diff trong phạm vi.** File ngoài "File dự kiến" chỉ được đụng khi task
+5. **Theo quy tắc riêng của repo** trong phần code mình viết. Quy tắc nào bảo làm
+   việc ngoài task (dọn file cũ, đổi tên hàng loạt…) hay mâu thuẫn với `tdd.md`
+   thì không làm — ghi vào "Phát sinh". Quy tắc máy kiểm được (lint, type,
+   kiến trúc) nên nằm trong `LENH_KIEM_THU` để máy chặn, không chỉ nằm trên giấy.
+
+6. **Giữ diff trong phạm vi.** File ngoài "File dự kiến" chỉ được đụng khi task
    không thể hoàn thành nếu không đụng — và phải ghi file đó (trong backtick)
    kèm lý do vào mục "Phát sinh".
 
-6. **Chạy `aw check implement`.** Script tự chạy lệnh test và tự ghi
+7. **Chạy `aw check implement`.** Script tự chạy lệnh test và tự ghi
    `ket-qua-kiem-thu.md` — không tự viết file đó.
 
 ## Theo loại việc — chặn

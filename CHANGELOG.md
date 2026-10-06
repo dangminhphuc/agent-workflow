@@ -13,6 +13,21 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+### Thêm
+- **Quy tắc riêng của repo theo phase:** khoá `quy_tac_spec`, `quy_tac_design`,
+  `quy_tac_plan`, `quy_tac_implement`, `quy_tac_review` trong `conventions.md` —
+  danh sách file (coding style, skill, chuẩn kiến trúc…) phase đó phải đọc.
+  Lệnh mới `aw rules <phase>` in danh sách lúc chạy; lệnh `/spec`…`/review` và
+  subagent rà soát gọi nó. `aw check` của phase chặn khi file khai không có,
+  chưa commit hoặc khoá gõ nhầm. `aw check review` chặn khi `review.md` thiếu mục
+  "Quy tắc repo" hoặc thiếu kết luận (`đạt` / `vi phạm` / `không áp dụng`) cho
+  một file. Repo không khai khoá nào thì không đổi gì. Cần wrapper `aw` mới để
+  có lệnh `aw rules`.
+- Checker LLM soát thiết kế (`soat-thiet-ke`) đọc `quy_tac_design` và có loại
+  phát hiện mới `trái quy tắc repo` — mức Chặn, chỉ Cảnh báo khi đã có D-xx cân
+  nhắc chuyện đó. Checker LLM khai `quy_tac: <phase>` trong frontmatter để đọc
+  quy tắc của phase đó.
+
 ### Đổi
 - **Version `YYYY.M.N`** thay cho `YYYY.M.D`: `N` là số thứ tự bản phát hành trong
   tháng, không còn giới hạn một bản mỗi ngày. Không số 0 đứng đầu, `N` từ 1.

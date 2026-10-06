@@ -7,6 +7,7 @@ inputs:
   - open-questions.md
   - tdd.md
 output: phat-hien-thiet-ke.md
+quy_tac: design
 ---
 
 # Checker LLM — Soát thiết kế
@@ -30,11 +31,15 @@ kèm lý do. Vì vậy báo nhầm chỉ tốn thời gian người; bỏ sót m
 | `YC chưa được thiết kế` | YC có trong ánh xạ nhưng mục được trỏ tới không thực sự nói cách đáp ứng nó | Chặn |
 | `mâu thuẫn nội bộ` | Hai mục của `tdd.md` nói trái nhau (vd ERD khác contract) | Chặn |
 | `yêu cầu mới` | Thiết kế thêm hành vi không có trong `spec.md` | Chặn |
+| `trái quy tắc repo` | `tdd.md` trái một file quy tắc của repo (`aw rules design`: chuẩn kiến trúc, pattern bị cấm…) mà không có D-xx nào nêu ra và giải thích | Chặn |
 | `mơ hồ` | Mục đủ mục nhưng `implement` sẽ phải tự đoán | Cảnh báo |
 
 Ở Mode 2 (`tac_gia: nguoi`): **không** chặn quyết định của người chỉ vì bạn
 thích phương án khác — đó là phản biện, ghi mức `Cảnh báo`. Chỉ chặn khi phần
 agent viết lệch khỏi quyết định của người.
+
+Quy tắc repo: trái quy tắc nhưng **đã có D-xx** cân nhắc chuyện đó thì chỉ
+`Cảnh báo` — người quyết khi duyệt D. Ghi rõ file quy tắc và đoạn bị trái.
 
 ## Không làm
 

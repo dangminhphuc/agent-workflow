@@ -8,6 +8,7 @@
 #   aw-engine feature [name]
 #   aw-engine input [--skip <intake.md>] <args|->
 #   aw-engine pending <feature-dir>
+#   aw-engine rules <phase>
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine rename <new-branch>
 #   aw-engine worktree new <type> <desc> [--create --base <ref>]
@@ -73,6 +74,7 @@ case "$LENH" in
   feature)   can_repo; exec sh "$T/xac-dinh-feature.sh" "$@" ;;
   input)     can_repo; exec sh "$T/phan-loai-input.sh" "$@" ;;
   pending)   can_repo; exec sh "$T/liet-ke-viec-cho.sh" "$@" ;;
+  rules)     can_repo; exec sh "$T/quy-tac-repo.sh" "$@" ;;
   based-on)  can_repo; exec sh "$T/cap-nhat-based-on.sh" "$@" ;;
   rename)    can_repo; exec sh "$T/doi-ten-feature.sh" "$@" ;;
   worktree)

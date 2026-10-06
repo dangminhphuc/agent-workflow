@@ -487,7 +487,7 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 | `aw worktree new <loại> <mô-tả> [--create --base <ref>]` | Đề xuất / tạo worktree cho việc |
 | `aw worktree status <branch>` · `aw worktree remove <branch> [--delete-branch]` | Dọn worktree sau khi merge |
 | `aw adapter build <agent> [--out <thư-mục>] [--force]` | Sinh lại adapter |
-| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` | Lệnh agent gọi trong các phase |
+| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules <phase>` | Lệnh agent gọi trong các phase |
 
 ### Artifact của việc: chỉ ở máy
 
@@ -566,8 +566,26 @@ prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành
 | `loai_theo_tien_to` | `feat_=feature fix_=bugfix` | Tiền tố branch → loại việc (gợi ý ở `/intake`, đối chiếu ở review) |
 | `mau_code_production` | `src/*` | Code production — `chore` không được đụng; bugfix/perf đo "trước" khi chưa đụng |
 | `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Nâng dependency" |
+| `quy_tac_<phase>` | `quy_tac_implement: docs/coding-style.md .claude/skills/api/SKILL.md` | Quy tắc riêng của repo — xem bên dưới |
 
 Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
+
+#### Quy tắc riêng của repo (`quy_tac_<phase>`)
+
+Coding style, skill của agent, chuẩn kiến trúc, thuật ngữ nghiệp vụ… gắn vào đúng
+phase cần nó: `quy_tac_spec`, `quy_tac_design`, `quy_tac_plan`, `quy_tac_implement`,
+`quy_tac_review`. Giá trị là danh sách file, đường dẫn tương đối với gốc repo.
+
+- Agent chạy `aw rules <phase>` ở đầu phase rồi đọc từng file. Danh sách đọc lúc
+  chạy, nên sửa `conventions.md` là có hiệu lực ngay, không cần build lại adapter.
+- File phải **đã commit** vào base: worktree mới chỉ có file đã commit. Không có,
+  chưa commit, hay khoá gõ nhầm → `aw check` của phase đó chặn. Skill để trong
+  `.claude/` thì commit bằng `git add -f` — `aw init` exclude cả `/.claude/`.
+- `review` đối chiếu diff với **mọi** khoá: mục "Quy tắc repo" của `review.md` có
+  một dòng `đạt` / `vi phạm` / `không áp dụng` cho từng file, thiếu là chặn.
+- Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md`. Quy tắc máy kiểm được
+  (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` — để máy chặn, không chỉ để
+  agent đọc.
 
 ## Cấu trúc repo
 
@@ -598,6 +616,7 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   doi-ten-feature.sh     aw rename: đổi tên branch + thư mục artifact + worktree
   phan-loai-input.sh     aw input: tham số → dòng "## Input" (nhãn do máy gán)
   liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
+  quy-tac-repo.sh        aw rules: file quy tắc riêng của repo cho một phase (quy_tac_* trong conventions.md)
   cap-nhat-based-on.sh   aw based-on: ghi hash đầu vào vào frontmatter artifact
   dong-goi.sh            đóng gói bản phát hành (tarball + SHA256SUMS)
   chuan-bi-phat-hanh.sh  đặt version YYYY.M.N cho PR phát hành (VERSION, bin/aw, CHANGELOG, README)

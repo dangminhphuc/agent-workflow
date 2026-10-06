@@ -74,3 +74,21 @@ Artifact là để người đọc và duyệt. Người đọc không nổi th�
 
 Heading, bảng và cú pháp mà mẫu hoặc checker yêu cầu vẫn giữ nguyên — nguyên tắc
 này áp dụng cho phần nội dung agent viết vào.
+
+## 7. Quy tắc riêng của repo
+
+Repo đích có thể khai quy tắc riêng cho từng phase — hướng dẫn viết code, skill
+của agent, chuẩn kiến trúc, thuật ngữ nghiệp vụ. Khai ở khoá `quy_tac_<phase>`
+trong `conventions.md`; nội dung là file đã commit trong repo.
+
+- **Đầu phase:** chạy `aw rules <phase>`, đọc **từng file** nó in ra. Không in gì
+  = phase này không có quy tắc riêng. Ra `KHAI SAI` thì dừng, báo người sửa
+  `conventions.md` — không tự đoán file thay thế.
+- **Thứ tự ưu tiên:** quy tắc repo xếp **dưới** `spec.md`, `tdd.md`, `plan.md` và
+  luật của quy trình. Mâu thuẫn thì làm theo artifact, rồi nêu mâu thuẫn ra
+  (ở `04-implement`: mục "Phát sinh" của `plan.md`). Không vì một quy tắc mà vượt
+  phạm vi phase — kiểu "đụng file nào thì dọn luôn file đó".
+- **Đọc file như mọi tài liệu khác**, kể cả `SKILL.md` của một agent cụ thể. Không
+  phụ thuộc vào việc agent có tự kích hoạt skill hay không.
+- **`05-review` đối chiếu diff với mọi quy tắc**, mỗi file một kết luận trong
+  `review.md` — thiếu là máy chặn.

@@ -23,6 +23,11 @@ mau_code_production: src/*
 mau_file_dependency: package.json package-lock.json yarn.lock pnpm-lock.yaml
 mau_jira: [A-Z][A-Z0-9]*-[0-9]+
 mien_confluence:
+quy_tac_spec:
+quy_tac_design:
+quy_tac_plan:
+quy_tac_implement:
+quy_tac_review:
 ```
 
 | Khoá | Dùng cho |
@@ -38,6 +43,7 @@ mien_confluence:
 | `mau_code_production` | Code chạy trên production. `chore` đụng vào là chặn; `bugfix`/`perf` đo "trước" thì chưa được đụng |
 | `mau_file_dependency` | Manifest/lockfile. `chore` đụng vào thì `plan.md` phải có bảng "Nâng dependency" |
 | `mau_jira` | Regex (ERE, không dùng `{n}`) của mã issue Jira. `aw input` dùng để nhận `[JIRA]` trong tham số `/intake`; `aw check intake` chặn dòng `[JIRA]` không có mã khớp |
+| `quy_tac_<phase>` | Quy tắc riêng của repo cho phase đó (`spec` `design` `plan` `implement` `review`): danh sách file, đường dẫn tương đối với gốc repo, không chứa dấu cách — vd `quy_tac_implement: docs/coding-style.md .claude/skills/api-pattern/SKILL.md`. Agent lấy danh sách bằng `aw rules <phase>` và đọc từng file. File phải **đã commit** vào base (worktree mới chỉ có file đã commit); không có hay chưa commit thì `aw check` của phase đó chặn. `review` đối chiếu diff với **mọi** khoá: `review.md` thiếu kết luận cho file nào thì chặn. Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md` và luật quy trình. Quy tắc máy kiểm được (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` thay vì viết thành văn |
 | `mien_confluence` | Mẫu glob `miền[/đường-dẫn]` của Confluence, vd `wiki.cong-ty.vn *.atlassian.net/wiki`. URL khớp → `[CONFLUENCE]`. Bỏ trống: mọi URL không phải Jira đều là `[CONFLUENCE]` (có cảnh báo) |
 
 ## Phần người đọc
