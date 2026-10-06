@@ -236,18 +236,22 @@ LLM (`phat-hien-*.md`) — theo thứ tự phải chốt trước. Với điểm
 mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhiều task đứng trên giả
 định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Danh sách đó để agent
 đọc; bạn chỉ thấy một dòng tóm tắt. Rồi agent hỏi **từng mục một** bằng câu hỏi
-lựa chọn (Claude Code: `AskUserQuestion`): ngữ cảnh vài dòng, các lựa chọn —
-giữ giả định tạm, cách hiểu khác có trong nguồn, "Chưa trả lời được", "Chat về
-câu này" — và luôn có ô tự nhập. Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
+lựa chọn (Claude Code: `AskUserQuestion`). Trước khi hỏi, agent **tự phân tích**
+(nguồn, spec, thiết kế, code đã có) để đưa ra 2–3 **phương án giải pháp thật**,
+mỗi phương án kèm đánh đổi một dòng; phương án nên chọn đứng đầu, nhãn bắt đầu
+bằng `(Đề xuất)`, ngữ cảnh nói vì sao. Mục gói nhiều quyết định thì tách thành
+nhiều câu hỏi. Cuối là "Chưa trả lời được"; luôn có ô tự nhập và "Chat về câu
+này". Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
 spec, chạy lại checker. Câu trả lời khác giả định thì agent cho bạn xem dòng YC
 sẽ sửa, bạn đồng ý trong hội thoại là xong — **không phải mở file sửa tay**
 `đề xuất` → `đã duyệt`. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
 cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
 
-Với phát hiện của checker LLM, lựa chọn là **Đồng ý — sửa** (agent cho bạn xem
-dòng `tdd.md` sẽ đổi, rồi ghi `đã sửa`; cần quyết định mới thì thêm D-xx
-`đề xuất` để bạn duyệt), **Bác bỏ** (kèm lý do, ghi nguyên văn), **Chat về câu
-này**, và **Để sau** với mục `Cảnh báo`. Phát hiện agent đã tự sửa lúc chạy
+Với phát hiện của checker LLM, lựa chọn là các **cách sửa cụ thể** (cách đề xuất
+đứng đầu; chọn thì agent cho bạn xem dòng `tdd.md` sẽ đổi, rồi ghi `đã sửa`; cần
+quyết định mới thì thêm D-xx `đề xuất` để bạn duyệt), **Bác bỏ** (kèm lý do, ghi
+nguyên văn — agent thấy phát hiện sai thì đề xuất bác bỏ), và **Để sau** với mục
+`Cảnh báo`. Phát hiện agent đã tự sửa lúc chạy
 `/design` được nêu lại trong tổng kết để bạn biết. Điểm mù và phát hiện vẫn ở
 **file riêng** — chỉ hàng đợi là chung.
 

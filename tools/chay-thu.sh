@@ -907,6 +907,9 @@ dung "lệnh /clarify có bước xác định feature + chạy aw pending" sh -
   "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/clarify.md' && grep -q 'aw pending' '$O/.claude/commands/clarify.md'"
 dung "lệnh /clarify hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
   "grep -q 'AskUserQuestion' '$O/.claude/commands/clarify.md' && grep -q 'Chat về câu này' '$O/.claude/commands/clarify.md'"
+dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng đầu nhãn" sh -c \
+  "grep -q 'Nghĩ kỹ trước khi hỏi' '$O/.claude/commands/clarify.md' && grep -q 'bắt đầu bằng.*(Đề xuất)' '$O/.claude/commands/clarify.md'"
+dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/clarify.md"
 dung "lệnh /clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-hien-thiet-ke.md' "$O/.claude/commands/clarify.md"
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'AskUserQuestion' '$O/.claude/commands/import.md'"
 dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"

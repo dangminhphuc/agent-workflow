@@ -9,6 +9,22 @@ version ghi trong `intake.md` của nó.
 So version theo luật **khớp chính xác `YYYY.M.D`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Đổi
+- `/clarify`: lựa chọn là **phương án giải pháp agent đã phân tích**, không còn
+  chỉ "giữ giả định / chưa trả lời được". Trước mỗi mục, agent đọc nguồn, spec,
+  thiết kế, code đã có; đưa 2–3 phương án khác nhau về hệ quả, mỗi phương án
+  kèm đánh đổi một dòng; phương án nên chọn đứng đầu, nhãn **bắt đầu bằng
+  `(Đề xuất)`**, ngữ cảnh nói vì sao. Mục gói nhiều quyết định thì tách thành
+  nhiều câu hỏi trong cùng lượt. Phát hiện checker LLM: các cách sửa cụ thể +
+  Bác bỏ (agent thấy phát hiện sai thì đề xuất bác bỏ).
+- Adapter Claude Code: không thêm "Chat về câu này" vào `options` nữa — dùng
+  "Chat about this" / "Type something" có sẵn của `AskUserQuestion`, để đủ chỗ
+  cho phương án thật.
+- Người chọn phương án agent đề xuất thì `Trả lời:` ghi nhãn phương án kèm
+  `(chọn từ phương án agent đề xuất)`.
+
 ## [2026.10.7]
 
 ### Đổi (phá tương thích)
