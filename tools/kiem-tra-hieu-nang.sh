@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
 # perf: ghi số đo hiệu năng TRƯỚC và SAU khi sửa, do máy chạy.
 #
-#   sh tools/kiem-tra-hieu-nang.sh <thư-mục-feature> --truoc   # trước khi sửa code
-#   sh tools/kiem-tra-hieu-nang.sh <thư-mục-feature> --sau     # sau khi sửa code
+#   aw check perf <thư-mục-feature> --before   # trước khi sửa code
+#   aw check perf <thư-mục-feature> --after    # sau khi sửa code
 #
 # Lệnh đo: LENH_DO_HIEU_NANG trong cau-hinh.sh, phải in một dòng "KET_QUA: <số> <đơn vị>".
-# --truoc từ chối nếu diff đã đụng code production (mau_code_production).
+# --before từ chối nếu diff đã đụng code production (mau_code_production).
 # Script chỉ GHI số; có đạt mục tiêu hay không thì người kết luận ở review —
 # số đo dao động nên máy chặn theo ngưỡng sẽ chặn nhầm.
 #
@@ -22,12 +22,12 @@ kq_khai kiem-tra-hieu-nang.sh \
 
 DIR="${1:-}"; PHA="${2:-}"
 case "$PHA" in
-  --truoc) TEN="Trước" ;;
-  --sau)   TEN="Sau" ;;
-  *) echo "Dùng: sh kiem-tra-hieu-nang.sh <thư-mục-feature> --truoc|--sau" >&2; exit 2 ;;
+  --before) TEN="Trước" ;;
+  --after)  TEN="Sau" ;;
+  *) echo "Dùng: aw check perf <thư-mục-feature> --before|--after" >&2; exit 2 ;;
 esac
 OUT="$DIR/do-hieu-nang.md"
-CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
+CAUHINH=$(kc_cau_hinh "$DIR")
 
 [ "$(kc_loai "$DIR")" = "perf" ] || { echo "LỖI: chỉ dùng cho loại việc perf (intake.md)." >&2; exit 2; }
 LENH_DO_HIEU_NANG=""
@@ -35,7 +35,7 @@ LENH_DO_HIEU_NANG=""
 [ -f "$CAUHINH" ] && . "$CAUHINH"
 [ -n "$LENH_DO_HIEU_NANG" ] || { echo "LỖI: chưa khai LENH_DO_HIEU_NANG trong $CAUHINH" >&2; exit 2; }
 
-if [ "$PHA" = "--truoc" ]; then
+if [ "$PHA" = "--before" ]; then
   DOI=$(kc_doi "$DIR") || { echo "LỖI: không xác định được base (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)." >&2; exit 2; }
   ngoai=$(printf '%s\n' "$DOI" | while IFS="$(printf '\t')" read -r s p q; do
     [ -n "$p" ] && kc_khop_khoa "$DIR" mau_code_production "${q:-$p}" && echo "  - ${q:-$p}"; done)

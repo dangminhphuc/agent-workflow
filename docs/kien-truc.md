@@ -84,7 +84,7 @@ tiêu**. Trước đây `ideation` chỉ chạy khi không có BRD; giờ nó b�
 **chép nguyên văn** (`[NGƯỜI-DÙNG]`). `[SUY-RA]` bị cấm ở input — nếu không, điều
 agent tự suy ra sẽ sang spec với nhãn `[FILE] intake.md` như có nguồn thật.
 
-**Nhãn input do máy gán** (`tools/phan-loai-input.sh`), không do agent đoán:
+**Nhãn input do máy gán** (`aw input`), không do agent đoán:
 checker chỉ kiểm được cú pháp nhãn, nên agent gắn `[JIRA]` cho một URL GitHub
 vẫn lọt tới `spec`. Luật chọn quyết định trên **cả chuỗi**, không trên từng từ:
 một từ không nhận ra là cả tham số thành lời người dùng nguyên văn. Tách từng từ
@@ -95,7 +95,7 @@ việc), và `spec.md` ghi `based_on: intake.md` để input mới làm spec l�
 **Nguồn sự thật của loại việc** là `intake.md` (người xác nhận). Tiền tố branch
 chỉ để gợi ý và đối chiếu; lệch thì cảnh báo, `review` chặn, không có ngoại lệ
 "ghi lý do chấp nhận lệch" — vì ngoại lệ dễ ghi hơn sửa, và tiền tố sẽ mất nghĩa.
-`tools/doi-ten-feature.sh` đổi tên branch, dời thư mục artifact và dời worktree trong một lệnh.
+`aw rename` đổi tên branch, dời thư mục artifact và dời worktree trong một lệnh.
 
 Phân loại theo **thay đổi gì về hành vi**, không theo "xây cái gì": một loại chỉ
 đáng tồn tại khi nó đổi luật. Vì vậy không có `utils`, `hotfix`, `security`;
@@ -119,7 +119,8 @@ cho kết luận sai mà tự tin (đỏ vì thiếu hàm vẫn tính là "tái 
 Artifact nằm trong `.agent-workflow/<tên-branch>/`, dùng tên branch **đầy đủ**
 (`feat_tao-todo`, `refactor_tao-todo`) để hai loại việc cùng tên không đè nhau.
 Quy ước tên branch nằm trong `conventions.md` của repo đích vì nó tuỳ hoàn cảnh
-từng team; bộ cài chỉ tạo mẫu và không ghi đè.
+từng team; nó nằm trong cấu hình của bản clone (`.git/agent-workflow/`), `aw init`
+chỉ tạo mẫu và không ghi đè.
 
 Thứ tự xác định feature: suy từ branch theo `conventions.md` → không khớp thì lấy
 tham số lệnh → không có thì dừng hỏi. Agent luôn in `Đang làm với: …` — ghi nhầm
@@ -128,7 +129,7 @@ artifact sang feature khác là lỗi im lặng, khó phát hiện về sau.
 ### Worktree bắt buộc, base do người chọn
 
 Mỗi việc làm trong một worktree riêng; checkout chính chỉ đứng ở `nhanh_goc` và
-chỉ chạy `/intake`. Mọi lệnh khác chạy ở checkout chính bị `xac-dinh-feature.sh`
+chỉ chạy `/intake`. Mọi lệnh khác chạy ở checkout chính bị `aw feature`
 chặn (`ĐANG Ở CHECKOUT CHÍNH`) — chốt đặt ở script mọi phase đều gọi, không phải trong từng phase.
 Hệ quả mong muốn: "mỗi phase chạy được từ phiên trắng" không còn là khuyến nghị
 mà là cấu trúc — tạo worktree xong thì người **phải** mở phiên mới ở đó.
@@ -138,9 +139,9 @@ grep quét trùng code, và agent ở worktree này đọc nhầm artifact của
 — đúng lỗi "ghi nhầm feature" mà quy trình cố chặn. Branch, thư mục worktree và
 thư mục artifact dùng một tên: nhìn đường dẫn là biết đang ở việc nào.
 
-Agent không chọn base. `tao-worktree.sh` liệt kê ứng viên kèm dữ kiện và gợi ý ★
+Agent không chọn base. `aw worktree new` liệt kê ứng viên kèm dữ kiện và gợi ý ★
 theo một luật máy duy nhất (giữa `main` và `origin/main`, bản nào chứa bản kia);
-phân kỳ thì không gợi ý. `--tao` thiếu `--goc` bị từ chối. Script không tự fetch:
+phân kỳ thì không gợi ý. `--create` thiếu `--base` bị từ chối. Script không tự fetch:
 thao tác mạng làm kết quả phụ thuộc thời điểm chạy — nó in thời điểm fetch cuối
 để người tự cân nhắc. Branch tạo `--no-track`: mặc định git đặt upstream là
 `origin/main`, và `git push` trơn trong worktree sẽ đẩy thẳng lên `main`.
@@ -153,9 +154,57 @@ bump version của nhánh phát hành. Ref không còn (branch cha đã xoá) th
 Xếp chồng lên branch việc khác không bị cấm (nhập qua "ref khác") nhưng không nằm
 trong danh sách gợi ý, và review cảnh báo: việc dựa trên code chưa được review.
 
-Dọn worktree (`don-worktree.sh`) không bao giờ `--force` hay `branch -D`: gỡ
+Dọn worktree (`aw worktree remove`) không bao giờ `--force` hay `branch -D`: gỡ
 worktree không mất commit; xoá branch dùng `git branch -d` để git tự từ chối khi
 chưa merge. Squash-merge git không nhận ra — script dừng, người tự quyết.
+
+## Engine có version, cài ngoài repo (từ 2026.10.6)
+
+Bộ cài cũ chép cả quy trình vào repo đích (`.agent-workflow/.quy-trinh/`) và bắt
+commit vào nhánh gốc, vì worktree chỉ có file đã commit. Ba lý do khiến bản 2026.10.6 đổi
+sang **engine có version + cấu hình cục bộ**:
+
+1. **Protected branch.** Repo thật có `main`, `develop`, `uat` không ai được tự
+   commit hay merge. Bộ cài phải vào base trước mới tạo được worktree — tức là
+   mỗi lần cài hay nâng cấp quy trình phải qua một PR vào nhánh được bảo vệ. Bản mới
+   không ghi gì vào cây làm việc mà git theo dõi: engine nằm trong
+   `~/.agent-workflow/engine/<YYYY.M.D>/`, cấu hình nằm trong
+   `$(git rev-parse --git-common-dir)/agent-workflow/` (dùng chung mọi worktree,
+   không bao giờ vào commit), file sinh ra bị `.git/info/exclude`. Vì vậy **base
+   tuỳ ý**: điều kiện "base phải có bộ cài" bị bỏ.
+2. **Version theo việc.** Với bộ cài cũ, đồng bộ bộ cài giữa chừng đổi luật của mọi
+   việc đang làm cùng lúc. Bản mới ghi `- **Engine:** YYYY.M.D` vào `intake.md` lúc tạo
+   worktree; mọi `aw check` của việc chạy đúng version đó. Không có version đó
+   và không tải được thì báo `KHÔNG HỢP LỆ` — chạy tạm bằng version khác là
+   chấm một việc theo luật nó không được đặt ra. Luật so: khớp chính xác `YYYY.M.D`,
+   không suy "tương thích" từ số phiên bản.
+3. **Độc lập với agent.** Luật cứng nằm trong checker của engine (mã thoát +
+   nhãn `Kết quả`), gọi bằng `aw …` — lệnh shell agent nào cũng chạy được.
+   Adapter chỉ còn là lớp mỏng dịch `workflow/` sang dạng native và dặn agent
+   gọi `aw`; thêm agent mới không đụng tới luật.
+
+Các mảnh:
+
+| Mảnh | Vai trò |
+|---|---|
+| `bin/aw` (wrapper, cài global) | Tìm repo bằng `git rev-parse`; chọn version (dòng `Engine:` của việc, hoặc file `version` của bản clone); tải bản thiếu vào cache, kiểm sha256; chuyển lệnh sang engine kèm `AW_REPO`, `AW_CONFIG`, `AW_ENGINE` |
+| `bin/aw-engine` | Điểm vào của engine: `init`, `check`, `worktree`, `adapter build`, `feature`… |
+| `tools/lib/moi-truong.sh` | Tool đọc đường dẫn repo và cấu hình **chỉ** từ biến môi trường; thiếu thì dừng. Không tool nào tự suy chúng từ vị trí của chính nó |
+| `checksums` trong cấu hình | sha256 ghim lần đầu tải (`aw init`/`aw upgrade`). Lần tải sau phải khớp sha đã ghim, không tin lại `SHA256SUMS` — `SHA256SUMS` cùng nguồn với tarball chỉ bắt được file hỏng, không bắt được nguồn bị tráo. Chia sẻ qua repo cấu hình của team (`aw init --from`) |
+
+Kênh tải mặc định là GitHub Release của repo này: file `agent-workflow-YYYY.M.D.tar.gz`
+do workflow `release` đóng gói và gắn vào — không dùng tarball GitHub tự sinh từ
+tag, vì byte của nó không được hứa giữ nguyên. `AW_MIRROR` đổi nguồn,
+`AW_ENGINE_DIR` dùng engine có sẵn cho máy không có mạng.
+
+Wrapper và engine nói chuyện qua một số giao thức (`AW_PROTOCOL`): wrapper cũ
+gặp engine đổi giao thức thì dừng, không truyền thiếu biến rồi chạy tiếp.
+
+**Artifact chỉ ở máy.** `.agent-workflow/` bị exclude, nên artifact không vào PR.
+Checker so diff vốn đã bỏ qua thư mục này nên không phải đổi. Cái giá: gỡ
+worktree là mất artifact — `aw worktree remove` chép nó vào
+`.git/agent-workflow/archive/<tên>/` trước khi gỡ; và reviewer của PR không thấy
+`spec.md`/`tdd.md` (xem điểm yếu 7, 10).
 
 ## Hai loại điều kiện ra
 
@@ -274,7 +323,7 @@ kế thì phải biết trước khi thiết kế; sai một phần code thì bi
 là đủ; còn lại thì chấp nhận giao trên giả định và ghi rõ là chưa xác nhận.
 
 Lệnh tiện ích `open-questions` (`workflow/open-questions.md`) dẫn người đi qua
-các mục còn mở: `tools/liet-ke-cau-hoi.sh` xếp thứ tự bằng máy (mức chặn → YC
+các mục còn mở: `aw questions` xếp thứ tự bằng máy (mức chặn → YC
 `bắt buộc` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
 đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
@@ -285,7 +334,7 @@ giữ nguyên). Dấu vết nằm ở dòng `Trả lời:` — ai, ngày, nguyê
 
 ### Vì sao checker tự chạy test thay vì đọc kết quả
 
-`kiem-tra-hien-thuc.sh` tự chạy lệnh test và tự ghi output vào
+`aw check implement` tự chạy lệnh test và tự ghi output vào
 `ket-qua-kiem-thu.md`. Nếu để agent chạy rồi dán kết quả vào, ta chỉ kiểm được
 *cái agent nói*, không kiểm được *cái đã xảy ra*. Tự chạy thì bỏ hẳn khoảng cách
 đó — agent không có chỗ nào để bịa.
@@ -319,7 +368,7 @@ when: ...                   # điều kiện kích hoạt, chỉ khi required: f
 status: chưa hiện thực      # có mặt = adapter bỏ qua phase này
 inputs: [intake.md, confluence, jira, file]
 outputs: [spec.md, open-questions.md]
-exit_machine: [sh tools/kiem-tra-truy-vet.sh]
+exit_machine: [aw check spec]
 exit_human: [...]
 needs_clean_context: true   # phải chạy được từ phiên trắng
 requires_fresh_agent: true  # không được dùng chính phiên vừa làm việc trước đó
@@ -341,14 +390,16 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 
 | Cơ chế | Nằm ở | Ghi chú |
 |---|---|---|
-| Xác định feature | `tools/xac-dinh-feature.sh` | Script nằm ở `<repo>/.agent-workflow/.quy-trinh/tools/`, suy ra thư mục artifact từ vị trí của chính nó |
+| Xác định feature | `tools/xac-dinh-feature.sh` (`aw feature`) | Đọc gốc worktree từ `AW_REPO`; thư mục artifact là `$AW_REPO/.agent-workflow/<tên>` |
 | Đọc `conventions.md` | `conv_get` trong `tools/lib/md.sh` | Chỉ đọc khối ` ```conventions `; phần còn lại là văn xuôi cho người |
 | Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` — POSIX, CRLF/LF cho cùng kết quả |
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
 | Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `chặn`; `implement` cảnh báo, `review` chặn mức `chặn` + `chặn review` |
 | Thứ tự chốt điểm mù | `tools/liet-ke-cau-hoi.sh` | Máy xếp, agent không xếp lại; chỉ đọc, không sửa file |
 | Entry check | Đầu mỗi `kiem-tra-*.sh` | Gọi checker phase trước; chuỗi `ra-soat → ke-hoach → thiet-ke → truy-vet` |
-| Cấu hình lệnh test | `.agent-workflow/.quy-trinh/cau-hinh.sh` | Checker tìm ở `<thư-mục-feature>/../.quy-trinh/` |
+| Cấu hình lệnh test | `$AW_CONFIG/config.sh` | `AW_CONFIG` = `$(git rev-parse --git-common-dir)/agent-workflow`, wrapper truyền vào |
+| Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | Wrapper chọn engine theo dòng `Engine:`; engine từ chối chấm việc ghim version khác; `aw check intake` chặn khi thiếu dòng |
+| Tên checker | `tools/lib/bang-lenh.sh` | Một bảng cho `aw check <tên>` và cho adapter kiểm `exit_machine` |
 | Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |
 
 Phạm vi diff so với `git merge-base <base> HEAD` **tới cây làm việc** (`<base>` là
@@ -389,19 +440,23 @@ buộc này chỉ áp dụng cho *cấu hình*, không áp dụng cho repo đíc
 
 1. Tạo `workflow/phases/NN-<id>.md` với frontmatter đầy đủ.
 2. Thêm mục vào `phases:` trong `workflow.yaml` (`id`, `file`, `required`).
-3. Nếu có `exit_machine`, viết script tương ứng trong `tools/` — adapter sẽ từ
-   chối build nếu script không tồn tại.
+3. Nếu có `exit_machine`, viết script tương ứng trong `tools/` và thêm tên vào
+   `tools/lib/bang-lenh.sh`; frontmatter ghi `aw check <tên>`. Adapter từ chối
+   build nếu tên không có trong bảng.
 4. Nếu phase sinh artifact mới, thêm mẫu vào `workflow/templates/`.
 5. Thêm ca kiểm vào `tools/chay-thu.sh`.
-6. Chạy lại `sh tools/cai-dat.sh <repo-đích>` — repo đích phải nằm ngoài repo
-   agent-workflow; đích là repo này hoặc thư mục con của nó sẽ bị từ chối.
+6. Thử trên một repo đích: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code`
+   (VERSION phải khớp version của repo đích). Phát hành bằng một version mới —
+   việc đang làm vẫn chạy version cũ.
 
 Không phase nào khác phải sửa — vì không phase nào biết gì về phase đứng sau nó.
 Đó là lý do `06-ship` thêm được sau mà không phải viết lại.
 
 ## Cách thêm một adapter
 
-Xem `adapters/claude-code/README.md`, mục "Viết adapter mới". Điểm quan trọng
+Xem `adapters/README.md` (hợp đồng: `build.sh`, file `exclude`, thư viện
+`adapters/lib/chung.sh`, ghi chú Codex/Cursor) và `adapters/claude-code/README.md`,
+mục "Viết adapter mới". Adapter chỉ dặn agent gọi `aw …`, không mang luật. Điểm quan trọng
 nhất: với mỗi khả năng không dịch được sang agent đích (subagent, hook, MCP),
 adapter phải **ghi rõ trong output** rằng người dùng phải tự làm — không im lặng
 bỏ qua. Bỏ qua âm thầm khiến quy trình *nhìn như* đang chạy đủ trong khi đã mất
@@ -438,14 +493,23 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
 7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Trạng thái spec`
    trong `spec.md`). Máy phân biệt được `đề xuất` với
    `đã duyệt`, và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
-   dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được — chỉ `git
-   blame`/review diff của `tdd.md` / `spec.md` mới thấy. `Trạng thái spec` còn yếu
+   dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được. Từ bản 2026.10.6
+   artifact không nằm trong git nên cũng không còn `git blame` hay diff PR để
+   soi — chỉ người đọc lại file ở máy mới thấy. `Trạng thái spec` còn yếu
    hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `đề xuất` thì bản
    "đã duyệt" không còn là bản người đọc — máy không phát hiện được.
 
 8. **`review` không chạy lại test.** Nó đọc dòng kết quả trong `ket-qua-kiem-thu.md`;
-   sửa code sau lần chạy `kiem-tra-hien-thuc.sh` cuối cùng thì kết quả đó đã cũ.
+   sửa code sau lần chạy `aw check implement` cuối cùng thì kết quả đó đã cũ.
    Chạy lại `implement` checker trước khi review là việc của người/agent.
 
 9. **Glob trong `conventions.md` và "File dự kiến" dùng `case` của shell**, nên
    `*` khớp cả `/` và không có `**`. `src/*` vì vậy rộng hơn người đọc tưởng.
+
+10. **Artifact không đi theo PR.** Reviewer của PR chỉ thấy code; đặc tả và quyết
+    định D-xx nằm ở máy người làm (và `archive/` sau khi gỡ worktree). Muốn chia
+    sẻ thì phải chép ra chỗ khác bằng tay — quy trình không tự làm.
+
+11. **Ghim sha256 là tin lần đầu (TOFU).** Lần tải đầu tiên tin `SHA256SUMS` của
+    bản phát hành; nếu lần đó đã bị tráo thì sha bị ghim sai. Repo cấu hình chung
+    của team thu hẹp rủi ro (một người ghim, mọi người kiểm theo), không xoá được.

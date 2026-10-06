@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiem tra dieu kien ra cua phase 05-review — CONG CHAN CUOI.
 #
-#   sh tools/kiem-tra-ra-soat.sh <thu-muc-feature>
+#   aw check review <thu-muc-feature>
 #
 # Chan:
 #   1. Moi ma YC trong spec.md deu co ket luan hop le trong review.md.
@@ -41,11 +41,11 @@ n_truoc=0
 loi_truoc() { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $1"; }
 
 if ! sh "$HERE/kiem-tra-ke-hoach.sh" "$DIR" >/dev/null 2>&1; then
-  loi_truoc "Đầu vào chưa đạt: plan.md/tdd.md/spec.md không qua kiem-tra-ke-hoach.sh — chạy nó để xem chi tiết."
+  loi_truoc "Đầu vào chưa đạt: plan.md/tdd.md/spec.md không qua aw check plan — chạy nó để xem chi tiết."
 fi
 
 if [ ! -f "$KQ" ]; then
-  loi_truoc "Không có ket-qua-kiem-thu.md — /implement chưa chạy kiem-tra-hien-thuc.sh."
+  loi_truoc "Không có ket-qua-kiem-thu.md — /implement chưa chạy aw check implement."
 elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
   loi_truoc "ket-qua-kiem-thu.md ghi mã thoát khác 0 — test chưa xanh."
 fi

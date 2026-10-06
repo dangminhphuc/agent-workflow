@@ -29,8 +29,8 @@ Thiếu một trong hai thì dừng lại hỏi.
      `[CẦN-HỎI]` + mục trong `open-questions.md`; với mục khác của `tdd.md` /
      `plan.md` ghi `<THIẾU TRONG NGUỒN: …>` để checker chặn và người thấy.
    - D-xx lấy từ tài liệu người viết thì `tac_gia: nguoi`, `Trạng thái: đề xuất`.
-4. Chạy **checker của phase sinh ra artifact đó** (`kiem-tra-truy-vet.sh`,
-   `kiem-tra-thiet-ke.sh`, `kiem-tra-ke-hoach.sh`) và báo kết quả thật.
+4. Chạy **checker của phase sinh ra artifact đó** (`aw check spec`,
+   `aw check design`, `aw check plan`) và báo kết quả thật.
 5. Dừng lại cho **người xác nhận bản chuyển đổi** — rồi mới qua gate người của
    phase đó (duyệt YC, duyệt từng D-xx…), như khi agent tự viết.
 

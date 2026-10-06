@@ -25,7 +25,7 @@ Mức do agent đề xuất ở `/spec`, **người** duyệt. Chỉ người đ
 
 ### 1. Liệt kê — cho agent đọc, KHÔNG dán cho người
 
-Chạy `sh tools/liet-ke-cau-hoi.sh <thư-mục-feature>`. Output là **dữ liệu cho
+Chạy `aw questions <thư-mục-feature>`. Output là **dữ liệu cho
 agent**: thứ tự phải giải quyết (máy xếp: mức chặn → YC `bắt buộc` trước `nên có`
 → nhiều task đứng trên giả định hơn → mã YC; agent không tự xếp lại) và chi tiết
 từng mục. **Không dán danh sách cho người.** Người chỉ thấy một dòng tóm tắt:
@@ -98,7 +98,7 @@ thì in các lựa chọn đánh số kèm dòng "hoặc gõ câu trả lời kh
    chính chỗ sửa này, không phải mở file sửa tay `đề xuất` → `đã duyệt` lần nữa.
    Ghi vào cuối dòng `Trả lời:` `(đã xác nhận sửa YC-NNN)` để còn dấu vết.
    Câu trả lời khớp giả định tạm thì chỉ đổi nhãn nguồn.
-4. Chạy `sh tools/kiem-tra-truy-vet.sh <thư-mục-feature>` và dán kết quả thật.
+4. Chạy `aw check spec <thư-mục-feature>` và dán kết quả thật.
    Không `[x] ĐẠT` thì sửa ngay cho khớp hai file rồi mới sang mục kế.
 
 **Người chưa trả lời được** (chọn "Chưa trả lời được"): soạn sẵn một tin nhắn gửi `Hỏi ai` — tự đủ
@@ -111,8 +111,8 @@ tự hạ.
 
 ### 4. Tổng kết
 
-Sau mục cuối (hoặc khi người dừng), chạy lại `liet-ke-cau-hoi.sh`, dán kết quả,
-rồi nói rõ:
+Sau mục cuối (hoặc khi người dừng), chạy lại `aw questions` (đọc, không dán),
+rồi nói ngắn gọn:
 
 - còn gì đang chặn phase nào;
 - câu hỏi nào đang chờ ai (các mục đã soạn tin nhắn);
@@ -133,7 +133,7 @@ rồi nói rõ:
 - Sửa YC khi người chưa xác nhận các dòng sẽ đổi, hoặc sửa YC khác ngoài YC của
   điểm mù đang xử lý.
 - Trình bày nhiều mục một lúc rồi bắt người trả lời gộp.
-- Dán nguyên danh sách của `liet-ke-cau-hoi.sh` cho người khi người không yêu cầu.
+- Dán nguyên danh sách của `aw questions` cho người khi người không yêu cầu.
 - Bỏ lựa chọn tự nhập hoặc "Chat về câu này" khỏi câu hỏi.
 - Sửa `tdd.md`, `plan.md` hay code — việc của phase tương ứng; chỉ nói rõ cần
   chạy lại phase nào.

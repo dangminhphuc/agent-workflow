@@ -3,11 +3,18 @@
 Biên dịch định nghĩa phase trung lập sang artifact native của Claude Code.
 
 ```sh
-sh adapters/claude-code/build.sh --out /đường/dẫn/repo-đích [--force]
+aw adapter build claude-code [--out <thư-mục>] [--force]
 ```
 
-Thường bạn không gọi trực tiếp — `tools/cai-dat.sh` gọi nó sau khi đã chép bộ
-luật/mẫu/công cụ vào repo đích.
+Thường bạn không gọi trực tiếp — `aw init` (ở checkout chính) và
+`aw worktree new … --create` (ở worktree mới) gọi nó. Mọi file sinh ra nằm trong
+`.claude/`, đường dẫn khai ở file [`exclude`](exclude); `aw init` thêm nó vào
+`.git/info/exclude` nên không lọt vào commit. File `.claude/` mà git đang theo dõi
+(vd bộ cài cũ còn trong base, hay `settings.json` của team) thì adapter bỏ qua.
+
+Lời dặn trong lệnh sinh ra chỉ gọi `aw …` — luật nằm trong checker của engine.
+Phần dùng chung với adapter khác ở `adapters/lib/chung.sh` (xem
+[../README.md](../README.md)).
 
 `--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (`SAI THAM SỐ`).
 
@@ -26,7 +33,7 @@ Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: `06-ship`).
 Mỗi command sinh ra gồm ba phần:
 
 1. **Bước 0 — xác định feature:** chạy
-   `sh .agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh $ARGUMENTS`. Script suy
+   `aw feature $ARGUMENTS`. Engine suy
    từ tên branch theo `conventions.md` → không khớp thì lấy tham số lệnh (vd
    `/spec feat_tao-todo`) → không có thì ra `CẦN HỎI NGƯỜI` và command bảo agent dừng hỏi.
    Đang ở checkout chính thì ra `ĐANG Ở CHECKOUT CHÍNH`: worktree là bắt buộc, command bảo agent dừng
@@ -36,8 +43,8 @@ Mỗi command sinh ra gồm ba phần:
 
    Ngoại lệ: phase khai `arguments: input` (hiện chỉ `00-intake`). Khi đó tham số
    lệnh là **input** (`/intake JIRA-123 …`), adapter **không** truyền nó vào
-   `xac-dinh-feature.sh`, và `ĐANG Ở CHECKOUT CHÍNH` dẫn tới bước đề xuất
-   worktree bằng `tao-worktree.sh` — người chọn base rồi mới tạo. Adapter từ chối build (`ĐỊNH NGHĨA QUY TRÌNH LỖI`) nếu `arguments` mang giá
+   `aw feature`, và `ĐANG Ở CHECKOUT CHÍNH` dẫn tới bước đề xuất
+   worktree bằng `aw worktree new` — người chọn base rồi mới tạo. Adapter từ chối build (`ĐỊNH NGHĨA QUY TRÌNH LỖI`) nếu `arguments` mang giá
    trị khác `input`.
 2. **Hợp đồng phase** (đọc gì, ghi ra đâu, mẫu nào, checker LLM nào, điều kiện
    ra là lệnh gì) do adapter dựng từ frontmatter.
@@ -53,7 +60,7 @@ thứ khác ngoài tên feature (như `/import <file> <artifact> [tên-feature]`
 Luật theo loại việc (`feature | bugfix | refactor | perf | chore`, ghi trong
 `intake.md` ở `/intake`) nằm **hoàn toàn** trong thân file phase và trong các
 script kiểm tra — adapter không sinh nhánh nào theo loại. `/design` với `chore`
-vẫn được sinh ra; chính `kiem-tra-thiet-ke.sh` chặn khi chạy design cho chore.
+vẫn được sinh ra; chính `aw check design` chặn khi chạy design cho chore.
 Adapter mới vì thế không phải biết gì về loại việc.
 
 ## Cái gì KHÔNG biên dịch portable được
@@ -101,7 +108,7 @@ dùng tự chạy — không được coi "không có file phát hiện" là đ�
 
 Adapter này dịch nó thành subagent `soat-thiet-ke` (thân lấy từ
 `workflow/checkers/thiet-ke.md`); command `/design` bảo agent gọi subagent đó sau
-khi viết xong `tdd.md`. `kiem-tra-thiet-ke.sh` fail nếu chưa có
+khi viết xong `tdd.md`. `aw check design` fail nếu chưa có
 `phat-hien-thiet-ke.md` — nên quên gọi subagent cũng không lọt.
 
 ### 6. Câu hỏi lựa chọn
@@ -113,10 +120,10 @@ Agent không có giao diện lựa chọn thì in lựa chọn đánh số kèm 
 lời khác" — mô tả trung lập đã nói cách lùi này.
 
 Những gì **luôn** portable: file artifact trong `.agent-workflow/<tên-branch>/`,
-`conventions.md`, các mẫu, và các script kiểm tra. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
+`conventions.md`, các mẫu (chép vào `.agent-workflow/.engine/`), và lệnh `aw check`. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
 trong prompt.
 
-## Dọn file cũ khi cài lại
+## Dọn file cũ khi sinh lại
 
 Sau khi sinh xong, adapter xoá mọi file trong `.claude/commands/` và
 `.claude/agents/` **mang dấu "SINH TỰ ĐỘNG"** mà lần build này không sinh ra — tức
@@ -141,7 +148,7 @@ của repo đích. Nó nhắc khi một artifact vừa bị sửa mà cổng ch�
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'for f in $CLAUDE_FILE_PATHS; do case \"$f\" in *.agent-workflow/*/spec.md) sh .agent-workflow/.quy-trinh/tools/kiem-tra-truy-vet.sh \"$(dirname \"$f\")\" >&2 ;; esac; done' || true"
+            "command": "sh -c 'for f in $CLAUDE_FILE_PATHS; do case \"$f\" in *.agent-workflow/*/spec.md) aw check spec \"$(dirname \"$f\")\" >&2 ;; esac; done' || true"
           }
         ]
       }
@@ -165,7 +172,7 @@ Cuối output có khối `Kết quả`, đánh `[x]` vào đúng một nhãn:
 | `ĐÃ SINH` | Thành công |
 | `SAI THAM SỐ` | Sai tham số |
 | `CÓ FILE VIẾT TAY` | Đích đã có file người viết tay — dùng `--force` để ghi đè |
-| `ĐỊNH NGHĨA QUY TRÌNH LỖI` | Spec nguồn sai: `exit_machine` không phải lệnh chạy được / trỏ tới script không tồn tại, hoặc `llm_checker` / mục `commands:` trỏ tới file không tồn tại, hoặc `arguments` sai giá trị |
+| `ĐỊNH NGHĨA QUY TRÌNH LỖI` | Spec nguồn sai: `exit_machine` không phải `aw check <tên>` / tên không có trong bảng checker của engine, hoặc `llm_checker` / mục `commands:` trỏ tới file không tồn tại, hoặc `arguments` sai giá trị |
 
 `ĐỊNH NGHĨA QUY TRÌNH LỖI` là chốt chặn quan trọng: nó giữ cho "điều kiện ra loại MÁY" luôn là lệnh
 thật. Không có nó, một dòng mô tả bằng chữ sẽ lọt vào mục đó và agent sẽ tự đánh
@@ -175,12 +182,14 @@ giá là đã đạt.
 
 1. Tạo `adapters/<id>/build.sh`, nhận `--out <thư-mục>`; từ chối `--out` nằm
    trong repo agent-workflow (`SAI THAM SỐ`), như adapter Claude Code.
-2. `. "$ROOT/tools/lib/md.sh"` rồi dùng `wf_phases`, `fm_scalar`, `fm_list`, `md_body`.
-   Nạp thêm `tools/lib/ket-qua.sh` và khai nhãn kết quả bằng `kq_khai`, như `build.sh`.
-3. Đọc `workflow.yaml` lấy `artifact_dir`; giữ nguyên đường dẫn artifact
-   `<artifact_dir>/<tên-branch>/` và thứ tự xác định feature (branch →
-   tham số → hỏi) — đây là giao diện chung giữa các adapter. Đừng viết lại
-   logic này: gọi `tools/xac-dinh-feature.sh` từ output của adapter.
-4. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
+2. Tạo `adapters/<id>/exclude` liệt kê đường dẫn adapter sinh ra (vd `/.cursor/rules/agent-workflow/`)
+   — `aw init` thêm vào `.git/info/exclude`.
+3. Nạp `tools/lib/md.sh`, `tools/lib/ket-qua.sh`, `tools/lib/bang-lenh.sh`, rồi
+   `adapters/lib/chung.sh` (đặt `ROOT`, `OUT`, `FORCE`, `DA_SINH` trước). Dùng
+   `kiem_tra_nguon`, `ghi_file`, `kiem_tra_ghi_de`, `buoc_xac_dinh_feature`,
+   `buoc_phan_loai_input`, `doc_truoc`, `don_file_cu` — đừng viết lại.
+4. Lời dặn agent chỉ gọi `aw …` (`aw feature`, `aw check <tên>`, `aw input`…) và
+   đọc mẫu/luật trong `.agent-workflow/.engine/`. Không nhúng luật vào prompt.
+5. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
    LLM, câu hỏi lựa chọn), **ghi rõ trong output** thay vì bỏ qua.
-5. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.
+6. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.

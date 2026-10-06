@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Đổi tên việc: branch + thư mục artifact + thư mục worktree, trong một lệnh.
 #
-#   sh .agent-workflow/.quy-trinh/tools/doi-ten-feature.sh <tên-branch-mới>
+#   aw rename <tên-branch-mới>
 #
 # Dùng khi loại việc lệch tiền tố branch (vd fix_ nhưng thực ra là feature) —
 # quy trình không có ngoại lệ "chấp nhận lệch", nên phải sửa cho khớp. Ba thứ
@@ -22,19 +22,21 @@ kq_khai doi-ten-feature.sh \
   "0=ĐÃ ĐỔI TÊN" \
   "2=KHÔNG ĐỔI ĐƯỢC — tham số hoặc trạng thái không cho phép"
 . "$HERE/lib/worktree.sh"
-ART_ABS=$(CDPATH= cd -- "$HERE/../.." && pwd)
-ART=$(basename "$ART_ABS")
+. "$HERE/lib/moi-truong.sh"
+mt_dat "$HERE"
+ART=$MT_ART_DIR
+ART_ABS=$MT_ART
 
 MOI="${1:-}"
-[ -n "$MOI" ] || { echo "Dùng: sh doi-ten-feature.sh <tên-branch-mới>" >&2; exit 2; }
-if wt_la_chinh "$ART_ABS"; then
+[ -n "$MOI" ] || { echo "Dùng: aw rename <tên-branch-mới>" >&2; exit 2; }
+if wt_la_chinh "$MT_REPO"; then
   echo "LỖI: đang ở checkout chính — chạy lệnh này trong worktree của việc cần đổi tên." >&2; exit 2
 fi
-CU=$(git -C "$ART_ABS" rev-parse --abbrev-ref HEAD 2>/dev/null)
+CU=$(git -C "$MT_REPO" rev-parse --abbrev-ref HEAD 2>/dev/null)
 [ -n "$CU" ] && [ "$CU" != "HEAD" ] || { echo "LỖI: không xác định được branch hiện tại." >&2; exit 2; }
 [ "$CU" != "$MOI" ] || { echo "LỖI: tên mới trùng tên cũ." >&2; exit 2; }
-git -C "$ART_ABS" check-ref-format --branch "$MOI" >/dev/null 2>&1 || { echo "LỖI: \"$MOI\" không phải tên branch hợp lệ." >&2; exit 2; }
-if git -C "$ART_ABS" rev-parse --verify --quiet "refs/heads/$MOI" >/dev/null; then
+git -C "$MT_REPO" check-ref-format --branch "$MOI" >/dev/null 2>&1 || { echo "LỖI: \"$MOI\" không phải tên branch hợp lệ." >&2; exit 2; }
+if git -C "$MT_REPO" rev-parse --verify --quiet "refs/heads/$MOI" >/dev/null; then
   echo "LỖI: branch \"$MOI\" đã tồn tại." >&2; exit 2
 fi
 
@@ -43,20 +45,20 @@ D_CU="$ART_ABS/$(printf '%s' "$CU" | tr '/' '_')"
 D_MOI="$ART_ABS/$TM_MOI"
 [ ! -e "$D_MOI" ] || { echo "LỖI: $D_MOI đã tồn tại — không ghi đè." >&2; exit 2; }
 
-WT=$(git -C "$ART_ABS" rev-parse --show-toplevel)
+WT=$(git -C "$MT_REPO" rev-parse --show-toplevel)
 WT_MOI="$(dirname "$WT")/$TM_MOI"
 [ ! -e "$WT_MOI" ] || { echo "LỖI: $WT_MOI đã tồn tại — không ghi đè." >&2; exit 2; }
 
 # Thứ tự: branch → artifact (trong worktree) → dời worktree (cuối cùng, vì sau
 # bước này thư mục hiện tại không còn). Bước nào hỏng thì hoàn tác các bước trước.
-git -C "$ART_ABS" branch -m "$CU" "$MOI" || exit 2
+git -C "$MT_REPO" branch -m "$CU" "$MOI" || exit 2
 if [ -d "$D_CU" ]; then
-  mv "$D_CU" "$D_MOI" || { git -C "$ART_ABS" branch -m "$MOI" "$CU"; echo "LỖI: không dời được thư mục artifact — đã đổi lại tên branch." >&2; exit 2; }
+  mv "$D_CU" "$D_MOI" || { git -C "$MT_REPO" branch -m "$MOI" "$CU"; echo "LỖI: không dời được thư mục artifact — đã đổi lại tên branch." >&2; exit 2; }
   echo "Dời  $ART/$(basename "$D_CU") → $ART/$TM_MOI"
 fi
 if ! git -C "$WT" worktree move "$WT" "$WT_MOI"; then
   [ -d "$D_MOI" ] && mv "$D_MOI" "$D_CU"
-  git -C "$ART_ABS" branch -m "$MOI" "$CU"
+  git -C "$MT_REPO" branch -m "$MOI" "$CU"
   echo "LỖI: git không dời được worktree — đã hoàn tác branch và thư mục artifact." >&2
   exit 2
 fi

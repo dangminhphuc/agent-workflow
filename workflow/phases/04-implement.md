@@ -13,7 +13,7 @@ outputs:
   - plan.md (cập nhật trạng thái task)
   - ket-qua-kiem-thu.md
 exit_machine:
-  - sh tools/kiem-tra-hien-thuc.sh
+  - aw check implement
 exit_human: []
 needs_clean_context: false
 ---
@@ -32,7 +32,7 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
 
 ## Đầu vào
 
-- `plan.md` — nguồn duy nhất của việc phải làm; phải qua `kiem-tra-ke-hoach.sh`
+- `plan.md` — nguồn duy nhất của việc phải làm; phải qua `aw check plan`
 - `tdd.md` — *làm thế nào*: contract, mô hình dữ liệu, flow, quyết định D-xx
 - `spec.md` — tra khi cần hiểu *vì sao* một task tồn tại
 - `../conventions.md` — mẫu file test, cú pháp tag `covers:`, nhánh gốc
@@ -61,7 +61,7 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
    không thể hoàn thành nếu không đụng — và phải ghi file đó (trong backtick)
    kèm lý do vào mục "Phát sinh".
 
-6. **Chạy `kiem-tra-hien-thuc.sh`.** Script tự chạy lệnh test và tự ghi
+6. **Chạy `aw check implement`.** Script tự chạy lệnh test và tự ghi
    `ket-qua-kiem-thu.md` — không tự viết file đó.
 
 ## Theo loại việc — chặn
@@ -70,25 +70,25 @@ Loại việc lấy từ `intake.md`. Các luật dưới là **chặn** ngay �
 
 | Loại | Thứ tự bắt buộc / luật | Máy ghi / kiểm |
 |---|---|---|
-| `bugfix` | Viết test tái hiện → chạy `sh tools/kiem-tra-tai-hien.sh <thư-mục-feature>` **trước khi sửa code** → mới sửa | `tai-hien.md`: test đỏ khi diff mới chỉ đụng file test. Thiếu, hoặc ghi xanh → chặn |
+| `bugfix` | Viết test tái hiện → chạy `aw check repro <thư-mục-feature>` **trước khi sửa code** → mới sửa | `tai-hien.md`: test đỏ khi diff mới chỉ đụng file test. Thiếu, hoặc ghi xanh → chặn |
 | `refactor` | Không xoá test cũ. Sửa test cũ thì khai ở "Test cũ bị sửa" | Xoá test cũ → chặn; sửa chưa khai → cảnh báo |
-| `perf` | Như refactor; `kiem-tra-hieu-nang.sh <thư-mục-feature> --truoc` **trước khi sửa**, `--sau` sau khi sửa | `do-hieu-nang.md` thiếu một trong hai số đo → chặn |
+| `perf` | Như refactor; `aw check perf <thư-mục-feature> --before` **trước khi sửa**, `--after` sau khi sửa | `do-hieu-nang.md` thiếu một trong hai số đo → chặn |
 | `chore` | Không đụng code production. Nâng dependency thì khai ở "Nâng dependency" | Đụng `mau_code_production` → chặn; đụng `mau_file_dependency` mà không khai, hoặc khai major → chặn |
 
-Quên chạy `tai-hien` / `--truoc` mà đã sửa code: script **từ chối**. Hoàn tác phần
+Quên chạy `tai-hien` / `--before` mà đã sửa code: script **từ chối**. Hoàn tác phần
 sửa (`git stash`), chạy lại, rồi `git stash pop`. Đây là chủ ý: bằng chứng "trước
 khi sửa" chỉ có giá trị khi nó thật sự được lấy trước khi sửa.
 
 ## Kiểm chéo — cảnh báo, `review` chặn
 
-`kiem-tra-hien-thuc.sh` in **cảnh báo** (không chặn phase này) cho:
+`aw check implement` in **cảnh báo** (không chặn phase này) cho:
 
 | Kiểm chéo | Xử lý |
 |---|---|
 | YC chưa có test gắn tag `covers:` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do |
 | File thay đổi so với nhánh gốc nằm ngoài "File dự kiến"/"Phát sinh" | Hoàn tác, hoặc ghi vào "Phát sinh" + lý do |
 | Artifact lỗi thời (`based_on` lệch hash) | Chạy lại phase sinh ra artifact đó |
-| Loại việc lệch tiền tố branch | Sửa loại trong `intake.md`, hoặc `tools/doi-ten-feature.sh` |
+| Loại việc lệch tiền tố branch | Sửa loại trong `intake.md`, hoặc `aw rename` |
 | refactor/perf: test cũ bị sửa mà chưa khai | Khai ở "Test cũ bị sửa" + lý do, hoặc hoàn tác |
 | Điểm mù `Mức chặn: chặn review` còn mở | Nhờ người chạy lệnh `open-questions` để chốt — agent không tự trả lời |
 
@@ -123,7 +123,7 @@ vào riêng — nó ăn đúng cái diff mà `05-review` ăn — và đặt nó 
 Đặt ở đây thì ràng buộc mạnh hơn: **chưa xanh nghĩa là chưa xong.**
 
 **Máy:**
-- `sh tools/kiem-tra-hien-thuc.sh` ra `[x] ĐẠT`: đầu vào qua `kiem-tra-ke-hoach.sh`;
+- `aw check implement` ra `[x] ĐẠT`: đầu vào qua `aw check plan`;
   lệnh kiểm thử của repo đích chạy **XANH** và output thật nằm trong
   `ket-qua-kiem-thu.md`; không còn task `[~]`.
 

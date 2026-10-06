@@ -5,7 +5,7 @@ based_on: []
 # Thiết kế kỹ thuật — <TÊN TÍNH NĂNG>
 
 > Technical Design Document, sinh bởi phase `02-design`. Output duy nhất của thiết kế.
-> `based_on` do `tools/cap-nhat-based-on.sh` ghi — không sửa tay.
+> `based_on` do `aw based-on` ghi — không sửa tay.
 > Mục không áp dụng ghi `Không áp dụng: <lý do>`, không bỏ trống.
 
 ## Bối cảnh code hiện có

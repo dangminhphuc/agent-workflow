@@ -2,9 +2,12 @@
 
 Quy trình phát triển phần mềm dựa trên AI agent, **không phụ thuộc vào một agent cụ thể**.
 
-Repo này là *nguồn*. Bạn cài nó vào repo dự án thật, nó sinh ra artifact riêng cho
-agent bạn đang dùng. Hiện có adapter cho **Claude Code**; Cursor và Copilot đã có
-khe cắm trong manifest nhưng chưa hiện thực.
+Repo này là *nguồn* của **engine**, phát hành theo tag `YYYY.M.D`
+([CHANGELOG](CHANGELOG.md)). Repo dự án không chứa gì của quy trình: wrapper `aw`
+cài global lấy đúng version engine vào cache, cấu hình nằm trong `.git/` của bản
+clone, và adapter sinh lệnh riêng cho agent bạn đang dùng — tất cả bị exclude,
+không bao giờ phải commit vào nhánh gốc (xem [Cài đặt](#cài-đặt)). Hiện có adapter
+cho **Claude Code**; Codex, Cursor, Copilot có khe cắm nhưng chưa hiện thực.
 
 ## Ý tưởng cốt lõi
 
@@ -42,13 +45,13 @@ văn xuôi.
 
 ```mermaid
 flowchart TD
-    INTAKE["00-intake · bắt buộc<br/>→ intake.md (loại việc + input)<br/><i>MÁY: kiem-tra-tiep-nhan.sh</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: kiem-tra-truy-vet.sh</i><br/><i>NGƯỜI: duyệt YC, Mức chặn, Mức rủi ro</i>"]
+    INTAKE["00-intake · bắt buộc<br/>→ intake.md (loại việc + input)<br/><i>MÁY: aw check intake</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: aw check spec</i><br/><i>NGƯỜI: duyệt YC, Mức chặn, Mức rủi ro</i>"]
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Mức rủi ro: cao)"/]
-    DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: kiem-tra-thiet-ke.sh + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
-    PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: kiem-tra-ke-hoach.sh</i>"]
-    IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: kiem-tra-hien-thuc.sh (tự chạy test)</i>"]
-    REVIEW["05-review · ngữ cảnh trắng<br/>đọc mọi artifact + diff → review.md<br/><i>MÁY: kiem-tra-ra-soat.sh</i><br/><i>NGƯỜI: xác nhận kết luận</i>"]
+    DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: aw check design + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
+    PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: aw check plan</i>"]
+    IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: aw check implement (tự chạy test)</i>"]
+    REVIEW["05-review · ngữ cảnh trắng<br/>đọc mọi artifact + diff → review.md<br/><i>MÁY: aw check review</i><br/><i>NGƯỜI: xác nhận kết luận</i>"]
     SHIP["06-ship · tuỳ chọn"]
 
     NGOAI[/"Artifact làm bằng tool khác<br/>(AI khác, Confluence, viết tay)"/]
@@ -121,14 +124,15 @@ Cách đọc:
    branch (`loai_theo_tien_to` trong `conventions.md`), **người xác nhận**, và
    `intake.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
    chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên bằng
-   `tools/doi-ten-feature.sh` (đổi cả branch, thư mục artifact và thư mục worktree).
+   `aw rename` (đổi cả branch, thư mục artifact và thư mục worktree).
 2. **Input** — tài liệu có định danh (`[JIRA]`, `[CONFLUENCE]`, `[FILE]`), hoặc
    lời người dùng **chép nguyên văn** (`[NGƯỜI-DÙNG]`). Không có `[SUY-RA]` ở đây:
    suy đoán của agent mà vào input thì mọi phase sau truy về nó như có nguồn.
 3. **Mục tiêu** một câu.
 
 Kèm dòng **Base** — base người chọn khi tạo worktree (xem dưới); checker phía sau
-so diff với base này.
+so diff với base này — và dòng **Engine**: version engine của việc, mọi `aw check`
+chạy đúng version đó.
 
 `00` chỉ **trỏ tới** tài liệu, không tóm tắt hay diễn giải BRD — nếu không nó
 thành một lớp diễn giải chen giữa tài liệu thật và spec.
@@ -139,7 +143,7 @@ từ branch.
 
 **Worktree là bắt buộc.** Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
 chạy `/intake`; mọi lệnh khác chạy ở đó đều bị chặn (`ĐANG Ở CHECKOUT CHÍNH`). `/intake` ở checkout
-chính: agent chốt loại việc với bạn, rồi chạy `tools/tao-worktree.sh <loại-việc>
+chính: agent chốt loại việc với bạn, rồi chạy `aw worktree new <loại-việc>
 <mô-tả>` — script **chỉ đề xuất**:
 
 ```
@@ -159,9 +163,9 @@ chính: agent chốt loại việc với bạn, rồi chạy `tools/tao-worktree
 
 **Bạn chọn base**; ★ là gợi ý của máy theo một luật cố định (giữa `main` và
 `origin/main`, bản nào chứa bản kia; phân kỳ thì không gợi ý), không phải của
-agent. Agent chạy lại với `--tao --goc <ref bạn chọn>` — thiếu `--goc` là bị từ
-chối. Script tạo worktree (branch `--no-track`, để `git push` trơn không đẩy lên
-`main`), in dòng `Base:` để ghi vào `intake.md`, và nhắc bạn chuẩn bị môi trường
+agent. Agent chạy lại với `--create --base <ref bạn chọn>` — thiếu `--base` là
+bị từ chối. Script tạo worktree (branch `--no-track`, để `git push` trơn không đẩy lên
+`main`), in hai dòng `Base:` và `Engine:` để ghi vào `intake.md`, sinh adapter vào worktree mới, và nhắc bạn chuẩn bị môi trường
 (`LENH_CHUAN_BI_WT`) rồi **mở phiên agent mới** trong worktree để chạy `/spec`.
 
 Branch, thư mục worktree và thư mục artifact dùng **cùng một tên**. Worktree đặt
@@ -175,13 +179,14 @@ mà so với `main` local thì commit của người khác bị tính cho việc
 branch việc khác (xếp chồng) vẫn được — nhập qua "ref khác" — nhưng `review`
 cảnh báo để bạn xác nhận có chủ ý: việc dựa trên code chưa được review.
 
-**Dọn dẹp.** `tools/don-worktree.sh <tên-branch>` chạy từ checkout chính: mặc định
-chỉ in trạng thái; `--xoa` gỡ worktree (branch giữ nguyên); `--xoa --ca-branch`
-xoá thêm branch local bằng `git branch -d`. Không bao giờ `--force` hay `-D`: còn
-thay đổi chưa commit thì chặn; squash-merge làm git từ chối xoá branch thì bạn tự
-quyết `git branch -D`. Phase nào gọi lệnh này sẽ định sau.
+**Dọn dẹp.** `aw worktree status <tên-branch>` chạy từ checkout chính chỉ in
+trạng thái; `aw worktree remove <tên-branch>` chép artifact vào
+`.git/agent-workflow/archive/` rồi gỡ worktree (branch giữ nguyên);
+`--delete-branch` xoá thêm branch local bằng `git branch -d`. Không bao giờ
+`--force` hay `-D`: còn thay đổi chưa commit thì chặn; squash-merge làm git từ
+chối xoá branch thì bạn tự quyết `git branch -D`.
 
-Nhãn input do **máy** gán: `tools/phan-loai-input.sh` nhận mã Jira (`mau_jira`),
+Nhãn input do **máy** gán: `aw input` nhận mã Jira (`mau_jira`),
 URL Confluence (`mien_confluence`), file có thật trong repo. Chỉ cần một từ không
 nhận ra thì **cả chuỗi** là lời người dùng, chép nguyên văn thành một mục
 `[NGƯỜI-DÙNG]` — vd `/intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
@@ -204,9 +209,9 @@ Loại việc **đổi luật** của các phase sau:
 | Loại | Phase | Máy ghi / chặn thêm | Người phán |
 |---|---|---|---|
 | `feature` | đủ | — | — |
-| `bugfix` | đủ | Spec có "Tái hiện lỗi". `kiem-tra-tai-hien.sh` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
+| `bugfix` | đủ | Spec có "Tái hiện lỗi". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
 | `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Được bảo vệ bởi:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Test cũ bị sửa" | Diff test cũ chỉ đổi import/cấu trúc |
-| `perf` | đủ | Như refactor + YC `hiệu năng` có số liệu; `kiem-tra-hieu-nang.sh --truoc/--sau` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
+| `perf` | đủ | Như refactor + YC `hiệu năng` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
 | `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Nâng dependency" (chỉ `vá \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
 
 Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bugfix gấp),
@@ -226,7 +231,7 @@ bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **Mức chặn** do agent đề 
 | `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận`, không được `đạt` |
 
 **`/open-questions`** — lệnh tiện ích, chạy bất cứ lúc nào sau `/spec`. Máy
-(`tools/liet-ke-cau-hoi.sh`) liệt kê điểm mù còn mở theo thứ tự phải chốt trước —
+(`aw questions`) liệt kê điểm mù còn mở theo thứ tự phải chốt trước —
 mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhiều task đứng trên giả
 định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Danh sách đó để agent
 đọc; bạn chỉ thấy một dòng tóm tắt. Rồi agent hỏi **từng mục một** bằng câu hỏi
@@ -306,12 +311,12 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
-| `intake` | `kiem-tra-tiep-nhan.sh` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
-| `spec` | `kiem-tra-truy-vet.sh` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Mức chặn` thiếu/sai |
-| `design` | `kiem-tra-thiet-ke.sh` | Spec chưa được người duyệt, điểm mù `chặn` còn mở, thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
-| `plan` | `kiem-tra-ke-hoach.sh` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
-| `implement` | `kiem-tra-hien-thuc.sh` | Test chưa xanh, task còn dở |
-| `review` | `kiem-tra-ra-soat.sh` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, điểm mù `chặn`/`chặn review` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
+| `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
+| `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Mức chặn` thiếu/sai |
+| `design` | `aw check design` | Spec chưa được người duyệt, điểm mù `chặn` còn mở, thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `plan` | `aw check plan` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
+| `implement` | `aw check implement` | Test chưa xanh, task còn dở |
+| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, điểm mù `chặn`/`chặn review` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
 
 Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
 một nhãn — người và agent đọc nhãn, không đọc mã số:
@@ -326,7 +331,7 @@ Kết quả: kiem-tra-ke-hoach.sh
 Mã thoát vẫn còn — script gọi lẫn nhau cần nó — nhưng chỉ là chi tiết của máy.
 Nhãn của từng script khai ở dòng `kq_khai` đầu script (`tools/lib/ket-qua.sh`).
 
-`kiem-tra-hien-thuc.sh` **tự chạy lệnh test và tự ghi output** vào
+`aw check implement` **tự chạy lệnh test và tự ghi output** vào
 `ket-qua-kiem-thu.md`. Agent không có cơ hội viết lại kết quả bằng lời hay bịa
 một dòng "tất cả test đã xanh".
 
@@ -350,7 +355,7 @@ Tiêu chí xếp một checker mới: độ chính xác, chi phí nếu lọt, v
 
 Checker dùng LLM (subagent `soat-thiet-ke`, định nghĩa ở
 `workflow/checkers/thiet-ke.md`) ghi phát hiện ra `phat-hien-thiet-ke.md`;
-`kiem-tra-thiet-ke.sh` fail nếu còn mục `Mức: Chặn` mà `Xử lý` chưa là `đã sửa`
+`aw check design` fail nếu còn mục `Mức: Chặn` mà `Xử lý` chưa là `đã sửa`
 hoặc `bác bỏ: <lý do>`. **Không có file phát hiện cũng là fail** — nghĩa là
 checker chưa chạy. Người là **trọng tài theo ngoại lệ**: xác nhận, hoặc bác bỏ
 kèm lý do. LLM không bao giờ là bên nói "đạt".
@@ -364,14 +369,14 @@ based_on:
   - spec.md@<hash>
 ```
 
-Hash do máy ghi (`tools/cap-nhat-based-on.sh`, dùng `cksum`, bỏ `\r`), không để
+Hash do máy ghi (`aw based-on`, dùng `cksum`, bỏ `\r`), không để
 agent tự chép. `spec.md` dựa trên `intake.md`; `tdd.md` dựa trên `spec.md` +
 `open-questions.md`; `plan.md` dựa trên `spec.md` + `tdd.md`. Lệch hash chỉ **cảnh báo** ở các phase sau; `review`
 chặn nếu còn artifact lỗi thời.
 
 ### Kiểm chéo ở `implement`
 
-`kiem-tra-hien-thuc.sh` in **cảnh báo**, `kiem-tra-ra-soat.sh` coi cùng phát hiện đó là **lỗi**
+`aw check implement` in **cảnh báo**, `aw check review` coi cùng phát hiện đó là **lỗi**
 (chung một thư viện `tools/lib/kiem-cheo.sh`, nên hai nơi không lệch nhau):
 
 | Kiểm chéo | Cách kiểm | Xử lý |
@@ -396,69 +401,127 @@ lập ở `workflow/import.md`.
 Entry check của phase N chính là checker của phase N-1 chạy lại trên input, nên
 không có đường tắt nào bỏ qua cổng chặn.
 
-## Cài vào một repo
+## Cài đặt
+
+Từ bản 2026.10.6, quy trình **không cài vào repo đích nữa**. Không có file nào phải
+commit vào `main`, `develop`, `uat`… — chạy được cả khi mọi nhánh gốc là
+protected branch. Gồm ba phần:
+
+| Phần | Ở đâu | Ai giữ |
+|---|---|---|
+| Wrapper `aw` | `~/.local/bin/aw` (một file POSIX sh) | mỗi máy, cài một lần |
+| Engine (tools, checker, luật, mẫu, adapter) | `~/.agent-workflow/engine/<YYYY.M.D>/` | cache theo version, tải khi cần |
+| Cấu hình của repo | `$(git rev-parse --git-common-dir)/agent-workflow/` | từng bản clone, dùng chung mọi worktree, **không commit** |
+
+### 1. Cài `aw`
 
 ```sh
-sh tools/cai-dat.sh /đường/dẫn/repo-của-bạn --lenh-kiem-thu "npm test"
+mkdir -p ~/.local/bin
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.6/aw -o ~/.local/bin/aw
+chmod +x ~/.local/bin/aw
+aw version
 ```
 
-Repo đích phải nằm **ngoài** repo agent-workflow: cài vào chính repo này hay bất
-kỳ thư mục con nào (vd `adapters/`) đều bị từ chối (`SAI THAM SỐ HOẶC THƯ MỤC ĐÍCH KHÔNG HỢP LỆ`), vì `.claude/` và
-`.agent-workflow/` sinh ra sẽ lẫn vào mã nguồn — và Claude Code sẽ nhận nhầm
-chúng là lệnh/skill của chính repo này.
+`aw` chỉ cần `sh`, `git`, `tar`, `gzip`, `curl` hoặc `wget`, `sha256sum` hoặc
+`shasum`. `aw doctor` kiểm hết.
 
-Sinh ra trong repo đích:
+### 2. `aw init` trong repo đích
 
-```
-.claude/
-  commands/{intake,spec,design,plan,implement,review}.md   ← phase
-  commands/{import,open-questions}.md              ← lệnh tiện ích (không phải phase)
-  agents/ra-soat-doc-lap.md                        ← rà soát ngữ cảnh sạch
-  agents/soat-thiet-ke.md                          ← checker LLM của design
-  skills/quy-trinh-agent/SKILL.md
-.agent-workflow/
-  .quy-trinh/{rules,templates,checkers,tools}      ← bộ cài, cài lại sẽ ghi đè
-  .quy-trinh/cau-hinh.sh                           ← LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; cài lại không ghi đè
-  .quy-trinh/nguon.txt                             ← cài từ repo nào, nhánh nào, commit nào — dong-bo.sh đọc
-  conventions.md                                   ← bạn viết; bộ cài chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
-  <tên-branch>/                                    ← artifact của từng feature, commit vào git
-    intake.md, spec.md, open-questions.md, tdd.md, phat-hien-thiet-ke.md,
-    plan.md, ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf), review.md
+```sh
+cd /đường/dẫn/repo-của-bạn        # checkout chính, đứng ở nhánh gốc
+aw init --test-cmd "npm test"
 ```
 
-Rồi sửa `.agent-workflow/conventions.md`, **commit bộ cài vào nhánh gốc** (worktree
-chỉ có file đã commit), mở Claude Code ở checkout chính và chạy `/intake` — nó đề
-xuất worktree cho việc. Các phase sau chạy trong worktree:
+`aw init`:
+
+- tải engine (mặc định đúng version của wrapper; `--version YYYY.M.D` để chọn) vào
+  cache, kiểm sha256 theo `SHA256SUMS` của bản phát hành, rồi **ghim** sha đó;
+- tạo trong `.git/agent-workflow/`:
+
+  ```
+  version          ← YYYY.M.D — engine cho việc MỚI
+  checksums        ← sha256 đã ghim của từng version (định dạng sha256sum)
+  conventions.md   ← bạn viết; aw chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
+  config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; không ghi đè
+  archive/         ← artifact của worktree đã gỡ (aw worktree remove)
+  ```
+
+- thêm `/.agent-workflow/` và `/.claude/` (đường dẫn adapter khai) vào
+  `.git/info/exclude`;
+- sinh adapter ở checkout chính.
+
+Rồi sửa `.git/agent-workflow/conventions.md`, mở agent ở checkout chính và chạy
+`/intake` — nó đề xuất worktree cho việc. Base chọn tuỳ ý: base không cần có gì
+của quy trình. Các phase sau chạy trong worktree:
 `/intake` → `/spec` → `/design` → `/plan` → `/implement` → `/review`.
 
-Cài lại sau khi sửa quy trình: chạy lại đúng lệnh trên. Adapter **từ chối ghi đè**
-file bạn viết tay (file do nó sinh ra đều mang dấu "SINH TỰ ĐỘNG"); dùng `--force`
-nếu thật sự muốn mất nội dung cũ. Ngược lại, file mang dấu "SINH TỰ ĐỘNG" mà bản
-mới không sinh nữa (vd `/ideation` cũ sau khi đổi thành `/intake`) thì bị **xoá**
-khi cài lại — để agent không còn gọi được lệnh cũ với luật cũ.
-
-### Đồng bộ khi repo agent-workflow có bản mới
-
-Bộ cài ghi nguồn của nó vào `.agent-workflow/.quy-trinh/nguon.txt` (URL `origin`
-của repo agent-workflow — đã bỏ `user:token` — nhánh, commit). Từ **checkout
-chính** của repo đích, đứng ở nhánh gốc:
+**Cấu hình chung của team.** Đặt `version`, `checksums`, `conventions.md`,
+`config.sh` vào một repo riêng (không phải repo dự án), rồi mỗi người:
 
 ```sh
-sh .agent-workflow/.quy-trinh/tools/dong-bo.sh --kiem-tra   # 0 = mới nhất, 1 = có bản mới
-sh .agent-workflow/.quy-trinh/tools/dong-bo.sh              # kéo bản mới + cài lại
+aw init --from git@github.com:team/agent-workflow-config.git
 ```
 
-Script clone nguồn vào thư mục tạm, in các commit mới, rồi chạy `cai-dat.sh`
-**của bản mới** vào repo đích — nên mọi luật của cài lại vẫn giữ: `cau-hinh.sh`,
-`conventions.md`, file viết tay không bị ghi đè; file trong `.quy-trinh/` mà bản
-mới bỏ đi thì bị xoá. Script **không tự commit**: xem diff rồi commit vào nhánh
-gốc; worktree đang làm nhận bản mới khi merge nhánh gốc vào.
+File đã có ở máy thì giữ; `--force` để lấy bản của team.
 
-- Chặn (`BỊ CHẶN`) khi chạy trong worktree, hoặc khi `.quy-trinh/`/`.claude/` có thay
-  đổi chưa commit — đè lên thì không còn xem được diff.
-- `--nguon <url|thư-mục>` / `--nhanh <tên>`: đổi nguồn hay nhánh theo dõi (được
-  ghi lại cho lần sau). Bộ cài cũ chưa có `nguon.txt` thì lần đầu phải truyền `--nguon`.
-- `--cai-lai`: cài lại kể cả khi đã ở commit mới nhất.
+### Lệnh
+
+| Lệnh | Việc |
+|---|---|
+| `aw init [--version YYYY.M.D] [--adapter <id>] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
+| `aw upgrade <YYYY.M.D>` | Đổi engine cho việc mới |
+| `aw version` · `aw doctor` | Xem version đang dùng · kiểm môi trường |
+| `aw check <tên> <thư-mục-feature>` | Checker máy — `intake spec design plan implement review repro perf` |
+| `aw worktree new <loại> <mô-tả> [--create --base <ref>]` | Đề xuất / tạo worktree cho việc |
+| `aw worktree status <branch>` · `aw worktree remove <branch> [--delete-branch]` | Dọn worktree sau khi merge |
+| `aw adapter build <agent> [--out <thư-mục>] [--force]` | Sinh lại adapter |
+| `aw feature` · `aw input` · `aw questions` · `aw based-on` · `aw rename` | Lệnh agent gọi trong các phase |
+
+### Artifact của việc: chỉ ở máy
+
+Artifact (`.agent-workflow/<tên-branch>/`) bị exclude: PR chỉ có code, reviewer
+không thấy `spec.md`, `tdd.md`… trong diff. Checker so diff vốn đã bỏ qua thư mục
+này. Gỡ worktree bằng `aw worktree remove` thì artifact được **chép vào**
+`.git/agent-workflow/archive/<tên>/` trước — `git worktree remove` trơn sẽ xoá
+mất, vì file bị ignore không nằm trong commit nào.
+
+### Nâng cấp
+
+```sh
+aw upgrade 2.1.0
+```
+
+Tải, kiểm và ghim sha256 của bản mới, ghi `version`, sinh lại adapter ở checkout
+chính. **Việc đang làm không đổi luật:** mỗi việc ghi `- **Engine:** YYYY.M.D` trong
+`intake.md` lúc tạo worktree, và mọi `aw check` của việc chạy đúng version đó.
+Máy không có version đó và không tải được thì `aw check` báo `KHÔNG HỢP LỆ` —
+không bao giờ chạy tạm bằng version khác. So version: khớp chính xác `YYYY.M.D`.
+
+Dùng chung cho team: commit `version` + `checksums` mới vào repo cấu hình của team.
+
+### Chạy không có mạng
+
+| Biến | Dùng khi |
+|---|---|
+| `AW_ENGINE_DIR=/đường/dẫn/engine` | Máy hoặc CI không có mạng: dùng engine có sẵn (một bản giải nén của release, hoặc bản checkout repo này đúng tag). `VERSION` của nó vẫn phải khớp chính xác |
+| `AW_MIRROR=https://mirror.noi-bo/agent-workflow` | Tải từ mirror khác thay cho GitHub. Cấu trúc: `<AW_MIRROR>/<YYYY.M.D>/agent-workflow-<YYYY.M.D>.tar.gz` và `SHA256SUMS`; nhận cả `file://` |
+| `AW_CACHE=/đường/dẫn` | Đổi chỗ cache (mặc định `~/.agent-workflow/engine`), vd cache dùng chung trên CI |
+
+Engine đã có trong cache thì không cần mạng nữa.
+
+### Chuyển từ bộ cài cũ
+
+Repo đã có `.agent-workflow/.quy-trinh/` commit trong base:
+
+```sh
+aw init --from-legacy
+```
+
+Lệnh chép `.agent-workflow/conventions.md` và `.quy-trinh/cau-hinh.sh` sang
+`.git/agent-workflow/`. Nó **không xoá, không commit gì** — chỉ in các lệnh
+`git rm` để người dọn bộ cài cũ bằng một PR bình thường (qua review) khi tiện.
+Trong lúc đó, file `.claude/` cũ git còn theo dõi được adapter **bỏ qua**, không
+ghi đè. `tools/cai-dat.sh` và `tools/dong-bo.sh` giờ chỉ in hướng dẫn này.
 
 ### Artifact theo feature và `conventions.md`
 
@@ -473,10 +536,10 @@ Cách xác định feature đang làm:
 3. không có tham số thì dừng lại hỏi.
 
 Agent luôn in `Đang làm với: …` trước khi bắt đầu. Thứ tự này nằm trong script
-`tools/xac-dinh-feature.sh` (kết quả `ĐÃ XÁC ĐỊNH`, `CẦN HỎI NGƯỜI` hoặc `ĐANG Ở CHECKOUT CHÍNH`), không nằm trong
+`aw feature` (kết quả `ĐÃ XÁC ĐỊNH`, `CẦN HỎI NGƯỜI` hoặc `ĐANG Ở CHECKOUT CHÍNH`), không nằm trong
 prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành `_`.
 
-`conventions.md` là của repo đích, do bạn viết. Phần máy đọc là một khối
+`conventions.md` (trong `.git/agent-workflow/`) là của repo đích, do bạn viết. Phần máy đọc là một khối
 ` ```conventions ` gồm các dòng `khoá: giá trị`:
 
 | Khoá | Ví dụ | Dùng cho |
@@ -497,39 +560,44 @@ Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
 ## Cấu trúc repo
 
 ```
+VERSION, CHANGELOG.md    version engine (YYYY.M.D) và thay đổi từng bản
 workflow.yaml            manifest trung lập — nguồn sự thật duy nhất (phases:, commands:)
 workflow/
-  phases/*.md            định nghĩa phase (frontmatter + mô tả)
+  phases/*.md            định nghĩa phase (frontmatter + mô tả); exit_machine là "aw check <tên>"
   checkers/*.md          định nghĩa checker LLM (chỉ được chặn)
   import.md              lệnh import artifact từ ngoài (không phải phase)
   open-questions.md      lệnh dẫn người chốt điểm mù theo thứ tự ưu tiên (không phải phase)
   rules/*.md             luật áp dụng cho mọi phase
-  templates/*.md         mẫu cho từng artifact + conventions.md
+  templates/*.md         mẫu cho từng artifact + conventions.md, config.sh
+bin/
+  aw                     wrapper cài global: chọn version, tải + kiểm sha256, chuyển lệnh
+  aw-engine              điểm vào của engine: init, check, worktree, adapter, feature…
 adapters/
-  claude-code/build.sh   biên dịch sang .claude/**
-tools/
-  cai-dat.sh             cài vào repo đích
-  dong-bo.sh             repo đích: kéo bản mới của agent-workflow và cài lại
-  kiem-tra-*.sh          các cổng chặn bằng máy
-  xac-dinh-feature.sh    checkout chính → chặn; branch → tham số → hỏi; in thư mục feature
-  kiem-tra-tai-hien.sh   bugfix: ghi bằng chứng test tái hiện đỏ trên code chưa sửa
-  kiem-tra-hieu-nang.sh  perf: ghi số đo trước / sau
-  doi-ten-feature.sh     đổi tên branch + dời thư mục artifact + dời worktree
-  tao-worktree.sh        /intake: đề xuất worktree (tên, vị trí, base) — người chọn base rồi mới tạo
-  don-worktree.sh        dọn worktree sau khi merge (không --force, không -D)
-  phan-loai-input.sh     /intake: tham số → dòng "## Input" (nhãn do máy gán, gộp khi chạy lại)
-  liet-ke-cau-hoi.sh     /open-questions: điểm mù còn mở theo thứ tự phải chốt, mục nào đang chặn
-  cap-nhat-based-on.sh   ghi hash đầu vào vào frontmatter artifact
-  chay-thu.sh            test hồi quy cho chính các cổng chặn
-  lib/md.sh              đọc frontmatter (tập con YAML), conventions, hash
-  lib/kiem-cheo.sh       kiểm chéo dùng chung: lỗi thời, test ↔ YC, phạm vi diff, base
-  lib/worktree.sh        nhận diện checkout chính / worktree, đường dẫn
+  README.md              hợp đồng adapter, ghi chú Codex / Cursor
+  lib/chung.sh           phần dùng chung của mọi adapter
+  claude-code/build.sh   biên dịch sang .claude/**; claude-code/exclude: đường dẫn cần exclude
+tools/                   (engine — gọi qua aw, không gọi thẳng)
+  khoi-tao.sh            aw init: cấu hình, exclude, adapter; --from-legacy
+  sinh-adapter.sh        aw adapter build: chép rules/templates vào .agent-workflow/.engine/ + build
+  kiem-tra-*.sh          các cổng chặn bằng máy (aw check)
+  xac-dinh-feature.sh    aw feature: checkout chính → chặn; branch → tham số → hỏi
+  tao-worktree.sh        aw worktree new: đề xuất worktree — người chọn base rồi mới tạo
+  don-worktree.sh        aw worktree status|remove (không --force, không -D)
+  doi-ten-feature.sh     aw rename: đổi tên branch + thư mục artifact + worktree
+  phan-loai-input.sh     aw input: tham số → dòng "## Input" (nhãn do máy gán)
+  liet-ke-cau-hoi.sh     aw questions: điểm mù còn mở theo thứ tự phải chốt
+  cap-nhat-based-on.sh   aw based-on: ghi hash đầu vào vào frontmatter artifact
+  dong-goi.sh            đóng gói bản phát hành (tarball + SHA256SUMS)
+  cai-dat.sh, dong-bo.sh đã bỏ — chỉ in hướng dẫn chuyển sang aw
+  chay-thu.sh            test hồi quy cho cổng chặn, wrapper, đóng gói
+  lib/                   md.sh, kiem-cheo.sh, worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh
 docs/kien-truc.md        vì sao thiết kế như vậy, cách thêm phase/adapter
 ```
 
 ## Yêu cầu môi trường
 
-POSIX shell + `awk` + `sed`. Không cần Node, Python, hay cài đặt gì thêm.
+POSIX shell + `awk` + `sed` + `git`; wrapper cần thêm `tar`, `gzip`, `curl` hoặc
+`wget`, `sha256sum` hoặc `shasum` để tải engine. Không cần Node, Python.
 Trên Windows dùng Git Bash (Claude Code có sẵn Bash trên mọi nền tảng).
 
 ## Vì sao `06-ship` để tuỳ chọn
@@ -543,8 +611,31 @@ nhận thẳng hơn là che bằng một lớp trừu tượng hoá đoán mò. 
 nội dung `workflow/phases/06-ship.md` và đổi `status` trong manifest; không phase
 nào khác phải sửa, vì không phase nào biết gì về phase đứng sau nó.
 
-## Chạy test
+## Chạy test và phát hành
 
 ```sh
 sh tools/chay-thu.sh
 ```
+
+Phát hành: version là ngày phát hành `YYYY.M.D` (vd `2026.10.6`), mỗi ngày tối
+đa một bản. Đặt cùng một chuỗi vào `VERSION`, `AW_WRAPPER_VERSION` trong `bin/aw`
+và tiêu đề mục mới của `CHANGELOG.md`; merge; rồi push tag đúng chuỗi đó, không
+có `v`:
+
+```sh
+git checkout main && git pull
+git tag -a 2026.10.6 -m 2026.10.6
+git push origin 2026.10.6
+```
+
+Hoặc trên giao diện GitHub: **Releases → Draft a new release → Choose a tag**, gõ
+`2026.10.6`, chọn **Create new tag on publish**, **Target: main**, rồi
+**Publish release**.
+
+Tag mới kích hoạt workflow `release`: kiểm tag khớp `VERSION`, chạy test, đóng gói
+(`tools/dong-goi.sh`) và gắn `agent-workflow-YYYY.M.D.tar.gz`, `aw`,
+`SHA256SUMS` vào Release — tạo Release mới nếu chưa có, hoặc gắn vào Release vừa
+tạo trên giao diện (ghi chú lấy từ `CHANGELOG.md` nếu bạn để trống). Release tạo
+trên giao diện hiện ra trước khi workflow chạy xong; workflow lỗi (tag lệch
+`VERSION`, test hỏng) thì Release không có file và `aw` chưa tải được — xem tab
+Actions.

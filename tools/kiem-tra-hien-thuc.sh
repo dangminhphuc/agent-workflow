@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiem tra dieu kien ra cua phase 04-implement.
 #
-#   sh tools/kiem-tra-hien-thuc.sh <thu-muc-feature>
+#   aw check implement <thu-muc-feature>
 #
 # Diem quan trong: script NAY TU CHAY lenh kiem thu va TU GHI output vao
 # ket-qua-kiem-thu.md. Agent khong co co hoi viet lai ket qua bang loi hay
@@ -16,7 +16,7 @@
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
 #        diem mu muc "chan review" chua tra loi.
 #
-# Cau hinh: <thu-muc-feature>/../.quy-trinh/cau-hinh.sh
+# Cau hinh: $AW_CONFIG/config.sh (xem lib/moi-truong.sh)
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -31,7 +31,7 @@ kq_khai kiem-tra-hien-thuc.sh \
 DIR="${1:-.}"
 PLAN="$DIR/plan.md"
 KQ="$DIR/ket-qua-kiem-thu.md"
-CAUHINH="$DIR/../.quy-trinh/cau-hinh.sh"
+CAUHINH=$(kc_cau_hinh "$DIR")
 
 [ -f "$PLAN" ] || { echo "LỖI: không tìm thấy $PLAN" >&2; exit 2; }
 
@@ -44,7 +44,7 @@ loi() { n_loi=$((n_loi + 1)); echo "  [LỖI] $1"; }
 
 # ---- 0. Dau vao ----
 if ! sh "$HERE/kiem-tra-ke-hoach.sh" "$DIR" >/dev/null 2>&1; then
-  loi "Đầu vào chưa đạt: plan.md không qua kiem-tra-ke-hoach.sh — chạy nó để xem chi tiết."
+  loi "Đầu vào chưa đạt: plan.md không qua aw check plan — chạy nó để xem chi tiết."
 fi
 
 # ---- 1. Phai khai bao lenh kiem thu ----

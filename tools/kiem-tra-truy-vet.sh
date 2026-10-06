@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Kiểm tra điều kiện ra của phase 01-spec — xem workflow/rules/truy-vet-nguon.md
 #
-#   sh tools/kiem-tra-truy-vet.sh <thư-mục-feature>
+#   aw check spec <thư-mục-feature>
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -33,7 +33,7 @@ fi
 n_truoc=0
 if ! sh "$HERE/kiem-tra-tiep-nhan.sh" "$DIR" >/dev/null 2>&1; then
   n_truoc=1
-  echo "  [LỖI] Đầu vào chưa đạt: intake.md không qua kiem-tra-tiep-nhan.sh — chạy nó để xem chi tiết."
+  echo "  [LỖI] Đầu vào chưa đạt: intake.md không qua aw check intake — chạy nó để xem chi tiết."
 fi
 LOAI=$(kc_loai "$DIR")
 BV="${TMPDIR:-/tmp}/tv-bv.$$"
