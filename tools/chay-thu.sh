@@ -336,7 +336,7 @@ ky_vong 1 "intake thiếu dòng Engine → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-n
 ky_vong 9 "…aw-engine check spec từ chối chấm (không biết engine nào)" sh "$AWE" check spec "$F"
 ky_vong 1 "…aw-engine check intake vẫn chạy để liệt kê lỗi" sh "$AWE" check intake "$F"
 sed 's/\*\*Engine:\*\* .*/**Engine:** 2026.10.06/' "$TMP/intake.bak" > "$F/intake.md"
-ky_vong 1 "Engine sai dạng YYYY.M.D (có số 0 đứng đầu) → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
+ky_vong 1 "Engine sai dạng YYYY.M.N (có số 0 đứng đầu) → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
 sed 's/\*\*Engine:\*\* .*/**Engine:** 2000.1.1/' "$TMP/intake.bak" > "$F/intake.md"
 ky_vong 1 "Engine lệch engine đang chạy → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
 for c in intake spec repro perf; do
@@ -1477,8 +1477,8 @@ dung "…stdout không lẫn khối Kết quả" sh -c "! printf '%s' \"\$1\" | 
 # ---------------------------------------------------------------- dong goi (phat hanh)
 echo ""
 echo "tools/dong-goi.sh"
-# tao_nguon <thư-mục> <YYYY.M.D> — chép repo này (cả thay đổi chưa commit) thành một
-# repo git riêng mang version <YYYY.M.D>. Dùng làm "bản phát hành" giả.
+# tao_nguon <thư-mục> <YYYY.M.N> — chép repo này (cả thay đổi chưa commit) thành một
+# repo git riêng mang version <YYYY.M.N>. Dùng làm "bản phát hành" giả.
 tao_nguon() {
   rm -rf "$1"; mkdir -p "$1"
   (cd "$ROOT" && tar cf - --exclude=.git .) | (cd "$1" && tar xf -)
@@ -1497,17 +1497,61 @@ printf 'chua commit\n' > "$NG/chua-commit.txt"
 sh "$NG/tools/dong-goi.sh" "$TMP/goi3" >/dev/null 2>&1
 dung "file chưa commit không lọt vào gói" sh -c "! gzip -dc '$TMP/goi3/agent-workflow-2099.9.1.tar.gz' | tar tf - | grep -q chua-commit"
 printf 'v2\n' > "$NG/VERSION"; git -C "$NG" -c user.name=t -c user.email=t@t commit -qam sai
-ky_vong 4 "VERSION sai dạng YYYY.M.D → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4"
+ky_vong 4 "VERSION sai dạng YYYY.M.N → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4"
 printf '2.0.0\n' > "$NG/VERSION"; git -C "$NG" -c user.name=t -c user.email=t@t commit -qam semver
 ky_vong 4 "VERSION kiểu X.Y.Z (semver) → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4b"
 printf '2026.13.1\n' > "$NG/VERSION"; git -C "$NG" -c user.name=t -c user.email=t@t commit -qam thang13
 ky_vong 4 "VERSION tháng 13 → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4c"
-dung "luật version: nhận 2026.10.6, 2026.1.6, 2026.12.31; từ chối 2026.10.06, 2026.01.6, 2026.0.10, 2026.10.32, 2026.10.6.1, v2026.10.6" sh -c ". '$T/lib/version.sh'; ver_hop_le 2026.10.6 && ver_hop_le 2026.1.6 && ver_hop_le 2026.12.31 && ! ver_hop_le 2026.10.06 && ! ver_hop_le 2026.01.6 && ! ver_hop_le 2026.0.10 && ! ver_hop_le 2026.10.32 && ! ver_hop_le 2026.10.6.1 && ! ver_hop_le v2026.10.6"
+dung "luật version YYYY.M.N: nhận 2026.10.6, 2026.1.6, 2026.12.31, 2026.10.32, 2026.10.100; từ chối 2026.10.06, 2026.01.6, 2026.0.10, 2026.10.0, 2026.10.6.1, 2026.10.1a, v2026.10.6" sh -c ". '$T/lib/version.sh'; ver_hop_le 2026.10.6 && ver_hop_le 2026.1.6 && ver_hop_le 2026.12.31 && ver_hop_le 2026.10.32 && ver_hop_le 2026.10.100 && ! ver_hop_le 2026.10.06 && ! ver_hop_le 2026.01.6 && ! ver_hop_le 2026.0.10 && ! ver_hop_le 2026.10.0 && ! ver_hop_le 2026.10.6.1 && ! ver_hop_le 2026.10.1a && ! ver_hop_le v2026.10.6"
+dung "wrapper bin/aw dùng cùng luật version với engine" sh -c "eval \"\$(sed -n '/^version_hop_le() {/,/^}/p' '$ROOT/bin/aw')\"; for v in 2026.10.32 2026.10.100 2026.1.1; do version_hop_le \$v || exit 1; done; for v in 2026.10.0 2026.10.08 2026.10.6.1; do version_hop_le \$v && exit 1; done; exit 0"
 ky_vong 2 "ref không tồn tại → sai tham số" sh "$NG/tools/dong-goi.sh" "$TMP/goi5" khong-co
-dung "VERSION của repo là ngày YYYY.M.D" sh -c ". '$T/lib/version.sh'; ver_hop_le \"\$(cat '$ROOT/VERSION')\""
-dung "workflow release gắn file vào release đã có (tạo tag trên giao diện GitHub)" sh -c "grep -q 'gh release upload \"\$tag\" dist/\* --clobber' '$ROOT/.github/workflows/release.yml' && grep -q 'gh release create \"\$tag\"' '$ROOT/.github/workflows/release.yml'"
-dung "workflow release bắt tag dạng YYYY.M.D, không có v" grep -qF "tags: ['[0-9][0-9][0-9][0-9].[0-9]+.[0-9]+']" "$ROOT/.github/workflows/release.yml"
+dung "VERSION của repo đúng dạng YYYY.M.N" sh -c ". '$T/lib/version.sh'; ver_hop_le \"\$(cat '$ROOT/VERSION')\""
+dung "workflow release gắn file vào release đã có (tạo tag trên giao diện GitHub)" sh -c "grep -q 'gh release upload \"\$TAG\" dist/\* --clobber' '$ROOT/.github/workflows/release.yml' && grep -q 'gh release create \"\$TAG\"' '$ROOT/.github/workflows/release.yml'"
+dung "workflow release chạy khi merge vào main, bỏ qua khi tag đã có" sh -c "grep -q 'branches: \[main\]' '$ROOT/.github/workflows/release.yml' && grep -q 'ls-remote --exit-code --tags origin' '$ROOT/.github/workflows/release.yml'"
+dung "workflow kiem-tra của PR chạy kiểm version + test" sh -c "grep -q 'kiem-tra-phat-hanh.sh \"origin/\$BASE\"' '$ROOT/.github/workflows/kiem-tra.yml' && grep -q 'chay-thu.sh' '$ROOT/.github/workflows/kiem-tra.yml'"
+dung "workflow release bắt tag dạng YYYY.M.N, không có v" grep -qF "tags: ['[0-9][0-9][0-9][0-9].[0-9]+.[0-9]+']" "$ROOT/.github/workflows/release.yml"
 dung "CHANGELOG.md có mục cho VERSION" grep -qF "## [$(cat "$ROOT/VERSION")]" "$ROOT/CHANGELOG.md"
+
+# ---------------------------------------------------------------- chuẩn bị + kiểm phát hành
+echo ""
+echo "tools/chuan-bi-phat-hanh.sh + tools/kiem-tra-phat-hanh.sh"
+git_t() { _gt_d=$1; shift; git -C "$_gt_d" -c user.name=t -c user.email=t@t "$@"; }
+PH="$TMP/ph"; PHO="$TMP/ph-origin.git"
+tao_nguon "$PH" 2099.9.1
+rm -rf "$PHO"; git init -q --bare "$PHO"; git -C "$PH" remote add origin "$PHO"
+git -C "$PH" push -q origin main 2>/dev/null
+git -C "$PH" tag 2099.9.1; git -C "$PH" push -q origin 2099.9.1 2>/dev/null
+ph_cl() { printf '# Changelog\n\n## [Chưa phát hành]\n\n- thay đổi mới\n\n## [2099.9.1]\n\n- cũ\n' > "$PH/CHANGELOG.md"; }
+ph_cl; git_t "$PH" commit -qam cl
+ky_vong 0 "kiểm phát hành: VERSION không đổi so với base → đạt" sh "$PH/tools/kiem-tra-phat-hanh.sh" main
+ky_vong 4 "chuẩn bị: version truyền tay trùng tag đã có → VERSION LỖI" sh "$PH/tools/chuan-bi-phat-hanh.sh" 2099.9.1
+ky_vong 4 "chuẩn bị: version sai dạng (số 0 đứng đầu) → VERSION LỖI" sh "$PH/tools/chuan-bi-phat-hanh.sh" 2099.09.2
+ky_vong 0 "chuẩn bị: version truyền tay" sh "$PH/tools/chuan-bi-phat-hanh.sh" 2099.9.2
+dung "…ghi VERSION, bin/aw, CHANGELOG cùng một version" sh -c "grep -qx 2099.9.2 '$PH/VERSION' && grep -q '^AW_WRAPPER_VERSION=\"2099.9.2\"' '$PH/bin/aw' && grep -qx '## \[2099.9.2\]' '$PH/CHANGELOG.md' && ! grep -q 'Chưa phát hành' '$PH/CHANGELOG.md'"
+dung "…link tải wrapper trong README trỏ version mới" grep -q 'releases/download/2099.9.2/aw' "$PH/README.md"
+git -C "$PH" checkout -q -b pr; git_t "$PH" commit -qam "phát hành 2099.9.2"
+ky_vong 0 "kiểm phát hành: PR đổi VERSION, tag chưa có → đạt" sh "$PH/tools/kiem-tra-phat-hanh.sh" main
+git -C "$PH" tag 2099.9.2 main; git -C "$PH" push -q origin 2099.9.2 2>/dev/null
+ky_vong 1 "kiểm phát hành: PR khác đã lấy số này (tag có rồi) → KHÔNG ĐẠT" sh "$PH/tools/kiem-tra-phat-hanh.sh" main
+thay "$PH/bin/aw" 'AW_WRAPPER_VERSION="2099.9.2"' 'AW_WRAPPER_VERSION="2099.9.1"'
+ky_vong 1 "kiểm phát hành: bin/aw lệch VERSION → KHÔNG ĐẠT" sh "$PH/tools/kiem-tra-phat-hanh.sh"
+git -C "$PH" checkout -q -- bin/aw
+thay "$PH/CHANGELOG.md" '## [2099.9.2]' '## [Chưa phát hành]'
+ky_vong 1 "kiểm phát hành: CHANGELOG thiếu mục cho VERSION → KHÔNG ĐẠT" sh "$PH/tools/kiem-tra-phat-hanh.sh"
+git -C "$PH" checkout -q -- .; git -C "$PH" checkout -q main; git -C "$PH" branch -qD pr
+ph_cl; git_t "$PH" commit -qam cl2
+THANG_NAY="$(date +%Y).$(date +%m | sed 's/^0//')"
+git -C "$PH" tag "$THANG_NAY.1"; git -C "$PH" tag "$THANG_NAY.3"; git -C "$PH" push -q origin --tags 2>/dev/null
+ky_vong 0 "chuẩn bị: tự tính version" sh "$PH/tools/chuan-bi-phat-hanh.sh"
+dung "…= tháng này, số lớn nhất ở remote + 1" grep -qx "$THANG_NAY.4" "$PH/VERSION"
+git -C "$PH" checkout -q -- .
+git -C "$PH" tag "$THANG_NAY.9"
+ky_vong 0 "chuẩn bị: tag chỉ có ở máy, chưa lên remote → không tính" sh "$PH/tools/chuan-bi-phat-hanh.sh"
+dung "…vẫn là số kế tiếp ở remote" grep -qx "$THANG_NAY.4" "$PH/VERSION"
+git -C "$PH" checkout -q -- .
+printf '# Changelog\n\n## [2099.9.1]\n\n- cũ\n' > "$PH/CHANGELOG.md"
+ky_vong 3 "chuẩn bị: CHANGELOG không có [Chưa phát hành] → KHÔNG CÓ GÌ ĐỂ PHÁT HÀNH" sh "$PH/tools/chuan-bi-phat-hanh.sh"
+dung "…không đổi file nào" sh -c "grep -qx 2099.9.1 '$PH/VERSION'"
 
 # ---------------------------------------------------------------- wrapper aw
 echo ""

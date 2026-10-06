@@ -1,0 +1,23 @@
+# Kiểm PR trước khi merge: test hồi quy + version nhất quán. PR đổi VERSION là một
+# bản phát hành — merge vào main thì workflow release tự tạo tag + Release, nên
+# version phải đúng ngay ở PR (tag chưa có, bin/aw và CHANGELOG khớp).
+name: kiem-tra
+
+on:
+  pull_request:
+
+jobs:
+  kiem-tra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version (VERSION, bin/aw, CHANGELOG, tag chưa có)
+        env:
+          BASE: ${{ github.base_ref }}
+        run: sh tools/kiem-tra-phat-hanh.sh "origin/$BASE"
+
+      - name: Test
+        run: sh tools/chay-thu.sh

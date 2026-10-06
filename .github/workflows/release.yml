@@ -1,19 +1,33 @@
-# Phát hành engine khi push tag YYYY.M.D.
+# Phát hành engine. Version YYYY.M.N (năm, tháng, số thứ tự trong tháng — xem
+# tools/lib/version.sh); tag trùng đúng chuỗi đó, không có tiền tố "v".
 #
-# Gắn vào GitHub Release: agent-workflow-YYYY.M.D.tar.gz, aw (wrapper), SHA256SUMS.
-# Wrapper `aw` tải đúng các file này (mặc định từ releases/download/YYYY.M.D/).
+# Hai đường vào:
+#   - push vào main (merge PR): đọc VERSION; tag đó CHƯA có thì phát hành luôn
+#     trong job này, ĐÃ có thì bỏ qua (PR không đổi version không phát hành).
+#     Tạo tag ngay trong job này, không tách workflow: tag tạo bằng GITHUB_TOKEN
+#     không kích hoạt workflow khác.
+#   - push tag / tạo Release trên giao diện GitHub (cách tay, vẫn giữ).
+#
+# Gắn vào GitHub Release: agent-workflow-YYYY.M.N.tar.gz, aw (wrapper), SHA256SUMS.
+# Wrapper `aw` tải đúng các file này (mặc định từ releases/download/YYYY.M.N/).
 # Tarball tự sinh của GitHub (archive/refs/tags/...) KHÔNG dùng: GitHub không
 # hứa giữ nguyên byte của nó, checksum đã ghim có thể lệch.
 name: release
 
 on:
   push:
-    # Tag = ngày phát hành YYYY.M.D, không có tiền tố "v"
+    branches: [main]
+    # Tag = YYYY.M.N, không có tiền tố "v"
     # (lọc thô ở đây; luật đầy đủ: tools/lib/version.sh, kiểm khi đóng gói)
     tags: ['[0-9][0-9][0-9][0-9].[0-9]+.[0-9]+']
 
 permissions:
   contents: write
+
+# Hai merge liền nhau không chạy chồng lên nhau.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -21,40 +35,58 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Tag khớp VERSION
+      - name: Xác định version cần phát hành
+        id: v
         run: |
           v=$(tr -d ' \r\n' < VERSION)
-          [ "$v" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME lệch VERSION ($v)"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            [ "$v" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME lệch VERSION ($v)"; exit 1; }
+          elif git ls-remote --exit-code --tags origin "refs/tags/$v" >/dev/null; then
+            echo "Tag $v đã có — lần push này không phát hành."
+            echo "bo_qua=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "tag=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Kiểm version (VERSION, bin/aw, CHANGELOG)
+        if: steps.v.outputs.bo_qua != '1'
+        run: sh tools/kiem-tra-phat-hanh.sh
 
       - name: Test
+        if: steps.v.outputs.bo_qua != '1'
         run: sh tools/chay-thu.sh
 
       - name: Đóng gói
-        run: sh tools/dong-goi.sh dist "$GITHUB_REF_NAME"
+        if: steps.v.outputs.bo_qua != '1'
+        run: sh tools/dong-goi.sh dist HEAD
 
       - name: Ghi chú phát hành từ CHANGELOG.md
+        if: steps.v.outputs.bo_qua != '1'
+        env:
+          TAG: ${{ steps.v.outputs.tag }}
         run: |
-          v=$GITHUB_REF_NAME
-          awk -v v="$v" '
+          awk -v v="$TAG" '
             index($0, "## [" v "]") == 1 { on = 1; next }
             on && /^## \[/ { exit }
             on { print }
           ' CHANGELOG.md > dist-notes.md
-          [ -s dist-notes.md ] || { echo "CHANGELOG.md thiếu mục [$v]"; exit 1; }
+          [ -s dist-notes.md ] || { echo "CHANGELOG.md thiếu mục [$TAG]"; exit 1; }
 
-      # Tag có thể đến từ hai đường:
-      #   - git push tag            → chưa có release: tạo mới, ghi chú lấy từ CHANGELOG.md
+      # Tag có thể đến từ ba đường:
+      #   - merge vào main         → chưa có tag lẫn release: tạo cả hai tại commit này
+      #   - git push tag           → chưa có release: tạo mới, ghi chú lấy từ CHANGELOG.md
       #   - giao diện GitHub (Releases → Draft a new release → tag mới) → release
       #     đã có: chỉ gắn file vào; ghi chú chỉ điền khi người để trống
       - name: Tạo release hoặc gắn file vào release đã có
+        if: steps.v.outputs.bo_qua != '1'
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
         run: |
-          tag=$GITHUB_REF_NAME
-          if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" dist/* --clobber
-            body=$(gh release view "$tag" --json body --jq .body)
-            [ -n "$body" ] || gh release edit "$tag" --notes-file dist-notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+            body=$(gh release view "$TAG" --json body --jq .body)
+            [ -n "$body" ] || gh release edit "$TAG" --notes-file dist-notes.md
           else
-            gh release create "$tag" dist/* --title "$tag" --notes-file dist-notes.md
+            gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "$TAG" --notes-file dist-notes.md
           fi

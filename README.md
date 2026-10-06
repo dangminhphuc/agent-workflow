@@ -2,7 +2,7 @@
 
 Quy trình phát triển phần mềm dựa trên AI agent, **không phụ thuộc vào một agent cụ thể**.
 
-Repo này là *nguồn* của **engine**, phát hành theo tag `YYYY.M.D`
+Repo này là *nguồn* của **engine**, phát hành theo tag `YYYY.M.N`
 ([CHANGELOG](CHANGELOG.md)). Repo dự án không chứa gì của quy trình: wrapper `aw`
 cài global lấy đúng version engine vào cache, cấu hình nằm trong `.git/` của bản
 clone, và adapter sinh lệnh riêng cho agent bạn đang dùng — tất cả bị exclude,
@@ -418,7 +418,7 @@ protected branch. Gồm ba phần:
 | Phần | Ở đâu | Ai giữ |
 |---|---|---|
 | Wrapper `aw` | `~/.local/bin/aw` (một file POSIX sh) | mỗi máy, cài một lần |
-| Engine (tools, checker, luật, mẫu, adapter) | `~/.agent-workflow/engine/<YYYY.M.D>/` | cache theo version, tải khi cần |
+| Engine (tools, checker, luật, mẫu, adapter) | `~/.agent-workflow/engine/<YYYY.M.N>/` | cache theo version, tải khi cần |
 | Cấu hình của repo | `$(git rev-parse --git-common-dir)/agent-workflow/` | từng bản clone, dùng chung mọi worktree, **không commit** |
 
 ### 1. Cài `aw`
@@ -442,12 +442,12 @@ aw init --test-cmd "npm test"
 
 `aw init`:
 
-- tải engine (mặc định đúng version của wrapper; `--version YYYY.M.D` để chọn) vào
+- tải engine (mặc định đúng version của wrapper; `--version YYYY.M.N` để chọn) vào
   cache, kiểm sha256 theo `SHA256SUMS` của bản phát hành, rồi **ghim** sha đó;
 - tạo trong `.git/agent-workflow/`:
 
   ```
-  version          ← YYYY.M.D — engine cho việc MỚI
+  version          ← YYYY.M.N — engine cho việc MỚI
   checksums        ← sha256 đã ghim của từng version (định dạng sha256sum)
   conventions.md   ← bạn viết; aw chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
   config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; không ghi đè
@@ -476,8 +476,8 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 
 | Lệnh | Việc |
 |---|---|
-| `aw init [--version YYYY.M.D] [--adapter <id>] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
-| `aw upgrade <YYYY.M.D>` | Đổi engine cho việc mới |
+| `aw init [--version YYYY.M.N] [--adapter <id>] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
+| `aw upgrade <YYYY.M.N>` | Đổi engine cho việc mới |
 | `aw version` · `aw doctor` | Xem version đang dùng · kiểm môi trường |
 | `aw check <tên> <thư-mục-feature>` | Checker máy — `intake spec design plan implement review repro perf` |
 | `aw worktree new <loại> <mô-tả> [--create --base <ref>]` | Đề xuất / tạo worktree cho việc |
@@ -500,10 +500,10 @@ aw upgrade 2.1.0
 ```
 
 Tải, kiểm và ghim sha256 của bản mới, ghi `version`, sinh lại adapter ở checkout
-chính. **Việc đang làm không đổi luật:** mỗi việc ghi `- **Engine:** YYYY.M.D` trong
+chính. **Việc đang làm không đổi luật:** mỗi việc ghi `- **Engine:** YYYY.M.N` trong
 `intake.md` lúc tạo worktree, và mọi `aw check` của việc chạy đúng version đó.
 Máy không có version đó và không tải được thì `aw check` báo `KHÔNG HỢP LỆ` —
-không bao giờ chạy tạm bằng version khác. So version: khớp chính xác `YYYY.M.D`.
+không bao giờ chạy tạm bằng version khác. So version: khớp chính xác `YYYY.M.N`.
 
 Dùng chung cho team: commit `version` + `checksums` mới vào repo cấu hình của team.
 
@@ -512,7 +512,7 @@ Dùng chung cho team: commit `version` + `checksums` mới vào repo cấu hình
 | Biến | Dùng khi |
 |---|---|
 | `AW_ENGINE_DIR=/đường/dẫn/engine` | Máy hoặc CI không có mạng: dùng engine có sẵn (một bản giải nén của release, hoặc bản checkout repo này đúng tag). `VERSION` của nó vẫn phải khớp chính xác |
-| `AW_MIRROR=https://mirror.noi-bo/agent-workflow` | Tải từ mirror khác thay cho GitHub. Cấu trúc: `<AW_MIRROR>/<YYYY.M.D>/agent-workflow-<YYYY.M.D>.tar.gz` và `SHA256SUMS`; nhận cả `file://` |
+| `AW_MIRROR=https://mirror.noi-bo/agent-workflow` | Tải từ mirror khác thay cho GitHub. Cấu trúc: `<AW_MIRROR>/<YYYY.M.N>/agent-workflow-<YYYY.M.N>.tar.gz` và `SHA256SUMS`; nhận cả `file://` |
 | `AW_CACHE=/đường/dẫn` | Đổi chỗ cache (mặc định `~/.agent-workflow/engine`), vd cache dùng chung trên CI |
 
 Engine đã có trong cache thì không cần mạng nữa.
@@ -568,7 +568,7 @@ Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
 ## Cấu trúc repo
 
 ```
-VERSION, CHANGELOG.md    version engine (YYYY.M.D) và thay đổi từng bản
+VERSION, CHANGELOG.md    version engine (YYYY.M.N) và thay đổi từng bản
 workflow.yaml            manifest trung lập — nguồn sự thật duy nhất (phases:, commands:)
 workflow/
   phases/*.md            định nghĩa phase (frontmatter + mô tả); exit_machine là "aw check <tên>"
@@ -596,6 +596,8 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
   cap-nhat-based-on.sh   aw based-on: ghi hash đầu vào vào frontmatter artifact
   dong-goi.sh            đóng gói bản phát hành (tarball + SHA256SUMS)
+  chuan-bi-phat-hanh.sh  đặt version YYYY.M.N cho PR phát hành (VERSION, bin/aw, CHANGELOG, README)
+  kiem-tra-phat-hanh.sh  kiểm version nhất quán + tag chưa có (CI của PR) — không phải aw check
   cai-dat.sh, dong-bo.sh đã bỏ — chỉ in hướng dẫn chuyển sang aw
   chay-thu.sh            test hồi quy cho cổng chặn, wrapper, đóng gói
   lib/                   md.sh, kiem-cheo.sh, worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh
@@ -625,23 +627,45 @@ nào khác phải sửa, vì không phase nào biết gì về phase đứng sau
 sh tools/chay-thu.sh
 ```
 
-Phát hành: version là ngày phát hành `YYYY.M.D` (vd `2026.10.6`), mỗi ngày tối
-đa một bản. Đặt cùng một chuỗi vào `VERSION`, `AW_WRAPPER_VERSION` trong `bin/aw`
-và tiêu đề mục mới của `CHANGELOG.md`; merge; rồi push tag đúng chuỗi đó, không
-có `v`:
+Phát hành: version là `YYYY.M.N` — năm, tháng, và `N` là số thứ tự bản phát
+hành trong tháng (1, 2, 3, …; sang tháng mới đếm lại từ 1), không số 0 đứng đầu,
+vd `2026.10.8`, `2026.11.1`. Tag trùng đúng chuỗi đó, không có `v`. Phát hành
+bao nhiêu bản trong ngày cũng được.
+
+**Cách thường dùng — phát hành bằng merge PR:**
+
+1. Ghi thay đổi vào mục `## [Chưa phát hành]` của `CHANGELOG.md` như bình thường.
+2. Trong PR muốn phát hành, chạy:
+
+   ```sh
+   sh tools/chuan-bi-phat-hanh.sh          # tự tính: tháng này, số lớn nhất ở remote + 1
+   sh tools/chuan-bi-phat-hanh.sh 2026.10.9  # hoặc tự đặt
+   ```
+
+   Script ghi cùng một version vào `VERSION`, `AW_WRAPPER_VERSION` trong `bin/aw`,
+   tiêu đề mục CHANGELOG (`[Chưa phát hành]` → `[<version>]`) và link tải wrapper
+   trong README. Commit các file đó vào PR.
+3. Workflow `kiem-tra` chạy trên PR: test hồi quy, và `tools/kiem-tra-phat-hanh.sh`
+   kiểm version nhất quán + tag chưa có. Hai PR cùng lấy một số thì PR merge sau
+   bị chặn ở đây — chạy lại script để lấy số kế tiếp.
+4. Merge vào `main` → workflow `release` thấy tag của `VERSION` chưa có thì tự
+   chạy test, đóng gói, tạo tag + Release. PR không đổi `VERSION` thì không phát
+   hành gì.
+
+**Cách tay (vẫn dùng được):** đặt version như bước 2, merge, rồi push tag:
 
 ```sh
 git checkout main && git pull
-git tag -a 2026.10.6 -m 2026.10.6
-git push origin 2026.10.6
+git tag -a 2026.10.9 -m 2026.10.9
+git push origin 2026.10.9
 ```
 
-Hoặc trên giao diện GitHub: **Releases → Draft a new release → Choose a tag**, gõ
-`2026.10.6`, chọn **Create new tag on publish**, **Target: main**, rồi
-**Publish release**.
+hoặc trên giao diện GitHub: **Releases → Draft a new release → Choose a tag**, gõ
+version, chọn **Create new tag on publish**, **Target: main**, rồi **Publish
+release**.
 
-Tag mới kích hoạt workflow `release`: kiểm tag khớp `VERSION`, chạy test, đóng gói
-(`tools/dong-goi.sh`) và gắn `agent-workflow-YYYY.M.D.tar.gz`, `aw`,
+Workflow `release` kiểm tag khớp `VERSION`, chạy test, đóng gói
+(`tools/dong-goi.sh`) và gắn `agent-workflow-YYYY.M.N.tar.gz`, `aw`,
 `SHA256SUMS` vào Release — tạo Release mới nếu chưa có, hoặc gắn vào Release vừa
 tạo trên giao diện (ghi chú lấy từ `CHANGELOG.md` nếu bạn để trống). Release tạo
 trên giao diện hiện ra trước khi workflow chạy xong; workflow lỗi (tag lệch

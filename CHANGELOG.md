@@ -1,13 +1,33 @@
 # Changelog
 
-Version là **ngày phát hành** `YYYY.M.D` (tháng, ngày **không** có số 0 đứng đầu, vd
-`2026.10.6`). Mỗi bản phát hành là một git tag đúng chuỗi đó, không có tiền tố
-`v`; mỗi ngày tối đa một bản. Repo đích ghim version
-cần dùng (xem README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết bằng
-version ghi trong `intake.md` của nó.
+Version là `YYYY.M.N`: năm, tháng phát hành, và `N` là **số thứ tự bản phát hành
+trong tháng** (1, 2, 3, …; sang tháng mới đếm lại từ 1), không số 0 đứng đầu, vd
+`2026.10.8`, `2026.11.1`. Mỗi bản phát hành là một git tag đúng chuỗi đó, không
+có tiền tố `v`. (Trước đó `N` là ngày phát hành — `2026.10.6`, `2026.10.7` vẫn
+hợp lệ, tháng 10/2026 đếm tiếp từ đó.) Repo đích ghim version cần dùng (xem
+README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết bằng version ghi trong
+`intake.md` của nó.
 
-So version theo luật **khớp chính xác `YYYY.M.D`** — không có "tương thích ngược"
+So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
+
+## [Chưa phát hành]
+
+### Đổi
+- **Version `YYYY.M.N`** thay cho `YYYY.M.D`: `N` là số thứ tự bản phát hành trong
+  tháng, không còn giới hạn một bản mỗi ngày. Không số 0 đứng đầu, `N` từ 1.
+  Wrapper `aw` cũ (2026.10.6, 2026.10.7) vẫn nhận version mới khi `N` ≤ 31; từ
+  bản thứ 32 trong một tháng cần cài wrapper mới.
+
+### Thêm
+- **Phát hành bằng merge PR:** workflow `release` chạy cả khi push vào `main` —
+  tag của `VERSION` chưa có thì tự test, đóng gói, tạo tag + Release; đã có thì
+  bỏ qua. Cách tay (push tag / tạo trên giao diện GitHub) vẫn giữ.
+- `tools/chuan-bi-phat-hanh.sh [YYYY.M.N]`: đặt version cho PR — tự tính số kế
+  tiếp từ tag ở remote, ghi `VERSION`, `bin/aw`, mục CHANGELOG, link tải wrapper.
+- `tools/kiem-tra-phat-hanh.sh [<base-ref>]` và workflow `kiem-tra` trên PR: test
+  hồi quy + version nhất quán (`VERSION` ↔ `bin/aw` ↔ CHANGELOG), PR đổi version
+  thì tag đó chưa được có.
 
 ## [2026.10.7]
 

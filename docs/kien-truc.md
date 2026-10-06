@@ -168,15 +168,15 @@ sang **engine có version + cấu hình cục bộ**:
    commit hay merge. Bộ cài phải vào base trước mới tạo được worktree — tức là
    mỗi lần cài hay nâng cấp quy trình phải qua một PR vào nhánh được bảo vệ. Bản mới
    không ghi gì vào cây làm việc mà git theo dõi: engine nằm trong
-   `~/.agent-workflow/engine/<YYYY.M.D>/`, cấu hình nằm trong
+   `~/.agent-workflow/engine/<YYYY.M.N>/`, cấu hình nằm trong
    `$(git rev-parse --git-common-dir)/agent-workflow/` (dùng chung mọi worktree,
    không bao giờ vào commit), file sinh ra bị `.git/info/exclude`. Vì vậy **base
    tuỳ ý**: điều kiện "base phải có bộ cài" bị bỏ.
 2. **Version theo việc.** Với bộ cài cũ, đồng bộ bộ cài giữa chừng đổi luật của mọi
-   việc đang làm cùng lúc. Bản mới ghi `- **Engine:** YYYY.M.D` vào `intake.md` lúc tạo
+   việc đang làm cùng lúc. Bản mới ghi `- **Engine:** YYYY.M.N` vào `intake.md` lúc tạo
    worktree; mọi `aw check` của việc chạy đúng version đó. Không có version đó
    và không tải được thì báo `KHÔNG HỢP LỆ` — chạy tạm bằng version khác là
-   chấm một việc theo luật nó không được đặt ra. Luật so: khớp chính xác `YYYY.M.D`,
+   chấm một việc theo luật nó không được đặt ra. Luật so: khớp chính xác `YYYY.M.N`,
    không suy "tương thích" từ số phiên bản.
 3. **Độc lập với agent.** Luật cứng nằm trong checker của engine (mã thoát +
    nhãn `Kết quả`), gọi bằng `aw …` — lệnh shell agent nào cũng chạy được.
@@ -192,10 +192,20 @@ Các mảnh:
 | `tools/lib/moi-truong.sh` | Tool đọc đường dẫn repo và cấu hình **chỉ** từ biến môi trường; thiếu thì dừng. Không tool nào tự suy chúng từ vị trí của chính nó |
 | `checksums` trong cấu hình | sha256 ghim lần đầu tải (`aw init`/`aw upgrade`). Lần tải sau phải khớp sha đã ghim, không tin lại `SHA256SUMS` — `SHA256SUMS` cùng nguồn với tarball chỉ bắt được file hỏng, không bắt được nguồn bị tráo. Chia sẻ qua repo cấu hình của team (`aw init --from`) |
 
-Kênh tải mặc định là GitHub Release của repo này: file `agent-workflow-YYYY.M.D.tar.gz`
+Kênh tải mặc định là GitHub Release của repo này: file `agent-workflow-YYYY.M.N.tar.gz`
 do workflow `release` đóng gói và gắn vào — không dùng tarball GitHub tự sinh từ
 tag, vì byte của nó không được hứa giữ nguyên. `AW_MIRROR` đổi nguồn,
 `AW_ENGINE_DIR` dùng engine có sẵn cho máy không có mạng.
+
+**Version `YYYY.M.N` và phát hành bằng merge.** `N` là số thứ tự bản phát hành
+trong tháng (không còn là ngày — một ngày một bản quá ít). Version vẫn được
+**đặt trong PR** (`tools/chuan-bi-phat-hanh.sh`), không để CI tự tăng sau merge:
+CI tự tăng thì bot phải commit thẳng vào `main` (cần vượt bảo vệ nhánh) và lịch
+sử có commit không qua review. Merge vào `main` chỉ *phát hành* version đã nằm
+trong PR: workflow `release` thấy tag chưa có thì tạo tag + Release ngay trong
+job đó — tách ra workflow tạo tag riêng thì tag tạo bằng `GITHUB_TOKEN` không
+kích hoạt được workflow `release`. Hai PR cùng lấy một số: CI của PR
+(`tools/kiem-tra-phat-hanh.sh`) chặn PR merge sau vì tag đã có.
 
 Wrapper và engine nói chuyện qua một số giao thức (`AW_PROTOCOL`): wrapper cũ
 gặp engine đổi giao thức thì dừng, không truyền thiếu biến rồi chạy tiếp.
