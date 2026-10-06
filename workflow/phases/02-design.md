@@ -44,7 +44,7 @@ tắt: `spec.md` đưa từ tool khác vào cũng phải qua đúng cổng đó.
 
 Điểm mù `Mức chặn: chặn` mà chưa `đã trả lời` thì **chặn** — thiết kế trên một
 giả định sẽ lật cả hướng đi là phí công. Dừng lại, nhờ người chạy lệnh
-`open-questions` để chốt. Mục `chặn review` / `không chặn` thì thiết kế tiếp trên
+`clarify` để chốt. Mục `chặn review` / `không chặn` thì thiết kế tiếp trên
 giả định tạm.
 
 ## Chọn Mode
@@ -84,7 +84,8 @@ nhờ người phác** — checker sẽ chặn.
 5. **Chạy checker LLM** (phiên/subagent riêng, theo `checkers/thiet-ke.md`). Nó
    tìm chỗ lệch D-xx và quyết định ngầm chưa nêu thành D, ghi ra
    `phat-hien-thiet-ke.md`. Sửa những gì bạn đồng ý (`Xử lý: đã sửa`); phần còn
-   lại để người làm trọng tài.
+   lại để người làm trọng tài qua lệnh `clarify` (hỏi từng phát hiện bằng câu
+   hỏi lựa chọn; mục bạn đã tự sửa cũng được nêu lại cho người biết).
 
 6. **Chạy `aw check design`**, rồi dừng lại cho người duyệt từng D-xx.
 

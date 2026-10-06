@@ -727,8 +727,8 @@ sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 
 # ---------------------------------------------------------------- liet ke cau hoi
 echo ""
-echo "liet-ke-cau-hoi.sh (/open-questions)"
-CHK="$T/liet-ke-cau-hoi.sh"
+echo "liet-ke-viec-cho.sh (/clarify)"
+CHK="$T/liet-ke-viec-cho.sh"
 LQ="$TMP/lq"; rm -rf "$LQ"; mkdir -p "$LQ"
 cat > "$LQ/spec.md" <<'EOF'
 ### YC-001 — a
@@ -783,7 +783,7 @@ dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định h�
 dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task đứng trên giả định: 2 (T-01 T-02)'"
 dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
 dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-005.*ĐANG CHẶN /implement'"
-dung "khối Kết quả: [x] CÓ ĐIỂM MÙ ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ ĐIỂM MÙ ĐANG CHẶN'"
+dung "khối Kết quả: [x] CÓ VIỆC ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ VIỆC ĐANG CHẶN'"
 thay "$LQ/open-questions.md" '`chặn`
 - **Trạng thái:** `mở`' '`không chặn`
 - **Trạng thái:** `mở`'
@@ -795,13 +795,79 @@ thay "$LQ/open-questions.md" '`chặn review`' '`toàn bộ thiết kế`'
 ky_vong 1 "mức thiếu/sai (nhãn cũ) → CHƯA PHÂN MỨC, đang chặn spec" sh "$CHK" "$LQ"
 dung "…xếp lên đầu" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -A1 '^\[CHƯA PHÂN MỨC\]' | grep -q '1\. YC-00'"
 printf '# Điểm mù\n\nKhông có điểm mù.\n' > "$LQ/open-questions.md"
-ky_vong 0 "không còn điểm mù mở" sh "$CHK" "$LQ"
+ky_vong 0 "không còn điểm mù mở, không có phát hiện" sh "$CHK" "$LQ"
 : > "$LQ/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte không làm đọc lệch file" sh "$CHK" "$LQ"
 rm -f "$LQ/open-questions.md"
 ky_vong 2 "thiếu open-questions.md → THIẾU ĐẦU VÀO" sh "$CHK" "$LQ"
 tao_fixture
 ky_vong 3 "fixture: chỉ có điểm mù không chặn" sh "$CHK" "$F"
+
+# Phát hiện checker LLM chen vào hàng đợi theo phase bị chặn.
+cat > "$LQ/open-questions.md" <<'EOF'
+# Điểm mù
+
+## YC-001 — không chặn
+- **Mức chặn:** `không chặn`
+- **Trạng thái:** `mở`
+
+## YC-002 — chặn review
+- **Mức chặn:** `chặn review`
+- **Trạng thái:** `mở`
+
+## YC-005 — chặn
+- **Mức chặn:** `chặn`
+- **Trạng thái:** `mở`
+EOF
+: > "$LQ/tdd.md"; rm -f "$LQ/plan.md"
+cat > "$LQ/phat-hien-thiet-ke.md" <<'EOF'
+# Phát hiện
+
+### PH-01 — cảnh báo
+- Mức: `Cảnh báo`
+- Vị trí: `tdd.md` § Flow
+- Vấn đề: mơ hồ
+- Xử lý: `chưa`
+
+### PH-02 — chặn chưa xử lý
+- Mức: `Chặn`   <!-- Chặn | Cảnh báo -->
+- Loại: `quyết định ngầm`
+- Vị trí: `tdd.md` § Contract
+- Vấn đề: chọn gRPC mà không nêu D
+- Xử lý: `chưa`   <!-- chưa | đã sửa | bác bỏ: <lý do> -->
+
+### PH-03 — đã sửa
+- Mức: `Chặn`
+- Xử lý: `đã sửa`
+
+### PH-04 — bác bỏ không lý do
+- Mức: `Chặn`
+- Xử lý: `bác bỏ:`
+
+### PH-05 — bác bỏ có lý do
+- Mức: `Chặn`
+- Xử lý: `bác bỏ: D-02 đã chốt — PO, 2026-10-06`
+EOF
+thu_tu_all() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \([A-Z]*-[0-9]*\).*/\1/p' | tr '\n' ' '; }
+ky_vong 1 "phát hiện Chặn chưa xử lý → ĐANG CHẶN" sh "$CHK" "$LQ"
+dung "xếp: điểm mù chặn → phát hiện Chặn → chặn review → phát hiện Cảnh báo → không chặn" \
+  bang "$(thu_tu_all)" "YC-005 PH-02 PH-04 YC-002 PH-01 YC-001 "
+dung "…phát hiện Chặn đánh dấu ĐANG CHẶN /plan" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'PH-02.*ĐANG CHẶN /plan'"
+dung "…in vị trí + vấn đề của phát hiện" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Vấn đề: chọn gRPC mà không nêu D'"
+dung "phát hiện đã đóng chỉ nằm ở [ĐÃ XỬ LÝ], không đánh số" sh -c \
+  "o=\$(sh '$CHK' '$LQ' 2>/dev/null); echo \"\$o\" | grep -q '^  - PH-03' && echo \"\$o\" | grep -q '^  - PH-05' && ! echo \"\$o\" | grep -q '^  [0-9]*\. PH-0[35]'"
+thay "$LQ/open-questions.md" '`chặn`
+- **Trạng thái:** `mở`' '`không chặn`
+- **Trạng thái:** `mở`'
+thay "$LQ/phat-hien-thiet-ke.md" '`chưa`   <!-- chưa' '`đã sửa`   <!-- chưa'
+thay "$LQ/phat-hien-thiet-ke.md" '`bác bỏ:`' '`bác bỏ: trùng PH-02`'
+ky_vong 3 "chỉ còn phát hiện Cảnh báo + điểm mù chưa chặn → chưa chặn" sh "$CHK" "$LQ"
+printf '# Điểm mù\n\nKhông có điểm mù.\n' > "$LQ/open-questions.md"
+printf '# Phát hiện\n\nKhông có phát hiện mức Chặn.\n' > "$LQ/phat-hien-thiet-ke.md"
+ky_vong 0 "file phát hiện rỗng + không điểm mù → không còn việc" sh "$CHK" "$LQ"
+printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: `chưa`\n' > "$LQ/phat-hien-ke-hoach.md"
+ky_vong 1 "checker mới (phat-hien-<id>.md) tự được gom" sh "$CHK" "$LQ"
+rm -f "$LQ/phat-hien-ke-hoach.md" "$LQ/phat-hien-thiet-ke.md" "$LQ/tdd.md"
 
 # ---------------------------------------------------------------- based_on
 echo ""
@@ -828,7 +894,7 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/intake.md commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
-         commands/import.md commands/open-questions.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
+         commands/import.md commands/clarify.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 [ -f "$O/.claude/commands/ship.md" ] && du=0
@@ -837,13 +903,14 @@ dung "command có bước xác định feature bằng aw feature" grep -q 'aw fe
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O/.claude/commands/design.md"
 dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
 dung "command design gọi checker LLM" grep -q 'soat-thiet-ke' "$O/.claude/commands/design.md"
-dung "lệnh /open-questions có bước xác định feature + chạy aw questions" sh -c \
-  "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/open-questions.md' && grep -q 'aw questions' '$O/.claude/commands/open-questions.md'"
-dung "lệnh /open-questions hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
-  "grep -q 'AskUserQuestion' '$O/.claude/commands/open-questions.md' && grep -q 'Chat về câu này' '$O/.claude/commands/open-questions.md'"
+dung "lệnh /clarify có bước xác định feature + chạy aw pending" sh -c \
+  "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/clarify.md' && grep -q 'aw pending' '$O/.claude/commands/clarify.md'"
+dung "lệnh /clarify hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
+  "grep -q 'AskUserQuestion' '$O/.claude/commands/clarify.md' && grep -q 'Chat về câu này' '$O/.claude/commands/clarify.md'"
+dung "lệnh /clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-hien-thiet-ke.md' "$O/.claude/commands/clarify.md"
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'AskUserQuestion' '$O/.claude/commands/import.md'"
 dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"
-dung "skill liệt kê lệnh tiện ích" grep -q '/open-questions' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
+dung "skill liệt kê lệnh tiện ích" grep -q '/clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 
 printf '# tôi tự viết\n' > "$O/.claude/commands/spec.md"
 ky_vong 3 "từ chối ghi đè file người viết tay" sh "$BUILD" --out "$O"
@@ -888,11 +955,11 @@ thay "$FAKE/workflow/phases/00-intake.md" 'arguments: input' 'arguments: gi-cung
 ky_vong 4 "từ chối build khi arguments không phải \"input\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5"
 
 tao_fake
-rm -f "$FAKE/workflow/open-questions.md"
+rm -f "$FAKE/workflow/clarify.md"
 ky_vong 4 "từ chối build khi mục commands: trỏ tới file không tồn tại" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out6"
 
 tao_fake
-thay "$FAKE/workflow/open-questions.md" 'choice_ui: true' 'choice_ui: co'
+thay "$FAKE/workflow/clarify.md" 'choice_ui: true' 'choice_ui: co'
 ky_vong 4 "từ chối build khi choice_ui khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out8"
 
 tao_fake
@@ -1520,7 +1587,8 @@ ky_vong 9 "intake ghim version không có và không tải được → KHÔNG H
 dung "…không âm thầm chạy bằng version khác" sh -c "cd '$R7' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' check intake .agent-workflow/feat_a 2>&1 | grep -q 'engine 2099.1.3 không có trong cache'"
 printf -- '- **Engine:** v9\n' > "$R7/.agent-workflow/feat_a/intake.md"
 ky_vong 9 "intake ghi Engine sai dạng → KHÔNG HỢP LỆ" aw7 check intake .agent-workflow/feat_a
-ky_vong 9 "aw questions cũng theo version của việc" aw7 questions .agent-workflow/feat_a
+ky_vong 9 "aw pending cũng theo version của việc" aw7 pending .agent-workflow/feat_a
+ky_vong 9 "…aw questions (tên cũ) vẫn qua wrapper, theo version của việc" aw7 questions .agent-workflow/feat_a
 rm -rf "$R7/.agent-workflow"
 dung "wrapper và VERSION cùng version (đóng gói kiểm lại)" bang "$(awk -F'"' '/^AW_WRAPPER_VERSION=/ { print $2 }' "$ROOT/bin/aw")" "$(cat "$ROOT/VERSION")"
 

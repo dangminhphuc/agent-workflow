@@ -322,8 +322,8 @@ Ba mức đặt cổng chặn ở **phase rẻ nhất để sửa** nếu giả 
 kế thì phải biết trước khi thiết kế; sai một phần code thì biết trước khi merge
 là đủ; còn lại thì chấp nhận giao trên giả định và ghi rõ là chưa xác nhận.
 
-Lệnh tiện ích `open-questions` (`workflow/open-questions.md`) dẫn người đi qua
-các mục còn mở: `aw questions` xếp thứ tự bằng máy (mức chặn → YC
+Lệnh tiện ích `clarify` (`workflow/clarify.md`) dẫn người đi qua
+các mục còn mở: `aw pending` xếp thứ tự bằng máy (mức chặn → YC
 `bắt buộc` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
 đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
@@ -331,6 +331,19 @@ Câu trả lời của người trong hội thoại **chính là** gate người
 có bước sửa tay `đề xuất` → `đã duyệt` nào thêm, kể cả khi YC phải sửa theo câu
 trả lời (người xác nhận các dòng sẽ đổi trước khi agent ghi; `Trạng thái spec`
 giữ nguyên). Dấu vết nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn.
+
+Cùng lệnh đó dẫn người **phân xử phát hiện của checker LLM** (`phat-hien-*.md`):
+đồng ý thì agent sửa đúng chỗ (người xem trước → sau) rồi ghi `đã sửa`; bác bỏ
+thì ghi lý do nguyên văn. Hàng đợi xếp theo phase bị chặn sớm nhất: điểm mù
+`chặn` (chặn `design`) trước phát hiện `Chặn` (chặn `plan`) trước điểm mù
+`chặn review`.
+
+**Gộp ở chỗ người nhìn, không gộp chỗ lưu.** Điểm mù và phát hiện vẫn ở file
+riêng: mỗi file có một bên ghi và vòng đời riêng (checker LLM ghi đè cả file
+mỗi lần chạy), và `based_on` băm cả file — chung một file thì checker ghi phát
+hiện sẽ làm chính `tdd.md` vừa viết bị báo lỗi thời. Checker LLM mới chỉ cần
+ghi `phat-hien-<id>.md` đúng mẫu (`### PH-NN`, `Mức`, `Xử lý`) là `aw pending`
+tự gom.
 
 ### Vì sao checker tự chạy test thay vì đọc kết quả
 
@@ -378,7 +391,7 @@ arguments: input            # tham số lệnh là input, không phải tên fea
 ```
 
 Lệnh tiện ích (`workflow/<id>.md`, khai ở `commands:` của manifest — hiện có
-`import`, `open-questions`) không phải phase: frontmatter chỉ có `id`, `name`,
+`import`, `clarify`) không phải phase: frontmatter chỉ có `id`, `name`,
 `summary`, tuỳ chọn `argument_hint`, `arguments: mixed`, và `choice_ui: true` khi
 lệnh hỏi người bằng câu hỏi lựa chọn (adapter dịch sang giao diện của agent).
 
@@ -395,7 +408,7 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` — POSIX, CRLF/LF cho cùng kết quả |
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
 | Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `chặn`; `implement` cảnh báo, `review` chặn mức `chặn` + `chặn review` |
-| Thứ tự chốt điểm mù | `tools/liet-ke-cau-hoi.sh` | Máy xếp, agent không xếp lại; chỉ đọc, không sửa file |
+| Hàng đợi việc chờ người | `tools/liet-ke-viec-cho.sh` (`aw pending`) | Gom điểm mù + mọi `phat-hien-*.md`; máy xếp, agent không xếp lại; chỉ đọc, không sửa file |
 | Entry check | Đầu mỗi `kiem-tra-*.sh` | Gọi checker phase trước; chuỗi `ra-soat → ke-hoach → thiet-ke → truy-vet` |
 | Cấu hình lệnh test | `$AW_CONFIG/config.sh` | `AW_CONFIG` = `$(git rev-parse --git-common-dir)/agent-workflow`, wrapper truyền vào |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | Wrapper chọn engine theo dòng `Engine:`; engine từ chối chấm việc ghim version khác; `aw check intake` chặn khi thiếu dòng |

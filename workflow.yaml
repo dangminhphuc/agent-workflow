@@ -23,13 +23,13 @@ artifact_dir: .agent-workflow
 # mỗi mục thành một lệnh (Claude Code: /<id>).
 #   import          đưa artifact làm bằng tool khác vào giữa quy trình — chỉ sắp
 #                   xếp lại theo mẫu, không thêm nội dung
-#   open-questions  liệt kê điểm mù còn mở theo thứ tự phải chốt trước, dẫn người
-#                   trả lời từng mục
+#   clarify         gom mọi việc chờ người quyết (điểm mù, phát hiện của checker
+#                   LLM) theo thứ tự phải chốt trước, dẫn người đi từng mục
 commands:
   - id: import
     file: workflow/import.md
-  - id: open-questions
-    file: workflow/open-questions.md
+  - id: clarify
+    file: workflow/clarify.md
 
 phases:
   - id: intake

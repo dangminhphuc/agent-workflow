@@ -421,8 +421,8 @@ kc_diem_mu_mo() {
     for _w in "$@"; do
       [ "$_m" = "$_w" ] || continue
       case "$_m" in
-        chặn) echo "$_q: điểm mù mức \"chặn\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh open-questions dẫn dắt việc này)" ;;
-        *)    echo "$_q: điểm mù mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh open-questions dẫn dắt việc này)" ;;
+        chặn) echo "$_q: điểm mù mức \"chặn\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh clarify dẫn dắt việc này)" ;;
+        *)    echo "$_q: điểm mù mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh clarify dẫn dắt việc này)" ;;
       esac
     done
   done
