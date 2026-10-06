@@ -11,7 +11,7 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.9]
 
 ### Thêm
 - **Quy tắc riêng của repo theo phase:** khoá `quy_tac_spec`, `quy_tac_design`,
