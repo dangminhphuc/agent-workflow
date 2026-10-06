@@ -58,7 +58,7 @@ Adapter mới vì thế không phải biết gì về loại việc.
 
 ## Cái gì KHÔNG biên dịch portable được
 
-Đây là phần quan trọng nhất của tài liệu này. Năm thứ dưới đây là đặc thù agent,
+Đây là phần quan trọng nhất của tài liệu này. Sáu thứ dưới đây là đặc thù agent,
 và adapter tương lai cho Cursor/Copilot sẽ phải tự xử lý — hoặc **nói rõ là
 không làm được** chứ không im lặng bỏ qua.
 
@@ -103,6 +103,14 @@ Adapter này dịch nó thành subagent `soat-thiet-ke` (thân lấy từ
 `workflow/checkers/thiet-ke.md`); command `/design` bảo agent gọi subagent đó sau
 khi viết xong `tdd.md`. `kiem-tra-thiet-ke.sh` fail nếu chưa có
 `phat-hien-thiet-ke.md` — nên quên gọi subagent cũng không lọt.
+
+### 6. Câu hỏi lựa chọn
+
+Lệnh khai `choice_ui: true` (hiện có `open-questions`) mô tả việc hỏi người bằng
+**câu hỏi lựa chọn** — luôn kèm ô tự nhập và lựa chọn "Chat về câu này". Adapter
+này dịch nó sang tool `AskUserQuestion` (ô "Other" của tool là ô tự nhập).
+Agent không có giao diện lựa chọn thì in lựa chọn đánh số kèm "hoặc gõ câu trả
+lời khác" — mô tả trung lập đã nói cách lùi này.
 
 Những gì **luôn** portable: file artifact trong `.agent-workflow/<tên-branch>/`,
 `conventions.md`, các mẫu, và các script kiểm tra. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
@@ -174,5 +182,5 @@ giá là đã đạt.
    tham số → hỏi) — đây là giao diện chung giữa các adapter. Đừng viết lại
    logic này: gọi `tools/xac-dinh-feature.sh` từ output của adapter.
 4. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
-   LLM), **ghi rõ trong output** thay vì bỏ qua.
+   LLM, câu hỏi lựa chọn), **ghi rõ trong output** thay vì bỏ qua.
 5. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.

@@ -228,9 +228,11 @@ bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **Mức chặn** do agent đề 
 **`/open-questions`** — lệnh tiện ích, chạy bất cứ lúc nào sau `/spec`. Máy
 (`tools/liet-ke-cau-hoi.sh`) liệt kê điểm mù còn mở theo thứ tự phải chốt trước —
 mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhiều task đứng trên giả
-định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Agent dẫn bạn đi **từng
-mục một**: câu hỏi, tài liệu nói gì, giả định đang dùng, hệ quả nếu sai, vài
-phương án lấy từ nguồn. Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
+định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Danh sách đó để agent
+đọc; bạn chỉ thấy một dòng tóm tắt. Rồi agent hỏi **từng mục một** bằng câu hỏi
+lựa chọn (Claude Code: `AskUserQuestion`): ngữ cảnh vài dòng, các lựa chọn —
+giữ giả định tạm, cách hiểu khác có trong nguồn, "Chưa trả lời được", "Chat về
+câu này" — và luôn có ô tự nhập. Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
 spec, chạy lại checker. Câu trả lời khác giả định thì agent cho bạn xem dòng YC
 sẽ sửa, bạn đồng ý trong hội thoại là xong — **không phải mở file sửa tay**
 `đề xuất` → `đã duyệt`. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người

@@ -188,6 +188,19 @@ buoc_phan_loai_input() {
   printf -- '- **ĐƯỜNG DẪN KHÔNG TỒN TẠI:** có đường dẫn không tồn tại → hỏi lại người dùng. Không tự đoán đường dẫn.\n\n'
 }
 
+# Lenh khai choice_ui: true — "cau hoi lua chon" trong mo ta trung lap dich sang
+# tool AskUserQuestion cua Claude Code. O "Other" cua tool la lua chon tu nhap.
+cach_hoi_lua_chon() {
+  printf '## Cách hỏi lựa chọn trong Claude Code\n\n'
+  printf 'Mỗi "câu hỏi lựa chọn" trong mô tả bên dưới là **một lần gọi tool `AskUserQuestion`** — một câu hỏi mỗi lần, `multiSelect: false`. Không in lựa chọn thành văn bản rồi bắt người gõ chữ cái.\n\n'
+  printf -- '- Ngữ cảnh ngắn (tài liệu nói gì, nếu sai, hỏi ai) viết thành văn bản **ngay trước** lần gọi, tối đa 4 dòng.\n'
+  printf -- '- `question`: câu hỏi, một câu, kết thúc bằng dấu `?`.\n'
+  printf -- '- `header` (≤ 12 ký tự): mã và vị trí, vd `YC-001 1/8`.\n'
+  printf -- '- `options` (tối đa 4), theo thứ tự: giữ giả định tạm · cách hiểu khác (nếu nguồn có) · `Chưa trả lời được` · `Chat về câu này`. `description` của mỗi lựa chọn là hệ quả một dòng.\n'
+  printf -- '- **Không** thêm lựa chọn "Khác": Claude Code luôn tự thêm ô "Other" — đó chính là lựa chọn tự nhập. Câu trả lời trả về là nhãn được chọn, hoặc nguyên văn người gõ vào "Other".\n'
+  printf -- '- Chọn `Chat về câu này` thì trả lời bằng văn bản thường; khi người đã rõ, gọi lại `AskUserQuestion` cho đúng câu đó.\n\n'
+}
+
 ten_agent_checker() { printf 'soat-%s' "$(basename "$1" .md)"; }
 
 sinh_command() {
@@ -350,6 +363,10 @@ while IFS='|' read -r cid cfile; do
   [ -n "$cid" ] || continue
   csrc="$ROOT/$cfile"
   [ -f "$csrc" ] || { echo "LỖI: workflow.yaml khai lệnh \"$cid\" → \"$cfile\" nhưng không có file đó." >&2; exit 4; }
+  case "$(fm_scalar "$csrc" choice_ui)" in
+    ""|true) ;;
+    *) echo "LỖI: $cfile khai choice_ui \"$(fm_scalar "$csrc" choice_ui)\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; exit 4 ;;
+  esac
   cargs=$(fm_scalar "$csrc" arguments)
   case "$cargs" in
     ""|mixed) ;;
@@ -369,6 +386,7 @@ while IFS='|' read -r cid cfile; do
     else
       buoc_xac_dinh_feature '$ARGUMENTS'
     fi
+    [ "$(fm_scalar "$csrc" choice_ui)" = "true" ] && cach_hoi_lua_chon
     printf '### Đọc trước khi làm\n\n'
     printf -- '- `%s/rules/nguyen-tac-chung.md`\n' "$QT"
     printf -- '- `%s/rules/truy-vet-nguon.md`\n' "$QT"
