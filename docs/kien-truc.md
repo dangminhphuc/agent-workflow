@@ -374,6 +374,25 @@ Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặ
 Mẫu file test, cú pháp tag, nhánh gốc và danh sách file bỏ qua khai trong
 `conventions.md` của repo đích — phần máy đọc phải parse được bằng sh/awk.
 
+### Quy tắc riêng của repo
+
+Repo đích khai file quy tắc cho từng phase ở khoá `quy_tac_<phase>` của
+`conventions.md`; agent lấy danh sách bằng `aw rules <phase>`. Ba lựa chọn:
+
+- **Đọc lúc chạy, không chép vào lệnh lúc build.** `conventions.md` do người sửa
+  sau khi cài và sửa nhiều lần; chép vào lúc `aw adapter build` thì lệnh của
+  agent lệch cấu hình mà không ai biết.
+- **Agent đọc file như tài liệu, không dựa vào skill tự kích hoạt.** Skill của
+  Claude Code chỉ chạy khi agent thấy mô tả khớp, và agent khác không thấy nó.
+  Đưa đường dẫn vào thì mọi agent đọc được như nhau.
+- **Máy chỉ kiểm phần chính xác:** file có thật, đã commit, khoá không gõ nhầm
+  (chặn ở phase khai nó), và `review.md` có kết luận cho từng file (chặn ở
+  review). Code có theo quy tắc hay không là việc người rà soát phán — như với
+  `tdd.md`.
+
+Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md`: một skill bảo "dọn file
+đụng tới" không được thắng luật giữ diff trong phạm vi.
+
 Không có phase test riêng: test là điều kiện ra của `implement`. Một phase test
 đặt phía sau sẽ biến "code xong" thành trạng thái hợp lệ dù chưa ai chạy gì.
 
@@ -423,6 +442,7 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Cấu hình lệnh test | `$AW_CONFIG/config.sh` | `AW_CONFIG` = `$(git rev-parse --git-common-dir)/agent-workflow`, wrapper truyền vào |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | Wrapper chọn engine theo dòng `Engine:`; engine từ chối chấm việc ghim version khác; `aw check intake` chặn khi thiếu dòng |
 | Tên checker | `tools/lib/bang-lenh.sh` | Một bảng cho `aw check <tên>` và cho adapter kiểm `exit_machine` |
+| Quy tắc riêng của repo | `kc_quy_tac*` trong `tools/lib/kiem-cheo.sh`; `tools/quy-tac-repo.sh` (`aw rules`) | Phase có khoá: `BL_QUY_TAC` trong `bang-lenh.sh`. Checker phase gọi `kc_quy_tac_loi`; review thêm khoá gõ nhầm + mục "Quy tắc repo" |
 | Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |
 
 Phạm vi diff so với `git merge-base <base> HEAD` **tới cây làm việc** (`<base>` là
@@ -536,3 +556,8 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
 11. **Ghim sha256 là tin lần đầu (TOFU).** Lần tải đầu tiên tin `SHA256SUMS` của
     bản phát hành; nếu lần đó đã bị tráo thì sha bị ghim sai. Repo cấu hình chung
     của team thu hẹp rủi ro (một người ghim, mọi người kiểm theo), không xoá được.
+
+12. **Tuân thủ quy tắc repo chỉ do người phán.** Máy biết `review.md` có một dòng
+    kết luận cho mỗi file quy tắc, không biết dòng `đạt` có đúng không. Quy tắc
+    nào viết được thành lệnh (lint, type, kiến trúc) thì nên nằm trong
+    `LENH_KIEM_THU`.

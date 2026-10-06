@@ -8,7 +8,8 @@
 # bia mot dong "tat ca test da xanh".
 #
 # Chan:  dau vao khong qua kiem-tra-ke-hoach.sh, chua khai lenh kiem thu,
-#        test do, con task dang lam do.
+#        test do, con task dang lam do; file khai o quy_tac_implement
+#        (conventions.md) khong co hoac chua commit.
 #        Theo loai viec (intake.md): bugfix thieu tai-hien.md do; refactor/perf
 #        xoa test cu; perf thieu so do truoc/sau; chore dung code production
 #        hoac nang dependency khong khai.
@@ -26,6 +27,7 @@ kq_khai kiem-tra-hien-thuc.sh \
   "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
   "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
+. "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
 DIR="${1:-.}"
@@ -46,6 +48,10 @@ loi() { n_loi=$((n_loi + 1)); echo "  [LỖI] $1"; }
 if ! sh "$HERE/kiem-tra-ke-hoach.sh" "$DIR" >/dev/null 2>&1; then
   loi "Đầu vào chưa đạt: plan.md không qua aw check plan — chạy nó để xem chi tiết."
 fi
+qtl=$(kc_quy_tac_loi "$DIR" implement)
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$qtl
+EOF
 
 # ---- 1. Phai khai bao lenh kiem thu ----
 if [ -z "$LENH_KIEM_THU" ]; then

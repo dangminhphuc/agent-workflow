@@ -32,6 +32,16 @@ Kết luận hợp lệ: `đạt` / `đạt một phần` / `chưa đạt` / `ch
 - Task đánh dấu xong nhưng diff không có dấu vết: <...>
 - Phát sinh bị xử lý lặng lẽ: <...>
 
+## Quy tắc repo
+
+<!-- Mỗi file `aw rules review` in ra một dòng — thiếu là máy chặn. Không in gì:
+     xoá mục này. Kết luận: đạt | vi phạm (kèm file:dòng, thêm finding ở lăng
+     kính 3) | không áp dụng (kèm lý do). -->
+
+| File | Kết luận | Vị trí / lý do |
+|---|---|---|
+| `docs/coding-style.md` | đạt | |
+
 ## Lăng kính 3 — Chất lượng
 
 ### [Chặn] <tiêu đề>

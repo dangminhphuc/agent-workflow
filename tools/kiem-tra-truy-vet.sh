@@ -3,10 +3,13 @@
 #
 #   aw check spec <thư-mục-feature>
 #
+# Chặn thêm: file khai ở quy_tac_spec (conventions.md) không có hoặc chưa commit.
+#
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/md.sh"
+. "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
 . "$HERE/lib/ket-qua.sh"
 kq_khai kiem-tra-truy-vet.sh \
@@ -35,6 +38,10 @@ if ! sh "$HERE/kiem-tra-tiep-nhan.sh" "$DIR" >/dev/null 2>&1; then
   n_truoc=1
   echo "  [LỖI] Đầu vào chưa đạt: intake.md không qua aw check intake — chạy nó để xem chi tiết."
 fi
+qtl=$(kc_quy_tac_loi "$DIR" spec)
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$qtl
+EOF
 LOAI=$(kc_loai "$DIR")
 BV="${TMPDIR:-/tmp}/tv-bv.$$"
 : > "$BV"

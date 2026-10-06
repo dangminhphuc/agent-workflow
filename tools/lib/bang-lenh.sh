@@ -5,6 +5,10 @@
 
 BL_CHECKERS="intake spec design plan implement review repro perf"
 
+# Phase đọc quy tắc riêng của repo (khoá quy_tac_<phase> trong conventions.md,
+# `aw rules <phase>`). Adapter dùng để thêm bước đọc vào đúng các phase này.
+BL_QUY_TAC="spec design plan implement review"
+
 # bl_checker <tên> -> tên file script (mã 1 nếu không có)
 bl_checker() {
   case "$1" in

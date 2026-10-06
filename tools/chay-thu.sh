@@ -283,7 +283,9 @@ tao_fixture() {
   } > "$CFG/config.sh"
   printf 'goc\n' > "$R/src/a.txt"
   printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
-  g add src test; g commit -q -m goc
+  # Quy tắc riêng của repo (quy_tac_*): file phải đã commit vào base.
+  printf '# quy tắc a\n' > "$R/docs/quy-tac.md"; printf '# quy tắc b\n' > "$R/docs/quy-tac-2.md"
+  g add src test docs; g commit -q -m goc
   g checkout -q -b "$_br"
   viet_intake; viet_spec; viet_tdd; viet_plan; viet_review
   ghi_based_on
@@ -725,6 +727,89 @@ rm -f "$F/ket-qua-kiem-thu.md"
 ky_vong 1 "chặn khi chưa có ket-qua-kiem-thu.md" sh "$CHK" "$F"
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 
+# ---------------------------------------------------------------- quy tac repo
+echo ""
+echo "quy tắc riêng của repo (quy_tac_*, aw rules)"
+QT="$T/quy-tac-repo.sh"
+CONV="$CFG/conventions.md"
+cp "$CONV" "$TMP/conv-qt.bak"
+# khai_qt <phase> <giá trị> — khai lại từ đầu một khoá quy_tac_<phase>
+khai_qt() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "quy_tac_$1:" "quy_tac_$1: $2"; }
+them_muc_qt() { printf '\n## Quy tắc repo\n\n| File | Kết luận | Vị trí / lý do |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; }
+
+ky_vong 0 "không khai gì → aw rules ĐÃ LIỆT KÊ" sh "$QT" implement
+dung "…stdout rỗng" bang "$(sh "$QT" implement 2>/dev/null)" ""
+ky_vong 2 "aw rules thiếu phase → SAI THAM SỐ" sh "$QT"
+ky_vong 2 "aw rules phase không có quy tắc (intake) → SAI THAM SỐ" sh "$QT" intake
+ky_vong 0 "aw-engine rules → đúng script" sh "$AWE" rules implement
+
+khai_qt implement 'docs/quy-tac.md'
+dung "khai implement → aw rules implement in đúng file" bang "$(sh "$QT" implement 2>/dev/null)" "docs/quy-tac.md"
+dung "…phase khác không thấy" bang "$(sh "$QT" spec 2>/dev/null)" ""
+khai_qt spec 'docs/quy-tac-2.md docs/quy-tac.md'
+thay "$CONV" 'quy_tac_implement:' 'quy_tac_implement: docs/quy-tac.md'
+dung "review = hợp mọi khoá, bỏ trùng, giữ thứ tự" bang "$(sh "$QT" review 2>/dev/null | tr '\n' ' ')" "docs/quy-tac-2.md docs/quy-tac.md "
+
+for p in spec:truy-vet design:thiet-ke plan:ke-hoach implement:hien-thuc; do
+  khai_qt "${p%%:*}" 'docs/khong-co.md'
+  ky_vong 1 "${p%%:*}: file quy tắc không có → aw check ${p%%:*} chặn" sh "$T/kiem-tra-${p#*:}.sh" "$F"
+done
+dung "…đúng lý do" sh -c "sh '$T/kiem-tra-hien-thuc.sh' '$F' | grep -q 'quy tắc repo \"docs/khong-co.md\": không có file'"
+ky_vong 1 "…aw rules implement ra KHAI SAI" sh "$QT" implement
+ky_vong 0 "…phase không khai thì không bị ảnh hưởng" sh "$T/kiem-tra-truy-vet.sh" "$F"
+ky_vong 1 "…review chặn (cổng cuối kiểm mọi khoá)" sh "$T/kiem-tra-ra-soat.sh" "$F"
+
+printf 'x\n' > "$R/docs/chua-commit.md"
+khai_qt implement 'docs/chua-commit.md'
+ky_vong 1 "file quy tắc chưa commit → chặn" sh "$QT" implement
+dung "…đúng lý do: chưa commit" sh -c "sh '$QT' implement 2>&1 | grep -q 'chưa commit'"
+rm -f "$R/docs/chua-commit.md"
+
+mkdir -p "$R/.claude/skills/x"; printf 'x\n' > "$R/.claude/skills/x/SKILL.md"
+printf '/.claude/\n' >> "$R/.git/info/exclude"
+khai_qt implement '.claude/skills/x/SKILL.md'
+ky_vong 1 "skill trong /.claude/ bị exclude → chặn" sh "$QT" implement
+dung "…chỉ rõ git đang bỏ qua + git add -f" sh -c "sh '$QT' implement 2>&1 | grep -q 'git đang bỏ qua.*git add -f'"
+git -C "$R" -c user.name=t -c user.email=t@t add -f .claude/skills/x/SKILL.md >/dev/null 2>&1
+ky_vong 0 "…đã git add -f thì cho qua" sh "$QT" implement
+git -C "$R" rm -q --cached .claude/skills/x/SKILL.md >/dev/null 2>&1; rm -rf "$R/.claude"
+
+for v in /etc/hosts ../x docs/../../x; do
+  khai_qt implement "$v"
+  ky_vong 1 "đường dẫn ra ngoài repo ($v) → chặn" sh "$QT" implement
+done
+
+cp "$TMP/conv-qt.bak" "$CONV"
+thay "$CONV" 'quy_tac_review:' 'quy_tac_review:
+quy_tac_implment: docs/quy-tac.md'
+ky_vong 1 "khoá gõ nhầm (quy_tac_implment) → aw rules chặn" sh "$QT" implement
+dung "…đúng lý do" sh -c "sh '$QT' implement 2>&1 | grep -q 'quy_tac_implment.*không ứng với phase'"
+ky_vong 1 "…review chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
+
+# Review: mỗi file quy tắc một kết luận
+khai_qt implement 'docs/quy-tac.md'
+viet_review
+ky_vong 1 "review.md thiếu mục Quy tắc repo → chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'thiếu mục \"## Quy tắc repo\"'"
+viet_review; them_muc_qt '| `docs/quy-tac.md` | đạt | |'
+ky_vong 0 "có kết luận đạt → cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
+viet_review; them_muc_qt '| `docs/quy-tac.md` | ổn | |'
+ky_vong 1 "kết luận tự chế → chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
+viet_review; them_muc_qt '| `docs/quy-tac.md` | vi phạm | |'
+ky_vong 1 "vi phạm không kèm vị trí → chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
+viet_review; them_muc_qt '| `docs/quy-tac.md` | vi phạm | `src/a.txt:1` |'
+ky_vong 0 "vi phạm có vị trí → cho qua (người phán finding)" sh "$T/kiem-tra-ra-soat.sh" "$F"
+viet_review; them_muc_qt '| `docs/quy-tac.md` | không áp dụng | <lý do> |'
+ky_vong 1 "không áp dụng còn chỗ giữ chỗ → chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
+viet_review; them_muc_qt '| `docs/quy-tac.md` | không áp dụng | không đụng API |'
+ky_vong 0 "không áp dụng có lý do → cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
+khai_qt spec 'docs/quy-tac-2.md'
+thay "$CONV" 'quy_tac_implement:' 'quy_tac_implement: docs/quy-tac.md'
+ky_vong 1 "review thiếu dòng cho quy tắc của phase khác (spec) → chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'docs/quy-tac-2.md\": không có kết luận'"
+cp "$TMP/conv-qt.bak" "$CONV"; viet_review
+ky_vong 0 "bỏ hết khoá → review như cũ" sh "$T/kiem-tra-ra-soat.sh" "$F"
+
 # ---------------------------------------------------------------- liet ke cau hoi
 echo ""
 echo "liet-ke-viec-cho.sh (/clarify)"
@@ -914,6 +999,11 @@ dung "lệnh /clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-h
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'AskUserQuestion' '$O/.claude/commands/import.md'"
 dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
+dung "phase có quy tắc repo: lệnh gọi aw rules <phase>" sh -c \
+  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O/.claude/commands/'\$p.md || exit 1; done"
+dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/intake.md'"
+dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/ra-soat-doc-lap.md"
+dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/soat-thiet-ke.md"
 
 printf '# tôi tự viết\n' > "$O/.claude/commands/spec.md"
 ky_vong 3 "từ chối ghi đè file người viết tay" sh "$BUILD" --out "$O"
@@ -964,6 +1054,10 @@ ky_vong 4 "từ chối build khi mục commands: trỏ tới file không tồn t
 tao_fake
 thay "$FAKE/workflow/clarify.md" 'choice_ui: true' 'choice_ui: co'
 ky_vong 4 "từ chối build khi choice_ui khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out8"
+
+tao_fake
+thay "$FAKE/workflow/checkers/thiet-ke.md" 'quy_tac: design' 'quy_tac: intake'
+ky_vong 4 "từ chối build khi checker LLM khai quy_tac không phải phase có quy tắc" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out9"
 
 tao_fake
 thay "$FAKE/workflow/import.md" 'arguments: mixed' 'arguments: input'

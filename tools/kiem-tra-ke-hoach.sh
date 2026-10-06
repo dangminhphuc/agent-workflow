@@ -12,6 +12,7 @@
 #       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
 #       ngược — mọi mã YC được task phủ, hoặc nằm ở "Hoãn lại" (bắt yêu cầu sót)
 #   - Task thiếu "Cách kiểm chứng", "File dự kiến"; "Dựa trên: D-xx" trỏ về D không có.
+#   - File khai ở quy_tac_plan (conventions.md) không có hoặc chưa commit.
 # Cảnh báo: artifact lỗi thời; YC "Ưu tiên: bắt buộc" nằm ở "Hoãn lại".
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -23,6 +24,7 @@ kq_khai kiem-tra-ke-hoach.sh \
   "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
   "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
+. "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
 DIR="${1:-.}"
@@ -69,6 +71,11 @@ else
     echo "  [LỖI] Đầu vào chưa đạt: tdd.md không qua aw check design — chạy nó để xem chi tiết."
   fi
 fi
+
+qtl=$(kc_quy_tac_loi "$DIR" plan)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$qtl
+EOF
 
 awk -v loi_truoc="$n_loi" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }

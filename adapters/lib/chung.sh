@@ -187,6 +187,16 @@ doc_truoc() {
   printf -- '- `%s` — quy ước của repo (cấu hình của bản clone, không nằm trong git)\n\n' "$CONV_DOC"
 }
 
+# buoc_quy_tac_repo <phase> — đọc quy tắc riêng của repo. Danh sách lấy LÚC CHẠY
+# bằng `aw rules`, không chép vào lúc build: conventions.md sửa là có hiệu lực ngay.
+buoc_quy_tac_repo() {
+  printf '### Quy tắc riêng của repo\n\n'
+  printf 'Chạy `aw rules %s`. Stdout là danh sách file (đường dẫn từ gốc repo) — **đọc từng file** trước khi làm. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:\n\n' "$1"
+  printf -- '- **ĐÃ LIỆT KÊ:** đọc hết các file đó và theo chúng trong phase này. Không in gì = không có quy tắc riêng.\n'
+  printf -- '- **KHAI SAI:** dừng lại, báo người sửa khoá `quy_tac_*` trong `%s`. Không tự đoán file thay thế.\n\n' "$CONV_DOC"
+  printf 'Quy tắc repo xếp **dưới** `spec.md`, `tdd.md`, `plan.md` và luật quy trình: mâu thuẫn thì làm theo artifact và nêu ra, không vì quy tắc mà vượt phạm vi phase. File `SKILL.md` trong danh sách cũng đọc như tài liệu thường.\n\n'
+}
+
 # luat_tom_tat — bảy luật không được vi phạm, dùng trong file tổng của agent
 luat_tom_tat() {
   printf '1. **Bàn giao bằng file.** Phase không được nhận đầu vào từ hội thoại phía trên.\n'

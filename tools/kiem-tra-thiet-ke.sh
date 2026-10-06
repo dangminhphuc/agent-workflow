@@ -12,6 +12,7 @@
 #   6. Mục "Ánh xạ YC" bỏ sót YC của spec, hoặc trỏ về YC không có.
 #   7. Mode 2: spec "Mức rủi ro: cao" mà không có D-xx nào do người viết.
 #   8. Checker LLM: chưa có phat-hien-thiet-ke.md, hoặc còn phát hiện mức Chặn chưa xử lý.
+#   9. File khai ở quy_tac_design (conventions.md) không có hoặc chưa commit.
 # Cảnh báo (không chặn): artifact lỗi thời.
 #
 # Checker LLM chỉ được CHẶN, không được DUYỆT: không có file phát hiện là
@@ -26,6 +27,7 @@ kq_khai kiem-tra-thiet-ke.sh \
   "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
   "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
+. "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
 DIR="${1:-.}"
@@ -65,6 +67,10 @@ if [ -n "$dm" ]; then
 $dm
 EOF
 fi
+qtl=$(kc_quy_tac_loi "$DIR" design)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$qtl
+EOF
 
 PHF="$PH"; PH_THIEU=0
 [ -f "$PH" ] || { PH_THIEU=1; PHF=/dev/null; }

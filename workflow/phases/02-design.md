@@ -38,6 +38,8 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 - `spec.md`, `open-questions.md` — phải qua được `aw check spec`, và
   `Trạng thái spec: đã duyệt` (người đã duyệt spec). Còn `đề xuất` thì dừng lại.
 - Code hiện có của repo đích
+- Quy tắc riêng của repo cho phase này — `aw rules design`, đọc từng file nó in ra
+  (xem `rules/nguyen-tac-chung.md` § 7)
 
 Checker của phase này chạy lại checker của `spec` trên đầu vào. Không có đường
 tắt: `spec.md` đưa từ tool khác vào cũng phải qua đúng cổng đó.

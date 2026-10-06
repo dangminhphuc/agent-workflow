@@ -33,6 +33,9 @@ thứ không truy về được nguồn đều phải lộ ra chứ không đư�
 
 ## Đầu vào
 
+- Quy tắc riêng của repo cho phase này — `aw rules spec`, đọc từng file nó in ra
+  (xem `rules/nguyen-tac-chung.md` § 7)
+
 `intake.md` — phải qua `aw check intake` (checker của spec chạy lại nó).
 Nó cho biết **loại việc** và **danh sách input**. Đọc hết từng input:
 

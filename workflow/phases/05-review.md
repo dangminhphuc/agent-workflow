@@ -72,6 +72,12 @@ tới đây; `chặn` / `chặn review` còn mở thì máy chặn.
   không có dấu vết?
 - Có mục "Phát sinh" nào bị xử lý lặng lẽ thay vì nêu ra?
 
+Thêm: đối chiếu diff với **từng file** quy tắc riêng của repo (`aw rules review` —
+hợp quy tắc của mọi phase). Mỗi file một dòng trong mục "Quy tắc repo" của
+`review.md`: `đạt` / `vi phạm` (kèm `file:dòng`) / `không áp dụng` (kèm lý do).
+Vi phạm thì thêm finding ở lăng kính 3, mức do bạn phán. Quy tắc repo xếp dưới
+`tdd.md`: code theo D-xx đã duyệt mà trái quy tắc là `không áp dụng`, ghi rõ D nào.
+
 ### 3. Chất lượng
 Lỗi đúng/sai, chỗ có thể dùng lại thứ đã có, chỗ phức tạp quá mức cần thiết.
 Mỗi finding phải có `file:dòng` và mức độ.
@@ -118,7 +124,9 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
   - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
     thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai, điểm mù
     `chặn` / `chặn review` còn mở;
-  - luật theo loại việc (như `implement`), và bugfix có dòng `Test tái hiện đỏ vì:`.
+  - luật theo loại việc (như `implement`), và bugfix có dòng `Test tái hiện đỏ vì:`;
+  - repo có quy tắc riêng (`quy_tac_*`): file khai có thật, đã commit, và mục
+    "Quy tắc repo" của `review.md` có kết luận hợp lệ cho **từng** file.
 - Diff được so với **base ghi trong `intake.md`**, không phải `nhanh_goc`. Base
   không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)
   thì checker **chỉ cảnh báo** — nêu ra cho người.
