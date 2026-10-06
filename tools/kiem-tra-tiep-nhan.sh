@@ -56,10 +56,10 @@ fi
 e_ver=$(kc_engine_dong "$DIR")
 e_dang=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
 if [ -z "$e_ver" ]; then
-  echo "  [LỖI] Thiếu dòng \"- **Engine:** YYYY.MM.DD\" — chép đúng dòng aw worktree in ra khi tạo worktree"
+  echo "  [LỖI] Thiếu dòng \"- **Engine:** YYYY.M.D\" — chép đúng dòng aw worktree in ra khi tạo worktree"
   n_base=$((n_base + 1))
 elif ! ver_hop_le "$e_ver"; then
-  echo "  [LỖI] Engine: \"$e_ver\" không phải YYYY.MM.DD"
+  echo "  [LỖI] Engine: \"$e_ver\" không phải YYYY.M.D"
   n_base=$((n_base + 1))
 elif [ -n "$e_dang" ] && [ "$e_ver" != "$e_dang" ]; then
   echo "  [LỖI] Engine: việc ghim $e_ver nhưng checker đang chạy là $e_dang — chạy qua aw check, không gọi engine khác"
