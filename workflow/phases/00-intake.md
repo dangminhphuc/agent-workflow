@@ -149,7 +149,7 @@ cảnh báo: việc này dựa trên code chưa được review.
 của bản clone lúc tạo worktree. Nâng cấp (`aw upgrade`) giữa chừng không đổi
 luật của việc đang làm. Mọi checker của việc chạy đúng version ghi ở dòng
 `Engine:`; máy không có version đó và không tải được thì checker báo KHÔNG HỢP
-LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `X.Y.Z`.
+LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `YYYY.MM.DD`.
 
 ## Việc phải làm
 
@@ -197,7 +197,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 - `aw check intake` ra `[x] ĐẠT` — loại việc hợp lệ, có mục tiêu, có ít
   nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
   `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
-  có dòng `Engine:` dạng `X.Y.Z` khớp engine đang chạy.
+  có dòng `Engine:` dạng `YYYY.MM.DD` khớp engine đang chạy.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.
 
 **Người:**

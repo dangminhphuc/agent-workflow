@@ -335,9 +335,9 @@ sed '/\*\*Engine:\*\*/d' "$TMP/intake.bak" > "$F/intake.md"
 ky_vong 1 "intake thiếu dòng Engine → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
 ky_vong 9 "…aw-engine check spec từ chối chấm (không biết engine nào)" sh "$AWE" check spec "$F"
 ky_vong 1 "…aw-engine check intake vẫn chạy để liệt kê lỗi" sh "$AWE" check intake "$F"
-sed 's/\*\*Engine:\*\* .*/**Engine:** 2.0/' "$TMP/intake.bak" > "$F/intake.md"
-ky_vong 1 "Engine sai dạng X.Y.Z → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
-sed 's/\*\*Engine:\*\* .*/**Engine:** 0.0.1/' "$TMP/intake.bak" > "$F/intake.md"
+sed 's/\*\*Engine:\*\* .*/**Engine:** 2026.10.6/' "$TMP/intake.bak" > "$F/intake.md"
+ky_vong 1 "Engine sai dạng YYYY.MM.DD → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
+sed 's/\*\*Engine:\*\* .*/**Engine:** 2000.01.01/' "$TMP/intake.bak" > "$F/intake.md"
 ky_vong 1 "Engine lệch engine đang chạy → KHÔNG ĐẠT" sh "$T/kiem-tra-tiep-nhan.sh" "$F"
 for c in intake spec repro perf; do
   ky_vong 9 "…aw-engine check $c lệch version → KHÔNG HỢP LỆ" sh "$AWE" check "$c" "$F"
@@ -1403,8 +1403,8 @@ dung "…stdout không lẫn khối Kết quả" sh -c "! printf '%s' \"\$1\" | 
 # ---------------------------------------------------------------- dong goi (phat hanh)
 echo ""
 echo "tools/dong-goi.sh"
-# tao_nguon <thư-mục> <X.Y.Z> — chép repo này (cả thay đổi chưa commit) thành một
-# repo git riêng mang version <X.Y.Z>. Dùng làm "bản phát hành" giả.
+# tao_nguon <thư-mục> <YYYY.MM.DD> — chép repo này (cả thay đổi chưa commit) thành một
+# repo git riêng mang version <YYYY.MM.DD>. Dùng làm "bản phát hành" giả.
 tao_nguon() {
   rm -rf "$1"; mkdir -p "$1"
   (cd "$ROOT" && tar cf - --exclude=.git .) | (cd "$1" && tar xf -)
@@ -1413,19 +1413,25 @@ tao_nguon() {
   git -C "$1" init -q; git -C "$1" checkout -q -b main
   git -C "$1" add -A; git -C "$1" -c user.name=t -c user.email=t@t commit -q -m "v$2"
 }
-NG="$TMP/nguon-goi"; tao_nguon "$NG" 9.9.1
+NG="$TMP/nguon-goi"; tao_nguon "$NG" 2099.09.01
 ky_vong 0 "đóng gói bản đúng" sh "$NG/tools/dong-goi.sh" "$TMP/goi1"
-dung "ra tarball đúng tên + SHA256SUMS khớp" sh -c "cd '$TMP/goi1' && [ -f agent-workflow-9.9.1.tar.gz ] && sha256sum -c SHA256SUMS >/dev/null 2>&1"
-dung "tarball có thư mục gốc agent-workflow-9.9.1/ và VERSION" sh -c "gzip -dc '$TMP/goi1/agent-workflow-9.9.1.tar.gz' | tar tf - | grep -qx 'agent-workflow-9.9.1/VERSION'"
+dung "ra tarball đúng tên + SHA256SUMS khớp" sh -c "cd '$TMP/goi1' && [ -f agent-workflow-2099.09.01.tar.gz ] && sha256sum -c SHA256SUMS >/dev/null 2>&1"
+dung "tarball có thư mục gốc agent-workflow-2099.09.01/ và VERSION" sh -c "gzip -dc '$TMP/goi1/agent-workflow-2099.09.01.tar.gz' | tar tf - | grep -qx 'agent-workflow-2099.09.01/VERSION'"
 sh "$NG/tools/dong-goi.sh" "$TMP/goi2" >/dev/null 2>&1
 dung "đóng gói lại cùng commit → cùng checksum" cmp -s "$TMP/goi1/SHA256SUMS" "$TMP/goi2/SHA256SUMS"
 printf 'chua commit\n' > "$NG/chua-commit.txt"
 sh "$NG/tools/dong-goi.sh" "$TMP/goi3" >/dev/null 2>&1
-dung "file chưa commit không lọt vào gói" sh -c "! gzip -dc '$TMP/goi3/agent-workflow-9.9.1.tar.gz' | tar tf - | grep -q chua-commit"
+dung "file chưa commit không lọt vào gói" sh -c "! gzip -dc '$TMP/goi3/agent-workflow-2099.09.01.tar.gz' | tar tf - | grep -q chua-commit"
 printf 'v2\n' > "$NG/VERSION"; git -C "$NG" -c user.name=t -c user.email=t@t commit -qam sai
-ky_vong 4 "VERSION sai dạng X.Y.Z → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4"
+ky_vong 4 "VERSION sai dạng YYYY.MM.DD → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4"
+printf '2.0.0\n' > "$NG/VERSION"; git -C "$NG" -c user.name=t -c user.email=t@t commit -qam semver
+ky_vong 4 "VERSION kiểu X.Y.Z (semver) → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4b"
+printf '2026.13.01\n' > "$NG/VERSION"; git -C "$NG" -c user.name=t -c user.email=t@t commit -qam thang13
+ky_vong 4 "VERSION tháng 13 → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP/goi4c"
+dung "luật version: nhận 2026.10.06, 2026.12.31; từ chối 2026.1.6, 2026.00.10, 2026.10.32, v2026.10.06" sh -c ". '$T/lib/version.sh'; ver_hop_le 2026.10.06 && ver_hop_le 2026.12.31 && ! ver_hop_le 2026.1.6 && ! ver_hop_le 2026.00.10 && ! ver_hop_le 2026.10.32 && ! ver_hop_le v2026.10.06"
 ky_vong 2 "ref không tồn tại → sai tham số" sh "$NG/tools/dong-goi.sh" "$TMP/goi5" khong-co
-dung "VERSION của repo là X.Y.Z" sh -c "grep -Eqx '[0-9]+\.[0-9]+\.[0-9]+' '$ROOT/VERSION'"
+dung "VERSION của repo là ngày YYYY.MM.DD" sh -c ". '$T/lib/version.sh'; ver_hop_le \"\$(cat '$ROOT/VERSION')\""
+dung "workflow release bắt tag dạng YYYY.MM.DD, không có v" grep -qF "tags: ['[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]']" "$ROOT/.github/workflows/release.yml"
 dung "CHANGELOG.md có mục cho VERSION" grep -qF "## [$(cat "$ROOT/VERSION")]" "$ROOT/CHANGELOG.md"
 
 # ---------------------------------------------------------------- wrapper aw
@@ -1434,13 +1440,13 @@ echo "bin/aw (wrapper)"
 unset AW_REPO AW_CONFIG
 AWH="$TMP/awhome"; MIR="$TMP/mirror"
 # Mirror giả (file://): mỗi version là một bản phát hành đóng gói từ repo này.
-for v in 9.0.1 9.0.2; do
+for v in 2099.01.01 2099.01.02; do
   tao_nguon "$TMP/nguon-$v" "$v"
-  sh "$TMP/nguon-$v/tools/dong-goi.sh" "$MIR/v$v" >/dev/null 2>&1
+  sh "$TMP/nguon-$v/tools/dong-goi.sh" "$MIR/$v" >/dev/null 2>&1
 done
-tao_nguon "$TMP/nguon-9.0.4" 9.0.4
-sh "$TMP/nguon-9.0.4/tools/dong-goi.sh" "$MIR/v9.0.4" >/dev/null 2>&1
-printf '%s  agent-workflow-9.0.4.tar.gz\n' "$(printf 0 | awk '{ for (i = 0; i < 64; i++) printf "0" }')" > "$MIR/v9.0.4/SHA256SUMS"
+tao_nguon "$TMP/nguon-2099.01.04" 2099.01.04
+sh "$TMP/nguon-2099.01.04/tools/dong-goi.sh" "$MIR/2099.01.04" >/dev/null 2>&1
+printf '%s  agent-workflow-2099.01.04.tar.gz\n' "$(printf 0 | awk '{ for (i = 0; i < 64; i++) printf "0" }')" > "$MIR/2099.01.04/SHA256SUMS"
 
 R7="$TMP/repo7"; mkdir -p "$R7"
 git -C "$R7" init -q; git -C "$R7" checkout -q -b main
@@ -1452,41 +1458,41 @@ C7="$R7/.git/agent-workflow"
 
 ky_vong 9 "ngoài git repo → KHÔNG HỢP LỆ" sh -c "cd '$TMP' && AW_HOME='$AWH' sh '$ROOT/bin/aw' check spec x"
 ky_vong 9 "chưa init → KHÔNG HỢP LỆ" aw7 check spec .agent-workflow/x
-ky_vong 2 "init --version sai dạng → SAI THAM SỐ" aw7 init --version 9.0
-ky_vong 0 "aw init --version 9.0.1 (cache thiếu → tải từ mirror)" aw7 init --version 9.0.1 --test-cmd true
+ky_vong 2 "init --version sai dạng → SAI THAM SỐ" aw7 init --version 2099.1.1
+ky_vong 0 "aw init --version 2099.01.01 (cache thiếu → tải từ mirror)" aw7 init --version 2099.01.01 --test-cmd true
 dung "…ghi version, checksums, conventions.md, config.sh vào .git/agent-workflow/" sh -c \
-  "grep -qx 9.0.1 '$C7/version' && grep -q ' agent-workflow-9.0.1.tar.gz' '$C7/checksums' && [ -f '$C7/conventions.md' ] && grep -q 'LENH_KIEM_THU=\"true\"' '$C7/config.sh'"
-dung "…engine vào cache theo version, có dấu sha256" sh -c "[ -f '$AWH/engine/9.0.1/bin/aw-engine' ] && [ -s '$AWH/engine/9.0.1/.aw-sha256' ]"
-dung "…sha ghim khớp SHA256SUMS của bản phát hành" sh -c "grep -qF \"\$(awk '\$2 == \"agent-workflow-9.0.1.tar.gz\" { print \$1 }' '$MIR/v9.0.1/SHA256SUMS')\" '$C7/checksums'"
+  "grep -qx 2099.01.01 '$C7/version' && grep -q ' agent-workflow-2099.01.01.tar.gz' '$C7/checksums' && [ -f '$C7/conventions.md' ] && grep -q 'LENH_KIEM_THU=\"true\"' '$C7/config.sh'"
+dung "…engine vào cache theo version, có dấu sha256" sh -c "[ -f '$AWH/engine/2099.01.01/bin/aw-engine' ] && [ -s '$AWH/engine/2099.01.01/.aw-sha256' ]"
+dung "…sha ghim khớp SHA256SUMS của bản phát hành" sh -c "grep -qF \"\$(awk '\$2 == \"agent-workflow-2099.01.01.tar.gz\" { print \$1 }' '$MIR/2099.01.01/SHA256SUMS')\" '$C7/checksums'"
 dung "…exclude /.agent-workflow/ và /.claude/" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qx '/.claude/' '$R7/.git/info/exclude'"
 dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/intake.md"
 dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)" "$GOC7"
 dung "…cây làm việc sạch: file sinh ra không lọt vào git status" sh -c "[ -z \"\$(git -C '$R7' status --porcelain)\" ]"
 aw7 init >/dev/null 2>&1
 dung "init lại: không nhân đôi dòng exclude" bang "$(grep -cx '/.claude/' "$R7/.git/info/exclude")" 1
-ky_vong 2 "init lại với version khác → SAI THAM SỐ (dùng aw upgrade)" aw7 init --version 9.0.2
-dung "aw version in engine đang dùng" sh -c "cd '$R7' && AW_HOME='$AWH' sh '$ROOT/bin/aw' version 2>/dev/null | grep -q 'engine       9.0.1'"
+ky_vong 2 "init lại với version khác → SAI THAM SỐ (dùng aw upgrade)" aw7 init --version 2099.01.02
+dung "aw version in engine đang dùng" sh -c "cd '$R7' && AW_HOME='$AWH' sh '$ROOT/bin/aw' version 2>/dev/null | grep -q 'engine       2099.01.01'"
 ky_vong 0 "aw doctor: mọi mục ✓" aw7 doctor
 
 ky_vong 6 "cache có version → chạy không cần mạng (aw feature)" sh -c "cd '$R7' && AW_HOME='$AWH' AW_MIRROR='file://$TMP/khong-co' sh '$ROOT/bin/aw' feature"
-ky_vong 9 "version không có trong cache và không tải được → KHÔNG HỢP LỆ" aw7 upgrade 9.0.3
-dung "…version giữ nguyên" grep -qx 9.0.1 "$C7/version"
-ky_vong 9 "checksum sai → KHÔNG HỢP LỆ" aw7 upgrade 9.0.4
-dung "…không cài vào cache, version giữ nguyên" sh -c "[ ! -e '$AWH/engine/9.0.4' ] && grep -qx 9.0.1 '$C7/version'"
+ky_vong 9 "version không có trong cache và không tải được → KHÔNG HỢP LỆ" aw7 upgrade 2099.01.03
+dung "…version giữ nguyên" grep -qx 2099.01.01 "$C7/version"
+ky_vong 9 "checksum sai → KHÔNG HỢP LỆ" aw7 upgrade 2099.01.04
+dung "…không cài vào cache, version giữ nguyên" sh -c "[ ! -e '$AWH/engine/2099.01.04' ] && grep -qx 2099.01.01 '$C7/version'"
 
 cp "$C7/checksums" "$TMP/checksums.bak"
-sed 's/^[0-9a-f]*  agent-workflow-9.0.1/1111  agent-workflow-9.0.1/' "$TMP/checksums.bak" > "$C7/checksums"
+sed 's/^[0-9a-f]*  agent-workflow-2099.01.01/1111  agent-workflow-2099.01.01/' "$TMP/checksums.bak" > "$C7/checksums"
 ky_vong 9 "cache lệch sha đã ghim → KHÔNG HỢP LỆ" aw7 feature
-mv "$AWH/engine/9.0.1" "$TMP/engine-9.0.1.bak"
+mv "$AWH/engine/2099.01.01" "$TMP/engine-2099.01.01.bak"
 ky_vong 9 "tải lại mà khác sha đã ghim → KHÔNG HỢP LỆ (không tin SHA256SUMS)" aw7 feature
-cp "$TMP/checksums.bak" "$C7/checksums"; mv "$TMP/engine-9.0.1.bak" "$AWH/engine/9.0.1"
+cp "$TMP/checksums.bak" "$C7/checksums"; mv "$TMP/engine-2099.01.01.bak" "$AWH/engine/2099.01.01"
 
 ky_vong 9 "AW_ENGINE_DIR khác version → KHÔNG HỢP LỆ" sh -c "cd '$R7' && AW_HOME='$TMP/awhome-trong' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature"
-ky_vong 6 "AW_ENGINE_DIR đúng version → chạy, không cần cache/mạng" sh -c "cd '$R7' && AW_HOME='$TMP/awhome-trong' AW_MIRROR='file://$TMP/khong-co' AW_ENGINE_DIR='$TMP/nguon-9.0.1' sh '$ROOT/bin/aw' feature"
-dung "…không tạo cache" test ! -e "$TMP/awhome-trong/engine/9.0.1"
+ky_vong 6 "AW_ENGINE_DIR đúng version → chạy, không cần cache/mạng" sh -c "cd '$R7' && AW_HOME='$TMP/awhome-trong' AW_MIRROR='file://$TMP/khong-co' AW_ENGINE_DIR='$TMP/nguon-2099.01.01' sh '$ROOT/bin/aw' feature"
+dung "…không tạo cache" test ! -e "$TMP/awhome-trong/engine/2099.01.01"
 
-ky_vong 0 "aw upgrade 9.0.2" aw7 upgrade 9.0.2
-dung "…version mới, ghim thêm sha của 9.0.2, giữ sha cũ" sh -c "grep -qx 9.0.2 '$C7/version' && grep -q 'agent-workflow-9.0.2' '$C7/checksums' && grep -q 'agent-workflow-9.0.1' '$C7/checksums'"
+ky_vong 0 "aw upgrade 2099.01.02" aw7 upgrade 2099.01.02
+dung "…version mới, ghim thêm sha của 2099.01.02, giữ sha cũ" sh -c "grep -qx 2099.01.02 '$C7/version' && grep -q 'agent-workflow-2099.01.02' '$C7/checksums' && grep -q 'agent-workflow-2099.01.01' '$C7/checksums'"
 dung "…vẫn không có commit nào, cây sạch" sh -c "[ \"\$(git -C '$R7' rev-parse HEAD)\" = '$GOC7' ] && [ -z \"\$(git -C '$R7' status --porcelain)\" ]"
 
 # cấu hình dùng chung của team: một repo riêng chứa version, checksums, conventions.md
@@ -1495,15 +1501,15 @@ cp "$C7/version" "$C7/checksums" "$TEAM/"; printf '# của team\n' > "$TEAM/conv
 git -C "$TEAM" add -A; git -C "$TEAM" -c user.name=t -c user.email=t@t commit -q -m cfg
 R8="$TMP/repo8"; git clone -q "$R7" "$R8" 2>/dev/null
 ky_vong 0 "aw init --from <repo cấu hình team>" sh -c "cd '$R8' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' init --from '$TEAM'"
-dung "…lấy version, checksums, conventions.md của team" sh -c "grep -qx 9.0.2 '$R8/.git/agent-workflow/version' && grep -q 'của team' '$R8/.git/agent-workflow/conventions.md' && cmp -s '$TEAM/checksums' '$R8/.git/agent-workflow/checksums'"
+dung "…lấy version, checksums, conventions.md của team" sh -c "grep -qx 2099.01.02 '$R8/.git/agent-workflow/version' && grep -q 'của team' '$R8/.git/agent-workflow/conventions.md' && cmp -s '$TEAM/checksums' '$R8/.git/agent-workflow/checksums'"
 ky_vong 9 "--from repo không có file version → KHÔNG HỢP LỆ" sh -c "cd '$R8' && AW_HOME='$AWH' sh '$ROOT/bin/aw' init --from '$R7'"
 # aw check chạy đúng version ghi trong intake.md của việc, không theo version của bản clone
 mkdir -p "$R7/.agent-workflow/feat_a"
-printf -- '- **Loại việc:** `feature`\n- **Engine:** 9.0.1\n' > "$R7/.agent-workflow/feat_a/intake.md"
-ky_vong 1 "intake ghim 9.0.1, bản clone 9.0.2 → chấm bằng 9.0.1 (KHÔNG ĐẠT, không phải KHÔNG HỢP LỆ)" aw7 check intake .agent-workflow/feat_a
-printf -- '- **Loại việc:** `feature`\n- **Engine:** 9.0.3\n' > "$R7/.agent-workflow/feat_a/intake.md"
+printf -- '- **Loại việc:** `feature`\n- **Engine:** 2099.01.01\n' > "$R7/.agent-workflow/feat_a/intake.md"
+ky_vong 1 "intake ghim 2099.01.01, bản clone 2099.01.02 → chấm bằng 2099.01.01 (KHÔNG ĐẠT, không phải KHÔNG HỢP LỆ)" aw7 check intake .agent-workflow/feat_a
+printf -- '- **Loại việc:** `feature`\n- **Engine:** 2099.01.03\n' > "$R7/.agent-workflow/feat_a/intake.md"
 ky_vong 9 "intake ghim version không có và không tải được → KHÔNG HỢP LỆ" aw7 check intake .agent-workflow/feat_a
-dung "…không âm thầm chạy bằng version khác" sh -c "cd '$R7' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' check intake .agent-workflow/feat_a 2>&1 | grep -q 'engine 9.0.3 không có trong cache'"
+dung "…không âm thầm chạy bằng version khác" sh -c "cd '$R7' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' check intake .agent-workflow/feat_a 2>&1 | grep -q 'engine 2099.01.03 không có trong cache'"
 printf -- '- **Engine:** v9\n' > "$R7/.agent-workflow/feat_a/intake.md"
 ky_vong 9 "intake ghi Engine sai dạng → KHÔNG HỢP LỆ" aw7 check intake .agent-workflow/feat_a
 ky_vong 9 "aw questions cũng theo version của việc" aw7 questions .agent-workflow/feat_a

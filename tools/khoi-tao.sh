@@ -9,7 +9,7 @@
 #
 #   aw-engine init [--adapter <id>] [--test-cmd "<lệnh>"] [--force] [--from-legacy]
 #
-# --from-legacy: repo đã cài bộ 1.x (.agent-workflow/.quy-trinh/ commit trong base).
+# --from-legacy: repo đã cài bộ cài cũ (.agent-workflow/.quy-trinh/ commit trong base).
 # Đọc .agent-workflow/conventions.md và .quy-trinh/cau-hinh.sh có sẵn, chuyển vào
 # $AW_CONFIG. KHÔNG xoá, KHÔNG commit gì — chỉ in hướng dẫn để người tự dọn
 # (bằng một PR bình thường, qua review, vì base là protected branch).
@@ -50,7 +50,7 @@ esac
 mkdir -p "$AW_CONFIG" || exit 9
 CONV="$AW_CONFIG/conventions.md"; CH="$AW_CONFIG/config.sh"
 
-# ---- bộ cài 1.x: chỉ ĐỌC ----
+# ---- bộ cài cũ: chỉ ĐỌC ----
 CU_ART="$AW_REPO/.agent-workflow"; CU_CONV="$CU_ART/conventions.md"; CU_CH="$CU_ART/.quy-trinh/cau-hinh.sh"
 if [ -n "$CU" ]; then
   [ -f "$CU_CONV" ] || [ -f "$CU_CH" ] || {
@@ -120,13 +120,13 @@ if [ -n "$CU" ]; then
   cl=$(git -C "$AW_REPO" ls-files -- .claude 2>/dev/null | while IFS= read -r f; do
          grep -q 'SINH TỰ ĐỘNG' "$AW_REPO/$f" 2>/dev/null && printf '%s\n' "$f"; done)
   echo ""
-  echo "Bộ cài 1.x vẫn còn trong base — aw KHÔNG xoá, KHÔNG commit gì."
+  echo "Bộ cài cũ vẫn còn trong base — aw KHÔNG xoá, KHÔNG commit gì."
   if [ -n "$ds$cl" ]; then
     echo "Khi tiện, NGƯỜI dọn bằng một PR bình thường (qua review) vào nhánh gốc:"
     echo ""
     echo "  git switch -c chore_bo-bo-cai-cu <nhánh-gốc>"
     printf '%s\n%s\n' "$ds" "$cl" | awk 'NF { printf "  git rm -r -q -- %s\n", $0 }'
-    echo "  git commit -m \"Bỏ bộ cài agent-workflow 1.x — đã chuyển sang aw\""
+    echo "  git commit -m \"Bỏ bộ cài agent-workflow cũ — đã chuyển sang aw\""
     echo ""
     echo "Thư mục artifact của việc cũ (.agent-workflow/<tên-branch>/) giữ hay bỏ là quyền của team."
     echo "Trước khi PR đó vào base: file .claude/ cũ được git theo dõi nên adapter BỎ QUA (skip),"
