@@ -379,7 +379,8 @@ arguments: input            # tham số lệnh là input, không phải tên fea
 
 Lệnh tiện ích (`workflow/<id>.md`, khai ở `commands:` của manifest — hiện có
 `import`, `open-questions`) không phải phase: frontmatter chỉ có `id`, `name`,
-`summary`, tuỳ chọn `argument_hint` và `arguments: mixed`.
+`summary`, tuỳ chọn `argument_hint`, `arguments: mixed`, và `choice_ui: true` khi
+lệnh hỏi người bằng câu hỏi lựa chọn (adapter dịch sang giao diện của agent).
 
 Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`,
 `output` (tên file phát hiện). Adapter Claude Code biến nó thành subagent

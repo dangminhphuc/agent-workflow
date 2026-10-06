@@ -839,6 +839,9 @@ dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep
 dung "command design gọi checker LLM" grep -q 'soat-thiet-ke' "$O/.claude/commands/design.md"
 dung "lệnh /open-questions có bước xác định feature + chạy aw questions" sh -c \
   "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/open-questions.md' && grep -q 'aw questions' '$O/.claude/commands/open-questions.md'"
+dung "lệnh /open-questions hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
+  "grep -q 'AskUserQuestion' '$O/.claude/commands/open-questions.md' && grep -q 'Chat về câu này' '$O/.claude/commands/open-questions.md'"
+dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'AskUserQuestion' '$O/.claude/commands/import.md'"
 dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/open-questions' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 
@@ -887,6 +890,10 @@ ky_vong 4 "từ chối build khi arguments không phải \"input\"" sh "$FAKE/ad
 tao_fake
 rm -f "$FAKE/workflow/open-questions.md"
 ky_vong 4 "từ chối build khi mục commands: trỏ tới file không tồn tại" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out6"
+
+tao_fake
+thay "$FAKE/workflow/open-questions.md" 'choice_ui: true' 'choice_ui: co'
+ky_vong 4 "từ chối build khi choice_ui khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out8"
 
 tao_fake
 thay "$FAKE/workflow/import.md" 'arguments: mixed' 'arguments: input'
