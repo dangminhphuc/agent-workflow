@@ -27,6 +27,7 @@ kq_khai kiem-tra-tiep-nhan.sh \
   "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/version.sh"
 
 DIR="${1:-.}"
 MD="$DIR/intake.md"
@@ -55,10 +56,10 @@ fi
 e_ver=$(kc_engine_dong "$DIR")
 e_dang=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
 if [ -z "$e_ver" ]; then
-  echo "  [LỖI] Thiếu dòng \"- **Engine:** X.Y.Z\" — chép đúng dòng aw worktree in ra khi tạo worktree"
+  echo "  [LỖI] Thiếu dòng \"- **Engine:** YYYY.MM.DD\" — chép đúng dòng aw worktree in ra khi tạo worktree"
   n_base=$((n_base + 1))
-elif ! kc_version_hop_le "$e_ver"; then
-  echo "  [LỖI] Engine: \"$e_ver\" không phải X.Y.Z"
+elif ! ver_hop_le "$e_ver"; then
+  echo "  [LỖI] Engine: \"$e_ver\" không phải YYYY.MM.DD"
   n_base=$((n_base + 1))
 elif [ -n "$e_dang" ] && [ "$e_ver" != "$e_dang" ]; then
   echo "  [LỖI] Engine: việc ghim $e_ver nhưng checker đang chạy là $e_dang — chạy qua aw check, không gọi engine khác"

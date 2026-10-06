@@ -190,12 +190,6 @@ kc_engine_dong() {
   ' "$1/intake.md"
 }
 
-# kc_version_hop_le <chuỗi> -> 0 nếu là X.Y.Z (chỉ chữ số)
-kc_version_hop_le() {
-  case "$1" in ""|*[!0-9.]*|.*|*.|*..*) return 1 ;; esac
-  [ "$(printf '%s' "$1" | awk -F. '{ print NF }')" = 3 ]
-}
-
 # kc_base_dong <thư-mục-feature> -> "<ref> <sha>" từ dòng "Base:" của intake.md
 # (thiếu phần nào thì phần đó rỗng; không có dòng Base thì không in gì).
 kc_base_dong() {

@@ -10,7 +10,7 @@ Thường bạn không gọi trực tiếp — `aw init` (ở checkout chính) v
 `aw worktree new … --create` (ở worktree mới) gọi nó. Mọi file sinh ra nằm trong
 `.claude/`, đường dẫn khai ở file [`exclude`](exclude); `aw init` thêm nó vào
 `.git/info/exclude` nên không lọt vào commit. File `.claude/` mà git đang theo dõi
-(vd bộ cài 1.x còn trong base, hay `settings.json` của team) thì adapter bỏ qua.
+(vd bộ cài cũ còn trong base, hay `settings.json` của team) thì adapter bỏ qua.
 
 Lời dặn trong lệnh sinh ra chỉ gọi `aw …` — luật nằm trong checker của engine.
 Phần dùng chung với adapter khác ở `adapters/lib/chung.sh` (xem

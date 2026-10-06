@@ -22,7 +22,7 @@ CONV_DOC="$DOCS/conventions.md"
 FD='<thư-mục-feature>'
 
 # ad_bi_theo_doi <file> -> 0 nếu git đang theo dõi file đó trong OUT. File của
-# bộ cài 1.x đã commit vào base: không ghi đè (sẽ thành thay đổi lọt vào commit).
+# bộ cài cũ đã commit vào base: không ghi đè (sẽ thành thay đổi lọt vào commit).
 ad_bi_theo_doi() {
   git -C "$OUT" ls-files --error-unmatch -- "${1#"$OUT"/}" >/dev/null 2>&1
 }

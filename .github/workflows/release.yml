@@ -1,14 +1,15 @@
-# Phát hành engine khi push tag vX.Y.Z.
+# Phát hành engine khi push tag YYYY.MM.DD.
 #
-# Gắn vào GitHub Release: agent-workflow-X.Y.Z.tar.gz, aw (wrapper), SHA256SUMS.
-# Wrapper `aw` tải đúng các file này (mặc định từ releases/download/vX.Y.Z/).
+# Gắn vào GitHub Release: agent-workflow-YYYY.MM.DD.tar.gz, aw (wrapper), SHA256SUMS.
+# Wrapper `aw` tải đúng các file này (mặc định từ releases/download/YYYY.MM.DD/).
 # Tarball tự sinh của GitHub (archive/refs/tags/...) KHÔNG dùng: GitHub không
 # hứa giữ nguyên byte của nó, checksum đã ghim có thể lệch.
 name: release
 
 on:
   push:
-    tags: ['v*.*.*']
+    # Tag = ngày phát hành YYYY.MM.DD, không có tiền tố "v"
+    tags: ['[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]']
 
 permissions:
   contents: write
@@ -22,7 +23,7 @@ jobs:
       - name: Tag khớp VERSION
         run: |
           v=$(tr -d ' \r\n' < VERSION)
-          [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME lệch VERSION ($v)"; exit 1; }
+          [ "$v" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME lệch VERSION ($v)"; exit 1; }
 
       - name: Test
         run: sh tools/chay-thu.sh
@@ -32,7 +33,7 @@ jobs:
 
       - name: Ghi chú phát hành từ CHANGELOG.md
         run: |
-          v=${GITHUB_REF_NAME#v}
+          v=$GITHUB_REF_NAME
           awk -v v="$v" '
             index($0, "## [" v "]") == 1 { on = 1; next }
             on && /^## \[/ { exit }

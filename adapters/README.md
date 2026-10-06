@@ -17,7 +17,7 @@ Thư mục `adapters/<id>/` gồm:
 
 Phần dùng chung nằm trong `adapters/lib/chung.sh`: kiểm `exit_machine` là
 `aw check <tên>` có thật, không ghi đè file người viết tay, bỏ qua file git đang
-theo dõi (bộ cài 1.x), dọn file sinh tự động đã cũ, các bước "xác định feature"
+theo dõi (bộ cài cũ), dọn file sinh tự động đã cũ, các bước "xác định feature"
 và "phân loại input".
 
 `aw adapter build <id>` (cũng chạy trong `aw init` và `aw worktree new --create`)
