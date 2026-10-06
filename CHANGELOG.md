@@ -9,15 +9,6 @@ version ghi trong `intake.md` của nó.
 So version theo luật **khớp chính xác `YYYY.M.D`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
-
-### Đổi
-- `/open-questions` hỏi **từng điểm mù một bằng câu hỏi lựa chọn** thay vì dán cả
-  danh sách: giữ giả định tạm · cách hiểu khác có trong nguồn · Chưa trả lời được
-  · Chat về câu này, luôn kèm ô tự nhập. Output của `aw questions` là dữ liệu cho
-  agent; người chỉ thấy một dòng tóm tắt. Lệnh tiện ích khai `choice_ui: true`;
-  adapter Claude Code dịch sang tool `AskUserQuestion`.
-
 ## [2026.10.6]
 
 Bản đầu tiên có version: đổi cách cài, **phá tương thích** với bộ cài cũ. Không còn file nào
@@ -41,6 +32,11 @@ phải commit vào repo đích — chạy được khi nhánh gốc là protecte
   điều kiện trước khi review/merge).
 
 ### Đổi
+- `/open-questions` hỏi **từng điểm mù một bằng câu hỏi lựa chọn** thay vì dán cả
+  danh sách: giữ giả định tạm · cách hiểu khác có trong nguồn · Chưa trả lời được
+  · Chat về câu này, luôn kèm ô tự nhập. Output của `aw questions` là dữ liệu cho
+  agent; người chỉ thấy một dòng tóm tắt. Lệnh tiện ích khai `choice_ui: true`;
+  adapter Claude Code dịch sang tool `AskUserQuestion`.
 - Cấu hình nằm trong `$(git rev-parse --git-common-dir)/agent-workflow/`:
   `version`, `checksums`, `conventions.md`, `config.sh` (thay `.quy-trinh/cau-hinh.sh`,
   thêm `ADAPTER`). Dùng chung mọi worktree, không commit.
