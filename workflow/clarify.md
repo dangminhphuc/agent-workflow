@@ -100,9 +100,17 @@ Mọi câu hỏi, mọi nguồn, người **luôn** có hai lối ra ngoài các
 - **tự nhập** câu trả lời khác;
 - **Chat về câu này** — hỏi lại, trao đổi trước khi chốt.
 
-Giao diện lựa chọn có sẵn hai lối này thì **không** thêm chúng vào danh sách lựa
-chọn (để chỗ cho phương án thật). Không có giao diện lựa chọn thì in các lựa chọn
-đánh số, cuối cùng một dòng "hoặc gõ câu trả lời khác / hỏi lại để trao đổi".
+Hai lối này **luôn hiện ở cuối** danh sách, sau các phương án, đúng hai dòng:
+
+```
+  N.   Type something.  — tự nhập câu trả lời khác
+  N+1. Chat about this.  — trao đổi thêm trước khi chốt
+```
+
+Giao diện lựa chọn có sẵn hai lối này (vd Claude Code) thì chúng tự hiện —
+**không** thêm trùng vào danh sách phương án (để đủ chỗ cho phương án thật).
+Không có giao diện lựa chọn thì agent tự in hai dòng đó, đánh số tiếp sau các
+phương án.
 
 #### 2a. Điểm mù
 
@@ -117,12 +125,16 @@ Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu q
   2. 404 — giấu route khỏi bên dò quét; đối tác khó debug
   3. 403 không body chi tiết — đơn giản; đối tác phải hỏi support
   4. Chưa trả lời được — soạn tin gửi chủ admin-portal; /review sẽ chặn
+  5. Type something.  — tự nhập câu trả lời khác
+  6. Chat about this.  — trao đổi thêm trước khi chốt
 
 (2/2) Route chưa có definition thì chặn hay cho qua?
   1. (Đề xuất) Từ chối mặc định — đang dùng làm giả định tạm; route mới phải khai mới chạy
   2. Cho qua + log cảnh báo — chuyển đổi êm; hở tới khi khai đủ
   3. Từ chối ở prod, cho qua ở non-prod — hai môi trường hành xử khác nhau
   4. Chưa trả lời được
+  5. Type something.  — tự nhập câu trả lời khác
+  6. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
 Lựa chọn, theo đúng thứ tự này (tối đa 4):
@@ -150,6 +162,8 @@ Xử lý phát hiện PH-03 thế nào?
   1. (Đề xuất) Nêu thành D-xx: giữ gRPC, phương án loại REST — bạn duyệt D sau
   2. Đổi sang REST cho khớp contract hiện có — sửa § Contract + § Flow
   3. Bác bỏ — nhập lý do ở ô tự nhập
+  4. Type something.  — tự nhập cách xử lý khác
+  5. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
 Lựa chọn, theo đúng thứ tự này (tối đa 4):

@@ -21,7 +21,8 @@ ngầm giữa các bản.
   Bác bỏ (agent thấy phát hiện sai thì đề xuất bác bỏ).
 - Adapter Claude Code: không thêm "Chat về câu này" vào `options` nữa — dùng
   "Chat about this" / "Type something" có sẵn của `AskUserQuestion`, để đủ chỗ
-  cho phương án thật.
+  cho phương án thật. Mẫu câu hỏi luôn kết thúc bằng hai dòng `Type something.`
+  và `Chat about this.`; agent không có giao diện lựa chọn thì tự in hai dòng đó.
 - Người chọn phương án agent đề xuất thì `Trả lời:` ghi nhãn phương án kèm
   `(chọn từ phương án agent đề xuất)`.
 
