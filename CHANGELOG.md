@@ -9,7 +9,7 @@ version ghi trong `intake.md` của nó.
 So version theo luật **khớp chính xác `YYYY.M.D`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.7]
 
 ### Đổi (phá tương thích)
 - `/open-questions` → **`/clarify`**: một hàng đợi cho mọi việc máy/LLM cần người
@@ -27,6 +27,8 @@ ngầm giữa các bản.
   ghim engine 2026.10.6.
 - Tên và cấu trúc file trong `.agent-workflow/<tên-branch>/` **không đổi**. Repo
   đích chạy lại `aw adapter build claude-code`: `/open-questions` cũ tự bị xoá.
+- Wrapper `aw` 2026.10.6 không biết `aw pending` — cài lại wrapper từ bản này
+  (README, mục cài đặt) trước khi dùng `/clarify`.
 
 ## [2026.10.6]
 
