@@ -12,8 +12,8 @@
 #   4. chuyển lệnh sang engine, kèm AW_REPO, AW_CONFIG, AW_ENGINE
 #
 # Lệnh:
-#   aw init [--version YYYY.M.D] [--adapter <id>] [--test-cmd "<lệnh>"] [--from <url>] [--from-legacy] [--force]
-#   aw upgrade <YYYY.M.D>
+#   aw init [--version YYYY.M.N] [--adapter <id>] [--test-cmd "<lệnh>"] [--from <url>] [--from-legacy] [--force]
+#   aw upgrade <YYYY.M.N>
 #   aw version
 #   aw doctor
 #   aw check <name> <feature-dir>          name: intake spec design plan implement review repro perf
@@ -26,7 +26,7 @@
 # Biến môi trường:
 #   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);
 #                  VERSION của nó vẫn phải khớp chính xác version cần dùng
-#   AW_MIRROR      nơi tải engine thay cho GitHub; cấu trúc <AW_MIRROR>/<YYYY.M.D>/{agent-workflow-<YYYY.M.D>.tar.gz,SHA256SUMS}
+#   AW_MIRROR      nơi tải engine thay cho GitHub; cấu trúc <AW_MIRROR>/<YYYY.M.N>/{agent-workflow-<YYYY.M.N>.tar.gz,SHA256SUMS}
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
@@ -61,13 +61,15 @@ tuyet_doi() { # <thư-mục-gốc> <đường-dẫn git in ra> — git cũ khôn
   esac
 }
 
-# Version = ngày phát hành YYYY.M.D (tag trùng chuỗi đó, không có "v"); so khớp
-# chính xác cả chuỗi. Cùng luật với tools/lib/version.sh của engine.
+# Version = YYYY.M.N — năm, tháng, số thứ tự bản phát hành trong tháng (tag trùng
+# chuỗi đó, không có "v"); so khớp chính xác cả chuỗi. Cùng luật với
+# tools/lib/version.sh của engine.
 version_hop_le() {
   case "$1" in [0-9][0-9][0-9][0-9].*.*) ;; *) return 1 ;; esac
   _vr=${1#*.}
   case "${_vr%%.*}" in [1-9]|1[0-2]) ;; *) return 1 ;; esac
-  case "${_vr#*.}" in [1-9]|[12][0-9]|3[01]) ;; *) return 1 ;; esac
+  case "${_vr#*.}" in [1-9]|[1-9]*[0-9]) ;; *) return 1 ;; esac
+  case "${_vr#*.}" in *[!0-9]*) return 1 ;; esac
 }
 
 sha256_file() {
@@ -118,7 +120,7 @@ ghi_sha() { # <version> <sha>
 # thì in lý do và trả 1 — người gọi báo KHÔNG HỢP LỆ, KHÔNG chạy version khác.
 dam_bao_engine() {
   _v=$1; ENGINE=""; SHA_MOI=""
-  version_hop_le "$_v" || { echo "LỖI: version \"$_v\" không phải YYYY.M.D." >&2; return 1; }
+  version_hop_le "$_v" || { echo "LỖI: version \"$_v\" không phải YYYY.M.N." >&2; return 1; }
 
   if [ -n "${AW_ENGINE_DIR:-}" ]; then
     _ev=$(tr -d ' \r\n' < "$AW_ENGINE_DIR/VERSION" 2>/dev/null)
@@ -195,7 +197,7 @@ version_theo_viec() {
         s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*` \t]/, "", s); print s; exit
       }' "$1/intake.md")
     if [ -n "$_e" ]; then
-      version_hop_le "$_e" || loi 9 "LỖI: $1/intake.md ghi Engine \"$_e\" — không phải YYYY.M.D."
+      version_hop_le "$_e" || loi 9 "LỖI: $1/intake.md ghi Engine \"$_e\" — không phải YYYY.M.N."
       echo "$_e"; return 0
     fi
   fi
@@ -214,7 +216,7 @@ cmd_init() {
   _ver=""; _from=""; _force=""; _con=""
   while [ $# -gt 0 ]; do
     case "$1" in
-      --version) [ -n "${2:-}" ] || loi 2 "LỖI: --version cần YYYY.M.D."; _ver=$2; shift 2 ;;
+      --version) [ -n "${2:-}" ] || loi 2 "LỖI: --version cần YYYY.M.N."; _ver=$2; shift 2 ;;
       --from)    [ -n "${2:-}" ] || loi 2 "LỖI: --from cần url repo cấu hình."; _from=$2; shift 2 ;;
       --force)   _force=1; _con="$_con --force"; shift ;;
       --adapter|--test-cmd)
@@ -224,7 +226,7 @@ cmd_init() {
       *) loi 2 "LỖI: tham số lạ \"$1\" — xem: aw help" ;;
     esac
   done
-  [ -z "$_ver" ] || version_hop_le "$_ver" || loi 2 "LỖI: --version \"$_ver\" không phải YYYY.M.D."
+  [ -z "$_ver" ] || version_hop_le "$_ver" || loi 2 "LỖI: --version \"$_ver\" không phải YYYY.M.N."
   mkdir -p "$AW_CONFIG" || loi 9 "LỖI: không tạo được $AW_CONFIG"
   echo "Repo:      $AW_REPO"
   echo "Cấu hình:  $AW_CONFIG   (không commit, dùng chung mọi worktree)"
@@ -243,7 +245,7 @@ cmd_init() {
 
   _cu=$(version_cau_hinh)
   if [ -n "$_cu" ]; then
-    version_hop_le "$_cu" || loi 9 "LỖI: $AW_CONFIG/version ghi \"$_cu\" — không phải YYYY.M.D."
+    version_hop_le "$_cu" || loi 9 "LỖI: $AW_CONFIG/version ghi \"$_cu\" — không phải YYYY.M.N."
     [ -z "$_ver" ] || [ "$_ver" = "$_cu" ] || loi 2 "LỖI: repo đang dùng engine $_cu. Đổi version bằng: aw upgrade $_ver"
     _v=$_cu; echo "  keep    version ($_v)"
   else
@@ -260,8 +262,8 @@ cmd_init() {
 
 cmd_upgrade() {
   can_repo
-  [ $# = 1 ] || loi 2 "Dùng: aw upgrade <YYYY.M.D>"
-  version_hop_le "$1" || loi 2 "LỖI: \"$1\" không phải YYYY.M.D."
+  [ $# = 1 ] || loi 2 "Dùng: aw upgrade <YYYY.M.N>"
+  version_hop_le "$1" || loi 2 "LỖI: \"$1\" không phải YYYY.M.N."
   _cu=$(version_cau_hinh)
   [ -n "$_cu" ] || loi 9 "LỖI: repo này chưa init — chạy: aw init --version $1"
   dam_bao_engine "$1" || ket_thuc 9
@@ -314,7 +316,7 @@ cmd_doctor() {
     co "$AW_REPO"
     _v=$(version_cau_hinh)
     if [ -z "$_v" ]; then khong "chưa init ($AW_CONFIG/version không có) — chạy: aw init"
-    elif ! version_hop_le "$_v"; then khong "version \"$_v\" không phải YYYY.M.D"
+    elif ! version_hop_le "$_v"; then khong "version \"$_v\" không phải YYYY.M.N"
     else
       co "version $_v"
       [ -n "$(sha_ghim "$_v")" ] || [ -n "${AW_ENGINE_DIR:-}" ] || khong "chưa ghim sha256 cho $_v trong checksums — chạy: aw upgrade $_v"

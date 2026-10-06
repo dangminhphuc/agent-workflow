@@ -64,7 +64,7 @@ case "$LENH" in
               "      Chạy qua wrapper: aw check $ten $1"
       fi
       if [ -z "$ev" ] && [ "$ten" != intake ]; then
-        sai 9 "LỖI: $1/intake.md thiếu dòng \"- **Engine:** YYYY.M.D\" — không biết việc này dùng engine nào." \
+        sai 9 "LỖI: $1/intake.md thiếu dòng \"- **Engine:** YYYY.M.N\" — không biết việc này dùng engine nào." \
               "      Thêm dòng đó (version lúc tạo việc: aw version), rồi chạy: aw check intake $1"
       fi
     fi
