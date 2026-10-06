@@ -1431,6 +1431,7 @@ ky_vong 4 "VERSION tháng 13 → VERSION LỖI" sh "$NG/tools/dong-goi.sh" "$TMP
 dung "luật version: nhận 2026.10.06, 2026.12.31; từ chối 2026.1.6, 2026.00.10, 2026.10.32, v2026.10.06" sh -c ". '$T/lib/version.sh'; ver_hop_le 2026.10.06 && ver_hop_le 2026.12.31 && ! ver_hop_le 2026.1.6 && ! ver_hop_le 2026.00.10 && ! ver_hop_le 2026.10.32 && ! ver_hop_le v2026.10.06"
 ky_vong 2 "ref không tồn tại → sai tham số" sh "$NG/tools/dong-goi.sh" "$TMP/goi5" khong-co
 dung "VERSION của repo là ngày YYYY.MM.DD" sh -c ". '$T/lib/version.sh'; ver_hop_le \"\$(cat '$ROOT/VERSION')\""
+dung "workflow release gắn file vào release đã có (tạo tag trên giao diện GitHub)" sh -c "grep -q 'gh release upload \"\$tag\" dist/\* --clobber' '$ROOT/.github/workflows/release.yml' && grep -q 'gh release create \"\$tag\"' '$ROOT/.github/workflows/release.yml'"
 dung "workflow release bắt tag dạng YYYY.MM.DD, không có v" grep -qF "tags: ['[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]']" "$ROOT/.github/workflows/release.yml"
 dung "CHANGELOG.md có mục cho VERSION" grep -qF "## [$(cat "$ROOT/VERSION")]" "$ROOT/CHANGELOG.md"
 

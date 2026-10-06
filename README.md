@@ -626,7 +626,14 @@ git tag -a 2026.10.06 -m 2026.10.06
 git push origin 2026.10.06
 ```
 
-Push tag bằng git, đừng tạo release trên giao diện GitHub (workflow sẽ không tạo
-được release đã có). Workflow `release` chạy test, đóng
-gói (`tools/dong-goi.sh`) và gắn `agent-workflow-YYYY.MM.DD.tar.gz`, `aw`,
-`SHA256SUMS` vào GitHub Release.
+Hoặc trên giao diện GitHub: **Releases → Draft a new release → Choose a tag**, gõ
+`2026.10.06`, chọn **Create new tag on publish**, **Target: main**, rồi
+**Publish release**.
+
+Tag mới kích hoạt workflow `release`: kiểm tag khớp `VERSION`, chạy test, đóng gói
+(`tools/dong-goi.sh`) và gắn `agent-workflow-YYYY.MM.DD.tar.gz`, `aw`,
+`SHA256SUMS` vào Release — tạo Release mới nếu chưa có, hoặc gắn vào Release vừa
+tạo trên giao diện (ghi chú lấy từ `CHANGELOG.md` nếu bạn để trống). Release tạo
+trên giao diện hiện ra trước khi workflow chạy xong; workflow lỗi (tag lệch
+`VERSION`, test hỏng) thì Release không có file và `aw` chưa tải được — xem tab
+Actions.
