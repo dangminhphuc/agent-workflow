@@ -9,7 +9,7 @@ version ghi trong `intake.md` của nó.
 So version theo luật **khớp chính xác `YYYY.M.D`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.8]
 
 ### Đổi
 - `/clarify`: lựa chọn là **phương án giải pháp agent đã phân tích**, không còn
