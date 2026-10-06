@@ -106,8 +106,8 @@ Cách đọc:
 | Phase | Người | Người làm gì |
 |---|---|---|
 | `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
-| `spec` | có | Duyệt yêu cầu, nhãn `Mức chặn` của `[CẦN-HỎI]`, và `Mức rủi ro`; rồi đổi `Trạng thái spec` sang `đã duyệt`. Trả lời điểm mù qua `/open-questions` |
-| `design` | có | Duyệt **từng D-xx** trong `tdd.md` |
+| `spec` | có | Duyệt yêu cầu, nhãn `Mức chặn` của `[CẦN-HỎI]`, và `Mức rủi ro`; rồi đổi `Trạng thái spec` sang `đã duyệt`. Trả lời điểm mù qua `/clarify` |
+| `design` | có | Duyệt **từng D-xx** trong `tdd.md`; phân xử phát hiện của checker LLM qua `/clarify` |
 | `plan` | không | — |
 | `implement` | không | — |
 | `review` | có | Xác nhận kết luận; làm trọng tài cho phát hiện của checker |
@@ -230,8 +230,9 @@ bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **Mức chặn** do agent đề 
 | `chặn review` | Làm lại một phần code | Flow đi tiếp trên giả định tạm; `implement` cảnh báo, `review` chặn |
 | `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận`, không được `đạt` |
 
-**`/open-questions`** — lệnh tiện ích, chạy bất cứ lúc nào sau `/spec`. Máy
-(`aw questions`) liệt kê điểm mù còn mở theo thứ tự phải chốt trước —
+**`/clarify`** — lệnh tiện ích, chạy bất cứ lúc nào sau `/spec`. Máy
+(`aw pending`) gom mọi việc đang chờ bạn quyết — điểm mù và phát hiện của checker
+LLM (`phat-hien-*.md`) — theo thứ tự phải chốt trước. Với điểm mù:
 mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhiều task đứng trên giả
 định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Danh sách đó để agent
 đọc; bạn chỉ thấy một dòng tóm tắt. Rồi agent hỏi **từng mục một** bằng câu hỏi
@@ -242,6 +243,13 @@ spec, chạy lại checker. Câu trả lời khác giả định thì agent cho 
 sẽ sửa, bạn đồng ý trong hội thoại là xong — **không phải mở file sửa tay**
 `đề xuất` → `đã duyệt`. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
 cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
+
+Với phát hiện của checker LLM, lựa chọn là **Đồng ý — sửa** (agent cho bạn xem
+dòng `tdd.md` sẽ đổi, rồi ghi `đã sửa`; cần quyết định mới thì thêm D-xx
+`đề xuất` để bạn duyệt), **Bác bỏ** (kèm lý do, ghi nguyên văn), **Chat về câu
+này**, và **Để sau** với mục `Cảnh báo`. Phát hiện agent đã tự sửa lúc chạy
+`/design` được nêu lại trong tổng kết để bạn biết. Điểm mù và phát hiện vẫn ở
+**file riêng** — chỉ hàng đợi là chung.
 
 Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.
@@ -384,7 +392,7 @@ chặn nếu còn artifact lỗi thời.
 | Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do trong `plan.md` |
 | Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "File dự kiến" + "Phát sinh" + `bo_qua` | Hoàn tác, hoặc ghi vào "Phát sinh" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
-| Điểm mù | `Mức chặn: chặn review` (hoặc `chặn`) còn `mở` trong `open-questions.md` | Chốt với người qua `/open-questions` |
+| Điểm mù | `Mức chặn: chặn review` (hoặc `chặn`) còn `mở` trong `open-questions.md` | Chốt với người qua `/clarify` |
 
 ## Đưa artifact từ ngoài vào
 
@@ -475,7 +483,7 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 | `aw worktree new <loại> <mô-tả> [--create --base <ref>]` | Đề xuất / tạo worktree cho việc |
 | `aw worktree status <branch>` · `aw worktree remove <branch> [--delete-branch]` | Dọn worktree sau khi merge |
 | `aw adapter build <agent> [--out <thư-mục>] [--force]` | Sinh lại adapter |
-| `aw feature` · `aw input` · `aw questions` · `aw based-on` · `aw rename` | Lệnh agent gọi trong các phase |
+| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` | Lệnh agent gọi trong các phase |
 
 ### Artifact của việc: chỉ ở máy
 
@@ -585,7 +593,7 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   don-worktree.sh        aw worktree status|remove (không --force, không -D)
   doi-ten-feature.sh     aw rename: đổi tên branch + thư mục artifact + worktree
   phan-loai-input.sh     aw input: tham số → dòng "## Input" (nhãn do máy gán)
-  liet-ke-cau-hoi.sh     aw questions: điểm mù còn mở theo thứ tự phải chốt
+  liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
   cap-nhat-based-on.sh   aw based-on: ghi hash đầu vào vào frontmatter artifact
   dong-goi.sh            đóng gói bản phát hành (tarball + SHA256SUMS)
   cai-dat.sh, dong-bo.sh đã bỏ — chỉ in hướng dẫn chuyển sang aw

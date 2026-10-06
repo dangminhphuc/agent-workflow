@@ -25,7 +25,7 @@ Phần dùng chung với adapter khác ở `adapters/lib/chung.sh` (xem
 | `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
-| `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/<id>.md` — lệnh tiện ích `/import`, `/open-questions` |
+| `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/<id>.md` — lệnh tiện ích `/import`, `/clarify` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
 Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: `06-ship`).
@@ -113,7 +113,7 @@ khi viết xong `tdd.md`. `aw check design` fail nếu chưa có
 
 ### 6. Câu hỏi lựa chọn
 
-Lệnh khai `choice_ui: true` (hiện có `open-questions`) mô tả việc hỏi người bằng
+Lệnh khai `choice_ui: true` (hiện có `clarify`) mô tả việc hỏi người bằng
 **câu hỏi lựa chọn** — luôn kèm ô tự nhập và lựa chọn "Chat về câu này". Adapter
 này dịch nó sang tool `AskUserQuestion` (ô "Other" của tool là ô tự nhập).
 Agent không có giao diện lựa chọn thì in lựa chọn đánh số kèm "hoặc gõ câu trả

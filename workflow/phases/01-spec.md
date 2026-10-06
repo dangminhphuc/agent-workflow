@@ -116,7 +116,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
      | `chặn review` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `04-implement` cảnh báo, `05-review` chặn |
      | `không chặn` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; review ghi YC đó `chờ xác nhận` |
 
-   Ưu tiên flow đi tiếp: chỉ mục `chặn` dừng flow ngay. Lệnh `open-questions`
+   Ưu tiên flow đi tiếp: chỉ mục `chặn` dừng flow ngay. Lệnh `clarify`
    liệt kê các mục còn mở theo thứ tự phải chốt trước và dẫn người trả lời.
 
 8. **Rà mâu thuẫn.** Đối chiếu các nguồn với nhau. Mâu thuẫn giữa BRD và ticket
@@ -141,7 +141,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
 
 12. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
     phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
-    Ngoại lệ duy nhất: lệnh `open-questions` sửa một YC theo câu trả lời mà
+    Ngoại lệ duy nhất: lệnh `clarify` sửa một YC theo câu trả lời mà
     người vừa xác nhận trong hội thoại — giữ nguyên trạng thái, người không phải
     sửa tay lại.
 

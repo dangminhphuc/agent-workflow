@@ -7,7 +7,7 @@
 #   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement review repro perf
 #   aw-engine feature [name]
 #   aw-engine input [--skip <intake.md>] <args|->
-#   aw-engine questions <feature-dir>
+#   aw-engine pending <feature-dir>
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine rename <new-branch>
 #   aw-engine worktree new <type> <desc> [--create --base <ref>]
@@ -72,7 +72,7 @@ case "$LENH" in
   init)      can_repo; exec sh "$T/khoi-tao.sh" "$@" ;;
   feature)   can_repo; exec sh "$T/xac-dinh-feature.sh" "$@" ;;
   input)     can_repo; exec sh "$T/phan-loai-input.sh" "$@" ;;
-  questions) can_repo; exec sh "$T/liet-ke-cau-hoi.sh" "$@" ;;
+  pending)   can_repo; exec sh "$T/liet-ke-viec-cho.sh" "$@" ;;
   based-on)  can_repo; exec sh "$T/cap-nhat-based-on.sh" "$@" ;;
   rename)    can_repo; exec sh "$T/doi-ten-feature.sh" "$@" ;;
   worktree)

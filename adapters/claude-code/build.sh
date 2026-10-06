@@ -7,7 +7,7 @@
 # Sinh ra trong repo dich:
 #   .claude/commands/<id>.md            slash command cho tung phase
 #   .claude/commands/<id>.md            lenh tien ich (commands: trong manifest) —
-#                                       import, open-questions
+#                                       import, clarify
 #   .claude/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
 #   .claude/agents/soat-<checker>.md    subagent cho tung checker LLM
 #   .claude/skills/quy-trinh-agent/SKILL.md
@@ -264,7 +264,7 @@ kiem_tra_ghi_de "$OUT/.claude/skills/quy-trinh-agent/SKILL.md"
 {
   printf -- '---\n'
   printf 'name: quy-trinh-agent\n'
-  printf 'description: Quy trình phát triển dựa trên AI agent của repo này. Dùng khi bắt đầu một tính năng mới, khi viết đặc tả từ BRD/PRD hoặc ticket Jira/Confluence, khi thiết kế kỹ thuật, khi lập kế hoạch, khi hiện thực theo kế hoạch, khi rà soát thay đổi, khi đưa tài liệu từ tool khác vào quy trình, khi cần chốt điểm mù (open questions) đang chặn phase, hoặc khi được hỏi quy trình làm việc của repo này là gì.\n'
+  printf 'description: Quy trình phát triển dựa trên AI agent của repo này. Dùng khi bắt đầu một tính năng mới, khi viết đặc tả từ BRD/PRD hoặc ticket Jira/Confluence, khi thiết kế kỹ thuật, khi lập kế hoạch, khi hiện thực theo kế hoạch, khi rà soát thay đổi, khi đưa tài liệu từ tool khác vào quy trình, khi cần chốt điểm mù (open questions) hoặc phân xử phát hiện của checker LLM đang chặn phase, hoặc khi được hỏi quy trình làm việc của repo này là gì.\n'
   printf -- '---\n\n'
   printf '# Quy trình phát triển dựa trên AI agent\n\n'
   canh_bao "workflow.yaml"

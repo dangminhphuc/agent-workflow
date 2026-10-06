@@ -13,8 +13,8 @@
 
      "Nếu giả định sai" là căn cứ để chọn mức. Agent không được hạ mức để khỏi bị chặn.
 
-     Lệnh `open-questions` liệt kê các mục còn mở theo thứ tự phải giải quyết trước
-     (aw questions) và dẫn người trả lời từng mục.
+     Lệnh `clarify` liệt kê các mục còn mở theo thứ tự phải giải quyết trước
+     (aw pending) và dẫn người trả lời từng mục.
 
      Checker đối chiếu hai chiều với `spec.md`: mỗi mục phải trỏ về một YC có thật;
      `mở` ↔ spec gắn `[CẦN-HỎI]`; `đã trả lời` ↔ có dòng "Trả lời" và spec đã đổi
