@@ -26,9 +26,9 @@
 # (nền tảng báo); lúc dọn, branch local chỉ được xoá cứng khi trùng sha này.
 
 # mr_nen_tang <repo> <conventions.md> -> github | gitlab | rỗng
-# Khoá nen_tang_mr thắng; bỏ trống thì đoán từ URL của origin.
+# Khoá mr_platform thắng; bỏ trống thì đoán từ URL của origin.
 mr_nen_tang() {
-  _mn=$(conv_get "$2" nen_tang_mr)
+  _mn=$(conv_get "$2" mr_platform)
   case "$_mn" in github|gitlab) echo "$_mn"; return 0 ;; esac
   _mu=$(git -C "$1" remote get-url origin 2>/dev/null)
   case "$_mu" in

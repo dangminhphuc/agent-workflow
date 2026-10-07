@@ -5,7 +5,7 @@
 #   aw check perf <thư-mục-feature> --after    # sau khi sửa code
 #
 # Lệnh đo: LENH_DO_HIEU_NANG trong cau-hinh.sh, phải in một dòng "KET_QUA: <số> <đơn vị>".
-# --before từ chối nếu diff đã đụng code production (mau_code_production).
+# --before từ chối nếu diff đã đụng code production (production_code).
 # Script chỉ GHI số; có đạt mục tiêu hay không thì người kết luận ở review —
 # số đo dao động nên máy chặn theo ngưỡng sẽ chặn nhầm.
 #
@@ -36,9 +36,9 @@ LENH_DO_HIEU_NANG=""
 [ -n "$LENH_DO_HIEU_NANG" ] || { echo "LỖI: chưa khai LENH_DO_HIEU_NANG trong $CAUHINH" >&2; exit 2; }
 
 if [ "$PHA" = "--before" ]; then
-  DOI=$(kc_doi "$DIR") || { echo "LỖI: không xác định được base (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)." >&2; exit 2; }
+  DOI=$(kc_doi "$DIR") || { echo "LỖI: không xác định được base (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)." >&2; exit 2; }
   ngoai=$(printf '%s\n' "$DOI" | while IFS="$(printf '\t')" read -r s p q; do
-    [ -n "$p" ] && kc_khop_khoa "$DIR" mau_code_production "${q:-$p}" && echo "  - ${q:-$p}"; done)
+    [ -n "$p" ] && kc_khop_khoa "$DIR" production_code "${q:-$p}" && echo "  - ${q:-$p}"; done)
   if [ -n "$ngoai" ]; then
     echo "KHÔNG HỢP LỆ — đo \"trước\" nhưng diff đã đụng code production:"
     echo "$ngoai"

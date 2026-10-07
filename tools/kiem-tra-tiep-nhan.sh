@@ -10,7 +10,7 @@
 #     Input chỉ nhận tài liệu có định danh hoặc lời người dùng CHÉP NGUYÊN VĂN —
 #     suy đoán của agent mà vào đây thì mọi phase sau sẽ truy về nó như có nguồn.
 #   - [HUMAN] không kèm nguyên văn.
-#   - [JIRA] mà định danh không có mã khớp mau_jira (conventions.md).
+#   - [JIRA] mà định danh không có mã khớp jira_key_regex (conventions.md).
 #   - Thiếu dòng "Base:" dạng `<ref>` @ `<sha>` (tao-worktree.sh in ra), hoặc sha
 #     không phải tổ tiên của HEAD. Checker phía sau so diff với base này — base
 #     sai thì phạm vi diff, test bảo vệ, tái hiện lỗi đều kiểm trên nền sai.
@@ -97,7 +97,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     else if (t != "HUMAN" && rest == "") loi("Input #" n_in ": [" t "] thiếu định danh (URL, mã issue, đường dẫn)")
     # Chỗ giữ chỗ còn sót (vd dòng mẫu chưa sửa) — nếu lọt, spec sẽ truy về một nguồn không có thật
     else if (t != "HUMAN" && (rest ~ /<[^>]*>/ || rest ~ /\((URL|https?:\/\/…)\)/)) loi("Input #" n_in ": [" t "] còn chỗ giữ chỗ chưa điền — " rest)
-    else if (t == "JIRA" && rest !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)")) loi("Input #" n_in ": [JIRA] không có mã issue khớp mau_jira (" mj ") — " rest)
+    else if (t == "JIRA" && rest !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)")) loi("Input #" n_in ": [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " rest)
     dem[t]++
     next
   }

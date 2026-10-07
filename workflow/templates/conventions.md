@@ -1,65 +1,80 @@
-# Quy ước của repo
+# Repository conventions
 
 > File này do **NGƯỜI** viết. Nằm ở `.git/agent-workflow/conventions.md` của bản
 > clone — không commit, dùng chung mọi worktree. `aw init` chỉ tạo nó một lần từ
 > mẫu và **không bao giờ ghi đè**, kể cả với `--force`. Chia sẻ cho team: repo
 > cấu hình riêng + `aw init --from <url>`.
 
-## Phần máy đọc
+## Machine-readable
 
-Khối dưới được script đọc bằng awk. Mỗi dòng `khoá: giá trị`; danh sách cách nhau
-bằng dấu cách. Trong mẫu glob, `*` khớp cả `/` (vd `src/*` khớp `src/a/b.ts`).
+Sửa giá trị trong khối dưới. Mỗi khoá có chú thích một dòng; giải thích đầy đủ,
+cú pháp glob/regex và mặc định khi để trống: xem
+`.agent-workflow/.engine/templates/conventions-reference.md`.
+
+Nhãn chú thích: **[edit]** phải xem lại cho đúng repo · **[default]** dùng được
+ngay · **[optional]** để trống = tắt luật hoặc dùng mặc định của engine.
+Kiểm file sau khi sửa: `aw conventions check`.
 
 ```conventions
-mau_branch: feat_* fix_* refactor_* perf_* chore_*
-loai_theo_tien_to: feat_=feature fix_=bugfix refactor_=refactor perf_=perf chore_=chore
-nhanh_goc: main
-thu_muc_worktree: ../{repo}.wt/{ten}
-mau_nhanh_phat_hanh:
-nhanh_dich_mr:
-nen_tang_mr:
-bo_qua: package-lock.json yarn.lock pnpm-lock.yaml
-mau_file_test: *.test.* *.spec.* *_test.* test/* tests/*
-the_covers: covers:
-mau_bo_qua_test:
-mau_code_production: src/*
-mau_code_nhay_cam:
-mau_file_dependency: package.json package-lock.json yarn.lock pnpm-lock.yaml
-mau_jira: [A-Z][A-Z0-9]*-[0-9]+
-mien_confluence:
-quy_tac_spec:
-quy_tac_design:
-quy_tac_plan:
-quy_tac_implement:
-quy_tac_review:
+# ── Branches & worktrees ──────────────────────────────────────────
+# [edit] nhánh checkout chính luôn đứng; base mặc định của việc mới
+base_branch: main
+# [default] branch khớp mẫu → tên branch là tên feature
+branch_patterns: feat_* fix_* refactor_* perf_* chore_*
+# [default] tiền tố branch = loại việc (feature bugfix refactor perf chore)
+type_by_prefix: feat_=feature fix_=bugfix refactor_=refactor perf_=perf chore_=chore
+# [default] vị trí worktree, phải ngoài repo; {repo} {ten} được thay
+worktree_dir: ../{repo}.wt/{ten}
+# [optional] glob nhánh phát hành, vd release/*
+release_branches:
+
+# ── Merge requests ────────────────────────────────────────────────
+# [optional] glob nhánh đích MR theo thứ tự hiện, vd develop uat/* main (trống = base_branch)
+mr_target_branches:
+# [optional] github | gitlab (trống = đoán từ URL origin)
+mr_platform:
+
+# ── File classes (đường dẫn tính từ gốc repo; * khớp cả /) ────────
+# [edit] code chạy production — test đặt cạnh code cũng bị tính là production
+production_code: src/*
+# [edit] file test; test/* chỉ khớp ở gốc repo, monorepo thêm */test/*
+test_files: *.test.* *.spec.* *_test.* test/* tests/*
+# [edit] manifest/lockfile — chore đụng vào phải khai "Dependency upgrades"
+dependency_files: package.json package-lock.json yarn.lock pnpm-lock.yaml
+# [default] file đổi không cần nằm trong "Expected files" (lockfile, file sinh)
+ignored_files: package-lock.json yarn.lock pnpm-lock.yaml
+
+# ── Test ──────────────────────────────────────────────────────────
+# [default] chuỗi trước mã YC trong test, vd // covers: YC-001
+covers_tag: covers:
+# [optional] regex ERE test bị tắt/chạy riêng (trống = .only( .skip( @Disabled …)
+skipped_test_regex:
+
+# ── Security ──────────────────────────────────────────────────────
+# [optional] glob code nhạy cảm, vd src/auth/* — đụng vào cần NGƯỜI rà bảo mật
+sensitive_code:
+
+# ── Intake input ──────────────────────────────────────────────────
+# [default] regex ERE mã Jira, không dùng {n}
+jira_key_regex: [A-Z][A-Z0-9]*-[0-9]+
+# [optional] glob miền Confluence, vd wiki.cong-ty.vn *.atlassian.net/wiki
+confluence_domains:
+
+# ── Repo rules (file đã commit, agent đọc qua `aw rules`) ─────────
+# [optional] vd rules_implement = docs/coding-style.md .claude/skills/x/SKILL.md
+rules_spec:
+rules_design:
+rules_plan:
+rules_implement:
+rules_review:
 ```
 
-| Khoá | Dùng cho |
-|---|---|
-| `mau_branch` | Branch khớp mẫu thì tên branch là tên feature → artifact ở `.agent-workflow/<tên-branch>/` |
-| `nhanh_goc` | Nhánh checkout chính luôn đứng; ứng viên base chính khi tạo worktree. Checker so diff với **base ghi trong `intake.md`**, chỉ quay về khoá này khi intake chưa có dòng Base |
-| `thu_muc_worktree` | Mẫu đường dẫn worktree, tương đối với gốc repo (hoặc tuyệt đối). `{repo}` = tên repo gốc, `{ten}` = tên branch (`/` → `_`). Phải nằm **ngoài** repo. Mỗi máy ghi đè được bằng biến môi trường `AW_THU_MUC_WORKTREE` |
-| `mau_nhanh_phat_hanh` | Mẫu glob nhánh phát hành, vd `release/*`. `aw worktree new` liệt kê làm ứng viên base (bugfix gấp); base khớp mẫu này thì review không cảnh báo |
-| `nhanh_dich_mr` | Mẫu glob các nhánh được làm đích MR, theo thứ tự muốn hiện, vd `develop uat/* main`. `aw ship targets` liệt kê nhánh trên origin khớp mẫu để người chọn; `aw ship create` từ chối đích khác. Bỏ trống = chỉ `nhanh_goc` |
-| `nen_tang_mr` | `github` hoặc `gitlab` — `aw ship` tạo MR/PR bằng `gh` / `glab` (người cài và đăng nhập sẵn). Bỏ trống: đoán từ URL của origin (`github.com` → github, có chữ `gitlab` → gitlab); GitLab tự host tên miền khác thì phải khai |
-| `bo_qua` | File thay đổi mà không cần nằm trong "Expected files" (lockfile, file sinh tự động…) |
-| `mau_file_test` | File nào là file test — để tìm tag `covers:` |
-| `the_covers` | Chuỗi đứng trước mã YC trong test, vd `// covers: YC-001, YC-002` |
-| `mau_bo_qua_test` | Regex (ERE) cho test bị tắt / chạy riêng trong **dòng thêm mới** của file test. Khớp thì `/aw-implement` cảnh báo, `/aw-review` chặn — trừ file khai ở "Unplanned" của `plan.md`. Bỏ trống = mặc định: `.only(` `.skip(` `fit(` `fdescribe(` `xit(` `xdescribe(` `xtest(` `@Disabled` `@Ignore` `pytest.mark.skip` `t.Skip(` `#[ignore]` |
-| `loai_theo_tien_to` | Tiền tố branch → loại việc. `/aw-intake` dùng để gợi ý; loại trong `intake.md` lệch tiền tố thì cảnh báo, `review` chặn |
-| `mau_code_production` | Code chạy trên production. `chore` đụng vào là chặn; `bugfix`/`perf` đo "trước" thì chưa được đụng |
-| `mau_code_nhay_cam` | Mẫu glob code nhạy cảm về bảo mật, vd `src/auth/* src/payment/* */crypto/*`. Diff đụng vào (kể cả đổi tên từ/đến) thì `review.md` phải có dòng `- Security reviewer: <tên người>` — một NGƯỜI rà bảo mật đã đọc Lens 4 và diff; thiếu là `aw check review` chặn. Bỏ trống = không bật luật này |
-| `mau_file_dependency` | Manifest/lockfile. `chore` đụng vào thì `plan.md` phải có bảng "Dependency upgrades" |
-| `mau_jira` | Regex (ERE, không dùng `{n}`) của mã issue Jira. `aw input` dùng để nhận `[JIRA]` trong tham số `/aw-intake`; `aw check intake` chặn dòng `[JIRA]` không có mã khớp |
-| `quy_tac_<phase>` | Quy tắc riêng của repo cho phase đó (`spec` `design` `plan` `implement` `review`): danh sách file, đường dẫn tương đối với gốc repo, không chứa dấu cách — vd `quy_tac_implement: docs/coding-style.md .claude/skills/api-pattern/SKILL.md`. Agent lấy danh sách bằng `aw rules <phase>` và đọc từng file. File phải **đã commit** vào base (worktree mới chỉ có file đã commit); không có hay chưa commit thì `aw check` của phase đó chặn. `review` đối chiếu diff với **mọi** khoá: `review.md` thiếu kết luận cho file nào thì chặn. Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md` và luật quy trình. Quy tắc máy kiểm được (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` thay vì viết thành văn |
-| `mien_confluence` | Mẫu glob `miền[/đường-dẫn]` của Confluence, vd `wiki.cong-ty.vn *.atlassian.net/wiki`. URL khớp → `[CONFLUENCE]`. Bỏ trống: mọi URL không phải Jira đều là `[CONFLUENCE]` (có cảnh báo) |
-
-## Phần người đọc
+## Team conventions
 
 <Quy ước đặt tên branch cụ thể của team, ví dụ: `feat_<mô-tả>` cho tính năng,
 `refactor_<mô-tả>` cho refactor; `<mô-tả>` không nhất thiết là mã Jira.>
 
-Worktree là bắt buộc: checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để chạy
+Worktree là bắt buộc: checkout chính luôn đứng ở `base_branch` và chỉ dùng để chạy
 `/aw-intake`; mỗi việc làm trong worktree riêng (`aw worktree new`). Gửi MR bằng
 `/aw-ship` trong worktree; sau khi merge, `/aw-ship` ở checkout chính dọn worktree và
 branch (`aw ship sweep`). Việc không qua `/aw-ship` thì dọn bằng `aw worktree remove`.
@@ -74,7 +89,7 @@ có gắn mã Jira hay không, phần thân, ví dụ.>
 > Mặc định của engine — sửa cho đúng team. Áp dụng như nhau cho MR (GitLab) và
 > PR (GitHub). Heading và nhãn trong mô tả MR viết tiếng Anh.
 
-**Scope.** Một MR = một việc = một branch theo `mau_branch`. Diff nên dưới ~400
+**Scope.** Một MR = một việc = một branch theo `branch_patterns`. Diff nên dưới ~400
 dòng (không tính lockfile, file sinh, test); lớn hơn thì tách theo task trong
 `plan.md` hoặc ghi lý do trong mô tả. Refactor đi kèm tính năng tách MR riêng.
 
@@ -93,9 +108,9 @@ Các mục còn lại không xoá — không áp dụng thì ghi `None`. Phải 
 - **Deployment order:** khi có phụ thuộc;
 - **Changed expectations:** test cũ bị đổi kỳ vọng.
 
-**Target branch.** Một trong `nhanh_dich_mr` (bỏ trống: `nhanh_goc`) — người
-chọn khi chạy `/aw-ship`. Hotfix vào nhánh khớp `mau_nhanh_phat_hanh` thì
-phải có MR cherry-pick ngược về `nhanh_goc`, link trong mô tả.
+**Target branch.** Một trong `mr_target_branches` (bỏ trống: `base_branch`) — người
+chọn khi chạy `/aw-ship`. Hotfix vào nhánh khớp `release_branches` thì
+phải có MR cherry-pick ngược về `base_branch`, link trong mô tả.
 
 **Reviewers.** Ít nhất <1> người ngoài tác giả; MR có breaking change hoặc
 external impact thêm người của bên phụ thuộc. Tác giả không tự duyệt.

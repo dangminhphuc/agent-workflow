@@ -9,6 +9,7 @@
 #   aw-engine input [--skip <intake.md>] <args|->
 #   aw-engine pending <feature-dir>
 #   aw-engine rules <phase>
+#   aw-engine conventions check                   kiểm conventions.md sau khi người sửa
 #   aw-engine ready <feature-dir> [--no-test]       worktree sẵn sàng chưa, bước tiếp là gì
 #   aw-engine task start|done|next <feature-dir> [T-NN] [--manual "<bằng chứng>"]
 #   aw-engine journal [report] | journal add <layer> <mô tả> [--feature <dir>]
@@ -91,6 +92,9 @@ case "$LENH" in
   input)     can_repo; exec sh "$T/phan-loai-input.sh" "$@" ;;
   pending)   can_repo; exec sh "$T/liet-ke-viec-cho.sh" "$@" ;;
   rules)     can_repo; exec sh "$T/quy-tac-repo.sh" "$@" ;;
+  conventions)
+    [ "${1:-}" = check ] || sai 2 "Dùng: aw conventions check"
+    shift; can_repo; exec sh "$T/kiem-tra-quy-uoc.sh" "$@" ;;
   ready)     can_repo; exec sh "$T/san-sang.sh" "$@" ;;
   task)      can_repo; exec sh "$T/task.sh" "$@" ;;
   journal)   can_repo; exec sh "$T/nhat-ky.sh" "$@" ;;

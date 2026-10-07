@@ -13,7 +13,7 @@
 #   6. Mục "YC mapping" bỏ sót YC của spec, hoặc trỏ về YC không có.
 #   7. Mode 2: spec "Risk: high" mà không có D-xx nào do người viết.
 #   8. Checker LLM: chưa có phat-hien-thiet-ke.md, hoặc còn phát hiện mức Chặn chưa xử lý.
-#   9. File khai ở quy_tac_design (conventions.md) không có hoặc chưa commit.
+#   9. File khai ở rules_design (conventions.md) không có hoặc chưa commit.
 # Cảnh báo (không chặn): artifact lỗi thời.
 #
 # Checker LLM chỉ được CHẶN, không được DUYỆT: không có file phát hiện là

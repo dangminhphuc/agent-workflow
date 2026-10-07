@@ -123,7 +123,7 @@ Cách đọc:
 Điểm xuất phát bắt buộc của mọi việc. `intake.md` trả lời đúng ba câu:
 
 1. **Loại việc** (dòng `Type`) — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
-   branch (`loai_theo_tien_to` trong `conventions.md`), **người xác nhận**, và
+   branch (`type_by_prefix` trong `conventions.md`), **người xác nhận**, và
    `intake.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
    chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên bằng
    `aw rename` (đổi cả branch, thư mục artifact và thư mục worktree).
@@ -143,7 +143,7 @@ thành một lớp diễn giải chen giữa tài liệu thật và spec.
 phải tên feature (các lệnh khác thì tham số là tên feature). Tên feature luôn lấy
 từ branch.
 
-**Worktree là bắt buộc.** Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
+**Worktree là bắt buộc.** Checkout chính luôn đứng ở `base_branch` và chỉ dùng để
 chạy `/aw-intake`; mọi lệnh khác chạy ở đó đều bị chặn (`ĐANG Ở CHECKOUT CHÍNH`). `/aw-intake` ở checkout
 chính: agent chốt loại việc với bạn, rồi chạy `aw worktree new <loại-việc>
 <mô-tả>` — script **chỉ đề xuất**:
@@ -151,15 +151,15 @@ chính: agent chốt loại việc với bạn, rồi chạy `aw worktree new <l
 ```
   Tên        fix_phi-hoan-tien   (tiền tố fix_ ← bugfix)
   Đường dẫn  /home/dev/shop.wt/fix_phi-hoan-tien
-             (thu_muc_worktree: ../{repo}.wt/{ten})
+             (worktree_dir: ../{repo}.wt/{ten})
 
   Base — chọn một:
      [1] main               c629505  2 hours ago  "…"
-         nhanh_goc local — ⚠ chậm 2 commit so với origin/main
+         base_branch local — ⚠ chậm 2 commit so với origin/main
    ★ [2] origin/main        80dc1bf  1 hour ago   "…"
          bản remote tính tới lần fetch cuối: 2026-09-29 17:25 (script không tự fetch)
      [3] release/1.2        c629505  3 days ago   "…"
-         khớp mau_nhanh_phat_hanh — hợp với bugfix gấp trên bản đã phát hành
+         khớp release_branches — hợp với bugfix gấp trên bản đã phát hành
      [4] ref khác — người nhập (branch, tag, commit). Branch việc khác (xếp chồng): review sẽ cảnh báo
 ```
 
@@ -176,7 +176,7 @@ agent không đọc nhầm artifact của worktree khác; mỗi máy ghi đè đ
 môi trường `AW_THU_MUC_WORKTREE`.
 
 **Vì sao ghi Base.** Checker so diff với điểm rẽ nhánh khỏi base, không phải
-`nhanh_goc`. Tạo từ `origin/main` khi `main` local đang chậm, hay từ `release/*`,
+`base_branch`. Tạo từ `origin/main` khi `main` local đang chậm, hay từ `release/*`,
 mà so với `main` local thì commit của người khác bị tính cho việc này. Base là
 branch việc khác (xếp chồng) vẫn được — nhập qua "ref khác" — nhưng `review`
 cảnh báo để bạn xác nhận có chủ ý: việc dựa trên code chưa được review.
@@ -188,8 +188,8 @@ trạng thái; `aw worktree remove <tên-branch>` chép artifact vào
 `--force` hay `-D`: còn thay đổi chưa commit thì chặn; squash-merge làm git từ
 chối xoá branch thì bạn tự quyết `git branch -D`.
 
-Nhãn input do **máy** gán: `aw input` nhận mã Jira (`mau_jira`),
-URL Confluence (`mien_confluence`), file có thật trong repo. Chỉ cần một từ không
+Nhãn input do **máy** gán: `aw input` nhận mã Jira (`jira_key_regex`),
+URL Confluence (`confluence_domains`), file có thật trong repo. Chỉ cần một từ không
 nhận ra thì **cả chuỗi** là lời người dùng, chép nguyên văn thành một mục
 `[HUMAN]` — vd `/aw-intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
 câu chỉ là đề xuất tách thêm, bạn đồng ý mới thành input riêng. Chạy lại `/aw-intake`
@@ -214,7 +214,7 @@ Loại việc **đổi luật** của các phase sau:
 | `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Repro test fails because: …") |
 | `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Modified existing tests" | Diff test cũ chỉ đổi import/cấu trúc |
 | `perf` | đủ | Như refactor + YC `performance` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
-| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) và lệnh quét nhóm `sca` phải chạy xanh | Mức phiên bản khai đúng |
+| `chore` | bỏ design | Diff đụng `production_code` → chặn; đụng `dependency_files` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) và lệnh quét nhóm `sca` phải chạy xanh | Mức phiên bản khai đúng |
 
 Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bugfix gấp),
 `security` (= bugfix/feature + rủi ro cao). `spike` nằm ngoài quy trình. Việc lai
@@ -387,7 +387,7 @@ Finding `Blocker` / `Should fix` mang `- Category: <loại-lỗi>` (kebab-case).
 nâng thành luật máy kiểm (lệnh trong `LENH_KIEM_THU`, quy tắc repo), để lỗi đã bắt
 một lần thành hàng rào vĩnh viễn.
 
-Code nhạy cảm (khoá `mau_code_nhay_cam` trong `conventions.md`, vd `src/auth/*
+Code nhạy cảm (khoá `sensitive_code` trong `conventions.md`, vd `src/auth/*
 src/payment/*`): diff đụng vào thì `review.md` phải có `- Security reviewer: <tên>`
 do một **người** rà bảo mật tự ghi sau khi đọc Lens 4 và diff. `aw check implement`
 báo trước (không chặn) để kịp hẹn người.
@@ -477,11 +477,11 @@ chặn nếu còn artifact lỗi thời.
 
 | Kiểm chéo | Cách kiểm | Xử lý |
 |---|---|---|
-| Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Manual verification" + lý do trong `plan.md` |
-| Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "Expected files" + "Unplanned" + `bo_qua` | Hoàn tác, hoặc ghi vào "Unplanned" |
+| Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `test_files` | Thêm test, hoặc ghi "Manual verification" + lý do trong `plan.md` |
+| Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "Expected files" + "Unplanned" + `ignored_files` | Hoàn tác, hoặc ghi vào "Unplanned" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
 | Điểm mù | `Blocking: review-blocking` (hoặc `blocking`) còn `open` trong `open-questions.md` | Chốt với người qua `/aw-clarify` |
-| Test bị tắt | Dòng **thêm mới** trong file test khớp `mau_bo_qua_test` (mặc định `.only(` `.skip(` `fit(` `xit(` `@Disabled` `pytest.mark.skip`…) | Bỏ đánh dấu, hoặc ghi file vào "Unplanned" + lý do |
+| Test bị tắt | Dòng **thêm mới** trong file test khớp `skipped_test_regex` (mặc định `.only(` `.skip(` `fit(` `xit(` `@Disabled` `pytest.mark.skip`…) | Bỏ đánh dấu, hoặc ghi file vào "Unplanned" + lý do |
 
 ## Đưa artifact từ ngoài vào
 
@@ -571,6 +571,7 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 | `aw upgrade <YYYY.M.N>` | Đổi engine cho việc mới |
 | `aw version` · `aw doctor` | Xem version đang dùng · kiểm cài đặt (wrapper, engine, exclude, adapter) |
 | `aw ready <thư-mục-feature> [--no-test]` | Worktree sẵn sàng chưa: cấu hình đủ, lệnh test **xanh trên code hiện tại**, lệnh quét đã khai; bước tiếp là gì |
+| `aw conventions check` | Kiểm `conventions.md` sau khi sửa: cấu trúc khối, khoá lạ/trùng, khoá bắt buộc, giá trị sai dạng, regex, `worktree_dir`, `base_branch`, file `rules_*` (✗ = chặn); thiếu khoá so với mẫu engine, glob không khớp file nào, test lẫn production, placeholder (! = cảnh báo). `aw ready` gọi lệnh này |
 | `aw task next\|start\|done <thư-mục-feature> [T-NN] [--manual "…"]` | Trạng thái task trong `plan.md` do máy giữ — `done` chạy `Verify`, xanh mới `[x]` |
 | `aw journal` · `aw journal add <lớp> "<mô tả>"` | Nhật ký harness: checker hay trượt chỗ nào, thất bại theo lớp, loại finding lặp lại |
 | `aw check <tên> <thư-mục-feature>` | Checker máy — `intake spec design plan implement review repro perf` |
@@ -666,31 +667,19 @@ Agent luôn in `Đang làm với: …` trước khi bắt đầu. Thứ tự nà
 prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành `_`.
 
 `conventions.md` (trong `.git/agent-workflow/`) là của repo đích, do bạn viết. Phần máy đọc là một khối
-` ```conventions ` gồm các dòng `khoá: giá trị`:
+` ```conventions ` gồm các dòng `khoá: giá trị`, nhóm theo chủ đề, mỗi khoá một dòng
+chú thích gắn nhãn **[edit]** / **[default]** / **[optional]**; dòng `#` trong khối
+là chú thích. Giải thích đầy đủ từng khoá, cú pháp glob/regex và mặc định khi để
+trống nằm ở [`workflow/templates/conventions-reference.md`](workflow/templates/conventions-reference.md)
+— tài liệu của engine, cập nhật theo engine (trong worktree:
+`.agent-workflow/.engine/templates/conventions-reference.md`), nên không chép lại vào
+`conventions.md` của repo đích.
 
-| Khoá | Ví dụ | Dùng cho |
-|---|---|---|
-| `mau_branch` | `feat_* fix_* refactor_*` | Quy ước tên branch; `xxx` không nhất thiết là mã Jira |
-| `nhanh_goc` | `main` | Nhánh checkout chính đứng; ứng viên base chính. Diff so với base trong `intake.md`, chỉ quay về khoá này khi intake chưa có Base |
-| `thu_muc_worktree` | `../{repo}.wt/{ten}` | Vị trí worktree (ngoài repo); ghi đè theo máy bằng `AW_THU_MUC_WORKTREE` |
-| `mau_nhanh_phat_hanh` | `release/*` | Nhánh phát hành — ứng viên base; base khớp thì review không cảnh báo |
-| `nhanh_dich_mr` | `develop uat/* main` | Nhánh được làm đích MR (`/aw-ship`), theo thứ tự hiện cho người chọn; bỏ trống = `nhanh_goc` |
-| `nen_tang_mr` | `gitlab` | `github` / `gitlab` — `/aw-ship` tạo MR bằng `gh` / `glab`; bỏ trống = đoán từ URL của origin |
-| `bo_qua` | `package-lock.json` | File đổi không cần nằm trong plan |
-| `mau_file_test` | `*.test.* test/*` | File nào là test |
-| `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
-| `loai_theo_tien_to` | `feat_=feature fix_=bugfix` | Tiền tố branch → loại việc (gợi ý ở `/aw-intake`, đối chiếu ở review) |
-| `mau_code_production` | `src/*` | Code production — `chore` không được đụng; bugfix/perf đo "trước" khi chưa đụng |
-| `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Dependency upgrades" |
-| `quy_tac_<phase>` | `quy_tac_implement: docs/coding-style.md .claude/skills/api/SKILL.md` | Quy tắc riêng của repo — xem bên dưới |
-
-Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
-
-#### Quy tắc riêng của repo (`quy_tac_<phase>`)
+#### Quy tắc riêng của repo (`rules_<phase>`)
 
 Coding style, skill của agent, chuẩn kiến trúc, thuật ngữ nghiệp vụ… gắn vào đúng
-phase cần nó: `quy_tac_spec`, `quy_tac_design`, `quy_tac_plan`, `quy_tac_implement`,
-`quy_tac_review`. Giá trị là danh sách file, đường dẫn tương đối với gốc repo.
+phase cần nó: `rules_spec`, `rules_design`, `rules_plan`, `rules_implement`,
+`rules_review`. Giá trị là danh sách file, đường dẫn tương đối với gốc repo.
 
 - Agent chạy `aw rules <phase>` ở đầu phase rồi đọc từng file. Danh sách đọc lúc
   chạy, nên sửa `conventions.md` là có hiệu lực ngay, không cần build lại adapter.
@@ -736,7 +725,8 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   doi-ten-feature.sh     aw rename: đổi tên branch + thư mục artifact + worktree
   phan-loai-input.sh     aw input: tham số → dòng "## Input" (nhãn do máy gán)
   liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
-  quy-tac-repo.sh        aw rules: file quy tắc riêng của repo cho một phase (quy_tac_* trong conventions.md)
+  quy-tac-repo.sh        aw rules: file quy tắc riêng của repo cho một phase (rules_* trong conventions.md)
+  kiem-tra-quy-uoc.sh    aw conventions check: conventions.md đúng cú pháp, khoá, giá trị
   san-sang.sh            aw ready: cấu hình, test xanh trên base, lệnh quét, tiến độ + bước tiếp
   task.sh                aw task next|start|done: trạng thái task do máy giữ, bằng chứng → ket-qua-task.md
   nhat-ky.sh             aw journal: nhật ký harness ($AW_CONFIG/journal/) — check, thất bại theo lớp, finding
@@ -771,7 +761,7 @@ Lệnh có hai chế độ, theo chỗ gõ:
 1. Agent viết `merge-request.md` theo mẫu (`templates/merge-request.md` + mục
    "Merge request" của `conventions.md`), chạy `aw check ship` — chặn khi review
    chưa đạt, `review.md` còn `[Blocker]`, mô tả thiếu mục / còn chữ giữ chỗ.
-2. `aw ship targets` liệt kê nhánh đích theo `nhanh_dich_mr` (vd `develop uat/*
+2. `aw ship targets` liệt kê nhánh đích theo `mr_target_branches` (vd `develop uat/*
    main`), đánh dấu base của việc và nhánh nào sẽ kéo theo commit không thuộc
    việc. **Bạn chọn.**
 3. Bạn xác nhận tiêu đề + mô tả + đích; agent chạy `aw ship create --target

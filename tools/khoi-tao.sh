@@ -80,7 +80,7 @@ fi
 
 # ---- conventions.md — của NGƯỜI ----
 if [ -f "$CONV" ]; then echo "  keep    conventions.md (của bạn, không bao giờ ghi đè)"
-else cp "$ENG/workflow/templates/conventions.md" "$CONV"; echo "  create  conventions.md từ mẫu — hãy sửa cho đúng repo của bạn"; fi
+else cp "$ENG/workflow/templates/conventions.md" "$CONV"; echo "  create  conventions.md từ mẫu — hãy sửa cho đúng repo của bạn, rồi chạy: aw conventions check"; fi
 
 # ---- config.sh — của NGƯỜI ----
 if [ -f "$CH" ]; then

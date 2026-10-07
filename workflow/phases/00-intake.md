@@ -71,8 +71,8 @@ không sửa dòng nó in ra. Luật (mẫu khai trong `conventions.md`):
 
 | Token | Nhãn |
 |---|---|
-| Khớp `mau_jira`, hoặc URL `…/browse/<mã>` | `[JIRA]` |
-| URL khớp `mien_confluence` (chưa khai: mọi URL còn lại, có cảnh báo) | `[CONFLUENCE]` |
+| Khớp `jira_key_regex`, hoặc URL `…/browse/<mã>` | `[JIRA]` |
+| URL khớp `confluence_domains` (chưa khai: mọi URL còn lại, có cảnh báo) | `[CONFLUENCE]` |
 | File có thật trong repo | `[FILE]` |
 | Trông như đường dẫn nhưng không có file | lỗi — `ĐƯỜNG DẪN KHÔNG TỒN TẠI` |
 | Còn lại | không nhận ra |
@@ -111,7 +111,7 @@ chạy lại `/aw-spec` để đọc input mới. Các phase sau cảnh báo, `r
 
 ## Tạo worktree
 
-Worktree là **bắt buộc**. Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
+Worktree là **bắt buộc**. Checkout chính luôn đứng ở `base_branch` và chỉ dùng để
 chạy `/aw-intake`; mỗi việc làm trong một worktree riêng, một phiên agent riêng.
 `aw feature` ra `ĐANG Ở CHECKOUT CHÍNH` khi đang ở checkout chính — với `/aw-intake` nghĩa là
 "tạo worktree", với mọi lệnh khác nghĩa là "dừng lại".
@@ -121,11 +121,11 @@ Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Là
 1. Đọc input, **chốt loại việc với người** (cây phân loại ở trên).
 2. Chọn một mô tả ngắn: chữ thường ASCII, số, dấu `-` (vd `phi-hoan-tien`).
 3. Chạy `aw worktree new <loại-việc> <mô-tả>` — nó **chỉ in đề xuất**:
-   - tên theo `loai_theo_tien_to` (vd `fix_phi-hoan-tien`) — branch, thư mục
+   - tên theo `type_by_prefix` (vd `fix_phi-hoan-tien`) — branch, thư mục
      worktree và thư mục artifact dùng **cùng một tên**;
-   - đường dẫn theo `thu_muc_worktree` (mặc định `../{repo}.wt/{ten}`);
-   - danh sách **base** kèm dữ kiện: `nhanh_goc` local, `origin/<nhanh_goc>`,
-     nhánh khớp `mau_nhanh_phat_hanh`, hoặc ref khác do người nhập. Dấu ★ là
+   - đường dẫn theo `worktree_dir` (mặc định `../{repo}.wt/{ten}`);
+   - danh sách **base** kèm dữ kiện: `base_branch` local, `origin/<base_branch>`,
+     nhánh khớp `release_branches`, hoặc ref khác do người nhập. Dấu ★ là
      gợi ý của **máy** theo một luật cố định, không phải của agent.
 4. Đưa **nguyên văn** đề xuất cho người, hỏi người **chọn base** (và xác nhận
    tên). Người muốn tên khác thì đổi `<mô-tả>` và chạy lại bước 3.
@@ -142,7 +142,7 @@ Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Là
 script in ra, rồi chạy lại `/aw-intake` ở đó nếu cần gộp thêm input.
 
 **Vì sao ghi Base.** Checker phía sau so diff với điểm rẽ nhánh khỏi base này.
-So với `nhanh_goc` khi base là `origin/main` (local đang chậm) hay `release/*`
+So với `base_branch` khi base là `origin/main` (local đang chậm) hay `release/*`
 sẽ quy commit của người khác cho việc này: phạm vi diff báo sai, review đọc code
 không phải của mình. Base là branch việc khác (xếp chồng) thì được, nhưng review
 cảnh báo: việc này dựa trên code chưa được review.
@@ -157,7 +157,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 
 1. **Chốt loại việc** với người. Đang ở checkout chính: tạo worktree theo mục
    trên. Đang trong worktree (chạy lại để gộp input): gợi ý loại từ tiền tố
-   branch (`loai_theo_tien_to`), đối chiếu với input, rồi hỏi người xác nhận.
+   branch (`type_by_prefix`), đối chiếu với input, rồi hỏi người xác nhận.
 
    Loại người chốt lệch tiền tố branch thì **không có ngoại lệ**: sửa loại, hoặc
    đổi tên bằng `aw rename` — nó đổi cả branch, thư mục artifact
@@ -200,7 +200,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 **Máy:**
 - `aw check intake` ra `[x] ĐẠT` — loại việc (`Type`) hợp lệ, có mục tiêu (`Goal`), có ít
   nhất một input với nhãn hợp lệ, không `[INFERRED]`, `[HUMAN]` có nguyên văn,
-  `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
+  `[JIRA]` có mã khớp `jira_key_regex`, có dòng `Base:` mà sha là tổ tiên của HEAD,
   có dòng `Engine:` dạng `YYYY.M.N` khớp engine đang chạy.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.
 

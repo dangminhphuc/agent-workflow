@@ -6,16 +6,16 @@
 #   aw worktree new <loại-việc> <mô-tả> --create --base <ref>  # tạo (sau khi NGƯỜI chọn)
 #
 # Agent KHÔNG chọn base. Script liệt kê ứng viên kèm dữ kiện (commit, chậm/nhanh
-# so với remote) và gợi ý ★ theo MỘT luật máy: giữa nhanh_goc và
-# origin/nhanh_goc, bản nào chứa bản kia thì gợi ý bản đó; phân kỳ thì không gợi ý.
+# so với remote) và gợi ý ★ theo MỘT luật máy: giữa base_branch và
+# origin/base_branch, bản nào chứa bản kia thì gợi ý bản đó; phân kỳ thì không gợi ý.
 # NGƯỜI chọn, agent chạy lại với --base <ref>. Script không tự fetch.
 #
 # Base tuỳ ý: không đòi base có gì của quy trình — engine nằm ngoài repo, cấu
 # hình nằm trong .git/agent-workflow/. Tạo xong, script sinh adapter (ADAPTER
 # trong config.sh) vào worktree mới; file sinh ra bị exclude, không vào commit.
 #
-# Tên: tiền tố theo loai_theo_tien_to + <mô-tả>. Branch, thư mục worktree và thư
-# mục artifact dùng CÙNG một tên. Vị trí: thu_muc_worktree trong conventions.md
+# Tên: tiền tố theo type_by_prefix + <mô-tả>. Branch, thư mục worktree và thư
+# mục artifact dùng CÙNG một tên. Vị trí: worktree_dir trong conventions.md
 # (mặc định ../{repo}.wt/{ten}); biến môi trường AW_THU_MUC_WORKTREE ghi đè theo máy.
 #
 # Branch mới tạo --no-track: tạo từ origin/main mà để git tự đặt upstream thì
@@ -57,11 +57,11 @@ esac
 [ -z "$GOC" ] || [ -n "$TAO" ] || { echo "LỖI: --base chỉ dùng cùng --create." >&2; exit 2; }
 
 tien_to=""
-for _cap in $(conv_get "$CONV" loai_theo_tien_to); do
+for _cap in $(conv_get "$CONV" type_by_prefix); do
   [ "${_cap#*=}" = "$LOAI" ] && { tien_to=${_cap%%=*}; break; }
 done
 if [ -z "$tien_to" ]; then
-  echo "LỖI: loại việc \"$LOAI\" không có tiền tố trong loai_theo_tien_to ($CONV)." >&2
+  echo "LỖI: loại việc \"$LOAI\" không có tiền tố trong type_by_prefix ($CONV)." >&2
   echo "      Loại hợp lệ: feature | bugfix | refactor | perf | chore." >&2
   exit 2
 fi
@@ -72,9 +72,9 @@ git -C "$MT_REPO" check-ref-format --branch "$TEN" >/dev/null 2>&1 || { echo "L�
 
 CHINH=$(wt_chinh "$MT_REPO") || { echo "LỖI: $MT_REPO không nằm trong git repo." >&2; exit 2; }
 REPO=$(basename "$CHINH")
-GOC_MD=$(conv_get "$CONV" nhanh_goc); GOC_MD=${GOC_MD:-main}
-MAU_PH=$(conv_get "$CONV" mau_nhanh_phat_hanh)
-MAU_TM=$(conv_get "$CONV" thu_muc_worktree); NGUON_TM="thu_muc_worktree"
+GOC_MD=$(conv_get "$CONV" base_branch); GOC_MD=${GOC_MD:-main}
+MAU_PH=$(conv_get "$CONV" release_branches)
+MAU_TM=$(conv_get "$CONV" worktree_dir); NGUON_TM="worktree_dir"
 [ -n "$MAU_TM" ] || { MAU_TM='../{repo}.wt/{ten}'; NGUON_TM="mặc định"; }
 [ -n "${AW_THU_MUC_WORKTREE:-}" ] && { MAU_TM="$AW_THU_MUC_WORKTREE"; NGUON_TM="AW_THU_MUC_WORKTREE — ghi đè theo máy"; }
 
@@ -82,7 +82,7 @@ DUONG=$(printf '%s' "$MAU_TM" | awk -v r="$REPO" -v t="$TEN_TM" '{ gsub(/\{repo\
 case "$DUONG" in /*) ;; *) DUONG="$CHINH/$DUONG" ;; esac
 DUONG=$(wt_chuan_hoa "$DUONG")
 case "$DUONG/" in
-  "$CHINH"/*) echo "LỖI: \"$DUONG\" nằm TRONG repo — tool quét trùng code và agent đọc nhầm artifact của worktree khác. Sửa thu_muc_worktree." >&2; exit 2 ;;
+  "$CHINH"/*) echo "LỖI: \"$DUONG\" nằm TRONG repo — tool quét trùng code và agent đọc nhầm artifact của worktree khác. Sửa worktree_dir." >&2; exit 2 ;;
 esac
 
 # ---- branch đã tồn tại? ----
@@ -133,7 +133,7 @@ if [ -z "$TAO" ]; then
   }
 
   if [ -n "$co_l" ]; then
-    g="nhanh_goc local"
+    g="base_branch local"
     [ "$sau" != 0 ] && g="$g — ⚠ chậm $sau commit so với origin/$GOC_MD"
     [ "$truoc" != 0 ] && g="$g — có $truoc commit chưa push"
     in_ung_vien "$GOC_MD" "$g"
@@ -149,7 +149,7 @@ if [ -z "$TAO" ]; then
     ph=$(for _m in $MAU_PH; do git -C "$MT_REPO" for-each-ref --format='%(refname:short)' "refs/heads/$_m"; done | sort -u | tail -3)
     set +f
     for r in $ph; do
-      g="khớp mau_nhanh_phat_hanh"; [ "$LOAI" = bugfix ] && g="$g — hợp với bugfix gấp trên bản đã phát hành"
+      g="khớp release_branches"; [ "$LOAI" = bugfix ] && g="$g — hợp với bugfix gấp trên bản đã phát hành"
       in_ung_vien "$r" "$g"
     done
   fi

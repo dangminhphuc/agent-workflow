@@ -52,7 +52,7 @@ if [ -n "$up" ]; then
 else
   tt_push="chưa có upstream (chưa push lần nào)"
 fi
-g=$(conv_get "$CONV" nhanh_goc); g=${g:-main}
+g=$(conv_get "$CONV" base_branch); g=${g:-main}
 goc=$g; git -C "$MT_REPO" rev-parse --verify --quiet "refs/remotes/origin/$g" >/dev/null && goc="origin/$g"
 if git -C "$MT_REPO" merge-base --is-ancestor "$TEN" "$goc" 2>/dev/null; then tt_merge="đã nằm trong $goc"
 else tt_merge="CHƯA nằm trong $goc (hoặc đã merge kiểu squash/rebase)"; fi

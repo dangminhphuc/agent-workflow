@@ -331,7 +331,7 @@ tao_fixture() {
   } > "$CFG/config.sh"
   printf 'goc\n' > "$R/src/a.txt"
   printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
-  # Quy tắc riêng của repo (quy_tac_*): file phải đã commit vào base.
+  # Quy tắc riêng của repo (rules_*): file phải đã commit vào base.
   printf '# quy tắc a\n' > "$R/docs/quy-tac.md"; printf '# quy tắc b\n' > "$R/docs/quy-tac-2.md"
   g add src test docs; g commit -q -m goc
   g checkout -q -b "$_br"
@@ -928,13 +928,13 @@ viet_review; thay "$F/review.md" "- Reviewed tree: \`$(van_tay)\`" '- Reviewed t
 ky_vong 1 "chặn Reviewed tree khác code hiện tại" sh "$CHK" "$F"
 viet_review
 
-# ---- Code nhạy cảm (mau_code_nhay_cam) → cần người rà bảo mật
+# ---- Code nhạy cảm (sensitive_code) → cần người rà bảo mật
 viet_review
-ky_vong 0 "không khai mau_code_nhay_cam → không đòi Security reviewer" sh "$CHK" "$F"
+ky_vong 0 "không khai sensitive_code → không đòi Security reviewer" sh "$CHK" "$F"
 cp "$CFG/conventions.md" "$TMP/conv-nc.bak"
-thay "$CFG/conventions.md" 'mau_code_nhay_cam:' 'mau_code_nhay_cam: src/*'
+thay "$CFG/conventions.md" 'sensitive_code:' 'sensitive_code: src/*'
 ky_vong 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" sh "$CHK" "$F"
-dung "…đúng lý do, nêu file nhạy cảm" sh -c "sh '$CHK' '$F' | grep -q 'code nhạy cảm (mau_code_nhay_cam: src/a.txt)'"
+dung "…đúng lý do, nêu file nhạy cảm" sh -c "sh '$CHK' '$F' | grep -q 'code nhạy cảm (sensitive_code: src/a.txt)'"
 dung "…implement chỉ LƯU Ý, không chặn" sh -c "sh '$T/kiem-tra-hien-thuc.sh' '$F' | grep -q 'LƯU Ý.*src/a.txt' && sh '$T/kiem-tra-hien-thuc.sh' '$F' >/dev/null 2>&1"
 printf -- '- Security reviewer: <tên người>\n' >> "$F/review.md"
 ky_vong 1 "chặn Security reviewer còn giữ chỗ" sh "$CHK" "$F"
@@ -942,7 +942,7 @@ viet_review; printf -- '- Security reviewer: Claude\n' >> "$F/review.md"
 ky_vong 1 "chặn Security reviewer là tên agent" sh "$CHK" "$F"
 viet_review; printf -- '- **Security reviewer:** Nguyễn Văn A — 2026-10-07\n' >> "$F/review.md"
 ky_vong 0 "Security reviewer là người → cho qua" sh "$CHK" "$F"
-thay "$CFG/conventions.md" 'mau_code_nhay_cam: src/*' 'mau_code_nhay_cam: src/auth/*'
+thay "$CFG/conventions.md" 'sensitive_code: src/*' 'sensitive_code: src/auth/*'
 viet_review
 ky_vong 0 "diff không đụng mẫu nhạy cảm → không đòi" sh "$CHK" "$F"
 cp "$TMP/conv-nc.bak" "$CFG/conventions.md"
@@ -1106,12 +1106,12 @@ ky_vong 0 "aw-engine check ship → đúng checker" sh "$AWE" check ship "$F"
 
 # ---------------------------------------------------------------- quy tac repo
 echo ""
-echo "quy tắc riêng của repo (quy_tac_*, aw rules)"
+echo "quy tắc riêng của repo (rules_*, aw rules)"
 QT="$T/quy-tac-repo.sh"
 CONV="$CFG/conventions.md"
 cp "$CONV" "$TMP/conv-qt.bak"
-# khai_qt <phase> <giá trị> — khai lại từ đầu một khoá quy_tac_<phase>
-khai_qt() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "quy_tac_$1:" "quy_tac_$1: $2"; }
+# khai_qt <phase> <giá trị> — khai lại từ đầu một khoá rules_<phase>
+khai_qt() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "rules_$1:" "rules_$1: $2"; }
 them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; }
 
 ky_vong 0 "không khai gì → aw rules ĐÃ LIỆT KÊ" sh "$QT" implement
@@ -1124,7 +1124,7 @@ khai_qt implement 'docs/quy-tac.md'
 dung "khai implement → aw rules implement in đúng file" bang "$(sh "$QT" implement 2>/dev/null)" "docs/quy-tac.md"
 dung "…phase khác không thấy" bang "$(sh "$QT" spec 2>/dev/null)" ""
 khai_qt spec 'docs/quy-tac-2.md docs/quy-tac.md'
-thay "$CONV" 'quy_tac_implement:' 'quy_tac_implement: docs/quy-tac.md'
+thay "$CONV" 'rules_implement:' 'rules_implement: docs/quy-tac.md'
 dung "review = hợp mọi khoá, bỏ trùng, giữ thứ tự" bang "$(sh "$QT" review 2>/dev/null | tr '\n' ' ')" "docs/quy-tac-2.md docs/quy-tac.md "
 
 for p in spec:truy-vet design:thiet-ke plan:ke-hoach implement:hien-thuc; do
@@ -1157,10 +1157,10 @@ for v in /etc/hosts ../x docs/../../x; do
 done
 
 cp "$TMP/conv-qt.bak" "$CONV"
-thay "$CONV" 'quy_tac_review:' 'quy_tac_review:
-quy_tac_implment: docs/quy-tac.md'
-ky_vong 1 "khoá gõ nhầm (quy_tac_implment) → aw rules chặn" sh "$QT" implement
-dung "…đúng lý do" sh -c "sh '$QT' implement 2>&1 | grep -q 'quy_tac_implment.*không ứng với phase'"
+thay "$CONV" 'rules_review:' 'rules_review:
+rules_implment: docs/quy-tac.md'
+ky_vong 1 "khoá gõ nhầm (rules_implment) → aw rules chặn" sh "$QT" implement
+dung "…đúng lý do" sh -c "sh '$QT' implement 2>&1 | grep -q 'rules_implment.*không ứng với phase'"
 ky_vong 1 "…review chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
 
 # Review: mỗi file quy tắc một kết luận
@@ -1181,7 +1181,7 @@ ky_vong 1 "không áp dụng còn chỗ giữ chỗ → chặn" sh "$T/kiem-tra-
 viet_review; them_muc_qt '| `docs/quy-tac.md` | not applicable | không đụng API |'
 ky_vong 0 "không áp dụng có lý do → cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
 khai_qt spec 'docs/quy-tac-2.md'
-thay "$CONV" 'quy_tac_implement:' 'quy_tac_implement: docs/quy-tac.md'
+thay "$CONV" 'rules_implement:' 'rules_implement: docs/quy-tac.md'
 ky_vong 1 "review thiếu dòng cho quy tắc của phase khác (spec) → chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
 dung "…đúng lý do" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'docs/quy-tac-2.md\": không có verdict'"
 cp "$TMP/conv-qt.bak" "$CONV"; viet_review
@@ -1711,13 +1711,13 @@ g9 worktree remove --force "$W4"
 # ---------------------------------------------------------------- tao worktree (/aw-intake)
 echo ""
 echo "aw worktree new (tao-worktree.sh)"
-thay "$CV9" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: release/*'
+thay "$CV9" 'release_branches:' 'release_branches: release/*'
 g9 branch release/1.2
 DX=$(awd "$R9" worktree new bugfix phi-hoan-tien 2>/dev/null)
 dung "đề xuất tên theo tiền tố của loại việc" sh -c "printf '%s' \"\$1\" | grep -q 'Tên        fix_phi-hoan-tien'" _ "$DX"
-dung "…đường dẫn theo thu_muc_worktree (ngoài repo)" sh -c "printf '%s' \"\$1\" | grep -qF '$TMP/repo9.wt/fix_phi-hoan-tien'" _ "$DX"
+dung "…đường dẫn theo worktree_dir (ngoài repo)" sh -c "printf '%s' \"\$1\" | grep -qF '$TMP/repo9.wt/fix_phi-hoan-tien'" _ "$DX"
 dung "…liệt kê nhánh phát hành làm ứng viên base" sh -c "printf '%s' \"\$1\" | grep -q 'release/1.2'" _ "$DX"
-dung "…gợi ý ★ nhanh_goc khi không có remote" sh -c "printf '%s' \"\$1\" | grep -q '★ \[1\] main'" _ "$DX"
+dung "…gợi ý ★ base_branch khi không có remote" sh -c "printf '%s' \"\$1\" | grep -q '★ \[1\] main'" _ "$DX"
 dung "…không còn đòi base có bộ cài" sh -c "! printf '%s' \"\$1\" | grep -q 'bộ cài'" _ "$DX"
 dung "…lệnh tạo in bằng aw, cờ tiếng Anh" sh -c "printf '%s' \"\$1\" | grep -q 'aw worktree new bugfix phi-hoan-tien --create --base <ref>'" _ "$DX"
 dung "…chỉ đề xuất: chưa tạo branch, chưa tạo worktree" sh -c "! git -C '$R9' rev-parse --verify --quiet refs/heads/fix_phi-hoan-tien && [ ! -e '$TMP/repo9.wt/fix_phi-hoan-tien' ]"
@@ -1863,7 +1863,7 @@ dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG 
 dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'aw feature \$ARGUMENTS' "$R9/.claude/commands/aw-spec.md"
 dung "/aw-intake: tham số đi qua aw input bằng heredoc nguyên văn" sh -c "grep -q 'aw input .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
 dung "aw init chép rules/templates/checkers của engine vào .agent-workflow/.engine/ (bị exclude)" sh -c "[ -f '$R9/.agent-workflow/.engine/templates/spec.md' ] && [ -f '$R9/.agent-workflow/.engine/rules/nguyen-tac-chung.md' ] && grep -qx '$VDEV' '$R9/.agent-workflow/.engine/VERSION'"
-dung "…conventions.md trong đó trỏ tới cấu hình của bản clone" sh -c "grep -q '^mau_branch:' '$R9/.agent-workflow/.engine/conventions.md'"
+dung "…conventions.md trong đó trỏ tới cấu hình của bản clone" sh -c "grep -q '^branch_patterns:' '$R9/.agent-workflow/.engine/conventions.md'"
 dung "mọi đường dẫn .agent-workflow/.engine/… mà lệnh sinh ra nhắc tới đều có thật" sh -c "cd '$R9' && for p in \$(grep -rhoE '\.agent-workflow/\.engine/[A-Za-z0-9_./-]+\.md' .claude | sort -u); do [ -e \"\$p\" ] || { echo \$p; exit 1; }; done"
 
 # ---------------------------------------------------------------- phan loai input (/aw-intake)
@@ -1880,8 +1880,8 @@ ky_vong 0 "mã Jira + file có thật → nguồn" pl "ABC-123 docs/a.md"
 dung "…đúng nhãn [JIRA] và [FILE]" bang "$(ra 'ABC-123 docs/a.md')" "- ${BT}[JIRA]${BT} ABC-123
 - ${BT}[FILE]${BT} docs/a.md"
 dung "URL …/browse/<mã> → [JIRA] với mã tách ra" bang "$(ra 'https://x.atlassian.net/browse/ABC-9')" "- ${BT}[JIRA]${BT} ABC-9 — https://x.atlassian.net/browse/ABC-9"
-dung "chưa khai mien_confluence: URL khác → [CONFLUENCE]" bang "$(ra 'https://wiki.co/p/1')" "- ${BT}[CONFLUENCE]${BT} https://wiki.co/p/1"
-dung "…kèm cảnh báo chưa khai mien_confluence" sh -c "printf '%s' \"\$1\" | grep -q mien_confluence" _ "$(loi 'https://wiki.co/p/1')"
+dung "chưa khai confluence_domains: URL khác → [CONFLUENCE]" bang "$(ra 'https://wiki.co/p/1')" "- ${BT}[CONFLUENCE]${BT} https://wiki.co/p/1"
+dung "…kèm cảnh báo chưa khai confluence_domains" sh -c "printf '%s' \"\$1\" | grep -q confluence_domains" _ "$(loi 'https://wiki.co/p/1')"
 dung "bỏ dấu câu / ngoặc bọc ngoài: (ABC-1), \`docs/a.md\`" bang "$(ra '(ABC-1), `docs/a.md`.')" "- ${BT}[JIRA]${BT} ABC-1
 - ${BT}[FILE]${BT} docs/a.md"
 dung "cùng một nguồn gõ nhiều cách → một dòng" bang "$(ra 'ABC-1 ABC-1 https://x.atlassian.net/browse/ABC-1' | wc -l | tr -d ' ')" 1
@@ -1913,13 +1913,13 @@ dung "…mã Jira trong câu chỉ là ĐỀ XUẤT (stderr)" sh -c "printf '%s\
 ky_vong 4 "đường dẫn không có file nằm trong câu chữ thì không chặn" pl "sửa lỗi trong src/khong-co.js"
 
 cp "$CV9" "$TMP/conv.bak"
-sed 's#^mien_confluence:.*#mien_confluence: *.atlassian.net/wiki#' "$TMP/conv.bak" > "$CV9"
-dung "khai mien_confluence: URL khớp → [CONFLUENCE]" bang "$(ra 'https://x.atlassian.net/wiki/spaces/A/pages/1')" "- ${BT}[CONFLUENCE]${BT} https://x.atlassian.net/wiki/spaces/A/pages/1"
-ky_vong 4 "khai mien_confluence: URL lạ → lời người dùng" pl "https://github.com/a/b"
-ky_vong 4 "khai mien_confluence: miền giả mạo x.atlassian.net.evil.com → không nhận" pl "https://x.atlassian.net.evil.com/wiki/p/1"
-dung "khai mien_confluence: URL có query vẫn khớp" bang "$(ra 'https://x.atlassian.net/wiki?p=1')" "- ${BT}[CONFLUENCE]${BT} https://x.atlassian.net/wiki?p=1"
-printf '%s\n' '```conventions' 'mau_branch: feat_*' '```' > "$CV9"
-ky_vong 0 "conventions.md cũ chưa có mau_jira → dùng mặc định" pl "ABC-1"
+sed 's#^confluence_domains:.*#confluence_domains: *.atlassian.net/wiki#' "$TMP/conv.bak" > "$CV9"
+dung "khai confluence_domains: URL khớp → [CONFLUENCE]" bang "$(ra 'https://x.atlassian.net/wiki/spaces/A/pages/1')" "- ${BT}[CONFLUENCE]${BT} https://x.atlassian.net/wiki/spaces/A/pages/1"
+ky_vong 4 "khai confluence_domains: URL lạ → lời người dùng" pl "https://github.com/a/b"
+ky_vong 4 "khai confluence_domains: miền giả mạo x.atlassian.net.evil.com → không nhận" pl "https://x.atlassian.net.evil.com/wiki/p/1"
+dung "khai confluence_domains: URL có query vẫn khớp" bang "$(ra 'https://x.atlassian.net/wiki?p=1')" "- ${BT}[CONFLUENCE]${BT} https://x.atlassian.net/wiki?p=1"
+printf '%s\n' '```conventions' 'branch_patterns: feat_*' '```' > "$CV9"
+ky_vong 0 "conventions.md cũ chưa có jira_key_regex → dùng mặc định" pl "ABC-1"
 cp "$TMP/conv.bak" "$CV9"
 
 # nguyen van qua stdin: dau nhay, $, backtick, nhieu dong khong bi shell dien giai
@@ -1998,7 +1998,7 @@ dung "…đúng lý do: chỗ giữ chỗ" sh -c "sh '$CHK' '$F' | grep -q 'ch�
 viet_intake
 
 thay "$F/intake.md" '`[JIRA]` ABC-1' '`[JIRA]` abc'
-ky_vong 1 "chặn [JIRA] không có mã khớp mau_jira" sh "$CHK" "$F"
+ky_vong 1 "chặn [JIRA] không có mã khớp jira_key_regex" sh "$CHK" "$F"
 viet_intake
 thay "$F/intake.md" '`[JIRA]` ABC-1' '`[JIRA]` [ABC-1](https://x.atlassian.net/browse/ABC-1)'
 ky_vong 0 "[JIRA] dạng link markdown có mã thì cho qua" sh "$CHK" "$F"
@@ -2048,9 +2048,9 @@ ghi_based_on
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "ghi đúng base → diff chỉ còn việc của mình, review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
 dung "…nhưng base lạ (xếp chồng) thì review CẢNH BÁO" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base \"moi-hon\"'"
-thay "$CFG/conventions.md" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: moi-*'
-dung "base khớp mau_nhanh_phat_hanh → không cảnh báo" sh -c "! sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base'"
-thay "$CFG/conventions.md" 'mau_nhanh_phat_hanh: moi-*' 'mau_nhanh_phat_hanh:'
+thay "$CFG/conventions.md" 'release_branches:' 'release_branches: moi-*'
+dung "base khớp release_branches → không cảnh báo" sh -c "! sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base'"
+thay "$CFG/conventions.md" 'release_branches: moi-*' 'release_branches:'
 
 # ---------------------------------------------------------------- bugfix
 echo ""
@@ -2350,7 +2350,7 @@ dung "…nhắc aw upgrade" sh -c "sh '$T/dong-bo.sh' 2>/dev/null | grep -q 'aw 
 # Repo đích có bộ cài 1.x đã commit vào base (dựng tay đúng cấu trúc cũ)
 RL="$TMP/repo-cu"; mkdir -p "$RL/.agent-workflow/.quy-trinh/tools" "$RL/.claude/commands" "$RL/.agent-workflow/feat_cu"
 git -C "$RL" init -q; git -C "$RL" checkout -q -b main
-printf '# quy ước cũ của team\n```conventions\nmau_branch: feat_* chore_*\nloai_theo_tien_to: feat_=feature chore_=chore\nnhanh_goc: main\n```\n' > "$RL/.agent-workflow/conventions.md"
+printf '# quy ước cũ của team\n```conventions\nbranch_patterns: feat_* chore_*\ntype_by_prefix: feat_=feature chore_=chore\nbase_branch: main\n```\n' > "$RL/.agent-workflow/conventions.md"
 printf 'LENH_KIEM_THU="make test"\nLENH_CHUAN_BI_WT="npm ci"\n' > "$RL/.agent-workflow/.quy-trinh/cau-hinh.sh"
 printf 'url=x\nadapter=claude-code\n' > "$RL/.agent-workflow/.quy-trinh/nguon.txt"
 printf 'echo cu\n' > "$RL/.agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh"
@@ -2379,7 +2379,7 @@ dung "…worktree sạch, base không đổi" sh -c "[ -z \"\$(git -C '$TMP/repo
 
 # Cấu hình của người: init lại không ghi đè (thay cho các ca của cai-dat.sh)
 printf 'LENH_KIEM_THU="npm test"\nADAPTER="claude-code"\n' > "$CL/config.sh"
-printf '# của tôi\n```conventions\nmau_branch: job-*\n```\n' > "$CL/conventions.md"
+printf '# của tôi\n```conventions\nbranch_patterns: job-*\n```\n' > "$CL/conventions.md"
 awd "$RL" init >/dev/null 2>&1
 dung "init lại KHÔNG ghi đè config.sh người sửa" grep -q 'npm test' "$CL/config.sh"
 awd "$RL" init --force >/dev/null 2>&1
@@ -2596,8 +2596,8 @@ g remote add origin "$RMS"; g push -q origin main; g push -q origin main:develop
 # uat: gốc khác, không có commit "goc" của main → MR vào uat kéo theo commit ngoài việc
 UATC=$(git -C "$R" -c user.name=t -c user.email=t@t commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m uat)
 g push -q origin "$UATC:refs/heads/uat"
-thay "$CFG/conventions.md" 'nhanh_dich_mr:' 'nhanh_dich_mr: develop uat main'
-thay "$CFG/conventions.md" 'nen_tang_mr:' 'nen_tang_mr: github'
+thay "$CFG/conventions.md" 'mr_target_branches:' 'mr_target_branches: develop uat main'
+thay "$CFG/conventions.md" 'mr_platform:' 'mr_platform: github'
 
 FB="$TMP/fakebin"; FG="$TMP/fakegh"; mkdir -p "$FB" "$FG"
 cat > "$FB/gh" <<'EOF'
@@ -2620,16 +2620,16 @@ sw() { (cd "$R" && AW_REPO="$R" PATH="$FB:$PATH" FG="$FG" sh "$T/don-viec-da-mer
 ky_vong 2 "create thiếu --target → SAI THAM SỐ (người chọn đích)" sg create "$FS"
 TG=$(sg targets "$FS" 2>/dev/null)
 ky_vong 0 "targets liệt kê nhánh đích" sg targets "$FS"
-dung "…theo thứ tự nhanh_dich_mr" bang "$(printf '%s\n' "$TG" | sed 's/^ *\[[0-9]*\] \([^ ]*\).*/\1/' | tr '\n' ' ')" "develop uat main "
+dung "…theo thứ tự mr_target_branches" bang "$(printf '%s\n' "$TG" | sed 's/^ *\[[0-9]*\] \([^ ]*\).*/\1/' | tr '\n' ' ')" "develop uat main "
 dung "…đánh dấu base của việc" sh -c "printf '%s\n' \"\$1\" | grep -q '\[3\] main  ← base của việc'" _ "$TG"
 dung "…cảnh báo nhánh sẽ kéo theo commit ngoài việc" sh -c "printf '%s\n' \"\$1\" | grep -q '\[2\] uat  ⚠ kéo theo 1 commit ngoài việc'" _ "$TG"
-ky_vong 2 "đích ngoài nhanh_dich_mr → từ chối" sg create "$FS" --target khac
+ky_vong 2 "đích ngoài mr_target_branches → từ chối" sg create "$FS" --target khac
 printf 'nhap\n' > "$WS/nhap.txt"
 ky_vong 1 "worktree còn file chưa commit → CHƯA ĐỦ ĐIỀU KIỆN" sg create "$FS" --target develop
 rm -f "$WS/nhap.txt"
 ky_vong 4 "MR vào uat kéo theo commit ngoài việc → người quyết" sg create "$FS" --target uat
 dung "…không push, không tạo MR" sh -c "[ ! -f '$FG/args' ] && [ -z \"\$(git -C '$RMS' branch --list feat_x)\" ]"
-thay "$CFG/conventions.md" 'nen_tang_mr: github' 'nen_tang_mr: gitlab'
+thay "$CFG/conventions.md" 'mr_platform: github' 'mr_platform: gitlab'
 # Không có glab (PATH chỉ có gh giả): server không hỗ trợ push options → push thường + link điền sẵn
 sl() { PATH="$FB:/usr/bin:/bin" FG="$FG" sh "$T/gui-mr.sh" "$@"; }
 SLO=$(sl create "$FS" --target develop 2>&1)
@@ -2680,7 +2680,7 @@ ky_vong 0 "status không có glab: nhận ra squash merge bằng patch-id → Đ
 rm -f "$RMS/hooks/post-receive" "$FS/ship.md" "$FS/mo-ta-mr.md"; git -C "$RMS" config --unset receive.advertisePushOptions
 git -C "$RMS" update-ref refs/heads/develop "$(git -C "$R" rev-parse main)"
 git -C "$WS" reset -q --hard HEAD~1; git -C "$WS" push -q -f origin feat_x 2>/dev/null
-thay "$CFG/conventions.md" 'nen_tang_mr: gitlab' 'nen_tang_mr: github'
+thay "$CFG/conventions.md" 'mr_platform: gitlab' 'mr_platform: github'
 
 URLS=$(sg create "$FS" --target develop 2>/dev/null)
 dung "create develop → ĐÃ TẠO MR, stdout là URL" bang "$URLS" "https://github.com/o/r/pull/7"
@@ -2735,9 +2735,56 @@ ky_vong 1 "chưa khai LENH_KIEM_TRA_BAO_MAT → CHƯA SẴN SÀNG" sh "$SS" "$F"
 printf 'LENH_KIEM_THU=""\n%s\n' "$BM_XANH" > "$CH"
 ky_vong 1 "chưa khai LENH_KIEM_THU → CHƯA SẴN SÀNG" sh "$SS" "$F" --no-test
 cp "$TMP/ch-ss.bak" "$CH"
-thay "$CFG/conventions.md" 'mau_file_test: ' 'mau_file_test_cu: '
-ky_vong 1 "conventions.md thiếu mau_file_test → CHƯA SẴN SÀNG" sh "$SS" "$F"
-thay "$CFG/conventions.md" 'mau_file_test_cu: ' 'mau_file_test: '
+thay "$CFG/conventions.md" 'test_files: ' 'mau_file_test_cu: '
+ky_vong 1 "conventions.md thiếu test_files → CHƯA SẴN SÀNG" sh "$SS" "$F"
+thay "$CFG/conventions.md" 'mau_file_test_cu: ' 'test_files: '
+
+# ---------------------------------------------------------------- aw conventions check (kiem-tra-quy-uoc.sh)
+echo ""
+echo "kiem-tra-quy-uoc.sh (aw conventions check)"
+QU="$T/kiem-tra-quy-uoc.sh"; CV="$CFG/conventions.md"; cp "$CV" "$TMP/conv-qu.bak"
+qu_ra() { sh "$QU" 2>/dev/null; }
+ky_vong 0 "mẫu của engine trên fixture → HỢP LỆ" sh "$QU"
+dung "…cảnh báo placeholder còn trong Team conventions" sh -c "sh '$QU' 2>/dev/null | grep -q 'còn placeholder'"
+ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$QU" x
+ky_vong 0 "aw-engine conventions check" sh "$ROOT/bin/aw-engine" conventions check
+ky_vong 2 "aw-engine conventions <lạ> → SAI THAM SỐ" sh "$ROOT/bin/aw-engine" conventions lam-gi
+# qu_loi <tên ca> <tìm> <thay> <chuỗi phải có trong output>
+qu_loi() {
+  cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" "$2" "$3"
+  ky_vong 1 "$1 → KHÔNG HỢP LỆ" sh "$QU"
+  dung "…nêu: $4" sh -c "sh '$QU' 2>/dev/null | grep -qF -- \"\$1\"" _ "$4"
+}
+qu_loi "khoá gõ sai" 'test_files: ' 'test_file: ' 'khoá lạ "test_file"'
+qu_loi "khoá tên cũ (tiếng Việt)" 'base_branch: main' 'base_branch: main
+nhanh_goc: main' 'khoá lạ "nhanh_goc"'
+qu_loi "khoá khai hai lần" 'base_branch: main' 'base_branch: main
+base_branch: develop' 'khai lần hai'
+qu_loi "dòng thụt lề" 'covers_tag: ' '  covers_tag: ' 'không phải "khoá: giá trị"'
+qu_loi "rules_ phase lạ" 'rules_spec:' 'rules_spek:' 'khoá lạ "rules_spek"'
+qu_loi "khoá bắt buộc trống" 'branch_patterns: feat_* fix_* refactor_* perf_* chore_*' 'branch_patterns:' 'branch_patterns trống'
+qu_loi "mr_platform sai" 'mr_platform:' 'mr_platform: bitbucket' 'chỉ nhận github hoặc gitlab'
+qu_loi "type_by_prefix loại sai" 'perf_=perf' 'perf_=toc-do' 'loại "toc-do" không hợp lệ'
+qu_loi "type_by_prefix lệch branch_patterns" 'perf_=perf' 'hieu-nang/=perf' 'không khớp branch_patterns'
+qu_loi "regex dùng {n}" 'jira_key_regex: [A-Z][A-Z0-9]*-[0-9]+' 'jira_key_regex: [A-Z]{2}-[0-9]+' 'không dùng {n}'
+qu_loi "regex không biên dịch" 'skipped_test_regex:' 'skipped_test_regex: (abc' 'không biên dịch được'
+qu_loi "worktree_dir trong repo" 'worktree_dir: ../{repo}.wt/{ten}' 'worktree_dir: wt/{ten}' 'nằm TRONG repo'
+qu_loi "worktree_dir thiếu {ten}" 'worktree_dir: ../{repo}.wt/{ten}' 'worktree_dir: ../{repo}.wt' 'thiếu {ten}'
+qu_loi "base_branch không có" 'base_branch: main' 'base_branch: khong-co' 'không có trong repo'
+qu_loi "khối chưa đóng" 'rules_review:
+```' 'rules_review:' 'chưa đóng'
+cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'sensitive_code:
+' ''
+ky_vong 0 "thiếu khoá có trong mẫu → vẫn HỢP LỆ" sh "$QU"
+dung "…cảnh báo thiếu khoá sensitive_code" sh -c "sh '$QU' 2>/dev/null | grep -q '! thiếu khoá sensitive_code'"
+cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'production_code: src/*' 'production_code: app/*'
+dung "production_code không khớp file nào → cảnh báo" sh -c "sh '$QU' 2>/dev/null | grep -q 'production_code \"app/\*\" không khớp file nào'"
+cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'production_code: src/*' 'production_code: src/* test/*'
+dung "file khớp cả test_files lẫn production_code → cảnh báo" sh -c "sh '$QU' 2>/dev/null | grep -q 'khớp cả test_files lẫn production_code'"
+cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'mr_platform:' 'mr_platform: bitbucket'
+ky_vong 1 "aw ready: conventions.md sai → CHƯA SẴN SÀNG" sh "$SS" "$F" --no-test
+dung "…nêu lỗi của aw conventions check" sh -c "sh '$SS' '$F' --no-test 2>/dev/null | grep -q 'conventions.md: mr_platform'"
+cp "$TMP/conv-qu.bak" "$CV"
 # tk_plan_t2 <dòng Verify + Status> — plan gốc, thay riêng hai dòng cuối của T-02
 tk_plan_t2() { viet_plan; ghi_based_on; thay "$F/plan.md" '- Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
@@ -2862,10 +2909,10 @@ g checkout -q main
 printf '// covers: YC-001, YC-002\nit.skip("cu", () => {})\n' > "$R/test/a.test.js"; g add test; g commit -q -m "test cu"
 g checkout -q feat_x; g rebase -q --autostash main
 dung "dòng .skip có sẵn trên base không tính (chỉ dòng thêm mới)" sh -c "! sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua'"
-thay "$CFG/conventions.md" 'mau_bo_qua_test:' 'mau_bo_qua_test: SKIPME'
+thay "$CFG/conventions.md" 'skipped_test_regex:' 'skipped_test_regex: SKIPME'
 printf 'SKIPME\n' >> "$R/test/a.test.js"
-dung "mau_bo_qua_test riêng của repo được dùng" sh -c "sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua / chạy riêng (SKIPME)'"
-thay "$CFG/conventions.md" 'mau_bo_qua_test: SKIPME' 'mau_bo_qua_test:'
+dung "skipped_test_regex riêng của repo được dùng" sh -c "sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua / chạy riêng (SKIPME)'"
+thay "$CFG/conventions.md" 'skipped_test_regex: SKIPME' 'skipped_test_regex:'
 
 # ---------------------------------------------------------------- nhật ký harness (aw journal)
 echo ""

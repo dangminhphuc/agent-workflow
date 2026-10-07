@@ -283,7 +283,7 @@ buoc_quy_tac_repo() {
   printf '### Quy tắc riêng của repo\n\n'
   printf 'Chạy `aw rules %s`. Stdout là danh sách file (đường dẫn từ gốc repo) — **đọc từng file** trước khi làm. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:\n\n' "$1"
   printf -- '- **ĐÃ LIỆT KÊ:** đọc hết các file đó và theo chúng trong phase này. Không in gì = không có quy tắc riêng.\n'
-  printf -- '- **KHAI SAI:** dừng lại, báo người sửa khoá `quy_tac_*` trong `%s`. Không tự đoán file thay thế.\n\n' "$CONV_DOC"
+  printf -- '- **KHAI SAI:** dừng lại, báo người sửa khoá `rules_*` trong `%s`. Không tự đoán file thay thế.\n\n' "$CONV_DOC"
   printf 'Quy tắc repo xếp **dưới** `spec.md`, `tdd.md`, `plan.md` và luật quy trình: mâu thuẫn thì làm theo artifact và nêu ra, không vì quy tắc mà vượt phạm vi phase. File `SKILL.md` trong danh sách cũng đọc như tài liệu thường.\n\n'
 }
 

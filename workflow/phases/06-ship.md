@@ -86,8 +86,8 @@ quay lại `/aw-implement` + `/aw-review`, không sửa ở đây.
 ### Bước 2 — Người chọn nhánh đích
 
 Chạy `aw ship targets <thư-mục-feature>` và đưa danh sách cho **người** chọn.
-Danh sách theo khoá `nhanh_dich_mr` của `conventions.md` (vd `develop uat/* main`;
-bỏ trống = `nhanh_goc`), đánh dấu base của việc và nhánh nào sẽ kéo theo commit
+Danh sách theo khoá `mr_target_branches` của `conventions.md` (vd `develop uat/* main`;
+bỏ trống = `base_branch`), đánh dấu base của việc và nhánh nào sẽ kéo theo commit
 không thuộc việc (`⚠`). Không tự chọn, kể cả khi chỉ có một nhánh.
 
 Việc cần vào nhiều nhánh (vd `develop` rồi `uat/…`): mỗi nhánh một MR, mỗi lần

@@ -11,6 +11,54 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+`conventions.md` dễ cấu hình hơn cho người, và có lệnh kiểm sau khi sửa.
+
+### Thêm
+- **`aw conventions check`** — kiểm `conventions.md` của bản clone. Lỗi (chặn):
+  thiếu / thừa / chưa đóng khối ` ```conventions `; dòng không phải `khoá: giá trị`
+  (vd thụt lề); **khoá lạ** (gõ sai — trước đây script bỏ qua ngầm, luật tắt mà
+  không ai biết); khoá khai hai lần; khoá bắt buộc trống (`base_branch`,
+  `branch_patterns`, `type_by_prefix`, `test_files`); `mr_platform` khác
+  github/gitlab; `type_by_prefix` sai loại hoặc lệch `branch_patterns`; regex không
+  biên dịch được hoặc dùng `{n}`; `worktree_dir` thiếu `{ten}` hay nằm trong repo;
+  `base_branch` không có; file `rules_*` không dùng được. Cảnh báo: thiếu khoá so với
+  mẫu của engine, glob không khớp file nào trong repo, file vừa là test vừa là
+  production, placeholder còn sót, thiếu mục `### Merge request`.
+  `aw ready` gọi lệnh này thay cho phần tự kiểm riêng; `aw init` nhắc chạy nó.
+- **`workflow/templates/conventions-reference.md`** — giải thích đầy đủ từng khoá,
+  cú pháp glob/regex, mặc định khi để trống. Tài liệu của engine (trong worktree:
+  `.agent-workflow/.engine/templates/`), cập nhật theo engine — không còn bị đóng
+  băng trong `conventions.md` của repo đích.
+
+### Đổi
+- Mẫu `conventions.md` viết lại: khối máy đọc chia nhóm (Branches & worktrees, Merge
+  requests, File classes, Test, Security, Intake input, Repo rules), mỗi khoá một
+  dòng chú thích gắn nhãn `[edit]` / `[default]` / `[optional]`; bảng giải thích dài
+  chuyển sang `conventions-reference.md`. Heading tiếng Anh: `Repository
+  conventions`, `Machine-readable`, `Team conventions`. Dòng `#` trong khối là chú
+  thích (parser vốn đã bỏ qua).
+- Tài liệu sửa cho đúng code: `bugfix` không dùng `production_code` — bước tái hiện
+  chỉ cho đụng `test_files` và `ignored_files`.
+
+### Đổi (phá vỡ)
+- **Khoá của `conventions.md` đổi sang tiếng Anh, không giữ tên cũ:**
+  `mau_branch` → `branch_patterns`, `loai_theo_tien_to` → `type_by_prefix`,
+  `nhanh_goc` → `base_branch`, `thu_muc_worktree` → `worktree_dir`,
+  `mau_nhanh_phat_hanh` → `release_branches`, `nhanh_dich_mr` → `mr_target_branches`,
+  `nen_tang_mr` → `mr_platform`, `bo_qua` → `ignored_files`,
+  `mau_file_test` → `test_files`, `the_covers` → `covers_tag`,
+  `mau_bo_qua_test` → `skipped_test_regex`, `mau_code_production` → `production_code`,
+  `mau_code_nhay_cam` → `sensitive_code`, `mau_file_dependency` → `dependency_files`,
+  `mau_jira` → `jira_key_regex`, `mien_confluence` → `confluence_domains`,
+  `quy_tac_<phase>` → `rules_<phase>`.
+  `aw init` không ghi đè `conventions.md` — **tự đổi tên trong
+  `.git/agent-workflow/conventions.md`**, rồi chạy `aw conventions check` (khoá cũ
+  hiện là "khoá lạ"). `conventions.md` dùng chung mọi worktree: việc đang ghim
+  engine cũ đọc tên khoá cũ — làm xong các việc đó trước khi đổi tên.
+- Lệnh mới `aw conventions` cần wrapper `aw` mới.
+
 ## [2026.10.15]
 
 Áp dụng các bài học của khoá *Learn Harness Engineering* (walkinglabs): máy giữ

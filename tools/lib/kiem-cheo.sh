@@ -51,10 +51,10 @@ kc_test_yc() {
   [ -f "$_d/spec.md" ] || return 0
   _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
     echo "Không kiểm được test ↔ YC: thư mục không nằm trong git repo"; return 0; }
-  _mau=$(conv_get "$_conv" mau_file_test)
-  _tag=$(conv_get "$_conv" the_covers); [ -n "$_tag" ] || _tag="covers:"
+  _mau=$(conv_get "$_conv" test_files)
+  _tag=$(conv_get "$_conv" covers_tag); [ -n "$_tag" ] || _tag="covers:"
   if [ -z "$_mau" ]; then
-    echo "Không kiểm được test ↔ YC: conventions.md chưa khai mau_file_test"; return 0
+    echo "Không kiểm được test ↔ YC: conventions.md chưa khai test_files"; return 0
   fi
 
   _ds="${TMPDIR:-/tmp}/kc-test.$$"
@@ -109,8 +109,8 @@ kc_pham_vi() {
   _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
     echo "Không kiểm được phạm vi diff: thư mục không nằm trong git repo"; return 0; }
   _mb=$(kc_mb "$_d") || {
-    echo "Không kiểm được phạm vi diff: không tìm thấy base \"$(kc_base "$_d")\" (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)"; return 0; }
-  _bo=$(conv_get "$_conv" bo_qua)
+    echo "Không kiểm được phạm vi diff: không tìm thấy base \"$(kc_base "$_d")\" (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)"; return 0; }
+  _bo=$(conv_get "$_conv" ignored_files)
 
   # Mẫu được phép: token trong backtick ở dòng "Expected files:" và mục "Unplanned".
   _cho=$(awk '
@@ -145,7 +145,7 @@ LOAI_HOP_LE="feature bugfix refactor perf chore"
 # kc_mau_jira <conventions.md> -> regex (ERE, không dùng {n}: mawk không hỗ trợ)
 # của mã issue Jira. Repo cài từ trước chưa có khoá này -> mặc định.
 kc_mau_jira() {
-  _mj=$(conv_get "$1" mau_jira)
+  _mj=$(conv_get "$1" jira_key_regex)
   printf '%s\n' "${_mj:-[A-Z][A-Z0-9]*-[0-9]+}"
 }
 
@@ -224,14 +224,14 @@ kc_base_dong() {
 
 # kc_base <thư-mục-feature> -> ref để so diff: base NGƯỜI chọn lúc tạo worktree
 # (dòng "Base:" của intake.md). Ref không còn (vd branch cha đã xoá) thì dùng sha
-# ghi kèm. intake.md cũ chưa có dòng Base thì quay về nhanh_goc.
-# So với nhanh_goc khi base là origin/main hay release/* sẽ quy commit không
+# ghi kèm. intake.md cũ chưa có dòng Base thì quay về base_branch.
+# So với base_branch khi base là origin/main hay release/* sẽ quy commit không
 # thuộc việc này cho việc này — phạm vi diff sai, review đọc code không phải của mình.
 kc_base() {
   set -- "$1" $(kc_base_dong "$1")
   if [ -n "${2:-}" ] && git -C "$1" rev-parse --verify --quiet "$2^{commit}" >/dev/null; then echo "$2"; return 0; fi
   if [ -n "${3:-}" ] && git -C "$1" rev-parse --verify --quiet "$3^{commit}" >/dev/null; then echo "$3"; return 0; fi
-  _g=$(conv_get "$(kc_conventions "$1")" nhanh_goc); echo "${_g:-main}"
+  _g=$(conv_get "$(kc_conventions "$1")" base_branch); echo "${_g:-main}"
 }
 
 # kc_mb <thư-mục-feature> -> merge-base của HEAD với base của việc
@@ -246,15 +246,15 @@ kc_base_la() {
   set -- "$1" $(kc_base_dong "$1")
   [ -n "${2:-}" ] || return 0
   _conv=$(kc_conventions "$1")
-  _g=$(conv_get "$_conv" nhanh_goc); _g=${_g:-main}
+  _g=$(conv_get "$_conv" base_branch); _g=${_g:-main}
   _b=${2#origin/}
   [ "$_b" = "$_g" ] && return 0
   set -f
-  for _m in $(conv_get "$_conv" mau_nhanh_phat_hanh); do
+  for _m in $(conv_get "$_conv" release_branches); do
     case "$_b" in $_m) set +f; return 0 ;; esac
   done
   set +f
-  echo "Base \"$2\" không phải nhánh gốc ($_g) hay nhánh phát hành (mau_nhanh_phat_hanh). Nếu là branch việc khác (xếp chồng): việc này dựa trên code chưa được review — người xác nhận đây là chủ ý"
+  echo "Base \"$2\" không phải nhánh gốc ($_g) hay nhánh phát hành (release_branches). Nếu là branch việc khác (xếp chồng): việc này dựa trên code chưa được review — người xác nhận đây là chủ ý"
 }
 
 # kc_doi <thư-mục-feature> -> file thay đổi so với merge-base (kể cả chưa commit,
@@ -295,12 +295,12 @@ kc_bang_backtick() {
 }
 
 # kc_loai_branch <thư-mục-feature>
-# Loại việc lệch tiền tố branch (theo loai_theo_tien_to trong conventions.md).
+# Loại việc lệch tiền tố branch (theo type_by_prefix trong conventions.md).
 # Không có ngoại lệ: phải sửa loại hoặc đổi tên branch (tools/doi-ten-feature.sh).
 kc_loai_branch() {
   _l=$(kc_loai "$1"); [ -n "$_l" ] || return 0
   _b=$(git -C "$1" rev-parse --abbrev-ref HEAD 2>/dev/null) || return 0
-  for _cap in $(conv_get "$(kc_conventions "$1")" loai_theo_tien_to); do
+  for _cap in $(conv_get "$(kc_conventions "$1")" type_by_prefix); do
     _tt=${_cap%%=*}; _lt=${_cap#*=}
     case "$_b" in
       "$_tt"*) [ "$_lt" = "$_l" ] || echo "intake.md ghi loại \"$_l\" nhưng branch \"$_b\" mang tiền tố \"$_tt\" (= $_lt). Sửa loại, hoặc đổi tên branch bằng aw rename <tên-mới>"
@@ -313,7 +313,7 @@ kc_loai_branch() {
 kc_test_cu_xoa() {
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     [ "$_s" = "D" ] || continue
-    kc_khop_khoa "$1" mau_file_test "$_p" && echo "$_p: test cũ bị xoá — refactor/perf không được xoá test cũ (xoá test = bỏ một hành vi)"
+    kc_khop_khoa "$1" test_files "$_p" && echo "$_p: test cũ bị xoá — refactor/perf không được xoá test cũ (xoá test = bỏ một hành vi)"
   done
 }
 
@@ -323,7 +323,7 @@ kc_test_cu_sua() {
   _khai=$(kc_bang_backtick "$1/plan.md" "Modified existing tests")
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     case "$_s" in M|R) ;; *) continue ;; esac
-    kc_khop_khoa "$1" mau_file_test "$_p" || continue
+    kc_khop_khoa "$1" test_files "$_p" || continue
     printf '%s\n' "$_khai" | grep -qxF "$_p" && continue
     echo "$_p: test cũ bị sửa nhưng chưa khai trong \"Modified existing tests\" của plan.md (kèm lý do)"
   done
@@ -333,18 +333,18 @@ kc_test_cu_sua() {
 kc_chore_production() {
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     for _f in "$_p" $_q; do
-      kc_khop_khoa "$1" mau_code_production "$_f" && echo "$_f: chore không được đụng code production (mau_code_production). Đây là việc loại khác — tách branch"
+      kc_khop_khoa "$1" production_code "$_f" && echo "$_f: chore không được đụng code production (production_code). Đây là việc loại khác — tách branch"
     done
   done | sort -u
 }
 
-# kc_nhay_cam <thư-mục-feature> -> file thay đổi khớp mau_code_nhay_cam (mỗi dòng
+# kc_nhay_cam <thư-mục-feature> -> file thay đổi khớp sensitive_code (mỗi dòng
 # một file, bỏ trùng). Đổi tên tính cả đường dẫn cũ lẫn mới: dời code ra khỏi thư
 # mục nhạy cảm cũng là đụng vào nó.
 kc_nhay_cam() {
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     for _f in "$_p" $_q; do
-      kc_khop_khoa "$1" mau_code_nhay_cam "$_f" && echo "$_f"
+      kc_khop_khoa "$1" sensitive_code "$_f" && echo "$_f"
     done
   done | sort -u
 }
@@ -354,7 +354,7 @@ kc_nhay_cam() {
 # merge sót, không test bị tắt/khoanh vùng lén. Đọc phần diff so với base.
 
 # Mẫu mặc định (ERE) cho test bị bỏ qua / chạy riêng — repo cài từ trước chưa có
-# khoá mau_bo_qua_test. Không dùng \b (không chuẩn POSIX).
+# khoá skipped_test_regex. Không dùng \b (không chuẩn POSIX).
 KC_BO_QUA_TEST_MAC_DINH='\.only\(|\.skip\(|(^|[^A-Za-z0-9_])(fit|fdescribe|xit|xdescribe|xtest)\(|@Disabled|@Ignore|pytest\.mark\.skip|t\.Skip\(|#\[ignore\]'
 
 # kc_dau_xung_dot <thư-mục-feature> — file thay đổi còn dấu xung đột merge -> chặn
@@ -370,19 +370,19 @@ kc_dau_xung_dot() {
 }
 
 # kc_test_bo_qua <thư-mục-feature> — dòng THÊM MỚI trong file test khớp
-# mau_bo_qua_test (mặc định: .only/.skip/fit/xit/@Disabled/pytest.mark.skip…).
+# skipped_test_regex (mặc định: .only/.skip/fit/xit/@Disabled/pytest.mark.skip…).
 # Test tắt hay khoanh vùng làm "test xanh" mất nghĩa -> cảnh báo, review chặn.
 # File ghi (trong backtick) ở "Unplanned" của plan.md thì miễn: đã nêu ra cho người.
 kc_test_bo_qua() {
   _top=$(kc_top "$1") || return 0
   _mb=$(kc_mb "$1") || return 0
-  _bq_m=$(conv_get "$(kc_conventions "$1")" mau_bo_qua_test)
+  _bq_m=$(conv_get "$(kc_conventions "$1")" skipped_test_regex)
   _bq_m=${_bq_m:-$KC_BO_QUA_TEST_MAC_DINH}
   _khai=$(kc_bang_backtick "$1/plan.md" "Unplanned")
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     [ "$_s" = D ] && continue
     _f=${_q:-$_p}
-    kc_khop_khoa "$1" mau_file_test "$_f" || continue
+    kc_khop_khoa "$1" test_files "$_f" || continue
     printf '%s\n' "$_khai" | grep -qxF "$_f" && continue
     if [ "$_s" = A ] && ! git -C "$_top" cat-file -e "$_mb:$_f" 2>/dev/null; then
       cat "$_top/$_f" 2>/dev/null
@@ -399,7 +399,7 @@ kc_test_bo_qua() {
 # bảng "Dependency upgrades" hợp lệ; nâng major không được là chore.
 kc_chore_dependency() {
   _co=$(kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
-    kc_khop_khoa "$1" mau_file_dependency "$_p" && echo "$_p"; done)
+    kc_khop_khoa "$1" dependency_files "$_p" && echo "$_p"; done)
   [ -n "$_co" ] || return 0
   awk '
     { sub(/\r$/, "") }
@@ -503,7 +503,7 @@ kc_diem_mu_mo() {
 }
 
 # ------------------------------------------------------------------ quy tắc riêng của repo
-# Khoá quy_tac_<phase> trong conventions.md: danh sách file (tương đối với gốc
+# Khoá rules_<phase> trong conventions.md: danh sách file (tương đối với gốc
 # repo, cách nhau bằng dấu cách) mà phase đó phải đọc và tuân theo — hướng dẫn
 # viết code, skill của agent, chuẩn kiến trúc… Phase có khoá: BL_QUY_TAC
 # (tools/lib/bang-lenh.sh — người gọi source trước).
@@ -512,14 +512,14 @@ kc_diem_mu_mo() {
 # đã commit (worktree mới chỉ có file đã commit), và review có kết luận cho từng file.
 
 # kc_quy_tac <thư-mục-feature> <phase> -> mỗi dòng một file, bỏ trùng, giữ thứ tự.
-# review = hợp MỌI khoá quy_tac_*: cổng cuối đối chiếu diff với mọi quy tắc.
+# review = hợp MỌI khoá rules_*: cổng cuối đối chiếu diff với mọi quy tắc.
 kc_quy_tac() {
   awk -v ph="$2" '
     { sub(/\r$/, "") }
     /^```conventions[ \t]*$/ { inb = 1; next }
     inb == 1 && /^```/ { exit }
-    inb == 1 && /^quy_tac_[a-z]+:/ {
-      k = $0; sub(/:.*/, "", k); sub(/^quy_tac_/, "", k)
+    inb == 1 && /^rules_[a-z]+:/ {
+      k = $0; sub(/:.*/, "", k); sub(/^rules_/, "", k)
       if (ph != "review" && k != ph) next
       v = $0; sub(/^[^:]*:/, "", v)
       n = split(v, ds, /[ \t]+/)
@@ -528,18 +528,18 @@ kc_quy_tac() {
   ' "$(kc_conventions "$1")" 2>/dev/null
 }
 
-# kc_quy_tac_khoa_la <thư-mục-feature> -> khoá quy_tac_<x> mà <x> không phải phase
+# kc_quy_tac_khoa_la <thư-mục-feature> -> khoá rules_<x> mà <x> không phải phase
 # có quy tắc (gõ nhầm thì phase không bao giờ đọc file đó).
 kc_quy_tac_khoa_la() {
   awk '
     { sub(/\r$/, "") }
     /^```conventions[ \t]*$/ { inb = 1; next }
     inb == 1 && /^```/ { exit }
-    inb == 1 && /^quy_tac_[^:]*:/ { k = $0; sub(/:.*/, "", k); print k }
+    inb == 1 && /^rules_[^:]*:/ { k = $0; sub(/:.*/, "", k); print k }
   ' "$(kc_conventions "$1")" 2>/dev/null | while IFS= read -r _k; do
     case " $BL_QUY_TAC " in
-      *" ${_k#quy_tac_} "*) ;;
-      *) echo "conventions.md: khoá \"$_k\" không ứng với phase nào (có: $(printf 'quy_tac_%s ' $BL_QUY_TAC | sed 's/ $//'))" ;;
+      *" ${_k#rules_} "*) ;;
+      *) echo "conventions.md: khoá \"$_k\" không ứng với phase nào (có: $(printf 'rules_%s ' $BL_QUY_TAC | sed 's/ $//'))" ;;
     esac
   done
 }
@@ -550,11 +550,11 @@ kc_quy_tac_loi() {
   kc_quy_tac "$1" "$2" | while IFS= read -r _f; do
     case "$_f" in
       /*|..|../*|*/..|*/../*)
-        echo "quy tắc repo \"$_f\": phải là đường dẫn tương đối, nằm trong repo — sửa khoá quy_tac_* trong conventions.md"
+        echo "quy tắc repo \"$_f\": phải là đường dẫn tương đối, nằm trong repo — sửa khoá rules_* trong conventions.md"
         continue ;;
     esac
     if [ ! -f "$_top/$_f" ]; then
-      echo "quy tắc repo \"$_f\": không có file này trong repo — sửa khoá quy_tac_* trong conventions.md"
+      echo "quy tắc repo \"$_f\": không có file này trong repo — sửa khoá rules_* trong conventions.md"
     elif git -C "$_top" ls-files --error-unmatch -- "$_f" >/dev/null 2>&1; then
       :
     elif git -C "$_top" check-ignore -q -- "$_f" 2>/dev/null; then
@@ -655,7 +655,7 @@ kc_bm_nhom_xanh() {
 # (CVE/license của bản mới chỉ máy quét biết; mức patch/minor không nói gì về nó).
 kc_chore_sca() {
   _co=$(kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
-    kc_khop_khoa "$1" mau_file_dependency "$_p" && echo "$_p"; done)
+    kc_khop_khoa "$1" dependency_files "$_p" && echo "$_p"; done)
   [ -n "$_co" ] || return 0
   kc_bm_nhom_xanh "$1/ket-qua-bao-mat.md" sca ||
     echo "Diff đụng file dependency nhưng ket-qua-bao-mat.md không có lệnh nhóm \"sca\" chạy XANH — khai dòng \"sca: <lệnh>\" trong LENH_KIEM_TRA_BAO_MAT (giống CI) rồi chạy aw check security"

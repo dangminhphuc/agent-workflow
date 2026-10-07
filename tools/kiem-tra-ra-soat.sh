@@ -17,10 +17,10 @@
 #      thi khong con cho nao phia sau de bat lai.
 #   5b. Task chua xong bang may: con [~] / [ ], task [x] khong co bang chung xanh
 #      trong ket-qua-task.md (aw task done); file con dau xung dot merge; test
-#      moi bi tat / chay rieng (mau_bo_qua_test) ma khong khai o "Unplanned".
+#      moi bi tat / chay rieng (skipped_test_regex) ma khong khai o "Unplanned".
 #   6. Luat theo loai viec (intake.md) — nhu implement; bugfix con phai co
 #      dong "Repro test fails because: ..." do nguoi ra soat viet.
-#   7. Quy tac rieng cua repo (moi khoa quy_tac_* trong conventions.md): file
+#   7. Quy tac rieng cua repo (moi khoa rules_* trong conventions.md): file
 #      khai khong co / chua commit / khoa go nham; review.md thieu muc
 #      "## Repo rules" hoac thieu ket luan hop le cho mot file.
 #   8. Lens 4 — Security: thieu muc; thieu hang muc nao trong bay hang muc co
@@ -35,7 +35,7 @@
 #  10. Conclusion: "Blocker findings: <n>" thieu hoac khac so muc [Blocker].
 #  11. "Reviewed tree:" thieu hoac khac dau van tay code hien tai — code doi
 #      sau khi ra soat thi ket luan khong con noi ve code nay.
-#  12. Diff dung code nhay cam (mau_code_nhay_cam trong conventions.md) ma
+#  12. Diff dung code nhay cam (sensitive_code trong conventions.md) ma
 #      review.md thieu "- Security reviewer: <ten nguoi>" (trong, giu cho, hay
 #      ghi ten agent).
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
@@ -102,7 +102,7 @@ $cb
 CB
 fi
 
-# Quy tắc riêng của repo (mọi khoá quy_tac_*): file khai phải dùng được, và
+# Quy tắc riêng của repo (mọi khoá rules_*): file khai phải dùng được, và
 # review.md có kết luận cho TỪNG file — thiếu là người rà soát chưa đối chiếu.
 qtl=$( { kc_quy_tac_khoa_la "$DIR"; kc_quy_tac_loi "$DIR" review; } )
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<QT
@@ -267,7 +267,7 @@ if [ -n "$nc" ]; then
   ds_nc=$(printf '%s\n' "$nc" | head -5 | tr '\n' ' ' | sed 's/ $//')
   [ "$(printf '%s\n' "$nc" | wc -l | tr -d ' ')" -gt 5 ] && ds_nc="$ds_nc …"
   case "$(printf '%s' "$srv" | tr 'A-Z' 'a-z')" in
-    "") loi_truoc "Diff đụng code nhạy cảm (mau_code_nhay_cam: $ds_nc) — review.md cần dòng \"- Security reviewer: <tên người>\": một NGƯỜI rà bảo mật đọc Lens 4 và diff rồi tự ghi tên" ;;
+    "") loi_truoc "Diff đụng code nhạy cảm (sensitive_code: $ds_nc) — review.md cần dòng \"- Security reviewer: <tên người>\": một NGƯỜI rà bảo mật đọc Lens 4 và diff rồi tự ghi tên" ;;
     "<"*">") loi_truoc "Diff đụng code nhạy cảm ($ds_nc) — \"Security reviewer\" còn chữ giữ chỗ; người rà bảo mật tự ghi tên" ;;
     claude|claude\ code|agent|ai|assistant|subagent|cursor|copilot|codex|none|n/a|-)
       loi_truoc "Diff đụng code nhạy cảm ($ds_nc) — \"Security reviewer: $srv\" không phải một người. Agent không tự xác nhận thay người rà bảo mật" ;;
