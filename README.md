@@ -52,7 +52,7 @@ flowchart TD
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Risk: high)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: aw check design + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: aw check plan</i>"]
-    IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: aw check implement (tự chạy test)</i>"]
+    IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md + ket-qua-bao-mat.md<br/><i>MÁY: aw check implement (tự chạy test + quét bảo mật)</i>"]
     REVIEW["05-review · ngữ cảnh trắng<br/>đọc mọi artifact + diff → review.md<br/><i>MÁY: aw check review</i><br/><i>NGƯỜI: xác nhận kết luận</i>"]
     SHIP["06-ship · tuỳ chọn<br/>→ merge-request.md, MR/PR (ship.md)<br/><i>MÁY: aw check ship</i><br/><i>NGƯỜI: chọn nhánh đích, merge</i>"]
 
@@ -93,7 +93,7 @@ Cách đọc:
 01-spec       [bắt buộc]  intake.md + các input nó liệt kê →  spec.md + open-questions.md
 02-design     [bắt buộc*] spec.md                            →  tdd.md          (*chore bỏ qua)
 03-plan       [bắt buộc]  spec.md + tdd.md                   →  plan.md
-04-implement  [bắt buộc]  plan.md + tdd.md                   →  diff + ket-qua-kiem-thu.md
+04-implement  [bắt buộc]  plan.md + tdd.md                   →  diff + ket-qua-kiem-thu.md + ket-qua-bao-mat.md
 05-review     [bắt buộc]  mọi artifact + diff                →  review.md
 06-ship       [tuỳ chọn]  review.md + mọi artifact + diff  →  merge-request.md + MR/PR (ship.md)
 ```
@@ -214,7 +214,7 @@ Loại việc **đổi luật** của các phase sau:
 | `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Repro test fails because: …") |
 | `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Modified existing tests" | Diff test cũ chỉ đổi import/cấu trúc |
 | `perf` | đủ | Như refactor + YC `performance` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
-| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
+| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) và lệnh quét nhóm `sca` phải chạy xanh | Mức phiên bản khai đúng |
 
 Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bugfix gấp),
 `security` (= bugfix/feature + rủi ro cao). `spike` nằm ngoài quy trình. Việc lai
@@ -364,6 +364,18 @@ Chạy bằng phiên/subagent có ngữ cảnh trắng, không phải phiên v�
 là **cổng chặn cuối**: mọi cảnh báo từ phase trước (artifact lỗi thời, YC chưa có
 test, diff ngoài phạm vi) chưa xử lý thì `review` chặn.
 
+Bốn lăng kính: đúng đặc tả (từng YC), đúng thiết kế và phạm vi (+ quy tắc repo),
+chất lượng, và **bảo mật** — bảng bảy hạng mục cố định (injection, authn/authz,
+dữ liệu nhạy cảm, secret/config, crypto, SSRF/path traversal/deserialization,
+dependency mới), mỗi dòng `pass | finding | not applicable` kèm vị trí/lý do. Máy
+quét bắt mẫu đã biết; lăng kính này bắt ý đồ — endpoint thiếu kiểm quyền, log lộ PII.
+`Blocker` gồm cả lỗ hổng khai thác được, mất/lộ dữ liệu, breaking change chưa khai.
+
+Code nhạy cảm (khoá `mau_code_nhay_cam` trong `conventions.md`, vd `src/auth/*
+src/payment/*`): diff đụng vào thì `review.md` phải có `- Security reviewer: <tên>`
+do một **người** rà bảo mật tự ghi sau khi đọc Lens 4 và diff. `aw check implement`
+báo trước (không chặn) để kịp hẹn người.
+
 ## Cổng chặn
 
 Điều kiện ra chia hai loại. Loại **NGƯỜI** thì agent nêu ra rồi dừng. Loại **MÁY**
@@ -375,8 +387,8 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Blocking` thiếu/sai |
 | `design` | `aw check design` | Spec chưa được người duyệt (hoặc đổi sau khi duyệt), điểm mù `blocking` còn mở, thiếu mục, D-xx thiếu/sai ô duyệt hoặc đổi sau khi duyệt, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `aw check plan` | D-xx chưa được người duyệt (hoặc đổi sau khi duyệt), task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
-| `implement` | `aw check implement` | Test chưa xanh, task còn dở |
-| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
+| `implement` | `aw check implement` | Test chưa xanh, quét bảo mật chưa khai hoặc đỏ, task còn dở |
+| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test hoặc quét bảo mật chưa xanh, kết quả lỗi thời so với code, Lens 4 thiếu hạng mục / thiếu lý do, Lens 3 trống mà không ghi `- None` / finding thiếu `file:dòng` / Blocker thiếu kịch bản lỗi, số Blocker ở Conclusion lệch, code đổi sau khi rà (`Reviewed tree`), diff đụng code nhạy cảm mà thiếu `Security reviewer`, hoặc **còn cảnh báo** |
 
 Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
 một nhãn — người và agent đọc nhãn, không đọc mã số:
@@ -394,6 +406,14 @@ Nhãn của từng script khai ở dòng `kq_khai` đầu script (`tools/lib/ket
 `aw check implement` **tự chạy lệnh test và tự ghi output** vào
 `ket-qua-kiem-thu.md`. Agent không có cơ hội viết lại kết quả bằng lời hay bịa
 một dòng "tất cả test đã xanh".
+
+Cùng cách đó với bảo mật: `aw check implement` (hoặc riêng `aw check security`)
+chạy từng lệnh trong `LENH_KIEM_TRA_BAO_MAT` — **đúng lệnh, config, ngưỡng của
+pipeline CI** (secret scan, SAST, SCA; mỗi dòng `<nhóm>: <lệnh>`) — và ghi
+`ket-qua-bao-mat.md`. Chưa khai là KHÔNG ĐẠT. Hai file kết quả ghi `Tree` — dấu vân
+tay nội dung code lúc chạy; `aw check review` chặn khi kết quả không xanh hoặc code
+đã đổi sau lần chạy (kể cả chưa commit). Nhờ vậy việc qua review local không còn
+bị pipeline chặn vì lỗi bảo mật mà máy dev chưa từng quét.
 
 Adapter tự từ chối build nếu một mục `exit_machine` không phải lệnh chạy được —
 nếu không, điều kiện loại NGƯỜI sẽ đội lốt loại MÁY và agent sẽ tự duyệt.
@@ -477,7 +497,7 @@ protected branch. Gồm ba phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.13/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.14/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -502,7 +522,7 @@ aw init --test-cmd "npm test"
   version          ← YYYY.M.N — engine cho việc MỚI
   checksums        ← sha256 đã ghim của từng version (định dạng sha256sum)
   conventions.md   ← bạn viết; aw chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
-  config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; không ghi đè
+  config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_KIEM_TRA_BAO_MAT, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; không ghi đè
   archive/         ← artifact của worktree đã gỡ (aw worktree remove)
   ```
 

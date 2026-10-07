@@ -338,6 +338,17 @@ kc_chore_production() {
   done | sort -u
 }
 
+# kc_nhay_cam <thư-mục-feature> -> file thay đổi khớp mau_code_nhay_cam (mỗi dòng
+# một file, bỏ trùng). Đổi tên tính cả đường dẫn cũ lẫn mới: dời code ra khỏi thư
+# mục nhạy cảm cũng là đụng vào nó.
+kc_nhay_cam() {
+  kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
+    for _f in "$_p" $_q; do
+      kc_khop_khoa "$1" mau_code_nhay_cam "$_f" && echo "$_f"
+    done
+  done | sort -u
+}
+
 # kc_chore_dependency <thư-mục-feature> — chore đụng file dependency mà plan.md thiếu
 # bảng "Dependency upgrades" hợp lệ; nâng major không được là chore.
 kc_chore_dependency() {
@@ -392,7 +403,7 @@ kc_chan_theo_loai() {
     bugfix)   kc_tai_hien "$1" ;;
     refactor) kc_test_cu_xoa "$1" ;;
     perf)     kc_test_cu_xoa "$1"; kc_hieu_nang "$1" ;;
-    chore)    kc_chore_production "$1"; kc_chore_dependency "$1" ;;
+    chore)    kc_chore_production "$1"; kc_chore_dependency "$1"; kc_chore_sca "$1" ;;
   esac
 }
 
@@ -507,4 +518,99 @@ kc_quy_tac_loi() {
       echo "quy tắc repo \"$_f\": chưa commit — worktree khác và người rà soát không có file này; commit nó vào base"
     fi
   done
+}
+
+# ------------------------------------------------------------------ độ mới của kết quả máy ghi
+# ket-qua-kiem-thu.md và ket-qua-bao-mat.md là bằng chứng chạy trên MỘT trạng thái
+# code. Code đổi sau đó thì bằng chứng hết giá trị — review phải chặn.
+#
+# Dấu vân tay là tree SHA của NỘI DUNG worktree (đã commit + chưa commit + chưa
+# track, trừ thư mục artifact và file git bỏ qua) — không phải SHA của HEAD.
+# Nhờ vậy commit lại đúng nội dung đã review (trước khi /aw-ship) không làm kết
+# quả lỗi thời, còn sửa một dòng code dù chưa commit thì có.
+
+# kc_van_tay <thư-mục-feature> -> tree SHA của nội dung worktree (mã 1 nếu không tính được)
+kc_van_tay() {
+  _top=$(kc_top "$1") || return 1
+  _idx=$(git -C "$_top" rev-parse --git-path index 2>/dev/null) || return 1
+  case "$_idx" in /*) ;; *) _idx="$_top/$_idx" ;; esac
+  _tmp="${TMPDIR:-/tmp}/kc-vt.$$"
+  # Index tạm (chép index thật để có sẵn cache stat): không đụng staging của người.
+  # cp -p GIỮ mtime: git so mtime file với mtime index để biết entry nào "racy"
+  # (sửa cùng giây với lúc ghi index) mà băm lại. Bản chép mới hơn thì git tin
+  # stat cũ — file sửa cùng giây, cùng cỡ bị coi là chưa đổi, dấu vân tay sai.
+  if [ -f "$_idx" ]; then cp -p "$_idx" "$_tmp" || return 1; else rm -f "$_tmp"; fi
+  # Không dùng pathspec exclude: thư mục artifact thường bị .git/info/exclude bỏ
+  # qua, và git add báo lỗi khi pathspec nhắc tới đường dẫn bị bỏ qua.
+  _vt=$(GIT_INDEX_FILE="$_tmp" git -C "$_top" add -A >/dev/null 2>&1 &&
+        GIT_INDEX_FILE="$_tmp" git -C "$_top" rm -r -q --cached --ignore-unmatch -- .agent-workflow >/dev/null 2>&1 &&
+        GIT_INDEX_FILE="$_tmp" git -C "$_top" write-tree 2>/dev/null)
+  _r=$?
+  rm -f "$_tmp"
+  [ $_r -eq 0 ] && [ -n "$_vt" ] || return 1
+  printf '%s\n' "$_vt"
+}
+
+# kc_dong_moi <thư-mục-feature> -> ba dòng markdown ghi vào file kết quả:
+# "- HEAD: `sha`", "- Tree: `sha`", "- Thời điểm: `…`". Checker đọc dòng Tree.
+kc_dong_moi() {
+  printf -- '- HEAD: `%s`\n' "$(git -C "$1" rev-parse HEAD 2>/dev/null || echo không-xác-định)"
+  printf -- '- Tree: `%s`\n' "$(kc_van_tay "$1" || echo không-xác-định)"
+  printf -- '- Thời điểm: `%s`\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+}
+
+# kc_ket_qua_cu <thư-mục-feature> <file-kết-quả> <lệnh chạy lại> -> in lý do nếu
+# file không ghi Tree, hoặc Tree khác nội dung worktree hiện tại.
+kc_ket_qua_cu() {
+  [ -f "$2" ] || return 0
+  _ten=$(basename "$2")
+  _ghi=$(awk '{ sub(/\r$/, "") } /^[ \t]*-[ \t]*Tree:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/[` \t]/, "", s); print s; exit }' "$2")
+  if [ -z "$_ghi" ]; then
+    echo "$_ten không ghi Tree (dấu vân tay code lúc chạy) — chạy lại $3"; return 0
+  fi
+  _nay=$(kc_van_tay "$1") || { echo "$_ten: không tính được dấu vân tay code hiện tại (git) — không xác nhận được kết quả còn mới"; return 0; }
+  [ "$_ghi" = "$_nay" ] || echo "$_ten lỗi thời — code đã đổi sau lần chạy (Tree ghi $_ghi, hiện tại $_nay). Chạy lại $3. Không sửa code mà vẫn lệch: lệnh kiểm thử/quét đang ghi file vào repo — cho file đó vào .gitignore"
+}
+
+# ------------------------------------------------------------------ quét bảo mật
+# LENH_KIEM_TRA_BAO_MAT (config.sh): mỗi dòng "<nhóm>: <lệnh>", nhóm ∈ NHOM_BAO_MAT.
+# Dòng trống và dòng bắt đầu bằng # bỏ qua.
+
+NHOM_BAO_MAT="secret sast sca other"
+
+# kc_bm_dong <chuỗi LENH_KIEM_TRA_BAO_MAT> -> mỗi lệnh một dòng "<nhóm><TAB><lệnh>";
+# dòng sai dạng in "!<TAB><dòng gốc>".
+kc_bm_dong() {
+  printf '%s\n' "$1" | awk -v nhom="$NHOM_BAO_MAT" '
+    BEGIN { n = split(nhom, a, " "); for (i = 1; i <= n; i++) ok[a[i]] = 1 }
+    { sub(/\r$/, ""); s = $0; gsub(/^[ \t]+|[ \t]+$/, "", s) }
+    s == "" || s ~ /^#/ { next }
+    {
+      i = index(s, ":"); g = (i ? substr(s, 1, i - 1) : ""); l = (i ? substr(s, i + 1) : "")
+      gsub(/^[ \t]+|[ \t]+$/, "", g); gsub(/^[ \t]+|[ \t]+$/, "", l)
+      if (!(g in ok) || l == "") { print "!\t" s; next }
+      print g "\t" l
+    }'
+}
+
+# kc_bm_nhom_xanh <file ket-qua-bao-mat.md> <nhóm> -> 0 nếu file có ít nhất một
+# lệnh thuộc nhóm đó và mọi lệnh của nhóm có mã thoát 0.
+kc_bm_nhom_xanh() {
+  [ -f "$1" ] || return 1
+  awk -v g="$2" '
+    { sub(/\r$/, "") }
+    /^##[ \t]/ { vao = ($0 ~ ("^##[ \t]+" g "[ \t]")); next }
+    vao && /Mã thoát: `/ { co = 1; if ($0 !~ /Mã thoát: `0`/) do_ = 1 }
+    END { exit (co && !do_) ? 0 : 1 }
+  ' "$1"
+}
+
+# kc_chore_sca <thư-mục-feature> — chore đụng file dependency: kết quả SCA phải xanh
+# (CVE/license của bản mới chỉ máy quét biết; mức patch/minor không nói gì về nó).
+kc_chore_sca() {
+  _co=$(kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
+    kc_khop_khoa "$1" mau_file_dependency "$_p" && echo "$_p"; done)
+  [ -n "$_co" ] || return 0
+  kc_bm_nhom_xanh "$1/ket-qua-bao-mat.md" sca ||
+    echo "Diff đụng file dependency nhưng ket-qua-bao-mat.md không có lệnh nhóm \"sca\" chạy XANH — khai dòng \"sca: <lệnh>\" trong LENH_KIEM_TRA_BAO_MAT (giống CI) rồi chạy aw check security"
 }

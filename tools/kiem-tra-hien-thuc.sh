@@ -7,15 +7,20 @@
 # ket-qua-kiem-thu.md. Agent khong co co hoi viet lai ket qua bang loi hay
 # bia mot dong "tat ca test da xanh".
 #
+# Cung chay lenh quet bao mat (kiem-tra-bao-mat.sh -> ket-qua-bao-mat.md). Ca hai
+# file ket qua ghi dau van tay code (Tree) de review biet code co doi sau do khong.
+#
 # Chan:  dau vao khong qua kiem-tra-ke-hoach.sh, chua khai lenh kiem thu,
-#        test do, con task dang lam do; file khai o quy_tac_implement
+#        test do, chua khai / khai sai LENH_KIEM_TRA_BAO_MAT hoac lenh quet do,
+#        con task dang lam do; file khai o quy_tac_implement
 #        (conventions.md) khong co hoac chua commit.
 #        Theo loai viec (intake.md): bugfix thieu tai-hien.md do; refactor/perf
-#        xoa test cu; perf thieu so do truoc/sau; chore dung code production
-#        hoac nang dependency khong khai.
+#        xoa test cu; perf thieu so do truoc/sau; chore dung code production,
+#        nang dependency khong khai, hoac dung file dependency ma SCA chua xanh.
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
 #        diem mu muc "chan review" chua tra loi.
+# Luu y (khong chan): diff dung mau_code_nhay_cam — review se can nguoi ra bao mat.
 #
 # Cau hinh: $AW_CONFIG/config.sh (xem lib/moi-truong.sh)
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -99,6 +104,7 @@ echo "Lệnh kiểm thử: $nhan_kt"
   echo "- Lệnh: \`$LENH_KIEM_THU\`"
   echo "- Kết quả: **$nhan_kt**"
   echo "- Mã thoát: \`$ma_thoat\` (bằng chứng thô của lệnh)"
+  kc_dong_moi "$DIR"
   echo ""
   echo '```'
   cat "$TMP"
@@ -109,6 +115,16 @@ echo ""
 echo "Đã ghi output thật vào $KQ"
 
 [ "$ma_thoat" -ne 0 ] && loi "Lệnh kiểm thử trả về mã $ma_thoat — chưa xanh thì chưa xong"
+
+# ---- 4b. Quet bao mat — cung lenh, cung nguong voi CI ----
+# Chay o day (khong o review): sua loi bao mat la viec cua implement; review
+# chi kiem lai ket qua con moi theo Tree.
+sh "$HERE/kiem-tra-bao-mat.sh" "$DIR" 2>/dev/null
+case $? in
+  0) ;;
+  1) loi "Quét bảo mật chưa đạt — xem output phía trên, ket-qua-bao-mat.md" ;;
+  *) loi "Không chạy được quét bảo mật (aw check security $DIR để xem lý do)" ;;
+esac
 
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----
 chan=$(kc_chan_theo_loai "$DIR")
@@ -128,6 +144,14 @@ if [ -n "$cb" ]; then
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Xử lý: thêm test gắn tag, ghi \"Manual verification\", ghi file vào \"Unplanned\", chạy lại phase lỗi thời, hoặc trả lời điểm mù."
+fi
+
+# Code nhạy cảm: không phải vi phạm — báo sớm để kịp hẹn người rà bảo mật.
+nc=$(kc_nhay_cam "$DIR")
+if [ -n "$nc" ]; then
+  echo ""
+  echo "  [LƯU Ý] Diff đụng code nhạy cảm (mau_code_nhay_cam): $(printf '%s\n' "$nc" | head -5 | tr '\n' ' ')"
+  echo "  /aw-review sẽ cần một NGƯỜI rà bảo mật ghi tên vào \"Security reviewer\" của review.md."
 fi
 
 echo ""

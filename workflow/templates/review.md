@@ -2,6 +2,13 @@
 
 > Sinh bởi phase `05-review`, chạy bằng ngữ cảnh sạch.
 
+<!-- Tree của code đã rà: chép dòng "- Tree:" trong ket-qua-kiem-thu.md (máy đã kiểm
+     nó khớp code hiện tại). Code đổi sau khi rà thì máy chặn — rà lại. -->
+- Reviewed tree: `<sha>`
+<!-- Chỉ khi diff đụng mau_code_nhay_cam: NGƯỜI rà bảo mật tự ghi tên sau khi đọc
+     Lens 4 và diff. Agent không điền. Không đụng: xoá dòng này. -->
+- Security reviewer: <tên người>
+
 ## Lens 1 — Spec conformance
 
 Mọi mã `YC` trong `spec.md` phải có mặt ở bảng này.
@@ -44,6 +51,10 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
 ## Lens 3 — Quality
 
+<!-- Không có finding nào: xoá ba mục mẫu, ghi đúng một dòng "- None".
+     [Blocker] / [Should fix]: Location dạng `file:dòng` (số dòng thật).
+     [Blocker]: thêm Failure scenario — đầu vào cụ thể → kết quả sai. -->
+
 ### [Blocker] <tiêu đề>
 - Location: `file:dòng`
 - Problem: <...>
@@ -56,6 +67,22 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 ### [Nit] <tiêu đề>
 - Location: `file:dòng`
 
+## Lens 4 — Security
+
+<!-- Đủ cả bảy dòng, không đổi tên hạng mục — máy chặn nếu thiếu.
+     Verdict: pass | finding (kèm file:dòng, thêm finding ở Lens 3) | not applicable (kèm lý do).
+     Authn / authz: đối chiếu YC Phân quyền trong spec.md. -->
+
+| Item | Verdict | Location / reason |
+|---|---|---|
+| Input validation / injection | <pass \| finding \| not applicable> | <...> |
+| Authn / authz | <...> | <...> |
+| Sensitive data / PII in logs | <...> | <...> |
+| Secrets / config | <...> | <...> |
+| Crypto | <...> | <...> |
+| SSRF / path traversal / deserialization | <...> | <...> |
+| New dependencies | <...> | <...> |
+
 ## Carried-over warnings
 
 Lỗi "Cảnh báo chưa xử lý" từ `aw check review` (YC chưa có test, diff ngoài
@@ -65,5 +92,5 @@ phạm vi, artifact lỗi thời). Còn mục nào thì review không đạt.
 
 ## Conclusion
 
-- Blocker findings: <n>
+- Blocker findings: <n>   <!-- phải bằng số mục [Blocker] ở Lens 3 -->
 - Mergeable: <no / yes after fixing Blockers>

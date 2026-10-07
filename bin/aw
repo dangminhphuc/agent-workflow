@@ -16,7 +16,7 @@
 #   aw upgrade <YYYY.M.N>
 #   aw version
 #   aw doctor
-#   aw check <name> <feature-dir>          name: intake spec design plan implement review repro perf ship
+#   aw check <name> <feature-dir>          name: intake spec design plan implement security review repro perf ship
 #   aw worktree new <type> <desc> [--create --base <ref>]
 #   aw worktree status <branch>
 #   aw worktree remove <branch> [--delete-branch]
@@ -36,7 +36,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.13"
+AW_WRAPPER_VERSION="2026.10.14"
 AW_PROTOCOL=1
 AW_MIRROR_MAC_DINH="https://github.com/dangminhphuc/agent-workflow/releases/download"
 

@@ -144,5 +144,8 @@ n=1
 if ! grep -q 'LENH_KIEM_THU="[^"]' "$CH" 2>/dev/null; then
   echo "  $n. Khai lệnh kiểm thử trong $CH (chưa khai thì /aw-implement không đạt)"; n=$((n + 1))
 fi
+if [ -z "$( (LENH_KIEM_TRA_BAO_MAT=""; . "$CH" >/dev/null 2>&1; printf '%s' "$LENH_KIEM_TRA_BAO_MAT") | grep -v '^[[:space:]]*\(#\|$\)')" ]; then
+  echo "  $n. Khai lệnh quét bảo mật (LENH_KIEM_TRA_BAO_MAT) trong $CH — đúng lệnh/ngưỡng của CI (chưa khai thì /aw-implement không đạt)"; n=$((n + 1))
+fi
 echo "  $n. Sửa $CONV: mẫu tên branch, nhánh gốc, vị trí worktree, mẫu file test…"; n=$((n + 1))
 echo "  $n. Mở agent ở checkout chính, chạy /aw-intake — nó đề xuất worktree cho việc"

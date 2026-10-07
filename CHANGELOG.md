@@ -11,6 +11,54 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.14]
+
+### Thêm
+- **Cổng bảo mật bằng máy, khớp CI.** Khoá mới `LENH_KIEM_TRA_BAO_MAT` trong
+  `config.sh`: mỗi dòng `<nhóm>: <lệnh>` (`secret | sast | sca | other`), khai đúng
+  lệnh/config/ngưỡng của pipeline (gitleaks, semgrep, sonar-scanner, trivy, npm
+  audit…). `aw check implement` chạy chúng sau test và ghi `ket-qua-bao-mat.md`
+  (output thật từng lệnh); `aw check security` chỉ chạy phần quét. Chưa khai, khai
+  sai dạng, hay một lệnh đỏ → KHÔNG ĐẠT; thiếu nhóm `secret`/`sast`/`sca` chỉ cảnh báo.
+- **Độ mới của bằng chứng:** `ket-qua-kiem-thu.md` và `ket-qua-bao-mat.md` ghi `HEAD`,
+  `Tree` (dấu vân tay nội dung code lúc chạy) và thời điểm. `aw check review` chặn khi
+  file thiếu `Tree` hoặc `Tree` khác code hiện tại — sửa code sau lần chạy, kể cả chưa
+  commit, không còn lọt. Commit lại đúng code đã review thì không tính là đổi.
+- **chore đụng file dependency** phải có lệnh nhóm `sca` chạy xanh (CVE/license) —
+  mức patch/minor không nói gì về chúng.
+- **`## Lens 4 — Security` trong `review.md`:** bảng bảy hạng mục cố định (Input
+  validation / injection; Authn / authz; Sensitive data / PII in logs; Secrets /
+  config; Crypto; SSRF / path traversal / deserialization; New dependencies), verdict
+  `pass | finding | not applicable`. `aw check review` chặn khi thiếu mục, thiếu dòng,
+  verdict sai, `finding`/`not applicable` không vị trí/lý do, hoặc có `finding` mà
+  Lens 3 không có finding nào.
+- **`Blocker`** gồm thêm: lỗ hổng bảo mật khai thác được, mất/lộ dữ liệu, breaking
+  change chưa khai.
+
+- **Siết `aw check review`:** Lens 3 phải có finding hoặc đúng dòng `- None`, không
+  còn chữ giữ chỗ; `[Blocker]`/`[Should fix]` có `Location` dạng `file:dòng`;
+  `[Blocker]` có `Failure scenario`; `Blocker findings: <n>` ở Conclusion bằng số mục
+  `[Blocker]`; dòng mới `- Reviewed tree:` phải khớp dấu vân tay code hiện tại (code
+  đổi sau khi rà → rà lại).
+
+- **Code nhạy cảm cần người rà bảo mật.** Khoá mới `mau_code_nhay_cam` trong
+  `conventions.md` (glob, vd `src/auth/* src/payment/*`; bỏ trống = tắt). Diff đụng
+  vào thì `review.md` phải có `- Security reviewer: <tên người>` — `aw check review`
+  chặn khi thiếu, còn giữ chỗ, hay là tên agent; `exit_human` của review thêm bước
+  người rà bảo mật xác nhận; `aw check implement` in `[LƯU Ý]` (không chặn).
+
+### Sửa
+- Lens 1 chỉ đọc dòng bảng có ô đầu là mã YC — bảng khác nhắc `YC-NNN` ở cột lý do
+  không còn ghi đè kết luận.
+
+### Đổi (phá vỡ)
+- Bản clone có `config.sh` cũ chưa có `LENH_KIEM_TRA_BAO_MAT` → `aw check implement`
+  KHÔNG ĐẠT tới khi người khai (`aw init` không ghi đè `config.sh`; chép khối chú
+  thích từ `workflow/templates/config.sh`). Việc chuyển sang engine này giữa chừng có `ket-qua-kiem-thu.md` cũ
+  (không có `Tree`) → chạy lại `aw check implement` trước `/aw-review`.
+- `review.md` thiếu `## Lens 4 — Security`, `## Lens 3` không finding cũng không
+  `- None`, thiếu `Blocker findings` hay `Reviewed tree` → `aw check review` KHÔNG ĐẠT.
+
 ## [2026.10.13]
 
 ### Đổi (phá vỡ thói quen gõ lệnh)

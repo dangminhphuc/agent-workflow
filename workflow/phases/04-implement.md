@@ -12,6 +12,7 @@ outputs:
   - diff
   - plan.md (cập nhật trạng thái task)
   - ket-qua-kiem-thu.md
+  - ket-qua-bao-mat.md
 exit_machine:
   - aw check implement
 exit_human: []
@@ -68,8 +69,10 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
    không thể hoàn thành nếu không đụng — và phải ghi file đó (trong backtick)
    kèm lý do vào mục "Unplanned".
 
-7. **Chạy `aw check implement`.** Script tự chạy lệnh test và tự ghi
-   `ket-qua-kiem-thu.md` — không tự viết file đó.
+7. **Chạy `aw check implement`.** Script tự chạy lệnh test và các lệnh quét bảo
+   mật (`LENH_KIEM_TRA_BAO_MAT` — cùng lệnh, cùng ngưỡng với CI), tự ghi
+   `ket-qua-kiem-thu.md` và `ket-qua-bao-mat.md` — không tự viết hai file đó. Chỉ
+   cần chạy lại phần quét: `aw check security <thư-mục-feature>`.
 
 ## Theo loại việc — chặn
 
@@ -80,7 +83,7 @@ Loại việc lấy từ `intake.md`. Các luật dưới là **chặn** ngay �
 | `bugfix` | Viết test tái hiện → chạy `aw check repro <thư-mục-feature>` **trước khi sửa code** → mới sửa | `tai-hien.md`: test đỏ khi diff mới chỉ đụng file test. Thiếu, hoặc ghi xanh → chặn |
 | `refactor` | Không xoá test cũ. Sửa test cũ thì khai ở "Modified existing tests" | Xoá test cũ → chặn; sửa chưa khai → cảnh báo |
 | `perf` | Như refactor; `aw check perf <thư-mục-feature> --before` **trước khi sửa**, `--after` sau khi sửa | `do-hieu-nang.md` thiếu một trong hai số đo → chặn |
-| `chore` | Không đụng code production. Dependency upgrades thì khai ở "Dependency upgrades" | Đụng `mau_code_production` → chặn; đụng `mau_file_dependency` mà không khai, hoặc khai major → chặn |
+| `chore` | Không đụng code production. Dependency upgrades thì khai ở "Dependency upgrades" | Đụng `mau_code_production` → chặn; đụng `mau_file_dependency` mà không khai, hoặc khai major → chặn; đụng `mau_file_dependency` mà `ket-qua-bao-mat.md` không có lệnh nhóm `sca` chạy xanh → chặn (mức patch/minor không nói gì về CVE/license) |
 
 Quên chạy `tai-hien` / `--before` mà đã sửa code: script **từ chối**. Hoàn tác phần
 sửa (`git stash`), chạy lại, rồi `git stash pop`. Đây là chủ ý: bằng chứng "trước
@@ -108,6 +111,10 @@ luôn ở đây là rẻ nhất.
 - Thay đổi code trong repo đích
 - `plan.md` đã cập nhật trạng thái (và "Unplanned", "Manual verification" nếu có)
 - `ket-qua-kiem-thu.md` — do script ghi, output thật của lệnh kiểm thử
+- `ket-qua-bao-mat.md` — do script ghi, output thật của từng lệnh quét bảo mật
+
+Cả hai ghi `HEAD`, `Tree` (dấu vân tay nội dung code lúc chạy) và thời điểm. Sửa
+code sau đó — kể cả chưa commit — thì `review` chặn tới khi chạy lại.
 
 ## Cấm
 
@@ -120,6 +127,10 @@ luôn ở đây là rẻ nhất.
   không phải việc sửa lặng lẽ.
 - Gắn tag `covers:` cho test không thực sự kiểm YC đó để tắt cảnh báo.
 - Bỏ qua lỗi lint/type với lý do "không liên quan tới task".
+- Làm cho quét bảo mật xanh bằng cách nới công cụ thay vì sửa code: thêm
+  `nosemgrep`, `.gitleaksignore`, `.trivyignore`, hạ ngưỡng, bỏ dòng khỏi
+  `LENH_KIEM_TRA_BAO_MAT`. Báo nhầm thật thì ghi vào "Unplanned" kèm bằng chứng —
+  người quyết, và diff đó sẽ qua review như mọi thay đổi khác.
 
 ## Điều kiện ra — `test` nằm ở đây
 
@@ -132,8 +143,9 @@ vào riêng — nó ăn đúng cái diff mà `05-review` ăn — và đặt nó 
 **Máy:**
 - `aw check implement` ra `[x] ĐẠT`: đầu vào qua `aw check plan`;
   lệnh kiểm thử của repo đích chạy **XANH** và output thật nằm trong
-  `ket-qua-kiem-thu.md`; không còn task `[~]`.
+  `ket-qua-kiem-thu.md`; mọi lệnh trong `LENH_KIEM_TRA_BAO_MAT` chạy **XANH** và
+  output thật nằm trong `ket-qua-bao-mat.md`; không còn task `[~]`.
 
-Nếu repo đích chưa có lệnh kiểm thử, phải khai báo lúc cài đặt. Không khai thì
+Nếu repo đích chưa có lệnh kiểm thử hay lệnh quét bảo mật, phải khai báo lúc cài đặt. Không khai thì
 điều kiện ra này coi như **fail**, không phải "bỏ qua" — im lặng bỏ qua sẽ làm
 cả ràng buộc trên mất tác dụng ở đúng những repo cần nó nhất.

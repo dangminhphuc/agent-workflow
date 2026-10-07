@@ -397,6 +397,81 @@ tự gom.
 *cái agent nói*, không kiểm được *cái đã xảy ra*. Tự chạy thì bỏ hẳn khoảng cách
 đó — agent không có chỗ nào để bịa.
 
+### Quét bảo mật: chạy ở implement, review kiểm độ mới
+
+Pipeline CI/CD chạy secret scan, SAST, SCA; quy trình trước đây thì không. Kết quả:
+việc qua `aw check review` local rồi mới bị pipeline chặn release. Sửa bằng cách
+chạy **đúng lệnh của CI** (`LENH_KIEM_TRA_BAO_MAT` trong `config.sh`, mỗi dòng
+`<nhóm>: <lệnh>`, nhóm `secret | sast | sca | other`) theo cùng mẫu với test: máy
+tự chạy, tự ghi `ket-qua-bao-mat.md`, chưa khai là KHÔNG ĐẠT.
+
+**Chạy ở `implement`, không ở `review`.** Lỗi quét ra là việc phải sửa code — việc
+của `implement`; review chạy ngữ cảnh trắng và bị **cấm sửa code**, nên quét ở đó
+chỉ để báo đỏ rồi quay về implement, tốn một vòng. Quét cũng chậm (SAST, SCA tải
+CSDL CVE), không nên chạy lại mỗi lần sửa một dòng `review.md`. Review chỉ kiểm
+phần chính xác: kết quả xanh, và còn mới.
+
+**Độ mới theo `Tree`, không theo SHA của HEAD.** `ket-qua-kiem-thu.md` và
+`ket-qua-bao-mat.md` ghi `HEAD`, `Tree`, thời điểm. `Tree` là tree SHA của nội dung
+worktree (đã commit + chưa commit + chưa track, trừ `.agent-workflow/`), tính bằng
+index tạm nên không đụng staging của người. So theo HEAD thì sửa code chưa commit
+sau khi chạy test vẫn lọt (diff mà checker so có tính file chưa commit); còn commit
+đúng code đã review (bước trước `/aw-ship`) lại làm kết quả "lỗi thời" dù code không
+đổi. `Tree` đúng cả hai chiều. HEAD ghi để người đọc, máy không so.
+
+Trước đây (giới hạn 8 cũ) review chỉ đọc dòng kết quả, sửa code sau lần chạy
+`implement` cuối vẫn qua — nay chặn.
+
+**Không bắt đủ ba nhóm.** Thiếu `secret`/`sast`/`sca` chỉ cảnh báo: repo có thể
+không dùng nhóm đó, và người khai `config.sh` biết pipeline của mình. Ngoại lệ là
+`chore` đụng file dependency — đúng chỗ SCA sinh ra để bắt — thì phải có lệnh `sca`
+xanh.
+
+### Lens 4 — bảo mật do người rà phán, bảng cố định
+
+Máy quét bắt **mẫu**: secret khớp regex, CVE trong lockfile, pattern SAST. Nó
+không biết **ý đồ**: endpoint mới thiếu kiểm quyền theo YC Phân quyền, log in số
+tài khoản, id lấy từ request mà không kiểm chủ sở hữu. Đó là việc của người rà.
+
+Bảng **bảy hạng mục cố định** chứ không phải "ghi finding bảo mật nếu có": danh
+sách mở thì "không thấy gì" và "không xét" trông giống hệt nhau. Mỗi hạng mục một
+dòng `pass | finding | not applicable` — cùng cách máy kiểm bảng Repo rules: thiếu
+dòng, verdict lạ, `finding`/`not applicable` không vị trí/lý do thì chặn. Máy không
+biết `pass` có đúng không (giới hạn 12), nhưng biết người rà đã phải nhìn từng mục.
+`finding` thì Lens 3 phải có ít nhất một finding — mức (`Blocker`…) nằm ở đó, nơi
+`aw check ship` đã đếm.
+
+Parser Lens 1 chỉ đọc dòng bảng có **ô đầu** là mã YC: dòng Authn của Lens 4 hay
+nhắc YC Phân quyền ở cột lý do, trước đây sẽ ghi đè kết luận của YC đó.
+
+### Lens 3 và Conclusion: máy kiểm hình dạng, không kiểm nội dung
+
+Trước đây Lens 3 để trống vẫn ĐẠT, và `Blocker findings: <n>` không ai đối chiếu
+— `aw check ship` đếm `### [Blocker]` một đằng, người đọc kết luận một nẻo. Nay máy
+kiểm phần chính xác: Lens 3 có finding **hoặc** `- None` (danh sách trống và "chưa
+rà" trông giống nhau, nên phải nói ra), finding đủ trường để người khác kiểm lại
+(`Location` có số dòng; `Blocker` có kịch bản lỗi), và số ở Conclusion khớp số mục.
+Finding có đúng không vẫn là việc của người.
+
+`- Reviewed tree:` gắn kết luận vào đúng code đã rà — cùng dấu vân tay với
+`ket-qua-*.md`. Không có nó, chạy lại `aw check implement` sau khi sửa code làm
+kết quả máy mới lại, còn `review.md` cũ vẫn qua dù nói về code khác.
+
+### Code nhạy cảm: theo rủi ro, không theo loại việc
+
+`security` không phải loại việc (xem trên) — nhưng "rủi ro cao" vẫn cần luật. Loại
+việc nói **thay đổi gì về hành vi**; rủi ro bảo mật lại nằm ở **chỗ code bị đụng**:
+sửa chữ trên màn hình đăng nhập là `feature` bình thường, sửa hàm kiểm token thì
+không. Vì vậy luật bám vào đường dẫn: `mau_code_nhay_cam` trong `conventions.md`,
+team tự khai thư mục auth, thanh toán, crypto… Diff đụng vào (kể cả đổi tên ra
+khỏi đó) thì review cần một **người** rà bảo mật, ghi ở `- Security reviewer:`.
+
+Máy chỉ kiểm dòng đó có, không giữ chỗ, không phải tên agent rõ ràng — nó không
+biết ai gõ dòng đó (giới hạn 7, như ô duyệt; hook `aw guard` hiện chỉ gác
+`spec.md`/`tdd.md`). Luật này đặt việc "cần người" thành cổng máy để không bị
+quên; chuyện agent cố tình điền thay người thì chỉ chặn được bằng lời dặn và
+review của MR. Bỏ trống khoá = không bật luật — repo cài từ trước không bị chặn bất ngờ.
+
 ### Test ↔ YC và phạm vi diff
 
 Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặn):
@@ -585,9 +660,11 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    khi tick ở mọi agent — trừ khi nội dung đổi **trước** lần ghi dấu đầu tiên
    (người tick, rồi agent sửa trước khi có `aw check` hay hook nào chạy).
 
-8. **`review` không chạy lại test.** Nó đọc dòng kết quả trong `ket-qua-kiem-thu.md`;
-   sửa code sau lần chạy `aw check implement` cuối cùng thì kết quả đó đã cũ.
-   Chạy lại `implement` checker trước khi review là việc của người/agent.
+8. **`review` không chạy lại test hay quét.** Nó đọc kết quả và so `Tree` với code
+   hiện tại — biết kết quả **cũ**, không biết lệnh có **đủ**. `LENH_KIEM_TRA_BAO_MAT`
+   lệch pipeline (thiếu công cụ, ngưỡng lỏng hơn, rule khác) thì local vẫn xanh mà
+   CI vẫn chặn; đồng bộ với file pipeline là việc của người giữ `config.sh`. Lệnh
+   test/quét ghi file vào repo (không `.gitignore`) làm `Tree` đổi sau mỗi lần chạy.
 
 9. **Glob trong `conventions.md` và "Expected files" dùng `case` của shell**, nên
    `*` khớp cả `/` và không có `**`. `src/*` vì vậy rộng hơn người đọc tưởng.

@@ -12,6 +12,7 @@ inputs:
   - tdd.md
   - review.md
   - ket-qua-kiem-thu.md
+  - ket-qua-bao-mat.md
   - tai-hien.md (bugfix)
   - do-hieu-nang.md (perf)
   - diff

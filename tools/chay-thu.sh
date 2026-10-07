@@ -70,6 +70,13 @@ g() { git -C "$R" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
 # R, F, LOAI cho tung loai. Test "bao ve" test/a.test.js co san tren main.
 LOAI=feature
 R="$TMP/repo"
+# Lệnh quét bảo mật giả: đủ ba nhóm, luôn xanh. Ca kiểm bảo mật tự đổi.
+BM_XANH='LENH_KIEM_TRA_BAO_MAT="
+secret: echo secret-sach
+sast: echo sast-sach
+sca: echo sca-sach
+"'
+
 F="$R/.agent-workflow/feat_x"
 
 viet_intake() {
@@ -255,7 +262,39 @@ EOF
 viet_review() {
   printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n' > "$F/review.md"
   [ "$LOAI" = "bugfix" ] && printf '\n- Repro test fails because: grep không thấy "moi" trong src/a.txt\n' >> "$F/review.md"
+  viet_lens4
+  printf '\n## Lens 3 — Quality\n\n- None\n\n## Conclusion\n\n- Blocker findings: 0\n- Mergeable: yes\n' >> "$F/review.md"
+  ghi_tree_review
   return 0
+}
+
+# van_tay — dấu vân tay code hiện tại (như checker tính)
+van_tay() { sh -c ". '$T/lib/md.sh'; . '$T/lib/kiem-cheo.sh'; kc_van_tay '$F'"; }
+
+# ghi_tree_review — ghi / cập nhật dòng "Reviewed tree" theo code hiện tại
+# (người rà soát rà lại sau khi code đổi)
+ghi_tree_review() {
+  grep -v '^- Reviewed tree:' "$F/review.md" > "$F/review.md.tmp"
+  { printf -- '- Reviewed tree: `%s`\n\n' "$(van_tay)"; cat "$F/review.md.tmp"; } > "$F/review.md"
+  rm -f "$F/review.md.tmp"
+}
+
+# viet_lens4 — bảng Lens 4 đủ bảy hạng mục, kết luận hợp lệ
+viet_lens4() {
+  cat >> "$F/review.md" <<'EOF'
+
+## Lens 4 — Security
+
+| Item | Verdict | Location / reason |
+|---|---|---|
+| Input validation / injection | not applicable | diff không nhận input từ ngoài |
+| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |
+| Sensitive data / PII in logs | not applicable | không log, không dữ liệu cá nhân |
+| Secrets / config | pass | |
+| Crypto | not applicable | không dùng crypto |
+| SSRF / path traversal / deserialization | not applicable | không có URL, đường dẫn hay deserialize |
+| `New dependencies` | not applicable | không thêm dependency |
+EOF
 }
 
 ghi_based_on() {
@@ -283,6 +322,7 @@ tao_fixture() {
   {
     printf 'LENH_KIEM_THU="grep -q moi %s/src/a.txt"\n' "$R"
     printf 'LENH_DO_HIEU_NANG="echo KET_QUA: 5 ms"\n'
+    printf '%s\n' "$BM_XANH"
   } > "$CFG/config.sh"
   printf 'goc\n' > "$R/src/a.txt"
   printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
@@ -300,13 +340,14 @@ tao_fixture() {
       sh "$T/kiem-tra-hieu-nang.sh" "$F" --before >/dev/null 2>&1 ;;
   esac
   if [ "$LOAI" = "chore" ]; then
-    printf 'LENH_KIEM_THU="true"\n' > "$CFG/config.sh"
+    printf 'LENH_KIEM_THU="true"\n%s\n' "$BM_XANH" > "$CFG/config.sh"
     printf 'huong dan\n' > "$R/docs/huong-dan.md"
   else
     printf 'moi\n' > "$R/src/a.txt"
   fi
   [ "$LOAI" = "perf" ] && sh "$T/kiem-tra-hieu-nang.sh" "$F" --after >/dev/null 2>&1
   sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+  ghi_tree_review   # rà soát diễn ra sau implement
 }
 
 # ---------------------------------------------------------------- fixture goc
@@ -695,10 +736,10 @@ CH="$CFG/config.sh"
 printf 'LENH_KIEM_THU=""\n' > "$CH"
 ky_vong 1 "chưa khai LENH_KIEM_THU là KHÔNG ĐẠT, không phải bỏ qua" sh "$CHK" "$F"
 
-printf 'LENH_KIEM_THU="false"\n' > "$CH"
+printf 'LENH_KIEM_THU="false"\n%s\n' "$BM_XANH" > "$CH"
 ky_vong 1 "chặn khi test đỏ" sh "$CHK" "$F"
 
-printf 'LENH_KIEM_THU="true"\n' > "$CH"
+printf 'LENH_KIEM_THU="true"\n%s\n' "$BM_XANH" > "$CH"
 thay "$F/plan.md" '- Status: `[x]`
 
 ## Deferred' '- Status: `[~]`
@@ -707,10 +748,10 @@ thay "$F/plan.md" '- Status: `[x]`
 ky_vong 1 "chặn khi còn task đang làm dở" sh "$CHK" "$F"
 viet_plan; ghi_based_on
 
-printf 'LENH_KIEM_THU="echo DAU-VET-DUY-NHAT-12345"\n' > "$CH"
+printf 'LENH_KIEM_THU="echo DAU-VET-DUY-NHAT-12345"\n%s\n' "$BM_XANH" > "$CH"
 sh "$CHK" "$F" >/dev/null 2>&1
 dung "ghi output THẬT vào ket-qua-kiem-thu.md" grep -q 'DAU-VET-DUY-NHAT-12345' "$F/ket-qua-kiem-thu.md"
-printf 'LENH_KIEM_THU="true"\n' > "$CH"
+printf 'LENH_KIEM_THU="true"\n%s\n' "$BM_XANH" > "$CH"
 
 printf 'x\n' > "$R/README.md"
 ky_vong 0 "file ngoài phạm vi chỉ CẢNH BÁO, không chặn implement" sh "$CHK" "$F"
@@ -721,6 +762,40 @@ thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" còn mở chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
 dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: điểm mù mức \"review-blocking\"'"
 viet_spec; ghi_based_on
+
+# ---------------------------------------------------------------- bao mat (aw check security)
+echo ""
+echo "kiem-tra-bao-mat.sh (aw check security)"
+BMC="$T/kiem-tra-bao-mat.sh"
+cp "$CH" "$TMP/ch.bak"
+ky_vong 0 "đủ ba nhóm, mọi lệnh xanh → ĐẠT" sh "$BMC" "$F"
+
+printf 'LENH_KIEM_THU="true"\n' > "$CH"
+ky_vong 1 "chưa khai LENH_KIEM_TRA_BAO_MAT là KHÔNG ĐẠT, không phải bỏ qua" sh "$BMC" "$F"
+ky_vong 1 "…và implement cũng KHÔNG ĐẠT" sh "$CHK" "$F"
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="\n# sca: trivy fs .\n"\n' > "$CH"
+ky_vong 1 "chỉ có dòng comment = chưa khai → KHÔNG ĐẠT" sh "$BMC" "$F"
+
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="\nsecret: true\nsast: echo LO-HONG-SQLI; exit 1\nsca: true\n"\n' > "$CH"
+ky_vong 1 "một lệnh quét đỏ → KHÔNG ĐẠT" sh "$BMC" "$F"
+dung "…ghi ĐỎ và output thật vào ket-qua-bao-mat.md" sh -c "grep -q '^- Kết quả: \*\*ĐỎ\*\*' '$F/ket-qua-bao-mat.md' && grep -q 'LO-HONG-SQLI' '$F/ket-qua-bao-mat.md' && grep -q 'Mã thoát: \`1\`' '$F/ket-qua-bao-mat.md'"
+ky_vong 1 "…implement chặn khi quét bảo mật đỏ dù test xanh" sh "$CHK" "$F"
+
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="\ntrivy fs .\n"\n' > "$CH"
+ky_vong 1 "dòng thiếu \"<nhóm>:\" → KHÔNG ĐẠT" sh "$BMC" "$F"
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="\ndast: true\n"\n' > "$CH"
+ky_vong 1 "nhóm lạ → KHÔNG ĐẠT" sh "$BMC" "$F"
+dung "…đúng lý do: liệt kê nhóm hợp lệ" sh -c "sh '$BMC' '$F' | grep -q 'secret, sast, sca, other'"
+
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="secret: true"\n' > "$CH"
+ky_vong 0 "thiếu nhóm sast/sca chỉ CẢNH BÁO (người xác nhận có chủ ý)" sh "$BMC" "$F"
+dung "…có in cảnh báo thiếu nhóm sca" sh -c "sh '$BMC' '$F' | grep -q 'CẢNH BÁO.*nhóm \"sca\"'"
+
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="sca: pwd"\n' > "$CH"
+sh "$BMC" "$F" >/dev/null 2>&1
+dung "lệnh quét chạy ở gốc repo (như CI)" grep -qx "$(git -C "$R" rev-parse --show-toplevel)" "$F/ket-qua-bao-mat.md"
+cp "$TMP/ch.bak" "$CH"
+sh "$CHK" "$F" >/dev/null 2>&1
 
 # ---------------------------------------------------------------- ra soat
 echo ""
@@ -751,14 +826,126 @@ printf '| ID | Verdict |\n|---|---|\n| YC-001 | ổn |\n| YC-002 | pending |\n' 
 ky_vong 1 "chặn kết luận tự chế ngoài 4 giá trị hợp lệ" sh "$CHK" "$F"
 viet_review
 
+# ---- Lens 4 — Security
+printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n' > "$F/review.md"
+ky_vong 1 "chặn khi thiếu mục Lens 4 — Security" sh "$CHK" "$F"
+dung "…đúng lý do: thiếu mục Lens 4" sh -c "sh '$CHK' '$F' | grep -q 'thiếu mục \"## Lens 4 — Security\"'"
+viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |
+' ''
+ky_vong 1 "chặn khi thiếu một hạng mục bảo mật" sh "$CHK" "$F"
+dung "…đúng lý do: hạng mục Crypto" sh -c "sh '$CHK' '$F' | grep -q 'Lens 4 \"Crypto\": không có dòng kết luận'"
+viet_review; thay "$F/review.md" '| Crypto | not applicable |' '| Cryptography | not applicable |'
+ky_vong 1 "chặn khi đổi tên hạng mục (tên cố định)" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Secrets / config | pass |' '| Secrets / config | ổn |'
+ky_vong 1 "chặn verdict ngoài pass / finding / not applicable" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |' '| Crypto | not applicable | |'
+ky_vong 1 "chặn not applicable không có lý do" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |' '| Crypto | not applicable | <...> |'
+ky_vong 1 "chặn lý do còn chữ giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / config | finding | |'
+ky_vong 1 "chặn finding không có vị trí" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / config | finding | `src/a.txt:1` token cứng |'
+ky_vong 1 "chặn finding bảo mật mà Lens 3 không có finding nào" sh "$CHK" "$F"
+dung "…đúng lý do: thiếu finding ở Lens 3" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 không có finding nào'"
+thay "$F/review.md" '- None' '### [Should fix] token cứng
+- Location: `src/a.txt:1`
+- Problem: token trong code'
+ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
+viet_review; cp "$ROOT/workflow/templates/review.md" "$TMP/review-mau.md"
+awk '/^## Lens 4/ { p = 1 } /^## Carried-over/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
+printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n\n' > "$F/review.md"; cat "$TMP/lens4-mau.md" >> "$F/review.md"
+ky_vong 1 "chặn bảng Lens 4 chép nguyên mẫu chưa điền" sh "$CHK" "$F"
+# ---- Lens 3 — Quality, Conclusion, Reviewed tree
+viet_review; thay "$F/review.md" '- None
+' ''
+ky_vong 1 "chặn Lens 3 không finding mà không ghi \"- None\"" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'không ghi \"- None\"'"
+viet_review; thay "$F/review.md" '## Lens 3 — Quality' '## Ghi chú'
+ky_vong 1 "chặn khi thiếu mục Lens 3 — Quality" sh "$CHK" "$F"
+L3_SF='### [Should fix] trùng hàm
+- Location: `src/a.txt:1`
+- Problem: có sẵn hàm tương tự'
+viet_review; thay "$F/review.md" '- None' "$L3_SF"
+ky_vong 0 "Lens 3 có finding đủ Location file:dòng thì cho qua" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' "- None
+$L3_SF"
+ky_vong 1 "chặn Lens 3 vừa \"- None\" vừa có finding" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Problem: có sẵn hàm tương tự'
+ky_vong 1 "chặn [Should fix] thiếu Location" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Location: `file:dòng`'
+ky_vong 1 "chặn Location giữ chỗ của mẫu (không phải file:dòng)" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
+- Location: `src/a.txt:1`'
+ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
+ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
+L3_B='### [Blocker] mất dữ liệu
+- Location: `src/a.txt:1`
+- Problem: ghi đè'
+viet_review; thay "$F/review.md" '- None' "$L3_B"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 1 "chặn [Blocker] thiếu Failure scenario" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu \"- Failure scenario:\"'"
+viet_review; thay "$F/review.md" '- None' "$L3_B
+- Failure scenario: <đầu vào cụ thể → kết quả sai>"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 1 "chặn Failure scenario giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' "$L3_B
+- Failure scenario: lưu hai lần → bản ghi đầu mất"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 0 "[Blocker] đủ trường, Conclusion khớp số → review đạt (ship mới chặn)" sh "$CHK" "$F"
+thay "$F/review.md" '- Blocker findings: 1' '- Blocker findings: 0'
+ky_vong 1 "chặn Conclusion ghi số Blocker lệch số mục" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Blocker findings: 0 nhưng Lens 3 có 1'"
+viet_review; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: <n>'
+ky_vong 1 "chặn Conclusion còn giữ chỗ <n>" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- Blocker findings: 0
+' ''
+ky_vong 1 "chặn Conclusion thiếu dòng Blocker findings" sh "$CHK" "$F"
+viet_review; grep -v '^- Reviewed tree:' "$F/review.md" > "$TMP/rv" && cp "$TMP/rv" "$F/review.md"
+ky_vong 1 "chặn review.md thiếu Reviewed tree" sh "$CHK" "$F"
+dung "…lời nhắc có giá trị hiện tại" sh -c "sh '$CHK' '$F' | grep -q 'hiện tại: [0-9a-f]\{40\}'"
+viet_review; thay "$F/review.md" "- Reviewed tree: \`$(van_tay)\`" '- Reviewed tree: `0000000000000000000000000000000000000000`'
+ky_vong 1 "chặn Reviewed tree khác code hiện tại" sh "$CHK" "$F"
+viet_review
+
+# ---- Code nhạy cảm (mau_code_nhay_cam) → cần người rà bảo mật
+viet_review
+ky_vong 0 "không khai mau_code_nhay_cam → không đòi Security reviewer" sh "$CHK" "$F"
+cp "$CFG/conventions.md" "$TMP/conv-nc.bak"
+thay "$CFG/conventions.md" 'mau_code_nhay_cam:' 'mau_code_nhay_cam: src/*'
+ky_vong 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" sh "$CHK" "$F"
+dung "…đúng lý do, nêu file nhạy cảm" sh -c "sh '$CHK' '$F' | grep -q 'code nhạy cảm (mau_code_nhay_cam: src/a.txt)'"
+dung "…implement chỉ LƯU Ý, không chặn" sh -c "sh '$T/kiem-tra-hien-thuc.sh' '$F' | grep -q 'LƯU Ý.*src/a.txt' && sh '$T/kiem-tra-hien-thuc.sh' '$F' >/dev/null 2>&1"
+printf -- '- Security reviewer: <tên người>\n' >> "$F/review.md"
+ky_vong 1 "chặn Security reviewer còn giữ chỗ" sh "$CHK" "$F"
+viet_review; printf -- '- Security reviewer: Claude\n' >> "$F/review.md"
+ky_vong 1 "chặn Security reviewer là tên agent" sh "$CHK" "$F"
+viet_review; printf -- '- **Security reviewer:** Nguyễn Văn A — 2026-10-07\n' >> "$F/review.md"
+ky_vong 0 "Security reviewer là người → cho qua" sh "$CHK" "$F"
+thay "$CFG/conventions.md" 'mau_code_nhay_cam: src/*' 'mau_code_nhay_cam: src/auth/*'
+viet_review
+ky_vong 0 "diff không đụng mẫu nhạy cảm → không đòi" sh "$CHK" "$F"
+cp "$TMP/conv-nc.bak" "$CFG/conventions.md"
+
+# Bảng khác nhắc mã YC ở cột lý do không được ghi đè kết luận của Lens 1
+viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |' '| Authn / authz | pass | khớp YC-002 |'
+ky_vong 0 "dòng Lens 4 nhắc YC-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
+viet_review
+
 printf 'x\n' > "$R/README.md"
 ky_vong 1 "CỔNG CUỐI: chặn file ngoài phạm vi" sh "$CHK" "$F"
+dung "…và chặn kết quả kiểm thử/quét lỗi thời (code đổi sau lần chạy)" sh -c "sh '$CHK' '$F' | grep -q 'ket-qua-kiem-thu.md lỗi thời'"
 thay "$F/plan.md" '|---|---|---|---|
 ' '|---|---|---|---|
 | T-01 | cần README | `README.md` | đã ghi |
 '
-ky_vong 0 "ghi file vào Phát sinh thì cho qua" sh "$CHK" "$F"
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+ky_vong 1 "chạy lại implement mà chưa rà lại → chặn Reviewed tree cũ" sh "$CHK" "$F"
+dung "…đúng lý do: code đổi sau khi rà soát" sh -c "sh '$CHK' '$F' | grep -q 'code đổi sau khi rà soát'"
+ghi_tree_review
+ky_vong 0 "ghi file vào Phát sinh (chạy lại implement, rà lại) thì cho qua" sh "$CHK" "$F"
 rm -f "$R/README.md"; viet_plan; ghi_based_on
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 printf '// covers: YC-001\n' > "$R/test/a.test.js"
 ky_vong 1 "CỔNG CUỐI: chặn YC chưa có test gắn tag" sh "$CHK" "$F"
@@ -768,8 +955,10 @@ thay "$F/plan.md" '| ID | Why not automated |
 |---|---|
 | YC-002 | cần kiểm bằng mắt trên UI |
 '
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "ghi Kiểm chứng thủ công có lý do thì cho qua" sh "$CHK" "$F"
 printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"; viet_plan; ghi_based_on
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 # Không test nào gắn tag: danh sách dòng tag rỗng không được làm kiểm chéo câm
 printf '// chua gan tag\n' > "$R/test/a.test.js"
@@ -792,6 +981,29 @@ viet_spec; ghi_based_on
 rm -f "$F/ket-qua-kiem-thu.md"
 ky_vong 1 "chặn khi chưa có ket-qua-kiem-thu.md" sh "$CHK" "$F"
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+
+# ---- Độ mới của bằng chứng máy ghi + quét bảo mật (cổng cuối)
+dung "ket-qua-kiem-thu.md ghi HEAD, Tree, thời điểm" sh -c "grep -q '^- HEAD: \`[0-9a-f]\{40\}\`' '$F/ket-qua-kiem-thu.md' && grep -q '^- Tree: \`[0-9a-f]\{40\}\`' '$F/ket-qua-kiem-thu.md' && grep -q '^- Thời điểm: ' '$F/ket-qua-kiem-thu.md'"
+dung "ket-qua-bao-mat.md ghi HEAD, Tree, output thật từng nhóm" sh -c "grep -q '^- Tree: \`[0-9a-f]\{40\}\`' '$F/ket-qua-bao-mat.md' && grep -q '^## sca — ' '$F/ket-qua-bao-mat.md' && grep -q 'sca-sach' '$F/ket-qua-bao-mat.md'"
+
+printf 'sua sau review\n' > "$R/src/a.txt"; printf 'moi\n' >> "$R/src/a.txt"
+ky_vong 1 "CỔNG CUỐI: chặn khi code đổi (chưa commit) sau lần chạy test/quét" sh "$CHK" "$F"
+dung "…đúng lý do: cả hai file kết quả lỗi thời" sh -c "out=\$(sh '$CHK' '$F'); echo \"\$out\" | grep -q 'ket-qua-kiem-thu.md lỗi thời' && echo \"\$out\" | grep -q 'ket-qua-bao-mat.md lỗi thời'"
+printf 'moi\n' > "$R/src/a.txt"
+ky_vong 0 "…hoàn tác về đúng nội dung đã chạy thì hết lỗi thời" sh "$CHK" "$F"
+
+cp "$F/ket-qua-kiem-thu.md" "$TMP/kqkt.bak"
+grep -v '^- Tree:' "$TMP/kqkt.bak" > "$F/ket-qua-kiem-thu.md"
+ky_vong 1 "chặn ket-qua-kiem-thu.md không ghi Tree (engine cũ / viết tay)" sh "$CHK" "$F"
+cp "$TMP/kqkt.bak" "$F/ket-qua-kiem-thu.md"
+
+rm -f "$F/ket-qua-bao-mat.md"
+ky_vong 1 "chặn khi chưa có ket-qua-bao-mat.md" sh "$CHK" "$F"
+sh "$T/kiem-tra-bao-mat.sh" "$F" >/dev/null 2>&1
+ky_vong 0 "aw check security ghi lại ket-qua-bao-mat.md thì cho qua" sh "$CHK" "$F"
+thay "$F/ket-qua-bao-mat.md" '- Kết quả: **XANH**' '- Kết quả: **ĐỎ**'
+ky_vong 1 "chặn ket-qua-bao-mat.md không XANH" sh "$CHK" "$F"
+sh "$T/kiem-tra-bao-mat.sh" "$F" >/dev/null 2>&1
 
 # ---------------------------------------------------------------- kiem-tra-gui-mr (aw check ship)
 echo ""
@@ -1813,6 +2025,7 @@ dung "…đúng lý do: file của người khác bị tính ngoài phạm vi" s
 SHA_MH=$(git -C "$R" rev-parse --short moi-hon)
 thay "$F/intake.md" "\`main\` @ \`$SHA_MAIN\`" "\`moi-hon\` @ \`$SHA_MH\`"
 ghi_based_on
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "ghi đúng base → diff chỉ còn việc của mình, review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
 dung "…nhưng base lạ (xếp chồng) thì review CẢNH BÁO" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base \"moi-hon\"'"
 thay "$CFG/conventions.md" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: moi-*'
@@ -1847,7 +2060,7 @@ viet_review
 
 # test xanh tren code chua sua -> khong tai hien duoc
 g stash -q
-printf 'LENH_KIEM_THU="true"\n' > "$CFG/config.sh"
+printf 'LENH_KIEM_THU="true"\n%s\n' "$BM_XANH" > "$CFG/config.sh"
 ky_vong 1 "kiem-tra-tai-hien chặn khi test XANH trên code chưa sửa" sh "$T/kiem-tra-tai-hien.sh" "$F"
 dung "…đúng lý do: test xanh, không phải vì đã sửa code" sh -c "sh '$T/kiem-tra-tai-hien.sh' '$F' | grep -q 'XANH'"
 
@@ -1877,8 +2090,10 @@ thay "$F/plan.md" '| Test file | Reason |
 |---|---|
 | `test/a.test.js` | đổi import do dời module |
 '
+ghi_tree_review
 ky_vong 0 "khai ở \"Test cũ bị sửa\" thì review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
 g checkout -q -- test/a.test.js; viet_plan; ghi_based_on
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 rm -f "$R/test/a.test.js"
 ky_vong 1 "implement chặn refactor XOÁ test cũ" sh "$T/kiem-tra-hien-thuc.sh" "$F"
@@ -2066,9 +2281,21 @@ thay "$F/plan.md" '| Library | Old → new | Level |
 | lodash | 4.17.20 → 4.17.21 | patch |
 '
 ky_vong 0 "khai nâng bản vá thì cho qua" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+cp "$CFG/config.sh" "$TMP/ch-chore.bak"
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="secret: true\nsast: true"\n' > "$CFG/config.sh"
+ky_vong 1 "chore đụng dependency mà không có lệnh nhóm sca → chặn" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+dung "…đúng lý do: thiếu SCA" sh -c "sh '$T/kiem-tra-hien-thuc.sh' '$F' | grep -q 'nhóm \"sca\" chạy XANH'"
+dung "…review cũng chặn đúng lý do" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'nhóm \"sca\" chạy XANH'"
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="secret: true\nsast: true\nsca: echo CVE-2099-1; exit 1"\n' > "$CFG/config.sh"
+ky_vong 1 "chore đụng dependency mà SCA đỏ (CVE) → chặn" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+cp "$TMP/ch-chore.bak" "$CFG/config.sh"
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 thay "$F/plan.md" '| patch |' '| major |'
 ky_vong 1 "nâng major không được là chore" sh "$T/kiem-tra-hien-thuc.sh" "$F"
 rm -f "$R/package.json"; viet_plan; ghi_based_on
+printf 'LENH_KIEM_THU="true"\nLENH_KIEM_TRA_BAO_MAT="secret: true"\n' > "$CFG/config.sh"
+ky_vong 0 "chore KHÔNG đụng dependency thì không đòi SCA" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+cp "$TMP/ch-chore.bak" "$CFG/config.sh"; sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 
 thay "$F/plan.md" '- Expected files: `docs/*`' '- Based on: `D-01`
 - Expected files: `docs/*`'
@@ -2337,6 +2564,7 @@ tao_fixture 2>/dev/null
 viet_mr
 printf '/.agent-workflow/\n' >> "$R/.git/info/exclude"
 g add -A; g commit -q -m "lam x"
+# Dấu vân tay theo NỘI DUNG: commit đúng code đã review không làm kết quả lỗi thời.
 ky_vong 0 "fixture: code đã commit, aw check ship đạt" sh "$SHC" "$F"
 WS="$TMP/ship-wt"; FS="$WS/.agent-workflow/feat_x"
 g checkout -q main

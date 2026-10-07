@@ -12,6 +12,33 @@ ADAPTER="claude-code"
 # Bỏ trống thì phase implement sẽ KHÔNG ĐẠT, không phải "bỏ qua".
 LENH_KIEM_THU=""
 
+# Lệnh quét bảo mật — cũng là điều kiện ra của 04-implement; 05-review chặn khi
+# kết quả không xanh hoặc code đã đổi sau lần quét.
+# Bỏ trống thì phase implement sẽ KHÔNG ĐẠT, không phải "bỏ qua".
+#
+# Khai ĐÚNG lệnh, file config, ngưỡng mà pipeline CI/CD đang chạy — chép từ file
+# pipeline (.gitlab-ci.yml, .github/workflows/…). Lệch CI (khác rule, khác ngưỡng)
+# thì local đạt mà pipeline vẫn chặn release — đúng lỗi gate này sinh ra để chặn.
+#
+# Mỗi dòng "<nhóm>: <lệnh>", nhóm ∈ secret | sast | sca | other. Lệnh chạy ở gốc
+# repo; mã thoát khác 0 = ĐỎ, nên lệnh phải tự thoát khác 0 khi vượt ngưỡng.
+# Báo cáo (json, sarif…) ghi ra ngoài repo hoặc vào chỗ .gitignore — file lạ trong
+# repo làm kết quả bị coi là lỗi thời. Dòng trống và dòng bắt đầu bằng # bỏ qua.
+# Ví dụ (sửa theo pipeline của bạn):
+#
+# LENH_KIEM_TRA_BAO_MAT="
+# secret: gitleaks detect --no-banner --redact --exit-code 1 --config .gitleaks.toml
+# sast: semgrep scan --config p/ci --error --metrics off
+# sast: sonar-scanner -Dsonar.qualitygate.wait=true
+# sca: trivy fs --scanners vuln,license --severity HIGH,CRITICAL --exit-code 1 .
+# sca: npm audit --omit=dev --audit-level=high
+# "
+#
+# SonarQube cần server và token (SONAR_HOST_URL, SONAR_TOKEN). Máy dev không chạy
+# được thì để dòng đó thành comment KÈM LÝ DO — người chấp nhận rằng quality gate
+# của Sonar chỉ chặn ở CI.
+LENH_KIEM_TRA_BAO_MAT=""
+
 # Lệnh đo hiệu năng — chỉ dùng cho loại việc perf. Phải in một dòng
 # "KET_QUA: <số> <đơn vị>", vd: KET_QUA: 138 ms
 LENH_DO_HIEU_NANG=""
