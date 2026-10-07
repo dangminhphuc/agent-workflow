@@ -53,14 +53,18 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
 <!-- Không có finding nào: xoá ba mục mẫu, ghi đúng một dòng "- None".
      [Blocker] / [Should fix]: Location dạng `file:dòng` (số dòng thật).
-     [Blocker]: thêm Failure scenario — đầu vào cụ thể → kết quả sai. -->
+     [Blocker]: thêm Failure scenario — đầu vào cụ thể → kết quả sai.
+     [Blocker] / [Should fix]: Category — loại lỗi kebab-case (vd missing-null-check,
+     sql-injection). Dùng lại tên đã có trong `aw journal` để đếm được lặp lại. -->
 
 ### [Blocker] <tiêu đề>
+- Category: <loại-lỗi>
 - Location: `file:dòng`
 - Problem: <...>
 - Failure scenario: <đầu vào cụ thể → kết quả sai>
 
 ### [Should fix] <tiêu đề>
+- Category: <loại-lỗi>
 - Location: `file:dòng`
 - Problem: <...>
 

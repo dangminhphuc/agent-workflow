@@ -12,15 +12,19 @@
 #
 # Chan:  dau vao khong qua kiem-tra-ke-hoach.sh, chua khai lenh kiem thu,
 #        test do, chua khai / khai sai LENH_KIEM_TRA_BAO_MAT hoac lenh quet do,
-#        con task dang lam do; file khai o quy_tac_implement
+#        con task dang lam do [~] hoac chua lam [ ]; task [x] khong co bang
+#        chung xanh trong ket-qua-task.md (aw task done) khop lenh Verify; file
+#        con dau xung dot merge; file khai o quy_tac_implement
 #        (conventions.md) khong co hoac chua commit.
 #        Theo loai viec (intake.md): bugfix thieu tai-hien.md do; refactor/perf
 #        xoa test cu; perf thieu so do truoc/sau; chore dung code production,
 #        nang dependency khong khai, hoac dung file dependency ma SCA chua xanh.
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
+#        test moi bi tat / chay rieng (.only, .skip… — mau_bo_qua_test),
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
 #        diem mu muc "chan review" chua tra loi.
-# Luu y (khong chan): diff dung mau_code_nhay_cam — review se can nguoi ra bao mat.
+# Luu y (khong chan): diff dung mau_code_nhay_cam — review se can nguoi ra bao mat;
+#        task kiem chung thu cong (aw task done --manual).
 #
 # Cau hinh: $AW_CONFIG/config.sh (xem lib/moi-truong.sh)
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -34,6 +38,7 @@ kq_khai kiem-tra-hien-thuc.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/task.sh"
 
 DIR="${1:-.}"
 PLAN="$DIR/plan.md"
@@ -71,16 +76,11 @@ if [ -z "$LENH_KIEM_THU" ]; then
   exit 1
 fi
 
-# ---- 2. Khong con task dang lam do ----
-dang_do=$(awk '
-  { sub(/\r$/, "") }
-  /^###[ \t]+T-/ { match($0, /T-[0-9]+/); cur = substr($0, RSTART, RLENGTH) }
-  cur != "" && /^[ \t]*-[ \t]*\**Status\**:/ && /\[~\]/ { print cur }
-' "$PLAN")
-
-for t in $dang_do; do
-  loi "$t còn ở trạng thái đang làm dở \`[~]\`"
-done
+# ---- 2. Moi task da xong, va xong bang may (aw task done) ----
+tt=$( { tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; } )
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$tt
+EOF
 
 # ---- 3. Chay that lenh kiem thu ----
 echo ""
@@ -126,6 +126,12 @@ case $? in
   *) loi "Không chạy được quét bảo mật (aw check security $DIR để xem lý do)" ;;
 esac
 
+# ---- 4c. Trang thai sach — chinh xac nen CHAN ----
+xd=$(kc_dau_xung_dot "$DIR")
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$xd
+EOF
+
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----
 chan=$(kc_chan_theo_loai "$DIR")
 if [ -n "$chan" ]; then
@@ -136,7 +142,7 @@ EOF
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""
@@ -152,6 +158,14 @@ if [ -n "$nc" ]; then
   echo ""
   echo "  [LƯU Ý] Diff đụng code nhạy cảm (mau_code_nhay_cam): $(printf '%s\n' "$nc" | head -5 | tr '\n' ' ')"
   echo "  /aw-review sẽ cần một NGƯỜI rà bảo mật ghi tên vào \"Security reviewer\" của review.md."
+fi
+
+tc=$(tk_ds "$PLAN" | while IFS='|' read -r t s_ d v; do
+  [ "$s_" = x ] && [ "$(tk_bc "$DIR/ket-qua-task.md" "$t" "Kiểm chứng")" = "thủ công" ] && printf '%s ' "$t"
+done)
+if [ -n "$tc" ]; then
+  echo ""
+  echo "  [LƯU Ý] Task kiểm chứng thủ công: $tc— người rà soát đọc bằng chứng trong ket-qua-task.md."
 fi
 
 echo ""

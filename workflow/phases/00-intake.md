@@ -135,6 +135,8 @@ Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Là
 6. Ghi `intake.md` vào `<worktree>/.agent-workflow/<tên>/`, chạy checker trên
    thư mục đó, rồi **dừng**: người chuẩn bị môi trường (lệnh `LENH_CHUAN_BI_WT`
    script in ra) và mở phiên agent **mới** trong worktree để chạy `/aw-spec`.
+   Trong phiên mới, `aw ready <thư-mục-feature>` cho biết môi trường đã đủ chưa
+   (lệnh test xanh trên base, cấu hình đủ) và bước tiếp là gì.
 
 `ĐÃ CÓ WORKTREE` (branch đã có worktree): không tạo gì — bảo người mở phiên ở đường dẫn
 script in ra, rồi chạy lại `/aw-intake` ở đó nếu cần gộp thêm input.

@@ -610,6 +610,9 @@ ad_sinh() {
     printf -- '- Quy tắc riêng của repo cho từng phase (coding style, skill, chuẩn kiến trúc): `aw rules <phase>` — phase: %s\n' "$BL_QUY_TAC"
     printf -- '- Luật, mẫu, checker LLM của engine: `%s/`\n' "$DOCS"
     printf -- '- Checker máy: `aw check <tên> %s` — tên: %s\n' "$FD" "$BL_CHECKERS"
+    printf -- '- Đầu phiên mới: `aw ready %s` — môi trường đủ chưa (test xanh trên base), bước tiếp là gì\n' "$FD"
+    printf -- '- Trạng thái task do máy giữ: `aw task next|start|done %s [T-NN]` — không tự sửa ô `Status`\n' "$FD"
+    printf -- '- Agent làm hỏng mà checker không bắt: `aw journal add <task|context|env|verify|state|model> "<mô tả>"`; tổng hợp: `aw journal`\n'
   } | ghi_file "$SK"
 
   # ---------- dọn file cũ ----------

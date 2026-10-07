@@ -9,6 +9,7 @@ inputs:
   - open-questions.md
   - tdd.md
   - plan.md
+  - ket-qua-task.md
   - ket-qua-kiem-thu.md
   - ket-qua-bao-mat.md
   - tai-hien.md (bugfix)
@@ -73,6 +74,8 @@ tới đây; `blocking` / `review-blocking` còn mở thì máy chặn.
 - Thay đổi nào **không** thuộc task nào? Task nào đánh dấu xong nhưng diff
   không có dấu vết?
 - Có mục "Unplanned" nào bị xử lý lặng lẽ thay vì nêu ra?
+- Task kiểm chứng thủ công (`ket-qua-task.md`, `Kiểm chứng: thủ công`): bằng
+  chứng có thật sự chứng minh task xong không? Máy chỉ biết có người/agent đã ghi.
 
 Thêm: đối chiếu diff với **từng file** quy tắc riêng của repo (`aw rules review` —
 hợp quy tắc của mọi phase). Mỗi file một dòng trong mục "Repo rules" của
@@ -85,6 +88,11 @@ Lỗi đúng/sai, chỗ có thể dùng lại thứ đã có, chỗ phức tạp
 Mỗi finding là một mục `### [Blocker|Should fix|Nit] <tiêu đề>`. `Blocker` và
 `Should fix` có `- Location: \`file:dòng\`` (số dòng thật); `Blocker` thêm
 `- Failure scenario:` — đầu vào cụ thể → kết quả sai, để người khác tái hiện được.
+`Blocker` và `Should fix` có `- Category: <loại-lỗi>` — kebab-case, vd
+`missing-null-check`, `sql-injection`. Chạy `aw journal` để **dùng lại tên đã có**:
+loại nào lặp lại ở nhiều việc thì máy gợi ý nâng nó thành luật máy kiểm (lệnh
+trong `LENH_KIEM_THU`, quy tắc repo) — mỗi loại lỗi đã bắt được một lần thành hàng
+rào vĩnh viễn, lần sau không phải trông vào người rà soát.
 Không có finding nào thì ghi đúng một dòng `- None` — để "không thấy lỗi" khác
 "chưa rà".
 
@@ -142,7 +150,7 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
   Anh, giữ đúng như mẫu (`## Lens 1/2/3/4`, verdict `pass | partial | fail | pending`,
   `## Repo rules` với `pass | violation | not applicable`, `## Lens 4 — Security` với
   `pass | finding | not applicable`, `Repro test fails because:`, `- None`,
-  `- Reviewed tree:`, `- Blocker findings: <n>`,
+  `- Reviewed tree:`, `- Blocker findings: <n>`, `- Category:`,
   `[Blocker] / [Should fix] / [Nit]`) — checker đọc theo đúng chữ đó; nội dung điền
   vào viết tiếng Việt.
 
@@ -177,7 +185,10 @@ không còn nói về code đó — máy chặn, rà lại.
   - chore đụng file dependency: có lệnh nhóm `sca` chạy xanh;
   - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
     thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai, điểm mù
-    `blocking` / `review-blocking` còn mở;
+    `blocking` / `review-blocking` còn mở, test mới bị tắt / chạy riêng chưa khai
+    ở "Unplanned";
+  - mọi task `[x]` với bằng chứng xanh trong `ket-qua-task.md` khớp `Verify`;
+    không file nào còn dấu xung đột merge;
   - luật theo loại việc (như `implement`), và bugfix có dòng `Repro test fails because:`;
   - repo có quy tắc riêng (`quy_tac_*`): file khai có thật, đã commit, và mục
     "Repo rules" của `review.md` có kết luận hợp lệ cho **từng** file;
@@ -186,7 +197,8 @@ không còn nói về code đó — máy chặn, rà lại.
     có ít nhất một finding;
   - `## Lens 3 — Quality` có ít nhất một finding **hoặc** đúng dòng `- None` (không
     cả hai), không còn chữ giữ chỗ của mẫu; `[Blocker]` / `[Should fix]` có
-    `Location` dạng `file:dòng`; `[Blocker]` có `Failure scenario`;
+    `Location` dạng `file:dòng` và `Category` kebab-case; `[Blocker]` có
+    `Failure scenario`;
   - `## Conclusion` có `- Blocker findings: <n>` với `n` bằng số mục `[Blocker]`;
   - `- Reviewed tree:` khớp dấu vân tay code hiện tại;
   - diff đụng `mau_code_nhay_cam` thì có `- Security reviewer: <tên người>` (không
@@ -195,6 +207,10 @@ không còn nói về code đó — máy chặn, rà lại.
   không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)
   thì checker **chỉ cảnh báo** — nêu ra cho người.
 
+Đạt thì finding `[Blocker]` / `[Should fix]` được ghi vào nhật ký harness theo
+`Category` (`aw journal`); loại đã gặp ở việc khác thì checker in `[GỢI Ý]`.
+
 **Người:**
 - Xác nhận kết luận; quyết định xử lý các finding mức `Blocker`.
+- Có `[GỢI Ý]` nâng luật: quyết định có biến loại lỗi đó thành lệnh máy kiểm không.
 - Có cảnh báo base: xác nhận việc dựa trên code của branch khác là có chủ ý.

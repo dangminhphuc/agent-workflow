@@ -9,6 +9,9 @@
 #   aw-engine input [--skip <intake.md>] <args|->
 #   aw-engine pending <feature-dir>
 #   aw-engine rules <phase>
+#   aw-engine ready <feature-dir> [--no-test]       worktree sẵn sàng chưa, bước tiếp là gì
+#   aw-engine task start|done|next <feature-dir> [T-NN] [--manual "<bằng chứng>"]
+#   aw-engine journal [report] | journal add <layer> <mô tả> [--feature <dir>]
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine rename <new-branch>
 #   aw-engine guard pre|post                      hook gác ô duyệt (Claude Code)
@@ -74,12 +77,23 @@ case "$LENH" in
               "      Thêm dòng đó (version lúc tạo việc: aw version), rồi chạy: aw check intake $1"
       fi
     fi
-    exec sh "$T/$s" "$@" ;;
+    # Nhật ký harness (aw journal): ghi mỗi lần chạy — checker nào, đạt không,
+    # vi phạm đầu tiên. stdout vẫn chảy ra ngay (tee); mã thoát giữ nguyên.
+    [ "${AW_JOURNAL:-1}" = 0 ] && exec sh "$T/$s" "$@"
+    _nk="${TMPDIR:-/tmp}/aw-nk.$$"
+    { sh "$T/$s" "$@"; echo $? > "$_nk.ma"; } | tee "$_nk"
+    _ma=$(cat "$_nk.ma" 2>/dev/null); _ma=${_ma:-1}
+    sh "$T/nhat-ky.sh" _check "$ten" "$1" "$_ma" "$_nk" >/dev/null 2>&1
+    rm -f "$_nk" "$_nk.ma"
+    exit "$_ma" ;;
   init)      can_repo; exec sh "$T/khoi-tao.sh" "$@" ;;
   feature)   can_repo; exec sh "$T/xac-dinh-feature.sh" "$@" ;;
   input)     can_repo; exec sh "$T/phan-loai-input.sh" "$@" ;;
   pending)   can_repo; exec sh "$T/liet-ke-viec-cho.sh" "$@" ;;
   rules)     can_repo; exec sh "$T/quy-tac-repo.sh" "$@" ;;
+  ready)     can_repo; exec sh "$T/san-sang.sh" "$@" ;;
+  task)      can_repo; exec sh "$T/task.sh" "$@" ;;
+  journal)   can_repo; exec sh "$T/nhat-ky.sh" "$@" ;;
   based-on)  can_repo; exec sh "$T/cap-nhat-based-on.sh" "$@" ;;
   rename)    can_repo; exec sh "$T/doi-ten-feature.sh" "$@" ;;
   guard)     can_repo; exec sh "$T/gac-duyet.sh" "$@" ;;

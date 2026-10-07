@@ -11,6 +11,7 @@ inputs:
 outputs:
   - diff
   - plan.md (cập nhật trạng thái task)
+  - ket-qua-task.md
   - ket-qua-kiem-thu.md
   - ket-qua-bao-mat.md
 exit_machine:
@@ -42,16 +43,33 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
 
 ## Việc phải làm
 
-1. **Làm từng task một.** Không gộp nhiều task vào một lượt, kể cả khi chúng
-   trông giống nhau. Gộp lại thì mất điểm dừng để kiểm tra giữa chừng.
-   Đánh `[~]` khi bắt đầu, `[x]` khi xong kèm danh sách file đã đụng tới.
+0. **Chạy `aw ready <thư-mục-feature>` trước task đầu tiên.** Nó chạy lệnh test
+   trên code chưa sửa. Đỏ ngay từ đầu nghĩa là môi trường chưa chuẩn bị
+   (`LENH_CHUAN_BI_WT`) hoặc base đang hỏng: **dừng, báo người** — đừng sửa hay
+   tắt test có sẵn. Bắt đầu trên base đỏ thì không còn phân biệt được lỗi mình
+   gây ra với lỗi có sẵn.
+
+1. **Làm từng task một — trạng thái do máy giữ.** Không gộp nhiều task vào một
+   lượt, kể cả khi chúng trông giống nhau. Không tự sửa ô `Status`:
+   - `aw task next <thư-mục-feature>` — task phải làm tiếp (đang `[~]` thì làm
+     cho xong nó trước; không thì task `[ ]` đầu tiên có phụ thuộc đã xong);
+   - `aw task start <thư-mục-feature> T-NN` — `[ ]` → `[~]`. Máy từ chối khi đã
+     có task khác `[~]` (một việc một lúc) hoặc phụ thuộc chưa `[x]`;
+   - `aw task done <thư-mục-feature> T-NN` — máy chạy lệnh trong backtick của
+     dòng `Verify`, ghi output thật vào `ket-qua-task.md`; **xanh** mới lên `[x]`.
+     Verify chỉ kiểm được bằng tay (không có lệnh): `--manual "<đã làm gì, thấy gì>"`.
+
+   `[x]` tự đánh không có bằng chứng xanh khớp lệnh `Verify` hiện tại thì
+   `aw check implement` chặn. Sửa lệnh `Verify` sau khi task xong cũng vậy.
 
 2. **Viết test gắn tag** theo cú pháp trong `conventions.md`, ví dụ
    `// covers: YC-001`. YC không test tự động được thì ghi vào mục
    "Manual verification" của `plan.md` kèm lý do.
 
-3. **Chạy kiểm chứng đã khai trong task** ngay sau khi làm xong task đó — không
-   dồn tới cuối.
+3. **Kiểm chứng ngay sau mỗi task** bằng `aw task done` — không dồn tới cuối.
+   Đỏ thì sửa trong task đó rồi chạy lại. Đỏ liên tiếp tới `SO_LAN_DO_TOI_DA`
+   (config.sh, mặc định 3) thì máy báo **DỪNG**: ghi vào "Unplanned" đã thử gì,
+   lỗi gì, rồi báo người. Thử tiếp sau đó là đoán mò.
 
 4. **Dừng và báo khi gặp điều kế hoạch chưa lường.** Không tự quyết rồi đi
    tiếp. Ghi vào `plan.md` mục "Unplanned" và nêu ra. Nếu nó đụng một quyết định
@@ -73,6 +91,37 @@ dọn thêm vài file. Kết quả là một diff không ai review nổi.
    mật (`LENH_KIEM_TRA_BAO_MAT` — cùng lệnh, cùng ngưỡng với CI), tự ghi
    `ket-qua-kiem-thu.md` và `ket-qua-bao-mat.md` — không tự viết hai file đó. Chỉ
    cần chạy lại phần quét: `aw check security <thư-mục-feature>`.
+
+## Chạy thành vòng lặp (tuỳ chọn)
+
+Phase này không có gate người — mọi quyết định đã chốt ở `spec`, `design`, `plan`.
+Vì vậy nó chạy được thành vòng lặp không cần người canh từng task. Vòng lặp nằm
+ở **lệnh và file**, không ở tính năng riêng của agent nào:
+
+```
+lặp:
+  T = aw task next <dir>
+      HẾT TASK  → aw check implement → ĐẠT: dừng, báo kết quả
+                                       KHÔNG ĐẠT: sửa đúng vi phạm, chạy lại (tính vào lượt)
+      KẸT, DỪNG → dừng, báo người
+  aw task start <dir> T
+  làm T (chỉ trong "Expected files" của T)
+  aw task done <dir> T
+      ĐỎ   → sửa trong T, chạy lại done
+      DỪNG → ghi "Unplanned", dừng, báo người
+```
+
+Điều kiện dừng ngoài các nhãn trên — gặp một trong số này thì dừng ngay, không
+lượt nào được bỏ qua:
+
+- Gặp điều kế hoạch chưa lường (bước 4) — đã ghi "Unplanned".
+- Cần đụng file ngoài "Expected files" của task.
+- Cần sửa `tdd.md`, `spec.md`, hoặc mở lại một D-xx.
+- `aw check implement` không đạt cùng một vi phạm hai lần liên tiếp.
+
+Người giao vòng lặp vẫn là người đọc kết quả: vòng lặp làm việc sinh code gần
+như miễn phí, phần còn khan hiếm là phán đoán — `review` vẫn chạy bằng ngữ cảnh
+sạch như mọi khi.
 
 ## Theo loại việc — chặn
 
@@ -101,6 +150,7 @@ khi sửa" chỉ có giá trị khi nó thật sự được lấy trước khi 
 | Loại việc lệch tiền tố branch | Sửa loại trong `intake.md`, hoặc `aw rename` |
 | refactor/perf: test cũ bị sửa mà chưa khai | Khai ở "Modified existing tests" + lý do, hoặc hoàn tác |
 | Điểm mù `Blocking: review-blocking` còn mở | Nhờ người chạy lệnh `clarify` để chốt — agent không tự trả lời |
+| Dòng **thêm mới** trong file test có `.only(`, `.skip(`, `xit(`, `@Disabled`… (`mau_bo_qua_test`) | Bỏ đánh dấu; thật sự cần tắt thì ghi file vào "Unplanned" kèm lý do |
 
 Cảnh báo không chặn ở đây để flow không tắc vì checker hay báo nhầm. Nhưng
 `05-review` là cổng chặn cuối: cảnh báo nào còn thì review **không đạt**. Xử lý
@@ -110,6 +160,7 @@ luôn ở đây là rẻ nhất.
 
 - Thay đổi code trong repo đích
 - `plan.md` đã cập nhật trạng thái (và "Unplanned", "Manual verification" nếu có)
+- `ket-qua-task.md` — do `aw task done` ghi, bằng chứng kiểm chứng của từng task
 - `ket-qua-kiem-thu.md` — do script ghi, output thật của lệnh kiểm thử
 - `ket-qua-bao-mat.md` — do script ghi, output thật của từng lệnh quét bảo mật
 
@@ -119,6 +170,9 @@ code sau đó — kể cả chưa commit — thì `review` chặn tới khi ch�
 ## Cấm
 
 - Làm việc không có trong `plan.md`.
+- Tự sửa ô `Status` trong `plan.md` thay vì `aw task start` / `aw task done`,
+  hay tự viết `ket-qua-task.md`.
+- Mở task mới khi task trước còn `[~]`.
 - Sửa `tdd.md` hay `spec.md`. Thấy sai thì dừng và nêu ra.
 - **Tuyên bố xong khi chưa chạy kiểm thử.** Đây là thất bại phổ biến nhất của
   agent trong toàn quy trình.
@@ -144,8 +198,21 @@ vào riêng — nó ăn đúng cái diff mà `05-review` ăn — và đặt nó 
 - `aw check implement` ra `[x] ĐẠT`: đầu vào qua `aw check plan`;
   lệnh kiểm thử của repo đích chạy **XANH** và output thật nằm trong
   `ket-qua-kiem-thu.md`; mọi lệnh trong `LENH_KIEM_TRA_BAO_MAT` chạy **XANH** và
-  output thật nằm trong `ket-qua-bao-mat.md`; không còn task `[~]`.
+  output thật nằm trong `ket-qua-bao-mat.md`; **mọi** task `[x]` (không còn
+  `[~]` hay `[ ]`), mỗi task có bằng chứng xanh trong `ket-qua-task.md` khớp lệnh
+  `Verify` hiện tại; không file nào còn dấu xung đột merge.
 
 Nếu repo đích chưa có lệnh kiểm thử hay lệnh quét bảo mật, phải khai báo lúc cài đặt. Không khai thì
 điều kiện ra này coi như **fail**, không phải "bỏ qua" — im lặng bỏ qua sẽ làm
 cả ràng buộc trên mất tác dụng ở đúng những repo cần nó nhất.
+
+## Khi agent làm hỏng
+
+Agent làm sai mà checker không bắt (hoặc bắt quá muộn) là dấu hiệu harness
+thiếu một chỗ. Người hoặc agent ghi lại, gắn lớp gây ra:
+
+```
+aw journal add <task|context|env|verify|state|model> "<làm sai gì, ở đâu, harness thiếu gì>"
+```
+
+`aw journal` tổng hợp lại để biết nên đầu tư vào đâu — xem `docs/kien-truc.md`.

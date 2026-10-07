@@ -15,6 +15,9 @@
 #      bi sua chua khai, diem mu muc "review-blocking" chua tra loi. Giua flow
 #      chung chi canh bao de flow khong tac; o day
 #      thi khong con cho nao phia sau de bat lai.
+#   5b. Task chua xong bang may: con [~] / [ ], task [x] khong co bang chung xanh
+#      trong ket-qua-task.md (aw task done); file con dau xung dot merge; test
+#      moi bi tat / chay rieng (mau_bo_qua_test) ma khong khai o "Unplanned".
 #   6. Luat theo loai viec (intake.md) — nhu implement; bugfix con phai co
 #      dong "Repro test fails because: ..." do nguoi ra soat viet.
 #   7. Quy tac rieng cua repo (moi khoa quy_tac_* trong conventions.md): file
@@ -27,7 +30,8 @@
 #   9. Lens 3 — Quality: thieu muc; khong co finding nao ma cung khong ghi
 #      "- None" (hoac ghi "- None" ma van co finding); tieu de / gia tri con
 #      chu giu cho; [Blocker] / [Should fix] thieu "Location:" dang file:dong;
-#      [Blocker] thieu "Failure scenario:".
+#      [Blocker] thieu "Failure scenario:"; [Blocker] / [Should fix] thieu
+#      "Category:" dang kebab-case (aw journal dem loai lap lai giua cac viec).
 #  10. Conclusion: "Blocker findings: <n>" thieu hoac khac so muc [Blocker].
 #  11. "Reviewed tree:" thieu hoac khac dau van tay code hien tai — code doi
 #      sau khi ra soat thi ket luan khong con noi ve code nay.
@@ -48,6 +52,7 @@ kq_khai kiem-tra-ra-soat.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/task.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -81,7 +86,7 @@ while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<MOI
 $moi
 MOI
 
-cb=$( { kc_chan_theo_loai "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
+cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
 # bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.
 if [ "$(kc_loai "$DIR")" = "bugfix" ]; then
@@ -201,6 +206,8 @@ l3=$(awk '
     }
     if (muc == "Blocker" && giu_cho(kb))
       print "Lens 3 [Blocker] \"" ten "\": thiếu \"- Failure scenario:\" — đầu vào cụ thể → kết quả sai"
+    if ((muc == "Blocker" || muc == "Should fix") && cat !~ /^[a-z0-9]+(-[a-z0-9]+)*$/)
+      print "Lens 3 [" muc "] \"" ten "\": " (cat == "" ? "thiếu dòng \"- Category: <loại>\"" : "Category \"" cat "\" không phải kebab-case") " — loại lỗi ngắn, chữ thường, vd missing-null-check, sql-injection; dùng lại tên đã có (aw journal) để đếm được lặp lại"
     muc = ""
   }
   { sub(/\r$/, "") }
@@ -217,13 +224,14 @@ l3=$(awk '
     dong_muc()
     if (match($0, /\[(Blocker|Should fix|Nit)\]/)) {
       muc = substr($0, RSTART + 1, RLENGTH - 2); ten = trim(substr($0, RSTART + RLENGTH))
-      co_loc = 0; loc = ""; kb = ""; n_f++; if (muc == "Blocker") n_b++
+      co_loc = 0; loc = ""; kb = ""; cat = ""; n_f++; if (muc == "Blocker") n_b++
     } else print "Lens 3: tiêu đề \"" $0 "\" không có mức [Blocker] / [Should fix] / [Nit]"
     next
   }
   trong && /^[ \t]*-[ \t]*None[ \t]*$/ { none = 1; next }
   trong && muc != "" && /^[ \t]*-[ \t]*\**Location\**:/ { co_loc = 1; loc = gt($0); next }
   trong && muc != "" && /^[ \t]*-[ \t]*\**Failure scenario\**:/ { kb = gt($0); next }
+  trong && muc != "" && /^[ \t]*-[ \t]*\**Category\**:/ { cat = gt($0); gsub(/`/, "", cat); next }
   kl && /^[ \t]*-[ \t]*\**Blocker findings\**:/ { co_kl = 1; kl_b = gt($0) }
   END {
     if (trong) dong_muc()
@@ -341,3 +349,7 @@ awk -v loi_truoc="$n_truoc" '
     print "ĐẠT — mọi yêu cầu đều có kết luận rà soát."
   }
 ' "$SPEC" "$REVIEW"
+ma=$?
+# Đạt: ghi finding theo Category vào nhật ký harness; loại lặp ở nhiều việc thì gợi ý.
+[ "$ma" -eq 0 ] && sh "$HERE/nhat-ky.sh" _findings "$DIR" "$REVIEW" 2>/dev/null
+exit "$ma"

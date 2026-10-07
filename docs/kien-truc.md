@@ -397,6 +397,37 @@ tự gom.
 *cái agent nói*, không kiểm được *cái đã xảy ra*. Tự chạy thì bỏ hẳn khoảng cách
 đó — agent không có chỗ nào để bịa.
 
+### Trạng thái task do máy giữ
+
+Cùng lý do ở cấp task. Ô `Status` trong `plan.md` từng do agent tự đánh `[x]` — tức
+máy chỉ biết *agent nói* task xong. Giờ chỉ `aw task done` được nâng lên `[x]`:
+nó chạy lệnh trong backtick của dòng `Verify`, ghi output thật vào
+`ket-qua-task.md`, xanh mới đổi ô. `aw check implement` (và `review`) chặn task
+`[x]` không có mục xanh trong file đó, hay có mà lệnh đã chạy khác lệnh `Verify`
+hiện tại — sửa `Verify` cho dễ qua sau khi xong không còn tác dụng.
+
+- **WIP = 1.** `aw task start` từ chối khi đã có task `[~]` hoặc phụ thuộc chưa
+  `[x]`. Agent mở nhiều task cùng lúc là đường ngắn nhất tới "làm nhiều mà không
+  xong cái nào".
+- **Kiểm chứng thủ công vẫn để lại dấu.** Verify không có lệnh thì `--manual
+  "<bằng chứng>"`; máy chỉ cho khi thật sự không có lệnh, ghi `Kiểm chứng: thủ công`,
+  và `implement` nhắc người rà soát đọc bằng chứng đó.
+- **Đỏ liên tiếp có trần.** `SO_LAN_DO_TOI_DA` (mặc định 3): tới trần thì `done`
+  và `next` báo DỪNG. Đây là điều kiện dừng của vòng lặp — không có nó, vòng lặp
+  tự động sẽ thử tới khi hết token.
+- **Vòng lặp nằm ở lệnh, không ở agent.** `implement` không có gate người nên
+  chạy được thành vòng `next → start → làm → done`. Vòng lặp mô tả trong file
+  phase bằng lệnh `aw`, nên agent nào đọc được file và chạy được shell đều lặp
+  được; adapter không cần cơ chế riêng.
+
+### Đầu phiên: `aw ready`
+
+`aw doctor` kiểm phần cài đặt; `aw ready` kiểm repo đích có chạy được quy trình
+không: cấu hình có khoá máy cần, lệnh quét đã khai, và **lệnh test xanh trên code
+chưa sửa**. Base đỏ mà vẫn bắt đầu thì mọi task sau không phân biệt được lỗi mình
+gây ra với lỗi có sẵn — và agent hay "sửa" test có sẵn cho xanh. `ready` cũng in
+bước tiếp theo từ artifact đã có, để phiên mới không phải đoán đang ở đâu.
+
 ### Quét bảo mật: chạy ở implement, review kiểm độ mới
 
 Pipeline CI/CD chạy secret scan, SAST, SCA; quy trình trước đây thì không. Kết quả:
@@ -483,6 +514,41 @@ Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặ
 
 Mẫu file test, cú pháp tag, nhánh gốc và danh sách file bỏ qua khai trong
 `conventions.md` của repo đích — phần máy đọc phải parse được bằng sh/awk.
+
+### Trạng thái sạch
+
+Phiên kết thúc phải để lại code người sau dùng được ngay. Phần chính xác thì
+**chặn** ở `implement`: task `[ ]` còn sót (implement xong là mọi task xong — task
+người quyết bỏ thì xoá khỏi plan, YC sang "Deferred"), dấu xung đột merge trong
+file đã đổi. Phần hay báo nhầm thì **cảnh báo** rồi `review` chặn: dòng *thêm mới*
+trong file test khớp `mau_bo_qua_test` (`.only(`, `.skip(`, `xit(`, `@Disabled`…) —
+"test xanh" mất nghĩa khi có test bị tắt. Chỉ xét dòng thêm mới so với base, để
+test đã bị tắt từ trước không đổ lên việc này; tắt có chủ ý thì khai file ở
+"Unplanned".
+
+### Nhật ký harness: `aw journal`
+
+Mỗi lần agent làm hỏng là một tín hiệu harness thiếu một chỗ — nhưng không ghi
+lại thì không biết chỗ nào hỏng nhiều nhất. `$AW_CONFIG/journal/` (dùng chung
+mọi worktree, không commit) có ba nguồn:
+
+- **`checks.tsv`** — engine ghi mỗi lần `aw check`: checker, đạt không, vi phạm
+  đầu tiên. Không cần ai nhớ ghi; `AW_JOURNAL=0` để tắt.
+- **`failures.tsv`** — người/agent ghi khi agent làm sai mà checker không bắt,
+  gắn **một lớp**: `task` (việc không rõ), `context` (thiếu ngữ cảnh), `env`
+  (môi trường), `verify` (thiếu kiểm chứng), `state` (mất trạng thái giữa phiên),
+  `model`. `model` là lớp cuối: đổi model là lựa chọn đắt nhất, và thường lỗi
+  nằm ở một trong năm lớp kia.
+- **`findings.tsv`** — finding `[Blocker]` / `[Should fix]` của review theo
+  `Category`, ghi khi `aw check review` đạt (chạy lại thì thay, không nhân đôi).
+  Loại đã gặp ở ít nhất hai việc thì checker in `[GỢI Ý]` nâng nó thành luật máy
+  kiểm. Máy không tự thêm luật: người quyết luật nào đáng chặn, vì luật sai chặn
+  mọi việc sau.
+
+`Category` là chữ tự do (kebab-case), không phải danh sách cố định: danh sách
+cố định hoặc quá thô để có ích, hoặc dài tới mức người rà soát chọn bừa. Cái giá
+là cùng một loại có thể mang hai tên — `aw journal` liệt kê tên đã có để người
+rà soát dùng lại.
 
 ### Quy tắc riêng của repo
 
@@ -681,3 +747,14 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
     kết luận cho mỗi file quy tắc, không biết dòng `pass` có đúng không. Quy tắc
     nào viết được thành lệnh (lint, type, kiến trúc) thì nên nằm trong
     `LENH_KIEM_THU`.
+
+13. **`ket-qua-task.md` giả được như mọi file máy ghi.** Agent cố tình viết tay
+    một mục "Mã thoát: `0`" thì checker không phân biệt được với bản `aw task done`
+    ghi — cùng giới hạn với `ket-qua-kiem-thu.md`. Nó chặn việc *quên* kiểm chứng
+    và việc tự đánh `[x]`, không chặn được gian lận có chủ ý; `review` vẫn chạy lại
+    nghi ngờ đó bằng ngữ cảnh sạch.
+
+14. **Nhật ký harness chỉ ở máy từng người.** `$AW_CONFIG/journal/` không commit,
+    nên "loại lỗi lặp ở hai việc" chỉ đếm việc làm trên cùng bản clone. Team muốn
+    đếm chung thì phải gom file tay. `Category` tự do cũng có thể đếm hụt khi
+    cùng một loại mang hai tên.
