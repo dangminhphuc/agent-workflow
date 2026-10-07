@@ -46,8 +46,8 @@ văn xuôi.
 ```mermaid
 flowchart TD
     INTAKE["00-intake · bắt buộc<br/>→ intake.md (loại việc + input)<br/><i>MÁY: aw check intake</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: aw check spec</i><br/><i>NGƯỜI: duyệt YC, Mức chặn, Mức rủi ro</i>"]
-    PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Mức rủi ro: cao)"/]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: aw check spec</i><br/><i>NGƯỜI: duyệt YC, Blocking, Risk</i>"]
+    PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Risk: high)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: aw check design + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: aw check plan</i>"]
     IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: aw check implement (tự chạy test)</i>"]
@@ -106,8 +106,8 @@ Cách đọc:
 | Phase | Người | Người làm gì |
 |---|---|---|
 | `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
-| `spec` | có | Duyệt yêu cầu, nhãn `Mức chặn` của `[CẦN-HỎI]`, và `Mức rủi ro`; rồi tick ô `Người duyệt spec`. Trả lời điểm mù qua `/clarify` |
-| `design` | có | Duyệt **từng D-xx** trong `tdd.md` (tick ô `Người duyệt quyết định` của D đó); phân xử phát hiện của checker LLM qua `/clarify` |
+| `spec` | có | Duyệt yêu cầu, nhãn `Blocking` của `[OPEN-QUESTION]`, và `Risk`; rồi tick ô `Approved by human` ở đầu spec. Trả lời điểm mù qua `/clarify` |
+| `design` | có | Duyệt **từng D-xx** trong `tdd.md` (tick ô `Approved by human` của D đó); phân xử phát hiện của checker LLM qua `/clarify` |
 | `plan` | không | — |
 | `implement` | không | — |
 | `review` | có | Xác nhận kết luận; làm trọng tài cho phát hiện của checker |
@@ -120,15 +120,15 @@ Cách đọc:
 
 Điểm xuất phát bắt buộc của mọi việc. `intake.md` trả lời đúng ba câu:
 
-1. **Loại việc** — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
+1. **Loại việc** (dòng `Type`) — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
    branch (`loai_theo_tien_to` trong `conventions.md`), **người xác nhận**, và
    `intake.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
    chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên bằng
    `aw rename` (đổi cả branch, thư mục artifact và thư mục worktree).
 2. **Input** — tài liệu có định danh (`[JIRA]`, `[CONFLUENCE]`, `[FILE]`), hoặc
-   lời người dùng **chép nguyên văn** (`[NGƯỜI-DÙNG]`). Không có `[SUY-RA]` ở đây:
+   lời người dùng **chép nguyên văn** (`[HUMAN]`). Không có `[INFERRED]` ở đây:
    suy đoán của agent mà vào input thì mọi phase sau truy về nó như có nguồn.
-3. **Mục tiêu** một câu.
+3. **Mục tiêu** một câu (dòng `Goal`).
 
 Kèm dòng **Base** — base người chọn khi tạo worktree (xem dưới); checker phía sau
 so diff với base này — và dòng **Engine**: version engine của việc, mọi `aw check`
@@ -189,7 +189,7 @@ chối xoá branch thì bạn tự quyết `git branch -D`.
 Nhãn input do **máy** gán: `aw input` nhận mã Jira (`mau_jira`),
 URL Confluence (`mien_confluence`), file có thật trong repo. Chỉ cần một từ không
 nhận ra thì **cả chuỗi** là lời người dùng, chép nguyên văn thành một mục
-`[NGƯỜI-DÙNG]` — vd `/intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
+`[HUMAN]` — vd `/intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
 câu chỉ là đề xuất tách thêm, bạn đồng ý mới thành input riêng. Chạy lại `/intake`
 trong worktree đã có `intake.md` thì **gộp thêm** input mới (bỏ trùng), giữ nguyên
 loại việc; `spec.md` khi đó thành lỗi thời và phải chạy lại `/spec`.
@@ -209,10 +209,10 @@ Loại việc **đổi luật** của các phase sau:
 | Loại | Phase | Máy ghi / chặn thêm | Người phán |
 |---|---|---|---|
 | `feature` | đủ | — | — |
-| `bugfix` | đủ | Spec có "Tái hiện lỗi". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
-| `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Được bảo vệ bởi:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Test cũ bị sửa" | Diff test cũ chỉ đổi import/cấu trúc |
-| `perf` | đủ | Như refactor + YC `hiệu năng` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
-| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Nâng dependency" (chỉ `vá \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
+| `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Repro test fails because: …") |
+| `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Modified existing tests" | Diff test cũ chỉ đổi import/cấu trúc |
+| `perf` | đủ | Như refactor + YC `performance` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
+| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
 
 Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bugfix gấp),
 `security` (= bugfix/feature + rủi ro cao). `spike` nằm ngoài quy trình. Việc lai
@@ -221,19 +221,19 @@ Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bu
 ### `01-spec` — yêu cầu
 
 Mỗi yêu cầu `YC-xxx` phải truy được về một input trong `intake.md` (Confluence, Jira, file cục
-bộ). Chỗ chưa rõ ghi `[CẦN-HỎI]` kèm **Mức chặn** do agent đề xuất, người duyệt
+bộ). Chỗ chưa rõ ghi `[OPEN-QUESTION]` kèm **Blocking** do agent đề xuất, người duyệt
 ở gate spec — đúng ba mức:
 
-| Mức chặn | Sai giả định thì | Chặn gì |
+| Blocking | Sai giả định thì | Chặn gì |
 |---|---|---|
-| `chặn` | Cả thiết kế đổi hướng | `design` (chore: `plan`) và mọi phase sau, tới khi `đã trả lời` |
-| `chặn review` | Làm lại một phần code | Flow đi tiếp trên giả định tạm; `implement` cảnh báo, `review` chặn |
-| `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận`, không được `đạt` |
+| `blocking` | Cả thiết kế đổi hướng | `design` (chore: `plan`) và mọi phase sau, tới khi `answered` |
+| `review-blocking` | Làm lại một phần code | Flow đi tiếp trên giả định tạm; `implement` cảnh báo, `review` chặn |
+| `non-blocking` | Sửa nhỏ | Không chặn; `review` ghi YC đó `pending`, không được `pass` |
 
 **`/clarify`** — lệnh tiện ích, chạy bất cứ lúc nào sau `/spec`. Máy
 (`aw pending`) gom mọi việc đang chờ bạn quyết — điểm mù và phát hiện của checker
 LLM (`phat-hien-*.md`) — theo thứ tự phải chốt trước. Với điểm mù:
-mức chặn, rồi YC `bắt buộc` trước `nên có`, rồi mục có nhiều task đứng trên giả
+mức chặn, rồi YC `must` trước `should`, rồi mục có nhiều task đứng trên giả
 định hơn — và đánh dấu mục **đang chặn** phase kế tiếp. Danh sách đó để agent
 đọc; bạn chỉ thấy một dòng tóm tắt. Rồi agent hỏi **từng mục một** bằng câu hỏi
 lựa chọn (Claude Code: `AskUserQuestion`). Trước khi hỏi, agent **tự phân tích**
@@ -255,12 +255,12 @@ nguyên văn — agent thấy phát hiện sai thì đề xuất bác bỏ), và
 `/design` được nêu lại trong tổng kết để bạn biết. Điểm mù và phát hiện vẫn ở
 **file riêng** — chỉ hàng đợi là chung.
 
-Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
+Spec cũng gắn `Risk: high | normal`. **High** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.
 
-Gate người để lại dấu vết trong file: ô `- [ ] **Người duyệt spec**` ở đầu
+Gate người để lại dấu vết trong file: ô `- [ ] **Approved by human**` ở đầu
 `spec.md`, chỉ người tick; `design` (chore: `plan`) chặn tới lúc đó. Khi một
-`[CẦN-HỎI]` được trả lời, `open-questions.md` và nhãn nguồn trong spec phải đổi
+`[OPEN-QUESTION]` được trả lời, `open-questions.md` và nhãn nguồn trong spec phải đổi
 cùng nhau — checker đối chiếu hai chiều.
 
 #### Ô duyệt
@@ -268,13 +268,13 @@ cùng nhau — checker đối chiếu hai chiều.
 Spec và mỗi D-xx có một ô duyệt; bạn duyệt bằng cách đổi `[ ]` thành `[x]`:
 
 ```markdown
-- [x] **Người duyệt spec** — đã đọc và đồng ý toàn bộ spec <!-- dấu duyệt: 3f2a9c01d4e7b6a8 -->
+- [x] **Approved by human** — đã đọc và đồng ý toàn bộ spec <!-- approval-hash: 3f2a9c01d4e7b6a8 -->
 ```
 
 - **Dấu duyệt** do máy ghi lần đầu thấy tick (`aw check`, hoặc hook): hash của
   nội dung lúc đó. Nội dung đổi sau đó mà tick còn thì `aw check` chặn "đổi sau
-  duyệt". Duyệt lại bản mới: đọc chỗ đổi, xoá `<!-- dấu duyệt: … -->` (giữ tick).
-  Dòng trống, chú thích và `- Phản biện (agent):` dưới D không tính.
+  duyệt". Duyệt lại bản mới: đọc chỗ đổi, xoá `<!-- approval-hash: … -->` (giữ tick).
+  Dòng trống, chú thích và `- Critique (agent):` dưới D không tính.
 - **Agent không bao giờ tick**, không sửa dấu duyệt; agent sửa nội dung đã tick thì
   bỏ tick. Muốn máy chặn cứng thay vì chỉ dặn: cài hook `aw guard` cho Claude Code
   ([adapters/claude-code/README.md](adapters/claude-code/README.md#hook-gác-ô-duyệt))
@@ -288,16 +288,16 @@ Spec và mỗi D-xx có một ô duyệt; bạn duyệt bằng cách đổi `[ ]
   ```text
   CỔNG DUYỆT — vào /design cần spec đã được bạn duyệt
   Việc:        feat_x
-  Trạng thái:  ✗ CHƯA DUYỆT — ô "Người duyệt spec" chưa tick
+  Trạng thái:  ✗ CHƯA DUYỆT — ô "Approved by human" chưa tick
   Cách duyệt:  mở .agent-workflow/feat_x/spec.md, dòng 12
-               đổi   - [ ] **Người duyệt spec**
-               thành - [x] **Người duyệt spec**
+               đổi   - [ ] **Approved by human**
+               thành - [x] **Approved by human**
 
   Nên đọc kỹ trước khi tick (máy không kiểm thay được):
-    1. Yêu cầu agent tự suy ra [SUY-RA] — 3 mục, nguồn không ghi trực tiếp:
+    1. Yêu cầu agent tự suy ra [INFERRED] — 3 mục, nguồn không ghi trực tiếp:
          YC-006 — …
-    2. Ngoài phạm vi — 2 mục: …
-    3. Mức rủi ro: cao — /design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại
+    2. Out of scope — 2 mục: …
+    3. Risk: high — /design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại
     4. Điểm mù còn mở: 0
   ```
 
@@ -305,55 +305,55 @@ Spec và mỗi D-xx có một ô duyệt; bạn duyệt bằng cách đổi `[ ]
   ngay), **Giải thích từng điểm cần duyệt**, **Dừng — tôi duyệt sau**. Agent
   không bao giờ tick hộ — kể cả khi bạn bảo "duyệt hộ".
 - Việc bắt đầu trước bản có ô duyệt vẫn chạy bằng engine ghi trong `intake.md` của
-  nó (dòng `Trạng thái spec:` cũ). Engine mới gặp dạng cũ thì báo cách đổi.
+  nó (dòng `Status:` cũ). Engine mới gặp dạng cũ thì báo cách đổi.
 
 ### `02-design` — Technical Design Document
 
 Output duy nhất: `tdd.md` (Technical Design Document, **không phải** Test-Driven
 Development). Nó chứa mọi thông tin `implement` cần để làm đúng kỹ thuật:
 
-- Bối cảnh code hiện có
-- **Quyết định D-xx** — người duyệt từng mục; mục này được phép rỗng
-- Mô hình dữ liệu + ERD
+- Existing code — code hiện có
+- **Decisions (D-xx)** — người duyệt từng mục; mục này được phép rỗng
+- Data model + ERD
 - Contract / API
 - Flow, sequence, state (Mermaid)
 - Yêu cầu phi chức năng
-- Chiến lược test
-- Ánh xạ YC → mục thiết kế
+- Test strategy
+- YC mapping → mục thiết kế
 
-Mục không áp dụng ghi `Không áp dụng: <lý do>` chứ không bỏ trống. Mục chi tiết
-ghi `Dựa trên: D-xx`; checker LLM tìm chỗ lệch D-xx và các quyết định ngầm chưa
+Mục không áp dụng ghi `Not applicable: <lý do>` chứ không bỏ trống. Mục chi tiết
+ghi `Based on: D-xx`; checker LLM tìm chỗ lệch D-xx và các quyết định ngầm chưa
 được nêu thành D.
 
-Mỗi D-xx có `tac_gia: nguoi | agent` và một ô `- [ ] **Người duyệt quyết định**`.
+Mỗi D-xx có `Author: human | agent` và một ô `- [ ] **Approved by human**`.
 **Chỉ người** tick; `/plan` chặn nếu còn D chưa tick. Chưa tick mà có
-`Lý do mở lại:` là D đang mở lại.
+`Reopen reason:` là D đang mở lại (`reopened`).
 
 Hai cách làm:
 
 - **Mode 1** — agent viết cả `tdd.md` một lần, người duyệt.
-- **Mode 2** — người phác các mục D-xx trước (`tac_gia: nguoi`), agent viết phần
-  còn lại và chỉ **phản biện** quyết định của người. Spec có `Mức rủi ro: cao` mà
+- **Mode 2** — người phác các mục D-xx trước (`Author: human`), agent viết phần
+  còn lại và chỉ **phản biện** quyết định của người. Spec có `Risk: high` mà
   chưa có bản phác của người thì `design` chặn — để tránh người duyệt bị neo vào
   phương án agent đưa ra.
 
 **Mở lại quyết định:** mở lại đúng một D-xx, sửa tại chỗ (lịch sử để git giữ), ghi
-trạng thái `mở lại` + dòng `Lý do mở lại:`. Grep `Dựa trên: D-xx` ra các task bị ảnh hưởng, chỉ
+bỏ tick ô duyệt của D đó + thêm dòng `Reopen reason:` (trạng thái `reopened`). Grep `Based on: D-xx` ra các task bị ảnh hưởng, chỉ
 các task đó đặt lại `[ ]`; người chỉ duyệt lại D đang mở.
 
 ### `03-plan` — quản lý thực thi
 
-`plan.md` chỉ còn phần thực thi: task, thứ tự/phụ thuộc, `Phủ: YC-xxx`,
-`Dựa trên: D-xx`, `Theo: tdd.md § …`, File dự kiến, Cách kiểm chứng, task dựa
-trên giả định, trạng thái, Phát sinh, Hoãn lại. Nó tách khỏi `tdd.md` để việc
+`plan.md` chỉ còn phần thực thi: task, thứ tự/phụ thuộc, `Covers: YC-xxx`,
+`Based on: D-xx`, `Design: tdd.md § …`, Expected files, Verify, task dựa
+trên giả định, trạng thái, Unplanned, Deferred. Nó tách khỏi `tdd.md` để việc
 tick task không bao giờ sửa vào tài liệu thiết kế đã duyệt.
 
 ### `04-implement` — code + test
 
 - Test gắn tag `covers: YC-xxx`. YC chưa có test → **cảnh báo**. YC không test tự
   động được ghi `Kiểm chứng: thủ công` + lý do.
-- So `git diff --name-only <nhánh-gốc>...HEAD` với "File dự kiến" (cho phép glob)
-  và "Phát sinh" của plan. File ngoài phạm vi → **cảnh báo**.
+- So `git diff --name-only <nhánh-gốc>...HEAD` với "Expected files" (cho phép glob)
+  và "Unplanned" của plan. File ngoài phạm vi → **cảnh báo**.
 
 ### `05-review` — rà soát độc lập
 
@@ -368,12 +368,12 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
-| `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
-| `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Mức chặn` thiếu/sai |
-| `design` | `aw check design` | Spec chưa được người duyệt (hoặc đổi sau khi duyệt), điểm mù `chặn` còn mở, thiếu mục, D-xx thiếu/sai ô duyệt hoặc đổi sau khi duyệt, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[INFERRED]` trong input, `[HUMAN]` không kèm nguyên văn |
+| `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Blocking` thiếu/sai |
+| `design` | `aw check design` | Spec chưa được người duyệt (hoặc đổi sau khi duyệt), điểm mù `blocking` còn mở, thiếu mục, D-xx thiếu/sai ô duyệt hoặc đổi sau khi duyệt, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `aw check plan` | D-xx chưa được người duyệt (hoặc đổi sau khi duyệt), task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `aw check implement` | Test chưa xanh, task còn dở |
-| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, điểm mù `chặn`/`chặn review` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
+| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
 
 Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
 một nhãn — người và agent đọc nhãn, không đọc mã số:
@@ -438,10 +438,10 @@ chặn nếu còn artifact lỗi thời.
 
 | Kiểm chéo | Cách kiểm | Xử lý |
 |---|---|---|
-| Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do trong `plan.md` |
-| Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "File dự kiến" + "Phát sinh" + `bo_qua` | Hoàn tác, hoặc ghi vào "Phát sinh" |
+| Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Manual verification" + lý do trong `plan.md` |
+| Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "Expected files" + "Unplanned" + `bo_qua` | Hoàn tác, hoặc ghi vào "Unplanned" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
-| Điểm mù | `Mức chặn: chặn review` (hoặc `chặn`) còn `mở` trong `open-questions.md` | Chốt với người qua `/clarify` |
+| Điểm mù | `Blocking: review-blocking` (hoặc `blocking`) còn `open` trong `open-questions.md` | Chốt với người qua `/clarify` |
 
 ## Đưa artifact từ ngoài vào
 
@@ -449,7 +449,7 @@ Artifact làm bằng tool khác thường không đúng mẫu. Nó đi qua **bư
 kiểm soát** — một lệnh riêng, không phải phase:
 
 - Chỉ sắp xếp lại theo mẫu, **không thêm nội dung**.
-- Gắn nhãn nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[CẦN-HỎI]`.
+- Gắn nhãn nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[OPEN-QUESTION]`.
 - Kết quả chạy qua checker của phase tương ứng, và người xác nhận bản chuyển đổi.
 
 Với Claude Code: `/import <file-nguồn> <spec.md|tdd.md|plan.md>`. Định nghĩa trung
@@ -474,7 +474,7 @@ protected branch. Gồm ba phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.9/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.10/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -612,7 +612,7 @@ prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành
 | `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
 | `loai_theo_tien_to` | `feat_=feature fix_=bugfix` | Tiền tố branch → loại việc (gợi ý ở `/intake`, đối chiếu ở review) |
 | `mau_code_production` | `src/*` | Code production — `chore` không được đụng; bugfix/perf đo "trước" khi chưa đụng |
-| `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Nâng dependency" |
+| `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Dependency upgrades" |
 | `quy_tac_<phase>` | `quy_tac_implement: docs/coding-style.md .claude/skills/api/SKILL.md` | Quy tắc riêng của repo — xem bên dưới |
 
 Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.
@@ -628,8 +628,8 @@ phase cần nó: `quy_tac_spec`, `quy_tac_design`, `quy_tac_plan`, `quy_tac_impl
 - File phải **đã commit** vào base: worktree mới chỉ có file đã commit. Không có,
   chưa commit, hay khoá gõ nhầm → `aw check` của phase đó chặn. Skill để trong
   `.claude/` thì commit bằng `git add -f` — `aw init` exclude cả `/.claude/`.
-- `review` đối chiếu diff với **mọi** khoá: mục "Quy tắc repo" của `review.md` có
-  một dòng `đạt` / `vi phạm` / `không áp dụng` cho từng file, thiếu là chặn.
+- `review` đối chiếu diff với **mọi** khoá: mục "Repo rules" của `review.md` có
+  một dòng `pass` / `violation` / `not applicable` cho từng file, thiếu là chặn.
 - Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md`. Quy tắc máy kiểm được
   (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` — để máy chặn, không chỉ để
   agent đọc.

@@ -50,18 +50,18 @@ if [ "$CONG" = spec ]; then
   echo "CỔNG DUYỆT — vào /$PHASE cần spec đã được bạn duyệt"
   echo "Việc:        $VIEC"
   case "$TT" in
-    "đã duyệt")
+    approved)
       echo "Trạng thái:  ✓ ĐÃ DUYỆT"
       exit 0 ;;
-    "đề xuất")
+    proposed)
       echo "Trạng thái:  ✗ CHƯA DUYỆT — ô \"$DY_NHAN_SPEC\" chưa tick"
       echo "Cách duyệt:  mở $F, dòng $DONG"
       echo "             đổi   - [ ] **$DY_NHAN_SPEC**"
       echo "             thành - [x] **$DY_NHAN_SPEC**" ;;
-    "đổi sau duyệt")
+    changed-after-approval)
       echo "Trạng thái:  ✗ ĐÃ ĐỔI SAU KHI DUYỆT — bạn đã tick, nhưng nội dung spec đổi sau đó"
       echo "Cách duyệt:  đọc lại $F"
-      echo "             đồng ý bản mới → xoá \"<!-- dấu duyệt: … -->\" ở dòng $DONG (giữ [x])"
+      echo "             đồng ý bản mới → xoá \"<!-- approval-hash: … -->\" ở dòng $DONG (giữ [x])"
       echo "             không đồng ý   → bỏ tick, nói agent cần sửa gì"
       echo "             (máy chỉ lưu hash nên không chỉ ra được dòng nào đã đổi)" ;;
     *)
@@ -77,42 +77,42 @@ if [ "$CONG" = spec ]; then
     cmt { if ($0 ~ /-->/) cmt = 0; next }
     /^[ \t]*<!--/ && !/-->/ { cmt = 1; next }
     /^[ \t]*<!--.*-->[ \t]*$/ { next }
-    idx == 1 && rui_ro == "" && /Mức rủi ro[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); rui_ro = ra(v); next }
+    idx == 1 && rui_ro == "" && /^[-*][ \t]*\*\*Risk:\*\*/ { v = $0; sub(/^[^:]*:/, "", v); rui_ro = ra(v); next }
     idx == 1 && /^###[ \t]+YC-[0-9]+/ {
       match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH); ds[++n] = cur
       t = $0; sub(/^###[ \t]+YC-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t; next
     }
-    idx == 1 && /^##[ \t]/ { cur = ""; sec = ($0 ~ /Ngoài phạm vi/) ? "npv" : ""; next }
+    idx == 1 && /^##[ \t]/ { cur = ""; sec = ($0 ~ /^##[ \t]+Out of scope/) ? "npv" : ""; next }
     idx == 1 && /^###[ \t]/ { cur = ""; next }
-    idx == 1 && cur != "" && /Nguồn[^:]*:/ && !(cur in nhan) {
-      if (match($0, /\[(CONFLUENCE|JIRA|FILE|SUY-RA|CẦN-HỎI)\]/)) { nhan[cur] = substr($0, RSTART + 1, RLENGTH - 2); dem[nhan[cur]]++ }
+    idx == 1 && cur != "" && /^[-*][ \t]*\*{0,2}Source[^:]*:/ && !(cur in nhan) {
+      if (match($0, /\[(CONFLUENCE|JIRA|FILE|INFERRED|OPEN-QUESTION)\]/)) { nhan[cur] = substr($0, RSTART + 1, RLENGTH - 2); dem[nhan[cur]]++ }
     }
     idx == 1 && sec == "npv" && $0 !~ /^[ \t]*$/ { v = ra($0); if (v != "" && v !~ /^</) npv[++n_npv] = v }
-    idx == 2 && /^##[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); q = substr($0, RSTART, RLENGTH); oq[++n_oq] = q; tt[q] = "mở"; mc[q] = "?"; next }
-    idx == 2 && q != "" && /Mức chặn[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); mc[q] = ra(v) }
-    idx == 2 && q != "" && /Trạng thái[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); tt[q] = ra(v) }
+    idx == 2 && /^##[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); q = substr($0, RSTART, RLENGTH); oq[++n_oq] = q; tt[q] = "open"; mc[q] = "?"; next }
+    idx == 2 && q != "" && /^[-*][ \t]*\*{0,2}Blocking[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); mc[q] = ra(v) }
+    idx == 2 && q != "" && /^[-*][ \t]*\*{0,2}Status[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); tt[q] = ra(v) }
     END {
       print "Nên đọc kỹ trước khi tick (máy không kiểm thay được):"
       k = 0
-      s = ""; for (i = 1; i <= n; i++) if (nhan[ds[i]] == "SUY-RA") s = s "\n       " ds[i] " — " ten[ds[i]]
-      printf "  %d. Yêu cầu agent tự suy ra [SUY-RA] — %d mục, nguồn không ghi trực tiếp%s\n", ++k, dem["SUY-RA"] + 0, (s == "" ? "" : ":" s)
-      printf "  %d. Ngoài phạm vi — %d mục%s\n", ++k, n_npv, (n_npv ? ":" : "")
+      s = ""; for (i = 1; i <= n; i++) if (nhan[ds[i]] == "INFERRED") s = s "\n       " ds[i] " — " ten[ds[i]]
+      printf "  %d. Yêu cầu agent tự suy ra [INFERRED] — %d mục, nguồn không ghi trực tiếp%s\n", ++k, dem["INFERRED"] + 0, (s == "" ? "" : ":" s)
+      printf "  %d. Out of scope — %d mục%s\n", ++k, n_npv, (n_npv ? ":" : "")
       for (i = 1; i <= n_npv && i <= 6; i++) print "       - " npv[i]
       if (n_npv > 6) print "       … và " (n_npv - 6) " mục nữa"
       if (phase == "design") {
-        if (rui_ro == "cao") hq = "/design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại"
-        else if (rui_ro == "thường") hq = "/design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
+        if (rui_ro == "high") hq = "/design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại"
+        else if (rui_ro == "normal") hq = "/design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
         else hq = "chưa có nhãn hợp lệ — aw check spec sẽ chặn"
       } else hq = "chore không có design"
-      printf "  %d. Mức rủi ro: %s — %s\n", ++k, (rui_ro == "" ? "?" : rui_ro), hq
+      printf "  %d. Risk: %s — %s\n", ++k, (rui_ro == "" ? "?" : rui_ro), hq
       mo = 0; mo_chan = ""
-      for (i = 1; i <= n_oq; i++) if (tt[oq[i]] != "đã trả lời") { mo++; dmc[mc[oq[i]]]++; if (mc[oq[i]] == "chặn") mo_chan = mo_chan " " oq[i] }
+      for (i = 1; i <= n_oq; i++) if (tt[oq[i]] != "answered") { mo++; dmc[mc[oq[i]]]++; if (mc[oq[i]] == "blocking") mo_chan = mo_chan " " oq[i] }
       if (mo == 0) printf "  %d. Điểm mù còn mở: 0\n", ++k
-      else printf "  %d. Điểm mù còn mở: %d (chặn: %d · chặn review: %d · không chặn: %d)%s\n", ++k, mo, dmc["chặn"] + 0, dmc["chặn review"] + 0, dmc["không chặn"] + 0, \
-             (mo_chan == "" ? "" : " — mục \"chặn\" phải trả lời qua /clarify trước:" mo_chan)
+      else printf "  %d. Điểm mù còn mở: %d (blocking: %d · review-blocking: %d · non-blocking: %d)%s\n", ++k, mo, dmc["blocking"] + 0, dmc["review-blocking"] + 0, dmc["non-blocking"] + 0, \
+             (mo_chan == "" ? "" : " — mục \"blocking\" phải trả lời qua /clarify trước:" mo_chan)
       print ""
       t = ""
-      split("FILE JIRA CONFLUENCE SUY-RA CẦN-HỎI", lb, " ")
+      split("FILE JIRA CONFLUENCE INFERRED OPEN-QUESTION", lb, " ")
       for (i = 1; i <= 5; i++) if (dem[lb[i]]) t = t (t == "" ? "" : " · ") "[" lb[i] "] " dem[lb[i]]
       print "Spec có " n " yêu cầu" (t == "" ? "" : ": " t)
     }
@@ -142,15 +142,15 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" '
     co[d] = 1; ds[++n] = d; t = $0; sub(/^###[ \t]+D-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[d] = t; next
   }
   idx == 1 && /^##?#?[ \t]/ { d = ""; next }
-  idx == 1 && d != "" && /^[ \t]*[-*][ \t]*tac_gia[^:]*:/ { tg[d] = ra($0) }
-  idx == 1 && d != "" && /^[ \t]*[-*][ \t]*Chọn[^:]*:/ { chon[d] = ra($0) }
-  idx == 1 && d != "" && /Lý do mở lại[^:]*:/ { ld[d] = ra($0) }
-  idx == 1 && d != "" && /^[-*][ \t]*Phản biện \(agent\)/ { pb[d]++ }
+  idx == 1 && d != "" && /^[ \t]*[-*][ \t]*Author[^:]*:/ { tg[d] = ra($0) }
+  idx == 1 && d != "" && /^[ \t]*[-*][ \t]*Choice[^:]*:/ { chon[d] = ra($0) }
+  idx == 1 && d != "" && /Reopen reason[^:]*:/ { ld[d] = ra($0) }
+  idx == 1 && d != "" && /^[-*][ \t]*Critique \(agent\)/ { pb[d]++ }
   idx == 2 && /^###[ \t]+PH-[0-9]+/ { match($0, /PH-[0-9]+/); ph = substr($0, RSTART, RLENGTH); dsph[++nph] = ph; xl[ph] = ""; next }
   idx == 2 && ph != "" && /Xử lý[^:]*:/ { xl[ph] = ra($0) }
   idx == 2 && ph != "" && /Mức[^:]*:/ && !/Mức chặn/ { muc[ph] = ra($0) }
   END {
-    for (i = 1; i <= n; i++) if (tt[ds[i]] != "đã duyệt") cho++
+    for (i = 1; i <= n; i++) if (tt[ds[i]] != "approved") cho++
     print "CỔNG DUYỆT — vào /plan cần mọi quyết định D-xx đã được bạn duyệt"
     print "Việc:        " viec
     if (n == 0) { print "Trạng thái:  ✓ KHÔNG CÓ QUYẾT ĐỊNH NÀO CẦN DUYỆT"; exit 0 }
@@ -161,17 +161,17 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" '
     print "Chưa duyệt:"
     for (i = 1; i <= n; i++) {
       d = ds[i]; s = tt[d]
-      if (s == "đã duyệt") continue
-      if (s == "đề xuất") lydo = "chưa tick"
-      else if (s == "mở lại") lydo = "đang mở lại — lý do: " ld[d]
-      else if (s == "đổi sau duyệt") lydo = "ĐÃ ĐỔI sau khi bạn tick — đọc lại; đồng ý thì xoá dấu duyệt (giữ [x])"
+      if (s == "approved") continue
+      if (s == "proposed") lydo = "chưa tick"
+      else if (s == "reopened") lydo = "đang mở lại — lý do: " ld[d]
+      else if (s == "changed-after-approval") lydo = "ĐÃ ĐỔI sau khi bạn tick — đọc lại; đồng ý thì xoá dấu duyệt (giữ [x])"
       else lydo = "thiếu ô duyệt — agent thêm ô (chưa tick) rồi chạy lại"
       printf "  %s — %s\n", d, ten[d]
       printf "         %s%s\n", (d in nr ? "dòng " nr[d] " · " : ""), lydo
-      printf "         tác giả: %s%s%s\n", (tg[d] == "nguoi" ? "bạn (nguoi)" : (tg[d] == "" ? "?" : tg[d])), \
-             (chon[d] == "" ? "" : " · Chọn: " chon[d]), (pb[d] ? " · có " pb[d] " phản biện của agent — đọc trước khi tick" : "")
+      printf "         tác giả: %s%s%s\n", (tg[d] == "human" ? "bạn (human)" : (tg[d] == "" ? "?" : tg[d])), \
+             (chon[d] == "" ? "" : " · Choice: " chon[d]), (pb[d] ? " · có " pb[d] " phản biện của agent — đọc trước khi tick" : "")
     }
-    xong = ""; for (i = 1; i <= n; i++) if (tt[ds[i]] == "đã duyệt") xong = xong (xong == "" ? "" : ", ") ds[i]
+    xong = ""; for (i = 1; i <= n; i++) if (tt[ds[i]] == "approved") xong = xong (xong == "" ? "" : ", ") ds[i]
     if (xong != "") print "Đã duyệt:    " xong
     print ""
     print "Cách duyệt:  đọc từng D ở trên, đổi \"- [ ] **" nhan "**\" thành \"- [x] **" nhan "**\""

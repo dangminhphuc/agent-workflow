@@ -63,7 +63,7 @@ Confluence, viết tay…) rồi đưa vào đúng phase cần.
   `tdd.md` viết tay vẫn cần người duyệt từng D-xx như khi agent viết.
 - **Input không đúng mẫu đi qua bước import có kiểm soát** — lệnh riêng, không
   phải phase. Nó chỉ sắp xếp lại theo mẫu, **không thêm nội dung**; gắn nhãn
-  nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[CẦN-HỎI]`. Kết quả qua checker và
+  nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[OPEN-QUESTION]`. Kết quả qua checker và
   người xác nhận bản chuyển đổi.
 
 Import không được thêm nội dung vì nếu được, agent sẽ lặng lẽ lấp chỗ trống bằng
@@ -81,14 +81,14 @@ tiêu**. Trước đây `ideation` chỉ chạy khi không có BRD; giờ nó b�
 
 Điều giữ cho `00` không thành một lớp diễn giải chen giữa BRD và spec: nó chỉ
 **trỏ tới** tài liệu, và input chỉ nhận tài liệu có định danh hoặc lời người dùng
-**chép nguyên văn** (`[NGƯỜI-DÙNG]`). `[SUY-RA]` bị cấm ở input — nếu không, điều
+**chép nguyên văn** (`[HUMAN]`). `[INFERRED]` bị cấm ở input — nếu không, điều
 agent tự suy ra sẽ sang spec với nhãn `[FILE] intake.md` như có nguồn thật.
 
 **Nhãn input do máy gán** (`aw input`), không do agent đoán:
 checker chỉ kiểm được cú pháp nhãn, nên agent gắn `[JIRA]` cho một URL GitHub
 vẫn lọt tới `spec`. Luật chọn quyết định trên **cả chuỗi**, không trên từng từ:
 một từ không nhận ra là cả tham số thành lời người dùng nguyên văn. Tách từng từ
-sẽ biến một câu thành vài input rác và làm mất câu gốc — đúng thứ `[NGƯỜI-DÙNG]`
+sẽ biến một câu thành vài input rác và làm mất câu gốc — đúng thứ `[HUMAN]`
 sinh ra để giữ. Chạy lại `/intake` chỉ **gộp thêm** (không xoá, không đổi loại
 việc), và `spec.md` ghi `based_on: intake.md` để input mới làm spec lỗi thời.
 
@@ -236,18 +236,18 @@ trong chính quá trình xây repo này, ở phase `review`.
 
 Gate người cố định ở `intake`, `spec`, `design`, `review` (và `ship` nếu dùng).
 Gate nào có phase máy chạy ngay sau thì phải để lại **dấu vết trong file** để
-phase sau chặn được: spec và mỗi D-xx có một **ô duyệt** `- [ ] **Người duyệt …**`.
+phase sau chặn được: spec và mỗi D-xx có một **ô duyệt** `- [ ] **Approved by human**`.
 Gate chỉ nằm trong tài liệu thì agent chạy tiếp được trên một spec chưa ai đọc.
 
-Ô duyệt là checkbox chứ không phải chữ gõ tay (`đề xuất` → `đã duyệt`): gõ sai một
+Ô duyệt là checkbox chứ không phải chữ gõ tay (`proposed` → `approved`): gõ sai một
 dấu là checker không nhận. Đổi lại, LLM quen tick checklist khi xong việc, nên ô
 duyệt có thêm hai lớp, cùng nằm ở `tools/lib/duyet.sh`:
 
 - **Dấu duyệt.** Lần đầu thấy tick, máy ghi hash nội dung (spec, hoặc riêng D đó)
-  vào cuối dòng: `<!-- dấu duyệt: <hex> -->`. Nội dung đổi mà tick còn thì
+  vào cuối dòng: `<!-- approval-hash: <hex> -->`. Nội dung đổi mà tick còn thì
   `aw check` chặn ("đổi sau duyệt"). Đây là chỗ trước kia máy mù: agent sửa spec
   mà quên đặt lại trạng thái thì bản "đã duyệt" không còn là bản người đọc. Hash bỏ
-  qua dòng trống, chú thích, và `- Phản biện (agent):` dưới D — agent phản biện ở
+  qua dòng trống, chú thích, và `- Critique (agent):` dưới D — agent phản biện ở
   Mode 2 mà không làm mất duyệt. `file_hash` (based_on) bỏ qua dấu duyệt, nên máy
   ghi dấu không làm artifact phía sau lỗi thời.
 - **Hook `aw guard`** (Claude Code, người tự cài — adapter không ghi settings).
@@ -259,7 +259,7 @@ duyệt có thêm hai lớp, cùng nằm ở `tools/lib/duyet.sh`:
 
 Người gõ lệnh phase sau khi phần trước chưa duyệt thì lệnh mở đầu bằng **cổng
 duyệt** (`approval_gate: true`): `aw approval <phase>` in bản tóm tắt cho người —
-file/dòng phải tick, YC `[SUY-RA]`, "Ngoài phạm vi", mức rủi ro và Mode kéo theo,
+file/dòng phải tick, YC `[INFERRED]`, "Out of scope", `Risk` và Mode kéo theo,
 điểm mù còn mở; hay D nào chưa duyệt, ai viết, chọn gì, có phản biện không — rồi
 agent hỏi bằng hộp xác nhận. Bản tóm tắt do **máy** dựng từ file chứ không để
 agent tự diễn giải: hộp xác nhận là chỗ người quyết, thông tin trong đó phải ổn
@@ -323,7 +323,7 @@ Người duyệt một tài liệu thiết kế dài thường lướt, vì văn
 chỗ nào là lựa chọn thật. Vì vậy `design` tách các lựa chọn thành mục **D-xx**
 riêng trong `tdd.md`; người duyệt từng D, phần còn lại là hệ quả.
 
-- Mục chi tiết ghi `Dựa trên: D-xx`; checker LLM chặn chỗ lệch D và quyết định
+- Mục chi tiết ghi `Based on: D-xx`; checker LLM chặn chỗ lệch D và quyết định
   ngầm. Mục D **được phép rỗng** — thay đổi nhỏ có thể không có quyết định nào.
 - `tdd.md` là **output duy nhất** của `design`, không có file quyết định riêng:
   tách ra thì hai file sẽ lệch nhau.
@@ -331,35 +331,35 @@ riêng trong `tdd.md`; người duyệt từng D, phần còn lại là hệ qu�
 ### Chống neo: Mode 2
 
 Khi agent đưa phương án trước, người duyệt có xu hướng neo vào nó. Với thay đổi
-`Mức rủi ro: cao` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
+`Risk: high` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
 đề xuất nhãn, người duyệt ở gate spec), `design` **chặn** nếu chưa có bản phác
-mục D-xx do người viết (`tac_gia: nguoi`). Có bản phác thì agent chỉ phản biện.
+mục D-xx do người viết (`Author: human`). Có bản phác thì agent chỉ phản biện.
 Rủi ro thường dùng Mode 1: agent viết cả `tdd.md`, người duyệt.
 
 ### Mở lại một quyết định
 
 Mở lại **đúng một D-xx**, sửa tại chỗ; lịch sử để git giữ, không giữ bản cũ trong
-file. D đó mang trạng thái `mở lại` + lý do. Grep `Dựa trên: D-xx` ra task và test
+file. D đó bỏ tick ô duyệt + thêm `Reopen reason:` (trạng thái `reopened`). Grep `Based on: D-xx` ra task và test
 bị ảnh hưởng; chỉ các task đó đặt lại `[ ]`, người chỉ duyệt lại D đang mở.
 
 ### Vì sao `plan` vẫn tách khỏi `tdd.md`
 
-`plan.md` chỉ còn quản lý thực thi: task, phụ thuộc, `Phủ: YC`, `Dựa trên: D-xx`,
-`Theo: tdd.md § …`, File dự kiến, Cách kiểm chứng, trạng thái, Phát sinh, Hoãn
-lại. Giữ riêng vì hai lẽ: plan là ranh giới do **phiên khác** đặt cho
+`plan.md` chỉ còn quản lý thực thi: task, phụ thuộc, `Covers: YC`, `Based on: D-xx`,
+`Design: tdd.md § …`, Expected files, Verify, trạng thái, Unplanned,
+Deferred. Giữ riêng vì hai lẽ: plan là ranh giới do **phiên khác** đặt cho
 `implement`, và tick task không được phép sửa vào `tdd.md` đã duyệt.
 
 ## Giả định chưa xác nhận
 
-Chỗ chưa rõ trong spec ghi `[CẦN-HỎI]` kèm **mức chặn**; agent đề xuất, người
+Chỗ chưa rõ trong spec ghi `[OPEN-QUESTION]` kèm **mức chặn**; agent đề xuất, người
 duyệt nhãn ở gate spec. Đúng ba mức — thêm mức nữa thì người duyệt phải phân
 biệt những ranh giới không ai đo được:
 
 | Mức | Sai giả định thì | Chặn |
 |---|---|---|
-| `chặn` | Cả thiết kế đổi hướng | Phase ngay sau spec (`design`; chore: `plan`) — và mọi phase sau, vì checker mỗi phase chạy lại checker phase trước |
-| `chặn review` | Làm lại một phần code | Như một kiểm chéo: `implement` cảnh báo, `review` chặn |
-| `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận` thay vì `đạt` |
+| `blocking` | Cả thiết kế đổi hướng | Phase ngay sau spec (`design`; chore: `plan`) — và mọi phase sau, vì checker mỗi phase chạy lại checker phase trước |
+| `review-blocking` | Làm lại một phần code | Như một kiểm chéo: `implement` cảnh báo, `review` chặn |
+| `non-blocking` | Sửa nhỏ | Không chặn; `review` ghi YC đó `pending` thay vì `pass` |
 
 Ba mức đặt cổng chặn ở **phase rẻ nhất để sửa** nếu giả định sai: lật hướng thiết
 kế thì phải biết trước khi thiết kế; sai một phần code thì biết trước khi merge
@@ -367,21 +367,21 @@ là đủ; còn lại thì chấp nhận giao trên giả định và ghi rõ l�
 
 Lệnh tiện ích `clarify` (`workflow/clarify.md`) dẫn người đi qua
 các mục còn mở: `aw pending` xếp thứ tự bằng máy (mức chặn → YC
-`bắt buộc` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
+`must` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
 đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
 Câu trả lời của người trong hội thoại **chính là** gate người của điểm mù; dấu vết
-nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn. Nhưng spec đã được tick duyệt thì
+nằm ở dòng `Answer:` — ai, ngày, nguyên văn. Nhưng spec đã được tick duyệt thì
 sửa YC (hay chỉ đổi nhãn nguồn) làm nó khác bản đã duyệt: agent bỏ tick, người
-tick lại. Trước kia `Trạng thái spec` được giữ nguyên ở đây cho đỡ một bước; khi
+tick lại. Trước kia `Status` của spec được giữ nguyên ở đây cho đỡ một bước; khi
 duyệt gắn với hash nội dung thì ngoại lệ đó không còn đứng được — máy không phân
 biệt "sửa người vừa xác nhận" với "sửa người chưa thấy".
 
 Cùng lệnh đó dẫn người **phân xử phát hiện của checker LLM** (`phat-hien-*.md`):
 đồng ý thì agent sửa đúng chỗ (người xem trước → sau) rồi ghi `đã sửa`; bác bỏ
 thì ghi lý do nguyên văn. Hàng đợi xếp theo phase bị chặn sớm nhất: điểm mù
-`chặn` (chặn `design`) trước phát hiện `Chặn` (chặn `plan`) trước điểm mù
-`chặn review`.
+`blocking` (chặn `design`) trước phát hiện `Chặn` (chặn `plan`) trước điểm mù
+`review-blocking`.
 
 **Gộp ở chỗ người nhìn, không gộp chỗ lưu.** Điểm mù và phát hiện vẫn ở file
 riêng: mỗi file có một bên ghi và vòng đời riêng (checker LLM ghi đè cả file
@@ -403,8 +403,8 @@ Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặ
 
 - Test gắn tag `covers: YC-xxx`. YC chưa có test thì cảnh báo; YC không test tự
   động được ghi `Kiểm chứng: thủ công` + lý do.
-- So `git diff --name-only <nhánh-gốc>...HEAD` với "File dự kiến" (cho phép glob)
-  và "Phát sinh" trong plan.
+- So `git diff --name-only <nhánh-gốc>...HEAD` với "Expected files" (cho phép glob)
+  và "Unplanned" trong plan.
 
 Mẫu file test, cú pháp tag, nhánh gốc và danh sách file bỏ qua khai trong
 `conventions.md` của repo đích — phần máy đọc phải parse được bằng sh/awk.
@@ -472,13 +472,13 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Đọc `conventions.md` | `conv_get` trong `tools/lib/md.sh` | Chỉ đọc khối ` ```conventions `; phần còn lại là văn xuôi cho người |
 | Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` — POSIX, CRLF/LF cho cùng kết quả |
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
-| Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `chặn`; `implement` cảnh báo, `review` chặn mức `chặn` + `chặn review` |
+| Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `blocking`; `implement` cảnh báo, `review` chặn mức `blocking` + `review-blocking` |
 | Hàng đợi việc chờ người | `tools/liet-ke-viec-cho.sh` (`aw pending`) | Gom điểm mù + mọi `phat-hien-*.md`; máy xếp, agent không xếp lại; chỉ đọc, không sửa file |
 | Entry check | Đầu mỗi `kiem-tra-*.sh` | Gọi checker phase trước; chuỗi `ra-soat → ke-hoach → thiet-ke → truy-vet` |
 | Cấu hình lệnh test | `$AW_CONFIG/config.sh` | `AW_CONFIG` = `$(git rev-parse --git-common-dir)/agent-workflow`, wrapper truyền vào |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | Wrapper chọn engine theo dòng `Engine:`; engine từ chối chấm việc ghim version khác; `aw check intake` chặn khi thiếu dòng |
 | Tên checker | `tools/lib/bang-lenh.sh` | Một bảng cho `aw check <tên>` và cho adapter kiểm `exit_machine` |
-| Quy tắc riêng của repo | `kc_quy_tac*` trong `tools/lib/kiem-cheo.sh`; `tools/quy-tac-repo.sh` (`aw rules`) | Phase có khoá: `BL_QUY_TAC` trong `bang-lenh.sh`. Checker phase gọi `kc_quy_tac_loi`; review thêm khoá gõ nhầm + mục "Quy tắc repo" |
+| Quy tắc riêng của repo | `kc_quy_tac*` trong `tools/lib/kiem-cheo.sh`; `tools/quy-tac-repo.sh` (`aw rules`) | Phase có khoá: `BL_QUY_TAC` trong `bang-lenh.sh`. Checker phase gọi `kc_quy_tac_loi`; review thêm khoá gõ nhầm + mục "Repo rules" |
 | Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |
 
 Phạm vi diff so với `git merge-base <base> HEAD` **tới cây làm việc** (`<base>` là
@@ -557,8 +557,8 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    Đừng nhầm "qua hết checker" với "làm đúng". Checker LLM thu hẹp khoảng trống
    này một phần, nhưng vì nó chỉ được chặn, những gì nó bỏ sót vẫn lọt qua.
 
-4. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Mức rủi ro` do agent đề xuất; nếu
-   người duyệt ở gate spec cho qua nhãn `thường` sai, `design` sẽ chạy Mode 1 và
+4. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Risk` do agent đề xuất; nếu
+   người duyệt ở gate spec cho qua nhãn `normal` sai, `design` sẽ chạy Mode 1 và
    hiện tượng neo quay lại.
 
 5. **Hash cả file báo cả thay đổi vô hại.** Sửa chính tả trong `spec.md` cũng làm
@@ -569,8 +569,8 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    không báo lỗi cú pháp; nó chỉ trả về giá trị rỗng, và lỗi sẽ lộ ra muộn ở
    chỗ khác.
 
-7. **"Duyệt" là một ô tick trong file** (ô "Người duyệt spec" trong `spec.md`, ô
-   "Người duyệt quyết định" của từng D-xx). Máy không biết **ai** tick. Hook
+7. **"Duyệt" là một ô tick trong file** (ô "Approved by human" ở đầu `spec.md` và ở
+   từng D-xx). Máy không biết **ai** tick. Hook
    `aw guard` bắt agent tick trong lúc lệnh của nó chạy — nhưng chỉ khi repo cài
    hook, và chỉ với agent có hook (Claude Code). Không có hook thì agent vi phạm
    luật mà tự tick vẫn lọt; artifact không nằm trong git (từ 2026.10.6) nên cũng
@@ -584,7 +584,7 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    sửa code sau lần chạy `aw check implement` cuối cùng thì kết quả đó đã cũ.
    Chạy lại `implement` checker trước khi review là việc của người/agent.
 
-9. **Glob trong `conventions.md` và "File dự kiến" dùng `case` của shell**, nên
+9. **Glob trong `conventions.md` và "Expected files" dùng `case` của shell**, nên
    `*` khớp cả `/` và không có `**`. `src/*` vì vậy rộng hơn người đọc tưởng.
 
 10. **Artifact không đi theo PR.** Reviewer của PR chỉ thấy code; đặc tả và quyết
@@ -596,6 +596,6 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
     của team thu hẹp rủi ro (một người ghim, mọi người kiểm theo), không xoá được.
 
 12. **Tuân thủ quy tắc repo chỉ do người phán.** Máy biết `review.md` có một dòng
-    kết luận cho mỗi file quy tắc, không biết dòng `đạt` có đúng không. Quy tắc
+    kết luận cho mỗi file quy tắc, không biết dòng `pass` có đúng không. Quy tắc
     nào viết được thành lệnh (lint, type, kiến trúc) thì nên nằm trong
     `LENH_KIEM_THU`.

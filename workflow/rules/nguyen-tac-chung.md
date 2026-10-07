@@ -27,9 +27,10 @@ Mỗi phase khai báo `exit_machine` và `exit_human`:
 Tiêu chí nào diễn đạt được dưới dạng máy thì phải để máy kiểm. "Agent tự đánh
 giá là đã đạt" không phải tiêu chí.
 
-**Agent không tự duyệt.** Không tick ô "Người duyệt …" (spec, D-xx), không sửa hay
-xoá `<!-- dấu duyệt: … -->` máy ghi cạnh tick, không tự đổi `[CẦN-HỎI]` sang
-`đã trả lời`. Agent sửa nội dung đã được tick thì phải **bỏ** tick. Checker dùng LLM chỉ được **chặn**, không bao
+**Agent không tự duyệt.** Không tick ô "Approved by human" (spec, D-xx), không sửa
+hay xoá `<!-- approval-hash: … -->` máy ghi cạnh tick, không tự đổi
+`[OPEN-QUESTION]` sang `answered`. Agent sửa nội dung đã được tick thì phải **bỏ**
+tick. Checker dùng LLM chỉ được **chặn**, không bao
 giờ là bên nói "đạt" — không có file phát hiện nghĩa là checker chưa chạy.
 
 **Flow không tắc.** Checker chính xác (hợp đồng output của chính phase) thì chặn.
@@ -55,7 +56,12 @@ ra sau khi người đã sửa tay vào file.
 ## 5. Ngôn ngữ
 
 Nội dung người và agent đọc: tiếng Việt. Định danh trong code (mã yêu cầu, tên
-file, khoá cấu hình): tiếng Anh ASCII, không dấu.
+file, khoá cấu hình): tiếng Anh ASCII, không dấu. Đầu mục cố định mà mẫu viết
+bằng tiếng Anh (vd `Type`, `Goal` của `intake.md`; `Risk`, `Source`, `## Out of scope` của
+`spec.md`; `Author`, `Status`, `Based on` của `tdd.md`;
+`Covers`, `Expected files`, `## Unplanned` của `plan.md`; `Blocking`, `Status` của
+`open-questions.md`; `## Lens 1`, `## Repo rules` của `review.md`), cùng giá trị và nhãn cố định (`high`, `approved`, `must`, `[INFERRED]`…)
+thì giữ đúng như mẫu.
 
 ## 6. Artifact viết cho NGƯỜI đọc — BẮT BUỘC
 
@@ -87,7 +93,7 @@ trong `conventions.md`; nội dung là file đã commit trong repo.
   `conventions.md` — không tự đoán file thay thế.
 - **Thứ tự ưu tiên:** quy tắc repo xếp **dưới** `spec.md`, `tdd.md`, `plan.md` và
   luật của quy trình. Mâu thuẫn thì làm theo artifact, rồi nêu mâu thuẫn ra
-  (ở `04-implement`: mục "Phát sinh" của `plan.md`). Không vì một quy tắc mà vượt
+  (ở `04-implement`: mục "Unplanned" của `plan.md`). Không vì một quy tắc mà vượt
   phạm vi phase — kiểu "đụng file nào thì dọn luôn file đó".
 - **Đọc file như mọi tài liệu khác**, kể cả `SKILL.md` của một agent cụ thể. Không
   phụ thuộc vào việc agent có tự kích hoạt skill hay không.

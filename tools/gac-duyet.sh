@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Gác ô duyệt — hook của agent (Claude Code: PreToolUse / PostToolUse) để agent
-# không tick được ô "Người duyệt …" trong spec.md / tdd.md.
+# không tick được ô "Approved by human" trong spec.md / tdd.md.
 #
 #   aw guard pre    trước mỗi lệnh ghi của agent: ghi dấu duyệt cho ô người vừa
 #                   tick (chốt nội dung người đã thấy), đặt mốc "pre đã chạy"

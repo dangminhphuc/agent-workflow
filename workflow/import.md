@@ -26,9 +26,9 @@ Thiếu một trong hai thì dừng lại hỏi.
    - mỗi mục mang nhãn nguồn trỏ về tài liệu gốc (`[FILE] <đường dẫn> § <heading>`,
      `[CONFLUENCE] <URL> § <heading>`…);
    - chỗ mẫu đòi mà nguồn không có: **không lấp**. Với `spec.md` ghi
-     `[CẦN-HỎI]` + mục trong `open-questions.md`; với mục khác của `tdd.md` /
+     `[OPEN-QUESTION]` + mục trong `open-questions.md`; với mục khác của `tdd.md` /
      `plan.md` ghi `<THIẾU TRONG NGUỒN: …>` để checker chặn và người thấy.
-   - D-xx lấy từ tài liệu người viết thì `tac_gia: nguoi`, ô duyệt chưa tick.
+   - D-xx lấy từ tài liệu người viết thì `Author: human`, ô duyệt chưa tick.
 4. Chạy **checker của phase sinh ra artifact đó** (`aw check spec`,
    `aw check design`, `aw check plan`) và báo kết quả thật.
 5. Dừng lại cho **người xác nhận bản chuyển đổi** — rồi mới qua gate người của

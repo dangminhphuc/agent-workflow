@@ -16,7 +16,7 @@ là của người.
 
 | Nguồn | File | Người làm gì | Chặn gì |
 |---|---|---|---|
-| Điểm mù | `open-questions.md` (do `/spec` ghi) | **Trả lời** — thường phải hỏi PO/BA | Theo `Mức chặn` (bảng dưới) |
+| Điểm mù | `open-questions.md` (do `/spec` ghi) | **Trả lời** — thường phải hỏi PO/BA | Theo `Blocking` (bảng dưới) |
 | Phát hiện checker LLM | `phat-hien-<checker>.md` (hiện có `phat-hien-thiet-ke.md`) | **Phân xử** — đồng ý (sửa) hoặc bác bỏ kèm lý do | Mức `Chặn`: checker của phase đó (`thiết kế` → `/plan`); `Cảnh báo`: không chặn |
 
 Không gộp hai file: mỗi file có một bên ghi và một vòng đời riêng, và `based_on`
@@ -27,9 +27,9 @@ Hàng đợi chỉ gộp ở **chỗ người nhìn**, không gộp chỗ lưu.
 
 | Mức | Khi nào | Chặn gì |
 |---|---|---|
-| `chặn` | Sai giả định thì cả thiết kế đổi hướng | `/design` (chore: `/plan`) và mọi phase sau |
-| `chặn review` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `/implement` cảnh báo, `/review` chặn |
-| `không chặn` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; `review` ghi YC đó `chờ xác nhận` |
+| `blocking` | Sai giả định thì cả thiết kế đổi hướng | `/design` (chore: `/plan`) và mọi phase sau |
+| `review-blocking` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `/implement` cảnh báo, `/review` chặn |
+| `non-blocking` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; `review` ghi YC đó `pending` |
 
 Mức do agent đề xuất ở `/spec`, **người** duyệt. Chỉ người được đổi mức.
 
@@ -41,10 +41,10 @@ Chạy `aw pending <thư-mục-feature>`. Output là **dữ liệu cho agent**: 
 phải giải quyết (máy xếp, agent không tự xếp lại) và chi tiết từng mục. Máy xếp
 nhóm chặn phase sớm hơn lên trước:
 
-1. điểm mù chưa phân mức → 2. điểm mù `chặn` → 3. phát hiện `Chặn` →
-4. điểm mù `chặn review` → 5. phát hiện `Cảnh báo` → 6. điểm mù `không chặn`.
+1. điểm mù chưa phân mức → 2. điểm mù `blocking` → 3. phát hiện `Chặn` →
+4. điểm mù `review-blocking` → 5. phát hiện `Cảnh báo` → 6. điểm mù `non-blocking`.
 
-Trong nhóm điểm mù: YC `bắt buộc` trước `nên có` → nhiều task đứng trên giả
+Trong nhóm điểm mù: YC `must` trước `should` → nhiều task đứng trên giả
 định hơn → mã YC.
 
 **Không dán danh sách cho người.** Người chỉ thấy một dòng tóm tắt:
@@ -141,12 +141,12 @@ Lựa chọn, theo đúng thứ tự này (tối đa 4):
 
 1. **`(Đề xuất) <phương án>`**.
 2. Các phương án khác (1–2), phương án có trong nguồn trước.
-3. **Chưa trả lời được** — agent soạn tin nhắn gửi `<Hỏi ai>`.
+3. **Chưa trả lời được** — agent soạn tin nhắn gửi `<Ask>`.
 
 Ô tự nhập nhận cả "đổi mức chặn sang …" hay "bỏ qua".
 
-Mục `CHƯA PHÂN MỨC` (thiếu hoặc sai `Mức chặn`): câu hỏi đầu tiên của mục là
-chọn mức (`chặn` / `chặn review` / `không chặn`), mức đề xuất theo "Nếu sai"
+Mục `CHƯA PHÂN MỨC` (thiếu hoặc sai `Blocking`): câu hỏi đầu tiên của mục là
+chọn mức (`blocking` / `review-blocking` / `non-blocking`), mức đề xuất theo "Nếu sai"
 đứng đầu với `(Đề xuất)` — checker của spec đang chặn vì nó. Xong mới hỏi câu
 trả lời.
 
@@ -191,33 +191,33 @@ Lựa chọn, theo đúng thứ tự này (tối đa 4):
 
 **Người trả lời** (chọn lựa chọn 1, 2, hoặc tự nhập):
 
-1. Trong `open-questions.md`: `Trả lời:` = **nguyên văn** lời người kèm ai trả
-   lời và ngày (vd `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Trạng thái:`
-   → `đã trả lời`. Người nói "đã hỏi PO, PO chốt…" thì ghi PO là người trả lời.
+1. Trong `open-questions.md`: `Answer:` = **nguyên văn** lời người kèm ai trả
+   lời và ngày (vd `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status:`
+   → `answered`. Người nói "đã hỏi PO, PO chốt…" thì ghi PO là người trả lời.
    Người **chọn** một phương án thì nguyên văn là nhãn phương án (bỏ `(Đề xuất)`),
    kèm `(chọn từ phương án agent đề xuất)` — vd `"403 problem+json, mã lỗi riêng"
    — chủ repo, 2026-10-06 (chọn từ phương án agent đề xuất)`. Mục tách nhiều câu
    hỏi thì ghi từng câu trả lời, mỗi câu một ý.
 2. Trong `spec.md`, đổi nhãn nguồn của YC: `[FILE]` open-questions.md § YC-NNN —
    hoặc nguồn người chỉ ra (`[JIRA]` comment, `[CONFLUENCE]` page mới hơn).
-   Bỏ dòng `Giả định tạm` của YC đó.
+   Bỏ dòng `Assumption` của YC đó.
 3. **Câu trả lời khác giả định tạm:** sửa mô tả / tiêu chí chấp nhận của YC đó
    theo câu trả lời — chỉ YC đó. Trước khi ghi, cho người xem đúng các dòng
    sẽ đổi (trước → sau) và hỏi "ghi như vậy được không?"; người đồng ý trong hội
-   thoại là đủ. Ghi vào cuối dòng `Trả lời:` `(đã xác nhận sửa YC-NNN)` để còn
+   thoại là đủ. Ghi vào cuối dòng `Answer:` `(đã xác nhận sửa YC-NNN)` để còn
    dấu vết.
    Câu trả lời khớp giả định tạm thì chỉ đổi nhãn nguồn.
 4. **Spec đã được người tick duyệt** thì bước 2–3 làm nó đổi so với bản đã
-   duyệt: **bỏ tick** ô "Người duyệt spec" (agent được bỏ, không bao giờ được
+   duyệt: **bỏ tick** ô "Approved by human" (agent được bỏ, không bao giờ được
    tick). Người vừa xác nhận chỗ sửa nên chỉ cần tick lại — nhắc ở tổng kết.
 5. Chạy `aw check spec <thư-mục-feature>` và dán kết quả thật.
    Không `[x] ĐẠT` thì sửa ngay cho khớp hai file rồi mới sang mục kế.
 
-**Người chưa trả lời được** (chọn "Chưa trả lời được"): soạn sẵn một tin nhắn gửi `Hỏi ai` — tự đủ
+**Người chưa trả lời được** (chọn "Chưa trả lời được"): soạn sẵn một tin nhắn gửi `Ask` — tự đủ
 ngữ cảnh, đọc được mà không cần mở repo: câu hỏi, tài liệu đang nói gì, giả định
-đang dùng, hệ quả nếu sai, và phase nào đang chờ. Giữ `mở`, sang mục kế.
+đang dùng, hệ quả nếu sai, và phase nào đang chờ. Giữ `open`, sang mục kế.
 
-**Người đổi mức chặn** (tự nhập, hoặc nói trong lúc chat): ghi đúng mức người nói vào `Mức chặn:`. Agent
+**Người đổi mức chặn** (tự nhập, hoặc nói trong lúc chat): ghi đúng mức người nói vào `Blocking:`. Agent
 được **đề xuất nâng** mức (vd thấy "Nếu sai" lớn hơn mức đang ghi), không bao giờ
 tự hạ.
 
@@ -265,15 +265,15 @@ rồi nói ngắn gọn:
 ## Cấm
 
 - **Tự quyết** thay người: tự trả lời điểm mù, tự đồng ý hay bác bỏ phát hiện,
-  hoặc ghi `đã trả lời` / `đã sửa` / `bác bỏ` khi người chưa nói gì.
+  hoặc ghi `answered` / `đã sửa` / `bác bỏ` khi người chưa nói gì.
 - Ghi câu trả lời hay lý do bác bỏ đã diễn giải thay cho nguyên văn lời người.
 - Coi phương án agent đề xuất là quyết định khi người chưa chọn.
 - Hỏi khi chưa phân tích: đưa lựa chọn chỉ có "giữ giả định / chưa trả lời được"
   trong khi có phương án thật; chêm phương án yếu cho đủ số; gộp nhiều quyết
   định độc lập vào một câu hỏi.
 - Đặt `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc cho nhiều hơn một lựa chọn.
-- Tự hạ `Mức chặn`, hoặc tự đổi mức khi người chưa nói. Đổi `Mức` của phát hiện.
-- Tick ô duyệt (spec hay D-xx), hay sửa/xoá `<!-- dấu duyệt: … -->`. Lệnh này chỉ
+- Tự hạ `Blocking`, hoặc tự đổi mức khi người chưa nói. Đổi `Mức` của phát hiện.
+- Tick ô duyệt (spec hay D-xx), hay sửa/xoá `<!-- approval-hash: … -->`. Lệnh này chỉ
   được **bỏ** tick spec khi sửa spec đã duyệt (mục 3a bước 4).
 - Sửa YC / mục `tdd.md` khi người chưa xác nhận các dòng sẽ đổi, hoặc sửa ngoài
   phạm vi của mục đang xử lý.

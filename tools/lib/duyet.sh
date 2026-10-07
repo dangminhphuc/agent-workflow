@@ -2,25 +2,25 @@
 # Ô duyệt của người — một nguồn duy nhất cho mọi checker và hook `aw guard`.
 #
 # spec.md: đúng một dòng ở phần đầu file (trước heading "##" đầu tiên):
-#   - [ ] **Người duyệt spec** — …
+#   - [ ] **Approved by human** — …
 # tdd.md: mỗi "### D-NN" có đúng một dòng trong mục của nó:
-#   - [ ] **Người duyệt quyết định**
+#   - [ ] **Approved by human**
 #
 # Chỉ NGƯỜI tick [x]. Lần đầu thấy tick, máy ghi dấu duyệt — hash nội dung lúc
-# đó — vào cuối dòng:  <!-- dấu duyệt: <16 hex> -->
-# Nội dung đổi sau đó mà tick vẫn còn thì trạng thái là "đổi sau duyệt": bản
+# đó — vào cuối dòng:  <!-- approval-hash: <16 hex> -->
+# Nội dung đổi sau đó mà tick vẫn còn thì trạng thái là "changed-after-approval": bản
 # người đã duyệt không còn là bản này. Duyệt lại = người xoá dấu duyệt (giữ tick).
 #
 # Hash bỏ qua: dòng trống, chú thích HTML, chính dòng ô duyệt; với D-xx bỏ cả
-# mục "Phản biện (agent):" — agent được phản biện mà không làm mất duyệt.
+# mục "Critique (agent):" — agent được phản biện mà không làm mất duyệt.
 #
 # Dòng ô duyệt trong chú thích HTML hay khối ``` không được tính. Dòng có nhãn
 # ô duyệt mà sai dạng, sai chỗ, hay lặp lại là lỗi — không đoán.
 #
 # Cần nạp trước: tools/lib/sha256.sh
 
-DY_NHAN_SPEC="Người duyệt spec"
-DY_NHAN_D="Người duyệt quyết định"
+DY_NHAN_SPEC="Approved by human"
+DY_NHAN_D="Approved by human"
 
 # Phần awk dùng chung: bỏ \r, frontmatter, chú thích, khối ```; nhận dạng ô duyệt.
 # Đặt biến cho mỗi dòng: bo (1 = không phải nội dung), od (1 = dòng ô duyệt hợp lệ),
@@ -46,8 +46,8 @@ _DY_AWK_CHUNG='
     if (index(t, nhan_dy) > 0) nhan = 1
     if (t ~ /^[-*] \[[ xX]\] \*\*/ && index(t, "**" nhan_dy "**") == 7) {
       od = 1; tick = (substr(t, 4, 1) != " ")
-      if (match(s, /<!-- dấu duyệt: [0-9a-f]+ -->/)) {
-        dau = substr(s, RSTART, RLENGTH); sub(/^<!-- dấu duyệt: /, "", dau); sub(/ -->$/, "", dau)
+      if (match(s, /<!-- approval-hash: [0-9a-f]+ -->/)) {
+        dau = substr(s, RSTART, RLENGTH); sub(/^<!-- approval-hash: /, "", dau); sub(/ -->$/, "", dau)
       }
     }
   }
@@ -64,8 +64,8 @@ dy_quet() {
     { sub(/\r$/, ""); dy_dong($0) }
     bo { next }
     # Dạng cũ (trước ô duyệt): báo rõ để người đổi, không đọc lẫn hai dạng.
-    loai == "spec" && sach ~ /Trạng thái spec[^:]*:/ {
-      print "L|spec.md dòng " NR ": dạng cũ \"Trạng thái spec:\" — thay bằng ô duyệt \"- [ ] **" nhan_dy "**\" (xem templates/spec.md)"; next
+    loai == "spec" && !dau_file && (sach ~ /^[-*][ \t]*\*\*Status:\*\*/ || sach ~ /Trạng thái spec[^:]*:/) {
+      print "L|spec.md dòng " NR ": dạng cũ \"Status:\" — thay bằng ô duyệt \"- [ ] **" nhan_dy "**\" (xem templates/spec.md)"; next
     }
     loai == "spec" {
       if (sach ~ /^##[ \t]/) dau_file = 1
@@ -96,10 +96,10 @@ dy_quet() {
       co_od[d] = 1; d_tick[d] = tick; d_dau[d] = dau; d_nr[d] = NR; next
     }
     nhan { print "L|tdd.md dòng " NR ": dòng có \"" nhan_dy "\" nhưng sai dạng — phải là \"- [ ] **" nhan_dy "**\" ở đầu dòng"; next }
-    d != "" && sach ~ /^[ \t]*-[ \t]*Trạng thái[^:]*:/ {
-      print "L|tdd.md dòng " NR ": " d " dùng dạng cũ \"Trạng thái:\" — thay bằng ô duyệt \"- [ ] **" nhan_dy "**\" (xem templates/tdd.md)"; next
+    d != "" && sach ~ /^[ \t]*-[ \t]*(Status|Trạng thái)[^:]*:/ {
+      print "L|tdd.md dòng " NR ": " d " dùng dạng cũ \"Status:\" — thay bằng ô duyệt \"- [ ] **" nhan_dy "**\" (xem templates/tdd.md)"; next
     }
-    d != "" && sach ~ /Lý do mở lại[^:]*:/ { v = sach; sub(/^[^:]*:/, "", v); gsub(/[*`]/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v); if (co_nd(v)) ly_do[d] = 1 }
+    d != "" && sach ~ /Reopen reason[^:]*:/ { v = sach; sub(/^[^:]*:/, "", v); gsub(/[*`]/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v); if (co_nd(v)) ly_do[d] = 1 }
     END {
       dong_d()
       if (loai == "spec" && !n_od) print "L|spec.md thiếu ô duyệt \"- [ ] **" nhan_dy "**\" ở phần đầu file (xem templates/spec.md)"
@@ -117,8 +117,8 @@ dy_noi_dung() {
       if (sach ~ /^###[ \t]+D-[0-9]+/) { match(sach, /D-[0-9]+/); trong = (substr(sach, RSTART, RLENGTH) == khoa); pb = 0 }
       else if (sach ~ /^##?#?[ \t]/) trong = 0
       if (!trong) next
-      # "- Phản biện (agent): …" và các dòng thụt vào ngay dưới nó
-      if (sach ~ /^[-*][ \t]*Phản biện \(agent\)/) { pb = 1; next }
+      # "- Critique (agent): …" và các dòng thụt vào ngay dưới nó
+      if (sach ~ /^[-*][ \t]*Critique \(agent\)/) { pb = 1; next }
       if (pb && sach ~ /^[ \t]+[^ \t]/) next
       pb = 0
     }
@@ -133,21 +133,21 @@ dy_hash() {
 }
 
 # dy_trang_thai <file> <spec|tdd> -> bản ghi:
-#   S|<khoá>|<đề xuất | đã duyệt | mở lại | đổi sau duyệt | thiếu ô duyệt>
+#   S|<khoá>|<proposed | approved | reopened | changed-after-approval | missing-box>
 #   L|<thông báo>
-# "đã duyệt" gồm cả tick chưa có dấu duyệt (dy_dong_dau sẽ ghi).
+# "approved" gồm cả tick chưa có dấu duyệt (dy_dong_dau sẽ ghi).
 dy_trang_thai() {
   dy_quet "$1" "$2" | while IFS='|' read -r _k _a _b _c _e _f; do
     case "$_k" in
       L) printf 'L|%s\n' "$_a" ;;
-      T) printf 'S|%s|thiếu ô duyệt\n' "$_a"
+      T) printf 'S|%s|missing-box\n' "$_a"
          printf 'L|%s: thiếu ô duyệt "- [ ] **%s**"\n' "$_a" "$DY_NHAN_D" ;;
       O)
         if [ "$_b" = 1 ]; then
-          if [ -z "$_c" ] || [ "$_c" = "$(dy_hash "$1" "$2" "$_a")" ]; then printf 'S|%s|đã duyệt\n' "$_a"
-          else printf 'S|%s|đổi sau duyệt\n' "$_a"; fi
-        elif [ "$_f" = 1 ]; then printf 'S|%s|mở lại\n' "$_a"
-        else printf 'S|%s|đề xuất\n' "$_a"; fi ;;
+          if [ -z "$_c" ] || [ "$_c" = "$(dy_hash "$1" "$2" "$_a")" ]; then printf 'S|%s|approved\n' "$_a"
+          else printf 'S|%s|changed-after-approval\n' "$_a"; fi
+        elif [ "$_f" = 1 ]; then printf 'S|%s|reopened\n' "$_a"
+        else printf 'S|%s|proposed\n' "$_a"; fi ;;
     esac
   done
 }
@@ -160,10 +160,10 @@ _dy_sua() {
     !(FNR in hd) { print; next }
     {
       cr = sub(/\r$/, ""); s = $0
-      sub(/ *<!-- dấu duyệt: [0-9a-f]+ -->/, "", s)
+      sub(/ *<!-- approval-hash: [0-9a-f]+ -->/, "", s)
       h = hd[FNR]
       if (h == "bo-tick") s = substr(s, 1, 3) " " substr(s, 5)
-      else if (h ~ /^dau:/) s = s " <!-- dấu duyệt: " substr(h, 5) " -->"
+      else if (h ~ /^dau:/) s = s " <!-- approval-hash: " substr(h, 5) " -->"
       printf "%s%s\n", s, (cr ? "\r" : "")
     }
   ' "$1" > "$1.dy.$$" && cat "$1.dy.$$" > "$1"

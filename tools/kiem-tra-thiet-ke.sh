@@ -5,13 +5,13 @@
 #
 # Chặn:
 #   1. Đầu vào: spec chưa qua checker của spec (entry check = checker phase trước).
-#   2. Đầu vào: còn điểm mù "Mức chặn: chặn" chưa được trả lời.
-#   3. tdd.md thiếu mục bắt buộc, hoặc mục bỏ trống mà không ghi "Không áp dụng: <lý do>".
-#   4. D-xx thiếu/ sai ô duyệt (tools/lib/duyet.sh) hoặc "tac_gia"; mã trùng; D đã
+#   2. Đầu vào: còn điểm mù "Blocking: blocking" chưa được trả lời.
+#   3. tdd.md thiếu mục bắt buộc, hoặc mục bỏ trống mà không ghi "Not applicable: <lý do>".
+#   4. D-xx thiếu/ sai ô duyệt (tools/lib/duyet.sh) hoặc "Author"; mã trùng; D đã
 #      tick mà nội dung đổi sau đó (dấu duyệt không khớp).
-#   5. "Dựa trên: D-xx" trỏ về D không tồn tại.
-#   6. Mục "Ánh xạ YC" bỏ sót YC của spec, hoặc trỏ về YC không có.
-#   7. Mode 2: spec "Mức rủi ro: cao" mà không có D-xx nào do người viết.
+#   5. "Based on: D-xx" trỏ về D không tồn tại.
+#   6. Mục "YC mapping" bỏ sót YC của spec, hoặc trỏ về YC không có.
+#   7. Mode 2: spec "Risk: high" mà không có D-xx nào do người viết.
 #   8. Checker LLM: chưa có phat-hien-thiet-ke.md, hoặc còn phát hiện mức Chặn chưa xử lý.
 #   9. File khai ở quy_tac_design (conventions.md) không có hoặc chưa commit.
 # Cảnh báo (không chặn): artifact lỗi thời.
@@ -60,8 +60,8 @@ if [ -n "$cd_duyet" ]; then
   n_loi=$((n_loi + 1))
   echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
 fi
-# Điểm mù mức "chặn": thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
-dm=$(kc_diem_mu_mo "$DIR" "chặn")
+# Điểm mù mức "blocking": thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
+dm=$(kc_diem_mu_mo "$DIR" "blocking")
 if [ -n "$dm" ]; then
   while IFS= read -r l; do
     [ -n "$l" ] || continue
@@ -102,9 +102,9 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
   BEGIN {
     n_loi = loi_truoc
     n_kv = split(dtt, kv, ";"); for (i = 1; i <= n_kv; i++) if (kv[i] != "") { split(kv[i], kv2, "="); d_tt[kv2[1]] = kv2[2] }
-    muc[1] = "Bối cảnh code hiện có"; muc[2] = "Quyết định"; muc[3] = "Mô hình dữ liệu"
-    muc[4] = "Contract"; muc[5] = "Flow"; muc[6] = "Phi chức năng"
-    muc[7] = "Chiến lược test"; muc[8] = "Ánh xạ YC"; n_muc = 8
+    muc[1] = "Existing code"; muc[2] = "Decisions"; muc[3] = "Data model"
+    muc[4] = "Contract"; muc[5] = "Flow"; muc[6] = "Non-functional"
+    muc[7] = "Test strategy"; muc[8] = "YC mapping"; n_muc = 8
   }
 
   { sub(/\r$/, "") }
@@ -114,7 +114,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
 
   # ---- File 1: spec.md ----
   idx==1 {
-    if ($0 ~ /Mức rủi ro[^:]*:/ && rui_ro == "") rui_ro = gia_tri($0)
+    if ($0 ~ /^[ \t]*-[ \t]*\**Risk\**:/ && rui_ro == "") rui_ro = gia_tri($0)
     if ($0 ~ /^###[ \t]+YC-[0-9]+/) { match($0, /YC-[0-9]+/); c = substr($0, RSTART, RLENGTH); co_yc[c] = 1; ds_yc[++n_yc] = c }
     next
   }
@@ -131,29 +131,29 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
     }
     if (sect == "") next
 
-    if (sect == "Quyết định" && $0 ~ /^###[ \t]+D-[0-9]+/) {
+    if (sect == "Decisions" && $0 ~ /^###[ \t]+D-[0-9]+/) {
       match($0, /D-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
       if (cur in co_d) loi("Mã quyết định " cur " bị trùng")
       co_d[cur] = 1; ds_d[++n_d] = cur
       co_nd[sect] = 1
       next
     }
-    if (sect == "Quyết định" && cur != "") {
-      if ($0 ~ /tac_gia[^:]*:/)    d_tg[cur] = gia_tri($0)
+    if (sect == "Decisions" && cur != "") {
+      if ($0 ~ /^[ \t]*-[ \t]*\**Author\**:/) d_tg[cur] = gia_tri($0)
     }
 
     if (dong_noi_dung($0)) {
       co_nd[sect] = 1
-      if ($0 ~ /Không áp dụng/) {
-        v = $0; sub(/^.*Không áp dụng[^:]*:?/, "", v); gsub(/[*`]/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v)
-        if (v == "" || v ~ /^<.*>$/) loi("tdd.md § " sect ": ghi \"Không áp dụng\" nhưng không có lý do")
+      if ($0 ~ /Not applicable/) {
+        v = $0; sub(/^.*Not applicable[^:]*:?/, "", v); gsub(/[*`]/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v)
+        if (v == "" || v ~ /^<.*>$/) loi("tdd.md § " sect ": ghi \"Not applicable\" nhưng không có lý do")
       }
     }
 
-    # Dòng "Dựa trên" có thể liệt kê nhiều D: D-01, D-02
-    if ($0 ~ /Dựa trên/) { s = $0; while (match(s, /D-[0-9]+/)) { tham_chieu[substr(s, RSTART, RLENGTH)] = 1; s = substr(s, RSTART + RLENGTH) } }
+    # Dòng "Based on" có thể liệt kê nhiều D: D-01, D-02
+    if ($0 ~ /Based on/) { s = $0; while (match(s, /D-[0-9]+/)) { tham_chieu[substr(s, RSTART, RLENGTH)] = 1; s = substr(s, RSTART + RLENGTH) } }
 
-    if (sect == "Ánh xạ YC" && $0 ~ /^[ \t]*\|/) {
+    if (sect == "YC mapping" && $0 ~ /^[ \t]*\|/) {
       s = $0; while (match(s, /YC-[0-9]+/)) { anh_xa[substr(s, RSTART, RLENGTH)] = 1; s = substr(s, RSTART + RLENGTH) }
     }
     next
@@ -172,29 +172,29 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
     for (i = 1; i <= n_muc; i++) {
       m = muc[i]
       if (!(m in co_sect)) { loi("tdd.md thiếu mục \"## " m "\""); continue }
-      if (m == "Quyết định") continue           # mục D-xx được phép rỗng
-      if (!(m in co_nd)) loi("tdd.md § " m ": để trống. Không áp dụng thì ghi \"Không áp dụng: <lý do>\".")
+      if (m == "Decisions") continue           # mục D-xx được phép rỗng
+      if (!(m in co_nd)) loi("tdd.md § " m ": để trống. Không áp dụng thì ghi \"Not applicable: <lý do>\".")
     }
 
     # 4. D-xx
     # Ô duyệt (thiếu, sai dạng, đổi sau duyệt) đã báo ở trên — thư viện duyet.sh.
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
-      if (!(d in d_tg))                               loi(d ": thiếu dòng \"tac_gia:\" (nguoi | agent)")
-      else if (d_tg[d] != "nguoi" && d_tg[d] != "agent") loi(d ": \"tac_gia: " d_tg[d] "\" không hợp lệ. Chỉ chấp nhận: nguoi | agent")
-      if (d_tg[d] == "nguoi") co_nguoi = 1
+      if (!(d in d_tg))                               loi(d ": thiếu dòng \"Author:\" (human | agent)")
+      else if (d_tg[d] != "human" && d_tg[d] != "agent") loi(d ": \"Author: " d_tg[d] "\" không hợp lệ. Chỉ chấp nhận: human | agent")
+      if (d_tg[d] == "human") co_nguoi = 1
     }
 
     # 5. tham chiếu D
-    for (d in tham_chieu) if (!(d in co_d)) loi("tdd.md ghi \"Dựa trên: " d "\" nhưng mục Quyết định không có " d)
+    for (d in tham_chieu) if (!(d in co_d)) loi("tdd.md ghi \"Based on: " d "\" nhưng mục Decisions không có " d)
 
     # 6. ánh xạ YC hai chiều
-    for (i = 1; i <= n_yc; i++) if (!(ds_yc[i] in anh_xa)) loi(ds_yc[i] ": chưa được ánh xạ tới mục nào trong \"Ánh xạ YC\"")
-    for (c in anh_xa) if (!(c in co_yc)) loi("\"Ánh xạ YC\" trỏ về " c " nhưng spec.md không có mã này")
+    for (i = 1; i <= n_yc; i++) if (!(ds_yc[i] in anh_xa)) loi(ds_yc[i] ": chưa được ánh xạ tới mục nào trong \"YC mapping\"")
+    for (c in anh_xa) if (!(c in co_yc)) loi("\"YC mapping\" trỏ về " c " nhưng spec.md không có mã này")
 
     # 7. Mode 2 — chống neo
-    if (rui_ro == "cao" && !co_nguoi)
-      loi("spec.md có \"Mức rủi ro: cao\" nhưng không D-xx nào có \"tac_gia: nguoi\". " \
+    if (rui_ro == "high" && !co_nguoi)
+      loi("spec.md có \"Risk: high\" nhưng không D-xx nào có \"Author: human\". " \
           "Người phải phác quyết định trước (Mode 2); agent chỉ phản biện.")
 
     # 8. checker LLM
@@ -213,12 +213,12 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
     }
 
     print ""
-    printf "Tổng: %d YC, %d quyết định D-xx, %d phát hiện LLM — Mức rủi ro: %s\n", n_yc, n_d, n_ph, (rui_ro == "" ? "?" : rui_ro)
-    for (i = 1; i <= n_d; i++) printf "  %-6s %s (tac_gia: %s)\n", ds_d[i], d_tt[ds_d[i]], d_tg[ds_d[i]]
+    printf "Tổng: %d YC, %d quyết định D-xx, %d phát hiện LLM — Risk: %s\n", n_yc, n_d, n_ph, (rui_ro == "" ? "?" : rui_ro)
+    for (i = 1; i <= n_d; i++) printf "  %-6s %s (Author: %s)\n", ds_d[i], d_tt[ds_d[i]], d_tg[ds_d[i]]
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
     print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện Chặn."
-    print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Người duyệt quyết định\"). /plan sẽ chặn nếu còn D chưa duyệt."
+    print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Approved by human\"). /plan sẽ chặn nếu còn D chưa duyệt."
   }
 ' "$SPEC" "$TDD" "$PHF"
 ma=$?

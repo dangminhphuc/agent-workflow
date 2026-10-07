@@ -15,19 +15,20 @@ ngầm giữa các bản.
 
 ### Đổi
 - **Duyệt bằng ô tick thay cho gõ chữ.** `spec.md` có ô
-  `- [ ] **Người duyệt spec**` ở phần đầu file thay cho dòng
-  `Trạng thái spec: đề xuất | đã duyệt`; mỗi D-xx trong `tdd.md` có ô
-  `- [ ] **Người duyệt quyết định**` thay cho `Trạng thái: …`. D chưa tick mà có
-  `Lý do mở lại:` là D đang mở lại. Gặp dạng cũ thì `aw check` báo cách đổi.
-  Việc đã bắt đầu vẫn chạy bằng engine ghim trong `intake.md`, không bị ảnh hưởng.
+  `- [ ] **Approved by human**` ở phần đầu file thay cho dòng
+  `Status: proposed | approved`; mỗi D-xx trong `tdd.md` có ô
+  `- [ ] **Approved by human**` thay cho `Status: …`. D chưa tick mà có
+  `Reopen reason:` là D đang mở lại (`reopened`). Gặp dạng cũ thì `aw check` báo
+  cách đổi. Việc đã bắt đầu vẫn chạy bằng engine ghim trong `intake.md`, không bị
+  ảnh hưởng.
 - `/clarify` sửa spec đã duyệt (sửa YC hay đổi nhãn nguồn) thì bỏ tick, người
-  tick lại — không còn ngoại lệ "giữ nguyên Trạng thái spec".
+  tick lại — không còn ngoại lệ "giữ nguyên Status của spec".
 
 ### Thêm
 - **Dấu duyệt:** lần đầu thấy tick, máy ghi hash nội dung (spec, hoặc từng D) cạnh
-  tick, `<!-- dấu duyệt: … -->`. Nội dung đổi sau đó mà tick còn thì
-  `aw check spec|design|plan` chặn "đổi sau duyệt". Duyệt lại: xoá dấu, giữ tick.
-  Dòng trống, chú thích và `- Phản biện (agent):` không tính vào hash. Hash
+  tick, `<!-- approval-hash: … -->`. Nội dung đổi sau đó mà tick còn thì
+  `aw check spec|design|plan` chặn "đổi sau khi duyệt". Duyệt lại: xoá dấu, giữ
+  tick. Dòng trống, chú thích và `- Critique (agent):` không tính vào hash. Hash
   `based_on` bỏ qua dấu duyệt nên máy ghi dấu không làm artifact phía sau lỗi thời.
 - **Parser ô duyệt chặt:** đúng chỗ (spec trước `##` đầu tiên, D trong mục của nó),
   đúng một ô; ô trong chú thích hay khối code không tính; dòng mang nhãn ô duyệt
@@ -39,12 +40,84 @@ ngầm giữa các bản.
 - **Cổng duyệt khi vào phase:** gõ `/design` khi spec chưa duyệt (hay `/plan` khi
   còn D-xx chưa duyệt; chore: spec) thì agent không làm gì của phase mà chạy
   `aw approval design|plan`, in bản tóm tắt máy dựng từ file (file/dòng phải tick,
-  YC `[SUY-RA]`, Ngoài phạm vi, mức rủi ro → Mode, điểm mù còn mở; hay từng D chưa
+  YC `[INFERRED]`, Out of scope, Risk → Mode, điểm mù còn mở; hay từng D chưa
   duyệt: dòng, tác giả, lựa chọn, phản biện), rồi hỏi bằng hộp xác nhận
   (`AskUserQuestion`, có preview): *Tôi đã duyệt xong — kiểm lại* · *Giải thích
   từng điểm cần duyệt* · *Dừng — tôi duyệt sau*. Agent không tick hộ. Phase khai
   `approval_gate: true` trong frontmatter. Cần wrapper `aw` mới để có lệnh
   `aw approval`.
+
+## [2026.10.10]
+
+### Đổi
+- **Đầu mục của `intake.md` sang tiếng Anh:** `# Tiếp nhận` → `# Intake`,
+  `Loại việc:` → `Type:`, `Mục tiêu:` → `Goal:` (`Base:`, `Engine:`, `## Input`
+  giữ nguyên). `aw check intake` và luật theo loại việc chỉ đọc dòng
+  `- **Type:**` / `- **Goal:**`. Việc đã bắt đầu không bị ảnh hưởng: nó chạy hết
+  bằng version ghi ở dòng `Engine:`. Việc mới tạo bằng bản này phải dùng đầu mục
+  mới.
+- **Nhãn input `[NGƯỜI-DÙNG]` → `[HUMAN]`:** lời người vận hành workflow chép
+  nguyên văn trong `## Input` của `intake.md`. Đổi để không nhầm với "người dùng"
+  cuối của sản phẩm trong tài liệu nghiệp vụ, và khớp cặp máy / người
+  (`exit_machine` / `exit_human`). `aw input` in `[HUMAN]`; `aw check intake`
+  chỉ nhận `[HUMAN]`.
+- **Đầu mục và tên trường của `spec.md` sang tiếng Anh:** `# Đặc tả` → `# Spec`;
+  `Mức rủi ro` → `Risk`, `Lý do` → `Reason`, `Trạng thái spec` → `Status`;
+  mục `Nguồn` → `Sources`, `Bối cảnh` → `Context`, `Thuật ngữ` → `Glossary`,
+  `Yêu cầu` → `Requirements`, `Tái hiện lỗi` → `Reproduction`
+  (`Steps to reproduce`, `Actual behavior`, `Expected behavior`),
+  `Ràng buộc & phụ thuộc` → `Constraints & dependencies`, `Ngoài phạm vi` →
+  `Out of scope`, `Mâu thuẫn giữa các nguồn` → `Source conflicts` (cột
+  `Source A says | Source B says | Resolution`); trường của YC: `Nguồn` →
+  `Source`, `Ưu tiên` → `Priority`, `Mô tả` → `Description`, `Tiêu chí chấp nhận`
+  → `Acceptance criteria`, `Giả định tạm` → `Assumption`, `Loại YC` → `Type`,
+  `Được bảo vệ bởi` → `Protected by`, `Mục tiêu` → `Target`. `aw check spec/design/plan/review` và `aw pending` đọc tên mới,
+  neo ở đầu dòng `- `.
+- **Giá trị trong `spec.md` sang tiếng Anh:** `Risk: cao | thường` →
+  `high | normal`; `Status: đề xuất | đã duyệt` → `proposed | approved`;
+  `Priority: bắt buộc | nên có` → `must | should`; `Type: giữ nguyên | cấu trúc |
+  hiệu năng` → `preserve | structural | performance`. `Trạng thái` của D-xx trong
+  `tdd.md` không đổi (`đề xuất | đã duyệt | mở lại`).
+- **Nhãn nguồn `[SUY-RA]` → `[INFERRED]`, `[CẦN-HỎI]` → `[OPEN-QUESTION]`** — ở
+  mọi nơi: dòng `Source:` của spec, luật cấm suy đoán trong input của
+  `intake.md`, tài liệu và hướng dẫn agent.
+- **`tdd.md` sang tiếng Anh:** `# Thiết kế kỹ thuật` → `# Technical Design`; mục
+  `Bối cảnh code hiện có` → `Existing code`, `Quyết định (D-xx)` → `Decisions
+  (D-xx)`, `Mô hình dữ liệu` → `Data model`, `Phi chức năng` → `Non-functional`,
+  `Chiến lược test` → `Test strategy`, `Ánh xạ YC` → `YC mapping`; trường của
+  D-xx: `tac_gia: nguoi | agent` → `Author: human | agent`, `Trạng thái: đề xuất
+  | đã duyệt | mở lại` → `Status: proposed | approved | reopened`, `Phương án` →
+  `Option` (`pros` / `cons`), `Chọn` → `Choice`, `Khó đảo ngược vì` → `Hard to
+  reverse because`, `Lý do mở lại` → `Reopen reason`, `Phản biện (agent)` →
+  `Critique (agent)`; `Dựa trên:` → `Based on:`, `Không áp dụng:` → `Not
+  applicable:`. `aw check design` và `aw check plan` (D-xx phải `approved`) đọc
+  tên mới.
+- **`plan.md` sang tiếng Anh:** `# Kế hoạch` → `# Plan`, `## Task` → `## Tasks`;
+  trường của task: `Phủ` → `Covers`, `Dựa trên` → `Based on`, `Theo` → `Design`,
+  `Phụ thuộc` → `Depends on` (`không` → `none`), `File dự kiến` → `Expected
+  files`, `Cách kiểm chứng` → `Verify`, `Đứng trên giả định tạm: không | có` →
+  `On assumption: no | yes`, `Trạng thái` → `Status` (`[ ] [~] [x]` giữ nguyên);
+  mục `Hoãn lại` → `Deferred`, `Kiểm chứng thủ công` → `Manual verification`,
+  `Test cũ bị sửa` → `Modified existing tests`, `Nâng dependency` → `Dependency
+  upgrades` (cột `Library | Old → new | Level`, mức `vá` → `patch`), `Phát sinh`
+  → `Unplanned`. `aw check plan/implement/review` và `aw pending` đọc tên mới.
+- **`open-questions.md` sang tiếng Anh:** `# Điểm mù cần làm rõ` → `# Open
+  questions` ("Không có điểm mù." → "No open questions."); trường: `Tài liệu nói
+  gì` → `Source says`, `Chỗ chưa rõ` → `Question`, `Hỏi ai` → `Ask`, `Giả định
+  tạm đang dùng` → `Assumption`, `Nếu giả định sai thì phải làm lại gì` → `If
+  wrong, redo`, `Mức chặn: chặn | chặn review | không chặn` → `Blocking:
+  blocking | review-blocking | non-blocking`, `Trạng thái: mở | đã trả lời` →
+  `Status: open | answered`, `Trả lời` → `Answer`. Nhãn cũ (`Mức chặn`, `Mức ảnh
+  hưởng`) bị chặn kèm hướng dẫn đổi.
+- **`review.md` sang tiếng Anh:** `# Review`; `## Lens 1 — Spec conformance`
+  (cột `ID | Verdict | Evidence | Notes`, verdict `đạt | đạt một phần | chưa đạt
+  | chờ xác nhận` → `pass | partial | fail | pending`), `## By work type`
+  (`Test tái hiện đỏ vì` → `Repro test fails because`), `## Lens 2 — Design and
+  scope`, `## Repo rules` (`đạt | vi phạm | không áp dụng` → `pass | violation |
+  not applicable`), `## Lens 3 — Quality` (`[Chặn] [Nên sửa] [Góp ý]` →
+  `[Blocker] [Should fix] [Nit]`, `Location`, `Problem`, `Failure scenario`),
+  `## Carried-over warnings`, `## Conclusion`. `aw check review`, `aw check
+  spec/design/plan/implement` (điểm mù) và `aw pending` đọc tên mới.
 
 ## [2026.10.9]
 

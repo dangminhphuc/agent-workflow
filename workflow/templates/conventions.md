@@ -36,12 +36,12 @@ quy_tac_review:
 | `nhanh_goc` | Nhánh checkout chính luôn đứng; ứng viên base chính khi tạo worktree. Checker so diff với **base ghi trong `intake.md`**, chỉ quay về khoá này khi intake chưa có dòng Base |
 | `thu_muc_worktree` | Mẫu đường dẫn worktree, tương đối với gốc repo (hoặc tuyệt đối). `{repo}` = tên repo gốc, `{ten}` = tên branch (`/` → `_`). Phải nằm **ngoài** repo. Mỗi máy ghi đè được bằng biến môi trường `AW_THU_MUC_WORKTREE` |
 | `mau_nhanh_phat_hanh` | Mẫu glob nhánh phát hành, vd `release/*`. `aw worktree new` liệt kê làm ứng viên base (bugfix gấp); base khớp mẫu này thì review không cảnh báo |
-| `bo_qua` | File thay đổi mà không cần nằm trong "File dự kiến" (lockfile, file sinh tự động…) |
+| `bo_qua` | File thay đổi mà không cần nằm trong "Expected files" (lockfile, file sinh tự động…) |
 | `mau_file_test` | File nào là file test — để tìm tag `covers:` |
 | `the_covers` | Chuỗi đứng trước mã YC trong test, vd `// covers: YC-001, YC-002` |
 | `loai_theo_tien_to` | Tiền tố branch → loại việc. `/intake` dùng để gợi ý; loại trong `intake.md` lệch tiền tố thì cảnh báo, `review` chặn |
 | `mau_code_production` | Code chạy trên production. `chore` đụng vào là chặn; `bugfix`/`perf` đo "trước" thì chưa được đụng |
-| `mau_file_dependency` | Manifest/lockfile. `chore` đụng vào thì `plan.md` phải có bảng "Nâng dependency" |
+| `mau_file_dependency` | Manifest/lockfile. `chore` đụng vào thì `plan.md` phải có bảng "Dependency upgrades" |
 | `mau_jira` | Regex (ERE, không dùng `{n}`) của mã issue Jira. `aw input` dùng để nhận `[JIRA]` trong tham số `/intake`; `aw check intake` chặn dòng `[JIRA]` không có mã khớp |
 | `quy_tac_<phase>` | Quy tắc riêng của repo cho phase đó (`spec` `design` `plan` `implement` `review`): danh sách file, đường dẫn tương đối với gốc repo, không chứa dấu cách — vd `quy_tac_implement: docs/coding-style.md .claude/skills/api-pattern/SKILL.md`. Agent lấy danh sách bằng `aw rules <phase>` và đọc từng file. File phải **đã commit** vào base (worktree mới chỉ có file đã commit); không có hay chưa commit thì `aw check` của phase đó chặn. `review` đối chiếu diff với **mọi** khoá: `review.md` thiếu kết luận cho file nào thì chặn. Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md` và luật quy trình. Quy tắc máy kiểm được (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` thay vì viết thành văn |
 | `mien_confluence` | Mẫu glob `miền[/đường-dẫn]` của Confluence, vd `wiki.cong-ty.vn *.atlassian.net/wiki`. URL khớp → `[CONFLUENCE]`. Bỏ trống: mọi URL không phải Jira đều là `[CONFLUENCE]` (có cảnh báo) |

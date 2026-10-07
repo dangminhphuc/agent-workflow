@@ -49,9 +49,9 @@ Có sửa code chạy trên production không?
 | Loại | Luật khác biệt |
 |---|---|
 | `feature` | Quy trình chuẩn |
-| `bugfix` | Spec có mục "Tái hiện lỗi"; test tái hiện phải **đỏ trên code chưa sửa** (`aw check repro`) |
-| `refactor` | YC chỉ là `giữ nguyên` / `cấu trúc`, YC giữ nguyên phải có test bảo vệ sẵn trên nhánh gốc; không được xoá test cũ, sửa test cũ phải khai |
-| `perf` | Như refactor, cộng YC `hiệu năng` có số liệu và số đo trước/sau do máy ghi (`aw check perf`) |
+| `bugfix` | Spec có mục "Reproduction"; test tái hiện phải **đỏ trên code chưa sửa** (`aw check repro`) |
+| `refactor` | YC chỉ là `preserve` / `structural`, YC preserve phải có test bảo vệ sẵn trên nhánh gốc; không được xoá test cũ, sửa test cũ phải khai |
+| `perf` | Như refactor, cộng YC `performance` có số liệu và số đo trước/sau do máy ghi (`aw check perf`) |
 | `chore` | Không có phase design; không được đụng code production; nâng dependency phải khai (major thì là refactor) |
 
 Không phải loại riêng: `utils` (thêm hàm dùng chung = feature, gom code trùng =
@@ -78,7 +78,7 @@ không sửa dòng nó in ra. Luật (mẫu khai trong `conventions.md`):
 | Còn lại | không nhận ra |
 
 **Lời người dùng.** Chỉ cần **một** token không nhận ra, **cả chuỗi** là lời
-người dùng: một mục `[NGƯỜI-DÙNG]` chép nguyên văn (`LỜI NGƯỜI DÙNG`). Tách từng từ sẽ biến
+người dùng: một mục `[HUMAN]` chép nguyên văn (`LỜI NGƯỜI DÙNG`). Tách từng từ sẽ biến
 một câu thành vài "input" rác và làm mất câu gốc. Nguồn nhận ra được nằm trong
 câu (vd `ABC-123` trong "sửa phí hoàn tiền ABC-123") chỉ là **đề xuất tách thêm**:
 hỏi người, người đồng ý mới ghi thành dòng riêng.
@@ -86,7 +86,7 @@ hỏi người, người đồng ý mới ghi thành dòng riêng.
 | Kết quả `[x]` | Làm gì |
 |---|---|
 | `NGUỒN` | Chép stdout (rỗng = không có input mới) |
-| `LỜI NGƯỜI DÙNG` | Chép mục `[NGƯỜI-DÙNG]`; hỏi người về "đề xuất tách thêm" nếu có |
+| `LỜI NGƯỜI DÙNG` | Chép mục `[HUMAN]`; hỏi người về "đề xuất tách thêm" nếu có |
 | `KHÔNG CÓ THAM SỐ` | Hỏi người dùng, chạy lại script với **nguyên văn** câu trả lời |
 | `ĐƯỜNG DẪN KHÔNG TỒN TẠI` | Hỏi lại, không tự đoán |
 
@@ -94,12 +94,12 @@ hỏi người, người đồng ý mới ghi thành dòng riêng.
 
 Đã có `intake.md` thì chạy lại là **gộp thêm input**, không viết lại:
 
-1. Không tạo lại từ mẫu. **Giữ nguyên** `Loại việc` và `Mục tiêu`.
+1. Không tạo lại từ mẫu. **Giữ nguyên** dòng `Type` và `Goal`.
 2. Chạy `aw input --skip <thư-mục-feature>/intake.md -` — nó bỏ các
    input đã có (so theo định danh: `ABC-1` và `…/browse/ABC-1` là một nguồn).
    **Thêm** stdout vào cuối `## Input`.
 3. Input mới làm loại việc có vẻ khác đi (vd thêm incident note vào việc
-   `feature`): **nêu ra cho người**, không tự sửa `Loại việc`. Người đổi loại
+   `feature`): **nêu ra cho người**, không tự sửa dòng `Type`. Người đổi loại
    thì xác nhận lại như lần đầu (và đổi tên bằng `aw rename` nếu lệch tiền tố).
 4. Chạy checker, dừng cho người xác nhận **các input mới**.
 
@@ -163,15 +163,17 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 
 2. **Ghi input** bằng `aw input` (mục "Tham số của lệnh là input"):
    - tài liệu: `[CONFLUENCE]` / `[JIRA]` / `[FILE]` + định danh (URL, mã issue, đường dẫn);
-   - lời người dùng: `[NGƯỜI-DÙNG]`, **chép nguyên văn** ở dòng `>` bên dưới.
+   - lời người dùng: `[HUMAN]`, **chép nguyên văn** ở dòng `>` bên dưới.
 
-3. **Ghi mục tiêu** một câu, và hai dòng **Base**, **Engine** đúng như `aw worktree new` in ra.
+3. **Ghi mục tiêu** một câu vào dòng `Goal`, và hai dòng **Base**, **Engine** đúng như `aw worktree new` in ra.
 
 4. Chạy `aw check intake` rồi dừng lại cho người xác nhận.
 
 ## Đầu ra
 
-- `intake.md` — theo `templates/intake.md`.
+- `intake.md` — theo `templates/intake.md`. Đầu mục viết tiếng Anh, giữ đúng như
+  mẫu (`Type`, `Base`, `Engine`, `Goal`, `## Input`) — checker đọc theo đúng chữ đó;
+  nội dung điền vào vẫn viết tiếng Việt.
 
 `01-spec` đọc các tài liệu được liệt kê, và trích lời người dùng bằng nhãn
 `[FILE] intake.md § Input`.
@@ -182,8 +184,8 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
   Viết lại BRD ở đây là tạo một lớp diễn giải chen giữa tài liệu thật và spec —
   và sai lệch của lớp đó sẽ được spec gắn nhãn như có nguồn đàng hoàng.
 - Tự gán nhãn input, hay sửa dòng `aw input` in ra.
-- Ghi `[SUY-RA]` vào input, hay ghi lời người dùng mà không phải nguyên văn.
-- Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi `Loại việc`.
+- Ghi `[INFERRED]` vào input, hay ghi lời người dùng mà không phải nguyên văn.
+- Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi dòng `Type`.
   Suy đoán của agent vào input thì mọi phase sau truy về nó như thể có nguồn.
 - Tự chốt loại việc thay người.
 - Tự chọn base, tự điền `--base`, hay tạo worktree trước khi người chọn.
@@ -194,8 +196,8 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 ## Điều kiện ra
 
 **Máy:**
-- `aw check intake` ra `[x] ĐẠT` — loại việc hợp lệ, có mục tiêu, có ít
-  nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
+- `aw check intake` ra `[x] ĐẠT` — loại việc (`Type`) hợp lệ, có mục tiêu (`Goal`), có ít
+  nhất một input với nhãn hợp lệ, không `[INFERRED]`, `[HUMAN]` có nguyên văn,
   `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
   có dòng `Engine:` dạng `YYYY.M.N` khớp engine đang chạy.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.

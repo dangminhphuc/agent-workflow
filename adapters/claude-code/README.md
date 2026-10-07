@@ -152,7 +152,7 @@ lệnh của phase đã đổi tên hoặc bị bỏ. Không dọn thì repo đ�
 
 ## Hook gác ô duyệt
 
-Ô duyệt (`- [ ] **Người duyệt spec**`, `- [ ] **Người duyệt quyết định**`) chỉ
+Ô duyệt (`- [ ] **Approved by human**` ở spec.md và ở từng D-xx) chỉ
 người được tick. Không có hook thì đó là lời dặn trong prompt — LLM quen tick
 checklist khi xong việc. Thêm đoạn này vào `.claude/settings.json` (hoặc
 `.claude/settings.local.json` nếu chỉ muốn áp cho máy mình) của repo đích:

@@ -5,19 +5,19 @@
 #
 # Chan:
 #   1. Moi ma YC trong spec.md deu co ket luan hop le trong review.md.
-#   2. Yeu cau gan [CAN-HOI] khong duoc ket luan "dat".
+#   2. Yeu cau gan [OPEN-QUESTION] khong duoc ket luan "pass".
 #   3. Dau vao khong qua kiem-tra-ke-hoach.sh (keo theo design va spec).
 #   4. ket-qua-kiem-thu.md thieu hoac ma thoat khac 0.
 #   5. Moi CANH BAO don tu cac phase truoc con ton tai: YC chua co test,
 #      diff ngoai pham vi, artifact loi thoi, loai viec lech branch, test cu
-#      bi sua chua khai, diem mu muc "chan review" chua tra loi. Giua flow
+#      bi sua chua khai, diem mu muc "review-blocking" chua tra loi. Giua flow
 #      chung chi canh bao de flow khong tac; o day
 #      thi khong con cho nao phia sau de bat lai.
 #   6. Luat theo loai viec (intake.md) — nhu implement; bugfix con phai co
-#      dong "Test tai hien do vi: ..." do nguoi ra soat viet.
+#      dong "Repro test fails because: ..." do nguoi ra soat viet.
 #   7. Quy tac rieng cua repo (moi khoa quy_tac_* trong conventions.md): file
 #      khai khong co / chua commit / khoa go nham; review.md thieu muc
-#      "## Quy tac repo" hoac thieu ket luan hop le cho mot file.
+#      "## Repo rules" hoac thieu ket luan hop le cho mot file.
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
 # hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
@@ -54,12 +54,12 @@ elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
   loi_truoc "ket-qua-kiem-thu.md ghi mã thoát khác 0 — test chưa xanh."
 fi
 
-cb=$( { kc_chan_theo_loai "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "chặn" "chặn review"; } )
+cb=$( { kc_chan_theo_loai "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
 # bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.
 if [ "$(kc_loai "$DIR")" = "bugfix" ]; then
-  v=$(awk '{ sub(/\r$/, "") } /Test tái hiện đỏ vì[^:]*:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }' "$REVIEW")
-  case "$v" in ""|"<"*">") loi_truoc "bugfix: review.md thiếu \"Test tái hiện đỏ vì: <trích output tai-hien.md>\"" ;; esac
+  v=$(awk '{ sub(/\r$/, "") } /^[ \t]*-[ \t]*\**Repro test fails because\**:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }' "$REVIEW")
+  case "$v" in ""|"<"*">") loi_truoc "bugfix: review.md thiếu \"Repro test fails because: <trích output tai-hien.md>\"" ;; esac
 fi
 if [ -n "$cb" ]; then
   # vòng lặp ở shell chính (không pipe) để đếm được
@@ -78,11 +78,11 @@ $qtl
 QT
 qt=$(kc_quy_tac "$DIR" review)
 if [ -n "$qt" ]; then
-  # Mục "## Quy tắc repo": mỗi dòng bảng -> "<file>\t<kết luận>\t<bằng chứng / lý do>"
+  # Mục "## Repo rules": mỗi dòng bảng -> "<file>\t<kết luận>\t<bằng chứng / lý do>"
   bang_qt=$(awk '
     function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     { sub(/\r$/, "") }
-    /^##[ \t]+Quy tắc repo/ { trong = 1; co = 1; next }
+    /^##[ \t]+Repo rules/ { trong = 1; co = 1; next }
     /^##[ \t]/ { trong = 0 }
     trong && /^[ \t]*\|/ {
       n = split($0, c, "|"); f = trim(c[2]); gsub(/`/, "", f)
@@ -92,18 +92,18 @@ if [ -n "$qt" ]; then
     END { if (!co) print "\tKHÔNG CÓ MỤC" }
   ' "$REVIEW")
   if printf '%s\n' "$bang_qt" | grep -q "	KHÔNG CÓ MỤC"; then
-    loi_truoc "review.md thiếu mục \"## Quy tắc repo\" — repo khai $(printf '%s\n' "$qt" | wc -l | tr -d ' ') file quy tắc (aw rules review); mỗi file một dòng kết luận"
+    loi_truoc "review.md thiếu mục \"## Repo rules\" — repo khai $(printf '%s\n' "$qt" | wc -l | tr -d ' ') file quy tắc (aw rules review); mỗi file một dòng kết luận"
   else
     while IFS= read -r f; do
       [ -n "$f" ] || continue
       dong=$(printf '%s\n' "$bang_qt" | awk -F '	' -v f="$f" '$1 == f { print; exit }')
       kl=$(printf '%s' "$dong" | cut -f2); gc=$(printf '%s' "$dong" | cut -f3)
       case "$kl" in
-        "") loi_truoc "quy tắc repo \"$f\": không có kết luận trong mục \"Quy tắc repo\" của review.md" ;;
-        "đạt") ;;
-        "vi phạm"|"không áp dụng")
-          case "$gc" in ""|"<"*">") loi_truoc "quy tắc repo \"$f\": kết luận \"$kl\" mà thiếu vị trí / lý do" ;; esac ;;
-        *) loi_truoc "quy tắc repo \"$f\": kết luận \"$kl\" không hợp lệ. Chỉ chấp nhận: đạt / vi phạm / không áp dụng" ;;
+        "") loi_truoc "quy tắc repo \"$f\": không có verdict trong mục \"Repo rules\" của review.md" ;;
+        "pass") ;;
+        "violation"|"not applicable")
+          case "$gc" in ""|"<"*">") loi_truoc "quy tắc repo \"$f\": verdict \"$kl\" mà thiếu vị trí / lý do" ;; esac ;;
+        *) loi_truoc "quy tắc repo \"$f\": verdict \"$kl\" không hợp lệ. Chỉ chấp nhận: pass / violation / not applicable" ;;
       esac
     done <<QT
 $qt
@@ -131,7 +131,7 @@ awk -v loi_truoc="$n_truoc" '
       next
     }
     if ($0 ~ /^##[#]?[ \t]/) { cur = ""; next }   # cùng ranh giới vùng YC với kiem-tra-truy-vet.sh
-    if (cur != "" && $0 ~ /Nguồn/ && $0 ~ /CẦN-HỎI/) can_hoi[cur] = 1
+    if (cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Source\**:/ && $0 ~ /OPEN-QUESTION/) can_hoi[cur] = 1
     next
   }
 
@@ -144,10 +144,10 @@ awk -v loi_truoc="$n_truoc" '
   }
 
   END {
-    hop_le["đạt"] = 1
-    hop_le["đạt một phần"] = 1
-    hop_le["chưa đạt"] = 1
-    hop_le["chờ xác nhận"] = 1
+    hop_le["pass"] = 1
+    hop_le["partial"] = 1
+    hop_le["fail"] = 1
+    hop_le["pending"] = 1
 
     if (n_yc == 0) loi("spec.md không có mã YC nào")
 
@@ -161,12 +161,12 @@ awk -v loi_truoc="$n_truoc" '
       kl = ket_luan[c]
       if (!(kl in hop_le)) {
         loi(c ": kết luận \"" kl "\" không hợp lệ. Chỉ chấp nhận: " \
-            "đạt / đạt một phần / chưa đạt / chờ xác nhận")
+            "pass / partial / fail / pending")
         continue
       }
-      if ((c in can_hoi) && kl == "đạt") {
-        loi(c ": gắn [CẦN-HỎI] trong spec nhưng kết luận \"đạt\". " \
-            "Giả định tạm chưa ai xác nhận thì phải là \"chờ xác nhận\".")
+      if ((c in can_hoi) && kl == "pass") {
+        loi(c ": gắn [OPEN-QUESTION] trong spec nhưng verdict \"pass\". " \
+            "Giả định tạm chưa ai xác nhận thì phải là \"pending\".")
         continue
       }
       dem[kl]++
