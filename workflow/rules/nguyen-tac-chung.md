@@ -28,7 +28,7 @@ Tiêu chí nào diễn đạt được dưới dạng máy thì phải để má
 giá là đã đạt" không phải tiêu chí.
 
 **Agent không tự duyệt.** Không tự đổi quyết định D-xx sang `approved`, không tự
-đổi `[OPEN-QUESTION]` sang `đã trả lời`. Checker dùng LLM chỉ được **chặn**, không bao
+đổi `[OPEN-QUESTION]` sang `answered`. Checker dùng LLM chỉ được **chặn**, không bao
 giờ là bên nói "đạt" — không có file phát hiện nghĩa là checker chưa chạy.
 
 **Flow không tắc.** Checker chính xác (hợp đồng output của chính phase) thì chặn.
@@ -57,7 +57,8 @@ Nội dung người và agent đọc: tiếng Việt. Định danh trong code (m
 file, khoá cấu hình): tiếng Anh ASCII, không dấu. Đầu mục cố định mà mẫu viết
 bằng tiếng Anh (vd `Type`, `Goal` của `intake.md`; `Risk`, `Source`, `## Out of scope` của
 `spec.md`; `Author`, `Status`, `Based on` của `tdd.md`;
-`Covers`, `Expected files`, `## Unplanned` của `plan.md`), cùng giá trị và nhãn cố định (`high`, `approved`, `must`, `[INFERRED]`…)
+`Covers`, `Expected files`, `## Unplanned` của `plan.md`; `Blocking`, `Status` của
+`open-questions.md`; `## Lens 1`, `## Repo rules` của `review.md`), cùng giá trị và nhãn cố định (`high`, `approved`, `must`, `[INFERRED]`…)
 thì giữ đúng như mẫu.
 
 ## 6. Artifact viết cho NGƯỜI đọc — BẮT BUỘC

@@ -44,9 +44,9 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 Checker của phase này chạy lại checker của `spec` trên đầu vào. Không có đường
 tắt: `spec.md` đưa từ tool khác vào cũng phải qua đúng cổng đó.
 
-Điểm mù `Mức chặn: chặn` mà chưa `đã trả lời` thì **chặn** — thiết kế trên một
+Điểm mù `Blocking: blocking` mà chưa `answered` thì **chặn** — thiết kế trên một
 giả định sẽ lật cả hướng đi là phí công. Dừng lại, nhờ người chạy lệnh
-`clarify` để chốt. Mục `chặn review` / `không chặn` thì thiết kế tiếp trên
+`clarify` để chốt. Mục `review-blocking` / `non-blocking` thì thiết kế tiếp trên
 giả định tạm.
 
 ## Chọn Mode

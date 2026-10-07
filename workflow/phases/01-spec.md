@@ -15,7 +15,7 @@ exit_machine:
   - aw check spec
 exit_human:
   - Chủ repo duyệt danh sách yêu cầu và phần "Out of scope"
-  - Chủ repo duyệt nhãn "Mức chặn" của từng [OPEN-QUESTION] (chặn | chặn review | không chặn)
+  - Chủ repo duyệt nhãn "Blocking" của từng [OPEN-QUESTION] (blocking | review-blocking | non-blocking)
   - Chủ repo duyệt "Risk" (cao → design chạy Mode 2, người phác D-xx trước)
   - Duyệt xong, chủ repo tự đổi "Status" sang "approved" — design (chore thì plan) chặn tới lúc đó
 needs_clean_context: true
@@ -97,7 +97,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    | Lỗi & khôi phục | Hệ thống ngoài lỗi thì sao? Có cần thử lại, đảo ngược? |
 
    Nguồn có nói → thành YC như mọi YC khác. Việc **có đụng** tới nhóm đó mà
-   nguồn im lặng → `[OPEN-QUESTION]` (thường `chặn review`). Không đụng → bỏ qua, không
+   nguồn im lặng → `[OPEN-QUESTION]` (thường `review-blocking`). Không đụng → bỏ qua, không
    ghi gì. Không bịa con số NFR: số liệu phải từ nguồn hoặc từ câu trả lời.
 
 5. **Bối cảnh và thuật ngữ.** Ghi vai trò người dùng liên quan theo nguồn vào `## Context`. Domain
@@ -110,16 +110,16 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    `open-questions.md` kèm:
    - **giả định tạm** đang dùng để đi tiếp;
    - *điều gì sẽ phải làm lại nếu giả định sai*;
-   - **Mức chặn** do bạn đề xuất — đúng một trong ba, chọn theo "nếu sai thì
+   - **Blocking** do bạn đề xuất — đúng một trong ba, chọn theo "nếu sai thì
      phải làm lại gì". Người duyệt nhãn này.
 
      | Mức | Khi nào | Chặn gì |
      |---|---|---|
-     | `chặn` | Sai thì cả thiết kế đổi hướng | `02-design` (chore: `03-plan`) và mọi phase sau, tới khi `đã trả lời` |
-     | `chặn review` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `04-implement` cảnh báo, `05-review` chặn |
-     | `không chặn` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; review ghi YC đó `chờ xác nhận` |
+     | `blocking` | Sai thì cả thiết kế đổi hướng | `02-design` (chore: `03-plan`) và mọi phase sau, tới khi `answered` |
+     | `review-blocking` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `04-implement` cảnh báo, `05-review` chặn |
+     | `non-blocking` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; review ghi YC đó `pending` |
 
-   Ưu tiên flow đi tiếp: chỉ mục `chặn` dừng flow ngay. Lệnh `clarify`
+   Ưu tiên flow đi tiếp: chỉ mục `blocking` dừng flow ngay. Lệnh `clarify`
    liệt kê các mục còn mở theo thứ tự phải chốt trước và dẫn người trả lời.
 
 8. **Rà mâu thuẫn.** Đối chiếu các nguồn với nhau. Mâu thuẫn giữa BRD và ticket
@@ -153,7 +153,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
     spec thành lỗi thời — cảnh báo ở các phase sau, `review` chặn; phải chạy lại
     phase này để đọc input mới.
 
-Khi một điểm mù được trả lời: ghi `Trả lời:`, đổi `Trạng thái` sang `đã trả lời`,
+Khi một điểm mù được trả lời: ghi `Answer:`, đổi `Status` sang `answered`,
 **và** đổi nhãn nguồn của YC trong spec (vd `[FILE]` open-questions.md § YC-002).
 Checker chặn nếu hai file lệch nhau.
 
@@ -163,8 +163,10 @@ Checker chặn nếu hai file lệch nhau.
   đúng như mẫu (`Risk`, `Status`, `Source`, `Priority`, `## Out of scope`…) —
   checker đọc theo đúng chữ đó; giá trị (`high`, `approved`, `must`…) và nhãn nguồn cũng
   vậy; chỉ nội dung điền vào viết tiếng Việt.
-- `open-questions.md` — theo `templates/open-questions.md`.
-  Phải tồn tại kể cả khi rỗng, và khi rỗng phải ghi rõ "Không có điểm mù".
+- `open-questions.md` — theo `templates/open-questions.md`. Tên trường và giá trị
+  tiếng Anh như mẫu (`Assumption`, `Blocking: blocking | review-blocking |
+  non-blocking`, `Status: open | answered`, `Answer`…).
+  Phải tồn tại kể cả khi rỗng, và khi rỗng phải ghi rõ "No open questions".
   File rỗng và file thiếu là hai chuyện khác nhau: một cái nghĩa là đã rà và
   không thấy gì, cái kia nghĩa là chưa rà.
 
@@ -175,7 +177,7 @@ Checker chặn nếu hai file lệch nhau.
   việc của `02-design`.
 - Tự chọn một cách hiểu cho chỗ mơ hồ rồi đi tiếp mà không ghi `[OPEN-QUESTION]`.
 - Gắn `[INFERRED]` cho một quyết định nghiệp vụ để né việc phải hỏi.
-- Hạ `Risk` hoặc `Mức chặn` xuống để khỏi bị chặn.
+- Hạ `Risk` hoặc `Blocking` xuống để khỏi bị chặn.
 - Ghi `Priority: should` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
 - Tự phân xử mâu thuẫn giữa các nguồn ("chọn bên an toàn hơn").
 - **Tự đổi `Status` của spec sang `approved`.** Chỉ người làm việc này.
@@ -194,9 +196,9 @@ Checker chặn nếu hai file lệch nhau.
 **Người:**
 - Duyệt yêu cầu và "Out of scope" — chỗ hiểu lệch nhau nhiều nhất, máy không
   kiểm thay được.
-- Duyệt nhãn `Mức chặn` và `Risk` do agent đề xuất.
+- Duyệt nhãn `Blocking` và `Risk` do agent đề xuất.
 - Đổi `Status` của spec sang `approved`. `02-design` (chore: `03-plan`) chặn
   cho tới lúc đó — gate người để lại dấu vết trong file, như D-xx.
 
-Mục `[OPEN-QUESTION]` còn mở không được để `05-review` kết luận "đạt" cho YC đó; mục
-`chặn` hoặc `chặn review` còn mở thì `05-review` chặn hẳn.
+Mục `[OPEN-QUESTION]` còn mở không được để `05-review` kết luận "pass" cho YC đó; mục
+`blocking` hoặc `review-blocking` còn mở thì `05-review` chặn hẳn.

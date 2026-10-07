@@ -5,7 +5,7 @@
 #
 # Chặn:
 #   - Đầu vào: tdd.md không qua kiem-tra-thiet-ke.sh (entry check = checker phase trước).
-#   - Đầu vào (chore): spec chưa duyệt, còn điểm mù "Mức chặn: chặn" chưa trả lời.
+#   - Đầu vào (chore): spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
 #   - Đầu vào: còn D-xx chưa "approved". plan và implement không có người —
 #     chúng chỉ được thực thi những gì người đã duyệt.
 #   - Kiểm HAI CHIỀU phủ YC:
@@ -52,8 +52,8 @@ if [ "$LOAI" = "chore" ]; then
     n_loi=$((n_loi + 1))
     echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
   fi
-  # Điểm mù mức "chặn" chặn phase ngay sau spec — với chore là phase này.
-  dm=$(kc_diem_mu_mo "$DIR" "chặn")
+  # Điểm mù mức "blocking" chặn phase ngay sau spec — với chore là phase này.
+  dm=$(kc_diem_mu_mo "$DIR" "blocking")
   if [ -n "$dm" ]; then
     while IFS= read -r l; do
       [ -n "$l" ] || continue

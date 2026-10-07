@@ -5,7 +5,7 @@
 #
 # Chặn:
 #   1. Đầu vào: spec chưa qua checker của spec (entry check = checker phase trước).
-#   2. Đầu vào: còn điểm mù "Mức chặn: chặn" chưa được trả lời.
+#   2. Đầu vào: còn điểm mù "Blocking: blocking" chưa được trả lời.
 #   3. tdd.md thiếu mục bắt buộc, hoặc mục bỏ trống mà không ghi "Not applicable: <lý do>".
 #   4. D-xx thiếu/ sai "Status" hoặc "Author"; "reopened" không có lý do; mã trùng.
 #   5. "Based on: D-xx" trỏ về D không tồn tại.
@@ -57,8 +57,8 @@ if [ -n "$cd_duyet" ]; then
   n_loi=$((n_loi + 1))
   echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
 fi
-# Điểm mù mức "chặn": thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
-dm=$(kc_diem_mu_mo "$DIR" "chặn")
+# Điểm mù mức "blocking": thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
+dm=$(kc_diem_mu_mo "$DIR" "blocking")
 if [ -n "$dm" ]; then
   while IFS= read -r l; do
     [ -n "$l" ] || continue

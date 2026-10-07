@@ -57,14 +57,14 @@ Kiểm mười một điều:
    dưới `### Ghi chú` không được tính cho YC phía trên.
 2. Mọi mục gắn `[OPEN-QUESTION]` có mục tương ứng cùng mã trong `open-questions.md`.
 3. Không có mã `YC-NNN` trùng nhau.
-4. Mục `[OPEN-QUESTION]` trong `open-questions.md` có dòng "Giả định tạm" — không có thì phase sau không đi tiếp được.
-5. Mục `[OPEN-QUESTION]` có `Mức chặn: chặn | chặn review | không chặn`. Mục `chặn`
-   còn `Trạng thái: mở` thì chặn vào design (chore: plan); mục `chặn review` còn
+4. Mục `[OPEN-QUESTION]` trong `open-questions.md` có dòng "Assumption" — không có thì phase sau không đi tiếp được.
+5. Mục `[OPEN-QUESTION]` có `Blocking: blocking | review-blocking | non-blocking`. Mục `blocking`
+   còn `Status: open` thì chặn vào design (chore: plan); mục `review-blocking` còn
    mở thì `implement` cảnh báo, `review` chặn.
 6. `spec.md` có `Risk: high | normal` và `Status: proposed | approved`.
 7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
-   có thật; `Trạng thái` là `mở | đã trả lời`; `mở` thì spec phải còn `[OPEN-QUESTION]`;
-   `đã trả lời` thì phải có dòng "Trả lời" và spec đã đổi nhãn nguồn.
+   có thật; `Status` là `open | answered`; `open` thì spec phải còn `[OPEN-QUESTION]`;
+   `answered` thì phải có dòng "Answer" và spec đã đổi nhãn nguồn.
 8. `open-questions.md` 0 byte là hợp lệ (đã rà, không có điểm mù).
 9. Mọi YC có `Priority: must | should` và ít nhất một tiêu chí chấp nhận
    `- [ ] …` có nội dung thật (không phải `<...>`, không nằm trong comment HTML).
@@ -78,5 +78,5 @@ Kiểm mười một điều:
 
 Điều thứ 2 quan trọng: không có nó thì agent chỉ cần gắn `[OPEN-QUESTION]` là qua được
 kiểm tra mà chẳng phải hỏi ai. Điều thứ 7 giữ cho hai file không lệch nhau khi
-điểm mù được trả lời — lệch thì `review` buộc "chờ xác nhận" cho một YC đã có
+điểm mù được trả lời — lệch thì `review` buộc "pending" cho một YC đã có
 câu trả lời, hoặc design chặn vì một mục mồ côi.

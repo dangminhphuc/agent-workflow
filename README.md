@@ -46,7 +46,7 @@ văn xuôi.
 ```mermaid
 flowchart TD
     INTAKE["00-intake · bắt buộc<br/>→ intake.md (loại việc + input)<br/><i>MÁY: aw check intake</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: aw check spec</i><br/><i>NGƯỜI: duyệt YC, Mức chặn, Risk</i>"]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: aw check spec</i><br/><i>NGƯỜI: duyệt YC, Blocking, Risk</i>"]
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Risk: high)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: aw check design + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: aw check plan</i>"]
@@ -106,7 +106,7 @@ Cách đọc:
 | Phase | Người | Người làm gì |
 |---|---|---|
 | `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
-| `spec` | có | Duyệt yêu cầu, nhãn `Mức chặn` của `[OPEN-QUESTION]`, và `Risk`; rồi đổi `Status` của spec sang `approved`. Trả lời điểm mù qua `/clarify` |
+| `spec` | có | Duyệt yêu cầu, nhãn `Blocking` của `[OPEN-QUESTION]`, và `Risk`; rồi đổi `Status` của spec sang `approved`. Trả lời điểm mù qua `/clarify` |
 | `design` | có | Duyệt **từng D-xx** trong `tdd.md`; phân xử phát hiện của checker LLM qua `/clarify` |
 | `plan` | không | — |
 | `implement` | không | — |
@@ -209,7 +209,7 @@ Loại việc **đổi luật** của các phase sau:
 | Loại | Phase | Máy ghi / chặn thêm | Người phán |
 |---|---|---|---|
 | `feature` | đủ | — | — |
-| `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
+| `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Repro test fails because: …") |
 | `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Modified existing tests" | Diff test cũ chỉ đổi import/cấu trúc |
 | `perf` | đủ | Như refactor + YC `performance` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
 | `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
@@ -221,14 +221,14 @@ Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bu
 ### `01-spec` — yêu cầu
 
 Mỗi yêu cầu `YC-xxx` phải truy được về một input trong `intake.md` (Confluence, Jira, file cục
-bộ). Chỗ chưa rõ ghi `[OPEN-QUESTION]` kèm **Mức chặn** do agent đề xuất, người duyệt
+bộ). Chỗ chưa rõ ghi `[OPEN-QUESTION]` kèm **Blocking** do agent đề xuất, người duyệt
 ở gate spec — đúng ba mức:
 
-| Mức chặn | Sai giả định thì | Chặn gì |
+| Blocking | Sai giả định thì | Chặn gì |
 |---|---|---|
-| `chặn` | Cả thiết kế đổi hướng | `design` (chore: `plan`) và mọi phase sau, tới khi `đã trả lời` |
-| `chặn review` | Làm lại một phần code | Flow đi tiếp trên giả định tạm; `implement` cảnh báo, `review` chặn |
-| `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận`, không được `đạt` |
+| `blocking` | Cả thiết kế đổi hướng | `design` (chore: `plan`) và mọi phase sau, tới khi `answered` |
+| `review-blocking` | Làm lại một phần code | Flow đi tiếp trên giả định tạm; `implement` cảnh báo, `review` chặn |
+| `non-blocking` | Sửa nhỏ | Không chặn; `review` ghi YC đó `pending`, không được `pass` |
 
 **`/clarify`** — lệnh tiện ích, chạy bất cứ lúc nào sau `/spec`. Máy
 (`aw pending`) gom mọi việc đang chờ bạn quyết — điểm mù và phát hiện của checker
@@ -324,11 +324,11 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
 | `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[INFERRED]` trong input, `[HUMAN]` không kèm nguyên văn |
-| `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Mức chặn` thiếu/sai |
-| `design` | `aw check design` | Spec chưa được người duyệt, điểm mù `chặn` còn mở, thiếu mục, D-xx sai trạng thái, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Blocking` thiếu/sai |
+| `design` | `aw check design` | Spec chưa được người duyệt, điểm mù `blocking` còn mở, thiếu mục, D-xx sai trạng thái, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `aw check plan` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `aw check implement` | Test chưa xanh, task còn dở |
-| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, điểm mù `chặn`/`chặn review` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
+| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
 
 Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
 một nhãn — người và agent đọc nhãn, không đọc mã số:
@@ -396,7 +396,7 @@ chặn nếu còn artifact lỗi thời.
 | Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Manual verification" + lý do trong `plan.md` |
 | Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "Expected files" + "Unplanned" + `bo_qua` | Hoàn tác, hoặc ghi vào "Unplanned" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
-| Điểm mù | `Mức chặn: chặn review` (hoặc `chặn`) còn `mở` trong `open-questions.md` | Chốt với người qua `/clarify` |
+| Điểm mù | `Blocking: review-blocking` (hoặc `blocking`) còn `open` trong `open-questions.md` | Chốt với người qua `/clarify` |
 
 ## Đưa artifact từ ngoài vào
 
@@ -581,8 +581,8 @@ phase cần nó: `quy_tac_spec`, `quy_tac_design`, `quy_tac_plan`, `quy_tac_impl
 - File phải **đã commit** vào base: worktree mới chỉ có file đã commit. Không có,
   chưa commit, hay khoá gõ nhầm → `aw check` của phase đó chặn. Skill để trong
   `.claude/` thì commit bằng `git add -f` — `aw init` exclude cả `/.claude/`.
-- `review` đối chiếu diff với **mọi** khoá: mục "Quy tắc repo" của `review.md` có
-  một dòng `đạt` / `vi phạm` / `không áp dụng` cho từng file, thiếu là chặn.
+- `review` đối chiếu diff với **mọi** khoá: mục "Repo rules" của `review.md` có
+  một dòng `pass` / `violation` / `not applicable` cho từng file, thiếu là chặn.
 - Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md`. Quy tắc máy kiểm được
   (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` — để máy chặn, không chỉ để
   agent đọc.

@@ -5,22 +5,22 @@
 #   aw pending <thư-mục-feature>
 #
 # Nguồn (mỗi nguồn giữ file riêng — không gộp, xem docs/kien-truc.md):
-#   - open-questions.md    điểm mù còn `mở`              → người TRẢ LỜI
+#   - open-questions.md    điểm mù còn `open`              → người TRẢ LỜI
 #   - phat-hien-*.md       phát hiện checker LLM `chưa`  → người PHÂN XỬ
 #                          (hiện có phat-hien-thiet-ke.md; checker mới chỉ cần
 #                          ghi đúng mẫu là tự được gom)
 #
 # Thứ tự nhóm (nhóm chặn phase sớm hơn đứng trước):
-#   1. Điểm mù thiếu/sai "Mức chặn" (checker spec đang chặn)
-#   2. Điểm mù `chặn`               — chặn /design (chore: /plan)
+#   1. Điểm mù thiếu/sai "Blocking" (checker spec đang chặn)
+#   2. Điểm mù `blocking`             — chặn /design (chore: /plan)
 #   3. Phát hiện mức `Chặn`         — chặn checker của phase ghi ra nó (thiết kế: /plan)
-#   4. Điểm mù `chặn review`        — chặn /review
+#   4. Điểm mù `review-blocking`      — chặn /review
 #   5. Phát hiện mức `Cảnh báo`     — không chặn
-#   6. Điểm mù `không chặn`         — không chặn
+#   6. Điểm mù `non-blocking`       — không chặn
 # Trong nhóm điểm mù: YC "must" trước "should", rồi nhiều task trong plan.md
 # đứng trên giả định tạm hơn thì trước, rồi thứ tự trong file. Trong nhóm phát
 # hiện: thứ tự trong file.
-# Mục đã xong (điểm mù `đã trả lời`, phát hiện `đã sửa` / `bác bỏ: <lý do>`) chỉ
+# Mục đã xong (điểm mù `answered`, phát hiện `đã sửa` / `bác bỏ: <lý do>`) chỉ
 # được đếm; phát hiện đã xong được liệt kê một dòng để người thấy agent đã tự
 # xử lý gì.
 #
@@ -49,7 +49,7 @@ PLAN="$DIR/plan.md"
 
 LOAI=$(kc_loai "$DIR")
 
-# Phase kế tiếp, suy từ artifact đã có. Điểm mù mức "chặn" chặn phase ngay sau
+# Phase kế tiếp, suy từ artifact đã có. Điểm mù mức "blocking" chặn phase ngay sau
 # spec, và vì mỗi checker chạy lại checker phase trước, nó chặn mọi phase sau đó.
 if [ -f "$DIR/review.md" ] || [ -f "$DIR/ket-qua-kiem-thu.md" ]; then KE=review
 elif [ -f "$PLAN" ]; then KE=implement
@@ -76,18 +76,18 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
   # ---- File 1: open-questions.md ----
   idx==1 && /^##[ \t]+YC-[0-9]+/ {
     match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
-    ds[++n] = cur; tt[cur] = "mở"; muc[cur] = ""
+    ds[++n] = cur; tt[cur] = "open"; muc[cur] = ""
     t = $0; sub(/^##[ \t]+YC-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t
     next
   }
   idx==1 && /^##?[ \t]/ { cur = ""; next }
   idx==1 && cur != "" && /^[ \t]*-/ {
-    if ($0 ~ /Mức chặn[^:]*:/)               muc[cur] = gia_tri($0)
-    else if ($0 ~ /Trạng thái[^:]*:/)        tt[cur]  = gia_tri($0)
-    else if ($0 ~ /Chỗ chưa rõ[^:]*:/)       hoi[cur] = gia_tri($0)
-    else if ($0 ~ /Hỏi ai[^:]*:/)            ai[cur]  = gia_tri($0)
-    else if ($0 ~ /Giả định tạm[^:]*:/)      gd[cur]  = gia_tri($0)
-    else if ($0 ~ /Nếu giả định sai[^:]*:/)  sai[cur] = gia_tri($0)
+    if ($0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/)            muc[cur] = gia_tri($0)
+    else if ($0 ~ /^[ \t]*-[ \t]*\**Status\**:/)         tt[cur]  = gia_tri($0)
+    else if ($0 ~ /^[ \t]*-[ \t]*\**Question\**:/)       hoi[cur] = gia_tri($0)
+    else if ($0 ~ /^[ \t]*-[ \t]*\**Ask\**:/)            ai[cur]  = gia_tri($0)
+    else if ($0 ~ /^[ \t]*-[ \t]*\**Assumption\**:/)     gd[cur]  = gia_tri($0)
+    else if ($0 ~ /^[ \t]*-[ \t]*\**If wrong, redo\**:/) sai[cur] = gia_tri($0)
     next
   }
   idx==1 { next }
@@ -123,14 +123,14 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
   }
 
   END {
-    nhom[0] = "CHƯA PHÂN MỨC"; nhom[1] = "CHẶN"; nhom[2] = "PHÁT HIỆN — CHẶN"
-    nhom[3] = "CHẶN REVIEW"; nhom[4] = "PHÁT HIỆN — CẢNH BÁO"; nhom[5] = "KHÔNG CHẶN"
-    mo_ta[0] = "điểm mù thiếu hoặc sai \"Mức chặn\" — checker của spec chặn; NGƯỜI gán: chặn | chặn review | không chặn"
+    nhom[0] = "CHƯA PHÂN MỨC"; nhom[1] = "BLOCKING"; nhom[2] = "PHÁT HIỆN — CHẶN"
+    nhom[3] = "REVIEW-BLOCKING"; nhom[4] = "PHÁT HIỆN — CẢNH BÁO"; nhom[5] = "NON-BLOCKING"
+    mo_ta[0] = "điểm mù thiếu hoặc sai \"Blocking\" — checker của spec chặn; NGƯỜI gán: blocking | review-blocking | non-blocking"
     mo_ta[1] = "điểm mù: sai giả định thì cả thiết kế đổi hướng — chặn /" csp
     mo_ta[2] = "phát hiện của checker LLM, NGƯỜI phân xử: đồng ý (sửa → đã sửa) hoặc bác bỏ kèm lý do"
     mo_ta[3] = "điểm mù: flow đi tiếp trên giả định tạm; /review chặn tới khi có câu trả lời"
     mo_ta[4] = "phát hiện của checker LLM, không chặn — vẫn nên phân xử trước khi phase sau dựa vào"
-    mo_ta[5] = "điểm mù: giao được trên giả định tạm; review ghi YC đó \"chờ xác nhận\""
+    mo_ta[5] = "điểm mù: giao được trên giả định tạm; review ghi YC đó \"pending\""
     # Phase nào chặn "ngay": phase kế tiếp, hoặc mọi phase sau khi đã qua phase bị chặn
     # (checker mỗi phase chạy lại checker phase trước).
     thu["spec"] = 1; thu["design"] = 2; thu["plan"] = 3; thu["implement"] = 4; thu["review"] = 5
@@ -139,9 +139,9 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
 
     for (i = 1; i <= n; i++) {
       q = ds[i]
-      if (tt[q] == "đã trả lời") { n_xong++; continue }
+      if (tt[q] == "answered") { n_xong++; continue }
       m = muc[q]
-      g = (m == "chặn") ? 1 : (m == "chặn review") ? 3 : (m == "không chặn") ? 5 : 0
+      g = (m == "blocking") ? 1 : (m == "review-blocking") ? 3 : (m == "non-blocking") ? 5 : 0
       # Khoá sắp xếp: nhóm, ưu tiên YC (must trước), số task (nhiều trước), thứ tự trong file.
       k = sprintf("%d %d %04d %04d", g, (ut[q] == "should") ? 1 : 0, 9999 - so_task[q], i)
       khoa[++n_mo] = k; ma_k[k] = q; nh[q] = g; n_dm++
@@ -170,9 +170,9 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
     for (i = 2; i <= n_mo; i++) { k = khoa[i]; j = i - 1; while (j >= 1 && khoa[j] > k) { khoa[j+1] = khoa[j]; j-- } khoa[j+1] = k }
 
     printf "Việc chờ người: %d — phase kế tiếp: /%s\n", n_mo, ke
-    printf "  Điểm mù: %d mở, %d đã trả lời · Phát hiện LLM: %d chờ phân xử, %d đã xử lý\n", n_dm, n_xong, n_phmo, n_ph_xong
+    printf "  Điểm mù: %d open, %d answered · Phát hiện LLM: %d chờ phân xử, %d đã xử lý\n", n_dm, n_xong, n_phmo, n_ph_xong
     if (n_mo) {
-      printf "  chặn: %d · phát hiện Chặn: %d · chặn review: %d · phát hiện Cảnh báo: %d · không chặn: %d", \
+      printf "  blocking: %d · phát hiện Chặn: %d · review-blocking: %d · phát hiện Cảnh báo: %d · non-blocking: %d", \
         dem[1] + 0, dem[2] + 0, dem[3] + 0, dem[4] + 0, dem[5] + 0
       if (dem[0]) printf " · chưa phân mức: %d", dem[0]
       printf "\n"
@@ -196,11 +196,11 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
         continue
       }
       printf "  %d. %s%s%s\n", i, q, (ten[q] != "" ? " — " ten[q] : ""), dc
-      printf "     Hỏi ai: %s · Ưu tiên YC: %s · Task đứng trên giả định: %d%s\n", \
+      printf "     Ask: %s · Priority: %s · Task on assumption: %d%s\n", \
         (co_nd(ai[q]) ? ai[q] : "?"), (co_nd(ut[q]) ? ut[q] : "?"), so_task[q], (so_task[q] ? " (" substr(task[q], 2) ")" : "")
-      printf "     Chỗ chưa rõ: %s\n", (co_nd(hoi[q]) ? hoi[q] : "<chưa ghi>")
-      printf "     Giả định tạm: %s\n", (co_nd(gd[q]) ? gd[q] : "<chưa ghi>")
-      printf "     Nếu sai phải làm lại: %s\n", (co_nd(sai[q]) ? sai[q] : "<chưa ghi>")
+      printf "     Question: %s\n", (co_nd(hoi[q]) ? hoi[q] : "<chưa ghi>")
+      printf "     Assumption: %s\n", (co_nd(gd[q]) ? gd[q] : "<chưa ghi>")
+      printf "     If wrong, redo: %s\n", (co_nd(sai[q]) ? sai[q] : "<chưa ghi>")
     }
 
     if (n_ph_xong) {

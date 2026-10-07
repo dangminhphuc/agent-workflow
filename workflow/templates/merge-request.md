@@ -11,7 +11,7 @@ trông giống mục bị quên.
 Nguồn khi chạy theo quy trình (thư mục .agent-workflow/<branch>/):
   Problem          ← intake.md (mục tiêu, input), spec.md (Context)
   Changes          ← tdd.md (D-xx đã duyệt), diff
-  External Impact  ← review.md lăng kính 2
+  External Impact  ← review.md Lens 2
   Out of Scope     ← spec.md "Out of scope"
   Testing          ← ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf)
   Open Questions   ← open-questions.md

@@ -65,6 +65,23 @@ ngầm giữa các bản.
   `Test cũ bị sửa` → `Modified existing tests`, `Nâng dependency` → `Dependency
   upgrades` (cột `Library | Old → new | Level`, mức `vá` → `patch`), `Phát sinh`
   → `Unplanned`. `aw check plan/implement/review` và `aw pending` đọc tên mới.
+- **`open-questions.md` sang tiếng Anh:** `# Điểm mù cần làm rõ` → `# Open
+  questions` ("Không có điểm mù." → "No open questions."); trường: `Tài liệu nói
+  gì` → `Source says`, `Chỗ chưa rõ` → `Question`, `Hỏi ai` → `Ask`, `Giả định
+  tạm đang dùng` → `Assumption`, `Nếu giả định sai thì phải làm lại gì` → `If
+  wrong, redo`, `Mức chặn: chặn | chặn review | không chặn` → `Blocking:
+  blocking | review-blocking | non-blocking`, `Trạng thái: mở | đã trả lời` →
+  `Status: open | answered`, `Trả lời` → `Answer`. Nhãn cũ (`Mức chặn`, `Mức ảnh
+  hưởng`) bị chặn kèm hướng dẫn đổi.
+- **`review.md` sang tiếng Anh:** `# Review`; `## Lens 1 — Spec conformance`
+  (cột `ID | Verdict | Evidence | Notes`, verdict `đạt | đạt một phần | chưa đạt
+  | chờ xác nhận` → `pass | partial | fail | pending`), `## By work type`
+  (`Test tái hiện đỏ vì` → `Repro test fails because`), `## Lens 2 — Design and
+  scope`, `## Repo rules` (`đạt | vi phạm | không áp dụng` → `pass | violation |
+  not applicable`), `## Lens 3 — Quality` (`[Chặn] [Nên sửa] [Góp ý]` →
+  `[Blocker] [Should fix] [Nit]`, `Location`, `Problem`, `Failure scenario`),
+  `## Carried-over warnings`, `## Conclusion`. `aw check review`, `aw check
+  spec/design/plan/implement` (điểm mù) và `aw pending` đọc tên mới.
 
 ## [2026.10.9]
 

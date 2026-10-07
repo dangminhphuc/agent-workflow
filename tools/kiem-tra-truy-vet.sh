@@ -62,13 +62,13 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
   idx==1 {
     if ($0 ~ /^##[ \t]+YC-[0-9]+/) {
       match($0, /YC-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
-      co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "mở"
+      co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
     }
-    if (cur_oq != "" && $0 ~ /Giả định tạm/) co_gia_dinh[cur_oq] = 1
-    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*Mức chặn[^:]*:/) muc_ch[cur_oq] = gia_tri($0)
-    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*Mức ảnh hưởng[^:]*:/) muc_cu[cur_oq] = gia_tri($0)
-    if (cur_oq != "" && $0 ~ /Trạng thái[^:]*:/)    tt_oq[cur_oq] = gia_tri($0)
-    if (cur_oq != "" && $0 ~ /Trả lời[^:]*:/) { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) tra_loi[cur_oq] = 1 }
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Assumption\**:/) co_gia_dinh[cur_oq] = 1
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/) muc_ch[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*(Mức chặn|Mức ảnh hưởng)[^:]*:/) muc_cu[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Status\**:/) tt_oq[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Answer\**:/) { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) tra_loi[cur_oq] = 1 }
     next
   }
 
@@ -164,7 +164,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
   END {
     hop_le["CONFLUENCE"]=1; hop_le["JIRA"]=1; hop_le["FILE"]=1
     hop_le["INFERRED"]=1;   hop_le["OPEN-QUESTION"]=1
-    mc_hop_le["chặn"]=1; mc_hop_le["chặn review"]=1; mc_hop_le["không chặn"]=1
+    mc_hop_le["blocking"]=1; mc_hop_le["review-blocking"]=1; mc_hop_le["non-blocking"]=1
 
     if (!co_rui_ro)
       loi("spec.md thiếu dòng \"Risk:\" (high | normal). `design` cần nó để biết có phải chạy Mode 2.")
@@ -221,16 +221,16 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
           loi(c ": gắn [OPEN-QUESTION] nhưng open-questions.md không có mục \"## " c "\". " \
               "Gắn nhãn mà không hỏi ai thì nhãn vô nghĩa.")
         else if (!(c in co_gia_dinh))
-          loi(c ": mục trong open-questions.md thiếu dòng \"Giả định tạm\". " \
+          loi(c ": mục trong open-questions.md thiếu dòng \"Assumption:\". " \
               "Không có giả định tạm thì phase sau không đi tiếp được.")
         else if (!(c in muc_ch) && (c in muc_cu))
-          loi(c ": \"Mức ảnh hưởng\" đã đổi thành \"Mức chặn: chặn | chặn review | không chặn\". " \
-              "\"toàn bộ thiết kế\" → chặn; \"cục bộ\" → NGƯỜI chọn chặn review hoặc không chặn.")
+          loi(c ": nhãn cũ (\"Mức chặn\" / \"Mức ảnh hưởng\") đã đổi thành \"Blocking: blocking | review-blocking | non-blocking\". " \
+              "chặn / toàn bộ thiết kế → blocking; chặn review → review-blocking; không chặn → non-blocking; cục bộ → NGƯỜI chọn.")
         else if (!(c in muc_ch))
-          loi(c ": mục trong open-questions.md thiếu dòng \"Mức chặn:\" " \
-              "(chặn | chặn review | không chặn).")
+          loi(c ": mục trong open-questions.md thiếu dòng \"Blocking:\" " \
+              "(blocking | review-blocking | non-blocking).")
         else if (!(muc_ch[c] in mc_hop_le))
-          loi(c ": \"Mức chặn: " muc_ch[c] "\" không hợp lệ. Chỉ chấp nhận: chặn | chặn review | không chặn")
+          loi(c ": \"Blocking: " muc_ch[c] "\" không hợp lệ. Chỉ chấp nhận: blocking | review-blocking | non-blocking")
       }
       dem_nhan[t]++
     }
@@ -242,18 +242,18 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
         loi("open-questions.md có mục \"## " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
         continue
       }
-      if (s != "mở" && s != "đã trả lời") {
-        loi(q ": \"Trạng thái: " s "\" trong open-questions.md không hợp lệ. Chỉ chấp nhận: mở | đã trả lời")
+      if (s != "open" && s != "answered") {
+        loi(q ": \"Status: " s "\" trong open-questions.md không hợp lệ. Chỉ chấp nhận: open | answered")
         continue
       }
-      if (s == "đã trả lời" && !(q in tra_loi))
-        loi(q ": điểm mù ghi \"đã trả lời\" nhưng dòng \"Trả lời:\" còn trống.")
-      else if (s == "đã trả lời" && nhan[q] == "OPEN-QUESTION")
+      if (s == "answered" && !(q in tra_loi))
+        loi(q ": điểm mù ghi \"answered\" nhưng dòng \"Answer:\" còn trống.")
+      else if (s == "answered" && nhan[q] == "OPEN-QUESTION")
         loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [OPEN-QUESTION]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
             "(vd `[FILE]` open-questions.md § " q ").")
-      else if (s == "mở" && so_nguon[q] == 1 && nhan[q] != "OPEN-QUESTION")
-        loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng điểm mù trong open-questions.md vẫn \"mở\". " \
-            "Hoặc ghi câu trả lời và đổi sang \"đã trả lời\", hoặc trả nhãn về [OPEN-QUESTION].")
+      else if (s == "open" && so_nguon[q] == 1 && nhan[q] != "OPEN-QUESTION")
+        loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng điểm mù trong open-questions.md vẫn \"open\". " \
+            "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")
     }
 
     # ---- luật theo loại việc ----

@@ -1,69 +1,69 @@
-# Rà soát — <TÊN TÍNH NĂNG>
+# Review — <TÊN TÍNH NĂNG>
 
 > Sinh bởi phase `05-review`, chạy bằng ngữ cảnh sạch.
 
-## Lăng kính 1 — Đúng đặc tả
+## Lens 1 — Spec conformance
 
 Mọi mã `YC` trong `spec.md` phải có mặt ở bảng này.
 
-| Mã | Kết luận | Bằng chứng trong code | Ghi chú |
+| ID | Verdict | Evidence | Notes |
 |---|---|---|---|
-| YC-001 | đạt | `file.ts:42` | |
-| YC-002 | chờ xác nhận | `file.ts:88` | Giả định tạm chưa được xác nhận |
+| YC-001 | pass | `file.ts:42` | |
+| YC-002 | pending | `file.ts:88` | Giả định tạm chưa được xác nhận |
 
-Kết luận hợp lệ: `đạt` / `đạt một phần` / `chưa đạt` / `chờ xác nhận`.
+Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
-## Theo loại việc
+## By work type
 
 <!-- bugfix — BẮT BUỘC, máy chặn nếu thiếu. Máy chỉ biết test tái hiện đã đỏ;
      bạn xác nhận nó đỏ ĐÚNG VÌ BUG, không phải vì lỗi biên dịch / thiếu hàm. -->
-- Test tái hiện đỏ vì: <trích dòng lỗi trong tai-hien.md>
+- Repro test fails because: <trích dòng lỗi trong tai-hien.md>
 
 <!-- refactor / perf: với từng file ở "Modified existing tests" của plan.md, xác nhận diff chỉ
      đổi import/cấu trúc, không đổi assertion.
-     perf: đọc do-hieu-nang.md, kết luận YC hiệu năng đạt/chưa đạt theo số đo.
+     perf: đọc do-hieu-nang.md, kết luận YC performance pass/fail theo số đo.
      chore: xác nhận mức "patch | minor" ở "Dependency upgrades" là đúng.
      Loại việc khác: xoá mục này. -->
 
-## Lăng kính 2 — Đúng thiết kế và phạm vi
+## Lens 2 — Design and scope
 
-- Lệch D-xx / contract / mô hình dữ liệu trong `tdd.md`: <liệt kê, hoặc "không có">
-- Thay đổi không thuộc task nào: <...>
-- Task đánh dấu xong nhưng diff không có dấu vết: <...>
-- Phát sinh bị xử lý lặng lẽ: <...>
+- Deviations from `tdd.md` (D-xx / contract / data model): <liệt kê, hoặc "không có">
+- Changes outside any task: <...>
+- Tasks marked done with no trace in the diff: <...>
+- Unplanned items handled silently: <...>
 
-## Quy tắc repo
+## Repo rules
 
 <!-- Mỗi file `aw rules review` in ra một dòng — thiếu là máy chặn. Không in gì:
-     xoá mục này. Kết luận: đạt | vi phạm (kèm file:dòng, thêm finding ở lăng
-     kính 3) | không áp dụng (kèm lý do). -->
+     xoá mục này. Verdict: pass | violation (kèm file:dòng, thêm finding ở Lens 3)
+     | not applicable (kèm lý do). -->
 
-| File | Kết luận | Vị trí / lý do |
+| File | Verdict | Location / reason |
 |---|---|---|
-| `docs/coding-style.md` | đạt | |
+| `docs/coding-style.md` | pass | |
 
-## Lăng kính 3 — Chất lượng
+## Lens 3 — Quality
 
-### [Chặn] <tiêu đề>
-- Vị trí: `file:dòng`
-- Vấn đề: <...>
-- Kịch bản hỏng: <đầu vào cụ thể → kết quả sai>
+### [Blocker] <tiêu đề>
+- Location: `file:dòng`
+- Problem: <...>
+- Failure scenario: <đầu vào cụ thể → kết quả sai>
 
-### [Nên sửa] <tiêu đề>
-- Vị trí: `file:dòng`
-- Vấn đề: <...>
+### [Should fix] <tiêu đề>
+- Location: `file:dòng`
+- Problem: <...>
 
-### [Góp ý] <tiêu đề>
-- Vị trí: `file:dòng`
+### [Nit] <tiêu đề>
+- Location: `file:dòng`
 
-## Cảnh báo dồn về
+## Carried-over warnings
 
 Lỗi "Cảnh báo chưa xử lý" từ `aw check review` (YC chưa có test, diff ngoài
 phạm vi, artifact lỗi thời). Còn mục nào thì review không đạt.
 
 - <...>
 
-## Kết luận
+## Conclusion
 
-- Số finding mức `Chặn`: <n>
-- Merge được chưa: <chưa / được sau khi xử lý các mục Chặn>
+- Blocker findings: <n>
+- Mergeable: <no / yes after fixing Blockers>

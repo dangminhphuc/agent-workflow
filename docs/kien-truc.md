@@ -324,9 +324,9 @@ biệt những ranh giới không ai đo được:
 
 | Mức | Sai giả định thì | Chặn |
 |---|---|---|
-| `chặn` | Cả thiết kế đổi hướng | Phase ngay sau spec (`design`; chore: `plan`) — và mọi phase sau, vì checker mỗi phase chạy lại checker phase trước |
-| `chặn review` | Làm lại một phần code | Như một kiểm chéo: `implement` cảnh báo, `review` chặn |
-| `không chặn` | Sửa nhỏ | Không chặn; `review` ghi YC đó `chờ xác nhận` thay vì `đạt` |
+| `blocking` | Cả thiết kế đổi hướng | Phase ngay sau spec (`design`; chore: `plan`) — và mọi phase sau, vì checker mỗi phase chạy lại checker phase trước |
+| `review-blocking` | Làm lại một phần code | Như một kiểm chéo: `implement` cảnh báo, `review` chặn |
+| `non-blocking` | Sửa nhỏ | Không chặn; `review` ghi YC đó `pending` thay vì `pass` |
 
 Ba mức đặt cổng chặn ở **phase rẻ nhất để sửa** nếu giả định sai: lật hướng thiết
 kế thì phải biết trước khi thiết kế; sai một phần code thì biết trước khi merge
@@ -340,13 +340,13 @@ ghi nguyên văn câu trả lời của người. Agent không tự trả lời 
 Câu trả lời của người trong hội thoại **chính là** gate người của điểm mù: không
 có bước sửa tay `proposed` → `approved` nào thêm, kể cả khi YC phải sửa theo câu
 trả lời (người xác nhận các dòng sẽ đổi trước khi agent ghi; `Status` của spec
-giữ nguyên). Dấu vết nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn.
+giữ nguyên). Dấu vết nằm ở dòng `Answer:` — ai, ngày, nguyên văn.
 
 Cùng lệnh đó dẫn người **phân xử phát hiện của checker LLM** (`phat-hien-*.md`):
 đồng ý thì agent sửa đúng chỗ (người xem trước → sau) rồi ghi `đã sửa`; bác bỏ
 thì ghi lý do nguyên văn. Hàng đợi xếp theo phase bị chặn sớm nhất: điểm mù
-`chặn` (chặn `design`) trước phát hiện `Chặn` (chặn `plan`) trước điểm mù
-`chặn review`.
+`blocking` (chặn `design`) trước phát hiện `Chặn` (chặn `plan`) trước điểm mù
+`review-blocking`.
 
 **Gộp ở chỗ người nhìn, không gộp chỗ lưu.** Điểm mù và phát hiện vẫn ở file
 riêng: mỗi file có một bên ghi và vòng đời riêng (checker LLM ghi đè cả file
@@ -436,13 +436,13 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Đọc `conventions.md` | `conv_get` trong `tools/lib/md.sh` | Chỉ đọc khối ` ```conventions `; phần còn lại là văn xuôi cho người |
 | Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` — POSIX, CRLF/LF cho cùng kết quả |
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
-| Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `chặn`; `implement` cảnh báo, `review` chặn mức `chặn` + `chặn review` |
+| Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `blocking`; `implement` cảnh báo, `review` chặn mức `blocking` + `review-blocking` |
 | Hàng đợi việc chờ người | `tools/liet-ke-viec-cho.sh` (`aw pending`) | Gom điểm mù + mọi `phat-hien-*.md`; máy xếp, agent không xếp lại; chỉ đọc, không sửa file |
 | Entry check | Đầu mỗi `kiem-tra-*.sh` | Gọi checker phase trước; chuỗi `ra-soat → ke-hoach → thiet-ke → truy-vet` |
 | Cấu hình lệnh test | `$AW_CONFIG/config.sh` | `AW_CONFIG` = `$(git rev-parse --git-common-dir)/agent-workflow`, wrapper truyền vào |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | Wrapper chọn engine theo dòng `Engine:`; engine từ chối chấm việc ghim version khác; `aw check intake` chặn khi thiếu dòng |
 | Tên checker | `tools/lib/bang-lenh.sh` | Một bảng cho `aw check <tên>` và cho adapter kiểm `exit_machine` |
-| Quy tắc riêng của repo | `kc_quy_tac*` trong `tools/lib/kiem-cheo.sh`; `tools/quy-tac-repo.sh` (`aw rules`) | Phase có khoá: `BL_QUY_TAC` trong `bang-lenh.sh`. Checker phase gọi `kc_quy_tac_loi`; review thêm khoá gõ nhầm + mục "Quy tắc repo" |
+| Quy tắc riêng của repo | `kc_quy_tac*` trong `tools/lib/kiem-cheo.sh`; `tools/quy-tac-repo.sh` (`aw rules`) | Phase có khoá: `BL_QUY_TAC` trong `bang-lenh.sh`. Checker phase gọi `kc_quy_tac_loi`; review thêm khoá gõ nhầm + mục "Repo rules" |
 | Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |
 
 Phạm vi diff so với `git merge-base <base> HEAD` **tới cây làm việc** (`<base>` là
@@ -558,6 +558,6 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
     của team thu hẹp rủi ro (một người ghim, mọi người kiểm theo), không xoá được.
 
 12. **Tuân thủ quy tắc repo chỉ do người phán.** Máy biết `review.md` có một dòng
-    kết luận cho mỗi file quy tắc, không biết dòng `đạt` có đúng không. Quy tắc
+    kết luận cho mỗi file quy tắc, không biết dòng `pass` có đúng không. Quy tắc
     nào viết được thành lệnh (lint, type, kiến trúc) thì nên nằm trong
     `LENH_KIEM_THU`.

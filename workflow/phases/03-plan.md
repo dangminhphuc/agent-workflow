@@ -40,7 +40,7 @@ duyệt.
 
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
 `aw check spec`, có `Status: approved` và không còn điểm mù
-`Mức chặn: chặn` đang mở — các cổng này vốn nằm ở design), và task không có
+`Blocking: blocking` đang mở — các cổng này vốn nằm ở design), và task không có
 `Based on: D-xx`.
 
 ## Việc phải làm

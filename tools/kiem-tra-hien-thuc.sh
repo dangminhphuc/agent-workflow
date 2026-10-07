@@ -120,7 +120,7 @@ EOF
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "chặn" "chặn review"; } )
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""

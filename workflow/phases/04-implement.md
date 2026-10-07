@@ -97,7 +97,7 @@ khi sửa" chỉ có giá trị khi nó thật sự được lấy trước khi 
 | Artifact lỗi thời (`based_on` lệch hash) | Chạy lại phase sinh ra artifact đó |
 | Loại việc lệch tiền tố branch | Sửa loại trong `intake.md`, hoặc `aw rename` |
 | refactor/perf: test cũ bị sửa mà chưa khai | Khai ở "Modified existing tests" + lý do, hoặc hoàn tác |
-| Điểm mù `Mức chặn: chặn review` còn mở | Nhờ người chạy lệnh `clarify` để chốt — agent không tự trả lời |
+| Điểm mù `Blocking: review-blocking` còn mở | Nhờ người chạy lệnh `clarify` để chốt — agent không tự trả lời |
 
 Cảnh báo không chặn ở đây để flow không tắc vì checker hay báo nhầm. Nhưng
 `05-review` là cổng chặn cuối: cảnh báo nào còn thì review **không đạt**. Xử lý

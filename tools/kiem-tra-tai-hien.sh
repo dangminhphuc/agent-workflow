@@ -10,7 +10,7 @@
 #   - test phải ĐỎ (mã thoát ≠ 0). Xanh nghĩa là test không tái hiện được lỗi.
 #
 # Máy chỉ biết test ĐÃ đỏ, không biết nó đỏ ĐÚNG VÌ BUG (hay vì lỗi biên dịch):
-# phần đó người đọc output ở review ("Test tái hiện đỏ vì: …").
+# phần đó người đọc output ở review ("Repro test fails because: …").
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
