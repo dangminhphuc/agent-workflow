@@ -353,10 +353,21 @@ tick task không bao giờ sửa vào tài liệu thiết kế đã duyệt.
 
 ### `04-implement` — code + test
 
+- Đầu phiên: `aw ready <thư-mục-feature>` chạy lệnh test trên code chưa sửa — đỏ
+  ngay từ đầu thì dừng, báo người (thiếu chuẩn bị môi trường hoặc base hỏng).
+- **Trạng thái task do máy giữ**, agent không tự đánh: `aw task start` (`[ ]` →
+  `[~]`, một task một lúc, phụ thuộc phải xong), `aw task done` (máy chạy lệnh
+  `Verify` của task, ghi output vào `ket-qua-task.md`, **xanh** mới lên `[x]`),
+  `aw task next` (task làm tiếp). `[x]` không có bằng chứng xanh → **chặn**. Đỏ
+  liên tiếp tới `SO_LAN_DO_TOI_DA` (mặc định 3) → máy báo **DỪNG**, báo người.
+- Không có gate người nên chạy được thành **vòng lặp**: `next → start → làm →
+  done`, dừng khi hết task (`aw check implement`), kẹt, DỪNG, hay gặp "Unplanned".
 - Test gắn tag `covers: YC-xxx`. YC chưa có test → **cảnh báo**. YC không test tự
   động được ghi `Kiểm chứng: thủ công` + lý do.
 - So `git diff --name-only <nhánh-gốc>...HEAD` với "Expected files" (cho phép glob)
   và "Unplanned" của plan. File ngoài phạm vi → **cảnh báo**.
+- Trạng thái sạch: task `[ ]` còn sót hay dấu xung đột merge → **chặn**; dòng test
+  mới có `.only(` / `.skip(` / `xit(` / `@Disabled`… → **cảnh báo**.
 
 ### `05-review` — rà soát độc lập
 
@@ -370,6 +381,11 @@ dữ liệu nhạy cảm, secret/config, crypto, SSRF/path traversal/deserializa
 dependency mới), mỗi dòng `pass | finding | not applicable` kèm vị trí/lý do. Máy
 quét bắt mẫu đã biết; lăng kính này bắt ý đồ — endpoint thiếu kiểm quyền, log lộ PII.
 `Blocker` gồm cả lỗ hổng khai thác được, mất/lộ dữ liệu, breaking change chưa khai.
+
+Finding `Blocker` / `Should fix` mang `- Category: <loại-lỗi>` (kebab-case). Review
+đạt thì máy ghi chúng vào nhật ký harness; loại đã gặp ở việc khác → `[GỢI Ý]`
+nâng thành luật máy kiểm (lệnh trong `LENH_KIEM_THU`, quy tắc repo), để lỗi đã bắt
+một lần thành hàng rào vĩnh viễn.
 
 Code nhạy cảm (khoá `mau_code_nhay_cam` trong `conventions.md`, vd `src/auth/*
 src/payment/*`): diff đụng vào thì `review.md` phải có `- Security reviewer: <tên>`
@@ -465,6 +481,7 @@ chặn nếu còn artifact lỗi thời.
 | Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "Expected files" + "Unplanned" + `bo_qua` | Hoàn tác, hoặc ghi vào "Unplanned" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
 | Điểm mù | `Blocking: review-blocking` (hoặc `blocking`) còn `open` trong `open-questions.md` | Chốt với người qua `/aw-clarify` |
+| Test bị tắt | Dòng **thêm mới** trong file test khớp `mau_bo_qua_test` (mặc định `.only(` `.skip(` `fit(` `xit(` `@Disabled` `pytest.mark.skip`…) | Bỏ đánh dấu, hoặc ghi file vào "Unplanned" + lý do |
 
 ## Đưa artifact từ ngoài vào
 
@@ -497,7 +514,7 @@ protected branch. Gồm ba phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.14/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.15/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -552,7 +569,10 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 |---|---|
 | `aw init [--version YYYY.M.N] [--adapter <id>[,<id>…]] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
 | `aw upgrade <YYYY.M.N>` | Đổi engine cho việc mới |
-| `aw version` · `aw doctor` | Xem version đang dùng · kiểm môi trường |
+| `aw version` · `aw doctor` | Xem version đang dùng · kiểm cài đặt (wrapper, engine, exclude, adapter) |
+| `aw ready <thư-mục-feature> [--no-test]` | Worktree sẵn sàng chưa: cấu hình đủ, lệnh test **xanh trên code hiện tại**, lệnh quét đã khai; bước tiếp là gì |
+| `aw task next\|start\|done <thư-mục-feature> [T-NN] [--manual "…"]` | Trạng thái task trong `plan.md` do máy giữ — `done` chạy `Verify`, xanh mới `[x]` |
+| `aw journal` · `aw journal add <lớp> "<mô tả>"` | Nhật ký harness: checker hay trượt chỗ nào, thất bại theo lớp, loại finding lặp lại |
 | `aw check <tên> <thư-mục-feature>` | Checker máy — `intake spec design plan implement review repro perf` |
 | `aw worktree new <loại> <mô-tả> [--create --base <ref>]` | Đề xuất / tạo worktree cho việc |
 | `aw worktree status <branch>` · `aw worktree remove <branch> [--delete-branch]` | Dọn worktree sau khi merge |
@@ -717,6 +737,9 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   phan-loai-input.sh     aw input: tham số → dòng "## Input" (nhãn do máy gán)
   liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
   quy-tac-repo.sh        aw rules: file quy tắc riêng của repo cho một phase (quy_tac_* trong conventions.md)
+  san-sang.sh            aw ready: cấu hình, test xanh trên base, lệnh quét, tiến độ + bước tiếp
+  task.sh                aw task next|start|done: trạng thái task do máy giữ, bằng chứng → ket-qua-task.md
+  nhat-ky.sh             aw journal: nhật ký harness ($AW_CONFIG/journal/) — check, thất bại theo lớp, finding
   cap-nhat-based-on.sh   aw based-on: ghi hash đầu vào vào frontmatter artifact
   cong-duyet.sh          aw approval design|plan: tóm tắt cho người còn gì chờ duyệt (cổng duyệt khi vào phase)
   gac-duyet.sh           aw guard pre|post: hook bỏ tick ô duyệt agent tick / nội dung đổi sau duyệt
@@ -725,7 +748,7 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   kiem-tra-phat-hanh.sh  kiểm version nhất quán + tag chưa có (CI của PR) — không phải aw check
   cai-dat.sh, dong-bo.sh đã bỏ — chỉ in hướng dẫn chuyển sang aw
   chay-thu.sh            test hồi quy cho cổng chặn, wrapper, đóng gói
-  lib/                   md.sh, kiem-cheo.sh, duyet.sh (ô duyệt + dấu duyệt), worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh, mr.sh (gh/glab, ship.md)
+  lib/                   md.sh, kiem-cheo.sh, task.sh (đọc/ghi task trong plan.md), duyet.sh (ô duyệt + dấu duyệt), worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh, mr.sh (gh/glab, ship.md)
 docs/kien-truc.md        vì sao thiết kế như vậy, cách thêm phase/adapter
 ```
 

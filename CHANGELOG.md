@@ -11,6 +11,49 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.15]
+
+Áp dụng các bài học của khoá *Learn Harness Engineering* (walkinglabs): máy giữ
+trạng thái thay vì tin lời agent, phiên mới biết ngay đang ở đâu, lỗi bắt được một
+lần thành hàng rào vĩnh viễn.
+
+### Thêm
+- **`aw ready <thư-mục-feature> [--no-test]`** — đầu phiên mới: cấu hình có đủ khoá
+  máy cần (`nhanh_goc`, `mau_file_test`, `mau_branch`, quy tắc repo), lệnh test
+  **xanh trên code chưa sửa**, lệnh quét bảo mật đã khai đúng dạng; in tiến độ và
+  **bước tiếp** (phase nào, task nào). `aw doctor` vẫn chỉ kiểm phần cài đặt.
+- **Trạng thái task do máy giữ — `aw task next|start|done <thư-mục-feature> [T-NN]`.**
+  `start`: `[ ]` → `[~]`, từ chối khi đã có task `[~]` (WIP=1) hoặc phụ thuộc chưa
+  `[x]`. `done`: chạy lệnh trong backtick của dòng `Verify`, ghi output thật vào
+  `ket-qua-task.md`, **xanh** mới lên `[x]`; Verify không có lệnh thì
+  `--manual "<bằng chứng>"`. `next`: task làm tiếp. Đỏ liên tiếp tới
+  `SO_LAN_DO_TOI_DA` (khoá mới trong `config.sh`, mặc định 3) → DỪNG, báo người.
+- **Vòng lặp cho `04-implement`** (tuỳ chọn): `next → start → làm → done` tới khi
+  hết task, với điều kiện dừng rõ ràng — mô tả bằng lệnh `aw` trong file phase,
+  không phụ thuộc agent.
+- **Trạng thái sạch:** `aw check implement` chặn task `[ ]` còn sót và dấu xung đột
+  merge trong file đã đổi; cảnh báo (review chặn) dòng **thêm mới** trong file test
+  có `.only(` / `.skip(` / `xit(` / `@Disabled` / `pytest.mark.skip`… — khoá mới
+  `mau_bo_qua_test` trong `conventions.md` (ERE, bỏ trống = mặc định); file khai ở
+  "Unplanned" thì miễn.
+- **Nhật ký harness — `aw journal`** (`$AW_CONFIG/journal/`, không commit): engine
+  ghi mỗi lần `aw check` (checker, đạt không, vi phạm đầu tiên; `AW_JOURNAL=0` để
+  tắt); `aw journal add <task|context|env|verify|state|model> "<mô tả>"` ghi thất bại
+  theo lớp; `aw check review` đạt thì ghi finding theo `Category`. `aw journal` tổng
+  hợp: checker trượt nhiều nhất, thất bại theo lớp, loại finding lặp lại.
+- **`- Category: <loại-lỗi>`** (kebab-case) cho finding `[Blocker]` / `[Should fix]`
+  trong `review.md`. Loại đã gặp ở việc khác → `aw check review` in `[GỢI Ý]` nâng
+  thành luật máy kiểm.
+
+### Đổi (phá vỡ)
+- Việc tạo bằng engine này: task `[x]` phải có bằng chứng xanh trong
+  `ket-qua-task.md` khớp `Verify` hiện tại — tự đánh `[x]` thì `aw check implement`
+  và `aw check review` KHÔNG ĐẠT. Task `[ ]` còn sót cũng KHÔNG ĐẠT (trước đây chỉ
+  chặn `[~]`). Việc đã ghim engine cũ không bị ảnh hưởng.
+- `[Blocker]` / `[Should fix]` thiếu `- Category:` hay không phải kebab-case →
+  `aw check review` KHÔNG ĐẠT.
+- Lệnh mới `aw ready`, `aw task`, `aw journal` cần wrapper `aw` mới.
+
 ## [2026.10.14]
 
 ### Thêm
