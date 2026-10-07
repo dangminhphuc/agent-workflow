@@ -131,7 +131,7 @@ awk -v loi_truoc="$n_truoc" '
       next
     }
     if ($0 ~ /^##[#]?[ \t]/) { cur = ""; next }   # cùng ranh giới vùng YC với kiem-tra-truy-vet.sh
-    if (cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Source\**:/ && $0 ~ /CẦN-HỎI/) can_hoi[cur] = 1
+    if (cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Source\**:/ && $0 ~ /OPEN-QUESTION/) can_hoi[cur] = 1
     next
   }
 
@@ -165,7 +165,7 @@ awk -v loi_truoc="$n_truoc" '
         continue
       }
       if ((c in can_hoi) && kl == "đạt") {
-        loi(c ": gắn [CẦN-HỎI] trong spec nhưng kết luận \"đạt\". " \
+        loi(c ": gắn [OPEN-QUESTION] trong spec nhưng kết luận \"đạt\". " \
             "Giả định tạm chưa ai xác nhận thì phải là \"chờ xác nhận\".")
         continue
       }

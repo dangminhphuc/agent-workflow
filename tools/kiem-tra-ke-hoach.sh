@@ -13,7 +13,7 @@
 #       ngược — mọi mã YC được task phủ, hoặc nằm ở "Hoãn lại" (bắt yêu cầu sót)
 #   - Task thiếu "Cách kiểm chứng", "File dự kiến"; "Dựa trên: D-xx" trỏ về D không có.
 #   - File khai ở quy_tac_plan (conventions.md) không có hoặc chưa commit.
-# Cảnh báo: artifact lỗi thời; YC "Priority: bắt buộc" nằm ở "Hoãn lại".
+# Cảnh báo: artifact lỗi thời; YC "Priority: must" nằm ở "Hoãn lại".
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -205,11 +205,11 @@ awk -v loi_truoc="$n_loi" '
       else if (c in hoan)  printf "  %s ← (hoãn lại)\n", c
       else                 printf "  %s ← KHÔNG PHỦ\n", c
     }
-    # Hoãn YC "bắt buộc" không sai cú pháp, nhưng nghĩa là giao thiếu: người phải thấy.
+    # Hoãn YC "must" không sai cú pháp, nhưng nghĩa là giao thiếu: người phải thấy.
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
-      if ((c in hoan) && uu_tien[c] != "nên có")
-        print "  [CẢNH BÁO] " c ": Priority bắt buộc nhưng nằm ở \"Hoãn lại\" — người duyệt plan phải đồng ý giao thiếu."
+      if ((c in hoan) && uu_tien[c] != "should")
+        print "  [CẢNH BÁO] " c ": Priority must nhưng nằm ở \"Hoãn lại\" — người duyệt plan phải đồng ý giao thiếu."
     }
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }

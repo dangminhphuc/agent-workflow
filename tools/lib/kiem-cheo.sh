@@ -162,7 +162,7 @@ kc_loai() {
 }
 
 # kc_spec_chua_duyet <thư-mục-feature> -> in lý do nếu spec.md chưa được NGƯỜI duyệt
-# ("Status: đã duyệt" trong spec.md). Dùng làm cổng vào phase ngay sau spec.
+# ("Status: approved" trong spec.md). Dùng làm cổng vào phase ngay sau spec.
 kc_spec_chua_duyet() {
   [ -f "$1/spec.md" ] || return 0
   _tt=$(awk '
@@ -172,7 +172,7 @@ kc_spec_chua_duyet() {
       gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
     }
   ' "$1/spec.md")
-  [ "$_tt" = "đã duyệt" ] || echo "spec.md chưa được người duyệt (Status: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
+  [ "$_tt" = "approved" ] || echo "spec.md chưa được người duyệt (Status: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
 }
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
@@ -389,7 +389,7 @@ kc_canh_bao_theo_loai() {
 }
 
 # ------------------------------------------------------------------ điểm mù
-# Ba mức chặn của một điểm mù ([CẦN-HỎI]) — người duyệt nhãn ở gate spec:
+# Ba mức chặn của một điểm mù ([OPEN-QUESTION]) — người duyệt nhãn ở gate spec:
 #   chặn         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore: plan)
 #   chặn review  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
 #   không chặn   sai thì sửa nhỏ                 → giao được; review ghi YC đó "chờ xác nhận"

@@ -163,19 +163,19 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
 
   END {
     hop_le["CONFLUENCE"]=1; hop_le["JIRA"]=1; hop_le["FILE"]=1
-    hop_le["SUY-RA"]=1;     hop_le["CẦN-HỎI"]=1
+    hop_le["INFERRED"]=1;   hop_le["OPEN-QUESTION"]=1
     mc_hop_le["chặn"]=1; mc_hop_le["chặn review"]=1; mc_hop_le["không chặn"]=1
 
     if (!co_rui_ro)
-      loi("spec.md thiếu dòng \"Risk:\" (cao | thường). `design` cần nó để biết có phải chạy Mode 2.")
-    else if (rui_ro != "cao" && rui_ro != "thường")
-      loi("\"Risk: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: cao | thường")
+      loi("spec.md thiếu dòng \"Risk:\" (high | normal). `design` cần nó để biết có phải chạy Mode 2.")
+    else if (rui_ro != "high" && rui_ro != "normal")
+      loi("\"Risk: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: high | normal")
 
     # Người duyệt spec bằng cách đổi dòng này; design (và plan của chore) chặn khi chưa duyệt.
     if (!co_tt_spec)
-      loi("spec.md thiếu dòng \"Status:\" (đề xuất | đã duyệt). Agent ghi \"đề xuất\"; chỉ người đổi sang \"đã duyệt\".")
-    else if (tt_spec != "đề xuất" && tt_spec != "đã duyệt")
-      loi("\"Status: " tt_spec "\" không hợp lệ. Chỉ chấp nhận: đề xuất | đã duyệt")
+      loi("spec.md thiếu dòng \"Status:\" (proposed | approved). Agent ghi \"proposed\"; chỉ người đổi sang \"approved\".")
+    else if (tt_spec != "proposed" && tt_spec != "approved")
+      loi("\"Status: " tt_spec "\" không hợp lệ. Chỉ chấp nhận: proposed | approved")
 
     if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### YC-NNN\")")
 
@@ -203,9 +203,9 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       if (!(c in so_tc))
         loi(c ": thiếu tiêu chí chấp nhận (dòng \"- [ ] …\" quan sát được từ bên ngoài). Không có thì review không kết luận được.")
       if (!(c in uu_tien))
-        loi(c ": thiếu dòng \"Priority:\" (bắt buộc | nên có). Nguồn không nói thì ghi bắt buộc.")
-      else if (uu_tien[c] != "bắt buộc" && uu_tien[c] != "nên có")
-        loi(c ": \"Priority: " uu_tien[c] "\" không hợp lệ. Chỉ chấp nhận: bắt buộc | nên có")
+        loi(c ": thiếu dòng \"Priority:\" (must | should). Nguồn không nói thì ghi must.")
+      else if (uu_tien[c] != "must" && uu_tien[c] != "should")
+        loi(c ": \"Priority: " uu_tien[c] "\" không hợp lệ. Chỉ chấp nhận: must | should")
       t = nhan[c]
       if (t == "") {
         loi(c ": dòng \"Source:\" không có nhãn trong ngoặc vuông.")
@@ -213,12 +213,12 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       }
       if (!(t in hop_le)) {
         loi(c ": nhãn [" t "] không hợp lệ. Chỉ chấp nhận: " \
-            "[CONFLUENCE] [JIRA] [FILE] [SUY-RA] [CẦN-HỎI]")
+            "[CONFLUENCE] [JIRA] [FILE] [INFERRED] [OPEN-QUESTION]")
         continue
       }
-      if (t == "CẦN-HỎI") {
+      if (t == "OPEN-QUESTION") {
         if (!(c in co_muc))
-          loi(c ": gắn [CẦN-HỎI] nhưng open-questions.md không có mục \"## " c "\". " \
+          loi(c ": gắn [OPEN-QUESTION] nhưng open-questions.md không có mục \"## " c "\". " \
               "Gắn nhãn mà không hỏi ai thì nhãn vô nghĩa.")
         else if (!(c in co_gia_dinh))
           loi(c ": mục trong open-questions.md thiếu dòng \"Giả định tạm\". " \
@@ -248,12 +248,12 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       }
       if (s == "đã trả lời" && !(q in tra_loi))
         loi(q ": điểm mù ghi \"đã trả lời\" nhưng dòng \"Trả lời:\" còn trống.")
-      else if (s == "đã trả lời" && nhan[q] == "CẦN-HỎI")
-        loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [CẦN-HỎI]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
+      else if (s == "đã trả lời" && nhan[q] == "OPEN-QUESTION")
+        loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [OPEN-QUESTION]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
             "(vd `[FILE]` open-questions.md § " q ").")
-      else if (s == "mở" && so_nguon[q] == 1 && nhan[q] != "CẦN-HỎI")
+      else if (s == "mở" && so_nguon[q] == 1 && nhan[q] != "OPEN-QUESTION")
         loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng điểm mù trong open-questions.md vẫn \"mở\". " \
-            "Hoặc ghi câu trả lời và đổi sang \"đã trả lời\", hoặc trả nhãn về [CẦN-HỎI].")
+            "Hoặc ghi câu trả lời và đổi sang \"đã trả lời\", hoặc trả nhãn về [OPEN-QUESTION].")
     }
 
     # ---- luật theo loại việc ----
@@ -266,17 +266,17 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       }
     }
     if (loai == "refactor" || loai == "perf") {
-      hl_yc["giữ nguyên"] = 1; hl_yc["cấu trúc"] = 1; ds = "giữ nguyên | cấu trúc"
-      if (loai == "perf") { hl_yc["hiệu năng"] = 1; ds = ds " | hiệu năng" }
+      hl_yc["preserve"] = 1; hl_yc["structural"] = 1; ds = "preserve | structural"
+      if (loai == "perf") { hl_yc["performance"] = 1; ds = ds " | performance" }
       for (i = 1; i <= n; i++) {
         c = thu_tu[i]; lt = loai_yc[c]
         if (lt == "")              { loi(c ": " loai " — thiếu \"Type:\" (" ds "). Không được có YC hành vi mới."); continue }
         if (!(lt in hl_yc))        { loi(c ": \"Type: " lt "\" không hợp lệ cho " loai " (" ds ")"); continue }
-        if (lt == "giữ nguyên" && !(c in bv)) loi(c ": YC giữ nguyên phải có \"Protected by: `<file test>`\" — test có sẵn trên base của việc")
-        if (lt == "hiệu năng" && !(c in co_mt)) loi(c ": YC hiệu năng phải có \"Target:\" kèm số liệu")
-        if (lt == "hiệu năng") n_hn++
+        if (lt == "preserve" && !(c in bv)) loi(c ": YC preserve phải có \"Protected by: `<file test>`\" — test có sẵn trên base của việc")
+        if (lt == "performance" && !(c in co_mt)) loi(c ": YC performance phải có \"Target:\" kèm số liệu")
+        if (lt == "performance") n_hn++
       }
-      if (loai == "perf" && n_hn == 0) loi("perf: cần ít nhất một YC \"Type: hiệu năng\"")
+      if (loai == "perf" && n_hn == 0) loi("perf: cần ít nhất một YC \"Type: performance\"")
     }
 
     print ""
@@ -288,7 +288,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
 ' "$OQ" "$SPEC"
 ma=$?
 
-# Test bảo vệ YC giữ nguyên phải CÓ SẴN trên base của việc (điểm rẽ nhánh): test thêm trong chính việc
+# Test bảo vệ YC preserve phải CÓ SẴN trên base của việc (điểm rẽ nhánh): test thêm trong chính việc
 # refactor không chứng minh được hành vi cũ.
 n_bv=0
 if [ -s "$BV" ]; then

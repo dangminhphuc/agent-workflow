@@ -35,10 +35,16 @@ ngầm giữa các bản.
   `Source A says | Source B says | Resolution`); trường của YC: `Nguồn` →
   `Source`, `Ưu tiên` → `Priority`, `Mô tả` → `Description`, `Tiêu chí chấp nhận`
   → `Acceptance criteria`, `Giả định tạm` → `Assumption`, `Loại YC` → `Type`,
-  `Được bảo vệ bởi` → `Protected by`, `Mục tiêu` → `Target`. Giá trị (`cao`,
-  `đã duyệt`, `bắt buộc`, `giữ nguyên`…) và nhãn nguồn (`[SUY-RA]`, `[CẦN-HỎI]`)
-  giữ nguyên. `aw check spec/design/plan/review` và `aw pending` đọc tên mới,
+  `Được bảo vệ bởi` → `Protected by`, `Mục tiêu` → `Target`. `aw check spec/design/plan/review` và `aw pending` đọc tên mới,
   neo ở đầu dòng `- `.
+- **Giá trị trong `spec.md` sang tiếng Anh:** `Risk: cao | thường` →
+  `high | normal`; `Status: đề xuất | đã duyệt` → `proposed | approved`;
+  `Priority: bắt buộc | nên có` → `must | should`; `Type: giữ nguyên | cấu trúc |
+  hiệu năng` → `preserve | structural | performance`. `Trạng thái` của D-xx trong
+  `tdd.md` không đổi (`đề xuất | đã duyệt | mở lại`).
+- **Nhãn nguồn `[SUY-RA]` → `[INFERRED]`, `[CẦN-HỎI]` → `[OPEN-QUESTION]`** — ở
+  mọi nơi: dòng `Source:` của spec, luật cấm suy đoán trong input của
+  `intake.md`, tài liệu và hướng dẫn agent.
 
 ## [2026.10.9]
 

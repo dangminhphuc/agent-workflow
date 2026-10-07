@@ -44,7 +44,7 @@ nhóm chặn phase sớm hơn lên trước:
 1. điểm mù chưa phân mức → 2. điểm mù `chặn` → 3. phát hiện `Chặn` →
 4. điểm mù `chặn review` → 5. phát hiện `Cảnh báo` → 6. điểm mù `không chặn`.
 
-Trong nhóm điểm mù: YC `bắt buộc` trước `nên có` → nhiều task đứng trên giả
+Trong nhóm điểm mù: YC `must` trước `should` → nhiều task đứng trên giả
 định hơn → mã YC.
 
 **Không dán danh sách cho người.** Người chỉ thấy một dòng tóm tắt:
@@ -205,7 +205,7 @@ Lựa chọn, theo đúng thứ tự này (tối đa 4):
    theo câu trả lời — chỉ YC đó. Trước khi ghi, cho người xem đúng các dòng
    sẽ đổi (trước → sau) và hỏi "ghi như vậy được không?"; người đồng ý trong hội
    thoại là đủ. **Giữ nguyên `Status` của spec** — người vừa trả lời và xác nhận
-   chính chỗ sửa này, không phải mở file sửa tay `đề xuất` → `đã duyệt` lần nữa.
+   chính chỗ sửa này, không phải mở file sửa tay `proposed` → `approved` lần nữa.
    Ghi vào cuối dòng `Trả lời:` `(đã xác nhận sửa YC-NNN)` để còn dấu vết.
    Câu trả lời khớp giả định tạm thì chỉ đổi nhãn nguồn.
 4. Chạy `aw check spec <thư-mục-feature>` và dán kết quả thật.
@@ -270,7 +270,7 @@ rồi nói ngắn gọn:
   định độc lập vào một câu hỏi.
 - Đặt `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc cho nhiều hơn một lựa chọn.
 - Tự hạ `Mức chặn`, hoặc tự đổi mức khi người chưa nói. Đổi `Mức` của phát hiện.
-- Đổi `Status` của spec (cả `đề xuất` → `đã duyệt` lẫn ngược lại), hay ghi
+- Đổi `Status` của spec (cả `proposed` → `approved` lẫn ngược lại), hay ghi
   `đã duyệt` cho D-xx — lệnh này không đụng vào các dòng đó.
 - Sửa YC / mục `tdd.md` khi người chưa xác nhận các dòng sẽ đổi, hoặc sửa ngoài
   phạm vi của mục đang xử lý.

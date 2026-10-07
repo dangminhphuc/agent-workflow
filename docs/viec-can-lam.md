@@ -47,10 +47,10 @@ ghi câu trích. Đề xuất thêm `- Trích: > "…"` dưới mỗi YC.
 
 ### 6. Gợi ý nhãn `Risk` bằng từ khoá
 
-Khoá mới `tu_khoa_rui_ro_cao` trong `conventions.md`; spec ghi `thường` mà chứa
+Khoá mới `tu_khoa_rui_ro_cao` trong `conventions.md`; spec ghi `normal` mà chứa
 từ khoá thì **cảnh báo** (không chặn — từ khoá hay báo nhầm).
 
 ## Ngoài phạm vi (luật mới, cần quyết định độ chặt)
 
-Checker hiện vẫn **cho qua**: `Source: [JIRA]` không mã issue; `[SUY-RA]` không
+Checker hiện vẫn **cho qua**: `Source: [JIRA]` không mã issue; `[INFERRED]` không
 lý do; nguồn không có trong `intake.md`.

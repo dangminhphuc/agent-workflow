@@ -17,7 +17,7 @@
 #   4. Điểm mù `chặn review`        — chặn /review
 #   5. Phát hiện mức `Cảnh báo`     — không chặn
 #   6. Điểm mù `không chặn`         — không chặn
-# Trong nhóm điểm mù: YC "bắt buộc" trước "nên có", rồi nhiều task trong plan.md
+# Trong nhóm điểm mù: YC "must" trước "should", rồi nhiều task trong plan.md
 # đứng trên giả định tạm hơn thì trước, rồi thứ tự trong file. Trong nhóm phát
 # hiện: thứ tự trong file.
 # Mục đã xong (điểm mù `đã trả lời`, phát hiện `đã sửa` / `bác bỏ: <lý do>`) chỉ
@@ -142,8 +142,8 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
       if (tt[q] == "đã trả lời") { n_xong++; continue }
       m = muc[q]
       g = (m == "chặn") ? 1 : (m == "chặn review") ? 3 : (m == "không chặn") ? 5 : 0
-      # Khoá sắp xếp: nhóm, ưu tiên YC (bắt buộc trước), số task (nhiều trước), thứ tự trong file.
-      k = sprintf("%d %d %04d %04d", g, (ut[q] == "nên có") ? 1 : 0, 9999 - so_task[q], i)
+      # Khoá sắp xếp: nhóm, ưu tiên YC (must trước), số task (nhiều trước), thứ tự trong file.
+      k = sprintf("%d %d %04d %04d", g, (ut[q] == "should") ? 1 : 0, 9999 - so_task[q], i)
       khoa[++n_mo] = k; ma_k[k] = q; nh[q] = g; n_dm++
       dem[g]++
       if (g == 0)                                   { dang_chan[q] = "spec"; n_chan++ }

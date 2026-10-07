@@ -6,7 +6,7 @@
 # Chặn:
 #   - intake.md thiếu, hoặc "Type" (loại việc) không thuộc feature|bugfix|refactor|perf|chore.
 #   - "Goal" (mục tiêu) trống hoặc còn chỗ giữ chỗ.
-#   - Mục "Input" không có nguồn nào, nhãn không hợp lệ, hay có [SUY-RA].
+#   - Mục "Input" không có nguồn nào, nhãn không hợp lệ, hay có [INFERRED].
 #     Input chỉ nhận tài liệu có định danh hoặc lời người dùng CHÉP NGUYÊN VĂN —
 #     suy đoán của agent mà vào đây thì mọi phase sau sẽ truy về nó như có nguồn.
 #   - [HUMAN] không kèm nguyên văn.
@@ -90,7 +90,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     if (!match($0, /\[[^]]+\]/)) { loi("Input: dòng không có nhãn nguồn — " $0); next }
     t = substr($0, RSTART + 1, RLENGTH - 2); rest = substr($0, RSTART + RLENGTH)
     n_in++
-    if (t == "SUY-RA") { loi("Input #" n_in ": [SUY-RA] không được là input — input chỉ là tài liệu hoặc lời người dùng nguyên văn"); next }
+    if (t == "INFERRED") { loi("Input #" n_in ": [INFERRED] không được là input — input chỉ là tài liệu hoặc lời người dùng nguyên văn"); next }
     if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | FILE | HUMAN)"); next }
     gsub(/<!--.*-->/, "", rest); gsub(/^[`* \t]+|[ \t]+$/, "", rest)
     if (t == "HUMAN" && (rest == "" || rest ~ /^<.*>$/)) cho_nv = 1
@@ -102,7 +102,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     next
   }
   /^[ \t]*>/ {
-    if ($0 ~ /SUY-RA/) loi("Input: có [SUY-RA] trong phần nguyên văn")
+    if ($0 ~ /INFERRED/) loi("Input: có [INFERRED] trong phần nguyên văn")
     s = $0; sub(/^[ \t]*>[ \t]*/, "", s)
     if (s != "" && s !~ /^<.*>$/) cho_nv = 0
     next

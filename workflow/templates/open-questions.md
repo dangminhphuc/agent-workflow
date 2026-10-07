@@ -17,7 +17,7 @@
      (aw pending) và dẫn người trả lời từng mục.
 
      Checker đối chiếu hai chiều với `spec.md`: mỗi mục phải trỏ về một YC có thật;
-     `mở` ↔ spec gắn `[CẦN-HỎI]`; `đã trả lời` ↔ có dòng "Trả lời" và spec đã đổi
+     `mở` ↔ spec gắn `[OPEN-QUESTION]`; `đã trả lời` ↔ có dòng "Trả lời" và spec đã đổi
      nhãn nguồn (vd `[FILE]` open-questions.md § YC-002). -->
 
 <Nếu không có điểm mù nào, ghi đúng dòng dưới đây rồi xoá phần còn lại:>

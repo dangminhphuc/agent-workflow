@@ -10,7 +10,7 @@
 #   4. D-xx thiếu/ sai "Trạng thái" hoặc "tac_gia"; "mở lại" không có lý do; mã trùng.
 #   5. "Dựa trên: D-xx" trỏ về D không tồn tại.
 #   6. Mục "Ánh xạ YC" bỏ sót YC của spec, hoặc trỏ về YC không có.
-#   7. Mode 2: spec "Risk: cao" mà không có D-xx nào do người viết.
+#   7. Mode 2: spec "Risk: high" mà không có D-xx nào do người viết.
 #   8. Checker LLM: chưa có phat-hien-thiet-ke.md, hoặc còn phát hiện mức Chặn chưa xử lý.
 #   9. File khai ở quy_tac_design (conventions.md) không có hoặc chưa commit.
 # Cảnh báo (không chặn): artifact lỗi thời.
@@ -187,8 +187,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     for (c in anh_xa) if (!(c in co_yc)) loi("\"Ánh xạ YC\" trỏ về " c " nhưng spec.md không có mã này")
 
     # 7. Mode 2 — chống neo
-    if (rui_ro == "cao" && !co_nguoi)
-      loi("spec.md có \"Risk: cao\" nhưng không D-xx nào có \"tac_gia: nguoi\". " \
+    if (rui_ro == "high" && !co_nguoi)
+      loi("spec.md có \"Risk: high\" nhưng không D-xx nào có \"tac_gia: nguoi\". " \
           "Người phải phác quyết định trước (Mode 2); agent chỉ phản biện.")
 
     # 8. checker LLM

@@ -7,9 +7,9 @@ based_on: []
 > Sinh bởi phase `01-spec`. Người sửa tay được; chạy lại phase sẽ cập nhật,
 > không ghi đè trắng. `based_on` do `aw based-on` ghi — không sửa tay.
 
-- **Risk:** `<cao | thường>`
-- **Reason:** <cao khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
-- **Status:** `đề xuất`   <!-- đề xuất | đã duyệt — CHỈ NGƯỜI đổi sang đã duyệt; sửa nội dung thì agent đặt lại đề xuất -->
+- **Risk:** `<high | normal>`
+- **Reason:** <high khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
+- **Status:** `proposed`   <!-- proposed | approved — CHỈ NGƯỜI đổi sang approved; sửa nội dung thì agent đặt lại proposed -->
 
 ## Sources
 
@@ -44,24 +44,24 @@ Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — ch
 ### YC-001 — <tiêu đề ngắn>
 
 - Source: `[CONFLUENCE]` [Tên page](URL) § Tên heading
-- Priority: `bắt buộc`   <!-- bắt buộc | nên có — "nên có" chỉ khi NGUỒN nói vậy; nguồn im lặng = bắt buộc -->
+- Priority: `must`   <!-- must | should — "should" chỉ khi NGUỒN nói vậy; nguồn im lặng = must -->
 - Description: <yêu cầu, diễn đạt lại cho rõ>
 - Acceptance criteria:
   - [ ] <quan sát được từ bên ngoài, có số liệu nếu là yêu cầu phi chức năng>
 
 ### YC-002 — <tiêu đề ngắn>
 
-- Source: `[CẦN-HỎI]` → `open-questions.md` § YC-002
-- Priority: `bắt buộc`
+- Source: `[OPEN-QUESTION]` → `open-questions.md` § YC-002
+- Priority: `must`
 - Description: <...>
 - Assumption: <đang hiểu thế nào để đi tiếp>
 - Acceptance criteria:
   - [ ] <...>
 
 <!-- CHỈ refactor / perf: mỗi YC có thêm
-- Type: `giữ nguyên | cấu trúc | hiệu năng`   (hiệu năng: chỉ perf)
-- Protected by: `test/<file>.test.ts`         (YC giữ nguyên — file có sẵn trên nhánh gốc)
-- Target: p95 < 150 ms với 10k bản ghi         (YC hiệu năng — có số liệu)
+- Type: `preserve | structural | performance`   (performance: chỉ perf)
+- Protected by: `test/<file>.test.ts`         (YC preserve — file có sẵn trên nhánh gốc)
+- Target: p95 < 150 ms với 10k bản ghi         (YC performance — có số liệu)
 Không có YC hành vi mới. -->
 
 <!-- CHỈ bugfix: thêm mục dưới, bỏ comment

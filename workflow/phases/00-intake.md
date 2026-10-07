@@ -50,8 +50,8 @@ Có sửa code chạy trên production không?
 |---|---|
 | `feature` | Quy trình chuẩn |
 | `bugfix` | Spec có mục "Reproduction"; test tái hiện phải **đỏ trên code chưa sửa** (`aw check repro`) |
-| `refactor` | YC chỉ là `giữ nguyên` / `cấu trúc`, YC giữ nguyên phải có test bảo vệ sẵn trên nhánh gốc; không được xoá test cũ, sửa test cũ phải khai |
-| `perf` | Như refactor, cộng YC `hiệu năng` có số liệu và số đo trước/sau do máy ghi (`aw check perf`) |
+| `refactor` | YC chỉ là `preserve` / `structural`, YC preserve phải có test bảo vệ sẵn trên nhánh gốc; không được xoá test cũ, sửa test cũ phải khai |
+| `perf` | Như refactor, cộng YC `performance` có số liệu và số đo trước/sau do máy ghi (`aw check perf`) |
 | `chore` | Không có phase design; không được đụng code production; nâng dependency phải khai (major thì là refactor) |
 
 Không phải loại riêng: `utils` (thêm hàm dùng chung = feature, gom code trùng =
@@ -184,7 +184,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
   Viết lại BRD ở đây là tạo một lớp diễn giải chen giữa tài liệu thật và spec —
   và sai lệch của lớp đó sẽ được spec gắn nhãn như có nguồn đàng hoàng.
 - Tự gán nhãn input, hay sửa dòng `aw input` in ra.
-- Ghi `[SUY-RA]` vào input, hay ghi lời người dùng mà không phải nguyên văn.
+- Ghi `[INFERRED]` vào input, hay ghi lời người dùng mà không phải nguyên văn.
 - Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi dòng `Type`.
   Suy đoán của agent vào input thì mọi phase sau truy về nó như thể có nguồn.
 - Tự chốt loại việc thay người.
@@ -197,7 +197,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 
 **Máy:**
 - `aw check intake` ra `[x] ĐẠT` — loại việc (`Type`) hợp lệ, có mục tiêu (`Goal`), có ít
-  nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[HUMAN]` có nguyên văn,
+  nhất một input với nhãn hợp lệ, không `[INFERRED]`, `[HUMAN]` có nguyên văn,
   `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
   có dòng `Engine:` dạng `YYYY.M.N` khớp engine đang chạy.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.

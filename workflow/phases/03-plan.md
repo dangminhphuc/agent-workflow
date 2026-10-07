@@ -39,7 +39,7 @@ duyệt.
   (xem `rules/nguyen-tac-chung.md` § 7)
 
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
-`aw check spec`, có `Status: đã duyệt` và không còn điểm mù
+`aw check spec`, có `Status: approved` và không còn điểm mù
 `Mức chặn: chặn` đang mở — các cổng này vốn nằm ở design), và task không có
 `Dựa trên: D-xx`.
 
@@ -56,11 +56,11 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
    - `Phụ thuộc:` task phải xong trước (nếu có);
    - đủ nhỏ để hoàn thành trong một lượt làm việc và tự nó không làm hỏng build.
 
-2. **Đánh dấu task đứng trên giả định tạm** (mục `[CẦN-HỎI]`). Giả định sai thì
+2. **Đánh dấu task đứng trên giả định tạm** (mục `[OPEN-QUESTION]`). Giả định sai thì
    người cần biết ngay phải làm lại task nào.
 
 3. **Hoãn lại có lý do.** YC không có task nào phủ thì ghi vào "Hoãn lại" kèm lý do.
-   Ưu tiên hoãn YC `nên có`. Hoãn YC `bắt buộc` thì checker cảnh báo (không chặn)
+   Ưu tiên hoãn YC `should`. Hoãn YC `must` thì checker cảnh báo (không chặn)
    — nói rõ với người duyệt plan rằng lần giao này thiếu yêu cầu đó.
 
 4. **Kiểm chứng thủ công.** YC không test tự động được thì ghi vào mục

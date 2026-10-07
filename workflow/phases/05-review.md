@@ -62,7 +62,7 @@ Rà theo ba lăng kính tách bạch, không trộn. Trộn lại thì lăng kí
 Duyệt **từng mã `YC-NNN`** trong `spec.md`, chỉ ra code nào thoả nó, kết luận
 `đạt` / `chưa đạt` / `đạt một phần`. Không có mã nào được bỏ trống.
 
-Nếu một `YC` gắn `[CẦN-HỎI]` và giả định tạm chưa được xác nhận, kết luận là
+Nếu một `YC` gắn `[OPEN-QUESTION]` và giả định tạm chưa được xác nhận, kết luận là
 `chờ xác nhận` — không phải `đạt`. Chỉ điểm mù `Mức chặn: không chặn` còn mở được
 tới đây; `chặn` / `chặn review` còn mở thì máy chặn.
 
@@ -118,7 +118,7 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
 
 **Máy:**
 - `aw check review` ra `[x] ĐẠT`:
-  - mọi `YC-NNN` có kết luận hợp lệ, không `[CẦN-HỎI]` nào bị kết luận `đạt`;
+  - mọi `YC-NNN` có kết luận hợp lệ, không `[OPEN-QUESTION]` nào bị kết luận `đạt`;
   - đầu vào qua `aw check plan` (kéo theo design và spec);
   - `ket-qua-kiem-thu.md` có và ghi `Kết quả: XANH`;
   - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi

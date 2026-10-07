@@ -63,7 +63,7 @@ Confluence, viết tay…) rồi đưa vào đúng phase cần.
   `tdd.md` viết tay vẫn cần người duyệt từng D-xx như khi agent viết.
 - **Input không đúng mẫu đi qua bước import có kiểm soát** — lệnh riêng, không
   phải phase. Nó chỉ sắp xếp lại theo mẫu, **không thêm nội dung**; gắn nhãn
-  nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[CẦN-HỎI]`. Kết quả qua checker và
+  nguồn trỏ về tài liệu gốc; chỗ không rõ ghi `[OPEN-QUESTION]`. Kết quả qua checker và
   người xác nhận bản chuyển đổi.
 
 Import không được thêm nội dung vì nếu được, agent sẽ lặng lẽ lấp chỗ trống bằng
@@ -81,7 +81,7 @@ tiêu**. Trước đây `ideation` chỉ chạy khi không có BRD; giờ nó b�
 
 Điều giữ cho `00` không thành một lớp diễn giải chen giữa BRD và spec: nó chỉ
 **trỏ tới** tài liệu, và input chỉ nhận tài liệu có định danh hoặc lời người dùng
-**chép nguyên văn** (`[HUMAN]`). `[SUY-RA]` bị cấm ở input — nếu không, điều
+**chép nguyên văn** (`[HUMAN]`). `[INFERRED]` bị cấm ở input — nếu không, điều
 agent tự suy ra sẽ sang spec với nhãn `[FILE] intake.md` như có nguồn thật.
 
 **Nhãn input do máy gán** (`aw input`), không do agent đoán:
@@ -298,7 +298,7 @@ riêng trong `tdd.md`; người duyệt từng D, phần còn lại là hệ qu�
 ### Chống neo: Mode 2
 
 Khi agent đưa phương án trước, người duyệt có xu hướng neo vào nó. Với thay đổi
-`Risk: cao` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
+`Risk: high` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
 đề xuất nhãn, người duyệt ở gate spec), `design` **chặn** nếu chưa có bản phác
 mục D-xx do người viết (`tac_gia: nguoi`). Có bản phác thì agent chỉ phản biện.
 Rủi ro thường dùng Mode 1: agent viết cả `tdd.md`, người duyệt.
@@ -318,7 +318,7 @@ lại. Giữ riêng vì hai lẽ: plan là ranh giới do **phiên khác** đặ
 
 ## Giả định chưa xác nhận
 
-Chỗ chưa rõ trong spec ghi `[CẦN-HỎI]` kèm **mức chặn**; agent đề xuất, người
+Chỗ chưa rõ trong spec ghi `[OPEN-QUESTION]` kèm **mức chặn**; agent đề xuất, người
 duyệt nhãn ở gate spec. Đúng ba mức — thêm mức nữa thì người duyệt phải phân
 biệt những ranh giới không ai đo được:
 
@@ -334,11 +334,11 @@ là đủ; còn lại thì chấp nhận giao trên giả định và ghi rõ l�
 
 Lệnh tiện ích `clarify` (`workflow/clarify.md`) dẫn người đi qua
 các mục còn mở: `aw pending` xếp thứ tự bằng máy (mức chặn → YC
-`bắt buộc` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
+`must` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
 đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
 Câu trả lời của người trong hội thoại **chính là** gate người của điểm mù: không
-có bước sửa tay `đề xuất` → `đã duyệt` nào thêm, kể cả khi YC phải sửa theo câu
+có bước sửa tay `proposed` → `approved` nào thêm, kể cả khi YC phải sửa theo câu
 trả lời (người xác nhận các dòng sẽ đổi trước khi agent ghi; `Status` của spec
 giữ nguyên). Dấu vết nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn.
 
@@ -522,7 +522,7 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    này một phần, nhưng vì nó chỉ được chặn, những gì nó bỏ sót vẫn lọt qua.
 
 4. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Risk` do agent đề xuất; nếu
-   người duyệt ở gate spec cho qua nhãn `thường` sai, `design` sẽ chạy Mode 1 và
+   người duyệt ở gate spec cho qua nhãn `normal` sai, `design` sẽ chạy Mode 1 và
    hiện tượng neo quay lại.
 
 5. **Hash cả file báo cả thay đổi vô hại.** Sửa chính tả trong `spec.md` cũng làm
@@ -534,13 +534,13 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    chỗ khác.
 
 7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Status` của spec
-   trong `spec.md`). Máy phân biệt được `đề xuất` với
-   `đã duyệt`, và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
+   trong `spec.md`). Máy phân biệt được `proposed` với
+   `approved` (D-xx: `đề xuất` với `đã duyệt`), và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
    dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được. Từ bản 2026.10.6
    artifact không nằm trong git nên cũng không còn `git blame` hay diff PR để
    soi — chỉ người đọc lại file ở máy mới thấy. `Status` của spec còn yếu
-   hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `đề xuất` thì bản
-   "đã duyệt" không còn là bản người đọc — máy không phát hiện được.
+   hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `proposed` thì bản
+   "approved" không còn là bản người đọc — máy không phát hiện được.
 
 8. **`review` không chạy lại test.** Nó đọc dòng kết quả trong `ket-qua-kiem-thu.md`;
    sửa code sau lần chạy `aw check implement` cuối cùng thì kết quả đó đã cũ.
