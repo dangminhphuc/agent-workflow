@@ -25,6 +25,7 @@ Phần dùng chung với adapter khác ở `adapters/lib/chung.sh` (xem
 | `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
+| Phase có `approval_gate: true` (`02-design.md`, `03-plan.md`) | Bước "Cổng duyệt" trong lệnh phase: `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
 | `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/<id>.md` — lệnh tiện ích `/import`, `/clarify` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
@@ -65,7 +66,7 @@ Adapter mới vì thế không phải biết gì về loại việc.
 
 ## Cái gì KHÔNG biên dịch portable được
 
-Đây là phần quan trọng nhất của tài liệu này. Sáu thứ dưới đây là đặc thù agent,
+Đây là phần quan trọng nhất của tài liệu này. Bảy thứ dưới đây là đặc thù agent,
 và adapter tương lai cho Cursor/Copilot sẽ phải tự xử lý — hoặc **nói rõ là
 không làm được** chứ không im lặng bỏ qua.
 
@@ -124,6 +125,18 @@ và "Chat về câu này". Adapter này dịch nó sang tool `AskUserQuestion`: 
 vào `options` — để đủ chỗ cho phương án thật.
 Agent không có giao diện lựa chọn thì in lựa chọn đánh số kèm "hoặc gõ câu trả
 lời khác / hỏi lại để trao đổi" — mô tả trung lập đã nói cách lùi này.
+
+### 7. Hộp xác nhận của cổng duyệt
+
+Phase khai `approval_gate: true` có bước "Cổng duyệt": người gõ `/design` (hay
+`/plan`) khi phần trước chưa duyệt thì agent chạy `aw approval <phase>`, in
+nguyên văn bản tóm tắt máy dựng, rồi hỏi bằng hộp xác nhận ba lựa chọn cố định
+(*Tôi đã duyệt xong — kiểm lại* · *Giải thích từng điểm cần duyệt* · *Dừng — tôi
+duyệt sau*). Phần chung (`buoc_cong_duyet` trong `adapters/lib/chung.sh`) là luồng
+và luật "không tick hộ"; adapter này thêm cách gọi `AskUserQuestion`, dùng
+`preview` để người thấy đúng file/dòng phải tick và danh sách điểm cần đọc khi
+rê vào lựa chọn. Agent không có giao diện lựa chọn thì in ba lựa chọn đánh số.
+Hộp xác nhận **không** thay cho việc tick: nó chỉ dẫn người tới đúng chỗ.
 
 Những gì **luôn** portable: file artifact trong `.agent-workflow/<tên-branch>/`,
 `conventions.md`, các mẫu (chép vào `.agent-workflow/.engine/`), và lệnh `aw check`. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
@@ -239,5 +252,5 @@ giá là đã đạt.
 4. Lời dặn agent chỉ gọi `aw …` (`aw feature`, `aw check <tên>`, `aw input`…) và
    đọc mẫu/luật trong `.agent-workflow/.engine/`. Không nhúng luật vào prompt.
 5. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
-   LLM, câu hỏi lựa chọn), **ghi rõ trong output** thay vì bỏ qua.
+   LLM, câu hỏi lựa chọn, hộp xác nhận của cổng duyệt), **ghi rõ trong output** thay vì bỏ qua.
 6. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.

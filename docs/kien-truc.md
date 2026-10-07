@@ -257,6 +257,17 @@ duyệt có thêm hai lớp, cùng nằm ở `tools/lib/duyet.sh`:
   tick. Không cần đọc JSON của tool (không có jq trong yêu cầu môi trường): so
   trạng thái file trước/sau là đủ, và bắt được cả Edit, Write lẫn `sed -i` qua Bash.
 
+Người gõ lệnh phase sau khi phần trước chưa duyệt thì lệnh mở đầu bằng **cổng
+duyệt** (`approval_gate: true`): `aw approval <phase>` in bản tóm tắt cho người —
+file/dòng phải tick, YC `[SUY-RA]`, "Ngoài phạm vi", mức rủi ro và Mode kéo theo,
+điểm mù còn mở; hay D nào chưa duyệt, ai viết, chọn gì, có phản biện không — rồi
+agent hỏi bằng hộp xác nhận. Bản tóm tắt do **máy** dựng từ file chứ không để
+agent tự diễn giải: hộp xác nhận là chỗ người quyết, thông tin trong đó phải ổn
+định và không bị chọn lọc. Hộp xác nhận **không** tick hộ — bấm một nút không
+chứng minh người đã đọc, và máy không phân biệt được "agent tick vì người vừa
+bấm" với "agent tự tick" (hook `aw guard` sẽ bỏ tick đó). Nó chỉ dẫn người tới
+đúng chỗ rồi kiểm lại.
+
 Parser chỉ nhận ô duyệt đúng chỗ: spec ở phần đầu file (trước `##` đầu tiên), D-xx
 trong mục `### D-NN` của nó, đúng một ô; ô trong chú thích hay khối ``` không được
 tính; dòng mang nhãn ô duyệt mà sai dạng là lỗi, không đoán.
@@ -440,6 +451,7 @@ needs_clean_context: true   # phải chạy được từ phiên trắng
 requires_fresh_agent: true  # không được dùng chính phiên vừa làm việc trước đó
 llm_checker: workflow/checkers/thiet-ke.md   # có checker LLM; adapter từ chối build nếu file không có
 arguments: input            # tham số lệnh là input, không phải tên feature (chỉ 00-intake)
+approval_gate: true         # lệnh phase mở đầu bằng cổng duyệt (aw approval) — 02-design, 03-plan
 ---
 ```
 

@@ -281,6 +281,29 @@ Spec và mỗi D-xx có một ô duyệt; bạn duyệt bằng cách đổi `[ ]
   — ô nào được tick trong lúc lệnh của agent chạy thì bị bỏ tick và agent được báo.
 - Ô duyệt phải đúng chỗ (spec: trước heading `##` đầu tiên; D-xx: trong mục của
   nó), đúng một ô; ô trong chú thích hay khối code không được tính.
+- **Gõ lệnh phase sau khi chưa duyệt** (vd `/design` khi spec chưa tick, `/plan`
+  khi còn D chưa tick): agent không làm gì của phase mà in bản tóm tắt máy dựng
+  từ file (`aw approval`) rồi hỏi bằng hộp xác nhận:
+
+  ```text
+  CỔNG DUYỆT — vào /design cần spec đã được bạn duyệt
+  Việc:        feat_x
+  Trạng thái:  ✗ CHƯA DUYỆT — ô "Người duyệt spec" chưa tick
+  Cách duyệt:  mở .agent-workflow/feat_x/spec.md, dòng 12
+               đổi   - [ ] **Người duyệt spec**
+               thành - [x] **Người duyệt spec**
+
+  Nên đọc kỹ trước khi tick (máy không kiểm thay được):
+    1. Yêu cầu agent tự suy ra [SUY-RA] — 3 mục, nguồn không ghi trực tiếp:
+         YC-006 — …
+    2. Ngoài phạm vi — 2 mục: …
+    3. Mức rủi ro: cao — /design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại
+    4. Điểm mù còn mở: 0
+  ```
+
+  Ba lựa chọn: **Tôi đã duyệt xong — kiểm lại** (agent kiểm lại; đạt thì vào phase
+  ngay), **Giải thích từng điểm cần duyệt**, **Dừng — tôi duyệt sau**. Agent
+  không bao giờ tick hộ — kể cả khi bạn bảo "duyệt hộ".
 - Việc bắt đầu trước bản có ô duyệt vẫn chạy bằng engine ghi trong `intake.md` của
   nó (dòng `Trạng thái spec:` cũ). Engine mới gặp dạng cũ thì báo cách đổi.
 
@@ -510,6 +533,7 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 | `aw worktree status <branch>` · `aw worktree remove <branch> [--delete-branch]` | Dọn worktree sau khi merge |
 | `aw adapter build <agent> [--out <thư-mục>] [--force]` | Sinh lại adapter |
 | `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules <phase>` | Lệnh agent gọi trong các phase |
+| `aw approval design\|plan <thư-mục-feature>` | Cổng duyệt khi vào phase: còn gì chờ người duyệt — lệnh `/design`, `/plan` gọi |
 | `aw guard pre` · `aw guard post` | Hook gác ô duyệt — cấu hình ở [adapters/claude-code/README.md](adapters/claude-code/README.md#hook-gác-ô-duyệt) |
 
 ### Artifact của việc: chỉ ở máy
@@ -641,6 +665,7 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
   quy-tac-repo.sh        aw rules: file quy tắc riêng của repo cho một phase (quy_tac_* trong conventions.md)
   cap-nhat-based-on.sh   aw based-on: ghi hash đầu vào vào frontmatter artifact
+  cong-duyet.sh          aw approval design|plan: tóm tắt cho người còn gì chờ duyệt (cổng duyệt khi vào phase)
   gac-duyet.sh           aw guard pre|post: hook bỏ tick ô duyệt agent tick / nội dung đổi sau duyệt
   dong-goi.sh            đóng gói bản phát hành (tarball + SHA256SUMS)
   chuan-bi-phat-hanh.sh  đặt version YYYY.M.N cho PR phát hành (VERSION, bin/aw, CHANGELOG, README)

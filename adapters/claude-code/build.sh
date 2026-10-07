@@ -70,6 +70,27 @@ cach_hoi_lua_chon() {
   printf -- '- Người chọn "Chat about this" thì trả lời bằng văn bản thường; khi người đã rõ, gọi lại `AskUserQuestion` cho đúng câu đó.\n\n'
 }
 
+# Hộp xác nhận của cổng duyệt (approval_gate: true) → AskUserQuestion. preview hiện
+# khi người rê vào lựa chọn: để người thấy đúng việc phải làm mà không phải cuộn lên.
+cach_hoi_cong_duyet() {
+  printf '### Hộp xác nhận trong Claude Code\n\n'
+  printf 'Hộp xác nhận là **một lần gọi tool `AskUserQuestion`**, `multiSelect: false`, một phần tử trong `questions`:\n\n'
+  if [ "$1" = design ]; then
+    printf -- '- `question`: `Spec chưa được duyệt nên chưa vào /design được — bạn muốn làm gì?` (stdout ghi `ĐÃ ĐỔI SAU KHI DUYỆT` thì: `Spec đã đổi sau khi bạn duyệt nên chưa vào /design được — bạn muốn làm gì?`)\n'
+    printf -- '- `header`: `Duyệt spec`\n'
+  else
+    printf -- '- `question`: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /plan được — bạn muốn làm gì?` — số lấy ở dòng `Trạng thái` của stdout.\n'
+    printf -- '- `header`: `Duyệt D-xx`\n'
+    printf -- '- Việc chore (stdout là cổng duyệt **spec**): `question` là `Spec chưa được duyệt nên chưa vào /plan được — bạn muốn làm gì?`, `header` là `Duyệt spec`.\n'
+  fi
+  printf -- '- `options` (đúng ba, đúng thứ tự, nhãn giữ nguyên; **không** gắn `(Đề xuất)` — đây không phải chọn phương án):\n'
+  printf '  1. `label`: `Tôi đã duyệt xong — kiểm lại` · `description`: `Agent chạy lại kiểm tra; đạt thì vào phase ngay.` · `preview`: chép phần `Cách duyệt` của stdout (file, dòng, dòng trước → sau).\n'
+  printf '  2. `label`: `Giải thích từng điểm cần duyệt` · `description`: `Agent đi qua từng mục, nói nguồn và hậu quả. Không tick hộ.` · `preview`: chép phần `Nên đọc kỹ…` (spec) hoặc `Chưa duyệt:` (D-xx) của stdout.\n'
+  printf '  3. `label`: `Dừng — tôi duyệt sau` · `description`: `Không chạy phase này. Duyệt xong thì gõ lại lệnh.` · không cần `preview`.\n'
+  printf -- '- Claude Code tự thêm ô "Type something" và "Chat about this" — không thêm lựa chọn nào khác. Người gõ chữ thì xử lý như mô tả ở trên (kể cả "duyệt hộ" → từ chối).\n'
+  printf -- '- Khối ```` ```text ```` in stdout đứng **ngay trước** lần gọi, không chen lời dẫn dài; tối đa một câu mở đầu.\n\n'
+}
+
 ten_agent_checker() { printf 'soat-%s' "$(basename "$1" .md)"; }
 
 sinh_command() {
@@ -93,6 +114,10 @@ sinh_command() {
   canh_bao "$file"
   buoc_xac_dinh_feature '$ARGUMENTS' "$args"
   [ "$args" = "input" ] && buoc_phan_loai_input '$ARGUMENTS'
+  if [ "$(fm_scalar "$src" approval_gate)" = "true" ]; then
+    buoc_cong_duyet "$id"
+    cach_hoi_cong_duyet "$id"
+  fi
 
   printf '## Hợp đồng phase\n\n'
   if [ "$req" = "true" ]; then

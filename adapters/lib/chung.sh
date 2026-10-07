@@ -107,6 +107,11 @@ kiem_tra_nguon() {
     ""|input) ;;
     *) echo "LỖI: $_file khai arguments \"$_ar\" — chỉ nhận \"input\" (bỏ trống = tên feature)." >&2; _bad=1 ;;
   esac
+  _ag=$(fm_scalar "$_src" approval_gate)
+  case "$_ag" in
+    ""|true) ;;
+    *) echo "LỖI: $_file khai approval_gate \"$_ag\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
+  esac
   _lc=$(fm_scalar "$_src" llm_checker)
   if [ -n "$_lc" ] && [ ! -f "$ROOT/$_lc" ]; then
     echo "LỖI: $_file khai llm_checker \"$_lc\" nhưng không có file đó." >&2
@@ -177,6 +182,48 @@ buoc_phan_loai_input() {
   printf -- '- **LỜI NGƯỜI DÙNG:** tham số là lời người dùng → stdout là một mục `[NGƯỜI-DÙNG]` nguyên văn. Nếu stderr có "Đề xuất tách thêm": hỏi người, chỉ ghi các dòng đó khi người đồng ý.\n'
   printf -- '- **KHÔNG CÓ THAM SỐ:** không có tham số → hỏi người dùng input, rồi chạy lại lệnh trên với **nguyên văn câu trả lời**.\n'
   printf -- '- **ĐƯỜNG DẪN KHÔNG TỒN TẠI:** có đường dẫn không tồn tại → hỏi lại người dùng. Không tự đoán đường dẫn.\n\n'
+}
+
+# buoc_cong_duyet <phase> — phase khai approval_gate: true. Người gõ lệnh phase
+# tiếp theo khi phần trước chưa duyệt: agent KHÔNG tick hộ, chỉ cho người thấy rõ
+# còn gì chờ duyệt (máy dựng: aw approval) rồi hỏi. Cách hỏi cụ thể do adapter
+# thêm ngay sau (Claude Code: AskUserQuestion); adapter không có giao diện lựa
+# chọn thì in lựa chọn đánh số.
+buoc_cong_duyet() {
+  case "$1" in
+    design) _cd_gi="spec"; _cd_lenh="/design" ;;
+    plan)   _cd_gi="mọi quyết định D-xx (chore: spec)"; _cd_lenh="/plan" ;;
+    *)      _cd_gi="phần trước"; _cd_lenh="/$1" ;;
+  esac
+  printf '## Bước 1 — Cổng duyệt (làm ngay sau Bước 0, trước mọi việc khác)
+
+'
+  printf 'Vào `%s` cần %s đã được **người** duyệt. Người gõ `%s` khi chưa duyệt thì hỏi lại cho rõ — **không** tự tick, **không** coi việc gõ lệnh là đã duyệt.
+
+' "$_cd_lenh" "$_cd_gi" "$_cd_lenh"
+  printf 'Chạy `aw approval %s %s`. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:
+
+' "$1" "$FD"
+  printf -- '- **ĐÃ DUYỆT:** đi tiếp phase, không hỏi gì.
+'
+  printf -- '- **CHƯA DUYỆT:** in **nguyên văn** stdout cho người trong một khối ```` ```text ```` (máy đã viết sẵn cho người đọc — không tóm tắt, không thêm bớt), rồi hỏi bằng **hộp xác nhận** bên dưới. Dừng ở đó cho tới khi người chọn.
+'
+  printf -- '- **SAI THAM SỐ HOẶC THIẾU FILE:** thiếu file thì báo người chạy phase trước. Lệnh không có (việc ghim engine cũ) thì bỏ qua bước này — `aw check` vẫn chặn.
+
+'
+  printf '**Hộp xác nhận** — một câu hỏi, ba lựa chọn theo thứ tự:
+
+'
+  printf '1. **Tôi đã duyệt xong — kiểm lại** → chạy lại `aw approval %s %s`. ĐÃ DUYỆT thì báo một dòng ("Đã thấy bạn duyệt — vào %s") rồi đi tiếp. Vẫn CHƯA DUYỆT thì chỉ in lại phần `Trạng thái` và `Cách duyệt`/`Chưa duyệt` mới, rồi hỏi lại hộp này.
+' "$1" "$FD" "$_cd_lenh"
+  printf '2. **Giải thích từng điểm cần duyệt** → đi qua từng mục trong stdout, mỗi mục 2–3 dòng: nó nói gì, nguồn ở đâu (YC, dòng, tài liệu), duyệt sai thì hậu quả gì. Đọc từ file, không suy diễn thêm. Xong thì hỏi lại hộp này.
+'
+  printf '3. **Dừng — tôi duyệt sau** → không làm gì của phase. Nhắc: duyệt xong thì gõ lại `%s`.
+
+' "$_cd_lenh"
+  printf 'Người gõ "duyệt hộ", "tick giúp", "ok cứ làm đi"… thì **từ chối** một dòng (chỉ người được tick — ô duyệt là bằng chứng người đã đọc), chỉ lại đúng file và dòng, rồi hỏi lại hộp này. Người muốn sửa nội dung thì đó là việc của phase trước (`/spec`, hoặc `/design` cho D-xx) — nói vậy, không sửa ở đây.
+
+'
 }
 
 # doc_truoc — mục "Đọc trước khi làm" chung

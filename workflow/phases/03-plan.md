@@ -3,6 +3,7 @@ id: plan
 name: Kế hoạch
 summary: Chia thiết kế đã duyệt thành task thực thi được — chỉ quản lý thực thi
 required: true
+approval_gate: true
 inputs:
   - intake.md
   - spec.md
@@ -34,7 +35,9 @@ duyệt.
 
 - `spec.md`, `tdd.md` — phải qua được `aw check design`, và **mọi D-xx đã
   được người duyệt** (tick, dấu duyệt khớp nội dung). Còn D chưa tick, `mở lại`,
-  hay đổi sau khi tick thì dừng lại.
+  hay đổi sau khi tick thì dừng lại: lệnh `/plan` chạy **cổng duyệt**
+  (`aw approval plan`) trước tiên — cho người thấy rõ D nào chờ duyệt rồi hỏi bằng
+  hộp xác nhận; agent không tick hộ.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
 - Quy tắc riêng của repo cho phase này — `aw rules plan`, đọc từng file nó in ra
   (xem `rules/nguyen-tac-chung.md` § 7)

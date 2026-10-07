@@ -3,6 +3,7 @@ id: design
 name: Thiết kế kỹ thuật
 summary: Viết Technical Design Document — tách lựa chọn thành quyết định D-xx để người duyệt
 required: true
+approval_gate: true
 inputs:
   - intake.md
   - spec.md
@@ -37,7 +38,8 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 
 - `spec.md`, `open-questions.md` — phải qua được `aw check spec`, và
   ô "Người duyệt spec" đã tick và dấu duyệt còn khớp nội dung. Chưa tick thì
-  dừng lại.
+  dừng lại: lệnh `/design` chạy **cổng duyệt** (`aw approval design`) trước tiên —
+  cho người thấy rõ còn gì chờ duyệt rồi hỏi bằng hộp xác nhận; agent không tick hộ.
 - Code hiện có của repo đích
 - Quy tắc riêng của repo cho phase này — `aw rules design`, đọc từng file nó in ra
   (xem `rules/nguyen-tac-chung.md` § 7)

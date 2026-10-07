@@ -333,6 +333,7 @@ ky_vong 9 "thiếu AW_CONFIG → KHÔNG HỢP LỆ (không đoán đường dẫ
 ky_vong 9 "wrapper khác giao thức → KHÔNG HỢP LỆ" env AW_PROTOCOL=999 sh "$AWE" check spec "$F"
 ky_vong 2 "lệnh lạ → SAI THAM SỐ" sh "$AWE" lam-gi-do
 ky_vong 0 "aw-engine guard pre → gac-duyet.sh" sh "$AWE" guard pre
+ky_vong 0 "aw-engine approval → cong-duyet.sh" sh "$AWE" approval design "$F"
 ky_vong 3 "aw-engine guard sai pha → SAI THAM SỐ của gac-duyet.sh" sh "$AWE" guard khac
 ky_vong 2 "adapter không có → SAI THAM SỐ" sh "$AWE" adapter build khong-co --out "$TMP/o-x"
 
@@ -1061,6 +1062,12 @@ dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng 
 dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/clarify.md"
 dung "lệnh /clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-hien-thiet-ke.md' "$O/.claude/commands/clarify.md"
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'AskUserQuestion' '$O/.claude/commands/import.md'"
+dung "/design có cổng duyệt: aw approval design + hộp xác nhận AskUserQuestion" sh -c \
+  "grep -q 'Bước 1 — Cổng duyệt' '$O/.claude/commands/design.md' && grep -q 'aw approval design' '$O/.claude/commands/design.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/design.md'"
+dung "…ba lựa chọn cố định, có preview, từ chối duyệt hộ" sh -c \
+  "grep -q 'Tôi đã duyệt xong — kiểm lại' '$O/.claude/commands/design.md' && grep -q 'Giải thích từng điểm cần duyệt' '$O/.claude/commands/design.md' && grep -q 'Dừng — tôi duyệt sau' '$O/.claude/commands/design.md' && grep -q 'preview' '$O/.claude/commands/design.md' && grep -q 'duyệt hộ' '$O/.claude/commands/design.md'"
+dung "/plan có cổng duyệt aw approval plan" grep -q 'aw approval plan' "$O/.claude/commands/plan.md"
+dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Cổng duyệt' '$O/.claude/commands/implement.md' && ! grep -q 'Cổng duyệt' '$O/.claude/commands/spec.md'"
 dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase>" sh -c \
@@ -1118,6 +1125,10 @@ ky_vong 4 "từ chối build khi mục commands: trỏ tới file không tồn t
 tao_fake
 thay "$FAKE/workflow/clarify.md" 'choice_ui: true' 'choice_ui: co'
 ky_vong 4 "từ chối build khi choice_ui khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out8"
+
+tao_fake
+thay "$FAKE/workflow/phases/02-design.md" 'approval_gate: true' 'approval_gate: co'
+ky_vong 4 "từ chối build khi approval_gate khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out10"
 
 tao_fake
 thay "$FAKE/workflow/checkers/thiet-ke.md" 'quy_tac: design' 'quy_tac: intake'
@@ -1570,6 +1581,45 @@ sh "$GAC" pre >/dev/null 2>&1
 ky_vong 0 "spec dạng cũ: hook không chặn" sh "$GAC" post
 viet_spec; viet_tdd; ghi_based_on
 
+# ---------------------------------------------------------------- cổng duyệt
+echo ""
+echo "cong-duyet.sh (aw approval)"
+CD="$T/cong-duyet.sh"
+viet_spec; viet_tdd
+ky_vong 2 "approval sai phase → SAI THAM SỐ" sh "$CD" review "$F"
+ky_vong 2 "approval thiếu thư mục → SAI THAM SỐ" sh "$CD" design "$TMP/khong-co"
+ky_vong 0 "spec đã tick → ĐÃ DUYỆT" sh "$CD" design "$F"
+thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'
+thay "$F/spec.md" '### YC-002 — b' '### YC-003 — log khi từ chối
+- Nguồn: `[SUY-RA]` từ YC-001
+- Ưu tiên: `bắt buộc`
+- Tiêu chí chấp nhận:
+  - [ ] có log
+
+### YC-002 — b'
+ky_vong 1 "spec chưa tick → CHƯA DUYỆT" sh "$CD" design "$F"
+OUT_CD=$(sh "$CD" design "$F" 2>/dev/null)
+dung "…chỉ đúng file và dòng phải tick" sh -c "printf '%s' \"\$1\" | grep -q 'mở .agent-workflow/[^ ]*/spec.md, dòng [0-9]'" _ "$OUT_CD"
+dung "…liệt kê YC [SUY-RA] kèm tên" sh -c "printf '%s' \"\$1\" | grep -q 'YC-003 — log khi từ chối'" _ "$OUT_CD"
+dung "…liệt kê Ngoài phạm vi" sh -c "printf '%s' \"\$1\" | grep -q 'màn hình z'" _ "$OUT_CD"
+dung "…nói hệ quả của mức rủi ro (Mode 1/2)" sh -c "printf '%s' \"\$1\" | grep -q 'Mức rủi ro: thường — /design chạy Mode 1'" _ "$OUT_CD"
+dung "…đếm điểm mù còn mở theo mức chặn" sh -c "printf '%s' \"\$1\" | grep -q 'Điểm mù còn mở: 1 (chặn: 0 · chặn review: 0 · không chặn: 1)'" _ "$OUT_CD"
+dung "…không tự tick" sh -c "grep -q '^- \[ \] \*\*Người duyệt spec' '$F/spec.md'"
+thay "$F/spec.md" '- [ ] **Người duyệt spec** — đã đọc' '- [x] **Người duyệt spec** — đã đọc'
+ky_vong 0 "người tick xong → ĐÃ DUYỆT (kiểm lại)" sh "$CD" design "$F"
+thay "$F/spec.md" 'có log' 'có log Warn'
+ky_vong 1 "spec đổi sau duyệt → CHƯA DUYỆT" sh "$CD" design "$F"
+dung "…nói rõ đã đổi sau khi duyệt và cách duyệt lại" sh -c "sh '$CD' design '$F' 2>/dev/null | grep -q 'ĐÃ ĐỔI SAU KHI DUYỆT' && sh '$CD' design '$F' 2>/dev/null | grep -q 'xoá \"<!-- dấu duyệt'"
+viet_spec; viet_tdd
+ky_vong 0 "/plan: mọi D đã tick → ĐÃ DUYỆT" sh "$CD" plan "$F"
+thay "$F/tdd.md" '- [x] **Người duyệt quyết định**' '- [ ] **Người duyệt quyết định**
+- Phản biện (agent): cân nhắc DB'
+ky_vong 1 "/plan: còn D chưa tick → CHƯA DUYỆT" sh "$CD" plan "$F"
+OUT_CD=$(sh "$CD" plan "$F" 2>/dev/null)
+dung "…đếm D chưa duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'CÒN 1/1 QUYẾT ĐỊNH CHƯA DUYỆT'" _ "$OUT_CD"
+dung "…tên D, dòng, tác giả, lựa chọn, có phản biện" sh -c "printf '%s' \"\$1\" | grep -q 'D-01 — lưu ở đâu' && printf '%s' \"\$1\" | grep -q 'dòng [0-9]* · chưa tick' && printf '%s' \"\$1\" | grep -q 'tác giả: agent · Chọn: file · có 1 phản biện'" _ "$OUT_CD"
+viet_spec; viet_tdd; ghi_based_on
+
 # ---------------------------------------------------------------- chore
 echo ""
 echo "loại việc: chore"
@@ -1580,6 +1630,9 @@ done
 ky_vong 1 "chore chạy design thì bị chặn" sh "$T/kiem-tra-thiet-ke.sh" "$F"
 
 thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'
+ky_vong 1 "chore: aw approval plan hỏi duyệt SPEC (không có tdd.md)" sh "$T/cong-duyet.sh" plan "$F"
+dung "…đúng cổng spec, không nói Mode" sh -c "sh '$T/cong-duyet.sh' plan '$F' 2>/dev/null | grep -q 'vào /plan cần spec' && sh '$T/cong-duyet.sh' plan '$F' 2>/dev/null | grep -q 'chore không có design'"
+ky_vong 2 "chore: aw approval design → SAI THAM SỐ" sh "$T/cong-duyet.sh" design "$F"
 ky_vong 1 "chore: plan chặn khi người chưa duyệt spec" sh "$T/kiem-tra-ke-hoach.sh" "$F"
 viet_spec; ghi_based_on
 
@@ -1812,6 +1865,7 @@ dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)"
 dung "…cây làm việc sạch: file sinh ra không lọt vào git status" sh -c "[ -z \"\$(git -C '$R7' status --porcelain)\" ]"
 ky_vong 0 "aw guard pre → chuyển sang engine của bản clone (chưa có việc nào: không làm gì)" aw7 guard pre
 ky_vong 0 "aw guard post → như trên" aw7 guard post
+ky_vong 2 "aw approval → chuyển sang engine (thư mục không có → SAI THAM SỐ)" aw7 approval design "$TMP/khong-co"
 aw7 init >/dev/null 2>&1
 dung "init lại: không nhân đôi dòng exclude" bang "$(grep -cx '/.claude/' "$R7/.git/info/exclude")" 1
 ky_vong 2 "init lại với version khác → SAI THAM SỐ (dùng aw upgrade)" aw7 init --version 2099.1.2

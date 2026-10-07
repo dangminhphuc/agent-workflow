@@ -36,6 +36,15 @@ ngầm giữa các bản.
   tick trong lúc lệnh của agent chạy, hoặc ô có dấu mà nội dung đã đổi, bị bỏ tick
   và agent được báo (mã 2). Người tự thêm vào `.claude/settings.json` — xem
   adapters/claude-code/README.md. Cần wrapper `aw` mới để có lệnh `aw guard`.
+- **Cổng duyệt khi vào phase:** gõ `/design` khi spec chưa duyệt (hay `/plan` khi
+  còn D-xx chưa duyệt; chore: spec) thì agent không làm gì của phase mà chạy
+  `aw approval design|plan`, in bản tóm tắt máy dựng từ file (file/dòng phải tick,
+  YC `[SUY-RA]`, Ngoài phạm vi, mức rủi ro → Mode, điểm mù còn mở; hay từng D chưa
+  duyệt: dòng, tác giả, lựa chọn, phản biện), rồi hỏi bằng hộp xác nhận
+  (`AskUserQuestion`, có preview): *Tôi đã duyệt xong — kiểm lại* · *Giải thích
+  từng điểm cần duyệt* · *Dừng — tôi duyệt sau*. Agent không tick hộ. Phase khai
+  `approval_gate: true` trong frontmatter. Cần wrapper `aw` mới để có lệnh
+  `aw approval`.
 
 ## [2026.10.9]
 
