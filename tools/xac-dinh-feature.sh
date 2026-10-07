@@ -5,7 +5,8 @@
 #
 # Thu tu (da chot, la giao dien chung giua cac adapter):
 #   0. Dang o checkout CHINH -> ma 6. Worktree la bat buoc: moi viec lam trong
-#      worktree rieng; checkout chinh chi chay /intake de tao worktree.
+#      worktree rieng; checkout chinh chi chay /intake de tao worktree va /ship
+#      de don viec da merge.
 #   1. Suy tu ten branch hien tai, neu khop mau_branch trong conventions.md;
 #   2. khong khop thi lay tham so;
 #   3. khong co tham so thi ma 3 — agent phai DUNG LAI HOI, khong tu dat ten.
@@ -47,7 +48,8 @@ if wt_la_chinh "$MT_REPO"; then
     printf '%s\n' "$ds" | sed 's/^/    /' >&2
   fi
   echo "  Agent: /intake → đề xuất worktree bằng aw worktree new cho NGƯỜI chọn base;" >&2
-  echo "  lệnh khác → DỪNG LẠI, bảo người mở phiên mới trong worktree của việc. Không tự chuyển." >&2
+  echo "  /ship → dọn việc đã merge (aw ship sweep); lệnh khác → DỪNG LẠI, bảo người mở phiên mới" >&2
+  echo "  trong worktree của việc. Không tự chuyển." >&2
   exit 6
 fi
 

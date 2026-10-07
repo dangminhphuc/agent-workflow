@@ -54,7 +54,7 @@ flowchart TD
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: aw check plan</i>"]
     IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: aw check implement (tự chạy test)</i>"]
     REVIEW["05-review · ngữ cảnh trắng<br/>đọc mọi artifact + diff → review.md<br/><i>MÁY: aw check review</i><br/><i>NGƯỜI: xác nhận kết luận</i>"]
-    SHIP["06-ship · tuỳ chọn"]
+    SHIP["06-ship · tuỳ chọn<br/>→ merge-request.md, MR/PR (ship.md)<br/><i>MÁY: aw check ship</i><br/><i>NGƯỜI: chọn nhánh đích, merge</i>"]
 
     NGOAI[/"Artifact làm bằng tool khác<br/>(AI khác, Confluence, viết tay)"/]
     IMPORT["Import có kiểm soát<br/>lệnh riêng, không thêm nội dung"]
@@ -95,7 +95,7 @@ Cách đọc:
 03-plan       [bắt buộc]  spec.md + tdd.md                   →  plan.md
 04-implement  [bắt buộc]  plan.md + tdd.md                   →  diff + ket-qua-kiem-thu.md
 05-review     [bắt buộc]  mọi artifact + diff                →  review.md
-06-ship       [tuỳ chọn]  phụ thuộc hạ tầng CI của repo đích
+06-ship       [tuỳ chọn]  review.md + mọi artifact + diff  →  merge-request.md + MR/PR (ship.md)
 ```
 
 - **Không có phase test riêng.** Test là **điều kiện ra** của `implement`: chưa
@@ -113,7 +113,7 @@ Cách đọc:
 | `plan` | không | — |
 | `implement` | không | — |
 | `review` | có | Xác nhận kết luận; làm trọng tài cho phát hiện của checker |
-| `ship` | có | Tuỳ hạ tầng |
+| `ship` | có | Chọn nhánh đích; xác nhận tiêu đề, mô tả trước khi tạo MR; review và merge trên GitHub/GitLab; đồng ý dọn worktree |
 
 `plan` và `implement` không có người vì chúng chỉ thực thi những gì đã được duyệt
 ở `spec` và `design`.
@@ -634,6 +634,8 @@ prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành
 | `nhanh_goc` | `main` | Nhánh checkout chính đứng; ứng viên base chính. Diff so với base trong `intake.md`, chỉ quay về khoá này khi intake chưa có Base |
 | `thu_muc_worktree` | `../{repo}.wt/{ten}` | Vị trí worktree (ngoài repo); ghi đè theo máy bằng `AW_THU_MUC_WORKTREE` |
 | `mau_nhanh_phat_hanh` | `release/*` | Nhánh phát hành — ứng viên base; base khớp thì review không cảnh báo |
+| `nhanh_dich_mr` | `develop uat/* main` | Nhánh được làm đích MR (`/ship`), theo thứ tự hiện cho người chọn; bỏ trống = `nhanh_goc` |
+| `nen_tang_mr` | `gitlab` | `github` / `gitlab` — `/ship` tạo MR bằng `gh` / `glab`; bỏ trống = đoán từ URL của origin |
 | `bo_qua` | `package-lock.json` | File đổi không cần nằm trong plan |
 | `mau_file_test` | `*.test.* test/*` | File nào là test |
 | `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
@@ -689,6 +691,8 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   xac-dinh-feature.sh    aw feature: checkout chính → chặn; branch → tham số → hỏi
   tao-worktree.sh        aw worktree new: đề xuất worktree — người chọn base rồi mới tạo
   don-worktree.sh        aw worktree status|remove (không --force, không -D)
+  gui-mr.sh              aw ship targets|create|status: nhánh đích, tạo MR/PR (gh/glab), trạng thái → ship.md
+  don-viec-da-merge.sh   aw ship sweep: dọn worktree + branch của việc đã merge (từ checkout chính)
   doi-ten-feature.sh     aw rename: đổi tên branch + thư mục artifact + worktree
   phan-loai-input.sh     aw input: tham số → dòng "## Input" (nhãn do máy gán)
   liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
@@ -701,7 +705,7 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   kiem-tra-phat-hanh.sh  kiểm version nhất quán + tag chưa có (CI của PR) — không phải aw check
   cai-dat.sh, dong-bo.sh đã bỏ — chỉ in hướng dẫn chuyển sang aw
   chay-thu.sh            test hồi quy cho cổng chặn, wrapper, đóng gói
-  lib/                   md.sh, kiem-cheo.sh, duyet.sh (ô duyệt + dấu duyệt), worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh
+  lib/                   md.sh, kiem-cheo.sh, duyet.sh (ô duyệt + dấu duyệt), worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh, mr.sh (gh/glab, ship.md)
 docs/kien-truc.md        vì sao thiết kế như vậy, cách thêm phase/adapter
 ```
 
@@ -711,16 +715,42 @@ POSIX shell + `awk` + `sed` + `git`; wrapper cần thêm `tar`, `gzip`, `curl` h
 `wget`, `sha256sum` hoặc `shasum` để tải engine. Không cần Node, Python.
 Trên Windows dùng Git Bash (Claude Code có sẵn Bash trên mọi nền tảng).
 
-## Vì sao `06-ship` để tuỳ chọn
+`/ship` tạo MR/PR bằng `gh` (GitHub) hoặc `glab` (GitLab), người cài và đăng nhập
+sẵn. Không có thì vẫn dùng được: lệnh in link tạo MR bằng tay, người tạo xong ghi
+lại bằng `--url`; trạng thái khi đó suy từ git (không nhận ra squash/rebase merge).
 
-Nội dung của nó gần như hoàn toàn là đặc thù **hạ tầng CI của từng repo**
-(GitHub Actions / GitLab CI / Jenkins), chứ không phải đặc thù agent. Viết chung
-thì spec trung lập sẽ đầy nhánh điều kiện cho những hạ tầng chưa biết.
+## `06-ship` — gửi MR và dọn việc
 
-Đây là chỗ tính không-phụ-thuộc-agent yếu nhất trong cả quy trình — đáng thừa
-nhận thẳng hơn là che bằng một lớp trừu tượng hoá đoán mò. Thêm sau chỉ cần viết
-nội dung `workflow/phases/06-ship.md` và đổi `status` trong manifest; không phase
-nào khác phải sửa, vì không phase nào biết gì về phase đứng sau nó.
+Tuỳ chọn: việc đã qua `/review` muốn gửi MR/PR bằng quy trình thì chạy `/ship`.
+Lệnh có hai chế độ, theo chỗ gõ:
+
+**Trong worktree của việc**
+
+1. Agent viết `merge-request.md` theo mẫu (`templates/merge-request.md` + mục
+   "Merge request" của `conventions.md`), chạy `aw check ship` — chặn khi review
+   chưa đạt, `review.md` còn `[Blocker]`, mô tả thiếu mục / còn chữ giữ chỗ.
+2. `aw ship targets` liệt kê nhánh đích theo `nhanh_dich_mr` (vd `develop uat/*
+   main`), đánh dấu base của việc và nhánh nào sẽ kéo theo commit không thuộc
+   việc. **Bạn chọn.**
+3. Bạn xác nhận tiêu đề + mô tả + đích; agent chạy `aw ship create --target
+   <nhánh>`: push branch, tạo MR bằng `gh`/`glab` (GitLab: bật xoá source branch
+   khi merge), ghi `ship.md`. Chạy lại cùng đích sau khi sửa theo review chỉ push
+   thêm commit — không tạo MR mới. Vào nhiều nhánh: mỗi nhánh một MR.
+4. `aw ship status` hỏi nền tảng: còn mở / đã merge / bị đóng.
+
+**Ở checkout chính** — `aw ship sweep` duyệt mọi worktree có `ship.md`, liệt kê
+việc nào dọn được (mọi MR đã merge). Bạn đồng ý thì `--apply`: gỡ worktree (chép
+artifact vào archive như `aw worktree remove`), xoá branch local, xoá branch trên
+origin. Xoá cứng (`git branch -D`, cần khi squash merge) chỉ khi đầu branch trùng
+đúng sha mà MR đã merge; lệch thì dừng cho bạn quyết.
+
+Agent không merge, không duyệt MR. Theo dõi định kỳ: chạy lại `/ship` ở checkout
+chính theo lịch (vd `/loop` của Claude Code).
+
+Việc tạo bằng engine cũ (dòng `Engine:` trong `intake.md` trước bản có `/ship`)
+chạy `aw ship …` bằng engine đó nên không có lệnh này: hoặc gửi MR tay, hoặc
+`aw upgrade` rồi sửa dòng `Engine:` của việc (mọi `aw check` sẽ chấm lại bằng
+engine mới). Wrapper `aw` cũng phải là bản mới.
 
 ## Chạy test và phát hành
 

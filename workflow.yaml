@@ -53,7 +53,7 @@ phases:
   - id: ship
     file: workflow/phases/06-ship.md
     required: false
-    when: repo đích có hạ tầng phát hành muốn đưa vào quy trình
+    when: việc đã qua /review và cần gửi MR/PR (tạo MR, theo dõi tới khi merge, dọn worktree)
 
 rules:
   - workflow/rules/nguyen-tac-chung.md

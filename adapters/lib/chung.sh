@@ -136,6 +136,14 @@ kiem_tra_nguon() {
     ""|true) ;;
     *) echo "LỖI: $_file khai approval_gate \"$_ag\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
   esac
+  _mc=$(fm_scalar "$_src" runs_on_main_checkout)
+  case "$_mc" in
+    ""|true) ;;
+    *) echo "LỖI: $_file khai runs_on_main_checkout \"$_mc\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
+  esac
+  if [ "$_mc" = true ] && [ "$_ar" = input ]; then
+    echo "LỖI: $_file khai cả runs_on_main_checkout và arguments: input — phase input đã có lối riêng ở checkout chính." >&2; _bad=1
+  fi
   _lc=$(fm_scalar "$_src" llm_checker)
   if [ -n "$_lc" ] && [ ! -f "$ROOT/$_lc" ]; then
     echo "LỖI: $_file khai llm_checker \"$_lc\" nhưng không có file đó." >&2
@@ -169,7 +177,7 @@ mo_ta_output() {
 
 # Buoc 0 cua moi lenh: xac dinh feature. Thu tu branch -> tham so -> hoi la
 # giao dien chung giua cac adapter, nen no nam trong engine (aw feature), khong trong prompt.
-#   buoc_xac_dinh_feature <cách-viết-tham-số> [input]
+#   buoc_xac_dinh_feature <cách-viết-tham-số> [input] [true = phase có việc ở checkout chính]
 buoc_xac_dinh_feature() {
   printf '## Bước 0 — Xác định feature (luôn làm trước)\n\n'
   if [ "${2:-}" = "input" ]; then
@@ -184,7 +192,11 @@ buoc_xac_dinh_feature() {
     printf 'Chạy `aw feature %s`.\n\n' "$1"
     printf 'Đọc khối `Kết quả` cuối output — làm theo nhãn được đánh `[x]`:\n\n'
     printf -- '- **ĐÃ XÁC ĐỊNH:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
-    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/intake` ở checkout chính). Không tự chuyển thư mục.\n'
+    if [ "${3:-}" = "true" ]; then
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → làm theo mục "Ở checkout chính" trong mô tả phase (không cần thư mục feature). Không tự chuyển thư mục.\n'
+    else
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/intake` ở checkout chính). Không tự chuyển thư mục.\n'
+    fi
     printf -- '- **CẦN HỎI NGƯỜI:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
     printf -- '- **TÊN KHÔNG HỢP LỆ:** tên không hợp lệ → báo lại cho người dùng.\n\n'
   fi
@@ -364,7 +376,7 @@ sinh_command() {
   _hk ad_dau_lenh "$id" "$name — $summary" "$hint"
   canh_bao "$file"
   _hk ad_mo_dau_lenh "$id" "$hint" "$args"
-  buoc_xac_dinh_feature "$ts" "$args"
+  buoc_xac_dinh_feature "$ts" "$args" "$(fm_scalar "$src" runs_on_main_checkout)"
   [ "$args" = "input" ] && buoc_phan_loai_input "$ts"
   if [ "$(fm_scalar "$src" approval_gate)" = "true" ]; then
     buoc_cong_duyet "$id"

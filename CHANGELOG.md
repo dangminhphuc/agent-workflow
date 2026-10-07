@@ -11,6 +11,23 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **Phase `06-ship` (`/ship`, tuỳ chọn) — gửi MR/PR và dọn việc.** Trong worktree:
+  agent viết `merge-request.md` theo mẫu, `aw check ship` chặn khi review chưa đạt,
+  còn `[Blocker]`, mô tả thiếu mục hay còn chữ giữ chỗ. `aw ship targets` liệt kê
+  nhánh đích (khoá mới `nhanh_dich_mr`, vd `develop uat/* main`) cho người chọn;
+  `aw ship create --target <nhánh>` push và tạo MR bằng `gh`/`glab` (khoá mới
+  `nen_tang_mr`), chặn khi MR kéo theo commit không thuộc việc
+  (`--allow-extra-commits` khi người chấp nhận), ghi `ship.md`; chạy lại cùng đích
+  chỉ push thêm. Không có CLI: in link tạo tay, ghi lại bằng `--url`.
+  `aw ship status` hỏi trạng thái MR. Ở checkout chính: `aw ship sweep [--apply]`
+  gỡ worktree, xoá branch local và trên origin của việc đã merge — xoá cứng chỉ khi
+  đầu branch trùng sha MR đã merge.
+- Frontmatter phase `runs_on_main_checkout: true`: lệnh không dừng ở checkout chính
+  mà làm theo mục "Ở checkout chính" của phase.
+
 ## [2026.10.12]
 
 ### Thêm

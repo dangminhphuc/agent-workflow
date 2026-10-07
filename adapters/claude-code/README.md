@@ -28,14 +28,16 @@ dùng cả hai agent: `ADAPTER="claude-code cursor"` — xem
 
 | Nguồn trung lập | Artifact Claude Code |
 |---|---|
-| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
+| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`, `/ship`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
 | Phase có `approval_gate: true` (`02-design.md`, `03-plan.md`) | Bước "Cổng duyệt" trong lệnh phase: `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
 | `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/<id>.md` — lệnh tiện ích `/import`, `/clarify` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
-Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: `06-ship`).
+Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: không có). Phase khai
+`runs_on_main_checkout: true` (`06-ship.md`) không dừng ở checkout chính mà làm
+theo mục "Ở checkout chính" trong mô tả phase.
 
 Mỗi command sinh ra gồm ba phần:
 

@@ -548,8 +548,10 @@ một ràng buộc.
 
 Nói thẳng để người đọc sau khỏi phải tự phát hiện:
 
-1. **`06-ship` chưa có nội dung.** Phát hành đặc thù CI từng repo, không đặc thù
-   agent — đây là chỗ mô hình "một spec, nhiều adapter" ít giá trị nhất.
+1. **`06-ship` chỉ lo phần MR, không lo phần phát hành.** Tạo MR/PR, theo dõi,
+   dọn worktree là việc chung (qua `gh`/`glab`); deploy, tag, release note đặc thù
+   CI từng repo nên nằm ngoài quy trình. Trạng thái MR dựa vào CLI của nền tảng —
+   không có CLI thì chỉ suy được từ git, và git không nhận ra squash merge.
 
 2. **Ràng buộc "ngữ cảnh sạch" không tự cưỡng chế được ở agent không có
    subagent.** Nó lùi về một dòng hướng dẫn cho người, và người thì hay bỏ qua.

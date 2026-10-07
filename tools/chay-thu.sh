@@ -793,6 +793,85 @@ rm -f "$F/ket-qua-kiem-thu.md"
 ky_vong 1 "chặn khi chưa có ket-qua-kiem-thu.md" sh "$CHK" "$F"
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 
+# ---------------------------------------------------------------- kiem-tra-gui-mr (aw check ship)
+echo ""
+echo "kiem-tra-gui-mr.sh (aw check ship)"
+SHC="$T/kiem-tra-gui-mr.sh"
+# viet_mr — mô tả MR điền đủ theo mẫu (comment của mẫu giữ nguyên: là lời dặn, không tính)
+viet_mr() {
+  cat > "$F/merge-request.md" <<'EOF'
+# ABC-1: hiện a và b trên màn hình y
+
+<!-- lời dặn của mẫu: <…> <test> -->
+
+## Problem
+
+- **Current:** màn hình y không có a
+- **Expected:** có a và b
+- **Root cause:** chưa làm
+
+## Changes
+
+- Màn hình y hiện a và b
+- **Breaking change:** None
+- **Edge cases:** None
+
+## External Impact
+
+None
+
+## Out of Scope
+
+None
+
+## Deployment
+
+- **Dependencies:** None
+- **Order:** không có ràng buộc
+- **Migration / Config:** None
+- **Rollback:** revert MR là đủ
+
+## Testing
+
+- **Added:** test/a.test.js — có a và b
+- **Commands:** `npm test` → xanh
+
+## Open Questions
+
+None
+
+Refs: ABC-1
+EOF
+}
+ky_vong 2 "chưa có merge-request.md → THIẾU ĐẦU VÀO" sh "$SHC" "$F"
+viet_mr
+ky_vong 0 "mô tả MR đủ mục, review đạt → ĐẠT" sh "$SHC" "$F"
+thay "$F/merge-request.md" '# ABC-1: hiện a và b trên màn hình y' '# <JIRA-KEY>: <verb> <what> <where>'
+ky_vong 1 "tiêu đề còn chữ giữ chỗ → chặn" sh "$SHC" "$F"
+viet_mr; thay "$F/merge-request.md" '## Out of Scope
+
+None
+
+' ''
+ky_vong 1 "xoá mất một mục của mẫu → chặn (không áp dụng thì ghi None)" sh "$SHC" "$F"
+dung "…đúng lý do" sh -c "sh '$SHC' '$F' | grep -q 'Thiếu mục \"## Out of Scope\"'"
+viet_mr; thay "$F/merge-request.md" '- **Added:** test/a.test.js — có a và b
+- **Commands:** `npm test` → xanh' '<!-- chưa viết -->'
+ky_vong 1 "Testing chỉ có comment → chặn (mục bắt buộc trống)" sh "$SHC" "$F"
+viet_mr; thay "$F/merge-request.md" '- **Added:** test/a.test.js — có a và b' '- **Added:** <test> — <chứng minh gì>'
+ky_vong 1 "còn chữ giữ chỗ của mẫu ngoài comment → chặn" sh "$SHC" "$F"
+viet_mr; thay "$F/merge-request.md" '# ABC-1: hiện a và b trên màn hình y' '# hiện a và b trên màn hình y'
+ky_vong 0 "tiêu đề thiếu mã Jira của intake → chỉ cảnh báo" sh "$SHC" "$F"
+dung "…có cảnh báo" sh -c "sh '$SHC' '$F' | grep -q 'CẢNH BÁO.*ABC-1'"
+viet_mr
+printf '\n## Lens 3 — Quality\n\n### [Blocker] tràn bộ nhớ\n' >> "$F/review.md"
+ky_vong 1 "review.md còn [Blocker] → chặn" sh "$SHC" "$F"
+viet_review
+printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n' > "$F/review.md"
+ky_vong 1 "aw check review không đạt → chặn" sh "$SHC" "$F"
+viet_review
+ky_vong 0 "aw-engine check ship → đúng checker" sh "$AWE" check ship "$F"
+
 # ---------------------------------------------------------------- quy tac repo
 echo ""
 echo "quy tắc riêng của repo (quy_tac_*, aw rules)"
@@ -1051,11 +1130,17 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/intake.md commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
-         commands/import.md commands/clarify.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
+         commands/ship.md commands/import.md commands/clarify.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
-[ -f "$O/.claude/commands/ship.md" ] && du=0
-dung "sinh đúng bộ file, bỏ qua phase chưa hiện thực" test "$du" = 1
+dung "sinh đúng bộ file" test "$du" = 1
+dung "/ship: điều kiện ra máy là aw check ship" grep -q '`aw check ship <thư-mục-feature>`' "$O/.claude/commands/ship.md"
+dung "/ship: ở checkout chính thì làm mục \"Ở checkout chính\", không dừng" sh -c \
+  "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*mục \"Ở checkout chính\"' '$O/.claude/commands/ship.md' && ! grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' '$O/.claude/commands/ship.md'"
+dung "…lệnh khác vẫn dừng lại ở checkout chính" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$O/.claude/commands/review.md"
+dung "/ship: không bắt buộc, có mẫu merge-request.md" sh -c \
+  "grep -q 'Bắt buộc:\*\* không' '$O/.claude/commands/ship.md' && grep -q 'templates/merge-request.md' '$O/.claude/commands/ship.md'"
+dung "skill liệt kê /ship" grep -q '| `/ship` |' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 dung "command có bước xác định feature bằng aw feature" grep -q 'aw feature \$ARGUMENTS' "$O/.claude/commands/design.md"
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O/.claude/commands/design.md"
 dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
@@ -1125,6 +1210,16 @@ thay "$FAKE/workflow/phases/00-intake.md" 'arguments: input' 'arguments: gi-cung
 ky_vong 4 "từ chối build khi arguments không phải \"input\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5"
 
 tao_fake
+thay "$FAKE/workflow/phases/06-ship.md" 'runs_on_main_checkout: true' 'runs_on_main_checkout: co'
+ky_vong 4 "từ chối build khi runs_on_main_checkout khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5b"
+
+tao_fake
+thay "$FAKE/workflow/phases/06-ship.md" 'required: false' 'required: false
+status: chưa hiện thực'
+ky_vong 0 "phase status: chưa hiện thực → build vẫn đạt" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5c"
+dung "…nhưng không sinh lệnh cho nó" test ! -e "$TMP/out5c/.claude/commands/ship.md"
+
+tao_fake
 rm -f "$FAKE/workflow/clarify.md"
 ky_vong 4 "từ chối build khi mục commands: trỏ tới file không tồn tại" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out6"
 
@@ -1156,7 +1251,7 @@ ds_tuong_doi() { (cd "$1" && find . -type f | sed 's|^\./||' | LC_ALL=C sort); }
 dung "cùng bộ file với Claude Code (commands/, agents/, skills/) — trùng tên để che bản .claude/" \
   bang "$(ds_tuong_doi "$O3/.cursor")" "$(ds_tuong_doi "$TMP/out1/.claude" | grep -v '^commands/cua-toi.md$')"
 dung "…chỉ ghi vào .cursor/" bang "$(ls -A "$O3")" ".cursor"
-dung "…bỏ qua phase chưa hiện thực" test ! -e "$O3/.cursor/commands/ship.md"
+dung "…có /ship" test -f "$O3/.cursor/commands/ship.md"
 dung "không còn \$ARGUMENTS (Cursor không thay biến)" sh -c "! grep -rqF '\$ARGUMENTS' '$O3/.cursor'"
 dung "không gọi tool riêng của Claude Code (AskUserQuestion, multiSelect, trường preview/questions)" \
   sh -c "! grep -rqE 'AskUserQuestion|multiSelect|\`preview\`:|\`questions\`' '$O3/.cursor'"
@@ -2232,6 +2327,98 @@ ky_vong 9 "aw pending cũng theo version của việc" aw7 pending .agent-workfl
 ky_vong 9 "…aw questions (tên cũ) vẫn qua wrapper, theo version của việc" aw7 questions .agent-workflow/feat_a
 rm -rf "$R7/.agent-workflow"
 dung "wrapper và VERSION cùng version (đóng gói kiểm lại)" bang "$(awk -F'"' '/^AW_WRAPPER_VERSION=/ { print $2 }' "$ROOT/bin/aw")" "$(cat "$ROOT/VERSION")"
+
+# ---------------------------------------------------------------- aw ship (gui-mr.sh, don-viec-da-merge.sh)
+# Việc đã qua review nằm trong worktree; origin là repo bare; gh là bản giả
+# (ghi lại tham số, trạng thái PR đọc từ $FG/state).
+echo ""
+echo "aw ship targets|create|status|sweep (gui-mr.sh, don-viec-da-merge.sh)"
+tao_fixture 2>/dev/null
+viet_mr
+printf '/.agent-workflow/\n' >> "$R/.git/info/exclude"
+g add -A; g commit -q -m "lam x"
+ky_vong 0 "fixture: code đã commit, aw check ship đạt" sh "$SHC" "$F"
+WS="$TMP/ship-wt"; FS="$WS/.agent-workflow/feat_x"
+g checkout -q main
+g worktree add -q "$WS" feat_x
+mv "$R/.agent-workflow" "$WS/"
+export AW_REPO="$WS"
+RMS="$TMP/ship-remote.git"; git init -q --bare "$RMS"
+g remote add origin "$RMS"; g push -q origin main; g push -q origin main:develop
+# uat: gốc khác, không có commit "goc" của main → MR vào uat kéo theo commit ngoài việc
+UATC=$(git -C "$R" -c user.name=t -c user.email=t@t commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m uat)
+g push -q origin "$UATC:refs/heads/uat"
+thay "$CFG/conventions.md" 'nhanh_dich_mr:' 'nhanh_dich_mr: develop uat main'
+thay "$CFG/conventions.md" 'nen_tang_mr:' 'nen_tang_mr: github'
+
+FB="$TMP/fakebin"; FG="$TMP/fakegh"; mkdir -p "$FB" "$FG"
+cat > "$FB/gh" <<'EOF'
+#!/bin/sh
+case "$1 $2" in
+  "pr create")
+    printf 'OPEN\n' > "$FG/state"; git rev-parse HEAD > "$FG/head"; printf '%s\n' "$*" >> "$FG/args"
+    while [ $# -gt 0 ]; do [ "$1" = --body-file ] && cp "$2" "$FG/body"; shift; done
+    echo "https://github.com/o/r/pull/7" ;;
+  "pr list") [ "$(cat "$FG/state" 2>/dev/null)" = OPEN ] && echo "https://github.com/o/r/pull/7"; exit 0 ;;
+  "pr view") [ "$(cat "$FG/state")" = ERR ] && exit 1; echo "$(cat "$FG/state") $(cat "$FG/head")" ;;
+  *) exit 1 ;;
+esac
+EOF
+chmod +x "$FB/gh"
+sg() { PATH="$FB:$PATH" FG="$FG" sh "$T/gui-mr.sh" "$@"; }
+sw() { (cd "$R" && AW_REPO="$R" PATH="$FB:$PATH" FG="$FG" sh "$T/don-viec-da-merge.sh" "$@"); }
+
+ky_vong 2 "create thiếu --target → SAI THAM SỐ (người chọn đích)" sg create "$FS"
+TG=$(sg targets "$FS" 2>/dev/null)
+ky_vong 0 "targets liệt kê nhánh đích" sg targets "$FS"
+dung "…theo thứ tự nhanh_dich_mr" bang "$(printf '%s\n' "$TG" | sed 's/^ *\[[0-9]*\] \([^ ]*\).*/\1/' | tr '\n' ' ')" "develop uat main "
+dung "…đánh dấu base của việc" sh -c "printf '%s\n' \"\$1\" | grep -q '\[3\] main  ← base của việc'" _ "$TG"
+dung "…cảnh báo nhánh sẽ kéo theo commit ngoài việc" sh -c "printf '%s\n' \"\$1\" | grep -q '\[2\] uat  ⚠ kéo theo 1 commit ngoài việc'" _ "$TG"
+ky_vong 2 "đích ngoài nhanh_dich_mr → từ chối" sg create "$FS" --target khac
+printf 'nhap\n' > "$WS/nhap.txt"
+ky_vong 1 "worktree còn file chưa commit → CHƯA ĐỦ ĐIỀU KIỆN" sg create "$FS" --target develop
+rm -f "$WS/nhap.txt"
+ky_vong 4 "MR vào uat kéo theo commit ngoài việc → người quyết" sg create "$FS" --target uat
+dung "…không push, không tạo MR" sh -c "[ ! -f '$FG/args' ] && [ -z \"\$(git -C '$RMS' branch --list feat_x)\" ]"
+thay "$CFG/conventions.md" 'nen_tang_mr: github' 'nen_tang_mr: gitlab'
+ky_vong 8 "máy không có glab → KHÔNG TẠO ĐƯỢC MR, chỉ dẫn tạo tay" sh -c "PATH='$FB:/usr/bin:/bin' sh '$T/gui-mr.sh' create '$FS' --target develop"
+dung "…chỉ cách ghi lại bằng --url" sh -c "PATH='$FB:/usr/bin:/bin' sh '$T/gui-mr.sh' create '$FS' --target develop 2>&1 | grep -q 'aw ship create .* --target develop --url'"
+thay "$CFG/conventions.md" 'nen_tang_mr: gitlab' 'nen_tang_mr: github'
+
+URLS=$(sg create "$FS" --target develop 2>/dev/null)
+dung "create develop → ĐÃ TẠO MR, stdout là URL" bang "$URLS" "https://github.com/o/r/pull/7"
+dung "…gh nhận đúng nguồn/đích và tiêu đề" sh -c "grep -q -- '--head feat_x --base develop --title ABC-1: hiện a và b trên màn hình y' '$FG/args'"
+dung "…mô tả gửi đi bỏ dòng tiêu đề và comment của mẫu" sh -c "grep -q '^## Problem' '$FG/body' && ! grep -q '<!--' '$FG/body' && ! grep -q '^# ABC-1' '$FG/body'"
+dung "…branch đã lên origin" test "$(git -C "$RMS" rev-parse feat_x 2>/dev/null)" = "$(git -C "$WS" rev-parse HEAD)"
+dung "…ship.md ghi MR: đích, open, sha đầu branch, URL" grep -qxF "| develop | open | $(git -C "$WS" rev-parse HEAD) | https://github.com/o/r/pull/7 |" "$FS/ship.md"
+ky_vong 5 "create lại cùng đích → ĐÃ CÓ MR ĐANG MỞ, không tạo thêm" sg create "$FS" --target develop
+dung "…gh pr create chỉ được gọi một lần" test "$(wc -l < "$FG/args" | tr -d ' ')" = 1
+
+ky_vong 3 "status: PR mở → CÒN MR ĐANG MỞ" sg status "$FS"
+printf 'ERR\n' > "$FG/state"
+ky_vong 6 "status: không hỏi được nền tảng, git không thấy merge → CHƯA RÕ" sg status "$FS"
+printf 'CLOSED\n' > "$FG/state"
+ky_vong 4 "status: PR bị đóng → người quyết" sg status "$FS"
+printf 'MERGED\n' > "$FG/state"
+ky_vong 0 "status: PR đóng rồi mở lại và merge → ĐÃ MERGE HẾT (closed không phải trạng thái cuối)" sg status "$FS"
+dung "…ship.md ghi merged" grep -q '| develop | merged |' "$FS/ship.md"
+
+ky_vong 2 "sweep trong worktree → từ chối (chạy từ checkout chính)" sh -c "cd '$WS' && PATH='$FB:$PATH' FG='$FG' sh '$T/don-viec-da-merge.sh'"
+git -C "$WS" -c user.name=t -c user.email=t@t commit -q --allow-empty -m "sau khi merge"
+ky_vong 7 "sweep: branch local có commit chưa vào MR đã merge → chặn" sw --apply
+dung "…worktree còn nguyên" test -d "$WS"
+git -C "$WS" reset -q --hard HEAD~1
+SWO=$(sw 2>/dev/null)
+ky_vong 0 "sweep không --apply → chỉ in" sw
+dung "…báo việc dọn được, kể cả xoá origin/feat_x" sh -c "printf '%s\n' \"\$1\" | grep -q 'dọn được: .*xoá origin/feat_x'" _ "$SWO"
+dung "…không đụng gì" sh -c "[ -d '$WS' ] && git -C '$R' rev-parse --verify --quiet refs/heads/feat_x"
+ky_vong 0 "sweep --apply → dọn" sw --apply
+dung "…worktree đã gỡ" test ! -e "$WS"
+dung "…branch local đã xoá" sh -c "! git -C '$R' rev-parse --verify --quiet refs/heads/feat_x"
+dung "…origin/feat_x đã xoá" sh -c "[ -z \"\$(git -C '$RMS' branch --list feat_x)\" ]"
+dung "…artifact, kể cả ship.md, chép vào archive" test -f "$CFG/archive/feat_x/feat_x/ship.md"
+ky_vong 0 "sweep lần nữa: không còn gì để dọn" sw
+export AW_REPO="$R"
 
 # ---------------------------------------------------------------- tong ket
 echo ""
