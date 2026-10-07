@@ -427,6 +427,23 @@ không dùng nhóm đó, và người khai `config.sh` biết pipeline của mì
 `chore` đụng file dependency — đúng chỗ SCA sinh ra để bắt — thì phải có lệnh `sca`
 xanh.
 
+### Lens 4 — bảo mật do người rà phán, bảng cố định
+
+Máy quét bắt **mẫu**: secret khớp regex, CVE trong lockfile, pattern SAST. Nó
+không biết **ý đồ**: endpoint mới thiếu kiểm quyền theo YC Phân quyền, log in số
+tài khoản, id lấy từ request mà không kiểm chủ sở hữu. Đó là việc của người rà.
+
+Bảng **bảy hạng mục cố định** chứ không phải "ghi finding bảo mật nếu có": danh
+sách mở thì "không thấy gì" và "không xét" trông giống hệt nhau. Mỗi hạng mục một
+dòng `pass | finding | not applicable` — cùng cách máy kiểm bảng Repo rules: thiếu
+dòng, verdict lạ, `finding`/`not applicable` không vị trí/lý do thì chặn. Máy không
+biết `pass` có đúng không (giới hạn 12), nhưng biết người rà đã phải nhìn từng mục.
+`finding` thì Lens 3 phải có ít nhất một finding — mức (`Blocker`…) nằm ở đó, nơi
+`aw check ship` đã đếm.
+
+Parser Lens 1 chỉ đọc dòng bảng có **ô đầu** là mã YC: dòng Authn của Lens 4 hay
+nhắc YC Phân quyền ở cột lý do, trước đây sẽ ghi đè kết luận của YC đó.
+
 ### Test ↔ YC và phạm vi diff
 
 Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặn):

@@ -364,6 +364,13 @@ Chạy bằng phiên/subagent có ngữ cảnh trắng, không phải phiên v�
 là **cổng chặn cuối**: mọi cảnh báo từ phase trước (artifact lỗi thời, YC chưa có
 test, diff ngoài phạm vi) chưa xử lý thì `review` chặn.
 
+Bốn lăng kính: đúng đặc tả (từng YC), đúng thiết kế và phạm vi (+ quy tắc repo),
+chất lượng, và **bảo mật** — bảng bảy hạng mục cố định (injection, authn/authz,
+dữ liệu nhạy cảm, secret/config, crypto, SSRF/path traversal/deserialization,
+dependency mới), mỗi dòng `pass | finding | not applicable` kèm vị trí/lý do. Máy
+quét bắt mẫu đã biết; lăng kính này bắt ý đồ — endpoint thiếu kiểm quyền, log lộ PII.
+`Blocker` gồm cả lỗ hổng khai thác được, mất/lộ dữ liệu, breaking change chưa khai.
+
 ## Cổng chặn
 
 Điều kiện ra chia hai loại. Loại **NGƯỜI** thì agent nêu ra rồi dừng. Loại **MÁY**
@@ -375,8 +382,8 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Blocking` thiếu/sai |
 | `design` | `aw check design` | Spec chưa được người duyệt (hoặc đổi sau khi duyệt), điểm mù `blocking` còn mở, thiếu mục, D-xx thiếu/sai ô duyệt hoặc đổi sau khi duyệt, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `aw check plan` | D-xx chưa được người duyệt (hoặc đổi sau khi duyệt), task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
-| `implement` | `aw check implement` | Test chưa xanh, task còn dở |
-| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
+| `implement` | `aw check implement` | Test chưa xanh, quét bảo mật chưa khai hoặc đỏ, task còn dở |
+| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test hoặc quét bảo mật chưa xanh, kết quả lỗi thời so với code, Lens 4 thiếu hạng mục / thiếu lý do, hoặc **còn cảnh báo** |
 
 Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
 một nhãn — người và agent đọc nhãn, không đọc mã số:

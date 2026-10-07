@@ -20,6 +20,10 @@
 #   7. Quy tac rieng cua repo (moi khoa quy_tac_* trong conventions.md): file
 #      khai khong co / chua commit / khoa go nham; review.md thieu muc
 #      "## Repo rules" hoac thieu ket luan hop le cho mot file.
+#   8. Lens 4 — Security: thieu muc; thieu hang muc nao trong bay hang muc co
+#      dinh; verdict ngoai pass / finding / not applicable; finding hoac
+#      not applicable khong co vi tri / ly do; co finding ma Lens 3 khong co
+#      finding nao.
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
 # hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
@@ -124,6 +128,53 @@ QT
   fi
 fi
 
+# Lens 4 — Security: bảng hạng mục cố định — mỗi hạng mục một dòng kết luận.
+# Thiếu dòng = người rà soát chưa xét hạng mục đó (không có "mặc định là ổn").
+MUC_BAO_MAT="Input validation / injection
+Authn / authz
+Sensitive data / PII in logs
+Secrets / config
+Crypto
+SSRF / path traversal / deserialization
+New dependencies"
+bang_bm=$(awk '
+  function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+  { sub(/\r$/, "") }
+  /^##[ \t]+Lens 4/ { trong = 1; co = 1; next }
+  /^##[ \t]/ { trong = 0 }
+  trong && /^[ \t]*\|/ {
+    n = split($0, c, "|"); f = trim(c[2]); gsub(/[`*]/, "", f)
+    if (f == "" || f ~ /^:?-+:?$/ || f == "Item") next
+    v = trim(c[3]); gsub(/`/, "", v)
+    print f "\t" v "\t" (n >= 5 ? trim(c[4]) : "")
+  }
+  END { if (!co) print "\tKHÔNG CÓ MỤC" }
+' "$REVIEW")
+if printf '%s\n' "$bang_bm" | grep -q "	KHÔNG CÓ MỤC"; then
+  loi_truoc "review.md thiếu mục \"## Lens 4 — Security\" — bảng bảy hạng mục bảo mật, mỗi hạng mục một dòng kết luận (templates/review.md)"
+else
+  co_finding=0
+  while IFS= read -r m; do
+    [ -n "$m" ] || continue
+    dong=$(printf '%s\n' "$bang_bm" | awk -F '	' -v m="$m" '$1 == m { print; exit }')
+    kl=$(printf '%s' "$dong" | cut -f2); gc=$(printf '%s' "$dong" | cut -f3)
+    case "$kl" in
+      "") loi_truoc "Lens 4 \"$m\": không có dòng kết luận — mỗi hạng mục bảo mật phải được xét" ;;
+      "pass") ;;
+      "finding"|"not applicable")
+        [ "$kl" = finding ] && co_finding=1
+        case "$gc" in ""|"<"*">") loi_truoc "Lens 4 \"$m\": verdict \"$kl\" mà thiếu vị trí / lý do" ;; esac ;;
+      *) loi_truoc "Lens 4 \"$m\": verdict \"$kl\" không hợp lệ. Chỉ chấp nhận: pass / finding / not applicable" ;;
+    esac
+  done <<BM
+$MUC_BAO_MAT
+BM
+  if [ "$co_finding" = 1 ]; then
+    nf=$(awk '{ sub(/\r$/, "") } /^###[ \t]+\[(Blocker|Should fix|Nit)\]/ && !/<tiêu đề>/' "$REVIEW" | wc -l | tr -d ' ')
+    [ "$nf" -gt 0 ] || loi_truoc "Lens 4 có \"finding\" nhưng Lens 3 không có finding nào — mỗi finding bảo mật phải thành một mục [Blocker] / [Should fix] / [Nit] ở Lens 3"
+  fi
+fi
+
 # Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.
 cb_base=$(kc_base_la "$DIR")
 [ -z "$cb_base" ] || echo "  [CẢNH BÁO] $cb_base"
@@ -149,9 +200,11 @@ awk -v loi_truoc="$n_truoc" '
   }
 
   # ---- File 2: review.md — bang cua Lang kinh 1 ----
-  $0 ~ /^[ \t]*\|/ && $0 ~ /YC-[0-9]+/ {
-    match($0, /YC-[0-9]+/); c = substr($0, RSTART, RLENGTH)
-    split($0, f, "|")
+  # Chi dong co O DAU la ma YC: bang khac (Lens 4, Repo rules) hay nhac YC trong
+  # cot ly do, khong duoc ghi de ket luan cua Lens 1.
+  $0 ~ /^[ \t]*\|/ {
+    split($0, f, "|"); c = trim(f[2]); gsub(/[`*]/, "", c)
+    if (c !~ /^YC-[0-9]+$/) next
     kl = trim(f[3])
     if (kl != "") ket_luan[c] = kl
   }

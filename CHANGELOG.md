@@ -26,12 +26,25 @@ ngầm giữa các bản.
   commit, không còn lọt. Commit lại đúng code đã review thì không tính là đổi.
 - **chore đụng file dependency** phải có lệnh nhóm `sca` chạy xanh (CVE/license) —
   mức patch/minor không nói gì về chúng.
+- **`## Lens 4 — Security` trong `review.md`:** bảng bảy hạng mục cố định (Input
+  validation / injection; Authn / authz; Sensitive data / PII in logs; Secrets /
+  config; Crypto; SSRF / path traversal / deserialization; New dependencies), verdict
+  `pass | finding | not applicable`. `aw check review` chặn khi thiếu mục, thiếu dòng,
+  verdict sai, `finding`/`not applicable` không vị trí/lý do, hoặc có `finding` mà
+  Lens 3 không có finding nào.
+- **`Blocker`** gồm thêm: lỗ hổng bảo mật khai thác được, mất/lộ dữ liệu, breaking
+  change chưa khai.
+
+### Sửa
+- Lens 1 chỉ đọc dòng bảng có ô đầu là mã YC — bảng khác nhắc `YC-NNN` ở cột lý do
+  không còn ghi đè kết luận.
 
 ### Đổi (phá vỡ)
 - Bản clone có `config.sh` cũ chưa có `LENH_KIEM_TRA_BAO_MAT` → `aw check implement`
   KHÔNG ĐẠT tới khi người khai (`aw init` không ghi đè `config.sh`; chép khối chú
   thích từ `workflow/templates/config.sh`). Việc chuyển sang engine này giữa chừng có `ket-qua-kiem-thu.md` cũ
   (không có `Tree`) → chạy lại `aw check implement` trước `/aw-review`.
+- `review.md` thiếu `## Lens 4 — Security` → `aw check review` KHÔNG ĐẠT.
 
 ## [2026.10.13]
 

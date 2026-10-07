@@ -56,6 +56,22 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 ### [Nit] <tiêu đề>
 - Location: `file:dòng`
 
+## Lens 4 — Security
+
+<!-- Đủ cả bảy dòng, không đổi tên hạng mục — máy chặn nếu thiếu.
+     Verdict: pass | finding (kèm file:dòng, thêm finding ở Lens 3) | not applicable (kèm lý do).
+     Authn / authz: đối chiếu YC Phân quyền trong spec.md. -->
+
+| Item | Verdict | Location / reason |
+|---|---|---|
+| Input validation / injection | <pass \| finding \| not applicable> | <...> |
+| Authn / authz | <...> | <...> |
+| Sensitive data / PII in logs | <...> | <...> |
+| Secrets / config | <...> | <...> |
+| Crypto | <...> | <...> |
+| SSRF / path traversal / deserialization | <...> | <...> |
+| New dependencies | <...> | <...> |
+
 ## Carried-over warnings
 
 Lỗi "Cảnh báo chưa xử lý" từ `aw check review` (YC chưa có test, diff ngoài

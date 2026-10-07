@@ -262,7 +262,26 @@ EOF
 viet_review() {
   printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n' > "$F/review.md"
   [ "$LOAI" = "bugfix" ] && printf '\n- Repro test fails because: grep không thấy "moi" trong src/a.txt\n' >> "$F/review.md"
+  viet_lens4
   return 0
+}
+
+# viet_lens4 — bảng Lens 4 đủ bảy hạng mục, kết luận hợp lệ
+viet_lens4() {
+  cat >> "$F/review.md" <<'EOF'
+
+## Lens 4 — Security
+
+| Item | Verdict | Location / reason |
+|---|---|---|
+| Input validation / injection | not applicable | diff không nhận input từ ngoài |
+| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |
+| Sensitive data / PII in logs | not applicable | không log, không dữ liệu cá nhân |
+| Secrets / config | pass | |
+| Crypto | not applicable | không dùng crypto |
+| SSRF / path traversal / deserialization | not applicable | không có URL, đường dẫn hay deserialize |
+| `New dependencies` | not applicable | không thêm dependency |
+EOF
 }
 
 ghi_based_on() {
@@ -791,6 +810,38 @@ ky_vong 1 "chặn kết luận 'đạt' cho yêu cầu đứng trên giả đị
 
 printf '| ID | Verdict |\n|---|---|\n| YC-001 | ổn |\n| YC-002 | pending |\n' > "$F/review.md"
 ky_vong 1 "chặn kết luận tự chế ngoài 4 giá trị hợp lệ" sh "$CHK" "$F"
+viet_review
+
+# ---- Lens 4 — Security
+printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n' > "$F/review.md"
+ky_vong 1 "chặn khi thiếu mục Lens 4 — Security" sh "$CHK" "$F"
+dung "…đúng lý do: thiếu mục Lens 4" sh -c "sh '$CHK' '$F' | grep -q 'thiếu mục \"## Lens 4 — Security\"'"
+viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |
+' ''
+ky_vong 1 "chặn khi thiếu một hạng mục bảo mật" sh "$CHK" "$F"
+dung "…đúng lý do: hạng mục Crypto" sh -c "sh '$CHK' '$F' | grep -q 'Lens 4 \"Crypto\": không có dòng kết luận'"
+viet_review; thay "$F/review.md" '| Crypto | not applicable |' '| Cryptography | not applicable |'
+ky_vong 1 "chặn khi đổi tên hạng mục (tên cố định)" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Secrets / config | pass |' '| Secrets / config | ổn |'
+ky_vong 1 "chặn verdict ngoài pass / finding / not applicable" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |' '| Crypto | not applicable | |'
+ky_vong 1 "chặn not applicable không có lý do" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |' '| Crypto | not applicable | <...> |'
+ky_vong 1 "chặn lý do còn chữ giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / config | finding | |'
+ky_vong 1 "chặn finding không có vị trí" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / config | finding | `src/a.txt:1` token cứng |'
+ky_vong 1 "chặn finding bảo mật mà Lens 3 không có finding nào" sh "$CHK" "$F"
+dung "…đúng lý do: thiếu finding ở Lens 3" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 không có finding nào'"
+printf '\n## Lens 3 — Quality\n\n### [Should fix] token cứng\n- Location: `src/a.txt:1`\n- Problem: token trong code\n' >> "$F/review.md"
+ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
+viet_review; cp "$ROOT/workflow/templates/review.md" "$TMP/review-mau.md"
+awk '/^## Lens 4/ { p = 1 } /^## Carried-over/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
+printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n\n' > "$F/review.md"; cat "$TMP/lens4-mau.md" >> "$F/review.md"
+ky_vong 1 "chặn bảng Lens 4 chép nguyên mẫu chưa điền" sh "$CHK" "$F"
+# Bảng khác nhắc mã YC ở cột lý do không được ghi đè kết luận của Lens 1
+viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |' '| Authn / authz | pass | khớp YC-002 |'
+ky_vong 0 "dòng Lens 4 nhắc YC-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
 viet_review
 
 printf 'x\n' > "$R/README.md"
