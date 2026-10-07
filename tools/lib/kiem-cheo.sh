@@ -162,17 +162,17 @@ kc_loai() {
 }
 
 # kc_spec_chua_duyet <thư-mục-feature> -> in lý do nếu spec.md chưa được NGƯỜI duyệt
-# ("Trạng thái spec: đã duyệt"). Dùng làm cổng vào phase ngay sau spec.
+# ("Status: đã duyệt" trong spec.md). Dùng làm cổng vào phase ngay sau spec.
 kc_spec_chua_duyet() {
   [ -f "$1/spec.md" ] || return 0
   _tt=$(awk '
     { sub(/\r$/, "") }
-    /Trạng thái spec[^:]*:/ {
+    /^[ \t]*-[ \t]*\**Status\**:/ {
       s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
       gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
     }
   ' "$1/spec.md")
-  [ "$_tt" = "đã duyệt" ] || echo "spec.md chưa được người duyệt (Trạng thái spec: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
+  [ "$_tt" = "đã duyệt" ] || echo "spec.md chưa được người duyệt (Status: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
 }
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }

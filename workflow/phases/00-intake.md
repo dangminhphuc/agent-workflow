@@ -49,7 +49,7 @@ Có sửa code chạy trên production không?
 | Loại | Luật khác biệt |
 |---|---|
 | `feature` | Quy trình chuẩn |
-| `bugfix` | Spec có mục "Tái hiện lỗi"; test tái hiện phải **đỏ trên code chưa sửa** (`aw check repro`) |
+| `bugfix` | Spec có mục "Reproduction"; test tái hiện phải **đỏ trên code chưa sửa** (`aw check repro`) |
 | `refactor` | YC chỉ là `giữ nguyên` / `cấu trúc`, YC giữ nguyên phải có test bảo vệ sẵn trên nhánh gốc; không được xoá test cũ, sửa test cũ phải khai |
 | `perf` | Như refactor, cộng YC `hiệu năng` có số liệu và số đo trước/sau do máy ghi (`aw check perf`) |
 | `chore` | Không có phase design; không được đụng code production; nâng dependency phải khai (major thì là refactor) |

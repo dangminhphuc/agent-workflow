@@ -45,12 +45,12 @@ ghi câu trích. Đề xuất thêm `- Trích: > "…"` dưới mỗi YC.
 - Cần quyết: bắt buộc hay tuỳ chọn; một hay nhiều câu trích; chuẩn hoá khoảng
   trắng/xuống dòng khi so khớp thế nào.
 
-### 6. Gợi ý nhãn `Mức rủi ro` bằng từ khoá
+### 6. Gợi ý nhãn `Risk` bằng từ khoá
 
 Khoá mới `tu_khoa_rui_ro_cao` trong `conventions.md`; spec ghi `thường` mà chứa
 từ khoá thì **cảnh báo** (không chặn — từ khoá hay báo nhầm).
 
 ## Ngoài phạm vi (luật mới, cần quyết định độ chặt)
 
-Checker hiện vẫn **cho qua**: `Nguồn: [JIRA]` không mã issue; `[SUY-RA]` không
+Checker hiện vẫn **cho qua**: `Source: [JIRA]` không mã issue; `[SUY-RA]` không
 lý do; nguồn không có trong `intake.md`.

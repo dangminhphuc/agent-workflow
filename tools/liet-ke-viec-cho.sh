@@ -92,10 +92,10 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
   }
   idx==1 { next }
 
-  # ---- File 2: spec.md — Ưu tiên của YC ----
+  # ---- File 2: spec.md — Priority của YC ----
   idx==2 && /^###[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
   idx==2 && /^###?[ \t]/ { cur = ""; next }
-  idx==2 && cur != "" && /^[ \t]*-[ \t]*[*]*Ưu tiên[^:]*:/ { ut[cur] = gia_tri($0); next }
+  idx==2 && cur != "" && /^[ \t]*-[ \t]*\**Priority\**:/ { ut[cur] = gia_tri($0); next }
   idx==2 { next }
 
   # ---- File 3: plan.md — task đứng trên giả định tạm ----

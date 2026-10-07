@@ -55,7 +55,8 @@ ra sau khi người đã sửa tay vào file.
 
 Nội dung người và agent đọc: tiếng Việt. Định danh trong code (mã yêu cầu, tên
 file, khoá cấu hình): tiếng Anh ASCII, không dấu. Đầu mục cố định mà mẫu viết
-bằng tiếng Anh (vd `Type`, `Goal` của `intake.md`) thì giữ đúng như mẫu.
+bằng tiếng Anh (vd `Type`, `Goal` của `intake.md`; `Risk`, `Source`, `## Out of scope` của
+`spec.md`) thì giữ đúng như mẫu.
 
 ## 6. Artifact viết cho NGƯỜI đọc — BẮT BUỘC
 

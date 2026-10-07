@@ -10,7 +10,7 @@
 #   4. D-xx thiếu/ sai "Trạng thái" hoặc "tac_gia"; "mở lại" không có lý do; mã trùng.
 #   5. "Dựa trên: D-xx" trỏ về D không tồn tại.
 #   6. Mục "Ánh xạ YC" bỏ sót YC của spec, hoặc trỏ về YC không có.
-#   7. Mode 2: spec "Mức rủi ro: cao" mà không có D-xx nào do người viết.
+#   7. Mode 2: spec "Risk: cao" mà không có D-xx nào do người viết.
 #   8. Checker LLM: chưa có phat-hien-thiet-ke.md, hoặc còn phát hiện mức Chặn chưa xử lý.
 #   9. File khai ở quy_tac_design (conventions.md) không có hoặc chưa commit.
 # Cảnh báo (không chặn): artifact lỗi thời.
@@ -103,7 +103,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
 
   # ---- File 1: spec.md ----
   idx==1 {
-    if ($0 ~ /Mức rủi ro[^:]*:/ && rui_ro == "") rui_ro = gia_tri($0)
+    if ($0 ~ /^[ \t]*-[ \t]*\**Risk\**:/ && rui_ro == "") rui_ro = gia_tri($0)
     if ($0 ~ /^###[ \t]+YC-[0-9]+/) { match($0, /YC-[0-9]+/); c = substr($0, RSTART, RLENGTH); co_yc[c] = 1; ds_yc[++n_yc] = c }
     next
   }
@@ -188,7 +188,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
 
     # 7. Mode 2 — chống neo
     if (rui_ro == "cao" && !co_nguoi)
-      loi("spec.md có \"Mức rủi ro: cao\" nhưng không D-xx nào có \"tac_gia: nguoi\". " \
+      loi("spec.md có \"Risk: cao\" nhưng không D-xx nào có \"tac_gia: nguoi\". " \
           "Người phải phác quyết định trước (Mode 2); agent chỉ phản biện.")
 
     # 8. checker LLM
@@ -207,7 +207,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     }
 
     print ""
-    printf "Tổng: %d YC, %d quyết định D-xx, %d phát hiện LLM — Mức rủi ro: %s\n", n_yc, n_d, n_ph, (rui_ro == "" ? "?" : rui_ro)
+    printf "Tổng: %d YC, %d quyết định D-xx, %d phát hiện LLM — Risk: %s\n", n_yc, n_d, n_ph, (rui_ro == "" ? "?" : rui_ro)
     for (i = 1; i <= n_d; i++) printf "  %-6s %s (tac_gia: %s)\n", ds_d[i], d_tt[ds_d[i]], d_tg[ds_d[i]]
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }

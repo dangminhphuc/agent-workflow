@@ -14,10 +14,10 @@ outputs:
 exit_machine:
   - aw check spec
 exit_human:
-  - Chủ repo duyệt danh sách yêu cầu và phần "Ngoài phạm vi"
+  - Chủ repo duyệt danh sách yêu cầu và phần "Out of scope"
   - Chủ repo duyệt nhãn "Mức chặn" của từng [CẦN-HỎI] (chặn | chặn review | không chặn)
-  - Chủ repo duyệt "Mức rủi ro" (cao → design chạy Mode 2, người phác D-xx trước)
-  - Duyệt xong, chủ repo tự đổi "Trạng thái spec" sang "đã duyệt" — design (chore thì plan) chặn tới lúc đó
+  - Chủ repo duyệt "Risk" (cao → design chạy Mode 2, người phác D-xx trước)
+  - Duyệt xong, chủ repo tự đổi "Status" sang "đã duyệt" — design (chore thì plan) chặn tới lúc đó
 needs_clean_context: true
 ---
 
@@ -54,9 +54,9 @@ ngoài danh sách input — muốn thêm nguồn thì thêm vào `intake.md` tr�
 | Loại | Spec phải có thêm |
 |---|---|
 | `feature` | — |
-| `bugfix` | Mục `## Tái hiện lỗi`: `Cách tái hiện:`, `Hành vi sai:`, `Hành vi đúng:` |
-| `refactor` | Mỗi YC có `Loại YC: giữ nguyên \| cấu trúc` — **không có YC hành vi mới**. YC giữ nguyên có `Được bảo vệ bởi: \`<file test>\`` và file đó phải **có sẵn trên nhánh gốc** |
-| `perf` | Như refactor, thêm `Loại YC: hiệu năng` (ít nhất một) với `Mục tiêu:` có số liệu |
+| `bugfix` | Mục `## Reproduction`: `Steps to reproduce:`, `Actual behavior:`, `Expected behavior:` |
+| `refactor` | Mỗi YC có `Type: giữ nguyên \| cấu trúc` — **không có YC hành vi mới**. YC giữ nguyên có `Protected by: \`<file test>\`` và file đó phải **có sẵn trên nhánh gốc** |
+| `perf` | Như refactor, thêm `Type: hiệu năng` (ít nhất một) với `Target:` có số liệu |
 | `chore` | — |
 
 Refactor mà vùng sắp đụng tới chưa có test bảo vệ: checker chặn. Viết test cho
@@ -80,7 +80,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    ngoài**. "Hệ thống phải nhanh" không đạt; "trả kết quả tìm kiếm dưới 300ms
    với 10k bản ghi" thì đạt.
 
-   Mỗi YC có `Ưu tiên: bắt buộc | nên có`. `nên có` **chỉ khi nguồn nói vậy**
+   Mỗi YC có `Priority: bắt buộc | nên có`. `nên có` **chỉ khi nguồn nói vậy**
    (BRD ghi "nice to have", ticket ghi "phase 2 nếu kịp"…); nguồn im lặng thì
    `bắt buộc`. `03-plan` cảnh báo khi hoãn một YC `bắt buộc`.
 
@@ -100,9 +100,9 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    nguồn im lặng → `[CẦN-HỎI]` (thường `chặn review`). Không đụng → bỏ qua, không
    ghi gì. Không bịa con số NFR: số liệu phải từ nguồn hoặc từ câu trả lời.
 
-5. **Bối cảnh và thuật ngữ.** Ghi vai trò người dùng liên quan theo nguồn. Domain
+5. **Bối cảnh và thuật ngữ.** Ghi vai trò người dùng liên quan theo nguồn vào `## Context`. Domain
    có từ dễ hiểu lệch ("kỳ", "hạch toán", "khách hàng" vs "người dùng") thì thêm
-   mục `## Thuật ngữ` (tuỳ chọn) — mỗi thuật ngữ kèm nguồn định nghĩa nó.
+   mục `## Glossary` (tuỳ chọn) — mỗi thuật ngữ kèm nguồn định nghĩa nó.
 
 6. **Gắn nhãn nguồn** cho từng yêu cầu theo `rules/truy-vet-nguon.md`.
 
@@ -129,20 +129,20 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
    hơn…). Chọn bên nào "hợp lý hơn" là quyết định nghiệp vụ — không phải việc
    của agent. Không có mâu thuẫn thì ghi "Không phát hiện mâu thuẫn."
 
-9. **Xác định "Ngoài phạm vi".** Liệt kê thẳng những thứ *không* làm lần này.
+9. **Xác định "Out of scope".** Liệt kê thẳng những thứ *không* làm lần này.
    Mục này tồn tại để chặn các phase sau làm quá tay — không có nó, agent sẽ coi
    mọi thứ liền kề là "hợp lý nên làm luôn". Thật sự không có thì ghi "Không có."
 
-10. **Ghi "Ràng buộc & phụ thuộc".** Điều kiện bên ngoài việc này phải chịu: hệ
+10. **Ghi "Constraints & dependencies".** Điều kiện bên ngoài việc này phải chịu: hệ
     thống ngoài, quy định pháp lý–kế toán, deadline, việc của team khác — mỗi
-    mục kèm nguồn. Đây là đầu vào của `Mức rủi ro` (bước sau) và của D-xx ở
+    mục kèm nguồn. Đây là đầu vào của `Risk` (bước sau) và của D-xx ở
     `02-design`. Không có thì ghi "Không có ràng buộc hay phụ thuộc ngoài."
 
-11. **Đề xuất `Mức rủi ro`**: `cao` khi đụng tiền/hạch toán, tích hợp mới, schema
-    lõi, hoặc thay đổi khó đảo ngược (xem cả "Ràng buộc & phụ thuộc"); còn lại
+11. **Đề xuất `Risk`**: `cao` khi đụng tiền/hạch toán, tích hợp mới, schema
+    lõi, hoặc thay đổi khó đảo ngược (xem cả "Constraints & dependencies"); còn lại
     `thường`. Ghi lý do một dòng. Nhãn này quyết định `02-design` chạy Mode 1 hay Mode 2.
 
-12. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
+12. **Ghi `Status: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
     phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
     Ngoại lệ duy nhất: lệnh `clarify` sửa một YC theo câu trả lời mà
     người vừa xác nhận trong hội thoại — giữ nguyên trạng thái, người không phải
@@ -159,7 +159,10 @@ Checker chặn nếu hai file lệch nhau.
 
 ## Đầu ra
 
-- `spec.md` — theo `templates/spec.md`
+- `spec.md` — theo `templates/spec.md`. Đầu mục và tên trường viết tiếng Anh, giữ
+  đúng như mẫu (`Risk`, `Status`, `Source`, `Priority`, `## Out of scope`…) —
+  checker đọc theo đúng chữ đó; nội dung và giá trị (`cao`, `đã duyệt`, `bắt buộc`…)
+  vẫn viết tiếng Việt.
 - `open-questions.md` — theo `templates/open-questions.md`.
   Phải tồn tại kể cả khi rỗng, và khi rỗng phải ghi rõ "Không có điểm mù".
   File rỗng và file thiếu là hai chuyện khác nhau: một cái nghĩa là đã rà và
@@ -172,27 +175,27 @@ Checker chặn nếu hai file lệch nhau.
   việc của `02-design`.
 - Tự chọn một cách hiểu cho chỗ mơ hồ rồi đi tiếp mà không ghi `[CẦN-HỎI]`.
 - Gắn `[SUY-RA]` cho một quyết định nghiệp vụ để né việc phải hỏi.
-- Hạ `Mức rủi ro` hoặc `Mức chặn` xuống để khỏi bị chặn.
-- Ghi `Ưu tiên: nên có` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
+- Hạ `Risk` hoặc `Mức chặn` xuống để khỏi bị chặn.
+- Ghi `Priority: nên có` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
 - Tự phân xử mâu thuẫn giữa các nguồn ("chọn bên an toàn hơn").
-- **Tự đổi `Trạng thái spec` sang `đã duyệt`.** Chỉ người làm việc này.
+- **Tự đổi `Status` của spec sang `đã duyệt`.** Chỉ người làm việc này.
 - Viết code, kể cả code minh hoạ.
 
 ## Điều kiện ra
 
 **Máy:**
 - `aw check spec` ra `[x] ĐẠT` — mọi YC có đúng một nhãn nguồn hợp
-  lệ, `Ưu tiên` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[CẦN-HỎI]` có mục
+  lệ, `Priority` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[CẦN-HỎI]` có mục
   trong `open-questions.md` với giả định tạm và mức chặn hợp lệ; trạng thái hai
-  file khớp nhau; spec có `Mức rủi ro` và `Trạng thái spec` hợp lệ; có đủ các mục
-  "Ràng buộc & phụ thuộc", "Ngoài phạm vi", "Mâu thuẫn giữa các nguồn" với nội
+  file khớp nhau; spec có `Risk` và `Status` hợp lệ; có đủ các mục
+  "Constraints & dependencies", "Out of scope", "Source conflicts" với nội
   dung thật; mỗi mâu thuẫn trỏ tới điểm mù hoặc nguồn đã chốt.
 
 **Người:**
-- Duyệt yêu cầu và "Ngoài phạm vi" — chỗ hiểu lệch nhau nhiều nhất, máy không
+- Duyệt yêu cầu và "Out of scope" — chỗ hiểu lệch nhau nhiều nhất, máy không
   kiểm thay được.
-- Duyệt nhãn `Mức chặn` và `Mức rủi ro` do agent đề xuất.
-- Đổi `Trạng thái spec` sang `đã duyệt`. `02-design` (chore: `03-plan`) chặn
+- Duyệt nhãn `Mức chặn` và `Risk` do agent đề xuất.
+- Đổi `Status` của spec sang `đã duyệt`. `02-design` (chore: `03-plan`) chặn
   cho tới lúc đó — gate người để lại dấu vết trong file, như D-xx.
 
 Mục `[CẦN-HỎI]` còn mở không được để `05-review` kết luận "đạt" cho YC đó; mục

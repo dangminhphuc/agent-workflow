@@ -131,7 +131,7 @@ awk -v loi_truoc="$n_truoc" '
       next
     }
     if ($0 ~ /^##[#]?[ \t]/) { cur = ""; next }   # cùng ranh giới vùng YC với kiem-tra-truy-vet.sh
-    if (cur != "" && $0 ~ /Nguồn/ && $0 ~ /CẦN-HỎI/) can_hoi[cur] = 1
+    if (cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Source\**:/ && $0 ~ /CẦN-HỎI/) can_hoi[cur] = 1
     next
   }
 

@@ -236,7 +236,7 @@ trong chính quá trình xây repo này, ở phase `review`.
 
 Gate người cố định ở `intake`, `spec`, `design`, `review` (và `ship` nếu dùng).
 Gate nào có phase máy chạy ngay sau thì phải để lại **dấu vết trong file** để
-phase sau chặn được: D-xx có `Trạng thái`, spec có `Trạng thái spec`. Gate chỉ
+phase sau chặn được: D-xx có `Trạng thái`, spec có `Status`. Gate chỉ
 nằm trong tài liệu thì agent chạy tiếp được trên một spec chưa ai đọc.
 `plan` và `implement` **không có người**: chúng chỉ thực thi những gì đã duyệt
 ở `spec` và `design`. Đặt người ở đó chỉ tạo thêm một chỗ duyệt văn xuôi mà
@@ -298,7 +298,7 @@ riêng trong `tdd.md`; người duyệt từng D, phần còn lại là hệ qu�
 ### Chống neo: Mode 2
 
 Khi agent đưa phương án trước, người duyệt có xu hướng neo vào nó. Với thay đổi
-`Mức rủi ro: cao` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
+`Risk: cao` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
 đề xuất nhãn, người duyệt ở gate spec), `design` **chặn** nếu chưa có bản phác
 mục D-xx do người viết (`tac_gia: nguoi`). Có bản phác thì agent chỉ phản biện.
 Rủi ro thường dùng Mode 1: agent viết cả `tdd.md`, người duyệt.
@@ -339,7 +339,7 @@ các mục còn mở: `aw pending` xếp thứ tự bằng máy (mức chặn �
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
 Câu trả lời của người trong hội thoại **chính là** gate người của điểm mù: không
 có bước sửa tay `đề xuất` → `đã duyệt` nào thêm, kể cả khi YC phải sửa theo câu
-trả lời (người xác nhận các dòng sẽ đổi trước khi agent ghi; `Trạng thái spec`
+trả lời (người xác nhận các dòng sẽ đổi trước khi agent ghi; `Status` của spec
 giữ nguyên). Dấu vết nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn.
 
 Cùng lệnh đó dẫn người **phân xử phát hiện của checker LLM** (`phat-hien-*.md`):
@@ -521,7 +521,7 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    Đừng nhầm "qua hết checker" với "làm đúng". Checker LLM thu hẹp khoảng trống
    này một phần, nhưng vì nó chỉ được chặn, những gì nó bỏ sót vẫn lọt qua.
 
-4. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Mức rủi ro` do agent đề xuất; nếu
+4. **Mode 2 dựa trên nhãn rủi ro đúng.** Nhãn `Risk` do agent đề xuất; nếu
    người duyệt ở gate spec cho qua nhãn `thường` sai, `design` sẽ chạy Mode 1 và
    hiện tượng neo quay lại.
 
@@ -533,12 +533,12 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    không báo lỗi cú pháp; nó chỉ trả về giá trị rỗng, và lỗi sẽ lộ ra muộn ở
    chỗ khác.
 
-7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Trạng thái spec`
+7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Status` của spec
    trong `spec.md`). Máy phân biệt được `đề xuất` với
    `đã duyệt`, và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
    dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được. Từ bản 2026.10.6
    artifact không nằm trong git nên cũng không còn `git blame` hay diff PR để
-   soi — chỉ người đọc lại file ở máy mới thấy. `Trạng thái spec` còn yếu
+   soi — chỉ người đọc lại file ở máy mới thấy. `Status` của spec còn yếu
    hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `đề xuất` thì bản
    "đã duyệt" không còn là bản người đọc — máy không phát hiện được.
 

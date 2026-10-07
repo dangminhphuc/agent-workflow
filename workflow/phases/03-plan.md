@@ -39,7 +39,7 @@ duyệt.
   (xem `rules/nguyen-tac-chung.md` § 7)
 
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
-`aw check spec`, có `Trạng thái spec: đã duyệt` và không còn điểm mù
+`aw check spec`, có `Status: đã duyệt` và không còn điểm mù
 `Mức chặn: chặn` đang mở — các cổng này vốn nằm ở design), và task không có
 `Dựa trên: D-xx`.
 

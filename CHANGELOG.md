@@ -25,6 +25,20 @@ ngầm giữa các bản.
   cuối của sản phẩm trong tài liệu nghiệp vụ, và khớp cặp máy / người
   (`exit_machine` / `exit_human`). `aw input` in `[HUMAN]`; `aw check intake`
   chỉ nhận `[HUMAN]`.
+- **Đầu mục và tên trường của `spec.md` sang tiếng Anh:** `# Đặc tả` → `# Spec`;
+  `Mức rủi ro` → `Risk`, `Lý do` → `Reason`, `Trạng thái spec` → `Status`;
+  mục `Nguồn` → `Sources`, `Bối cảnh` → `Context`, `Thuật ngữ` → `Glossary`,
+  `Yêu cầu` → `Requirements`, `Tái hiện lỗi` → `Reproduction`
+  (`Steps to reproduce`, `Actual behavior`, `Expected behavior`),
+  `Ràng buộc & phụ thuộc` → `Constraints & dependencies`, `Ngoài phạm vi` →
+  `Out of scope`, `Mâu thuẫn giữa các nguồn` → `Source conflicts` (cột
+  `Source A says | Source B says | Resolution`); trường của YC: `Nguồn` →
+  `Source`, `Ưu tiên` → `Priority`, `Mô tả` → `Description`, `Tiêu chí chấp nhận`
+  → `Acceptance criteria`, `Giả định tạm` → `Assumption`, `Loại YC` → `Type`,
+  `Được bảo vệ bởi` → `Protected by`, `Mục tiêu` → `Target`. Giá trị (`cao`,
+  `đã duyệt`, `bắt buộc`, `giữ nguyên`…) và nhãn nguồn (`[SUY-RA]`, `[CẦN-HỎI]`)
+  giữ nguyên. `aw check spec/design/plan/review` và `aw pending` đọc tên mới,
+  neo ở đầu dòng `- `.
 
 ## [2026.10.9]
 

@@ -88,52 +88,52 @@ EOF
 
 viet_spec() {
   cat > "$F/spec.md" <<'EOF'
-# Đặc tả — x
+# Spec — x
 
-- **Mức rủi ro:** `thường`
-- **Trạng thái spec:** `đã duyệt`
+- **Risk:** `thường`
+- **Status:** `đã duyệt`
 
-## Yêu cầu
+## Requirements
 
 ### YC-001 — a
-- Nguồn: `[JIRA]` ABC-1
-- Ưu tiên: `bắt buộc`
-- Tiêu chí chấp nhận:
+- Source: `[JIRA]` ABC-1
+- Priority: `bắt buộc`
+- Acceptance criteria:
   - [ ] mở y thấy a
 
 ### YC-002 — b
-- Nguồn: `[CẦN-HỎI]` → open-questions.md § YC-002
-- Giả định tạm: y
-- Ưu tiên: `nên có`
-- Tiêu chí chấp nhận:
+- Source: `[CẦN-HỎI]` → open-questions.md § YC-002
+- Assumption: y
+- Priority: `nên có`
+- Acceptance criteria:
   - [ ] mở y thấy b
 EOF
   case "$LOAI" in
     refactor|perf)
-      thay "$F/spec.md" '- Nguồn: `[JIRA]` ABC-1' '- Nguồn: `[JIRA]` ABC-1
-- Loại YC: `giữ nguyên`
-- Được bảo vệ bởi: `test/a.test.js`' ;;
+      thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` ABC-1
+- Type: `giữ nguyên`
+- Protected by: `test/a.test.js`' ;;
   esac
   case "$LOAI" in
-    refactor) printf -- '- Loại YC: `cấu trúc`\n' >> "$F/spec.md" ;;
-    perf)     printf -- '- Loại YC: `hiệu năng`\n- Mục tiêu: dưới 10 ms\n' >> "$F/spec.md" ;;
+    refactor) printf -- '- Type: `cấu trúc`\n' >> "$F/spec.md" ;;
+    perf)     printf -- '- Type: `hiệu năng`\n- Target: dưới 10 ms\n' >> "$F/spec.md" ;;
   esac
   if [ "$LOAI" = "bugfix" ]; then
-    printf '\n## Tái hiện lỗi\n\n- Cách tái hiện: mở a\n- Hành vi sai: ra goc\n- Hành vi đúng: ra moi\n' >> "$F/spec.md"
+    printf '\n## Reproduction\n\n- Steps to reproduce: mở a\n- Actual behavior: ra goc\n- Expected behavior: ra moi\n' >> "$F/spec.md"
   fi
   cat >> "$F/spec.md" <<'EOF'
 
-## Ràng buộc & phụ thuộc
+## Constraints & dependencies
 
 Không có ràng buộc hay phụ thuộc ngoài.
 
-## Ngoài phạm vi
+## Out of scope
 
 - màn hình z — lý do: đợt sau
 
-## Mâu thuẫn giữa các nguồn
+## Source conflicts
 
-| Nguồn A nói | Nguồn B nói | Xử lý |
+| Source A says | Source B says | Resolution |
 |---|---|---|
 | | | |
 
@@ -352,7 +352,7 @@ echo ""
 echo "kiem-tra-truy-vet.sh"
 CHK="$T/kiem-tra-truy-vet.sh"
 
-viet_spec; thay "$F/spec.md" '- Nguồn: `[JIRA]` ABC-1' '- Mô tả: không nguồn'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Description: không nguồn'
 ky_vong 1 "chặn yêu cầu không có nhãn nguồn" sh "$CHK" "$F"
 
 viet_spec; thay "$F/spec.md" '`[JIRA]`' '`[BRD]`'
@@ -382,7 +382,7 @@ dung "…kèm hướng dẫn đổi sang Mức chặn" sh -c "sh '$CHK' '$F' | g
 viet_spec; thay "$F/open-questions.md" '`không chặn`' '`toàn bộ thiết kế`'
 ky_vong 1 "chặn giá trị cũ \"toàn bộ thiết kế\" dưới nhãn Mức chặn" sh "$CHK" "$F"
 
-viet_spec; thay "$F/spec.md" '- **Mức rủi ro:** `thường`' ''
+viet_spec; thay "$F/spec.md" '- **Risk:** `thường`' ''
 ky_vong 1 "chặn spec thiếu Mức rủi ro" sh "$CHK" "$F"
 
 viet_spec; thay "$F/spec.md" '`thường`' '`<cao | thường>`'
@@ -396,29 +396,29 @@ ky_vong 2 "chặn khi thiếu hẳn open-questions.md" sh "$CHK" "$F"
 
 # "### " không phải YC đóng vùng YC: Nguồn nằm dưới nó không thuộc YC phía trên
 viet_spec; thay "$F/spec.md" '### YC-001 — a
-- Nguồn: `[JIRA]` ABC-1' '### YC-001 — a
-- Mô tả: a
+- Source: `[JIRA]` ABC-1' '### YC-001 — a
+- Description: a
 
 ### Ghi chú
-- Nguồn: `[JIRA]` ABC-1'
+- Source: `[JIRA]` ABC-1'
 ky_vong 1 "chặn YC không có Nguồn dù \"### phụ\" bên dưới có Nguồn" sh "$CHK" "$F"
 dung "…đúng lý do: YC-001 thiếu Nguồn" sh -c "sh '$CHK' '$F' | grep -q 'YC-001: thiếu dòng'"
 viet_spec; thay "$F/spec.md" '### YC-002' '### Ghi chú
-- Nguồn: `[JIRA]` ABC-9
+- Source: `[JIRA]` ABC-9
 
 ### YC-002'
 ky_vong 0 "Nguồn dưới \"### phụ\" không bị cộng vào YC phía trên" sh "$CHK" "$F"
 
 # open-questions.md 0 byte = đã rà, không có điểm mù (không được làm lệch thứ tự file)
 viet_spec; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002
-- Giả định tạm: y' '`[JIRA]` ABC-1'
+- Assumption: y' '`[JIRA]` ABC-1'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte thì cho qua" sh "$CHK" "$F"
 
 # Trạng thái spec: chỉ người đổi sang "đã duyệt"; spec vẫn qua checker khi còn "đề xuất"
 viet_spec; thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
 ky_vong 0 "spec \"đề xuất\" vẫn qua checker của spec" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '- **Trạng thái spec:** `đã duyệt`' ''
+viet_spec; thay "$F/spec.md" '- **Status:** `đã duyệt`' ''
 ky_vong 1 "chặn spec thiếu Trạng thái spec" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '`đã duyệt`' '`ok`'
 ky_vong 1 "chặn Trạng thái spec tự chế" sh "$CHK" "$F"
@@ -448,23 +448,23 @@ viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] <quan sát đư�
 ky_vong 1 "chặn tiêu chí chấp nhận còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [x] mở y thấy a'
 ky_vong 0 "tiêu chí đã tick [x] vẫn tính" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '- Ưu tiên: `bắt buộc`' ''
+viet_spec; thay "$F/spec.md" '- Priority: `bắt buộc`' ''
 ky_vong 1 "chặn YC thiếu Ưu tiên" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '`bắt buộc`' '`cao`'
 ky_vong 1 "chặn Ưu tiên tự chế" sh "$CHK" "$F"
 
 # Các mục bắt buộc ngoài YC
-viet_spec; thay "$F/spec.md" '## Ngoài phạm vi' '## Ghi chú'
+viet_spec; thay "$F/spec.md" '## Out of scope' '## Ghi chú'
 ky_vong 1 "chặn spec thiếu mục Ngoài phạm vi" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- màn hình z — lý do: đợt sau' '- <...> — lý do: <...>'
 ky_vong 1 "chặn Ngoài phạm vi chỉ có chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- màn hình z — lý do: đợt sau' 'Không có.'
 ky_vong 0 "Ngoài phạm vi ghi \"Không có.\" thì cho qua" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '## Ràng buộc & phụ thuộc' '## Khác'
+viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Khác'
 ky_vong 1 "chặn spec thiếu mục Ràng buộc & phụ thuộc" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" 'Không có ràng buộc hay phụ thuộc ngoài.' '<!-- chưa rà -->'
 ky_vong 1 "chặn Ràng buộc rỗng (chỉ có comment)" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '## Mâu thuẫn giữa các nguồn' '## Khác'
+viet_spec; thay "$F/spec.md" '## Source conflicts' '## Khác'
 ky_vong 1 "chặn spec thiếu mục Mâu thuẫn giữa các nguồn" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" 'Không phát hiện mâu thuẫn.' '<Không có thì ghi "Không phát hiện mâu thuẫn.">'
 ky_vong 1 "chặn bảng mâu thuẫn rỗng, chỉ có chỗ giữ chỗ" sh "$CHK" "$F"
@@ -524,12 +524,12 @@ dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002
-- Giả định tạm: y' '`[JIRA]` ABC-1'
+- Assumption: y' '`[JIRA]` ABC-1'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte không làm design đọc lệch file" sh "$CHK" "$F"
 viet_spec
 
-viet_tdd; thay "$F/spec.md" '- Nguồn: `[JIRA]` ABC-1' ''
+viet_tdd; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' ''
 ky_vong 1 "chặn khi đầu vào spec không qua checker của spec" sh "$CHK" "$F"
 viet_spec
 
@@ -591,11 +591,11 @@ thay "$F/plan.md" '|---|---|
 | YC-002 | chờ BA |
 '
 ky_vong 0 "hoãn lại có lý do thì cho qua" sh "$CHK" "$F"
-dung "…không cảnh báo khi hoãn YC nên có" sh -c "! sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: Ưu tiên bắt buộc'"
+dung "…không cảnh báo khi hoãn YC nên có" sh -c "! sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: Priority bắt buộc'"
 thay "$F/plan.md" '| YC-002 | chờ BA |' '| YC-002 | chờ BA |
 | YC-001 | để sau |'
 ky_vong 0 "hoãn YC bắt buộc không chặn" sh "$CHK" "$F"
-dung "…nhưng cảnh báo giao thiếu" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-001: Ưu tiên bắt buộc'"
+dung "…nhưng cảnh báo giao thiếu" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-001: Priority bắt buộc'"
 thay "$F/plan.md" '
 | YC-001 | để sau |' ''
 thay "$F/plan.md" '| YC-002 | chờ BA |' '| YC-002 | |'
@@ -817,17 +817,17 @@ CHK="$T/liet-ke-viec-cho.sh"
 LQ="$TMP/lq"; rm -rf "$LQ"; mkdir -p "$LQ"
 cat > "$LQ/spec.md" <<'EOF'
 ### YC-001 — a
-- Ưu tiên: `nên có`
+- Priority: `nên có`
 ### YC-002 — b
-- Ưu tiên: `bắt buộc`
+- Priority: `bắt buộc`
 ### YC-003 — c
-- Ưu tiên: `bắt buộc`
+- Priority: `bắt buộc`
 ### YC-004 — d
-- Ưu tiên: `nên có`
+- Priority: `nên có`
 ### YC-005 — e
-- Ưu tiên: `bắt buộc`
+- Priority: `bắt buộc`
 ### YC-006 — f
-- Ưu tiên: `bắt buộc`
+- Priority: `bắt buộc`
 EOF
 # Thứ tự trong file cố tình ngược với thứ tự phải giải quyết.
 cat > "$LQ/open-questions.md" <<'EOF'
@@ -1369,7 +1369,7 @@ dung "tai-hien.md ghi output THẬT, mã thoát khác 0" sh -c "grep -q 'Mã tho
 ky_vong 1 "kiem-tra-tai-hien từ chối khi đã sửa code production" sh "$T/kiem-tra-tai-hien.sh" "$F"
 dung "…và giữ nguyên tai-hien.md cũ" grep -q 'Mã thoát: `1`' "$F/tai-hien.md"
 
-thay "$F/spec.md" '- Hành vi đúng: ra moi' ''
+thay "$F/spec.md" '- Expected behavior: ra moi' ''
 ky_vong 1 "spec bugfix chặn khi thiếu Hành vi đúng" sh "$T/kiem-tra-truy-vet.sh" "$F"
 viet_spec; ghi_based_on
 
@@ -1397,7 +1397,7 @@ for c in truy-vet thiet-ke ke-hoach hien-thuc ra-soat; do
   ky_vong 0 "refactor đầy đủ qua kiem-tra-$c.sh" sh "$T/kiem-tra-$c.sh" "$F"
 done
 
-thay "$F/spec.md" '- Loại YC: `cấu trúc`' ''
+thay "$F/spec.md" '- Type: `cấu trúc`' ''
 ky_vong 1 "spec refactor chặn YC không có Loại YC (hành vi mới)" sh "$T/kiem-tra-truy-vet.sh" "$F"
 viet_spec
 
@@ -1435,7 +1435,7 @@ done
 dung "do-hieu-nang.md có số đo trước và sau" sh -c "[ \"\$(awk '/^## /{m=\$2} /^KET_QUA:/ && m!=\"\" && !(m in c) {c[m]=1; n++} END{print n+0}' '$F/do-hieu-nang.md')\" = 2 ]"
 ky_vong 1 "đo \"trước\" bị từ chối khi đã sửa code production" sh "$T/kiem-tra-hieu-nang.sh" "$F" --before
 
-thay "$F/spec.md" '- Mục tiêu: dưới 10 ms' '- Mục tiêu: nhanh hơn'
+thay "$F/spec.md" '- Target: dưới 10 ms' '- Target: nhanh hơn'
 ky_vong 1 "spec perf chặn YC hiệu năng không có số liệu" sh "$T/kiem-tra-truy-vet.sh" "$F"
 viet_spec; ghi_based_on
 

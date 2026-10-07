@@ -9,10 +9,10 @@ hỏi họ sẽ hỏi; mục nào không áp dụng thì ghi "None" — đừng 
 trông giống mục bị quên.
 
 Nguồn khi chạy theo quy trình (thư mục .agent-workflow/<branch>/):
-  Problem          ← intake.md (mục tiêu, input), spec.md (Bối cảnh)
+  Problem          ← intake.md (mục tiêu, input), spec.md (Context)
   Changes          ← tdd.md (D-xx đã duyệt), diff
   External Impact  ← review.md lăng kính 2
-  Out of Scope     ← spec.md "Ngoài phạm vi"
+  Out of Scope     ← spec.md "Out of scope"
   Testing          ← ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf)
   Open Questions   ← open-questions.md
 Chỉ chép điều có trong artifact hoặc diff. Điều chưa chắc: ghi vào "Open

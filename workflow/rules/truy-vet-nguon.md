@@ -14,7 +14,7 @@ cú pháp (máy kiểm được).
 
 ## Nội dung luật
 
-Mỗi yêu cầu trong `spec.md` phải có đúng một dòng `Nguồn:` mang một nhãn:
+Mỗi yêu cầu trong `spec.md` phải có đúng một dòng `Source:` mang một nhãn:
 
 | Nhãn | Nghĩa | Bắt buộc kèm theo |
 |---|---|---|
@@ -52,8 +52,8 @@ aw check spec <thư-mục-artifact>
 ```
 
 Kiểm mười một điều:
-1. Mọi `### YC-NNN` trong `spec.md` có đúng một dòng `Nguồn:` với nhãn hợp lệ.
-   Vùng của một YC kết thúc ở heading `##` hoặc `###` kế tiếp — dòng `Nguồn:`
+1. Mọi `### YC-NNN` trong `spec.md` có đúng một dòng `Source:` với nhãn hợp lệ.
+   Vùng của một YC kết thúc ở heading `##` hoặc `###` kế tiếp — dòng `Source:`
    dưới `### Ghi chú` không được tính cho YC phía trên.
 2. Mọi mục gắn `[CẦN-HỎI]` có mục tương ứng cùng mã trong `open-questions.md`.
 3. Không có mã `YC-NNN` trùng nhau.
@@ -61,15 +61,15 @@ Kiểm mười một điều:
 5. Mục `[CẦN-HỎI]` có `Mức chặn: chặn | chặn review | không chặn`. Mục `chặn`
    còn `Trạng thái: mở` thì chặn vào design (chore: plan); mục `chặn review` còn
    mở thì `implement` cảnh báo, `review` chặn.
-6. `spec.md` có `Mức rủi ro: cao | thường` và `Trạng thái spec: đề xuất | đã duyệt`.
+6. `spec.md` có `Risk: cao | thường` và `Status: đề xuất | đã duyệt`.
 7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
    có thật; `Trạng thái` là `mở | đã trả lời`; `mở` thì spec phải còn `[CẦN-HỎI]`;
    `đã trả lời` thì phải có dòng "Trả lời" và spec đã đổi nhãn nguồn.
 8. `open-questions.md` 0 byte là hợp lệ (đã rà, không có điểm mù).
-9. Mọi YC có `Ưu tiên: bắt buộc | nên có` và ít nhất một tiêu chí chấp nhận
+9. Mọi YC có `Priority: bắt buộc | nên có` và ít nhất một tiêu chí chấp nhận
    `- [ ] …` có nội dung thật (không phải `<...>`, không nằm trong comment HTML).
-10. `spec.md` có đủ `## Ràng buộc & phụ thuộc`, `## Ngoài phạm vi`,
-    `## Mâu thuẫn giữa các nguồn`, mỗi mục có nội dung thật — không có gì thì
+10. `spec.md` có đủ `## Constraints & dependencies`, `## Out of scope`,
+    `## Source conflicts`, mỗi mục có nội dung thật — không có gì thì
     ghi thẳng "Không có…" / "Không phát hiện mâu thuẫn.".
 11. Mỗi dòng trong bảng mâu thuẫn có cột "Xử lý" trỏ tới một điểm mù có thật
     (`open-questions.md § YC-NNN`) hoặc một nguồn đã chốt (`[CONFLUENCE]`

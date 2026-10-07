@@ -46,8 +46,8 @@ văn xuôi.
 ```mermaid
 flowchart TD
     INTAKE["00-intake · bắt buộc<br/>→ intake.md (loại việc + input)<br/><i>MÁY: aw check intake</i><br/><i>NGƯỜI: xác nhận loại việc, input</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: aw check spec</i><br/><i>NGƯỜI: duyệt YC, Mức chặn, Mức rủi ro</i>"]
-    PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Mức rủi ro: cao)"/]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>MÁY: aw check spec</i><br/><i>NGƯỜI: duyệt YC, Mức chặn, Risk</i>"]
+    PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Risk: cao)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: aw check design + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: aw check plan</i>"]
     IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: aw check implement (tự chạy test)</i>"]
@@ -106,7 +106,7 @@ Cách đọc:
 | Phase | Người | Người làm gì |
 |---|---|---|
 | `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
-| `spec` | có | Duyệt yêu cầu, nhãn `Mức chặn` của `[CẦN-HỎI]`, và `Mức rủi ro`; rồi đổi `Trạng thái spec` sang `đã duyệt`. Trả lời điểm mù qua `/clarify` |
+| `spec` | có | Duyệt yêu cầu, nhãn `Mức chặn` của `[CẦN-HỎI]`, và `Risk`; rồi đổi `Status` của spec sang `đã duyệt`. Trả lời điểm mù qua `/clarify` |
 | `design` | có | Duyệt **từng D-xx** trong `tdd.md`; phân xử phát hiện của checker LLM qua `/clarify` |
 | `plan` | không | — |
 | `implement` | không | — |
@@ -209,8 +209,8 @@ Loại việc **đổi luật** của các phase sau:
 | Loại | Phase | Máy ghi / chặn thêm | Người phán |
 |---|---|---|---|
 | `feature` | đủ | — | — |
-| `bugfix` | đủ | Spec có "Tái hiện lỗi". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
-| `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Được bảo vệ bởi:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Test cũ bị sửa" | Diff test cũ chỉ đổi import/cấu trúc |
+| `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
+| `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Test cũ bị sửa" | Diff test cũ chỉ đổi import/cấu trúc |
 | `perf` | đủ | Như refactor + YC `hiệu năng` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
 | `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Nâng dependency" (chỉ `vá \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
 
@@ -255,10 +255,10 @@ nguyên văn — agent thấy phát hiện sai thì đề xuất bác bỏ), và
 `/design` được nêu lại trong tổng kết để bạn biết. Điểm mù và phát hiện vẫn ở
 **file riêng** — chỉ hàng đợi là chung.
 
-Spec cũng gắn `Mức rủi ro: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
+Spec cũng gắn `Risk: cao | thường`. **Cao** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.
 
-Gate người để lại dấu vết trong file: `Trạng thái spec: đề xuất | đã duyệt`, chỉ
+Gate người để lại dấu vết trong file: `Status: đề xuất | đã duyệt` (trong `spec.md`), chỉ
 người đổi sang `đã duyệt`; `design` (chore: `plan`) chặn tới lúc đó. Khi một
 `[CẦN-HỎI]` được trả lời, `open-questions.md` và nhãn nguồn trong spec phải đổi
 cùng nhau — checker đối chiếu hai chiều.
@@ -288,7 +288,7 @@ Hai cách làm:
 
 - **Mode 1** — agent viết cả `tdd.md` một lần, người duyệt.
 - **Mode 2** — người phác các mục D-xx trước (`tac_gia: nguoi`), agent viết phần
-  còn lại và chỉ **phản biện** quyết định của người. Spec có `Mức rủi ro: cao` mà
+  còn lại và chỉ **phản biện** quyết định của người. Spec có `Risk: cao` mà
   chưa có bản phác của người thì `design` chặn — để tránh người duyệt bị neo vào
   phương án agent đưa ra.
 

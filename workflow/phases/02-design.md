@@ -36,7 +36,7 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 ## Đầu vào
 
 - `spec.md`, `open-questions.md` — phải qua được `aw check spec`, và
-  `Trạng thái spec: đã duyệt` (người đã duyệt spec). Còn `đề xuất` thì dừng lại.
+  `Status: đã duyệt` (người đã duyệt spec). Còn `đề xuất` thì dừng lại.
 - Code hiện có của repo đích
 - Quy tắc riêng của repo cho phase này — `aw rules design`, đọc từng file nó in ra
   (xem `rules/nguyen-tac-chung.md` § 7)
@@ -51,7 +51,7 @@ giả định tạm.
 
 ## Chọn Mode
 
-| `Mức rủi ro` trong spec | Mode | Ai viết D-xx |
+| `Risk` trong spec | Mode | Ai viết D-xx |
 |---|---|---|
 | `thường` | **Mode 1** | Agent viết cả `tdd.md`, người duyệt từng D |
 | `cao` | **Mode 2** | **Người phác D-xx trước** (`tac_gia: nguoi`); agent viết phần còn lại và chỉ **phản biện** quyết định của người |
