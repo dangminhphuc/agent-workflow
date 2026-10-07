@@ -19,18 +19,19 @@ Conventions to follow:
 
 ## Decisions (D-xx)
 
-Mỗi lựa chọn mà người khác có thể chọn khác. Người duyệt **từng** D. Mục này được
-phép rỗng — khi đó ghi "Không có quyết định cần duyệt." và xoá mẫu bên dưới.
+Mỗi lựa chọn mà người khác có thể chọn khác. Người duyệt **từng** D bằng cách tick
+ô "Approved by human" của D đó. Mục này được phép rỗng — khi đó ghi "Không có
+quyết định cần duyệt." và xoá mẫu bên dưới.
 
 ### D-01 — <vấn đề cần quyết>
 
 - Author: `<human | agent>`
-- Status: `proposed`   <!-- proposed | approved | reopened — CHỈ NGƯỜI đổi sang approved -->
 - Option A: <...> — pros: <...> / cons: <...>
 - Option B: <...> — pros: <...> / cons: <...>
 - Choice: <A> — vì <...>
 - Hard to reverse because: <...>
-<!-- Khi mở lại: đổi Status thành `reopened` và thêm dòng
+- [ ] **Approved by human**   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick. Máy ghi dấu duyệt (hash của D) cạnh tick; D đổi sau đó thì bị chặn tới khi người duyệt lại -->
+<!-- Khi mở lại: bỏ tick và thêm dòng
 - Reopen reason: <...> -->
 <!-- Mode 2 (Author: human): agent không sửa mục này, chỉ thêm
 - Critique (agent): <...> -->

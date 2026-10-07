@@ -162,17 +162,34 @@ kc_loai() {
 }
 
 # kc_spec_chua_duyet <thư-mục-feature> -> in lý do nếu spec.md chưa được NGƯỜI duyệt
-# ("Status: approved" trong spec.md). Dùng làm cổng vào phase ngay sau spec.
+# (ô "Approved by human" chưa tick, hoặc nội dung đổi sau khi tick). Dùng làm cổng
+# vào phase ngay sau spec. Ghi dấu duyệt nếu người vừa tick.
+# Cần nạp trước: tools/lib/sha256.sh, tools/lib/duyet.sh
 kc_spec_chua_duyet() {
   [ -f "$1/spec.md" ] || return 0
-  _tt=$(awk '
-    { sub(/\r$/, "") }
-    /^[ \t]*-[ \t]*\**Status\**:/ {
-      s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
-      gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
-    }
-  ' "$1/spec.md")
-  [ "$_tt" = "approved" ] || echo "spec.md chưa được người duyệt (Status: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
+  dy_dong_dau "$1/spec.md" spec >/dev/null
+  _tt=$(dy_trang_thai "$1/spec.md" spec | awk -F'|' '$1 == "S" { print $3; exit }')
+  case "$_tt" in
+    approved) ;;
+    changed-after-approval)
+      echo "spec.md đã đổi sau khi người duyệt — bản người đọc không còn là bản này. Người đọc lại: đồng ý thì xoá \"<!-- approval-hash: … -->\" (giữ tick), không thì bỏ tick." ;;
+    proposed)
+      echo "spec.md chưa được người duyệt (ô \"$DY_NHAN_SPEC\" chưa tick). Người đọc spec rồi tự tick [x]." ;;
+    *)
+      echo "spec.md không có ô duyệt hợp lệ — chạy aw check spec để xem chi tiết." ;;
+  esac
+}
+
+# kc_loi_duyet <file> <spec|tdd> -> "[LỖI] …" cho lỗi vị trí/dạng ô duyệt và cho ô
+# đổi sau duyệt. Ghi dấu duyệt trước. Dùng chung cho checker spec/design.
+kc_loi_duyet() {
+  dy_dong_dau "$1" "$2" >/dev/null
+  dy_trang_thai "$1" "$2" | awk -F'|' -v f="$(basename "$1")" '
+    $1 == "L" { print $2 }
+    $1 == "S" && $3 == "changed-after-approval" {
+      k = ($2 == "spec") ? "spec.md" : $2
+      print k " đã đổi sau khi người duyệt (dấu duyệt không khớp nội dung). Agent sửa thì phải bỏ tick; người đọc lại và đồng ý thì xoá \"<!-- approval-hash: … -->\" trong " f " (giữ tick)."
+    }'
 }
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }

@@ -61,7 +61,8 @@ Kiểm mười một điều:
 5. Mục `[OPEN-QUESTION]` có `Blocking: blocking | review-blocking | non-blocking`. Mục `blocking`
    còn `Status: open` thì chặn vào design (chore: plan); mục `review-blocking` còn
    mở thì `implement` cảnh báo, `review` chặn.
-6. `spec.md` có `Risk: high | normal` và `Status: proposed | approved`.
+6. `spec.md` có `Risk: high | normal` và đúng một ô `- [ ] **Approved by human**`
+   ở phần đầu file; đã tick thì dấu duyệt máy ghi phải còn khớp nội dung.
 7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
    có thật; `Status` là `open | answered`; `open` thì spec phải còn `[OPEN-QUESTION]`;
    `answered` thì phải có dòng "Answer" và spec đã đổi nhãn nguồn.

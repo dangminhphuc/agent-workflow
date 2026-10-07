@@ -204,11 +204,13 @@ Lựa chọn, theo đúng thứ tự này (tối đa 4):
 3. **Câu trả lời khác giả định tạm:** sửa mô tả / tiêu chí chấp nhận của YC đó
    theo câu trả lời — chỉ YC đó. Trước khi ghi, cho người xem đúng các dòng
    sẽ đổi (trước → sau) và hỏi "ghi như vậy được không?"; người đồng ý trong hội
-   thoại là đủ. **Giữ nguyên `Status` của spec** — người vừa trả lời và xác nhận
-   chính chỗ sửa này, không phải mở file sửa tay `proposed` → `approved` lần nữa.
-   Ghi vào cuối dòng `Answer:` `(đã xác nhận sửa YC-NNN)` để còn dấu vết.
+   thoại là đủ. Ghi vào cuối dòng `Answer:` `(đã xác nhận sửa YC-NNN)` để còn
+   dấu vết.
    Câu trả lời khớp giả định tạm thì chỉ đổi nhãn nguồn.
-4. Chạy `aw check spec <thư-mục-feature>` và dán kết quả thật.
+4. **Spec đã được người tick duyệt** thì bước 2–3 làm nó đổi so với bản đã
+   duyệt: **bỏ tick** ô "Approved by human" (agent được bỏ, không bao giờ được
+   tick). Người vừa xác nhận chỗ sửa nên chỉ cần tick lại — nhắc ở tổng kết.
+5. Chạy `aw check spec <thư-mục-feature>` và dán kết quả thật.
    Không `[x] ĐẠT` thì sửa ngay cho khớp hai file rồi mới sang mục kế.
 
 **Người chưa trả lời được** (chọn "Chưa trả lời được"): soạn sẵn một tin nhắn gửi `Ask` — tự đủ
@@ -227,9 +229,9 @@ tự hạ.
    như vậy được không?"; người đồng ý trong hội thoại là đủ. Chỉ sửa đúng chỗ
    phát hiện chỉ ra.
 2. Phát hiện cần một quyết định (`quyết định ngầm`, `lệch D-xx` mà người muốn đổi
-   D): thêm/sửa D-xx với `Status: proposed` (sửa D đã duyệt thì theo mục "Mở
-   lại một quyết định" của `/design`). **Không** ghi `approved` — người duyệt D
-   như mọi D khác.
+   D): thêm/sửa D-xx với ô duyệt **chưa tick** (sửa D đã duyệt thì theo mục "Mở
+   lại một quyết định" của `/design`). **Không** tick — người duyệt D như mọi D
+   khác.
 3. Phát hiện `yêu cầu mới`: người đồng ý là **bỏ hành vi đó khỏi `tdd.md`**.
    Người muốn giữ hành vi đó thì đó là yêu cầu mới — báo người phải quay lại
    `/spec`, không tự thêm YC.
@@ -251,7 +253,8 @@ rồi nói ngắn gọn:
 - **phát hiện đã đóng mà người chưa phân xử trong lượt này** (nhóm `[ĐÃ XỬ LÝ]`
   — thường là agent tự sửa ở bước checker của `/design`): liệt kê mã + một dòng
   để người biết, người muốn xem lại mục nào thì xử lý như mục mới;
-- D-xx mới hoặc vừa sửa đang chờ người duyệt;
+- D-xx mới hoặc vừa sửa đang chờ người duyệt; spec vừa bị bỏ tick vì sửa theo
+  câu trả lời — người tick lại;
 - artifact nào đã lỗi thời vì file đầu vào đổi (`tdd.md`, `plan.md` ghi
   `based_on`): điểm mù trả lời **khớp** giả định → chạy lại phase đó để ghi lại
   dấu đầu vào; **khác** giả định → phase đó phải làm lại phần ghi ở "Nếu giả
@@ -270,8 +273,8 @@ rồi nói ngắn gọn:
   định độc lập vào một câu hỏi.
 - Đặt `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc cho nhiều hơn một lựa chọn.
 - Tự hạ `Blocking`, hoặc tự đổi mức khi người chưa nói. Đổi `Mức` của phát hiện.
-- Đổi `Status` của spec (cả `proposed` → `approved` lẫn ngược lại), hay ghi
-  `approved` cho D-xx — lệnh này không đụng vào các dòng đó.
+- Tick ô duyệt (spec hay D-xx), hay sửa/xoá `<!-- approval-hash: … -->`. Lệnh này chỉ
+  được **bỏ** tick spec khi sửa spec đã duyệt (mục 3a bước 4).
 - Sửa YC / mục `tdd.md` khi người chưa xác nhận các dòng sẽ đổi, hoặc sửa ngoài
   phạm vi của mục đang xử lý.
 - Trình bày nhiều mục một lúc rồi bắt người trả lời gộp.

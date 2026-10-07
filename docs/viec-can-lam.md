@@ -8,7 +8,8 @@
 - `open-questions.md` 0 byte làm lệch thứ tự file (spec, design; review đồng bộ).
 - Kiểm chéo test ↔ YC im lặng khi chưa test nào gắn `covers:` (`kiem-cheo.sh`).
 - `spec.md` ghi `based_on: intake.md` → đổi intake sau khi viết spec thì review chặn.
-- `Trạng thái spec: đề xuất | đã duyệt` — design (chore: plan) chặn khi chưa duyệt.
+- Gate duyệt spec — design (chore: plan) chặn khi chưa duyệt. (Nay là ô duyệt
+  `- [ ] **Approved by human**` kèm dấu duyệt — xem docs/kien-truc.md.)
 - Đối chiếu hai chiều `open-questions.md` ↔ `spec.md` (mục mồ côi, trạng thái lệch,
   đã trả lời mà trống "Trả lời").
 

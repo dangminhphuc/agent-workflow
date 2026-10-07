@@ -25,6 +25,7 @@ Phần dùng chung với adapter khác ở `adapters/lib/chung.sh` (xem
 | `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
+| Phase có `approval_gate: true` (`02-design.md`, `03-plan.md`) | Bước "Cổng duyệt" trong lệnh phase: `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
 | `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/<id>.md` — lệnh tiện ích `/import`, `/clarify` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
@@ -65,7 +66,7 @@ Adapter mới vì thế không phải biết gì về loại việc.
 
 ## Cái gì KHÔNG biên dịch portable được
 
-Đây là phần quan trọng nhất của tài liệu này. Sáu thứ dưới đây là đặc thù agent,
+Đây là phần quan trọng nhất của tài liệu này. Bảy thứ dưới đây là đặc thù agent,
 và adapter tương lai cho Cursor/Copilot sẽ phải tự xử lý — hoặc **nói rõ là
 không làm được** chứ không im lặng bỏ qua.
 
@@ -85,7 +86,10 @@ Bỏ qua âm thầm sẽ làm phase rà soát mất gần hết giá trị mà n
 ### 2. Hook
 
 Claude Code có hook; phần lớn agent khác không. Adapter này **cố tình không ghi**
-`.claude/settings.json` — xem mục dưới.
+`.claude/settings.json` — xem mục dưới. Hook gác ô duyệt (`aw guard`) là phần
+duy nhất của quy trình *cần* hook mới chặn cứng được; agent không có hook thì luật
+"chỉ người tick ô duyệt" chỉ còn là lời dặn, cộng với dấu duyệt mà `aw check`
+vẫn kiểm.
 
 ### 3. Truy cập MCP
 
@@ -122,6 +126,18 @@ vào `options` — để đủ chỗ cho phương án thật.
 Agent không có giao diện lựa chọn thì in lựa chọn đánh số kèm "hoặc gõ câu trả
 lời khác / hỏi lại để trao đổi" — mô tả trung lập đã nói cách lùi này.
 
+### 7. Hộp xác nhận của cổng duyệt
+
+Phase khai `approval_gate: true` có bước "Cổng duyệt": người gõ `/design` (hay
+`/plan`) khi phần trước chưa duyệt thì agent chạy `aw approval <phase>`, in
+nguyên văn bản tóm tắt máy dựng, rồi hỏi bằng hộp xác nhận ba lựa chọn cố định
+(*Tôi đã duyệt xong — kiểm lại* · *Giải thích từng điểm cần duyệt* · *Dừng — tôi
+duyệt sau*). Phần chung (`buoc_cong_duyet` trong `adapters/lib/chung.sh`) là luồng
+và luật "không tick hộ"; adapter này thêm cách gọi `AskUserQuestion`, dùng
+`preview` để người thấy đúng file/dòng phải tick và danh sách điểm cần đọc khi
+rê vào lựa chọn. Agent không có giao diện lựa chọn thì in ba lựa chọn đánh số.
+Hộp xác nhận **không** thay cho việc tick: nó chỉ dẫn người tới đúng chỗ.
+
 Những gì **luôn** portable: file artifact trong `.agent-workflow/<tên-branch>/`,
 `conventions.md`, các mẫu (chép vào `.agent-workflow/.engine/`), và lệnh `aw check`. Đó là lý do phần lõi của quy trình nằm ở đó chứ không nằm
 trong prompt.
@@ -133,6 +149,48 @@ Sau khi sinh xong, adapter xoá mọi file trong `.claude/commands/` và
 lệnh của phase đã đổi tên hoặc bị bỏ. Không dọn thì repo đích vẫn còn lệnh cũ
 (vd `/ideation` sau khi đổi thành `/intake`) chạy theo luật cũ. File không có dấu
 đó là do người viết, adapter không đụng tới.
+
+## Hook gác ô duyệt
+
+Ô duyệt (`- [ ] **Approved by human**` ở spec.md và ở từng D-xx) chỉ
+người được tick. Không có hook thì đó là lời dặn trong prompt — LLM quen tick
+checklist khi xong việc. Thêm đoạn này vào `.claude/settings.json` (hoặc
+`.claude/settings.local.json` nếu chỉ muốn áp cho máy mình) của repo đích:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+        "hooks": [{ "type": "command", "command": "aw guard pre" }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+        "hooks": [{ "type": "command", "command": "aw guard post" }]
+      }
+    ]
+  }
+}
+```
+
+- `aw guard pre` chạy trước mỗi lệnh ghi của agent: ghi dấu duyệt cho ô người vừa
+  tick (chốt nội dung người đã thấy) và đặt mốc. Luôn cho qua.
+- `aw guard post` chạy sau lệnh đó: ô được tick mà chưa có dấu duyệt — tức tick
+  trong lúc lệnh của agent chạy — bị bỏ tick; ô có dấu mà nội dung đã đổi cũng bị
+  bỏ tick. Có bỏ tick thì trả mã 2: Claude Code đưa lý do cho agent đọc ("Agent
+  KHÔNG tick lại. Báo người…").
+- Hai hook **phải cùng matcher**. `post` chỉ coi tick chưa dấu là của agent khi
+  thấy mốc của `pre`; `pre` không chạy thì `post` không bỏ tick của ai.
+- Bắt được Edit, Write và cả `sed -i` qua Bash: hook so trạng thái file, không đọc
+  lệnh.
+- Giới hạn: bạn tick đúng lúc một lệnh dài của agent đang chạy (vd đang chạy
+  test) thì tick bị bỏ — tick lại. Agent cố tình tự tính hash để ghi dấu giả thì
+  hook không phân biệt được.
+- Hook chạy `aw` qua wrapper, bằng engine của bản clone (`aw version`). Việc cũ
+  còn dạng `Trạng thái spec:` thì hook không đụng tới.
 
 ## Hook — vì sao adapter không tự ghi settings.json
 
@@ -194,5 +252,5 @@ giá là đã đạt.
 4. Lời dặn agent chỉ gọi `aw …` (`aw feature`, `aw check <tên>`, `aw input`…) và
    đọc mẫu/luật trong `.agent-workflow/.engine/`. Không nhúng luật vào prompt.
 5. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
-   LLM, câu hỏi lựa chọn), **ghi rõ trong output** thay vì bỏ qua.
+   LLM, câu hỏi lựa chọn, hộp xác nhận của cổng duyệt), **ghi rõ trong output** thay vì bỏ qua.
 6. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.

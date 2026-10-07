@@ -6,7 +6,7 @@
 # Chặn:
 #   - Đầu vào: tdd.md không qua kiem-tra-thiet-ke.sh (entry check = checker phase trước).
 #   - Đầu vào (chore): spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
-#   - Đầu vào: còn D-xx chưa "approved". plan và implement không có người —
+#   - Đầu vào: còn D-xx chưa được người tick duyệt (hoặc đổi sau khi tick). plan và implement không có người —
 #     chúng chỉ được thực thi những gì người đã duyệt.
 #   - Kiểm HAI CHIỀU phủ YC:
 #       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
@@ -26,6 +26,8 @@ kq_khai kiem-tra-ke-hoach.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/duyet.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -77,7 +79,14 @@ while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] 
 $qtl
 EOF
 
-awk -v loi_truoc="$n_loi" '
+# Trạng thái duyệt từng D-xx — thư viện chung (tick + dấu duyệt khớp nội dung).
+DTT=""
+if [ "$TDD" != /dev/null ]; then
+  dy_dong_dau "$TDD" tdd >/dev/null
+  DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
+fi
+
+awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
   function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); return trim(s) }
@@ -87,7 +96,10 @@ awk -v loi_truoc="$n_loi" '
     return n_tim
   }
 
-  BEGIN { n_loi = loi_truoc }
+  BEGIN {
+    n_loi = loi_truoc
+    n_kv = split(dtt, kv, ";"); for (i = 1; i <= n_kv; i++) if (kv[i] != "") { split(kv[i], kv2, "="); d_tt[kv2[1]] = kv2[2] }
+  }
   { sub(/\r$/, "") }
   FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : 3; sect=""; cur="" }
 
@@ -105,7 +117,6 @@ awk -v loi_truoc="$n_loi" '
   idx==2 {
     if ($0 ~ /^###[ \t]+D-[0-9]+/) { match($0, /D-[0-9]+/); d = substr($0, RSTART, RLENGTH); co_d[d] = 1; ds_d[++n_d] = d; next }
     if ($0 ~ /^##?[ \t]/) d = ""
-    if (d != "" && $0 ~ /^[ \t]*-[ \t]*\**Status\**:/) d_tt[d] = gia_tri($0)
     next
   }
 
@@ -180,7 +191,7 @@ awk -v loi_truoc="$n_loi" '
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
       if (d_tt[d] != "approved")
-        loi(d ": chưa được người duyệt (Status: " (d_tt[d] == "" ? "trống" : d_tt[d]) ")" \
+        loi(d ": chưa được người duyệt (" (d_tt[d] == "" ? "không đọc được ô duyệt" : d_tt[d]) ")" \
             (d in dua_tren ? " — task bị ảnh hưởng:" dua_tren[d] " (đặt lại `[ ]`)" : ""))
     }
 

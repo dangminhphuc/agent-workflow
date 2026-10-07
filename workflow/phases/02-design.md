@@ -3,6 +3,7 @@ id: design
 name: Thiết kế kỹ thuật
 summary: Viết Technical Design Document — tách lựa chọn thành quyết định D-xx để người duyệt
 required: true
+approval_gate: true
 inputs:
   - intake.md
   - spec.md
@@ -13,7 +14,7 @@ outputs:
 exit_machine:
   - aw check design
 exit_human:
-  - Người duyệt TỪNG quyết định D-xx trong tdd.md (đổi Status sang "approved")
+  - Người duyệt TỪNG quyết định D-xx trong tdd.md (tick ô "Approved by human" của D đó)
   - Người làm trọng tài cho phát hiện của checker LLM (xác nhận, hoặc bác bỏ kèm lý do)
 needs_clean_context: true
 llm_checker: workflow/checkers/thiet-ke.md
@@ -36,7 +37,9 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 ## Đầu vào
 
 - `spec.md`, `open-questions.md` — phải qua được `aw check spec`, và
-  `Status: approved` (người đã duyệt spec). Còn `proposed` thì dừng lại.
+  ô "Approved by human" đã tick và dấu duyệt còn khớp nội dung. Chưa tick thì
+  dừng lại: lệnh `/design` chạy **cổng duyệt** (`aw approval design`) trước tiên —
+  cho người thấy rõ còn gì chờ duyệt rồi hỏi bằng hộp xác nhận; agent không tick hộ.
 - Code hiện có của repo đích
 - Quy tắc riêng của repo cho phase này — `aw rules design`, đọc từng file nó in ra
   (xem `rules/nguyen-tac-chung.md` § 7)
@@ -71,7 +74,7 @@ nhờ người phác** — checker sẽ chặn.
 2. **Nêu quyết định D-xx.** Mỗi lựa chọn mà người khác có thể chọn khác — nhất là
    điểm khó đảo ngược (sửa nhiều chỗ, di trú dữ liệu, phá giao diện ngoài) — là
    một D-xx: vấn đề, ít nhất hai phương án kèm đánh đổi, lựa chọn, `Author`,
-   `Status: proposed`. Mục D **được phép rỗng** — thay đổi nhỏ có thể không
+   và ô `- [ ] **Approved by human**` **chưa tick**. Mục D **được phép rỗng** — thay đổi nhỏ có thể không
    có quyết định nào. Điểm hiển nhiên thì không cần D; bắt viết D cho mọi thứ sẽ
    khiến không ai đọc D nào.
 
@@ -93,7 +96,8 @@ nhờ người phác** — checker sẽ chặn.
 ## Mở lại một quyết định
 
 Mở lại **đúng một D-xx**, sửa tại chỗ (lịch sử để git giữ, không giữ bản cũ
-trong file). Đổi `Status: reopened` và thêm `Reopen reason:`. Grep
+trong file). Bỏ tick ô duyệt của D đó và thêm `Reopen reason:` — chưa tick mà có
+lý do là `reopened`. Grep
 `Based on: D-xx` trong `plan.md` ra các task bị ảnh hưởng; chỉ các task đó đặt
 lại `[ ]`. Người chỉ duyệt lại D đang mở. `/plan` chặn cho tới khi D đó được
 duyệt lại.
@@ -103,7 +107,7 @@ duyệt lại.
 - `tdd.md` — output duy nhất của thiết kế; không có file quyết định riêng, vì
   tách ra thì hai file sẽ lệch nhau. Đầu mục, tên trường và giá trị viết tiếng
   Anh, giữ đúng như mẫu (`## Decisions (D-xx)`, `Author: human | agent`,
-  `Status: proposed | approved | reopened`, `Based on:`, `Not applicable:`…) —
+  ô `- [ ] **Approved by human**`, `Reopen reason:`, `Based on:`, `Not applicable:`…) —
   checker đọc theo đúng chữ đó; nội dung điền vào viết tiếng Việt.
 - `phat-hien-thiet-ke.md` — do checker LLM ghi.
 
@@ -112,7 +116,9 @@ duyệt lại.
 - **Viết code.** Kể cả "code mẫu cho dễ hình dung" (chữ ký API/schema trong
   contract thì được).
 - Thêm yêu cầu mới không có trong `spec.md` — quay lại `01-spec`.
-- **Tự đổi `Status` của D-xx sang `approved`.** Chỉ người làm việc này.
+- **Tick ô duyệt của D-xx**, hay sửa/xoá dấu duyệt cạnh nó. Chỉ người làm việc
+  này. Sửa một D đã tick thì bỏ tick (mở lại) — thêm `- Critique (agent):` thì
+  không cần, phản biện không tính vào dấu duyệt.
 - Ở Mode 2: sửa hoặc thay quyết định của người thay vì phản biện.
 - Giấu một lựa chọn thật vào văn xuôi thay vì nêu thành D-xx.
 - Coi "checker LLM không báo gì" là đạt khi nó chưa chạy.
@@ -121,10 +127,11 @@ duyệt lại.
 
 **Máy:**
 - `aw check design` ra `[x] ĐẠT` — đầu vào qua checker của spec; đủ
-  mục; D-xx hợp lệ; `Based on` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của
+  mục; D-xx hợp lệ (mỗi D đúng một ô duyệt, D đã tick thì dấu duyệt còn khớp);
+  `Based on` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của
   người; có `phat-hien-thiet-ke.md` và không còn phát hiện `Chặn` chưa xử lý.
 
 **Người:**
-- Duyệt từng D-xx.
+- Duyệt từng D-xx: đọc rồi tick ô "Approved by human" của D đó.
 - Trọng tài cho phát hiện của checker LLM. LLM chỉ được **chặn**, không bao giờ
   là bên nói "đạt".

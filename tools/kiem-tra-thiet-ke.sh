@@ -7,7 +7,8 @@
 #   1. Đầu vào: spec chưa qua checker của spec (entry check = checker phase trước).
 #   2. Đầu vào: còn điểm mù "Blocking: blocking" chưa được trả lời.
 #   3. tdd.md thiếu mục bắt buộc, hoặc mục bỏ trống mà không ghi "Not applicable: <lý do>".
-#   4. D-xx thiếu/ sai "Status" hoặc "Author"; "reopened" không có lý do; mã trùng.
+#   4. D-xx thiếu/ sai ô duyệt (tools/lib/duyet.sh) hoặc "Author"; mã trùng; D đã
+#      tick mà nội dung đổi sau đó (dấu duyệt không khớp).
 #   5. "Based on: D-xx" trỏ về D không tồn tại.
 #   6. Mục "YC mapping" bỏ sót YC của spec, hoặc trỏ về YC không có.
 #   7. Mode 2: spec "Risk: high" mà không có D-xx nào do người viết.
@@ -29,6 +30,8 @@ kq_khai kiem-tra-thiet-ke.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/duyet.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -72,10 +75,17 @@ while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] 
 $qtl
 EOF
 
+# Ô duyệt từng D-xx — trạng thái lấy từ thư viện chung, không tự đọc lại.
+kld=$(kc_loi_duyet "$TDD" tdd)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$kld
+EOF
+DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
+
 PHF="$PH"; PH_THIEU=0
 [ -f "$PH" ] || { PH_THIEU=1; PHF=/dev/null; }
 
-awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
+awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function gia_tri(s) {
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
@@ -91,6 +101,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
 
   BEGIN {
     n_loi = loi_truoc
+    n_kv = split(dtt, kv, ";"); for (i = 1; i <= n_kv; i++) if (kv[i] != "") { split(kv[i], kv2, "="); d_tt[kv2[1]] = kv2[2] }
     muc[1] = "Existing code"; muc[2] = "Decisions"; muc[3] = "Data model"
     muc[4] = "Contract"; muc[5] = "Flow"; muc[6] = "Non-functional"
     muc[7] = "Test strategy"; muc[8] = "YC mapping"; n_muc = 8
@@ -128,9 +139,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
       next
     }
     if (sect == "Decisions" && cur != "") {
-      if ($0 ~ /^[ \t]*-[ \t]*\**Status\**:/) d_tt[cur] = gia_tri($0)
       if ($0 ~ /^[ \t]*-[ \t]*\**Author\**:/) d_tg[cur] = gia_tri($0)
-      if ($0 ~ /^[ \t]*-[ \t]*\**Reopen reason\**:/ && gia_tri($0) != "" && gia_tri($0) !~ /^<.*>$/) d_ly_do[cur] = 1
     }
 
     if (dong_noi_dung($0)) {
@@ -168,12 +177,9 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     }
 
     # 4. D-xx
-    tt_hl["proposed"] = 1; tt_hl["approved"] = 1; tt_hl["reopened"] = 1
+    # Ô duyệt (thiếu, sai dạng, đổi sau duyệt) đã báo ở trên — thư viện duyet.sh.
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
-      if (!(d in d_tt))            loi(d ": thiếu dòng \"Status:\" (proposed | approved | reopened)")
-      else if (!(d_tt[d] in tt_hl)) loi(d ": \"Status: " d_tt[d] "\" không hợp lệ. Chỉ chấp nhận: proposed | approved | reopened")
-      else if (d_tt[d] == "reopened" && !(d in d_ly_do)) loi(d ": đang \"reopened\" nhưng thiếu dòng \"Reopen reason:\"")
       if (!(d in d_tg))                               loi(d ": thiếu dòng \"Author:\" (human | agent)")
       else if (d_tg[d] != "human" && d_tg[d] != "agent") loi(d ": \"Author: " d_tg[d] "\" không hợp lệ. Chỉ chấp nhận: human | agent")
       if (d_tg[d] == "human") co_nguoi = 1
@@ -212,7 +218,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
     print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện Chặn."
-    print "Bước tiếp: NGƯỜI duyệt từng D-xx (đổi Status sang \"approved\"). /plan sẽ chặn nếu còn D chưa duyệt."
+    print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Approved by human\"). /plan sẽ chặn nếu còn D chưa duyệt."
   }
 ' "$SPEC" "$TDD" "$PHF"
 ma=$?

@@ -106,8 +106,8 @@ Cách đọc:
 | Phase | Người | Người làm gì |
 |---|---|---|
 | `intake` | có | Xác nhận **loại việc** và danh sách input (lời mình được chép đúng nguyên văn) |
-| `spec` | có | Duyệt yêu cầu, nhãn `Blocking` của `[OPEN-QUESTION]`, và `Risk`; rồi đổi `Status` của spec sang `approved`. Trả lời điểm mù qua `/clarify` |
-| `design` | có | Duyệt **từng D-xx** trong `tdd.md`; phân xử phát hiện của checker LLM qua `/clarify` |
+| `spec` | có | Duyệt yêu cầu, nhãn `Blocking` của `[OPEN-QUESTION]`, và `Risk`; rồi tick ô `Approved by human` ở đầu spec. Trả lời điểm mù qua `/clarify` |
+| `design` | có | Duyệt **từng D-xx** trong `tdd.md` (tick ô `Approved by human` của D đó); phân xử phát hiện của checker LLM qua `/clarify` |
 | `plan` | không | — |
 | `implement` | không | — |
 | `review` | có | Xác nhận kết luận; làm trọng tài cho phát hiện của checker |
@@ -243,13 +243,13 @@ bằng `(Đề xuất)`, ngữ cảnh nói vì sao. Mục gói nhiều quyết �
 nhiều câu hỏi. Cuối là "Chưa trả lời được"; luôn có ô tự nhập và "Chat về câu
 này". Bạn trả lời → agent ghi nguyên văn, đổi nhãn nguồn trong
 spec, chạy lại checker. Câu trả lời khác giả định thì agent cho bạn xem dòng YC
-sẽ sửa, bạn đồng ý trong hội thoại là xong — **không phải mở file sửa tay**
-`proposed` → `approved`. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
+sẽ sửa, bạn đồng ý trong hội thoại là xong. Spec đã tick duyệt thì sửa nào cũng
+làm nó khác bản đã duyệt: agent bỏ tick, bạn tick lại. Chưa trả lời được → agent soạn sẵn tin nhắn gửi người
 cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
 
 Với phát hiện của checker LLM, lựa chọn là các **cách sửa cụ thể** (cách đề xuất
 đứng đầu; chọn thì agent cho bạn xem dòng `tdd.md` sẽ đổi, rồi ghi `đã sửa`; cần
-quyết định mới thì thêm D-xx `proposed` để bạn duyệt), **Bác bỏ** (kèm lý do, ghi
+quyết định mới thì thêm D-xx chưa tick để bạn duyệt), **Bác bỏ** (kèm lý do, ghi
 nguyên văn — agent thấy phát hiện sai thì đề xuất bác bỏ), và **Để sau** với mục
 `Cảnh báo`. Phát hiện agent đã tự sửa lúc chạy
 `/design` được nêu lại trong tổng kết để bạn biết. Điểm mù và phát hiện vẫn ở
@@ -258,10 +258,54 @@ nguyên văn — agent thấy phát hiện sai thì đề xuất bác bỏ), và
 Spec cũng gắn `Risk: high | normal`. **High** khi đụng tiền/hạch toán, tích
 hợp mới, schema lõi, hoặc thay đổi khó đảo ngược.
 
-Gate người để lại dấu vết trong file: `Status: proposed | approved` (trong `spec.md`), chỉ
-người đổi sang `approved`; `design` (chore: `plan`) chặn tới lúc đó. Khi một
+Gate người để lại dấu vết trong file: ô `- [ ] **Approved by human**` ở đầu
+`spec.md`, chỉ người tick; `design` (chore: `plan`) chặn tới lúc đó. Khi một
 `[OPEN-QUESTION]` được trả lời, `open-questions.md` và nhãn nguồn trong spec phải đổi
 cùng nhau — checker đối chiếu hai chiều.
+
+#### Ô duyệt
+
+Spec và mỗi D-xx có một ô duyệt; bạn duyệt bằng cách đổi `[ ]` thành `[x]`:
+
+```markdown
+- [x] **Approved by human** — đã đọc và đồng ý toàn bộ spec <!-- approval-hash: 3f2a9c01d4e7b6a8 -->
+```
+
+- **Dấu duyệt** do máy ghi lần đầu thấy tick (`aw check`, hoặc hook): hash của
+  nội dung lúc đó. Nội dung đổi sau đó mà tick còn thì `aw check` chặn "đổi sau
+  duyệt". Duyệt lại bản mới: đọc chỗ đổi, xoá `<!-- approval-hash: … -->` (giữ tick).
+  Dòng trống, chú thích và `- Critique (agent):` dưới D không tính.
+- **Agent không bao giờ tick**, không sửa dấu duyệt; agent sửa nội dung đã tick thì
+  bỏ tick. Muốn máy chặn cứng thay vì chỉ dặn: cài hook `aw guard` cho Claude Code
+  ([adapters/claude-code/README.md](adapters/claude-code/README.md#hook-gác-ô-duyệt))
+  — ô nào được tick trong lúc lệnh của agent chạy thì bị bỏ tick và agent được báo.
+- Ô duyệt phải đúng chỗ (spec: trước heading `##` đầu tiên; D-xx: trong mục của
+  nó), đúng một ô; ô trong chú thích hay khối code không được tính.
+- **Gõ lệnh phase sau khi chưa duyệt** (vd `/design` khi spec chưa tick, `/plan`
+  khi còn D chưa tick): agent không làm gì của phase mà in bản tóm tắt máy dựng
+  từ file (`aw approval`) rồi hỏi bằng hộp xác nhận:
+
+  ```text
+  CỔNG DUYỆT — vào /design cần spec đã được bạn duyệt
+  Việc:        feat_x
+  Trạng thái:  ✗ CHƯA DUYỆT — ô "Approved by human" chưa tick
+  Cách duyệt:  mở .agent-workflow/feat_x/spec.md, dòng 12
+               đổi   - [ ] **Approved by human**
+               thành - [x] **Approved by human**
+
+  Nên đọc kỹ trước khi tick (máy không kiểm thay được):
+    1. Yêu cầu agent tự suy ra [INFERRED] — 3 mục, nguồn không ghi trực tiếp:
+         YC-006 — …
+    2. Out of scope — 2 mục: …
+    3. Risk: high — /design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại
+    4. Điểm mù còn mở: 0
+  ```
+
+  Ba lựa chọn: **Tôi đã duyệt xong — kiểm lại** (agent kiểm lại; đạt thì vào phase
+  ngay), **Giải thích từng điểm cần duyệt**, **Dừng — tôi duyệt sau**. Agent
+  không bao giờ tick hộ — kể cả khi bạn bảo "duyệt hộ".
+- Việc bắt đầu trước bản có ô duyệt vẫn chạy bằng engine ghi trong `intake.md` của
+  nó (dòng `Status:` cũ). Engine mới gặp dạng cũ thì báo cách đổi.
 
 ### `02-design` — Technical Design Document
 
@@ -281,8 +325,9 @@ Mục không áp dụng ghi `Not applicable: <lý do>` chứ không bỏ trống
 ghi `Based on: D-xx`; checker LLM tìm chỗ lệch D-xx và các quyết định ngầm chưa
 được nêu thành D.
 
-Mỗi D-xx có `Author: human | agent` và `Status: proposed | approved | reopened`.
-**Chỉ người** đổi sang `approved`; `/plan` chặn nếu còn D chưa duyệt.
+Mỗi D-xx có `Author: human | agent` và một ô `- [ ] **Approved by human**`.
+**Chỉ người** tick; `/plan` chặn nếu còn D chưa tick. Chưa tick mà có
+`Reopen reason:` là D đang mở lại (`reopened`).
 
 Hai cách làm:
 
@@ -293,7 +338,7 @@ Hai cách làm:
   phương án agent đưa ra.
 
 **Mở lại quyết định:** mở lại đúng một D-xx, sửa tại chỗ (lịch sử để git giữ), ghi
-trạng thái `reopened` + dòng `Reopen reason:`. Grep `Based on: D-xx` ra các task bị ảnh hưởng, chỉ
+bỏ tick ô duyệt của D đó + thêm dòng `Reopen reason:` (trạng thái `reopened`). Grep `Based on: D-xx` ra các task bị ảnh hưởng, chỉ
 các task đó đặt lại `[ ]`; người chỉ duyệt lại D đang mở.
 
 ### `03-plan` — quản lý thực thi
@@ -325,8 +370,8 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 |---|---|---|
 | `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[INFERRED]` trong input, `[HUMAN]` không kèm nguyên văn |
 | `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Blocking` thiếu/sai |
-| `design` | `aw check design` | Spec chưa được người duyệt, điểm mù `blocking` còn mở, thiếu mục, D-xx sai trạng thái, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
-| `plan` | `aw check plan` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
+| `design` | `aw check design` | Spec chưa được người duyệt (hoặc đổi sau khi duyệt), điểm mù `blocking` còn mở, thiếu mục, D-xx thiếu/sai ô duyệt hoặc đổi sau khi duyệt, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `plan` | `aw check plan` | D-xx chưa được người duyệt (hoặc đổi sau khi duyệt), task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `aw check implement` | Test chưa xanh, task còn dở |
 | `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test chưa xanh, hoặc **còn cảnh báo** |
 
@@ -429,7 +474,7 @@ protected branch. Gồm ba phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.10/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.11/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -488,6 +533,8 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 | `aw worktree status <branch>` · `aw worktree remove <branch> [--delete-branch]` | Dọn worktree sau khi merge |
 | `aw adapter build <agent> [--out <thư-mục>] [--force]` | Sinh lại adapter |
 | `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules <phase>` | Lệnh agent gọi trong các phase |
+| `aw approval design\|plan <thư-mục-feature>` | Cổng duyệt khi vào phase: còn gì chờ người duyệt — lệnh `/design`, `/plan` gọi |
+| `aw guard pre` · `aw guard post` | Hook gác ô duyệt — cấu hình ở [adapters/claude-code/README.md](adapters/claude-code/README.md#hook-gác-ô-duyệt) |
 
 ### Artifact của việc: chỉ ở máy
 
@@ -618,12 +665,14 @@ tools/                   (engine — gọi qua aw, không gọi thẳng)
   liet-ke-viec-cho.sh    aw pending: việc chờ người (điểm mù, phát hiện LLM) theo thứ tự phải chốt
   quy-tac-repo.sh        aw rules: file quy tắc riêng của repo cho một phase (quy_tac_* trong conventions.md)
   cap-nhat-based-on.sh   aw based-on: ghi hash đầu vào vào frontmatter artifact
+  cong-duyet.sh          aw approval design|plan: tóm tắt cho người còn gì chờ duyệt (cổng duyệt khi vào phase)
+  gac-duyet.sh           aw guard pre|post: hook bỏ tick ô duyệt agent tick / nội dung đổi sau duyệt
   dong-goi.sh            đóng gói bản phát hành (tarball + SHA256SUMS)
   chuan-bi-phat-hanh.sh  đặt version YYYY.M.N cho PR phát hành (VERSION, bin/aw, CHANGELOG, README)
   kiem-tra-phat-hanh.sh  kiểm version nhất quán + tag chưa có (CI của PR) — không phải aw check
   cai-dat.sh, dong-bo.sh đã bỏ — chỉ in hướng dẫn chuyển sang aw
   chay-thu.sh            test hồi quy cho cổng chặn, wrapper, đóng gói
-  lib/                   md.sh, kiem-cheo.sh, worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh
+  lib/                   md.sh, kiem-cheo.sh, duyet.sh (ô duyệt + dấu duyệt), worktree.sh, moi-truong.sh (AW_REPO/AW_CONFIG), bang-lenh.sh, ket-qua.sh
 docs/kien-truc.md        vì sao thiết kế như vậy, cách thêm phase/adapter
 ```
 

@@ -3,6 +3,7 @@ id: plan
 name: Kế hoạch
 summary: Chia thiết kế đã duyệt thành task thực thi được — chỉ quản lý thực thi
 required: true
+approval_gate: true
 inputs:
   - intake.md
   - spec.md
@@ -33,13 +34,16 @@ duyệt.
 ## Đầu vào
 
 - `spec.md`, `tdd.md` — phải qua được `aw check design`, và **mọi D-xx đã
-  được người duyệt**. Còn D `proposed` hay `reopened` thì dừng lại.
+  được người duyệt** (tick, dấu duyệt khớp nội dung). Còn D chưa tick, `reopened`,
+  hay đổi sau khi tick thì dừng lại: lệnh `/plan` chạy **cổng duyệt**
+  (`aw approval plan`) trước tiên — cho người thấy rõ D nào chờ duyệt rồi hỏi bằng
+  hộp xác nhận; agent không tick hộ.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
 - Quy tắc riêng của repo cho phase này — `aw rules plan`, đọc từng file nó in ra
   (xem `rules/nguyen-tac-chung.md` § 7)
 
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
-`aw check spec`, có `Status: approved` và không còn điểm mù
+`aw check spec`, ô "Approved by human" đã tick và không còn điểm mù
 `Blocking: blocking` đang mở — các cổng này vốn nằm ở design), và task không có
 `Based on: D-xx`.
 
@@ -100,7 +104,7 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
 
 **Máy:**
 - `aw check plan` ra `[x] ĐẠT`:
-  - đầu vào qua `aw check design`, mọi D-xx `approved`;
+  - đầu vào qua `aw check design`, mọi D-xx đã được người tick duyệt;
   - mọi task có `Covers:` hợp lệ, `Expected files:`, `Verify:` không rỗng;
     `Based on:` trỏ về D có thật;
   - mọi YC được ít nhất một task phủ, **hoặc** nằm ở "Deferred" kèm lý do. Kiểm

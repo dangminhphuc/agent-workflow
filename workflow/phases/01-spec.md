@@ -16,8 +16,8 @@ exit_machine:
 exit_human:
   - Chủ repo duyệt danh sách yêu cầu và phần "Out of scope"
   - Chủ repo duyệt nhãn "Blocking" của từng [OPEN-QUESTION] (blocking | review-blocking | non-blocking)
-  - Chủ repo duyệt "Risk" (cao → design chạy Mode 2, người phác D-xx trước)
-  - Duyệt xong, chủ repo tự đổi "Status" sang "approved" — design (chore thì plan) chặn tới lúc đó
+  - Chủ repo duyệt "Risk" (high → design chạy Mode 2, người phác D-xx trước)
+  - Duyệt xong, chủ repo tự tick ô "Approved by human" — design (chore thì plan) chặn tới lúc đó
 needs_clean_context: true
 ---
 
@@ -142,11 +142,11 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
     lõi, hoặc thay đổi khó đảo ngược (xem cả "Constraints & dependencies"); còn lại
     `normal`. Ghi lý do một dòng. Nhãn này quyết định `02-design` chạy Mode 1 hay Mode 2.
 
-12. **Ghi `Status: proposed`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
-    phase) đều đặt lại `proposed` — bản người đã duyệt không còn là bản này.
-    Ngoại lệ duy nhất: lệnh `clarify` sửa một YC theo câu trả lời mà
-    người vừa xác nhận trong hội thoại — giữ nguyên trạng thái, người không phải
-    sửa tay lại.
+12. **Để ô `- [ ] **Approved by human**` chưa tick.** Mỗi lần sửa nội dung spec
+    (kể cả chạy lại phase, kể cả `clarify`) đều **bỏ tick** — bản người đã duyệt
+    không còn là bản này. Khi người tick, máy ghi dấu duyệt (hash nội dung) cạnh
+    tick; nội dung đổi sau đó mà tick còn thì `aw check` chặn, và hook `aw guard`
+    (nếu repo cài) tự bỏ tick. Không bao giờ sửa hay xoá `<!-- approval-hash: … -->`.
 
 13. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> spec.md intake.md`.
     `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì
@@ -180,7 +180,7 @@ Checker chặn nếu hai file lệch nhau.
 - Hạ `Risk` hoặc `Blocking` xuống để khỏi bị chặn.
 - Ghi `Priority: should` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
 - Tự phân xử mâu thuẫn giữa các nguồn ("chọn bên an toàn hơn").
-- **Tự đổi `Status` của spec sang `approved`.** Chỉ người làm việc này.
+- **Tick ô "Approved by human"**, hay sửa/xoá dấu duyệt cạnh nó. Chỉ người làm việc này.
 - Viết code, kể cả code minh hoạ.
 
 ## Điều kiện ra
@@ -189,7 +189,8 @@ Checker chặn nếu hai file lệch nhau.
 - `aw check spec` ra `[x] ĐẠT` — mọi YC có đúng một nhãn nguồn hợp
   lệ, `Priority` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[OPEN-QUESTION]` có mục
   trong `open-questions.md` với giả định tạm và mức chặn hợp lệ; trạng thái hai
-  file khớp nhau; spec có `Risk` và `Status` hợp lệ; có đủ các mục
+  file khớp nhau; spec có `Risk` hợp lệ và đúng một ô duyệt ở phần đầu file,
+  tick thì dấu duyệt còn khớp nội dung; có đủ các mục
   "Constraints & dependencies", "Out of scope", "Source conflicts" với nội
   dung thật; mỗi mâu thuẫn trỏ tới điểm mù hoặc nguồn đã chốt.
 
@@ -197,8 +198,10 @@ Checker chặn nếu hai file lệch nhau.
 - Duyệt yêu cầu và "Out of scope" — chỗ hiểu lệch nhau nhiều nhất, máy không
   kiểm thay được.
 - Duyệt nhãn `Blocking` và `Risk` do agent đề xuất.
-- Đổi `Status` của spec sang `approved`. `02-design` (chore: `03-plan`) chặn
-  cho tới lúc đó — gate người để lại dấu vết trong file, như D-xx.
+- Tick ô "Approved by human". `02-design` (chore: `03-plan`) chặn cho tới lúc
+  đó — gate người để lại dấu vết trong file, như D-xx. Sửa spec sau khi đã tick
+  thì phải duyệt lại: đọc chỗ đổi rồi xoá `<!-- approval-hash: … -->` (giữ tick),
+  hoặc tick lại nếu tick đã bị bỏ.
 
 Mục `[OPEN-QUESTION]` còn mở không được để `05-review` kết luận "pass" cho YC đó; mục
 `blocking` hoặc `review-blocking` còn mở thì `05-review` chặn hẳn.

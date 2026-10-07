@@ -107,9 +107,11 @@ conv_get() {
   ' "$1"
 }
 
-# file_hash <file> -> hash cả file (cksum, bỏ \r để CRLF/LF cho cùng kết quả)
+# file_hash <file> -> hash cả file (cksum, bỏ \r để CRLF/LF cho cùng kết quả).
+# Bỏ dấu duyệt máy ghi (tools/lib/duyet.sh): ghi dấu không đổi nội dung, không
+# được làm artifact phía sau thành lỗi thời.
 file_hash() {
-  tr -d '\r' < "$1" | cksum | awk '{ print $1 }'
+  tr -d '\r' < "$1" | sed 's/ *<!-- approval-hash: [0-9a-f]* -->//' | cksum | awk '{ print $1 }'
 }
 
 # khop_glob <chuỗi> <mẫu...> -> 0 nếu khớp một mẫu. Trong mẫu, * khớp cả "/".

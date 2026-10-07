@@ -11,6 +11,8 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/md.sh"
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/duyet.sh"
 . "$HERE/lib/ket-qua.sh"
 kq_khai kiem-tra-truy-vet.sh \
   "0=ĐẠT — được sang phase sau" \
@@ -42,11 +44,17 @@ qtl=$(kc_quy_tac_loi "$DIR" spec)
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $qtl
 EOF
+# Ô duyệt spec: dạng, vị trí, và nội dung có đổi sau khi người tick không.
+kld=$(kc_loi_duyet "$SPEC" spec)
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$kld
+EOF
+TT_SPEC=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
 LOAI=$(kc_loai "$DIR")
 BV="${TMPDIR:-/tmp}/tv-bv.$$"
 : > "$BV"
 
-awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
+awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC:-?}" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   BEGIN { n_loi = loi_truoc }
   function gia_tri(s) {          # phần sau dấu ":" đầu tiên, bỏ * ` và khoảng trắng
@@ -80,7 +88,6 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
   $0 ~ /^[ \t]*<!--.*-->[ \t]*$/ { next }
 
   rui_ro == "" && $0 ~ /^[ \t]*-[ \t]*\**Risk\**:/ { rui_ro = gia_tri($0); co_rui_ro = 1 }
-  tt_spec == "" && $0 ~ /^[ \t]*-[ \t]*\**Status\**:/ { tt_spec = gia_tri($0); co_tt_spec = 1 }
 
   $0 ~ /^###[ \t]+YC-[0-9]+/ {
     match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
@@ -170,12 +177,6 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
       loi("spec.md thiếu dòng \"Risk:\" (high | normal). `design` cần nó để biết có phải chạy Mode 2.")
     else if (rui_ro != "high" && rui_ro != "normal")
       loi("\"Risk: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: high | normal")
-
-    # Người duyệt spec bằng cách đổi dòng này; design (và plan của chore) chặn khi chưa duyệt.
-    if (!co_tt_spec)
-      loi("spec.md thiếu dòng \"Status:\" (proposed | approved). Agent ghi \"proposed\"; chỉ người đổi sang \"approved\".")
-    else if (tt_spec != "proposed" && tt_spec != "approved")
-      loi("\"Status: " tt_spec "\" không hợp lệ. Chỉ chấp nhận: proposed | approved")
 
     if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### YC-NNN\")")
 
@@ -281,7 +282,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" '
 
     print ""
     print "Tổng: " n " yêu cầu — Loại việc: " (loai == "" ? "?" : loai) " — Risk: " (co_rui_ro ? rui_ro : "?") \
-          " — Status: " (co_tt_spec ? tt_spec : "?")
+          " — Duyệt: " tt_spec
     for (t in dem_nhan) printf "  [%s] %d\n", t, dem_nhan[t]
     if (n_loi > 0) exit 1
   }
