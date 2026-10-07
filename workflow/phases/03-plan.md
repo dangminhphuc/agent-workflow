@@ -21,91 +21,47 @@ needs_clean_context: true
 
 ## Mục tiêu
 
-Chia `tdd.md` **đã duyệt** thành danh sách task thực thi được. `plan.md` chỉ còn
-phần **quản lý thực thi** — mọi lựa chọn kỹ thuật đã nằm ở `tdd.md`.
-
-Phase này không có gate người: nó chỉ thực thi những gì đã được duyệt ở `spec`
-và `design`. Vì vậy nó **không được** có lựa chọn kỹ thuật mới nào.
-
-Tách khỏi `tdd.md` vì hai lẽ: `plan.md` là ranh giới do một phiên khác đặt cho
-`04-implement`, và tick task không bao giờ được sửa vào tài liệu thiết kế đã
-duyệt.
+Chia `tdd.md` **đã duyệt** thành task thực thi được. `plan.md` chỉ quản lý thực thi — **không có lựa chọn kỹ thuật mới** (phase này không có gate người).
 
 ## Đầu vào
 
-- `spec.md`, `tdd.md` — phải qua được `aw check design`, và **mọi D-xx đã
-  được người duyệt** (tick, dấu duyệt khớp nội dung). Còn D chưa tick, `reopened`,
-  hay đổi sau khi tick thì dừng lại: lệnh `/aw-plan` chạy **cổng duyệt**
-  (`aw approval plan`) trước tiên — cho người thấy rõ D nào chờ duyệt rồi hỏi bằng
-  hộp xác nhận; agent không tick hộ.
-- `open-questions.md` — để biết task nào đứng trên giả định tạm
-- Quy tắc riêng của repo cho phase này — `aw rules plan`, đọc từng file nó in ra
-  (xem `rules/nguyen-tac-chung.md` § 7)
+- `spec.md`, `tdd.md` — qua `aw check design`, **mọi D-xx đã được người duyệt** (tick, dấu duyệt khớp).
+- `open-questions.md` — để biết task nào đứng trên giả định tạm.
+- `aw rules plan` — đọc từng file nó in.
 
-Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
-`aw check spec`, ô "Approved by human" đã tick và không còn điểm mù
-`Blocking: blocking` đang mở — các cổng này vốn nằm ở design), và task không có
-`Based on: D-xx`.
+`chore` (không có `tdd.md`): đầu vào là `spec.md` — qua `aw check spec`, đã tick "Approved by human", không còn điểm mù `blocking` mở. Task không có `Based on: D-xx`.
 
 ## Việc phải làm
 
-1. **Chia task.** Mỗi task phải có:
-   - `Covers:` ít nhất một mã `YC-NNN` trong `spec.md`;
-   - `Based on: D-xx` nếu nó thực thi một quyết định (để khi D bị mở lại, grep
-     ra đúng task bị ảnh hưởng);
-   - `Design: tdd.md § …` — mục thiết kế nó hiện thực;
-   - `Expected files:` — đường dẫn trong backtick, cho phép glob (`src/todo/*`).
-     `04-implement` dùng dòng này để kiểm phạm vi diff;
-   - `Verify:` — test nào, lệnh nào, quan sát gì;
-   - `Depends on:` task phải xong trước (nếu có);
-   - đủ nhỏ để hoàn thành trong một lượt làm việc và tự nó không làm hỏng build.
-
-2. **Đánh dấu task đứng trên giả định tạm** (mục `[OPEN-QUESTION]`): dòng
-   `On assumption: **yes** — open-questions.md § YC-NNN`, không thì `no`. Giả định sai thì
-   người cần biết ngay phải làm lại task nào.
-
-3. **Hoãn có lý do.** YC không có task nào phủ thì ghi vào "Deferred" kèm lý do.
-   Ưu tiên hoãn YC `should`. Hoãn YC `must` thì checker cảnh báo (không chặn)
-   — nói rõ với người duyệt plan rằng lần giao này thiếu yêu cầu đó.
-
-4. **Manual verification.** YC không test tự động được thì ghi vào mục
-   "Manual verification" kèm lý do — nếu không, `/aw-implement` cảnh báo và
-   `/aw-review` chặn vì YC chưa có test.
-
+1. **Chia task.** Mỗi task:
+   - `Covers:` ≥ 1 mã `YC-NNN` có trong `spec.md`;
+   - `Based on: D-xx` nếu thực thi một quyết định;
+   - `Design: tdd.md § …`;
+   - `Expected files:` — đường dẫn trong backtick, glob được (`src/todo/*`) — dùng để kiểm phạm vi diff;
+   - `Verify:` — lệnh trong backtick + quan sát gì;
+   - `Depends on:` nếu có;
+   - đủ nhỏ để xong trong một lượt và tự nó không làm hỏng build.
+2. **Task đứng trên giả định tạm:** `On assumption: **yes** — open-questions.md § YC-NNN`, không thì `no`.
+3. **Hoãn có lý do:** YC không task nào phủ → `## Deferred` + lý do. Ưu tiên hoãn `should`; hoãn `must` thì checker cảnh báo — nói rõ với người.
+4. **`## Manual verification`:** YC không test tự động được + lý do (thiếu → implement cảnh báo, review chặn).
 5. **Theo loại việc:**
-   - `bugfix`: task đầu tiên là **viết test tái hiện**, tách khỏi task sửa code —
-     `/aw-implement` phải chạy `aw check repro` giữa hai task đó.
-   - `perf`: task đầu tiên là **đo trước** (`aw check perf <thư-mục-feature> --before`).
-   - `refactor`/`perf`: test cũ nào dự kiến phải sửa (vd đổi import khi dời module)
-     thì khai sẵn ở "Modified existing tests".
-   - `chore`: có nâng dependency thì khai ở "Dependency upgrades" (chỉ `patch | minor`).
-
-6. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md`
-   (chore: bỏ `tdd.md`).
+   - `bugfix`: task đầu là **viết test tái hiện**, tách khỏi task sửa (`aw check repro` chạy giữa hai task).
+   - `perf`: task đầu là **đo trước** (`aw check perf <thư-mục-feature> --before`).
+   - `refactor`/`perf`: test cũ dự kiến phải sửa → khai ở `## Modified existing tests`.
+   - `chore`: nâng dependency → `## Dependency upgrades` (chỉ `patch | minor`).
+6. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md` (chore: bỏ `tdd.md`).
 
 ## Đầu ra
 
-- `plan.md` — theo `templates/plan.md`. Đầu mục, tên trường và giá trị viết tiếng
-  Anh, giữ đúng như mẫu (`## Tasks`, `Covers:`, `Expected files:`, `Verify:`,
-  `Status: [ ] | [~] | [x]`, `## Deferred`, `## Unplanned`…) — checker đọc theo
-  đúng chữ đó; nội dung điền vào viết tiếng Việt.
+`plan.md` theo `templates/plan.md`.
 
 ## Cấm
 
 - **Viết code.**
-- Lựa chọn kỹ thuật mới không có trong `tdd.md`. Thấy thiếu thì quay lại
-  `02-design` (mở lại hoặc thêm D-xx), không nhét vào kế hoạch.
-- Task không ánh xạ được về mã `YC-NNN` nào.
-- Task kiểu "refactor toàn bộ module X", "dọn dẹp code cũ" — không có tiêu chí
-  xong, và là cửa ngõ để `04-implement` đi lạc không giới hạn.
-- Thêm yêu cầu mới không có trong `spec.md` — quay lại `01-spec`.
+- Lựa chọn kỹ thuật không có trong `tdd.md` — quay lại `02-design` (mở lại/thêm D).
+- Task không ánh xạ về `YC-NNN` nào; task kiểu "refactor toàn bộ module X", "dọn code cũ" (không có tiêu chí xong).
+- Thêm yêu cầu không có trong `spec.md` — quay lại `01-spec`.
 
 ## Điều kiện ra
 
-**Máy:**
-- `aw check plan` ra `[x] ĐẠT`:
-  - đầu vào qua `aw check design`, mọi D-xx đã được người tick duyệt;
-  - mọi task có `Covers:` hợp lệ, `Expected files:`, `Verify:` không rỗng;
-    `Based on:` trỏ về D có thật;
-  - mọi YC được ít nhất một task phủ, **hoặc** nằm ở "Deferred" kèm lý do. Kiểm
-    hai chiều mới bắt được lỗi bỏ sót — kiểm một chiều chỉ bắt được lỗi thừa.
+**Máy:** `aw check plan` ra `[x] ĐẠT` — đầu vào qua `aw check design`, mọi D đã duyệt; mọi task có `Covers:` hợp lệ, `Expected files:`, `Verify:` không rỗng, `Based on:` trỏ D có thật; mọi YC có task phủ **hoặc** nằm ở "Deferred" kèm lý do.

@@ -1394,8 +1394,12 @@ dung "/aw-plan có cổng duyệt aw approval plan" grep -q 'aw approval plan' "
 dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Cổng duyệt' '$O/.claude/commands/aw-implement.md' && ! grep -q 'Cổng duyệt' '$O/.claude/commands/aw-spec.md'"
 dung "lệnh /aw-import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/aw-import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/aw-clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
-dung "phase có quy tắc repo: lệnh gọi aw rules <phase>" sh -c \
-  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "phase có quy tắc repo: lệnh gọi aw rules <phase> (review: subagent đọc)" sh -c \
+  "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -c \
+  "grep -q 'Việc của phiên này' '$O/.claude/commands/aw-review.md' && ! grep -q 'Bốn lăng kính' '$O/.claude/commands/aw-review.md' && grep -q 'Bốn lăng kính' '$O/.claude/agents/ra-soat-doc-lap.md'"
+dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắt giữa chừng)" sh -c \
+  "for f in '$O'/.claude/commands/aw-*.md; do tail -1 \"\$f\" | grep -q . || exit 1; grep -q '^## Hợp đồng phase\|^## Bước 0' \"\$f\" || exit 1; done; grep -q 'Điều kiện ra — MÁY' '$O/.claude/commands/aw-implement.md'"
 dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/ra-soat-doc-lap.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/soat-thiet-ke.md"
@@ -1515,7 +1519,7 @@ dung "/aw-design, /aw-plan có cổng duyệt aw approval + hộp xác nhận Cu
 dung "…phase không khai approval_gate thì không có" sh -c \
   "for p in intake spec implement review; do ! grep -q 'Cổng duyệt' '$O3/.cursor/commands/aw-'\$p.md || exit 1; done"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase>; intake thì không" sh -c \
-  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/aw-intake.md'"
+  "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/aw-intake.md'"
 dung "skill liệt kê phase và lệnh tiện ích" sh -c \
   "grep -q '| \`/aw-design\` |' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' && grep -q '/aw-clarify' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md'"
 

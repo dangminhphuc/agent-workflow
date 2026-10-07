@@ -18,120 +18,67 @@ exit_human:
   - Người làm trọng tài cho phát hiện của checker LLM (xác nhận, hoặc bác bỏ kèm lý do)
 needs_clean_context: true
 llm_checker: workflow/checkers/thiet-ke.md
+trace_rule: true
 ---
 
-# Phase 02 — Thiết kế kỹ thuật (Technical Design Document)
+# Phase 02 — Thiết kế kỹ thuật
 
-`tdd.md` là **Technical Design Document**, không phải Test-Driven Development.
+`tdd.md` = **Technical Design Document** (không phải Test-Driven Development).
 
 ## Mục tiêu
 
-Viết ra mọi thông tin `04-implement` cần để làm đúng kỹ thuật, **nằm trong kiến
-trúc sẵn có của repo đích**, và tách các lựa chọn thật thành mục **D-xx** để
-người *quyết định* chứ không phải đọc duyệt cả một bài văn xuôi.
+Ghi mọi thứ `04-implement` cần để làm đúng kỹ thuật, **trong kiến trúc sẵn có** của repo, và tách lựa chọn thật thành mục **D-xx** để người *quyết định*.
 
-**Loại việc `chore` không có phase này** — đi thẳng `/aw-plan`. Checker chặn nếu
-chạy design cho chore. Với `refactor`/`perf`, design là phần việc chính: cấu trúc
-đích và quyết định D-xx về cách chuyển sang đó.
+- `chore` **không có phase này** — đi thẳng `/aw-plan` (checker chặn design cho chore).
+- `refactor`/`perf`: design là phần chính — cấu trúc đích và D-xx về cách chuyển sang đó.
 
 ## Đầu vào
 
-- `spec.md`, `open-questions.md` — phải qua được `aw check spec`, và
-  ô "Approved by human" đã tick và dấu duyệt còn khớp nội dung. Chưa tick thì
-  dừng lại: lệnh `/aw-design` chạy **cổng duyệt** (`aw approval design`) trước tiên —
-  cho người thấy rõ còn gì chờ duyệt rồi hỏi bằng hộp xác nhận; agent không tick hộ.
-- Code hiện có của repo đích
-- Quy tắc riêng của repo cho phase này — `aw rules design`, đọc từng file nó in ra
-  (xem `rules/nguyen-tac-chung.md` § 7)
-
-Checker của phase này chạy lại checker của `spec` trên đầu vào. Không có đường
-tắt: `spec.md` đưa từ tool khác vào cũng phải qua đúng cổng đó.
-
-Điểm mù `Blocking: blocking` mà chưa `answered` thì **chặn** — thiết kế trên một
-giả định sẽ lật cả hướng đi là phí công. Dừng lại, nhờ người chạy lệnh
-`clarify` để chốt. Mục `review-blocking` / `non-blocking` thì thiết kế tiếp trên
-giả định tạm.
+- `spec.md`, `open-questions.md` — qua `aw check spec` (checker này chạy lại nó, kể cả spec import từ tool khác), ô "Approved by human" đã tick và dấu duyệt khớp.
+- Điểm mù `blocking` chưa `answered` → **chặn**: dừng, nhờ người chạy `clarify`. `review-blocking`/`non-blocking` → thiết kế tiếp trên giả định tạm.
+- Code hiện có của repo.
+- `aw rules design` — đọc từng file nó in.
 
 ## Chọn Mode
 
-| `Risk` trong spec | Mode | Ai viết D-xx |
+| `Risk` | Mode | Ai viết D-xx |
 |---|---|---|
-| `normal` | **Mode 1** | Agent viết cả `tdd.md`, người duyệt từng D |
-| `high` | **Mode 2** | **Người phác D-xx trước** (`Author: human`); agent viết phần còn lại và chỉ **phản biện** quyết định của người |
+| `normal` | **1** | Agent viết cả `tdd.md`, người duyệt từng D |
+| `high` | **2** | **Người phác D-xx trước** (`Author: human`); agent viết phần còn lại và chỉ **phản biện** D của người |
 
-Mode 2 tồn tại để chống **neo**: agent đưa phương án trước thì người duyệt có xu
-hướng bám vào nó. Rủi ro `high` mà chưa có D nào `Author: human` thì **dừng lại
-nhờ người phác** — checker sẽ chặn.
-
-Ở Mode 2, không sửa D-xx của người. Phản biện ghi ngay dưới D đó, dạng
-`- Critique (agent): …`.
+Mode 2 chống neo vào phương án agent. `high` mà chưa có D `Author: human` → **dừng, nhờ người phác** (checker chặn). Không sửa D của người; phản biện ghi ngay dưới D đó: `- Critique (agent): …`.
 
 ## Việc phải làm
 
-1. **Khảo sát code hiện có trước khi thiết kế.** Tìm chỗ đã giải quyết vấn đề
-   tương tự; ghi module sẽ đụng tới và quy ước phải theo vào mục "Existing code". Bước này đi trước bước chọn phương án, không đảo ngược.
-
-2. **Nêu quyết định D-xx.** Mỗi lựa chọn mà người khác có thể chọn khác — nhất là
-   điểm khó đảo ngược (sửa nhiều chỗ, di trú dữ liệu, phá giao diện ngoài) — là
-   một D-xx: vấn đề, ít nhất hai phương án kèm đánh đổi, lựa chọn, `Author`,
-   và ô `- [ ] **Approved by human**` **chưa tick**. Mục D **được phép rỗng** — thay đổi nhỏ có thể không
-   có quyết định nào. Điểm hiển nhiên thì không cần D; bắt viết D cho mọi thứ sẽ
-   khiến không ai đọc D nào.
-
-3. **Viết các mục chi tiết** theo `templates/tdd.md`: mô hình dữ liệu + ERD,
-   contract/API, flow + sequence/state (Mermaid), phi chức năng, chiến lược test,
-   ánh xạ YC → mục. Mục nào dựa vào một quyết định thì ghi `Based on: D-xx`.
-   Mục không áp dụng ghi `Not applicable: <lý do>`, **không bỏ trống**.
-
+1. **Khảo sát code trước khi thiết kế.** Tìm chỗ đã giải quyết vấn đề tương tự; ghi module sẽ đụng và quy ước phải theo vào `## Existing code`.
+2. **Nêu D-xx.** Mỗi lựa chọn người khác có thể chọn khác — nhất là khó đảo ngược (sửa nhiều chỗ, di trú dữ liệu, phá giao diện ngoài): vấn đề, ≥ 2 phương án + đánh đổi, lựa chọn, `Author`, ô `- [ ] **Approved by human**` **chưa tick**. Điểm hiển nhiên không cần D; không có D nào cũng được.
+3. **Viết các mục** theo `templates/tdd.md`: dữ liệu + ERD, contract/API, flow + sequence/state (Mermaid), phi chức năng, chiến lược test, ánh xạ YC → mục. Mục dựa vào D thì ghi `Based on: D-xx`. Mục không áp dụng: `Not applicable: <lý do>`, không bỏ trống.
 4. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> tdd.md spec.md open-questions.md`.
+5. **Chạy checker LLM** (subagent/phiên riêng, theo `checkers/thiet-ke.md`) → `phat-hien-thiet-ke.md`. Sửa điều bạn đồng ý (`Xử lý: đã sửa`); phần còn lại người phân xử qua `clarify`.
+6. **Chạy `aw check design`**, rồi dừng cho người duyệt từng D.
 
-5. **Chạy checker LLM** (phiên/subagent riêng, theo `checkers/thiet-ke.md`). Nó
-   tìm chỗ lệch D-xx và quyết định ngầm chưa nêu thành D, ghi ra
-   `phat-hien-thiet-ke.md`. Sửa những gì bạn đồng ý (`Xử lý: đã sửa`); phần còn
-   lại để người làm trọng tài qua lệnh `clarify` (hỏi từng phát hiện bằng câu
-   hỏi lựa chọn; mục bạn đã tự sửa cũng được nêu lại cho người biết).
+## Mở lại một D-xx
 
-6. **Chạy `aw check design`**, rồi dừng lại cho người duyệt từng D-xx.
-
-## Mở lại một quyết định
-
-Mở lại **đúng một D-xx**, sửa tại chỗ (lịch sử để git giữ, không giữ bản cũ
-trong file). Bỏ tick ô duyệt của D đó và thêm `Reopen reason:` — chưa tick mà có
-lý do là `reopened`. Grep
-`Based on: D-xx` trong `plan.md` ra các task bị ảnh hưởng; chỉ các task đó đặt
-lại `[ ]`. Người chỉ duyệt lại D đang mở. `/aw-plan` chặn cho tới khi D đó được
-duyệt lại.
+- Mở **đúng một** D, sửa tại chỗ (git giữ lịch sử). Bỏ tick, thêm `Reopen reason:` (chưa tick + có lý do = `reopened`).
+- Grep `Based on: D-xx` trong `plan.md` → chỉ các task đó đặt lại `[ ]`.
+- Người chỉ duyệt lại D đang mở. `/aw-plan` chặn tới khi D đó được duyệt lại.
 
 ## Đầu ra
 
-- `tdd.md` — output duy nhất của thiết kế; không có file quyết định riêng, vì
-  tách ra thì hai file sẽ lệch nhau. Đầu mục, tên trường và giá trị viết tiếng
-  Anh, giữ đúng như mẫu (`## Decisions (D-xx)`, `Author: human | agent`,
-  ô `- [ ] **Approved by human**`, `Reopen reason:`, `Based on:`, `Not applicable:`…) —
-  checker đọc theo đúng chữ đó; nội dung điền vào viết tiếng Việt.
+- `tdd.md` theo `templates/tdd.md` — output duy nhất của thiết kế (không tách file quyết định).
 - `phat-hien-thiet-ke.md` — do checker LLM ghi.
 
 ## Cấm
 
-- **Viết code.** Kể cả "code mẫu cho dễ hình dung" (chữ ký API/schema trong
-  contract thì được).
-- Thêm yêu cầu mới không có trong `spec.md` — quay lại `01-spec`.
-- **Tick ô duyệt của D-xx**, hay sửa/xoá dấu duyệt cạnh nó. Chỉ người làm việc
-  này. Sửa một D đã tick thì bỏ tick (mở lại) — thêm `- Critique (agent):` thì
-  không cần, phản biện không tính vào dấu duyệt.
-- Ở Mode 2: sửa hoặc thay quyết định của người thay vì phản biện.
-- Giấu một lựa chọn thật vào văn xuôi thay vì nêu thành D-xx.
+- **Viết code**, kể cả "code mẫu" (chữ ký API/schema trong contract thì được).
+- Thêm yêu cầu không có trong `spec.md` — quay lại `01-spec`.
+- **Tick ô duyệt D-xx**, sửa/xoá dấu duyệt. Sửa D đã tick → bỏ tick (thêm `- Critique (agent):` thì không cần).
+- Mode 2: sửa/thay D của người thay vì phản biện.
+- Giấu lựa chọn thật vào văn xuôi thay vì nêu thành D.
 - Coi "checker LLM không báo gì" là đạt khi nó chưa chạy.
 
 ## Điều kiện ra
 
-**Máy:**
-- `aw check design` ra `[x] ĐẠT` — đầu vào qua checker của spec; đủ
-  mục; D-xx hợp lệ (mỗi D đúng một ô duyệt, D đã tick thì dấu duyệt còn khớp);
-  `Based on` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của
-  người; có `phat-hien-thiet-ke.md` và không còn phát hiện `Chặn` chưa xử lý.
+**Máy:** `aw check design` ra `[x] ĐẠT` — đầu vào qua checker spec; đủ mục; mỗi D đúng một ô duyệt, D đã tick có dấu duyệt khớp; `Based on` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của người; có `phat-hien-thiet-ke.md`, không còn phát hiện `Chặn` chưa xử lý.
 
-**Người:**
-- Duyệt từng D-xx: đọc rồi tick ô "Approved by human" của D đó.
-- Trọng tài cho phát hiện của checker LLM. LLM chỉ được **chặn**, không bao giờ
-  là bên nói "đạt".
+**Người:** duyệt từng D (tick ô của D đó); phân xử phát hiện của checker LLM.

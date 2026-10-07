@@ -1,83 +1,49 @@
 # Luật: Truy vết nguồn
 
-Luật này áp dụng cho `01-spec` và được `02-design`, `05-review` kiểm tra lại (checker của phase sau chạy lại checker của spec trên đầu vào).
+Áp dụng cho `01-spec`; checker của `02-design`, `03-plan`, `05-review` chạy lại checker của spec.
 
-## Vì sao có luật này
+Lỗi nguy hiểm nhất: agent tự nghĩ ra yêu cầu rồi trình bày như thể tài liệu đã nói. Luật này biến nó thành lỗi máy kiểm được.
 
-Khi yêu cầu đến từ tài liệu thượng nguồn (BRD/PRD/Jira/Confluence), thất bại
-nguy hiểm nhất của agent **không phải** viết sai code — mà là **tự nghĩ ra yêu
-cầu rồi trình bày như thể tài liệu đã nói**. Lỗi này rất khó phát hiện: nó đọc
-trôi chảy, hợp lý, và chỉ lộ ra khi BA/PO đọc lại ở cuối sprint.
+## Nhãn nguồn
 
-Luật truy vết biến nó từ lỗi ngữ nghĩa (phải có người đọc mới thấy) thành lỗi
-cú pháp (máy kiểm được).
+Mỗi `### YC-NNN` trong `spec.md` có **đúng một** dòng `Source:` mang một nhãn:
 
-## Nội dung luật
-
-Mỗi yêu cầu trong `spec.md` phải có đúng một dòng `Source:` mang một nhãn:
-
-| Nhãn | Nghĩa | Bắt buộc kèm theo |
+| Nhãn | Nghĩa | Kèm theo |
 |---|---|---|
-| `[CONFLUENCE]` | Trích từ page Confluence | URL page + tên heading |
+| `[CONFLUENCE]` | Trích từ page Confluence | URL page + heading |
 | `[JIRA]` | Trích từ issue Jira | Mã issue + URL |
-| `[FILE]` | Trích từ tài liệu trong repo | Đường dẫn + heading |
-| `[INFERRED]` | Quyết định kỹ thuật tự suy ra | Lý do, và yêu cầu gốc nó phục vụ |
-| `[OPEN-QUESTION]` | Chưa có nguồn, đang dùng giả định | Mục tương ứng trong `open-questions.md` |
+| `[FILE]` | Trích từ file trong repo | Đường dẫn + heading |
+| `[INFERRED]` | Quyết định kỹ thuật tự suy ra | Lý do + YC gốc nó phục vụ |
+| `[OPEN-QUESTION]` | Chưa có nguồn, dùng giả định tạm | Mục cùng mã trong `open-questions.md` |
 
-**Yêu cầu không có nhãn = fail.** Không có nhãn thứ sáu. Nếu một mục không
-xếp được vào năm nhãn trên thì nó không phải yêu cầu — nó là ý tưởng của agent,
-và chỗ của nó là `open-questions.md`.
+Không có nhãn thứ sáu. Không xếp được vào năm nhãn → không phải yêu cầu → ghi vào `open-questions.md`.
 
-## Ranh giới dễ nhầm giữa `[INFERRED]` và `[OPEN-QUESTION]`
+## `[INFERRED]` hay `[OPEN-QUESTION]`
 
-Đây là chỗ agent hay lách luật, nên phân định rõ:
+- `[INFERRED]` — quyết định **kỹ thuật** tài liệu không cần nói, ai đọc cũng thấy hiển nhiên. Vd: index cột `created_at` khi BRD đòi lọc theo ngày.
+- `[OPEN-QUESTION]` — quyết định **nghiệp vụ** tài liệu bỏ trống, người khác có thể chọn khác. Vd: BRD nói "thông báo" nhưng không nói email hay in-app.
 
-- `[INFERRED]` — **quyết định kỹ thuật** mà tài liệu nghiệp vụ không cần nói, và
-  người khác đọc xong sẽ đồng ý là hiển nhiên. Ví dụ: "dùng index trên cột
-  `created_at`" khi BRD yêu cầu lọc theo ngày.
-- `[OPEN-QUESTION]` — **quyết định nghiệp vụ** mà tài liệu bỏ trống, và người khác có
-  thể chọn khác. Ví dụ: BRD nói "thông báo cho người dùng" nhưng không nói qua
-  email hay in-app.
+Phép thử: BA/PO có thể nói "không, ý tôi khác" → `[OPEN-QUESTION]`. Gắn `[INFERRED]` cho quyết định nghiệp vụ là vi phạm nặng hơn bỏ trống nhãn — máy không bắt được.
 
-Phép thử: *nếu BA/PO đọc mục này mà có thể trả lời "không, ý tôi khác" thì nó là
-`[OPEN-QUESTION]`, không phải `[INFERRED]`.*
+## Mức chặn của `[OPEN-QUESTION]`
 
-Gắn `[INFERRED]` cho một quyết định nghiệp vụ là cách agent che giấu điểm mù —
-và là vi phạm nặng hơn việc bỏ trống nhãn, vì nó không kiểm được bằng máy.
+Agent đề xuất `Blocking`, người duyệt. Chọn theo "nếu giả định sai thì phải làm lại gì". Chỉ người được hạ mức.
 
-## Kiểm tra
+| Mức | Khi nào | Chặn gì |
+|---|---|---|
+| `blocking` | Sai thì cả thiết kế đổi hướng | `02-design` (chore: `03-plan`) và mọi phase sau, tới khi `answered` |
+| `review-blocking` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `04-implement` cảnh báo, `05-review` chặn |
+| `non-blocking` | Sai thì sửa nhỏ, giao trước được | Không chặn; review ghi YC đó `pending` |
 
-```
-aw check spec <thư-mục-artifact>
-```
+Trả lời một điểm mù: ghi `Answer:`, đổi `Status: answered`, **và** đổi nhãn nguồn của YC trong spec (vd `[FILE]` open-questions.md § YC-002). Hai file lệch nhau thì checker chặn.
 
-Kiểm mười một điều:
-1. Mọi `### YC-NNN` trong `spec.md` có đúng một dòng `Source:` với nhãn hợp lệ.
-   Vùng của một YC kết thúc ở heading `##` hoặc `###` kế tiếp — dòng `Source:`
-   dưới `### Ghi chú` không được tính cho YC phía trên.
-2. Mọi mục gắn `[OPEN-QUESTION]` có mục tương ứng cùng mã trong `open-questions.md`.
-3. Không có mã `YC-NNN` trùng nhau.
-4. Mục `[OPEN-QUESTION]` trong `open-questions.md` có dòng "Assumption" — không có thì phase sau không đi tiếp được.
-5. Mục `[OPEN-QUESTION]` có `Blocking: blocking | review-blocking | non-blocking`. Mục `blocking`
-   còn `Status: open` thì chặn vào design (chore: plan); mục `review-blocking` còn
-   mở thì `implement` cảnh báo, `review` chặn.
-6. `spec.md` có `Risk: high | normal` và đúng một ô `- [ ] **Approved by human**`
-   ở phần đầu file; đã tick thì dấu duyệt máy ghi phải còn khớp nội dung.
-7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
-   có thật; `Status` là `open | answered`; `open` thì spec phải còn `[OPEN-QUESTION]`;
-   `answered` thì phải có dòng "Answer" và spec đã đổi nhãn nguồn.
-8. `open-questions.md` 0 byte là hợp lệ (đã rà, không có điểm mù).
-9. Mọi YC có `Priority: must | should` và ít nhất một tiêu chí chấp nhận
-   `- [ ] …` có nội dung thật (không phải `<...>`, không nằm trong comment HTML).
-10. `spec.md` có đủ `## Constraints & dependencies`, `## Out of scope`,
-    `## Source conflicts`, mỗi mục có nội dung thật — không có gì thì
-    ghi thẳng "Không có…" / "Không phát hiện mâu thuẫn.".
-11. Mỗi dòng trong bảng mâu thuẫn có cột "Xử lý" trỏ tới một điểm mù có thật
-    (`open-questions.md § YC-NNN`) hoặc một nguồn đã chốt (`[CONFLUENCE]`
-    `[JIRA]` `[FILE]`). Mâu thuẫn nghiệp vụ mà agent tự phân xử cũng là tự nghĩ
-    ra yêu cầu — chỉ khác là có hai câu trích để che.
+## `aw check spec <thư-mục-feature>` kiểm
 
-Điều thứ 2 quan trọng: không có nó thì agent chỉ cần gắn `[OPEN-QUESTION]` là qua được
-kiểm tra mà chẳng phải hỏi ai. Điều thứ 7 giữ cho hai file không lệch nhau khi
-điểm mù được trả lời — lệch thì `review` buộc "pending" cho một YC đã có
-câu trả lời, hoặc design chặn vì một mục mồ côi.
+1. Mỗi `### YC-NNN` có đúng một `Source:` hợp lệ. Vùng YC kết thúc ở heading `##`/`###` kế tiếp (dòng `Source:` dưới `### Ghi chú` không tính cho YC trên). Mã YC không trùng.
+2. Mỗi YC có `Priority: must | should` và ít nhất một `- [ ] …` có nội dung thật (không `<...>`, không trong comment HTML).
+3. Mỗi `[OPEN-QUESTION]` có mục cùng mã trong `open-questions.md`, có `Assumption`, có `Blocking` hợp lệ.
+4. Ngược lại: mỗi mục `open-questions.md` trỏ về YC có thật; `Status: open | answered`; `open` ↔ spec còn `[OPEN-QUESTION]`; `answered` ↔ có `Answer` và spec đã đổi nhãn. File 0 byte hợp lệ (đã rà, không có điểm mù).
+5. `spec.md` có `Risk: high | normal` và đúng một ô `- [ ] **Approved by human**` ở phần đầu; đã tick thì dấu duyệt phải khớp nội dung.
+6. Có đủ `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` với nội dung thật (không có gì thì ghi thẳng "Không có…" / "Không phát hiện mâu thuẫn.").
+7. Mỗi dòng mâu thuẫn có cột "Xử lý" trỏ tới điểm mù (`open-questions.md § YC-NNN`) hoặc nguồn đã chốt (`[CONFLUENCE]` `[JIRA]` `[FILE]`). Agent tự phân xử mâu thuẫn nghiệp vụ = tự nghĩ ra yêu cầu.
+8. Mục `blocking` còn `open` chặn design (chore: plan); `review-blocking` còn mở: implement cảnh báo, review chặn.

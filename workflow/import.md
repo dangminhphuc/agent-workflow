@@ -4,40 +4,30 @@ name: Nhập artifact ngoài
 summary: Đưa spec/tdd/plan viết bằng tool khác vào quy trình: chỉ sắp lại theo mẫu, không thêm nội dung
 arguments: mixed
 argument_hint: <file-nguồn> <spec.md|tdd.md|plan.md> [tên-feature]
+trace_rule: true
 ---
 
 # Import artifact từ ngoài vào
 
-**Không phải phase.** Đây là bước chuyển đổi có kiểm soát để một tài liệu làm
-bằng tool khác (AI khác, Confluence, viết tay…) vào được giữa quy trình.
+**Không phải phase.** Đưa tài liệu làm bằng tool khác (AI khác, Confluence, viết tay…) vào giữa quy trình — chỉ **sắp lại theo mẫu**, không thêm nội dung.
 
 ## Tham số
 
-- Đường dẫn file nguồn (hoặc URL Confluence/Jira)
-- Artifact đích: `spec.md` | `tdd.md` | `plan.md`
-
-Thiếu một trong hai thì dừng lại hỏi.
+File nguồn (hoặc URL Confluence/Jira) và artifact đích (`spec.md` | `tdd.md` | `plan.md`). Thiếu một trong hai → dừng, hỏi.
 
 ## Việc phải làm
 
-1. Đọc hết tài liệu nguồn. Ghi lại định danh chính xác (đường dẫn / URL).
-2. Đọc mẫu `templates/<artifact-đích>` và điều kiện ra của phase sinh ra nó.
-3. **Sắp xếp lại** nội dung nguồn theo mẫu:
-   - mỗi mục mang nhãn nguồn trỏ về tài liệu gốc (`[FILE] <đường dẫn> § <heading>`,
-     `[CONFLUENCE] <URL> § <heading>`…);
-   - chỗ mẫu đòi mà nguồn không có: **không lấp**. Với `spec.md` ghi
-     `[OPEN-QUESTION]` + mục trong `open-questions.md`; với mục khác của `tdd.md` /
-     `plan.md` ghi `<THIẾU TRONG NGUỒN: …>` để checker chặn và người thấy.
-   - D-xx lấy từ tài liệu người viết thì `Author: human`, ô duyệt chưa tick.
-4. Chạy **checker của phase sinh ra artifact đó** (`aw check spec`,
-   `aw check design`, `aw check plan`) và báo kết quả thật.
-5. Dừng lại cho **người xác nhận bản chuyển đổi** — rồi mới qua gate người của
-   phase đó (duyệt YC, duyệt từng D-xx…), như khi agent tự viết.
+1. Đọc hết nguồn, ghi định danh chính xác (đường dẫn / URL).
+2. Đọc `templates/<artifact-đích>` và điều kiện ra của phase sinh ra nó.
+3. Sắp lại nội dung nguồn theo mẫu:
+   - mỗi mục mang nhãn nguồn về tài liệu gốc (`[FILE] <đường dẫn> § <heading>`, `[CONFLUENCE] <URL> § <heading>`…);
+   - mẫu đòi mà nguồn không có → **không lấp**: `spec.md` ghi `[OPEN-QUESTION]` + mục trong `open-questions.md`; mục khác của `tdd.md`/`plan.md` ghi `<THIẾU TRONG NGUỒN: …>` để checker chặn;
+   - D-xx từ tài liệu người viết: `Author: human`, ô duyệt chưa tick.
+4. Chạy checker của phase sinh ra artifact (`aw check spec` / `design` / `plan`), báo kết quả thật.
+5. Dừng cho **người xác nhận bản chuyển đổi** — rồi mới qua gate người của phase đó như bình thường.
 
 ## Cấm
 
-- **Thêm nội dung** không có trong nguồn — kể cả khi "hiển nhiên". Nếu được
-  thêm, suy đoán của agent sẽ mang nhãn nguồn như thể có trong tài liệu gốc.
-- Tick ô duyệt của D-xx hay của spec, kể cả khi tài liệu nguồn nói đã duyệt:
-  duyệt ở tool khác không phải duyệt trong quy trình này.
-- Bỏ qua checker vì "tài liệu đã được duyệt ở chỗ khác".
+- **Thêm nội dung** không có trong nguồn, kể cả "hiển nhiên".
+- Tick ô duyệt D-xx hay spec, kể cả khi nguồn nói đã duyệt — duyệt ở tool khác không phải duyệt trong quy trình này.
+- Bỏ qua checker vì "đã duyệt ở chỗ khác".

@@ -3,116 +3,65 @@ id: clarify
 choice_ui: true
 name: Chốt việc chờ người
 summary: Dẫn bạn chốt từng điểm mù và phát hiện của checker đang chặn phase, việc gấp nhất trước
+trace_rule: true
 ---
 
-# Làm rõ với người (clarify)
+# Chốt việc chờ người (clarify)
 
-**Không phải phase.** Lệnh này chạy được bất cứ lúc nào sau `/aw-spec`. Nó gom
-**mọi việc máy/LLM cần người quyết** vào một hàng đợi và dẫn người đi từng mục.
-Việc của agent là **dẫn dắt**: đặt câu hỏi, ghi lại quyết định. Việc **quyết**
-là của người.
+**Không phải phase** — chạy được bất cứ lúc nào sau `/aw-spec`. Gom mọi việc cần người quyết vào một hàng đợi, dẫn người đi từng mục. Agent **dẫn dắt** (phân tích, đặt câu hỏi, ghi lại); **người quyết**.
 
-## Hai nguồn, mỗi nguồn giữ file riêng
+## Hai nguồn
 
 | Nguồn | File | Người làm gì | Chặn gì |
 |---|---|---|---|
-| Điểm mù | `open-questions.md` (do `/aw-spec` ghi) | **Trả lời** — thường phải hỏi PO/BA | Theo `Blocking` (bảng dưới) |
-| Phát hiện checker LLM | `phat-hien-<checker>.md` (hiện có `phat-hien-thiet-ke.md`) | **Phân xử** — đồng ý (sửa) hoặc bác bỏ kèm lý do | Mức `Chặn`: checker của phase đó (`thiết kế` → `/aw-plan`); `Cảnh báo`: không chặn |
+| Điểm mù | `open-questions.md` | **Trả lời** (thường phải hỏi PO/BA) | Theo `Blocking` (`rules/truy-vet-nguon.md`) |
+| Phát hiện checker LLM | `phat-hien-<checker>.md` (hiện có `phat-hien-thiet-ke.md`) | **Phân xử**: đồng ý (sửa) hoặc bác bỏ + lý do | `Chặn`: checker của phase đó (`thiết kế` → `/aw-plan`); `Cảnh báo`: không |
 
-Không gộp hai file: mỗi file có một bên ghi và một vòng đời riêng, và `based_on`
-băm cả file — gộp lại thì checker LLM ghi phát hiện sẽ làm `tdd.md` "lỗi thời".
-Hàng đợi chỉ gộp ở **chỗ người nhìn**, không gộp chỗ lưu.
+Hai file giữ riêng (mỗi file một bên ghi, `based_on` băm cả file); chỉ gộp ở chỗ người nhìn. Mức chặn do agent đề xuất, **chỉ người** được đổi.
 
-### Ba mức chặn của điểm mù
+## 1. Liệt kê — cho agent đọc, KHÔNG dán cho người
 
-| Mức | Khi nào | Chặn gì |
-|---|---|---|
-| `blocking` | Sai giả định thì cả thiết kế đổi hướng | `/aw-design` (chore: `/aw-plan`) và mọi phase sau |
-| `review-blocking` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `/aw-implement` cảnh báo, `/aw-review` chặn |
-| `non-blocking` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; `review` ghi YC đó `pending` |
+`aw pending <thư-mục-feature>` — thứ tự do máy xếp, agent không xếp lại: chưa phân mức → `blocking` → phát hiện `Chặn` → `review-blocking` → phát hiện `Cảnh báo` → `non-blocking` (trong nhóm điểm mù: `must` trước `should`, nhiều task đứng trên giả định hơn trước, rồi theo mã).
 
-Mức do agent đề xuất ở `/aw-spec`, **người** duyệt. Chỉ người được đổi mức.
-
-## Việc phải làm
-
-### 1. Liệt kê — cho agent đọc, KHÔNG dán cho người
-
-Chạy `aw pending <thư-mục-feature>`. Output là **dữ liệu cho agent**: thứ tự
-phải giải quyết (máy xếp, agent không tự xếp lại) và chi tiết từng mục. Máy xếp
-nhóm chặn phase sớm hơn lên trước:
-
-1. điểm mù chưa phân mức → 2. điểm mù `blocking` → 3. phát hiện `Chặn` →
-4. điểm mù `review-blocking` → 5. phát hiện `Cảnh báo` → 6. điểm mù `non-blocking`.
-
-Trong nhóm điểm mù: YC `must` trước `should` → nhiều task đứng trên giả
-định hơn → mã YC.
-
-**Không dán danh sách cho người.** Người chỉ thấy một dòng tóm tắt:
+Người chỉ thấy **một dòng**:
 
 ```
 Còn 6 việc chờ bạn: 3 đang chặn (YC-001, YC-002 chặn /aw-design; PH-03 chặn /aw-plan), 3 chưa chặn. Bắt đầu từ YC-001.
 ```
 
-Người hỏi "cho xem hết" thì mới in danh sách (mã + tiêu đề + nhóm, mỗi mục một dòng).
+Người hỏi "cho xem hết" mới in danh sách (mã + tiêu đề + nhóm, mỗi mục một dòng).
 
-Đọc nhãn được đánh `[x]` trong khối `Kết quả`:
+| Kết quả `[x]` | Làm gì |
+|---|---|
+| `KHÔNG CÒN VIỆC CHỜ NGƯỜI` | Báo một dòng (kèm nhóm `[ĐÃ XỬ LÝ]` nếu có — bước 4), dừng |
+| `CÓ VIỆC ĐANG CHẶN` | Tóm tắt, sang bước 2 |
+| `CÒN VIỆC CHỜ NGƯỜI, CHƯA CHẶN` | Tóm tắt, hỏi lựa chọn "Giải quyết luôn" / "Để sau" |
+| `THIẾU ĐẦU VÀO` | Chưa có `spec.md`/`open-questions.md` → chạy `/aw-spec` trước |
 
-- **KHÔNG CÒN VIỆC CHỜ NGƯỜI:** báo người một dòng (kèm nhóm `[ĐÃ XỬ LÝ]` nếu
-  có — xem bước 4), dừng.
-- **CÓ VIỆC ĐANG CHẶN:** tóm tắt như trên, sang bước 2.
-- **CÒN VIỆC CHỜ NGƯỜI, CHƯA CHẶN:** tóm tắt, rồi hỏi bằng lựa chọn: "Giải quyết
-  luôn" / "Để sau". Để sau thì dừng.
-- **THIẾU ĐẦU VÀO:** chưa có `spec.md` / `open-questions.md` → chạy `/aw-spec` trước.
+## 2. Hỏi từng mục — MỘT mục mỗi lượt, theo thứ tự
 
-### 2. Hỏi từng mục bằng câu hỏi lựa chọn — MỘT mục mỗi lượt, theo thứ tự
+### Nghĩ kỹ trước khi hỏi
 
-#### Nghĩ kỹ trước khi hỏi — lựa chọn là phương án giải pháp, không phải thủ tục
+Lựa chọn là **phương án giải pháp**, không phải thủ tục. Trước mỗi mục:
+1. **Đọc đủ:** đoạn nguồn, YC trong `spec.md`, phần `tdd.md`/`plan.md`/code liên quan, `conventions.md`. Phát hiện LLM: đọc đúng chỗ `Vị trí`.
+2. **Tách quyết định:** mục gói nhiều quyết định độc lập → mỗi quyết định một câu hỏi, hỏi chung trong lượt đó (tối đa 4).
+3. **Tìm 2–3 phương án khác nhau về hệ quả** — từ nguồn, thực hành phổ biến, ràng buộc code hiện có. Không chêm phương án yếu; chỉ một phương án hợp lý thì đưa một.
+4. **Chọn đề xuất:** so đánh đổi (an toàn, chi phí làm lại, ảnh hưởng ngoài, đảo ngược được). Phương án đề xuất đứng **đầu**, nhãn bắt đầu bằng `(Đề xuất)`.
 
-Người không phải tự nghĩ ra lời giải từ một câu hỏi trống. Trước mỗi mục, agent
-**tự phân tích kỹ** rồi mới đặt lựa chọn:
+Mỗi lựa chọn: **nhãn** ngắn đúng phương án; **mô tả** một dòng hệ quả/đánh đổi (khác giả định tạm thì nói phải làm lại gì; lấy từ nguồn thì ghi nguồn, vd `theo Input 2 § 4`; trùng giả định tạm thì ghi "đang dùng làm giả định tạm").
 
-1. **Đọc đủ:** đoạn nguồn liên quan, YC trong `spec.md`, phần `tdd.md` / `plan.md`
-   / code đã có đụng tới mục này, `conventions.md`. Phát hiện LLM: đọc đúng chỗ
-   `Vị trí`.
-2. **Tách quyết định:** mục gói nhiều quyết định độc lập (vd "trả gì khi ngoài
-   allowlist" **và** "route chưa khai thì sao") thì mỗi quyết định là **một câu
-   hỏi riêng**, hỏi chung trong lượt của mục đó (tối đa 4 câu).
-3. **Tìm phương án thật:** 2–3 phương án **khác nhau về hệ quả** — lấy từ nguồn,
-   từ chuẩn/thực hành phổ biến của loại hệ thống đó, từ ràng buộc của code
-   hiện có. Không chêm phương án yếu cho đủ số; chỉ có một phương án hợp lý
-   thì đưa một.
-4. **Đánh giá và chọn đề xuất:** so đánh đổi (an toàn, chi phí làm lại, ảnh hưởng
-   bên ngoài, khả năng đảo ngược). Phương án agent đề xuất đứng **đầu**, nhãn
-   **bắt đầu bằng `(Đề xuất)`**.
+Ngữ cảnh ngay trước câu hỏi, tối đa 4 dòng: mã · nhóm · đang chặn gì · vị trí trong hàng đợi; nguồn nói gì; vì sao đề xuất.
 
-Mỗi lựa chọn:
-- **Nhãn:** ngắn, nói đúng phương án. Phương án đề xuất: `(Đề xuất) <phương án>`.
-- **Mô tả:** hệ quả/đánh đổi một dòng. Phương án khác giả định tạm thì nói luôn
-  phải làm lại gì. Phương án lấy từ nguồn thì ghi nguồn (vd `theo Input 2 § 4`);
-  không ghi thì là agent đề xuất.
-- Phương án trùng **giả định tạm** đang dùng thì ghi rõ trong mô tả
-  ("đang dùng làm giả định tạm") — để người biết chọn nó là không phải làm lại gì.
-
-Ngữ cảnh viết **ngay trước** câu hỏi, tối đa 4 dòng: mã · nhóm · đang chặn gì ·
-vị trí trong hàng đợi; nguồn nói gì; **vì sao đề xuất** (1–2 dòng).
-
-Mọi câu hỏi, mọi nguồn, người **luôn** có hai lối ra ngoài các lựa chọn:
-- **tự nhập** câu trả lời khác;
-- **Chat về câu này** — hỏi lại, trao đổi trước khi chốt.
-
-Hai lối này **luôn hiện ở cuối** danh sách, sau các phương án, đúng hai dòng:
+Người **luôn** có hai lối ra, ở **cuối** danh sách: tự nhập câu trả lời khác, và "Chat về câu này" (trao đổi trước khi chốt):
 
 ```
   N.   Type something.  — tự nhập câu trả lời khác
   N+1. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
-Giao diện lựa chọn có sẵn hai lối này (vd Claude Code) thì chúng tự hiện —
-**không** thêm trùng vào danh sách phương án (để đủ chỗ cho phương án thật).
-Không có giao diện lựa chọn thì agent tự in hai dòng đó, đánh số tiếp sau các
-phương án.
+Giao diện lựa chọn có sẵn hai lối này (vd Claude Code) → **không** thêm trùng. Không có giao diện lựa chọn → agent tự in hai dòng đó, đánh số tiếp.
 
-#### 2a. Điểm mù
+### 2a. Điểm mù
 
 ```
 YC-006 · CHẶN REVIEW · 5/9 · 2 quyết định
@@ -129,28 +78,14 @@ Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu q
   6. Chat about this.  — trao đổi thêm trước khi chốt
 
 (2/2) Route chưa có definition thì chặn hay cho qua?
-  1. (Đề xuất) Từ chối mặc định — đang dùng làm giả định tạm; route mới phải khai mới chạy
-  2. Cho qua + log cảnh báo — chuyển đổi êm; hở tới khi khai đủ
-  3. Từ chối ở prod, cho qua ở non-prod — hai môi trường hành xử khác nhau
-  4. Chưa trả lời được
-  5. Type something.  — tự nhập câu trả lời khác
-  6. Chat about this.  — trao đổi thêm trước khi chốt
+  …
 ```
 
-Lựa chọn, theo đúng thứ tự này (tối đa 4):
+Thứ tự lựa chọn (tối đa 4): `(Đề xuất) <phương án>` → 1–2 phương án khác (có trong nguồn trước) → **Chưa trả lời được** (agent soạn tin gửi `<Ask>`). Ô tự nhập nhận cả "đổi mức chặn sang …" hay "bỏ qua".
 
-1. **`(Đề xuất) <phương án>`**.
-2. Các phương án khác (1–2), phương án có trong nguồn trước.
-3. **Chưa trả lời được** — agent soạn tin nhắn gửi `<Ask>`.
+Mục `CHƯA PHÂN MỨC`: câu hỏi đầu là chọn mức (`blocking`/`review-blocking`/`non-blocking`), mức đề xuất theo "Nếu sai" đứng đầu — xong mới hỏi câu trả lời.
 
-Ô tự nhập nhận cả "đổi mức chặn sang …" hay "bỏ qua".
-
-Mục `CHƯA PHÂN MỨC` (thiếu hoặc sai `Blocking`): câu hỏi đầu tiên của mục là
-chọn mức (`blocking` / `review-blocking` / `non-blocking`), mức đề xuất theo "Nếu sai"
-đứng đầu với `(Đề xuất)` — checker của spec đang chặn vì nó. Xong mới hỏi câu
-trả lời.
-
-#### 2b. Phát hiện của checker LLM
+### 2b. Phát hiện checker LLM
 
 ```
 PH-03 · CHẶN · đang chặn /aw-plan · 3/6 · quyết định ngầm
@@ -166,119 +101,59 @@ Xử lý phát hiện PH-03 thế nào?
   5. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
-Lựa chọn, theo đúng thứ tự này (tối đa 4):
+Thứ tự (tối đa 4): `(Đề xuất) <cách sửa>` (sửa gì, ở mục nào) → 0–1 cách sửa khác hướng thật → **Bác bỏ** ("nhập lý do ở ô tự nhập") → mục `Cảnh báo`: **Để sau** (khi đó chỉ một cách sửa). Agent thấy phát hiện sai → đưa `(Đề xuất) Bác bỏ — <lý do>` lên đầu; người vẫn phải chọn. Bác bỏ không lý do → hỏi lý do (`aw check` chặn bác bỏ trống).
 
-1. **`(Đề xuất) <cách sửa>`** — mô tả: sửa gì, ở mục nào.
-2. Cách sửa khác (0–1) — khác hướng thật, không phải cùng cách viết khác đi.
-3. **Bác bỏ** — mô tả: "nhập lý do ở ô tự nhập". Agent thấy phát hiện sai thì
-   **đề xuất bác bỏ**: đưa `(Đề xuất) Bác bỏ — <lý do agent thấy>` lên đầu;
-   người vẫn phải chọn/nhập lý do. Người chọn bác bỏ mà không kèm lý do thì hỏi
-   lý do — bác bỏ không lý do là `aw check` chặn.
-4. Mục `Cảnh báo`: **Để sau** (giữ `chưa`, sang mục kế) — khi đó chỉ một cách sửa.
-
-#### Chung cho mọi mục
+### Chung
 
 - Hỏi xong thì **dừng chờ người**. Không hỏi mục kế khi mục này chưa xong.
-- **Chat về câu này:** trả lời câu hỏi của người, giải thích hệ quả từng lựa chọn,
-  trích thêm nguồn nếu cần — **không ghi gì vào file**. Người nói đã rõ (hoặc
-  sau vài lượt trao đổi) thì hỏi lại đúng câu đó bằng lựa chọn — sửa phương án
-  theo những gì vừa trao đổi. Trong lúc chat mà người nói ra quyết định thì xác
-  nhận lại bằng lựa chọn trước khi ghi.
+- **Chat về câu này:** trả lời, giải thích hệ quả, trích thêm nguồn — **không ghi file**. Rõ rồi thì hỏi lại đúng câu đó bằng lựa chọn (sửa phương án theo trao đổi). Người nói ra quyết định trong lúc chat → xác nhận lại bằng lựa chọn trước khi ghi.
 
-### 3. Ghi lại theo quyết định
+## 3. Ghi lại
 
-#### 3a. Điểm mù
+### 3a. Điểm mù
 
-**Người trả lời** (chọn lựa chọn 1, 2, hoặc tự nhập):
+**Người trả lời:**
+1. `open-questions.md`: `Answer:` = **nguyên văn** lời người + ai trả lời + ngày (vd `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status: answered`. Người **chọn** phương án → nguyên văn là nhãn (bỏ `(Đề xuất)`) kèm `(chọn từ phương án agent đề xuất)`. Nhiều câu hỏi → ghi từng câu trả lời.
+2. `spec.md`: đổi nhãn nguồn của YC thành `[FILE]` open-questions.md § YC-NNN (hoặc nguồn người chỉ ra). Bỏ dòng `Assumption` của YC.
+3. **Trả lời khác giả định tạm:** sửa mô tả / tiêu chí của **chỉ YC đó**. Trước khi ghi, cho người xem các dòng sẽ đổi (trước → sau), hỏi "ghi như vậy được không?" (đồng ý trong hội thoại là đủ). Thêm `(đã xác nhận sửa YC-NNN)` cuối `Answer:`. Khớp giả định → chỉ đổi nhãn.
+4. Spec đã tick duyệt mà bước 2–3 làm đổi → **bỏ tick** (được bỏ, không bao giờ tick). Nhắc người tick lại ở tổng kết.
+5. `aw check spec <thư-mục-feature>`, dán kết quả thật. Không `[x] ĐẠT` → sửa cho khớp rồi mới sang mục kế.
 
-1. Trong `open-questions.md`: `Answer:` = **nguyên văn** lời người kèm ai trả
-   lời và ngày (vd `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status:`
-   → `answered`. Người nói "đã hỏi PO, PO chốt…" thì ghi PO là người trả lời.
-   Người **chọn** một phương án thì nguyên văn là nhãn phương án (bỏ `(Đề xuất)`),
-   kèm `(chọn từ phương án agent đề xuất)` — vd `"403 problem+json, mã lỗi riêng"
-   — chủ repo, 2026-10-06 (chọn từ phương án agent đề xuất)`. Mục tách nhiều câu
-   hỏi thì ghi từng câu trả lời, mỗi câu một ý.
-2. Trong `spec.md`, đổi nhãn nguồn của YC: `[FILE]` open-questions.md § YC-NNN —
-   hoặc nguồn người chỉ ra (`[JIRA]` comment, `[CONFLUENCE]` page mới hơn).
-   Bỏ dòng `Assumption` của YC đó.
-3. **Câu trả lời khác giả định tạm:** sửa mô tả / tiêu chí chấp nhận của YC đó
-   theo câu trả lời — chỉ YC đó. Trước khi ghi, cho người xem đúng các dòng
-   sẽ đổi (trước → sau) và hỏi "ghi như vậy được không?"; người đồng ý trong hội
-   thoại là đủ. Ghi vào cuối dòng `Answer:` `(đã xác nhận sửa YC-NNN)` để còn
-   dấu vết.
-   Câu trả lời khớp giả định tạm thì chỉ đổi nhãn nguồn.
-4. **Spec đã được người tick duyệt** thì bước 2–3 làm nó đổi so với bản đã
-   duyệt: **bỏ tick** ô "Approved by human" (agent được bỏ, không bao giờ được
-   tick). Người vừa xác nhận chỗ sửa nên chỉ cần tick lại — nhắc ở tổng kết.
-5. Chạy `aw check spec <thư-mục-feature>` và dán kết quả thật.
-   Không `[x] ĐẠT` thì sửa ngay cho khớp hai file rồi mới sang mục kế.
+**Chưa trả lời được:** soạn tin gửi `Ask`, tự đủ ngữ cảnh (đọc không cần mở repo): câu hỏi, tài liệu nói gì, giả định đang dùng, hệ quả nếu sai, phase nào đang chờ. Giữ `open`, sang mục kế.
 
-**Người chưa trả lời được** (chọn "Chưa trả lời được"): soạn sẵn một tin nhắn gửi `Ask` — tự đủ
-ngữ cảnh, đọc được mà không cần mở repo: câu hỏi, tài liệu đang nói gì, giả định
-đang dùng, hệ quả nếu sai, và phase nào đang chờ. Giữ `open`, sang mục kế.
+**Người đổi mức:** ghi đúng mức người nói vào `Blocking:`. Agent chỉ được **đề xuất nâng**, không tự hạ.
 
-**Người đổi mức chặn** (tự nhập, hoặc nói trong lúc chat): ghi đúng mức người nói vào `Blocking:`. Agent
-được **đề xuất nâng** mức (vd thấy "Nếu sai" lớn hơn mức đang ghi), không bao giờ
-tự hạ.
+### 3b. Phát hiện checker LLM
 
-#### 3b. Phát hiện của checker LLM
+**Đồng ý:**
+1. Cho người xem các dòng sẽ đổi trong `tdd.md` (trước → sau), hỏi "ghi như vậy được không?". Chỉ sửa đúng chỗ phát hiện chỉ ra.
+2. Cần quyết định (`quyết định ngầm`, `lệch D-xx` mà người muốn đổi D) → thêm/sửa D-xx, ô duyệt **chưa tick** (sửa D đã duyệt: theo "Mở lại một D-xx" của `/aw-design`).
+3. `yêu cầu mới` → **bỏ hành vi đó khỏi `tdd.md`**. Người muốn giữ → đó là yêu cầu mới: quay lại `/aw-spec`, không tự thêm YC.
+4. File phát hiện: `Xử lý: đã sửa`.
+5. `aw check design <thư-mục-feature>`, dán kết quả thật.
 
-**Người đồng ý:**
-
-1. Cho người xem đúng các dòng sẽ đổi trong `tdd.md` (trước → sau) và hỏi "ghi
-   như vậy được không?"; người đồng ý trong hội thoại là đủ. Chỉ sửa đúng chỗ
-   phát hiện chỉ ra.
-2. Phát hiện cần một quyết định (`quyết định ngầm`, `lệch D-xx` mà người muốn đổi
-   D): thêm/sửa D-xx với ô duyệt **chưa tick** (sửa D đã duyệt thì theo mục "Mở
-   lại một quyết định" của `/aw-design`). **Không** tick — người duyệt D như mọi D
-   khác.
-3. Phát hiện `yêu cầu mới`: người đồng ý là **bỏ hành vi đó khỏi `tdd.md`**.
-   Người muốn giữ hành vi đó thì đó là yêu cầu mới — báo người phải quay lại
-   `/aw-spec`, không tự thêm YC.
-4. Trong file phát hiện: `Xử lý:` → `đã sửa`.
-5. Chạy `aw check design <thư-mục-feature>` và dán kết quả thật.
-
-**Người bác bỏ:** `Xử lý:` → `bác bỏ: <lý do nguyên văn của người> — <ai>, <ngày>`.
-Không sửa `tdd.md`.
+**Bác bỏ:** `Xử lý: bác bỏ: <lý do nguyên văn> — <ai>, <ngày>`. Không sửa `tdd.md`.
 
 **Để sau** (chỉ `Cảnh báo`): giữ `chưa`, sang mục kế.
 
-### 4. Tổng kết
+## 4. Tổng kết
 
-Sau mục cuối (hoặc khi người dừng), chạy lại `aw pending` (đọc, không dán),
-rồi nói ngắn gọn:
-
-- còn gì đang chặn phase nào;
-- câu hỏi nào đang chờ ai (các mục đã soạn tin nhắn);
-- **phát hiện đã đóng mà người chưa phân xử trong lượt này** (nhóm `[ĐÃ XỬ LÝ]`
-  — thường là agent tự sửa ở bước checker của `/aw-design`): liệt kê mã + một dòng
-  để người biết, người muốn xem lại mục nào thì xử lý như mục mới;
-- D-xx mới hoặc vừa sửa đang chờ người duyệt; spec vừa bị bỏ tick vì sửa theo
-  câu trả lời — người tick lại;
-- artifact nào đã lỗi thời vì file đầu vào đổi (`tdd.md`, `plan.md` ghi
-  `based_on`): điểm mù trả lời **khớp** giả định → chạy lại phase đó để ghi lại
-  dấu đầu vào; **khác** giả định → phase đó phải làm lại phần ghi ở "Nếu giả
-  định sai", và task trong `plan.md` đứng trên giả định đó đặt lại `[ ]` khi
-  chạy lại `/aw-plan`. `tdd.md` vừa sửa theo phát hiện mà đã có `plan.md` → chạy
-  lại `/aw-plan`.
+Chạy lại `aw pending` (đọc, không dán), rồi nói ngắn:
+- còn gì đang chặn phase nào; câu hỏi nào đang chờ ai (tin đã soạn);
+- phát hiện đã đóng mà người chưa phân xử trong lượt này (nhóm `[ĐÃ XỬ LÝ]`, thường do agent tự sửa ở `/aw-design`): mã + một dòng;
+- D-xx mới/vừa sửa chờ duyệt; spec vừa bị bỏ tick → người tick lại;
+- artifact lỗi thời vì đầu vào đổi (`tdd.md`, `plan.md`): trả lời **khớp** giả định → chạy lại phase đó để ghi dấu; **khác** → phase đó làm lại phần "Nếu giả định sai", task đứng trên giả định đặt lại `[ ]` khi chạy lại `/aw-plan`. `tdd.md` vừa sửa mà đã có `plan.md` → chạy lại `/aw-plan`.
 
 ## Cấm
 
-- **Tự quyết** thay người: tự trả lời điểm mù, tự đồng ý hay bác bỏ phát hiện,
-  hoặc ghi `answered` / `đã sửa` / `bác bỏ` khi người chưa nói gì.
-- Ghi câu trả lời hay lý do bác bỏ đã diễn giải thay cho nguyên văn lời người.
-- Coi phương án agent đề xuất là quyết định khi người chưa chọn.
-- Hỏi khi chưa phân tích: đưa lựa chọn chỉ có "giữ giả định / chưa trả lời được"
-  trong khi có phương án thật; chêm phương án yếu cho đủ số; gộp nhiều quyết
-  định độc lập vào một câu hỏi.
-- Đặt `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc cho nhiều hơn một lựa chọn.
-- Tự hạ `Blocking`, hoặc tự đổi mức khi người chưa nói. Đổi `Mức` của phát hiện.
-- Tick ô duyệt (spec hay D-xx), hay sửa/xoá `<!-- approval-hash: … -->`. Lệnh này chỉ
-  được **bỏ** tick spec khi sửa spec đã duyệt (mục 3a bước 4).
-- Sửa YC / mục `tdd.md` khi người chưa xác nhận các dòng sẽ đổi, hoặc sửa ngoài
-  phạm vi của mục đang xử lý.
-- Trình bày nhiều mục một lúc rồi bắt người trả lời gộp.
-- Dán nguyên danh sách của `aw pending` cho người khi người không yêu cầu.
-- Làm mất lối tự nhập hoặc "Chat về câu này" (giao diện không có sẵn thì phải in ra).
-- Sửa `plan.md` hay code, hoặc chạy lại checker LLM để "làm sạch" phát hiện —
-  việc của phase tương ứng; chỉ nói rõ cần chạy lại phase nào.
+- **Tự quyết** thay người: tự trả lời, tự đồng ý/bác bỏ, ghi `answered`/`đã sửa`/`bác bỏ` khi người chưa nói.
+- Ghi câu trả lời / lý do đã diễn giải thay vì nguyên văn.
+- Coi phương án đề xuất là quyết định khi người chưa chọn.
+- Hỏi khi chưa phân tích: chỉ đưa "giữ giả định / chưa trả lời được" khi có phương án thật; chêm phương án yếu; gộp quyết định độc lập vào một câu.
+- `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc trên nhiều hơn một lựa chọn.
+- Tự hạ/đổi `Blocking` khi người chưa nói; đổi `Mức` của phát hiện.
+- Tick ô duyệt, sửa/xoá `<!-- approval-hash: … -->` (chỉ được **bỏ** tick spec ở 3a bước 4).
+- Sửa YC / `tdd.md` khi người chưa xác nhận các dòng sẽ đổi, hoặc ngoài phạm vi mục đang xử lý.
+- Trình bày nhiều mục một lúc; dán nguyên danh sách `aw pending` khi người không yêu cầu.
+- Làm mất lối tự nhập hoặc "Chat về câu này".
+- Sửa `plan.md` hay code, chạy lại checker LLM để "làm sạch" phát hiện — chỉ nói cần chạy lại phase nào.
