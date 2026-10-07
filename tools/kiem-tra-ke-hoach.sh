@@ -6,7 +6,7 @@
 # Chặn:
 #   - Đầu vào: tdd.md không qua kiem-tra-thiet-ke.sh (entry check = checker phase trước).
 #   - Đầu vào (chore): spec chưa duyệt, còn điểm mù "Mức chặn: chặn" chưa trả lời.
-#   - Đầu vào: còn D-xx chưa "đã duyệt". plan và implement không có người —
+#   - Đầu vào: còn D-xx chưa "approved". plan và implement không có người —
 #     chúng chỉ được thực thi những gì người đã duyệt.
 #   - Kiểm HAI CHIỀU phủ YC:
 #       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
@@ -105,7 +105,7 @@ awk -v loi_truoc="$n_loi" '
   idx==2 {
     if ($0 ~ /^###[ \t]+D-[0-9]+/) { match($0, /D-[0-9]+/); d = substr($0, RSTART, RLENGTH); co_d[d] = 1; ds_d[++n_d] = d; next }
     if ($0 ~ /^##?[ \t]/) d = ""
-    if (d != "" && $0 ~ /Trạng thái[^:]*:/) d_tt[d] = gia_tri($0)
+    if (d != "" && $0 ~ /^[ \t]*-[ \t]*\**Status\**:/) d_tt[d] = gia_tri($0)
     next
   }
 
@@ -179,8 +179,8 @@ awk -v loi_truoc="$n_loi" '
     # D-xx phải được người duyệt trước khi lập kế hoạch
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
-      if (d_tt[d] != "đã duyệt")
-        loi(d ": chưa được người duyệt (Trạng thái: " (d_tt[d] == "" ? "trống" : d_tt[d]) ")" \
+      if (d_tt[d] != "approved")
+        loi(d ": chưa được người duyệt (Status: " (d_tt[d] == "" ? "trống" : d_tt[d]) ")" \
             (d in dua_tren ? " — task bị ảnh hưởng:" dua_tren[d] " (đặt lại `[ ]`)" : ""))
     }
 

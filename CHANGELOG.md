@@ -45,6 +45,17 @@ ngầm giữa các bản.
 - **Nhãn nguồn `[SUY-RA]` → `[INFERRED]`, `[CẦN-HỎI]` → `[OPEN-QUESTION]`** — ở
   mọi nơi: dòng `Source:` của spec, luật cấm suy đoán trong input của
   `intake.md`, tài liệu và hướng dẫn agent.
+- **`tdd.md` sang tiếng Anh:** `# Thiết kế kỹ thuật` → `# Technical Design`; mục
+  `Bối cảnh code hiện có` → `Existing code`, `Quyết định (D-xx)` → `Decisions
+  (D-xx)`, `Mô hình dữ liệu` → `Data model`, `Phi chức năng` → `Non-functional`,
+  `Chiến lược test` → `Test strategy`, `Ánh xạ YC` → `YC mapping`; trường của
+  D-xx: `tac_gia: nguoi | agent` → `Author: human | agent`, `Trạng thái: đề xuất
+  | đã duyệt | mở lại` → `Status: proposed | approved | reopened`, `Phương án` →
+  `Option` (`pros` / `cons`), `Chọn` → `Choice`, `Khó đảo ngược vì` → `Hard to
+  reverse because`, `Lý do mở lại` → `Reopen reason`, `Phản biện (agent)` →
+  `Critique (agent)`; `Dựa trên:` → `Based on:`, `Không áp dụng:` → `Not
+  applicable:`. `aw check design` và `aw check plan` (D-xx phải `approved`) đọc
+  tên mới. `Dựa trên: D-xx` của task trong `plan.md` chưa đổi.
 
 ## [2026.10.9]
 

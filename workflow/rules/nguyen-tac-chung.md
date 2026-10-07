@@ -27,7 +27,7 @@ Mỗi phase khai báo `exit_machine` và `exit_human`:
 Tiêu chí nào diễn đạt được dưới dạng máy thì phải để máy kiểm. "Agent tự đánh
 giá là đã đạt" không phải tiêu chí.
 
-**Agent không tự duyệt.** Không tự đổi quyết định D-xx sang `đã duyệt`, không tự
+**Agent không tự duyệt.** Không tự đổi quyết định D-xx sang `approved`, không tự
 đổi `[OPEN-QUESTION]` sang `đã trả lời`. Checker dùng LLM chỉ được **chặn**, không bao
 giờ là bên nói "đạt" — không có file phát hiện nghĩa là checker chưa chạy.
 
@@ -56,7 +56,7 @@ ra sau khi người đã sửa tay vào file.
 Nội dung người và agent đọc: tiếng Việt. Định danh trong code (mã yêu cầu, tên
 file, khoá cấu hình): tiếng Anh ASCII, không dấu. Đầu mục cố định mà mẫu viết
 bằng tiếng Anh (vd `Type`, `Goal` của `intake.md`; `Risk`, `Source`, `## Out of scope` của
-`spec.md`), cùng giá trị và nhãn cố định (`high`, `approved`, `must`, `[INFERRED]`…)
+`spec.md`; `Author`, `Status`, `Based on` của `tdd.md`), cùng giá trị và nhãn cố định (`high`, `approved`, `must`, `[INFERRED]`…)
 thì giữ đúng như mẫu.
 
 ## 6. Artifact viết cho NGƯỜI đọc — BẮT BUỘC

@@ -13,7 +13,7 @@ outputs:
 exit_machine:
   - aw check design
 exit_human:
-  - Người duyệt TỪNG quyết định D-xx trong tdd.md (đổi Trạng thái sang "đã duyệt")
+  - Người duyệt TỪNG quyết định D-xx trong tdd.md (đổi Status sang "approved")
   - Người làm trọng tài cho phát hiện của checker LLM (xác nhận, hoặc bác bỏ kèm lý do)
 needs_clean_context: true
 llm_checker: workflow/checkers/thiet-ke.md
@@ -54,32 +54,31 @@ giả định tạm.
 | `Risk` trong spec | Mode | Ai viết D-xx |
 |---|---|---|
 | `normal` | **Mode 1** | Agent viết cả `tdd.md`, người duyệt từng D |
-| `high` | **Mode 2** | **Người phác D-xx trước** (`tac_gia: nguoi`); agent viết phần còn lại và chỉ **phản biện** quyết định của người |
+| `high` | **Mode 2** | **Người phác D-xx trước** (`Author: human`); agent viết phần còn lại và chỉ **phản biện** quyết định của người |
 
 Mode 2 tồn tại để chống **neo**: agent đưa phương án trước thì người duyệt có xu
-hướng bám vào nó. Rủi ro `high` mà chưa có D nào `tac_gia: nguoi` thì **dừng lại
+hướng bám vào nó. Rủi ro `high` mà chưa có D nào `Author: human` thì **dừng lại
 nhờ người phác** — checker sẽ chặn.
 
 Ở Mode 2, không sửa D-xx của người. Phản biện ghi ngay dưới D đó, dạng
-`- Phản biện (agent): …`.
+`- Critique (agent): …`.
 
 ## Việc phải làm
 
 1. **Khảo sát code hiện có trước khi thiết kế.** Tìm chỗ đã giải quyết vấn đề
-   tương tự; ghi module sẽ đụng tới và quy ước phải theo vào mục "Bối cảnh code
-   hiện có". Bước này đi trước bước chọn phương án, không đảo ngược.
+   tương tự; ghi module sẽ đụng tới và quy ước phải theo vào mục "Existing code". Bước này đi trước bước chọn phương án, không đảo ngược.
 
 2. **Nêu quyết định D-xx.** Mỗi lựa chọn mà người khác có thể chọn khác — nhất là
    điểm khó đảo ngược (sửa nhiều chỗ, di trú dữ liệu, phá giao diện ngoài) — là
-   một D-xx: vấn đề, ít nhất hai phương án kèm đánh đổi, lựa chọn, `tac_gia`,
-   `Trạng thái: đề xuất`. Mục D **được phép rỗng** — thay đổi nhỏ có thể không
+   một D-xx: vấn đề, ít nhất hai phương án kèm đánh đổi, lựa chọn, `Author`,
+   `Status: proposed`. Mục D **được phép rỗng** — thay đổi nhỏ có thể không
    có quyết định nào. Điểm hiển nhiên thì không cần D; bắt viết D cho mọi thứ sẽ
    khiến không ai đọc D nào.
 
 3. **Viết các mục chi tiết** theo `templates/tdd.md`: mô hình dữ liệu + ERD,
    contract/API, flow + sequence/state (Mermaid), phi chức năng, chiến lược test,
-   ánh xạ YC → mục. Mục nào dựa vào một quyết định thì ghi `Dựa trên: D-xx`.
-   Mục không áp dụng ghi `Không áp dụng: <lý do>`, **không bỏ trống**.
+   ánh xạ YC → mục. Mục nào dựa vào một quyết định thì ghi `Based on: D-xx`.
+   Mục không áp dụng ghi `Not applicable: <lý do>`, **không bỏ trống**.
 
 4. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> tdd.md spec.md open-questions.md`.
 
@@ -94,7 +93,7 @@ nhờ người phác** — checker sẽ chặn.
 ## Mở lại một quyết định
 
 Mở lại **đúng một D-xx**, sửa tại chỗ (lịch sử để git giữ, không giữ bản cũ
-trong file). Đổi `Trạng thái: mở lại` và thêm `Lý do mở lại:`. Grep
+trong file). Đổi `Status: reopened` và thêm `Reopen reason:`. Grep
 `Dựa trên: D-xx` trong `plan.md` ra các task bị ảnh hưởng; chỉ các task đó đặt
 lại `[ ]`. Người chỉ duyệt lại D đang mở. `/plan` chặn cho tới khi D đó được
 duyệt lại.
@@ -102,7 +101,10 @@ duyệt lại.
 ## Đầu ra
 
 - `tdd.md` — output duy nhất của thiết kế; không có file quyết định riêng, vì
-  tách ra thì hai file sẽ lệch nhau.
+  tách ra thì hai file sẽ lệch nhau. Đầu mục, tên trường và giá trị viết tiếng
+  Anh, giữ đúng như mẫu (`## Decisions (D-xx)`, `Author: human | agent`,
+  `Status: proposed | approved | reopened`, `Based on:`, `Not applicable:`…) —
+  checker đọc theo đúng chữ đó; nội dung điền vào viết tiếng Việt.
 - `phat-hien-thiet-ke.md` — do checker LLM ghi.
 
 ## Cấm
@@ -110,7 +112,7 @@ duyệt lại.
 - **Viết code.** Kể cả "code mẫu cho dễ hình dung" (chữ ký API/schema trong
   contract thì được).
 - Thêm yêu cầu mới không có trong `spec.md` — quay lại `01-spec`.
-- **Tự đổi `Trạng thái` của D-xx sang `đã duyệt`.** Chỉ người làm việc này.
+- **Tự đổi `Status` của D-xx sang `approved`.** Chỉ người làm việc này.
 - Ở Mode 2: sửa hoặc thay quyết định của người thay vì phản biện.
 - Giấu một lựa chọn thật vào văn xuôi thay vì nêu thành D-xx.
 - Coi "checker LLM không báo gì" là đạt khi nó chưa chạy.
@@ -119,7 +121,7 @@ duyệt lại.
 
 **Máy:**
 - `aw check design` ra `[x] ĐẠT` — đầu vào qua checker của spec; đủ
-  mục; D-xx hợp lệ; `Dựa trên` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của
+  mục; D-xx hợp lệ; `Based on` trỏ đúng; mọi YC được ánh xạ; Mode 2 có D của
   người; có `phat-hien-thiet-ke.md` và không còn phát hiện `Chặn` chưa xử lý.
 
 **Người:**

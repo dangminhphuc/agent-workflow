@@ -227,8 +227,8 @@ tự hạ.
    như vậy được không?"; người đồng ý trong hội thoại là đủ. Chỉ sửa đúng chỗ
    phát hiện chỉ ra.
 2. Phát hiện cần một quyết định (`quyết định ngầm`, `lệch D-xx` mà người muốn đổi
-   D): thêm/sửa D-xx với `Trạng thái: đề xuất` (sửa D đã duyệt thì theo mục "Mở
-   lại một quyết định" của `/design`). **Không** ghi `đã duyệt` — người duyệt D
+   D): thêm/sửa D-xx với `Status: proposed` (sửa D đã duyệt thì theo mục "Mở
+   lại một quyết định" của `/design`). **Không** ghi `approved` — người duyệt D
    như mọi D khác.
 3. Phát hiện `yêu cầu mới`: người đồng ý là **bỏ hành vi đó khỏi `tdd.md`**.
    Người muốn giữ hành vi đó thì đó là yêu cầu mới — báo người phải quay lại
@@ -271,7 +271,7 @@ rồi nói ngắn gọn:
 - Đặt `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc cho nhiều hơn một lựa chọn.
 - Tự hạ `Mức chặn`, hoặc tự đổi mức khi người chưa nói. Đổi `Mức` của phát hiện.
 - Đổi `Status` của spec (cả `proposed` → `approved` lẫn ngược lại), hay ghi
-  `đã duyệt` cho D-xx — lệnh này không đụng vào các dòng đó.
+  `approved` cho D-xx — lệnh này không đụng vào các dòng đó.
 - Sửa YC / mục `tdd.md` khi người chưa xác nhận các dòng sẽ đổi, hoặc sửa ngoài
   phạm vi của mục đang xử lý.
 - Trình bày nhiều mục một lúc rồi bắt người trả lời gộp.

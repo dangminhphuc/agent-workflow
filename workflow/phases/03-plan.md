@@ -33,7 +33,7 @@ duyệt.
 ## Đầu vào
 
 - `spec.md`, `tdd.md` — phải qua được `aw check design`, và **mọi D-xx đã
-  được người duyệt**. Còn D `đề xuất` hay `mở lại` thì dừng lại.
+  được người duyệt**. Còn D `proposed` hay `reopened` thì dừng lại.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
 - Quy tắc riêng của repo cho phase này — `aw rules plan`, đọc từng file nó in ra
   (xem `rules/nguyen-tac-chung.md` § 7)
@@ -96,7 +96,7 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
 
 **Máy:**
 - `aw check plan` ra `[x] ĐẠT`:
-  - đầu vào qua `aw check design`, mọi D-xx `đã duyệt`;
+  - đầu vào qua `aw check design`, mọi D-xx `approved`;
   - mọi task có `Phủ:` hợp lệ, `File dự kiến:`, `Cách kiểm chứng:` không rỗng;
     `Dựa trên:` trỏ về D có thật;
   - mọi YC được ít nhất một task phủ, **hoặc** nằm ở "Hoãn lại" kèm lý do. Kiểm

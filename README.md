@@ -249,7 +249,7 @@ cần hỏi. Agent không tự trả lời, không tự hạ mức chặn.
 
 Với phát hiện của checker LLM, lựa chọn là các **cách sửa cụ thể** (cách đề xuất
 đứng đầu; chọn thì agent cho bạn xem dòng `tdd.md` sẽ đổi, rồi ghi `đã sửa`; cần
-quyết định mới thì thêm D-xx `đề xuất` để bạn duyệt), **Bác bỏ** (kèm lý do, ghi
+quyết định mới thì thêm D-xx `proposed` để bạn duyệt), **Bác bỏ** (kèm lý do, ghi
 nguyên văn — agent thấy phát hiện sai thì đề xuất bác bỏ), và **Để sau** với mục
 `Cảnh báo`. Phát hiện agent đã tự sửa lúc chạy
 `/design` được nêu lại trong tổng kết để bạn biết. Điểm mù và phát hiện vẫn ở
@@ -268,32 +268,32 @@ cùng nhau — checker đối chiếu hai chiều.
 Output duy nhất: `tdd.md` (Technical Design Document, **không phải** Test-Driven
 Development). Nó chứa mọi thông tin `implement` cần để làm đúng kỹ thuật:
 
-- Bối cảnh code hiện có
-- **Quyết định D-xx** — người duyệt từng mục; mục này được phép rỗng
-- Mô hình dữ liệu + ERD
+- Existing code — code hiện có
+- **Decisions (D-xx)** — người duyệt từng mục; mục này được phép rỗng
+- Data model + ERD
 - Contract / API
 - Flow, sequence, state (Mermaid)
 - Yêu cầu phi chức năng
-- Chiến lược test
-- Ánh xạ YC → mục thiết kế
+- Test strategy
+- YC mapping → mục thiết kế
 
-Mục không áp dụng ghi `Không áp dụng: <lý do>` chứ không bỏ trống. Mục chi tiết
-ghi `Dựa trên: D-xx`; checker LLM tìm chỗ lệch D-xx và các quyết định ngầm chưa
+Mục không áp dụng ghi `Not applicable: <lý do>` chứ không bỏ trống. Mục chi tiết
+ghi `Based on: D-xx`; checker LLM tìm chỗ lệch D-xx và các quyết định ngầm chưa
 được nêu thành D.
 
-Mỗi D-xx có `tac_gia: nguoi | agent` và `Trạng thái: đề xuất | đã duyệt | mở lại`.
-**Chỉ người** đổi sang `đã duyệt`; `/plan` chặn nếu còn D chưa duyệt.
+Mỗi D-xx có `Author: human | agent` và `Status: proposed | approved | reopened`.
+**Chỉ người** đổi sang `approved`; `/plan` chặn nếu còn D chưa duyệt.
 
 Hai cách làm:
 
 - **Mode 1** — agent viết cả `tdd.md` một lần, người duyệt.
-- **Mode 2** — người phác các mục D-xx trước (`tac_gia: nguoi`), agent viết phần
+- **Mode 2** — người phác các mục D-xx trước (`Author: human`), agent viết phần
   còn lại và chỉ **phản biện** quyết định của người. Spec có `Risk: high` mà
   chưa có bản phác của người thì `design` chặn — để tránh người duyệt bị neo vào
   phương án agent đưa ra.
 
 **Mở lại quyết định:** mở lại đúng một D-xx, sửa tại chỗ (lịch sử để git giữ), ghi
-trạng thái `mở lại` + dòng `Lý do mở lại:`. Grep `Dựa trên: D-xx` ra các task bị ảnh hưởng, chỉ
+trạng thái `reopened` + dòng `Reopen reason:`. Grep `Dựa trên: D-xx` ra các task bị ảnh hưởng, chỉ
 các task đó đặt lại `[ ]`; người chỉ duyệt lại D đang mở.
 
 ### `03-plan` — quản lý thực thi
@@ -325,7 +325,7 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 |---|---|---|
 | `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[INFERRED]` trong input, `[HUMAN]` không kèm nguyên văn |
 | `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Mức chặn` thiếu/sai |
-| `design` | `aw check design` | Spec chưa được người duyệt, điểm mù `chặn` còn mở, thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
+| `design` | `aw check design` | Spec chưa được người duyệt, điểm mù `chặn` còn mở, thiếu mục, D-xx sai trạng thái, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `aw check plan` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `aw check implement` | Test chưa xanh, task còn dở |
 | `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "đạt" khi còn giả định chưa xác nhận, điểm mù `chặn`/`chặn review` còn mở, test chưa xanh, hoặc **còn cảnh báo** |

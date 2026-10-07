@@ -236,7 +236,7 @@ trong chính quá trình xây repo này, ở phase `review`.
 
 Gate người cố định ở `intake`, `spec`, `design`, `review` (và `ship` nếu dùng).
 Gate nào có phase máy chạy ngay sau thì phải để lại **dấu vết trong file** để
-phase sau chặn được: D-xx có `Trạng thái`, spec có `Status`. Gate chỉ
+phase sau chặn được: D-xx và spec đều có `Status`. Gate chỉ
 nằm trong tài liệu thì agent chạy tiếp được trên một spec chưa ai đọc.
 `plan` và `implement` **không có người**: chúng chỉ thực thi những gì đã duyệt
 ở `spec` và `design`. Đặt người ở đó chỉ tạo thêm một chỗ duyệt văn xuôi mà
@@ -290,7 +290,7 @@ Người duyệt một tài liệu thiết kế dài thường lướt, vì văn
 chỗ nào là lựa chọn thật. Vì vậy `design` tách các lựa chọn thành mục **D-xx**
 riêng trong `tdd.md`; người duyệt từng D, phần còn lại là hệ quả.
 
-- Mục chi tiết ghi `Dựa trên: D-xx`; checker LLM chặn chỗ lệch D và quyết định
+- Mục chi tiết ghi `Based on: D-xx`; checker LLM chặn chỗ lệch D và quyết định
   ngầm. Mục D **được phép rỗng** — thay đổi nhỏ có thể không có quyết định nào.
 - `tdd.md` là **output duy nhất** của `design`, không có file quyết định riêng:
   tách ra thì hai file sẽ lệch nhau.
@@ -300,13 +300,13 @@ riêng trong `tdd.md`; người duyệt từng D, phần còn lại là hệ qu�
 Khi agent đưa phương án trước, người duyệt có xu hướng neo vào nó. Với thay đổi
 `Risk: high` (tiền/hạch toán, tích hợp mới, schema lõi, khó đảo ngược — agent
 đề xuất nhãn, người duyệt ở gate spec), `design` **chặn** nếu chưa có bản phác
-mục D-xx do người viết (`tac_gia: nguoi`). Có bản phác thì agent chỉ phản biện.
+mục D-xx do người viết (`Author: human`). Có bản phác thì agent chỉ phản biện.
 Rủi ro thường dùng Mode 1: agent viết cả `tdd.md`, người duyệt.
 
 ### Mở lại một quyết định
 
 Mở lại **đúng một D-xx**, sửa tại chỗ; lịch sử để git giữ, không giữ bản cũ trong
-file. D đó mang trạng thái `mở lại` + lý do. Grep `Dựa trên: D-xx` ra task và test
+file. D đó mang trạng thái `reopened` + lý do. Grep `Dựa trên: D-xx` ra task và test
 bị ảnh hưởng; chỉ các task đó đặt lại `[ ]`, người chỉ duyệt lại D đang mở.
 
 ### Vì sao `plan` vẫn tách khỏi `tdd.md`
@@ -535,7 +535,7 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
 
 7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Status` của spec
    trong `spec.md`). Máy phân biệt được `proposed` với
-   `approved` (D-xx: `đề xuất` với `đã duyệt`), và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
+   `approved`, và `Author: agent` với `Author: human`, nhưng không biết **ai** ghi
    dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được. Từ bản 2026.10.6
    artifact không nằm trong git nên cũng không còn `git blame` hay diff PR để
    soi — chỉ người đọc lại file ở máy mới thấy. `Status` của spec còn yếu

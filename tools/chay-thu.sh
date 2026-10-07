@@ -156,39 +156,39 @@ viet_tdd() {
 based_on: []
 ---
 
-# Thiết kế — x
+# Technical Design — x
 
-## Bối cảnh code hiện có
+## Existing code
 Module src/a.
 
-## Quyết định (D-xx)
+## Decisions (D-xx)
 
 ### D-01 — lưu ở đâu
-- tac_gia: `agent`
-- Trạng thái: `đã duyệt`   <!-- đề xuất | đã duyệt | mở lại -->
-- Chọn: file
+- Author: `agent`
+- Status: `approved`   <!-- proposed | approved | reopened -->
+- Choice: file
 
-## Mô hình dữ liệu
-Dựa trên: D-01
+## Data model
+Based on: D-01
 Một file văn bản.
 
 ## Contract / API
-Không áp dụng: không có API công khai.
+Not applicable: không có API công khai.
 
 ## Flow
 Đọc rồi ghi.
 
-## Phi chức năng
-Không áp dụng: thay đổi nội bộ nhỏ.
+## Non-functional
+Not applicable: thay đổi nội bộ nhỏ.
 
-## Chiến lược test
+## Test strategy
 Unit test.
 
-## Ánh xạ YC
+## YC mapping
 
 | YC | Mục |
 |---|---|
-| YC-001 | § Mô hình dữ liệu |
+| YC-001 | § Data model |
 | YC-002 | § Flow |
 EOF
   cat > "$F/phat-hien-thiet-ke.md" <<'EOF'
@@ -533,40 +533,40 @@ viet_tdd; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' ''
 ky_vong 1 "chặn khi đầu vào spec không qua checker của spec" sh "$CHK" "$F"
 viet_spec
 
-viet_tdd; thay "$F/tdd.md" '## Chiến lược test' '## Kiểm thử'
+viet_tdd; thay "$F/tdd.md" '## Test strategy' '## Kiểm thử'
 ky_vong 1 "chặn tdd thiếu mục bắt buộc" sh "$CHK" "$F"
 
 viet_tdd; thay "$F/tdd.md" 'Unit test.' ''
 ky_vong 1 "chặn mục bỏ trống không ghi Không áp dụng" sh "$CHK" "$F"
 
-viet_tdd; thay "$F/tdd.md" 'Không áp dụng: không có API công khai.' 'Không áp dụng:'
+viet_tdd; thay "$F/tdd.md" 'Not applicable: không có API công khai.' 'Not applicable:'
 ky_vong 1 "chặn Không áp dụng mà không có lý do" sh "$CHK" "$F"
 
 viet_tdd; thay "$F/tdd.md" '| YC-002 | § Flow |' ''
 ky_vong 1 "chặn YC chưa được ánh xạ" sh "$CHK" "$F"
 
-viet_tdd; thay "$F/tdd.md" 'Dựa trên: D-01' 'Dựa trên: D-09'
+viet_tdd; thay "$F/tdd.md" 'Based on: D-01' 'Based on: D-09'
 ky_vong 1 "chặn Dựa trên trỏ về D không tồn tại" sh "$CHK" "$F"
 
-viet_tdd; thay "$F/tdd.md" '`đã duyệt`' '`ổn rồi`'
+viet_tdd; thay "$F/tdd.md" '`approved`' '`ổn rồi`'
 ky_vong 1 "chặn trạng thái D-xx tự chế" sh "$CHK" "$F"
 
-viet_tdd; thay "$F/tdd.md" '`đã duyệt`' '`mở lại`'
+viet_tdd; thay "$F/tdd.md" '`approved`' '`reopened`'
 ky_vong 1 "chặn D mở lại mà không có lý do" sh "$CHK" "$F"
-thay "$F/tdd.md" '- Chọn: file' '- Chọn: file
-- Lý do mở lại: đổi sang DB'
+thay "$F/tdd.md" '- Choice: file' '- Choice: file
+- Reopen reason: đổi sang DB'
 ky_vong 0 "D mở lại có lý do thì thiết kế vẫn hợp lệ" sh "$CHK" "$F"
 
 viet_tdd; thay "$F/spec.md" '`normal`' '`high`'
 ky_vong 1 "Mode 2: chặn rủi ro cao mà không có D do người viết" sh "$CHK" "$F"
-thay "$F/tdd.md" '`agent`' '`nguoi`'
-ky_vong 0 "Mode 2: có D tac_gia: nguoi thì cho qua" sh "$CHK" "$F"
+thay "$F/tdd.md" '`agent`' '`human`'
+ky_vong 0 "Mode 2: có D Author: human thì cho qua" sh "$CHK" "$F"
 viet_spec
 
-viet_tdd; thay "$F/tdd.md" '## Quyết định (D-xx)' '## Quyết định (D-xx)
+viet_tdd; thay "$F/tdd.md" '## Decisions (D-xx)' '## Decisions (D-xx)
 Không có quyết định cần duyệt.
 ## Bỏ'
-thay "$F/tdd.md" 'Dựa trên: D-01' ''
+thay "$F/tdd.md" 'Based on: D-01' ''
 ky_vong 0 "mục Quyết định được phép rỗng" sh "$CHK" "$F"
 viet_tdd
 
@@ -576,7 +576,7 @@ echo "kiem-tra-ke-hoach.sh"
 CHK="$T/kiem-tra-ke-hoach.sh"
 ghi_based_on
 
-thay "$F/tdd.md" '`đã duyệt`' '`đề xuất`'
+thay "$F/tdd.md" '`approved`' '`proposed`'
 ky_vong 1 "chặn khi còn D-xx chưa được người duyệt" sh "$CHK" "$F"
 viet_tdd; ghi_based_on
 
