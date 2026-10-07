@@ -5,9 +5,10 @@
 #   $AW_CONFIG/conventions.md   quy ước của repo — NGƯỜI viết, không bao giờ ghi đè
 #   $AW_CONFIG/config.sh        lệnh kiểm thử, adapter… — NGƯỜI sửa, không ghi đè
 #   .git/info/exclude           /.agent-workflow/ + đường dẫn adapter sinh ra
-#   <AW_REPO>/.claude/…         adapter sinh lệnh cho agent (bị exclude)
+#   <AW_REPO>/.claude/…         adapter sinh lệnh cho agent (bị exclude) — một bộ
+#                               cho mỗi adapter khai trong ADAPTER (vd .claude/ + .cursor/)
 #
-#   aw-engine init [--adapter <id>] [--test-cmd "<lệnh>"] [--force] [--from-legacy]
+#   aw-engine init [--adapter <id>[,<id>…]] [--test-cmd "<lệnh>"] [--force] [--from-legacy]
 #
 # --from-legacy: repo đã cài bộ cài cũ (.agent-workflow/.quy-trinh/ commit trong base).
 # Đọc .agent-workflow/conventions.md và .quy-trinh/cau-hinh.sh có sẵn, chuyển vào
@@ -29,19 +30,23 @@ kq_khai init \
   "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow" \
   "9=KHÔNG HỢP LỆ — thiếu AW_REPO/AW_CONFIG, gọi qua aw"
 . "$HERE/lib/worktree.sh"
+. "$HERE/lib/adapter.sh"
 
 [ -n "${AW_REPO:-}" ] && [ -n "${AW_CONFIG:-}" ] || { echo "LỖI: thiếu AW_REPO hoặc AW_CONFIG." >&2; exit 9; }
 
 ADAPTER=""; LENH=""; FORCE=""; CU=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --adapter)  [ -n "${2:-}" ] || { echo "LỖI: --adapter cần id." >&2; exit 2; }; ADAPTER=$2; shift 2 ;;
+    --adapter)  ADAPTER=$(al_chuan "${2:-}"); [ -n "$ADAPTER" ] || { echo "LỖI: --adapter cần id (nhiều adapter: claude-code,cursor)." >&2; exit 2; }; shift 2 ;;
     --test-cmd) [ $# -ge 2 ] || { echo "LỖI: --test-cmd cần lệnh." >&2; exit 2; }; LENH=$2; shift 2 ;;
     --force)    FORCE=--force; shift ;;
     --from-legacy) CU=1; shift ;;
     *) echo "LỖI: tham số lạ \"$1\"." >&2; exit 2 ;;
   esac
 done
+
+# Kiểm id adapter TRƯỚC khi ghi gì: sai id thì không để lại config.sh nửa vời.
+if [ -n "$ADAPTER" ]; then al_kiem "$ENG" "$ADAPTER" || exit 2; fi
 
 case "$(CDPATH= cd -- "$AW_REPO" && pwd)/" in
   "$ENG"/*) echo "LỖI: không init trong chính engine agent-workflow ($AW_REPO) — repo đích mới là nơi dùng." >&2; exit 2 ;;
@@ -59,7 +64,7 @@ if [ -n "$CU" ]; then
     cp "$CU_CONV" "$CONV"; echo "  copy    conventions.md ← .agent-workflow/conventions.md"
   fi
   if [ -f "$CU_CH" ] && [ ! -f "$CH" ]; then
-    [ -n "$ADAPTER" ] || ADAPTER=$(awk -F= '$1 == "adapter" { print $2; exit }' "$CU_ART/.quy-trinh/nguon.txt" 2>/dev/null)
+    [ -n "$ADAPTER" ] || ADAPTER=$(al_chuan "$(awk -F= '$1 == "adapter" { print $2; exit }' "$CU_ART/.quy-trinh/nguon.txt" 2>/dev/null)")
     ADAPTER=${ADAPTER:-claude-code}
     # Lấy giá trị từ file cũ (chạy trong subshell), điền vào mẫu mới.
     gt() { (LENH_KIEM_THU=""; LENH_DO_HIEU_NANG=""; LENH_CHUAN_BI_WT=""; . "$CU_CH" >/dev/null 2>&1; eval "printf '%s' \"\${$1:-}\"") | sed 's/[\\"]/\\&/g'; }
@@ -80,8 +85,8 @@ else cp "$ENG/workflow/templates/conventions.md" "$CONV"; echo "  create  conven
 # ---- config.sh — của NGƯỜI ----
 if [ -f "$CH" ]; then
   echo "  keep    config.sh (đã có, không ghi đè)"
-  CO_AD=$(. "$CH" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}")
-  if [ -n "$ADAPTER" ] && [ -n "$CO_AD" ] && [ "$ADAPTER" != "$CO_AD" ]; then
+  CO_AD=$(al_chuan "$(. "$CH" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}")")
+  if [ -n "$ADAPTER" ] && [ -n "$CO_AD" ] && ! al_cung "$ADAPTER" "$CO_AD"; then
     echo "LỖI: config.sh đang khai ADAPTER=\"$CO_AD\" — muốn đổi sang \"$ADAPTER\" thì sửa config.sh." >&2; exit 2
   fi
   ADAPTER=${ADAPTER:-$CO_AD}
@@ -94,14 +99,13 @@ else
   echo "  write   config.sh"
 fi
 ADAPTER=${ADAPTER:-claude-code}
-[ -f "$ENG/adapters/$ADAPTER/build.sh" ] || {
-  echo "LỖI: không có adapter \"$ADAPTER\" (có: $(ls "$ENG/adapters" | grep -v '^lib$' | tr '\n' ' '))." >&2; exit 2; }
+al_kiem "$ENG" "$ADAPTER" || exit 2
 
 # ---- .git/info/exclude — file sinh ra không bao giờ lọt vào commit ----
 GC=$(wt_tuyet_doi "$AW_REPO" "$(git -C "$AW_REPO" rev-parse --git-common-dir)")
 EX="$GC/info/exclude"; mkdir -p "$GC/info"
 them=""
-for p in /.agent-workflow/ $(grep -v '^#' "$ENG/adapters/$ADAPTER/exclude" 2>/dev/null); do
+for p in /.agent-workflow/ $(al_exclude "$ENG" "$ADAPTER"); do
   grep -qxF "$p" "$EX" 2>/dev/null && continue
   grep -qxF '# agent-workflow — aw init: file sinh ra / cục bộ, không commit' "$EX" 2>/dev/null ||
     printf '\n# agent-workflow — aw init: file sinh ra / cục bộ, không commit\n' >> "$EX"

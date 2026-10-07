@@ -1068,7 +1068,7 @@ dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng 
   "grep -q 'Nghĩ kỹ trước khi hỏi' '$O/.claude/commands/clarify.md' && grep -q 'bắt đầu bằng.*(Đề xuất)' '$O/.claude/commands/clarify.md'"
 dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/clarify.md"
 dung "lệnh /clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-hien-thiet-ke.md' "$O/.claude/commands/clarify.md"
-dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'AskUserQuestion' '$O/.claude/commands/import.md'"
+dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O/.claude/commands/import.md'"
 dung "/design có cổng duyệt: aw approval design + hộp xác nhận AskUserQuestion" sh -c \
   "grep -q 'Bước 1 — Cổng duyệt' '$O/.claude/commands/design.md' && grep -q 'aw approval design' '$O/.claude/commands/design.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/design.md'"
 dung "…ba lựa chọn cố định, có preview, từ chối duyệt hộ" sh -c \
@@ -1097,14 +1097,13 @@ dung "…nhưng giữ lệnh người viết tay" test -f "$O/.claude/commands/c
 
 FAKE="$TMP/fake"
 tao_fake() {
-  rm -rf "$FAKE"; mkdir -p "$FAKE/tools" "$FAKE/adapters/claude-code"
+  rm -rf "$FAKE"; mkdir -p "$FAKE/tools"
   cp -r "$ROOT/workflow" "$FAKE/"
   cp "$ROOT/workflow.yaml" "$FAKE/"
   cp -r "$ROOT/tools/lib" "$FAKE/tools/"
   cp "$ROOT"/tools/*.sh "$FAKE/tools/"
   cp "$ROOT/VERSION" "$FAKE/"
-  cp -r "$ROOT/adapters/lib" "$FAKE/adapters/"
-  cp "$BUILD" "$FAKE/adapters/claude-code/"
+  cp -r "$ROOT/adapters" "$FAKE/"
 }
 
 tao_fake
@@ -1145,6 +1144,200 @@ tao_fake
 thay "$FAKE/workflow/import.md" 'arguments: mixed' 'arguments: input'
 ky_vong 4 "từ chối build khi lệnh tiện ích khai arguments khác \"mixed\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7"
 
+# ---------------------------------------------------------------- adapter cursor
+echo ""
+echo "adapters/cursor/build.sh"
+CB="$ROOT/adapters/cursor/build.sh"
+O3="$TMP/cur1"; mkdir -p "$O3"
+ky_vong 0 "build bản đúng thành công" sh "$CB" --out "$O3"
+
+# ds_tuong_doi <thư-mục> -> đường dẫn tương đối của mọi file, đã sắp
+ds_tuong_doi() { (cd "$1" && find . -type f | sed 's|^\./||' | LC_ALL=C sort); }
+dung "cùng bộ file với Claude Code (commands/, agents/, skills/) — trùng tên để che bản .claude/" \
+  bang "$(ds_tuong_doi "$O3/.cursor")" "$(ds_tuong_doi "$TMP/out1/.claude" | grep -v '^commands/cua-toi.md$')"
+dung "…chỉ ghi vào .cursor/" bang "$(ls -A "$O3")" ".cursor"
+dung "…bỏ qua phase chưa hiện thực" test ! -e "$O3/.cursor/commands/ship.md"
+dung "không còn \$ARGUMENTS (Cursor không thay biến)" sh -c "! grep -rqF '\$ARGUMENTS' '$O3/.cursor'"
+dung "không gọi tool riêng của Claude Code (AskUserQuestion, multiSelect, trường preview/questions)" \
+  sh -c "! grep -rqE 'AskUserQuestion|multiSelect|\`preview\`:|\`questions\`' '$O3/.cursor'"
+dung "mọi file mang dấu SINH TỰ ĐỘNG + version engine + 'Dành cho Cursor'" sh -c \
+  "for f in \$(find '$O3/.cursor' -type f); do grep -q 'SINH TỰ ĐỘNG' \"\$f\" && grep -q \"engine agent-workflow $(cat "$ROOT/VERSION")\" \"\$f\" && grep -q 'Dành cho Cursor' \"\$f\" || exit 1; done"
+dung "lệnh là markdown thường: dòng đầu '# /<id> — …', không frontmatter" sh -c \
+  "for f in '$O3'/.cursor/commands/*.md; do id=\$(basename \"\$f\" .md); head -1 \"\$f\" | grep -q \"^# /\$id — \" || exit 1; done"
+dung "mọi lệnh có mục tham số của Cursor (<tham-số> chép nguyên văn)" sh -c \
+  "for f in '$O3'/.cursor/commands/*.md; do grep -q '## Tham số của lệnh trong Cursor' \"\$f\" && grep -q 'chép nguyên văn' \"\$f\" || exit 1; done"
+dung "/design xác định feature bằng aw feature <tham-số>" grep -qF 'aw feature <tham-số>' "$O3/.cursor/commands/design.md"
+dung "/intake: aw feature không tham số, input đi qua heredoc với <tham-số>" sh -c \
+  "grep -q 'Chạy \`aw feature\` — \*\*không\*\* truyền' '$O3/.cursor/commands/intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/intake.md' | grep -qx '<tham-số>'"
+dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O3/.cursor/commands/design.md"
+dung "/design gọi subagent checker LLM soat-thiet-ke" grep -q 'subagent `soat-thiet-ke`' "$O3/.cursor/commands/design.md"
+dung "/review bắt buộc subagent ra-soat-doc-lap" grep -q 'subagent `ra-soat-doc-lap`' "$O3/.cursor/commands/review.md"
+dung "subagent: frontmatter name trùng tên file (Cursor nạp .cursor/agents/)" sh -c \
+  "for f in '$O3'/.cursor/agents/*.md; do head -1 \"\$f\" | grep -qx -- '---' && sed -n 2p \"\$f\" | grep -qx \"name: \$(basename \"\$f\" .md)\" || exit 1; done"
+dung "skill: frontmatter name quy-trinh-agent + description" sh -c \
+  "sed -n 2p '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' | grep -qx 'name: quy-trinh-agent' && sed -n 3p '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' | grep -q '^description: '"
+dung "/clarify hỏi lựa chọn kiểu Cursor: tool nếu có, không thì đánh số" sh -c \
+  "grep -q '## Cách hỏi lựa chọn trong Cursor' '$O3/.cursor/commands/clarify.md' && grep -q 'AskQuestion' '$O3/.cursor/commands/clarify.md' && grep -q 'đánh số' '$O3/.cursor/commands/clarify.md'"
+dung "…luôn có lối tự nhập và Chat về câu này (tool không chắc tự thêm)" sh -c \
+  "grep -q 'Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này' '$O3/.cursor/commands/clarify.md' && grep -q 'Chat về câu này' '$O3/.cursor/commands/clarify.md'"
+dung "…(Đề xuất) đứng đầu nhãn, phân tích trước khi hỏi" sh -c \
+  "grep -q 'bắt đầu bằng.*(Đề xuất)' '$O3/.cursor/commands/clarify.md' && grep -q 'Nghĩ kỹ trước khi hỏi' '$O3/.cursor/commands/clarify.md'"
+dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O3/.cursor/commands/import.md' && ! grep -q 'Cách hỏi lựa chọn' '$TMP/out1/.claude/commands/import.md'"
+dung "/design, /plan có cổng duyệt aw approval + hộp xác nhận Cursor" sh -c \
+  "grep -q 'aw approval design' '$O3/.cursor/commands/design.md' && grep -q 'aw approval plan' '$O3/.cursor/commands/plan.md' && grep -q '### Hộp xác nhận trong Cursor' '$O3/.cursor/commands/plan.md'"
+dung "…phase không khai approval_gate thì không có" sh -c \
+  "for p in intake spec implement review; do ! grep -q 'Cổng duyệt' '$O3/.cursor/commands/'\$p.md || exit 1; done"
+dung "phase có quy tắc repo: lệnh gọi aw rules <phase>; intake thì không" sh -c \
+  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/intake.md'"
+dung "skill liệt kê phase và lệnh tiện ích" sh -c \
+  "grep -q '| \`/design\` |' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' && grep -q '/clarify' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md'"
+
+printf '# tôi tự viết\n' > "$O3/.cursor/commands/spec.md"
+ky_vong 3 "từ chối ghi đè file người viết tay" sh "$CB" --out "$O3"
+dung "…nội dung người viết còn nguyên" sh -c "head -1 '$O3/.cursor/commands/spec.md' | grep -q 'tôi tự viết'"
+ky_vong 0 "--force thì cho phép ghi đè" sh "$CB" --out "$O3" --force
+printf -- '> **File này được SINH TỰ ĐỘNG** từ `workflow/phases/00-ideation.md`\n' > "$O3/.cursor/commands/ideation.md"
+printf -- '> **File này được SINH TỰ ĐỘNG** — agent cũ\n' > "$O3/.cursor/agents/cu.md"
+printf '# lệnh tôi tự viết\n' > "$O3/.cursor/commands/cua-toi.md"
+sh "$CB" --out "$O3" >/dev/null 2>&1
+dung "build lại xoá lệnh/subagent sinh tự động không còn trong manifest" sh -c "[ ! -e '$O3/.cursor/commands/ideation.md' ] && [ ! -e '$O3/.cursor/agents/cu.md' ]"
+dung "…nhưng giữ lệnh người viết tay" test -f "$O3/.cursor/commands/cua-toi.md"
+ky_vong 2 "từ chối --out nằm trong repo agent-workflow" sh "$CB" --out "$ROOT/adapters"
+ky_vong 2 "thiếu --out → SAI THAM SỐ" sh "$CB"
+ky_vong 2 "tham số lạ → SAI THAM SỐ" sh "$CB" --out "$O3" --khac
+
+# File .cursor/ git đang theo dõi (team commit lệnh trùng tên): bỏ qua, không đụng
+RT="$TMP/cur-team"; mkdir -p "$RT/.cursor/commands"; git -C "$RT" init -q
+printf '# lệnh spec của team\n' > "$RT/.cursor/commands/spec.md"
+git -C "$RT" add -A; git -C "$RT" -c user.name=t -c user.email=t@t commit -q -m team
+ky_vong 0 "file git đang theo dõi → bỏ qua, build vẫn đạt" sh "$CB" --out "$RT"
+dung "…nội dung của team giữ nguyên, cây sạch" sh -c "grep -q 'của team' '$RT/.cursor/commands/spec.md' && [ -z \"\$(git -C '$RT' status --porcelain -- .cursor/commands/spec.md)\" ]"
+
+# Định nghĩa quy trình lỗi: MỌI adapter phải từ chối, không để lại file viết dở
+for ad in claude-code cursor; do
+  tao_fake
+  thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - kế hoạch trông có vẻ hợp lý'
+  ky_vong 4 "$ad: từ chối build khi exit_machine không phải lệnh chạy được" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-1"
+  dung "$ad: …không để lại file viết dở" sh -c "[ -z \"\$(find '$TMP/f-$ad-1' -name '*.tmp' 2>/dev/null)\" ] && [ ! -e '$TMP/f-$ad-1/.claude/commands/plan.md' ] && [ ! -e '$TMP/f-$ad-1/.cursor/commands/plan.md' ]"
+  tao_fake
+  thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - aw check khong-ton-tai'
+  ky_vong 4 "$ad: từ chối build khi aw check trỏ tới checker không có" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-2"
+  tao_fake; rm -f "$FAKE/workflow/checkers/thiet-ke.md"
+  ky_vong 4 "$ad: từ chối build khi llm_checker trỏ tới file không tồn tại" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-3"
+  tao_fake; thay "$FAKE/workflow/phases/02-design.md" 'approval_gate: true' 'approval_gate: co'
+  ky_vong 4 "$ad: từ chối build khi approval_gate khác \"true\"" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-4"
+  tao_fake; thay "$FAKE/workflow/clarify.md" 'choice_ui: true' 'choice_ui: co'
+  ky_vong 4 "$ad: từ chối build khi choice_ui khác \"true\"" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-5"
+  tao_fake; thay "$FAKE/workflow/phases/00-intake.md" 'arguments: input' 'arguments: gi-cung-duoc'
+  ky_vong 4 "$ad: từ chối build khi arguments không phải \"input\"" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-6"
+done
+
+# Adapter thiếu hook → ĐỊNH NGHĨA QUY TRÌNH LỖI, không sinh gì
+tao_fake
+mkdir -p "$FAKE/adapters/thieu-hook"
+sed '/^ad_hoi_cong_duyet() {/,/^}/d' "$CB" > "$FAKE/adapters/thieu-hook/build.sh"
+ky_vong 4 "adapter thiếu hook (ad_hoi_cong_duyet) → từ chối build" sh "$FAKE/adapters/thieu-hook/build.sh" --out "$TMP/f-thieu"
+dung "…không sinh file nào" sh -c "[ -z \"\$(find '$TMP/f-thieu' -type f 2>/dev/null)\" ]"
+
+# ---------------------------------------------------------------- đối chiếu mọi adapter
+# Mọi adapter dùng chung adapters/lib/chung.sh. AW_DOI_CHIEU=1: hook in tên của nó
+# thay cho nội dung — phần còn lại (hợp đồng phase, Bước 0, cổng duyệt, quy tắc
+# repo, thân phase…) phải GIỐNG HỆT nhau từng byte. Ai sửa hợp đồng cho một agent
+# mà quên agent kia, hay viết chữ riêng của agent ngoài hook, là hỏng ở đây.
+echo ""
+echo "đối chiếu mọi adapter (một hợp đồng phase cho mọi agent)"
+DC="$TMP/doi-chieu"; mkdir -p "$DC"
+n_ad=0; dc_build=1; dc_goc=1
+for b in "$ROOT"/adapters/*/build.sh; do
+  a=$(basename "$(dirname "$b")"); n_ad=$((n_ad + 1)); mkdir -p "$DC/$a"
+  AW_DOI_CHIEU=1 sh "$b" --out "$DC/$a" >/dev/null 2>&1 || { dc_build=0; echo "        $a: build hỏng"; }
+  g=$(ls -A "$DC/$a")
+  if [ "$(printf '%s\n' "$g" | wc -l | tr -d ' ')" = 1 ] && [ -n "$g" ]; then mv "$DC/$a/$g" "$DC/$a/goc"
+  else dc_goc=0; echo "        $a: không ghi vào đúng một thư mục gốc: $g"; fi
+done
+dung "có ít nhất hai adapter để đối chiếu" test "$n_ad" -ge 2
+dung "mọi adapter build được ở chế độ đối chiếu" test "$dc_build" = 1
+dung "mỗi adapter chỉ ghi vào một thư mục gốc của nó (.claude/, .cursor/…)" test "$dc_goc" = 1
+dc_khac=0; dau=""
+for d in "$DC"/*/; do
+  [ -d "$d/goc" ] || continue
+  if [ -z "$dau" ]; then dau=$d; continue; fi
+  if ! diff -r "$dau/goc" "$d/goc" >/dev/null 2>&1; then
+    dc_khac=1; echo "        khác: $(basename "$dau") ↔ $(basename "$d")"
+    diff -r "$dau/goc" "$d/goc" 2>&1 | head -8 | sed 's/^/          /'
+  fi
+done
+dung "ngoài hook, output của mọi adapter giống hệt nhau từng byte" test "$dc_khac" = 0
+dung "…phép đối chiếu không rỗng: hook thật sự được gọi (cổng duyệt, hỏi lựa chọn, tham số)" sh -c \
+  "grep -q '<<ad_hoi_cong_duyet design>>' '$dau/goc/commands/design.md' && grep -q '<<ad_hoi_lua_chon>>' '$dau/goc/commands/clarify.md' && grep -q 'aw feature <<ad_tham_so>>' '$dau/goc/commands/spec.md' && grep -q '<<ad_danh_cho>>' '$dau/goc/agents/ra-soat-doc-lap.md'"
+dung "…và phần dùng chung không chứa chữ riêng của agent nào" sh -c \
+  "! grep -rqE 'AskUserQuestion|AskQuestion|\\\$ARGUMENTS|<tham-số>|\\.claude/|\\.cursor/' '$dau/goc'"
+
+# Ở chế độ thường: chữ riêng của agent ĐÚNG agent, và các hằng của cổng duyệt
+# (câu hỏi, ba nhãn) giống hệt nhau giữa các adapter.
+DT="$TMP/doi-chieu-that"; mkdir -p "$DT"
+for b in "$ROOT"/adapters/*/build.sh; do
+  a=$(basename "$(dirname "$b")"); mkdir -p "$DT/$a"; sh "$b" --out "$DT/$a" >/dev/null 2>&1
+done
+# cau_hoi <file> -> các chuỗi trong backtick kết thúc bằng "bạn muốn làm gì?", đã sắp
+cau_hoi() { grep -o '`[^`]*bạn muốn làm gì?`' "$1" | LC_ALL=C sort -u; }
+nhan_cd() { grep -oE '`(Tôi đã duyệt xong — kiểm lại|Giải thích từng điểm cần duyệt|Dừng — tôi duyệt sau)`' "$1" | tr '\n' '|'; }
+cd_khac=0
+for p in design plan; do
+  q0=$(cau_hoi "$DT/claude-code/.claude/commands/$p.md"); n0=$(nhan_cd "$DT/claude-code/.claude/commands/$p.md")
+  [ -n "$q0" ] && [ "$n0" = '`Tôi đã duyệt xong — kiểm lại`|`Giải thích từng điểm cần duyệt`|`Dừng — tôi duyệt sau`|' ] || { cd_khac=1; echo "        claude-code /$p: thiếu câu hỏi hay nhãn"; }
+  for d in "$DT"/*/; do
+    f=$(find "$d" -path "*/commands/$p.md" | head -1)
+    [ "$(cau_hoi "$f")" = "$q0" ] || { cd_khac=1; echo "        $(basename "$d") /$p: câu hỏi cổng duyệt khác"; }
+    [ "$(nhan_cd "$f")" = "$n0" ] || { cd_khac=1; echo "        $(basename "$d") /$p: ba nhãn / thứ tự khác"; }
+  done
+done
+dung "cổng duyệt: cùng câu hỏi, cùng ba nhãn đúng thứ tự ở mọi adapter" test "$cd_khac" = 0
+dung "mọi file .claude/ ghi 'Dành cho Claude Code' và chỉ đường sang .cursor/ (Cursor nạp .claude/)" sh -c \
+  "for f in \$(find '$DT/claude-code/.claude' -type f); do grep -q 'Dành cho Claude Code' \"\$f\" && grep -q 'AskUserQuestion' \"\$f\" && grep -qF '.cursor/' \"\$f\" || exit 1; done"
+dung "mọi subagent trùng tên giữa các adapter (bản .cursor/ che bản .claude/)" \
+  bang "$(ls "$DT/cursor/.cursor/agents")" "$(ls "$DT/claude-code/.claude/agents")"
+
+# Hai adapter cùng một worktree: không đè, không dọn file của nhau
+echo ""
+echo "hai adapter cùng một thư mục"
+B2="$TMP/ca-hai"; mkdir -p "$B2"
+ky_vong 0 "build claude-code rồi cursor vào cùng thư mục" sh -c "sh '$ROOT/adapters/claude-code/build.sh' --out '$B2' && sh '$CB' --out '$B2'"
+dung "….claude/ giống hệt khi build riêng" diff -r "$B2/.claude" "$DT/claude-code/.claude"
+dung "….cursor/ giống hệt khi build riêng" diff -r "$B2/.cursor" "$DT/cursor/.cursor"
+printf -- '> **File này được SINH TỰ ĐỘNG** — lệnh cũ\n' > "$B2/.claude/commands/cu-claude.md"
+printf -- '> **File này được SINH TỰ ĐỘNG** — lệnh cũ\n' > "$B2/.cursor/commands/cu-cursor.md"
+sh "$CB" --out "$B2" >/dev/null 2>&1
+dung "build cursor chỉ dọn file cũ của .cursor/, không đụng .claude/" sh -c "[ ! -e '$B2/.cursor/commands/cu-cursor.md' ] && [ -f '$B2/.claude/commands/cu-claude.md' ]"
+sh "$ROOT/adapters/claude-code/build.sh" --out "$B2" >/dev/null 2>&1
+dung "…build claude-code dọn của .claude/, .cursor/ vẫn nguyên" sh -c "[ ! -e '$B2/.claude/commands/cu-claude.md' ] && diff -r '$B2/.cursor' '$DT/cursor/.cursor'"
+mkdir -p "$TMP/ca-hai-2" "$TMP/ca-hai-3"
+ky_vong 0 "tools/sinh-adapter.sh nhận danh sách claude-code,cursor" sh "$T/sinh-adapter.sh" claude-code,cursor "$TMP/ca-hai-2"
+dung "…ghi dấu build cho từng adapter" bang "$(cat "$TMP/ca-hai-2/.agent-workflow/.adapters" 2>/dev/null)" "claude-code $(cat "$ROOT/VERSION")
+cursor $(cat "$ROOT/VERSION")"
+dung "…cả hai bộ giống hệt khi build riêng" sh -c "diff -r '$TMP/ca-hai-2/.claude' '$DT/claude-code/.claude' && diff -r '$TMP/ca-hai-2/.cursor' '$DT/cursor/.cursor'"
+ky_vong 2 "tools/sinh-adapter.sh: một id không có → SAI THAM SỐ, không sinh gì" sh "$T/sinh-adapter.sh" "claude-code khong-co" "$TMP/ca-hai-3"
+dung "…không sinh adapter nào" sh -c "[ ! -e '$TMP/ca-hai-3/.claude' ] && [ ! -e '$TMP/ca-hai-3/.agent-workflow' ]"
+mkdir -p "$TMP/ca-hai-4/.cursor/commands"; printf '# tự viết\n' > "$TMP/ca-hai-4/.cursor/commands/spec.md"
+ky_vong 3 "một adapter hỏng (file viết tay) → mã của adapter đó" sh "$T/sinh-adapter.sh" claude-code,cursor "$TMP/ca-hai-4"
+dung "…adapter kia vẫn sinh đủ, dấu build chỉ ghi adapter đạt" sh -c \
+  "diff -r '$TMP/ca-hai-4/.claude' '$DT/claude-code/.claude' && grep -q '^claude-code ' '$TMP/ca-hai-4/.agent-workflow/.adapters' && ! grep -q '^cursor ' '$TMP/ca-hai-4/.agent-workflow/.adapters'"
+
+# exclude của từng adapter phủ đúng file nó sinh — và không giấu file của team
+echo ""
+echo "exclude của adapter"
+for b in "$ROOT"/adapters/*/build.sh; do
+  a=$(basename "$(dirname "$b")"); RX="$TMP/ex-$a"; mkdir -p "$RX"; git -C "$RX" init -q
+  grep -v '^#' "$ROOT/adapters/$a/exclude" >> "$RX/.git/info/exclude"
+  sh "$b" --out "$RX" >/dev/null 2>&1
+  dung "$a: mọi file sinh ra bị exclude (git status sạch)" sh -c "[ -n \"\$(find '$RX' -path '$RX/.git' -prune -o -type f -print)\" ] && [ -z \"\$(git -C '$RX' status --porcelain --untracked-files=all)\" ]"
+done
+mkdir -p "$TMP/ex-cursor/.cursor/rules"; printf 'x\n' > "$TMP/ex-cursor/.cursor/rules/team.mdc"; printf '{}\n' > "$TMP/ex-cursor/.cursor/hooks.json"
+mkdir -p "$TMP/ex-cursor/.cursor/skills/cua-team"; printf 'x\n' > "$TMP/ex-cursor/.cursor/skills/cua-team/SKILL.md"
+dung "cursor: không giấu file team commit (.cursor/rules, hooks.json, skill khác)" bang \
+  "$(git -C "$TMP/ex-cursor" status --porcelain --untracked-files=all | LC_ALL=C sort | tr '\n' '|')" \
+  "?? .cursor/hooks.json|?? .cursor/rules/team.mdc|?? .cursor/skills/cua-team/SKILL.md|"
+
 # ---------------------------------------------------------------- khong cai vao engine
 echo ""
 echo "không cài vào chính engine"
@@ -1178,6 +1371,10 @@ g9 worktree add -q -b khong-khop "$W4" main
 ky_vong 3 "trong worktree, branch không khớp, không tham số → CẦN HỎI NGƯỜI" awd "$W4" feature
 dung "branch không khớp → lấy tham số" test "$(awd "$W4" feature feat_abc 2>/dev/null)" = ".agent-workflow/feat_abc"
 ky_vong 2 "từ chối tên feature có ../" awd "$W4" feature "../x"
+ky_vong 2 "chữ giữ chỗ <tham-số> của lệnh Cursor chưa thay → TÊN KHÔNG HỢP LỆ" awd "$W4" feature "<tham-số>"
+ky_vong 2 "chữ giữ chỗ \$ARGUMENTS chưa thay → TÊN KHÔNG HỢP LỆ" awd "$W4" feature '$ARGUMENTS'
+dung "…không tạo thư mục việc nào" test ! -e "$W4/.agent-workflow/<tham-số>"
+dung "…stderr bảo agent chép nguyên văn phần người gõ" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature '<tham-số>' 2>&1 | grep -q 'chữ giữ chỗ'"
 git -C "$W4" checkout -q -b feat_them-todo
 dung "branch khớp quy ước → tên branch đầy đủ" test "$(awd "$W4" feature 2>/dev/null)" = ".agent-workflow/feat_them-todo"
 dung "branch khớp thì thắng tham số" test "$(awd "$W4" feature khac 2>/dev/null)" = ".agent-workflow/feat_them-todo"
@@ -1238,6 +1435,78 @@ DX=$(awd "$R9" worktree new feature co-remote 2>/dev/null)
 dung "main và origin/main phân kỳ → không gợi ý ★" sh -c "printf '%s' \"\$1\" | grep -q 'PHÂN KỲ' && ! printf '%s' \"\$1\" | grep -q '★ \['" _ "$DX"
 g9 reset -q --hard HEAD~1
 
+# ---------------------------------------------------------------- nhiều adapter
+# Team dùng cả Claude Code lẫn Cursor: ADAPTER="claude-code cursor" trong config.sh.
+echo ""
+echo "nhiều adapter (ADAPTER=\"claude-code cursor\")"
+R10="$TMP/repo10"; mkdir -p "$R10"
+git -C "$R10" init -q; git -C "$R10" checkout -q -b main
+git -C "$R10" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
+GOC10=$(git -C "$R10" rev-parse HEAD); C10="$R10/.git/agent-workflow"
+ky_vong 2 "init --adapter có id không tồn tại → SAI THAM SỐ" awd "$R10" init --version "$VDEV" --adapter claude-code,khong-co
+dung "…không ghi config.sh, không sinh gì" sh -c "[ ! -e '$C10/config.sh' ] && [ ! -e '$R10/.claude' ] && [ ! -e '$R10/.cursor' ]"
+ky_vong 2 "init --adapter rỗng → SAI THAM SỐ" awd "$R10" init --version "$VDEV" --adapter ","
+ky_vong 0 "aw init --adapter claude-code,cursor" awd "$R10" init --version "$VDEV" --test-cmd true --adapter claude-code,cursor
+dung "…config.sh ghi ADAPTER=\"claude-code cursor\"" grep -qx 'ADAPTER="claude-code cursor"' "$C10/config.sh"
+dung "…exclude có đường dẫn của MỌI adapter" sh -c \
+  "for p in /.agent-workflow/ /.claude/ /.cursor/commands/ /.cursor/agents/ /.cursor/skills/quy-trinh-agent/; do grep -qxF \"\$p\" '$R10/.git/info/exclude' || exit 1; done"
+dung "…sinh cả hai bộ ở checkout chính" sh -c "[ -f '$R10/.claude/commands/intake.md' ] && [ -f '$R10/.cursor/commands/intake.md' ] && [ -f '$R10/.cursor/agents/ra-soat-doc-lap.md' ]"
+dung "…cả hai bộ giống hệt build riêng (không ảnh hưởng nhau)" sh -c "diff -r '$R10/.claude' '$TMP/doi-chieu-that/claude-code/.claude' && diff -r '$R10/.cursor' '$TMP/doi-chieu-that/cursor/.cursor'"
+dung "…dấu build ghi cả hai, đúng version" bang "$(cat "$R10/.agent-workflow/.adapters")" "claude-code $VDEV
+cursor $VDEV"
+dung "…không commit gì, cây sạch" sh -c "[ \"\$(git -C '$R10' rev-parse HEAD)\" = '$GOC10' ] && [ -z \"\$(git -C '$R10' status --porcelain --untracked-files=all)\" ]"
+ky_vong 0 "init lại: cùng tập adapter, khác thứ tự/cách viết → không coi là đổi" awd "$R10" init --adapter "cursor claude-code"
+dung "…không nhân đôi dòng exclude" bang "$(grep -cxF '/.cursor/agents/' "$R10/.git/info/exclude")" 1
+ky_vong 2 "init --adapter khác tập trong config.sh → SAI THAM SỐ (sửa config.sh)" awd "$R10" init --adapter cursor
+dung "…config.sh giữ nguyên" grep -qx 'ADAPTER="claude-code cursor"' "$C10/config.sh"
+ky_vong 0 "aw doctor: mọi mục ✓ với hai adapter" awd "$R10" doctor
+dung "…liệt kê từng adapter của worktree" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q '✓ cursor (engine $VDEV)'"
+
+W10=$(awd "$R10" worktree new feature hai-agent --create --base main 2>/dev/null)
+dung "worktree mới có cả .claude/ và .cursor/" sh -c "[ -n '$W10' ] && [ -f '$W10/.claude/commands/spec.md' ] && [ -f '$W10/.cursor/commands/spec.md' ]"
+dung "…giống hệt build riêng" sh -c "diff -r '$W10/.claude' '$TMP/doi-chieu-that/claude-code/.claude' && diff -r '$W10/.cursor' '$TMP/doi-chieu-that/cursor/.cursor'"
+dung "…worktree sạch (mọi file sinh ra bị exclude)" sh -c "[ -z \"\$(git -C '$W10' status --porcelain --untracked-files=all)\" ]"
+dung "…dấu build của worktree có cả hai" sh -c "grep -q '^claude-code ' '$W10/.agent-workflow/.adapters' && grep -q '^cursor ' '$W10/.agent-workflow/.adapters'"
+dung "…aw feature trong worktree suy được feature (cả hai agent dùng chung)" test "$(awd "$W10" feature 2>/dev/null)" = ".agent-workflow/feat_hai-agent"
+
+# doctor thấy worktree thiếu bộ lệnh của một agent
+awk '$1 != "cursor"' "$W10/.agent-workflow/.adapters" > "$TMP/dau.tmp" && mv "$TMP/dau.tmp" "$W10/.agent-workflow/.adapters"
+ky_vong 1 "doctor: worktree chưa sinh adapter cursor → ✗" awd "$W10" doctor
+dung "…chỉ đúng adapter thiếu và lệnh sửa" sh -c "cd '$W10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q '✗ cursor chưa được sinh — chạy: aw adapter build'"
+ky_vong 0 "aw adapter build cursor (một adapter)" awd "$W10" adapter build cursor
+dung "…dấu build giữ dòng claude-code, thêm lại cursor (đúng hai dòng)" sh -c \
+  "[ \"\$(wc -l < '$W10/.agent-workflow/.adapters' | tr -d ' ')\" = 2 ] && grep -q '^claude-code ' '$W10/.agent-workflow/.adapters' && grep -q '^cursor ' '$W10/.agent-workflow/.adapters'"
+ky_vong 0 "doctor lại ✓" awd "$W10" doctor
+sed 's/^claude-code .*/claude-code 2000.1.1/' "$W10/.agent-workflow/.adapters" > "$TMP/dau.tmp" && mv "$TMP/dau.tmp" "$W10/.agent-workflow/.adapters"
+ky_vong 0 "doctor: bộ lệnh sinh từ engine khác chỉ là thông tin (việc có thể ghim engine cũ)" awd "$W10" doctor
+dung "…nói rõ version của bộ lệnh và của bản clone" sh -c "cd '$W10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q 'claude-code sinh từ engine 2000.1.1, bản clone dùng $VDEV'"
+rm -rf "$W10/.cursor" "$W10/.claude"
+ky_vong 0 "aw adapter build (không id) → mọi adapter trong config.sh" awd "$W10" adapter build
+dung "…sinh lại cả hai, dấu build đúng version" sh -c "[ -f '$W10/.claude/commands/plan.md' ] && [ -f '$W10/.cursor/commands/plan.md' ] && [ \"\$(cat '$W10/.agent-workflow/.adapters')\" = 'claude-code $VDEV
+cursor $VDEV' ]"
+rm -rf "$W10/.cursor"
+ky_vong 2 "aw adapter build claude-code,khong-co → SAI THAM SỐ" awd "$W10" adapter build claude-code,khong-co
+dung "…không sinh adapter nào" test ! -e "$W10/.cursor"
+awd "$W10" adapter build >/dev/null 2>&1
+rm -f "$W10/.agent-workflow/.adapters"
+ky_vong 0 "doctor: worktree tạo bằng engine cũ (chưa có dấu build) → chỉ nhắc, không ✗" awd "$W10" doctor
+awd "$W10" adapter build >/dev/null 2>&1
+
+# config.sh do NGƯỜI sửa: dấu phẩy, id sai, bỏ trống
+cp "$C10/config.sh" "$TMP/config10.bak"
+sed 's/^ADAPTER=.*/ADAPTER="cursor,claude-code"/' "$TMP/config10.bak" > "$C10/config.sh"
+W11=$(awd "$R10" worktree new chore dau-phay --create --base main 2>/dev/null)
+dung "ADAPTER viết bằng dấu phẩy → worktree có cả hai bộ" sh -c "[ -f '$W11/.claude/commands/spec.md' ] && [ -f '$W11/.cursor/commands/spec.md' ]"
+sed 's/^ADAPTER=.*/ADAPTER=""/' "$TMP/config10.bak" > "$C10/config.sh"
+W12=$(awd "$R10" worktree new chore bo-trong --create --base main 2>/dev/null)
+dung "ADAPTER bỏ trống → chỉ claude-code (như trước khi có nhiều adapter)" sh -c "[ -f '$W12/.claude/commands/spec.md' ] && [ ! -e '$W12/.cursor' ]"
+sed 's/^ADAPTER=.*/ADAPTER="claude-code khong-co"/' "$TMP/config10.bak" > "$C10/config.sh"
+ky_vong 0 "ADAPTER có id sai → worktree vẫn tạo được" awd "$R10" worktree new chore id-sai --create --base main
+dung "…nhưng cảnh báo rõ, không sinh nửa vời" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore id-sai-2 --create --base main 2>&1 >/dev/null | grep -q 'CẢNH BÁO: ADAPTER=\"claude-code khong-co\"' && [ ! -e '$TMP/repo10.wt/chore_id-sai-2/.claude' ]"
+ky_vong 1 "doctor: ADAPTER khai id engine không có → ✗" awd "$R10" doctor
+cp "$TMP/config10.bak" "$C10/config.sh"
+dung "…sửa lại thì doctor ✓" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor >/dev/null 2>&1"
+
 # ---------------------------------------------------------------- don worktree
 echo ""
 echo "aw worktree status|remove (don-worktree.sh)"
@@ -1295,6 +1564,22 @@ ky_vong 3 "không có tham số → KHÔNG CÓ THAM SỐ (hỏi người dùng)"
 ky_vong 3 "tham số chỉ có khoảng trắng / dòng trống → KHÔNG CÓ THAM SỐ" pl "
   "
 ky_vong 4 "câu chữ tự do → LỜI NGƯỜI DÙNG" pl "sửa phí hoàn tiền bị âm ABC-123"
+ky_vong 2 "chữ giữ chỗ <tham-số> còn nguyên → SAI CÁCH GỌI (không thành mục [HUMAN])" pl "<tham-số>"
+ky_vong 2 "chữ giữ chỗ \$ARGUMENTS còn nguyên → SAI CÁCH GỌI" pl '$ARGUMENTS'
+ky_vong 2 "…kể cả có khoảng trắng / dòng trống bao quanh" pl "
+  <tham-số>
+"
+dung "…và không in dòng input nào" test -z "$(ra '<tham-số>')"
+ky_vong 4 "câu thật có nhắc chữ <tham-số> vẫn là LỜI NGƯỜI DÙNG" pl "sửa lỗi hiển thị <tham-số> trong trang"
+# Chạy NGUYÊN VĂN khối aw input do adapter sinh ra, như agent quên thay tham số
+for ad in claude-code cursor; do
+  case $ad in claude-code) f="$TMP/doi-chieu-that/claude-code/.claude/commands/intake.md" ;; *) f="$TMP/doi-chieu-that/cursor/.cursor/commands/intake.md" ;; esac
+  awk '/^```sh$/ { k = 1; next } k && /^```$/ { exit } k' "$f" | sed 's/^aw input \[--skip [^]]*\] /aw input /' > "$TMP/khoi-input-$ad.sh"
+  dung "$ad: khối aw input trong /intake là lệnh chạy được (có heredoc HET_INPUT)" sh -c "grep -q '^aw input - <<.HET_INPUT.\$' '$TMP/khoi-input-$ad.sh' && tail -1 '$TMP/khoi-input-$ad.sh' | grep -qx HET_INPUT"
+  ky_vong 2 "$ad: chạy khối đó khi chưa thay tham số → engine chặn (SAI CÁCH GỌI)" sh -c "cd '$R9' && aw() { AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' \"\$@\"; } && . '$TMP/khoi-input-$ad.sh'"
+  sed 's/^<tham-số>$/ABC-123/; s/^\$ARGUMENTS$/ABC-123/' "$TMP/khoi-input-$ad.sh" > "$TMP/khoi-input-$ad-thay.sh"
+  dung "$ad: …thay đúng tham số thì ra nhãn [JIRA]" sh -c "cd '$R9' && aw() { AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' \"\$@\"; } && . '$TMP/khoi-input-$ad-thay.sh' 2>/dev/null | grep -q 'JIRA.* ABC-123'"
+done
 dung "…cả chuỗi là MỘT mục [HUMAN] nguyên văn" bang "$(ra 'sửa phí hoàn tiền bị âm ABC-123')" "- ${BT}[HUMAN]${BT}
   > sửa phí hoàn tiền bị âm ABC-123"
 dung "…mã Jira trong câu chỉ là ĐỀ XUẤT (stderr)" sh -c "printf '%s\n' \"\$1\" | grep -A3 'Đề xuất tách thêm' | grep -q 'ABC-123'" _ "$(loi 'sửa phí hoàn tiền bị âm ABC-123')"
@@ -1586,6 +1871,32 @@ dung "…tick còn nguyên" co_tick
 viet_spec; thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- **Status:** `approved`'
 sh "$GAC" pre >/dev/null 2>&1
 ky_vong 0 "spec dạng cũ: hook không chặn" sh "$GAC" post
+
+# Cursor nạp hook của .claude/settings.json (tương thích, bật sẵn) VÀ của
+# .cursor/hooks.json: một lệnh của agent có thể chạy aw guard hai lần. Phải vô hại.
+viet_spec; sh "$GAC" pre >/dev/null 2>&1; sh "$GAC" post >/dev/null 2>&1
+thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
+sh "$GAC" pre >/dev/null 2>&1; sh "$GAC" pre >/dev/null 2>&1
+thay "$F/spec.md" '- [ ] **Approved by human** — đã đọc' '- [x] **Approved by human** — đã đọc'
+ky_vong 2 "hook chạy hai lần (pre pre · agent tick · post post): post đầu chặn" sh "$GAC" post
+ky_vong 0 "…post thứ hai không báo thêm" sh "$GAC" post
+dung "…tick của agent đã bị bỏ, không hồi lại" sh -c "! grep -q '^- \[x\] \*\*Approved by human' '$F/spec.md'"
+viet_spec
+sh "$GAC" pre >/dev/null 2>&1; sh "$GAC" pre >/dev/null 2>&1
+ky_vong 0 "người tick giữa hai lượt, hook chạy hai lần: post đầu cho qua" sh "$GAC" post
+ky_vong 0 "…post thứ hai cũng cho qua" sh "$GAC" post
+dung "…tick của người còn nguyên" co_tick
+sh "$GAC" pre >/dev/null 2>&1; thay "$F/spec.md" 'mở y thấy a' 'mở y thấy a và c'; sh "$GAC" pre >/dev/null 2>&1
+ky_vong 2 "nội dung đổi sau duyệt, hook hai lần: vẫn bỏ tick" sh "$GAC" post
+dung "…spec giờ chưa tick" sh -c "! grep -q '^- \[x\] \*\*Approved by human' '$F/spec.md'"
+# post dùng hết mốc của pre: một post lẻ về sau (agent bắn hook không đều — Cursor
+# có tool bỏ qua pre) không được coi tick của người là của agent.
+viet_spec; thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
+sh "$GAC" pre >/dev/null 2>&1; sh "$GAC" post >/dev/null 2>&1
+thay "$F/spec.md" '- [ ] **Approved by human** — đã đọc' '- [x] **Approved by human** — đã đọc'
+ky_vong 0 "post lẻ sau một cặp pre/post đã xong: tick của người không bị bỏ" sh "$GAC" post
+dung "…tick của người còn nguyên" co_tick
+rm -f "$R/.agent-workflow/.gac-duyet-pre"
 viet_spec; viet_tdd; ghi_based_on
 
 # ---------------------------------------------------------------- cổng duyệt

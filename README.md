@@ -7,7 +7,9 @@ Repo này là *nguồn* của **engine**, phát hành theo tag `YYYY.M.N`
 cài global lấy đúng version engine vào cache, cấu hình nằm trong `.git/` của bản
 clone, và adapter sinh lệnh riêng cho agent bạn đang dùng — tất cả bị exclude,
 không bao giờ phải commit vào nhánh gốc (xem [Cài đặt](#cài-đặt)). Hiện có adapter
-cho **Claude Code**; Codex, Cursor, Copilot có khe cắm nhưng chưa hiện thực.
+cho **Claude Code** và **Cursor** — team dùng cả hai thì mỗi worktree có cả hai bộ
+lệnh, cùng một hợp đồng phase (xem [Nhiều agent trong một team](#nhiều-agent-trong-một-team));
+Codex, Copilot có khe cắm nhưng chưa hiện thực.
 
 ## Ý tưởng cốt lõi
 
@@ -278,6 +280,7 @@ Spec và mỗi D-xx có một ô duyệt; bạn duyệt bằng cách đổi `[ ]
 - **Agent không bao giờ tick**, không sửa dấu duyệt; agent sửa nội dung đã tick thì
   bỏ tick. Muốn máy chặn cứng thay vì chỉ dặn: cài hook `aw guard` cho Claude Code
   ([adapters/claude-code/README.md](adapters/claude-code/README.md#hook-gác-ô-duyệt))
+  hay Cursor ([adapters/cursor/README.md](adapters/cursor/README.md#hook-gác-ô-duyệt))
   — ô nào được tick trong lúc lệnh của agent chạy thì bị bỏ tick và agent được báo.
 - Ô duyệt phải đúng chỗ (spec: trước heading `##` đầu tiên; D-xx: trong mục của
   nó), đúng một ô; ô trong chú thích hay khối code không được tính.
@@ -474,7 +477,7 @@ protected branch. Gồm ba phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.11/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.12/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -503,9 +506,11 @@ aw init --test-cmd "npm test"
   archive/         ← artifact của worktree đã gỡ (aw worktree remove)
   ```
 
-- thêm `/.agent-workflow/` và `/.claude/` (đường dẫn adapter khai) vào
+- thêm `/.agent-workflow/` và đường dẫn mọi adapter khai (`/.claude/`; Cursor:
+  `/.cursor/commands/`, `/.cursor/agents/`, `/.cursor/skills/quy-trinh-agent/`) vào
   `.git/info/exclude`;
-- sinh adapter ở checkout chính.
+- sinh adapter ở checkout chính — mỗi adapter trong `ADAPTER` của `config.sh`
+  (mặc định `claude-code`; `aw init --adapter claude-code,cursor` cho team dùng cả hai).
 
 Rồi sửa `.git/agent-workflow/conventions.md`, mở agent ở checkout chính và chạy
 `/intake` — nó đề xuất worktree cho việc. Base chọn tuỳ ý: base không cần có gì
@@ -525,16 +530,16 @@ File đã có ở máy thì giữ; `--force` để lấy bản của team.
 
 | Lệnh | Việc |
 |---|---|
-| `aw init [--version YYYY.M.N] [--adapter <id>] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
+| `aw init [--version YYYY.M.N] [--adapter <id>[,<id>…]] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
 | `aw upgrade <YYYY.M.N>` | Đổi engine cho việc mới |
 | `aw version` · `aw doctor` | Xem version đang dùng · kiểm môi trường |
 | `aw check <tên> <thư-mục-feature>` | Checker máy — `intake spec design plan implement review repro perf` |
 | `aw worktree new <loại> <mô-tả> [--create --base <ref>]` | Đề xuất / tạo worktree cho việc |
 | `aw worktree status <branch>` · `aw worktree remove <branch> [--delete-branch]` | Dọn worktree sau khi merge |
-| `aw adapter build <agent> [--out <thư-mục>] [--force]` | Sinh lại adapter |
+| `aw adapter build [<agent>[,<agent>…]] [--out <thư-mục>] [--force]` | Sinh lại adapter — bỏ trống agent: mọi adapter trong `ADAPTER` |
 | `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules <phase>` | Lệnh agent gọi trong các phase |
 | `aw approval design\|plan <thư-mục-feature>` | Cổng duyệt khi vào phase: còn gì chờ người duyệt — lệnh `/design`, `/plan` gọi |
-| `aw guard pre` · `aw guard post` | Hook gác ô duyệt — cấu hình ở [adapters/claude-code/README.md](adapters/claude-code/README.md#hook-gác-ô-duyệt) |
+| `aw guard pre` · `aw guard post` | Hook gác ô duyệt — cấu hình ở [Claude Code](adapters/claude-code/README.md#hook-gác-ô-duyệt) · [Cursor](adapters/cursor/README.md#hook-gác-ô-duyệt) |
 
 ### Artifact của việc: chỉ ở máy
 
@@ -543,6 +548,28 @@ không thấy `spec.md`, `tdd.md`… trong diff. Checker so diff vốn đã bỏ
 này. Gỡ worktree bằng `aw worktree remove` thì artifact được **chép vào**
 `.git/agent-workflow/archive/<tên>/` trước — `git worktree remove` trơn sẽ xoá
 mất, vì file bị ignore không nằm trong commit nào.
+
+### Nhiều agent trong một team
+
+Người dùng Claude Code, người dùng Cursor, cùng một repo:
+
+```sh
+aw init --adapter claude-code,cursor     # hoặc sửa ADAPTER="claude-code cursor" trong config.sh rồi aw init
+```
+
+- Mỗi worktree (và checkout chính) có cả `.claude/` lẫn `.cursor/`: ai mở bằng agent
+  nào cũng có `/intake`, `/spec`… Đổi agent giữa các phase được (vd `/spec` bằng
+  Claude Code, `/implement` bằng Cursor) — phase bàn giao bằng file, `aw check` như nhau,
+  dòng `Engine:` của `intake.md` ghim cùng version.
+- **Một hợp đồng phase cho mọi agent:** cả hai adapter sinh từ cùng bộ sinh
+  (`adapters/lib/chung.sh`); chỉ cách hỏi lựa chọn, cách truyền tham số và đầu file
+  là riêng. Test hồi quy đòi phần còn lại giống hệt nhau từng byte.
+- Cursor cũng nạp `.claude/` (chế độ tương thích, bật sẵn). Lệnh, subagent, skill của
+  hai adapter **trùng tên** để bản `.cursor/` che bản `.claude/`; file `.claude/` còn
+  dòng "Dành cho Claude Code" để Cursor nạp nhầm thì dừng.
+- **Mỗi worktree chỉ một agent chạy tại một lúc** — hook gác ô duyệt dùng một mốc
+  chung trong worktree.
+- `aw doctor` báo worktree thiếu bộ lệnh của một agent (`aw adapter build` để sinh).
 
 ### Nâng cấp
 
@@ -627,7 +654,8 @@ phase cần nó: `quy_tac_spec`, `quy_tac_design`, `quy_tac_plan`, `quy_tac_impl
   chạy, nên sửa `conventions.md` là có hiệu lực ngay, không cần build lại adapter.
 - File phải **đã commit** vào base: worktree mới chỉ có file đã commit. Không có,
   chưa commit, hay khoá gõ nhầm → `aw check` của phase đó chặn. Skill để trong
-  `.claude/` thì commit bằng `git add -f` — `aw init` exclude cả `/.claude/`.
+  `.claude/` thì commit bằng `git add -f` — `aw init` exclude cả `/.claude/` (Cursor:
+  `/.cursor/commands/`, `/.cursor/agents/`).
 - `review` đối chiếu diff với **mọi** khoá: mục "Repo rules" của `review.md` có
   một dòng `pass` / `violation` / `not applicable` cho từng file, thiếu là chặn.
 - Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md`. Quy tắc máy kiểm được
@@ -650,12 +678,13 @@ bin/
   aw                     wrapper cài global: chọn version, tải + kiểm sha256, chuyển lệnh
   aw-engine              điểm vào của engine: init, check, worktree, adapter, feature…
 adapters/
-  README.md              hợp đồng adapter, ghi chú Codex / Cursor
-  lib/chung.sh           phần dùng chung của mọi adapter
+  README.md              hợp đồng adapter (hook), nhiều adapter, ghi chú Codex
+  lib/chung.sh           bộ sinh dùng chung (ad_sinh) — adapter chỉ khai hook
   claude-code/build.sh   biên dịch sang .claude/**; claude-code/exclude: đường dẫn cần exclude
+  cursor/build.sh        biên dịch sang .cursor/{commands,agents,skills}/**
 tools/                   (engine — gọi qua aw, không gọi thẳng)
   khoi-tao.sh            aw init: cấu hình, exclude, adapter; --from-legacy
-  sinh-adapter.sh        aw adapter build: chép rules/templates vào .agent-workflow/.engine/ + build
+  sinh-adapter.sh        aw adapter build: chép rules/templates vào .agent-workflow/.engine/ + build từng adapter
   kiem-tra-*.sh          các cổng chặn bằng máy (aw check)
   xac-dinh-feature.sh    aw feature: checkout chính → chặn; branch → tham số → hỏi
   tao-worktree.sh        aw worktree new: đề xuất worktree — người chọn base rồi mới tạo

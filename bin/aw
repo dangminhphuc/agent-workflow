@@ -12,7 +12,7 @@
 #   4. chuyển lệnh sang engine, kèm AW_REPO, AW_CONFIG, AW_ENGINE
 #
 # Lệnh:
-#   aw init [--version YYYY.M.N] [--adapter <id>] [--test-cmd "<lệnh>"] [--from <url>] [--from-legacy] [--force]
+#   aw init [--version YYYY.M.N] [--adapter <id>[,<id>…]] [--test-cmd "<lệnh>"] [--from <url>] [--from-legacy] [--force]
 #   aw upgrade <YYYY.M.N>
 #   aw version
 #   aw doctor
@@ -20,10 +20,10 @@
 #   aw worktree new <type> <desc> [--create --base <ref>]
 #   aw worktree status <branch>
 #   aw worktree remove <branch> [--delete-branch]
-#   aw adapter build <agent> [--out <dir>] [--force]
+#   aw adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]   bỏ trống agent = ADAPTER trong config.sh
 #   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw rename <branch>
 #   aw rules <phase>                       phase: spec design plan implement review
-#   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md
+#   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /design, /plan gọi)
 #
 # Biến môi trường:
@@ -33,7 +33,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.11"
+AW_WRAPPER_VERSION="2026.10.12"
 AW_PROTOCOL=1
 AW_MIRROR_MAC_DINH="https://github.com/dangminhphuc/agent-workflow/releases/download"
 
@@ -334,12 +334,30 @@ cmd_doctor() {
     for _f in conventions.md config.sh; do [ -f "$AW_CONFIG/$_f" ] && co "$_f" || khong "$_f không có — chạy: aw init"; done
     _ex="$GIT_CHUNG/info/exclude"
     _ds="/.agent-workflow/"
-    _ad=$( [ -f "$AW_CONFIG/config.sh" ] && (. "$AW_CONFIG/config.sh" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}") )
+    # ADAPTER: một hoặc nhiều id, cách nhau dấu cách hoặc dấu phẩy (bỏ trống = claude-code)
+    _ad=$( [ -f "$AW_CONFIG/config.sh" ] && (. "$AW_CONFIG/config.sh" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}") | tr ',' ' ')
+    _ad=$(printf '%s\n' ${_ad:-claude-code} | awk 'NF && !t[$0]++ { printf "%s%s", (n++ ? " " : ""), $0 }')
     _e=""; if [ -n "${AW_ENGINE_DIR:-}" ]; then _e=$AW_ENGINE_DIR; elif [ -n "$_v" ]; then _e="$AW_CACHE/$_v"; fi
-    [ -n "$_ad" ] && [ -f "$_e/adapters/$_ad/exclude" ] && _ds="$_ds $(grep -v '^#' "$_e/adapters/$_ad/exclude" | tr '\n' ' ')"
+    for _a in $_ad; do
+      [ -f "$_e/adapters/$_a/exclude" ] && _ds="$_ds $(grep -v '^#' "$_e/adapters/$_a/exclude" | tr '\n' ' ')"
+      [ -d "$_e/adapters" ] && [ ! -f "$_e/adapters/$_a/build.sh" ] && khong "ADAPTER khai \"$_a\" nhưng engine $_v không có adapter đó — sửa $AW_CONFIG/config.sh"
+    done
     for _p in $_ds; do
       grep -qxF "$_p" "$_ex" 2>/dev/null && co "info/exclude có $_p" || khong "info/exclude thiếu $_p — chạy: aw init"
     done
+    # Dấu build adapter ở worktree hiện tại (sinh-adapter.sh ghi "<id> <version>").
+    _dau="$AW_REPO/.agent-workflow/.adapters"
+    echo "Adapter ở worktree này ($_ad)"
+    if [ ! -f "$_dau" ]; then
+      echo "  · chưa có dấu build adapter (worktree tạo bằng engine cũ) — chạy: aw adapter build"
+    else
+      for _a in $_ad; do
+        _va=$(awk -v a="$_a" '$1 == a { print $2; exit }' "$_dau")
+        if [ -z "$_va" ]; then khong "$_a chưa được sinh — chạy: aw adapter build"
+        elif [ -n "$_v" ] && [ "$_va" != "$_v" ]; then echo "  · $_a sinh từ engine $_va, bản clone dùng $_v — chạy aw adapter build nếu việc ở đây dùng $_v"
+        else co "$_a (engine $_va)"; fi
+      done
+    fi
   fi
   [ "$_x" = 0 ] && ket_thuc 0 || ket_thuc 1
 }

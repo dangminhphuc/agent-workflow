@@ -11,6 +11,34 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.12]
+
+### Thêm
+- **Adapter Cursor** (`adapters/cursor/`): `.cursor/commands/` (lệnh `/intake`…`/review`,
+  `/import`, `/clarify`), `.cursor/agents/` (`ra-soat-doc-lap`, `soat-thiet-ke`),
+  `.cursor/skills/quy-trinh-agent/`. Tên trùng bản Claude Code để bản `.cursor/` che
+  bản `.claude/` mà Cursor nạp để tương thích. Tham số lệnh là `<tham-số>` (Cursor
+  không thay `$ARGUMENTS`); hỏi lựa chọn và hộp xác nhận cổng duyệt bằng tool của
+  Cursor nếu có, không thì đánh số. Hook `aw guard` cho Cursor: `.cursor/hooks.json`
+  — xem adapters/cursor/README.md.
+- **Nhiều adapter cho một bản clone:** `ADAPTER` trong `config.sh` nhận nhiều id
+  (`"claude-code cursor"`, dấu cách hoặc phẩy); `aw init --adapter claude-code,cursor`.
+  `aw init` exclude đường dẫn của mọi adapter; `aw worktree new --create` và
+  `aw adapter build` sinh mọi adapter (`aw adapter build` không id = theo `config.sh`).
+  Dấu build `.agent-workflow/.adapters`; `aw doctor` báo worktree thiếu bộ lệnh của
+  một agent hay `ADAPTER` khai id không có.
+- Engine chặn chữ giữ chỗ chưa thay: `aw feature '<tham-số>'` / `'$ARGUMENTS'` →
+  `TÊN KHÔNG HỢP LỆ`; `aw input` với đúng chữ giữ chỗ → `SAI CÁCH GỌI`.
+
+### Đổi
+- Việc sinh file của adapter dồn vào `adapters/lib/chung.sh` (`ad_sinh`); adapter chỉ
+  khai hook (`ad_tham_so`, `ad_dau_lenh`, `ad_mo_dau_lenh`, `ad_hoi_lua_chon`,
+  `ad_hoi_cong_duyet`, `ad_danh_cho`). Output Claude Code không đổi, trừ dòng mới
+  "Dành cho Claude Code" ở mỗi file (Cursor nạp nhầm thì dừng).
+- `aw init --adapter` sai id thì từ chối **trước** khi ghi `config.sh`.
+- Test: đối chiếu mọi adapter (`AW_DOI_CHIEU=1`, giống hệt từng byte ngoài hook),
+  hai adapter cùng thư mục, exclude phủ đúng file sinh ra, `aw guard` chạy hai lần.
+
 ## [2026.10.11]
 
 ### Đổi
