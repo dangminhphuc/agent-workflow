@@ -57,6 +57,9 @@ thay() {
   }' "$1" > "$1.tmp" && mv "$1.tmp" "$1"
 }
 
+# duyet_lai <file> — người duyệt lại: xoá dấu duyệt, giữ tick
+duyet_lai() { sed 's/ *<!-- dấu duyệt: [0-9a-f]* -->//' "$1" > "$1.tmp" && mv "$1.tmp" "$1"; }
+
 g() { git -C "$R" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
 
 # ------------------------------------------------------------------ fixture
@@ -91,7 +94,7 @@ viet_spec() {
 # Đặc tả — x
 
 - **Mức rủi ro:** `thường`
-- **Trạng thái spec:** `đã duyệt`
+- [x] **Người duyệt spec** — đã đọc
 
 ## Yêu cầu
 
@@ -165,8 +168,8 @@ Module src/a.
 
 ### D-01 — lưu ở đâu
 - tac_gia: `agent`
-- Trạng thái: `đã duyệt`   <!-- đề xuất | đã duyệt | mở lại -->
 - Chọn: file
+- [x] **Người duyệt quyết định**
 
 ## Mô hình dữ liệu
 Dựa trên: D-01
@@ -329,6 +332,8 @@ ky_vong 2 "check thiếu thư mục → SAI THAM SỐ" sh "$AWE" check spec
 ky_vong 9 "thiếu AW_CONFIG → KHÔNG HỢP LỆ (không đoán đường dẫn)" env -u AW_CONFIG sh "$AWE" check spec "$F"
 ky_vong 9 "wrapper khác giao thức → KHÔNG HỢP LỆ" env AW_PROTOCOL=999 sh "$AWE" check spec "$F"
 ky_vong 2 "lệnh lạ → SAI THAM SỐ" sh "$AWE" lam-gi-do
+ky_vong 0 "aw-engine guard pre → gac-duyet.sh" sh "$AWE" guard pre
+ky_vong 3 "aw-engine guard sai pha → SAI THAM SỐ của gac-duyet.sh" sh "$AWE" guard khac
 ky_vong 2 "adapter không có → SAI THAM SỐ" sh "$AWE" adapter build khong-co --out "$TMP/o-x"
 
 # Ghim version theo việc: dòng Engine trong intake.md
@@ -415,13 +420,44 @@ viet_spec; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte thì cho qua" sh "$CHK" "$F"
 
-# Trạng thái spec: chỉ người đổi sang "đã duyệt"; spec vẫn qua checker khi còn "đề xuất"
-viet_spec; thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
-ky_vong 0 "spec \"đề xuất\" vẫn qua checker của spec" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '- **Trạng thái spec:** `đã duyệt`' ''
-ky_vong 1 "chặn spec thiếu Trạng thái spec" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '`đã duyệt`' '`ok`'
-ky_vong 1 "chặn Trạng thái spec tự chế" sh "$CHK" "$F"
+# Ô duyệt spec: chỉ người tick; spec vẫn qua checker khi chưa tick
+viet_spec; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'
+ky_vong 0 "spec chưa tick vẫn qua checker của spec" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' ''
+ky_vong 1 "chặn spec thiếu ô duyệt" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [x] Người duyệt spec'
+ky_vong 1 "chặn ô duyệt spec sai dạng" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- **Trạng thái spec:** `đã duyệt`'
+ky_vong 1 "chặn dạng cũ \"Trạng thái spec:\"" sh "$CHK" "$F"
+dung "…đúng lý do: dạng cũ" sh -c "sh '$CHK' '$F' | grep -q 'dạng cũ'"
+viet_spec; printf '\n- [x] **Người duyệt spec** — đã đọc\n' >> "$F/spec.md"
+ky_vong 1 "chặn ô duyệt spec nằm ngoài phần đầu file" sh "$CHK" "$F"
+viet_spec; printf '\n```\n- [x] **Người duyệt spec** — đã đọc\n```\n<!--\n- [x] **Người duyệt spec** — đã đọc\n-->\n' >> "$F/spec.md"
+ky_vong 0 "ô duyệt trong khối code / chú thích không được tính" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [x] **Người duyệt spec** — đã đọc
+- [x] **Người duyệt spec** — đã đọc'
+ky_vong 1 "chặn ô duyệt spec bị lặp" sh "$CHK" "$F"
+
+# Dấu duyệt: tick lần đầu thì máy ghi hash; nội dung đổi sau đó thì chặn
+viet_spec
+ky_vong 0 "spec đã tick qua checker" sh "$CHK" "$F"
+dung "…và máy ghi dấu duyệt" grep -q 'dấu duyệt: [0-9a-f]\{16\}' "$F/spec.md"
+H1=$(grep -o 'dấu duyệt: [0-9a-f]*' "$F/spec.md")
+sh "$CHK" "$F" >/dev/null 2>&1
+dung "…chạy lại không ghi dấu mới" bang "$H1" "$(grep -o 'dấu duyệt: [0-9a-f]*' "$F/spec.md")"
+thay "$F/spec.md" '<!-- chặn | chặn review | không chặn -->' '<!-- ghi chú khác -->'
+printf '\n\n' >> "$F/spec.md"
+ky_vong 0 "đổi chú thích / dòng trống không làm mất duyệt" sh "$CHK" "$F"
+thay "$F/spec.md" 'mở y thấy a' 'mở y thấy a và c'
+ky_vong 1 "chặn spec đổi nội dung sau khi người duyệt" sh "$CHK" "$F"
+dung "…đúng lý do: đổi sau khi người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'đã đổi sau khi người duyệt'"
+ky_vong 1 "…design cũng chặn spec đổi sau duyệt" sh "$T/kiem-tra-thiet-ke.sh" "$F"
+duyet_lai "$F/spec.md"
+ky_vong 0 "người xoá dấu duyệt (giữ tick) thì duyệt lại bản mới" sh "$CHK" "$F"
+thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'
+sh "$CHK" "$F" >/dev/null 2>&1
+dung "bỏ tick thì máy xoá dấu duyệt thừa" sh -c "! grep -q 'dấu duyệt' '$F/spec.md'"
+viet_spec
 
 # open-questions.md <-> spec.md phải khớp trạng thái
 viet_spec; printf '\n## YC-099 — mồ côi\n- **Giả định tạm đang dùng:** z\n- **Mức chặn:** `không chặn`\n- **Trạng thái:** `mở`\n' >> "$F/open-questions.md"
@@ -433,7 +469,9 @@ viet_spec; thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
 printf -- '- **Trả lời:** qua email\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [CẦN-HỎI]" sh "$CHK" "$F"
 thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
-ky_vong 0 "đã trả lời + spec đổi nhãn nguồn thì cho qua" sh "$CHK" "$F"
+ky_vong 1 "spec đã duyệt mà bị sửa (vd /clarify đổi nhãn) thì phải duyệt lại" sh "$CHK" "$F"
+duyet_lai "$F/spec.md"
+ky_vong 0 "đã trả lời + spec đổi nhãn nguồn + người duyệt lại thì cho qua" sh "$CHK" "$F"
 thay "$F/open-questions.md" '- **Trả lời:** qua email' '- **Trả lời:** <người trả lời ghi vào đây>'
 ky_vong 1 "chặn đã trả lời mà Trả lời còn trống/chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[JIRA]` ABC-2'
@@ -515,10 +553,11 @@ dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC
 thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
 printf -- '- **Trả lời:** qua email\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec
 
-viet_tdd; thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
+viet_tdd; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'
 ky_vong 1 "chặn vào design khi người chưa duyệt spec" sh "$CHK" "$F"
 dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'chưa được người duyệt'"
 viet_spec
@@ -548,18 +587,37 @@ ky_vong 1 "chặn YC chưa được ánh xạ" sh "$CHK" "$F"
 viet_tdd; thay "$F/tdd.md" 'Dựa trên: D-01' 'Dựa trên: D-09'
 ky_vong 1 "chặn Dựa trên trỏ về D không tồn tại" sh "$CHK" "$F"
 
-viet_tdd; thay "$F/tdd.md" '`đã duyệt`' '`ổn rồi`'
-ky_vong 1 "chặn trạng thái D-xx tự chế" sh "$CHK" "$F"
+viet_tdd; thay "$F/tdd.md" '- [x] **Người duyệt quyết định**' ''
+ky_vong 1 "chặn D-xx thiếu ô duyệt" sh "$CHK" "$F"
+viet_tdd; thay "$F/tdd.md" '- [x] **Người duyệt quyết định**' '- Trạng thái: `đã duyệt`'
+ky_vong 1 "chặn D-xx dạng cũ \"Trạng thái:\"" sh "$CHK" "$F"
+viet_tdd; thay "$F/tdd.md" '- [x] **Người duyệt quyết định**' '- [x] **Người duyệt quyết định**
+- [x] **Người duyệt quyết định**'
+ky_vong 1 "chặn D-xx có hai ô duyệt" sh "$CHK" "$F"
+viet_tdd; thay "$F/tdd.md" '## Contract / API' '- [x] **Người duyệt quyết định**
 
-viet_tdd; thay "$F/tdd.md" '`đã duyệt`' '`mở lại`'
-ky_vong 1 "chặn D mở lại mà không có lý do" sh "$CHK" "$F"
-thay "$F/tdd.md" '- Chọn: file' '- Chọn: file
+## Contract / API'
+ky_vong 1 "chặn ô duyệt nằm ngoài mục D-xx" sh "$CHK" "$F"
+
+viet_tdd; thay "$F/tdd.md" '- [x] **Người duyệt quyết định**' '- [ ] **Người duyệt quyết định**
 - Lý do mở lại: đổi sang DB'
-ky_vong 0 "D mở lại có lý do thì thiết kế vẫn hợp lệ" sh "$CHK" "$F"
+ky_vong 0 "D mở lại (bỏ tick + lý do) thì thiết kế vẫn hợp lệ" sh "$CHK" "$F"
+dung "…và hiện là mở lại" sh -c "sh '$CHK' '$F' | grep -q 'D-01  *mở lại'"
 
-viet_tdd; thay "$F/spec.md" '`thường`' '`cao`'
+viet_tdd
+ky_vong 0 "D đã tick qua checker design" sh "$CHK" "$F"
+thay "$F/tdd.md" '- Chọn: file' '- Chọn: file
+- Phản biện (agent): nên cân nhắc DB
+  vì dữ liệu sẽ lớn'
+ky_vong 0 "agent thêm phản biện không làm mất duyệt D" sh "$CHK" "$F"
+thay "$F/tdd.md" '- Chọn: file' '- Chọn: DB'
+ky_vong 1 "chặn D đổi nội dung sau khi người duyệt" sh "$CHK" "$F"
+duyet_lai "$F/tdd.md"
+ky_vong 0 "người xoá dấu duyệt D thì duyệt lại bản mới" sh "$CHK" "$F"
+
+viet_tdd; thay "$F/spec.md" '`thường`' '`cao`'; duyet_lai "$F/spec.md"
 ky_vong 1 "Mode 2: chặn rủi ro cao mà không có D do người viết" sh "$CHK" "$F"
-thay "$F/tdd.md" '`agent`' '`nguoi`'
+thay "$F/tdd.md" '`agent`' '`nguoi`'; duyet_lai "$F/tdd.md"
 ky_vong 0 "Mode 2: có D tac_gia: nguoi thì cho qua" sh "$CHK" "$F"
 viet_spec
 
@@ -576,7 +634,7 @@ echo "kiem-tra-ke-hoach.sh"
 CHK="$T/kiem-tra-ke-hoach.sh"
 ghi_based_on
 
-thay "$F/tdd.md" '`đã duyệt`' '`đề xuất`'
+thay "$F/tdd.md" '- [x] **Người duyệt quyết định**' '- [ ] **Người duyệt quyết định**'
 ky_vong 1 "chặn khi còn D-xx chưa được người duyệt" sh "$CHK" "$F"
 viet_tdd; ghi_based_on
 
@@ -671,7 +729,7 @@ dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-
 thay "$F/open-questions.md" '`mở`' '`đã trả lời`'
 printf -- '- **Trả lời:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[CẦN-HỎI]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
-ghi_based_on
+duyet_lai "$F/spec.md"; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec; ghi_based_on
 
@@ -962,7 +1020,13 @@ sh "$T/cap-nhat-based-on.sh" "$F" thu.md spec.md >/dev/null
 sh "$T/cap-nhat-based-on.sh" "$F" thu.md spec.md >/dev/null
 dung "giữ khoá frontmatter khác" grep -q '^khac: giu' "$F/thu.md"
 dung "chạy lại không nhân đôi based_on" test "$(grep -c 'spec.md@' "$F/thu.md")" = 1
-dung "hash ghi ra khớp file" grep -q "spec.md@$(tr -d '\r' < "$F/spec.md" | cksum | awk '{print $1}')" "$F/thu.md"
+dung "hash ghi ra khớp file (bỏ dấu duyệt)" grep -q "spec.md@$(tr -d '\r' < "$F/spec.md" | sed 's/ *<!-- dấu duyệt: [0-9a-f]* -->//' | cksum | awk '{print $1}')" "$F/thu.md"
+duyet_lai "$F/spec.md"; sh "$T/cap-nhat-based-on.sh" "$F" thu.md spec.md >/dev/null
+H_TRUOC=$(grep 'spec.md@' "$F/thu.md")
+sh "$T/kiem-tra-truy-vet.sh" "$F" >/dev/null 2>&1
+dung "…(spec giờ có dấu duyệt)" grep -q 'dấu duyệt:' "$F/spec.md"
+sh "$T/cap-nhat-based-on.sh" "$F" thu.md spec.md >/dev/null
+dung "máy ghi lại dấu duyệt không làm đổi hash based_on" bang "$H_TRUOC" "$(grep 'spec.md@' "$F/thu.md")"
 printf '# không frontmatter\n' > "$F/thu.md"
 sh "$T/cap-nhat-based-on.sh" "$F" thu.md spec.md >/dev/null
 dung "thêm frontmatter khi file chưa có" sh -c "head -1 '$F/thu.md' | grep -q '^---\$'"
@@ -1444,6 +1508,68 @@ ky_vong 1 "implement chặn perf không có số đo" sh "$T/kiem-tra-hien-thuc.
 ky_vong 1 "đo \"sau\" bị từ chối khi chưa có số đo trước" sh "$T/kiem-tra-hieu-nang.sh" "$F" --after
 mv "$F/do-hieu-nang.bak" "$F/do-hieu-nang.md"
 
+# ---------------------------------------------------------------- gác ô duyệt (hook)
+echo ""
+echo "gac-duyet.sh (aw guard)"
+GAC="$T/gac-duyet.sh"
+co_tick() { grep -q '^- \[x\] \*\*Người duyệt spec' "$F/spec.md"; }
+d_tick() { grep -q '^- \[x\] \*\*Người duyệt quyết định' "$F/tdd.md"; }
+viet_spec; viet_tdd
+ky_vong 3 "guard sai tham số → SAI THAM SỐ" sh "$GAC" khac
+
+# Người tick (giữa hai lệnh của agent): pre ghi dấu, post để yên
+ky_vong 0 "pre luôn cho qua" sh "$GAC" pre
+dung "…và ghi dấu duyệt cho ô người đã tick" grep -q 'dấu duyệt:' "$F/spec.md"
+ky_vong 0 "post không đổi gì thì cho qua" sh "$GAC" post
+dung "…tick của người còn nguyên" co_tick
+
+# Agent tick trong lúc lệnh chạy: post bỏ tick, báo agent (mã 2)
+thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'; sh "$GAC" pre >/dev/null 2>&1
+thay "$F/spec.md" '- [ ] **Người duyệt spec** — đã đọc' '- [x] **Người duyệt spec** — đã đọc'
+ky_vong 2 "post chặn agent tick ô duyệt spec" sh "$GAC" post
+dung "…và đã bỏ tick" sh -c "! grep -q '^- \[x\] \*\*Người duyệt spec' '$F/spec.md'"
+sh "$GAC" pre >/dev/null 2>&1
+thay "$F/spec.md" '- [ ] **Người duyệt spec** — đã đọc' '- [x] **Người duyệt spec** — đã đọc'
+dung "…stderr nói rõ cho agent: không tick lại" sh -c "sh '$GAC' post 2>&1 | grep -q 'Agent KHÔNG tick lại'"
+
+# Agent tick D-xx (kể cả viết cả file mới có sẵn [x])
+viet_tdd; thay "$F/tdd.md" '- [x] **Người duyệt quyết định**' '- [ ] **Người duyệt quyết định**'; sh "$GAC" pre >/dev/null 2>&1
+thay "$F/tdd.md" '- [ ] **Người duyệt quyết định**' '- [x] **Người duyệt quyết định**'
+ky_vong 2 "post chặn agent tick ô duyệt D-xx" sh "$GAC" post
+dung "…và đã bỏ tick D" sh -c "! grep -q '^- \[x\] \*\*Người duyệt quyết định' '$F/tdd.md'"
+sh "$GAC" pre >/dev/null 2>&1; viet_tdd
+ky_vong 2 "post chặn agent ghi đè cả tdd.md với ô đã tick" sh "$GAC" post
+
+# Agent sửa nội dung đã duyệt mà quên bỏ tick: post bỏ tick
+viet_spec; sh "$GAC" pre >/dev/null 2>&1; sh "$GAC" post >/dev/null 2>&1
+sh "$GAC" pre >/dev/null 2>&1
+thay "$F/spec.md" 'mở y thấy a' 'mở y thấy a và c'
+ky_vong 2 "post bỏ tick spec bị sửa sau khi duyệt" sh "$GAC" post
+dung "…spec giờ chưa tick" sh -c "! grep -q '^- \[x\] \*\*Người duyệt spec' '$F/spec.md'"
+
+# Được phép: agent bỏ tick; agent thêm phản biện dưới D đã duyệt
+viet_spec; sh "$GAC" pre >/dev/null 2>&1; sh "$GAC" post >/dev/null 2>&1
+sh "$GAC" pre >/dev/null 2>&1; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'
+ky_vong 0 "agent bỏ tick thì cho qua" sh "$GAC" post
+dung "…và dấu duyệt thừa bị xoá" sh -c "! grep -q 'dấu duyệt' '$F/spec.md'"
+viet_tdd; sh "$GAC" pre >/dev/null 2>&1; sh "$GAC" post >/dev/null 2>&1
+sh "$GAC" pre >/dev/null 2>&1
+thay "$F/tdd.md" '- Chọn: file' '- Chọn: file
+- Phản biện (agent): cân nhắc DB'
+ky_vong 0 "agent thêm phản biện dưới D đã duyệt thì cho qua" sh "$GAC" post
+dung "…D vẫn tick" d_tick
+
+# Không có mốc của pre (pre không chạy): post không bỏ tick của ai
+viet_spec; rm -f "$R/.agent-workflow/.gac-duyet-pre"
+ky_vong 0 "post không thấy pre thì không coi tick chưa dấu là của agent" sh "$GAC" post
+dung "…tick còn nguyên" co_tick
+
+# Việc mới dùng engine cũ (dạng "Trạng thái spec:") — hook không đụng tới
+viet_spec; thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- **Trạng thái spec:** `đã duyệt`'
+sh "$GAC" pre >/dev/null 2>&1
+ky_vong 0 "spec dạng cũ: hook không chặn" sh "$GAC" post
+viet_spec; viet_tdd; ghi_based_on
+
 # ---------------------------------------------------------------- chore
 echo ""
 echo "loại việc: chore"
@@ -1453,7 +1579,7 @@ for c in truy-vet ke-hoach hien-thuc ra-soat; do
 done
 ky_vong 1 "chore chạy design thì bị chặn" sh "$T/kiem-tra-thiet-ke.sh" "$F"
 
-thay "$F/spec.md" '`đã duyệt`' '`đề xuất`'
+thay "$F/spec.md" '- [x] **Người duyệt spec** — đã đọc' '- [ ] **Người duyệt spec** — đã đọc'
 ky_vong 1 "chore: plan chặn khi người chưa duyệt spec" sh "$T/kiem-tra-ke-hoach.sh" "$F"
 viet_spec; ghi_based_on
 
@@ -1684,6 +1810,8 @@ dung "…exclude /.agent-workflow/ và /.claude/" sh -c "grep -qx '/.agent-workf
 dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/intake.md"
 dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)" "$GOC7"
 dung "…cây làm việc sạch: file sinh ra không lọt vào git status" sh -c "[ -z \"\$(git -C '$R7' status --porcelain)\" ]"
+ky_vong 0 "aw guard pre → chuyển sang engine của bản clone (chưa có việc nào: không làm gì)" aw7 guard pre
+ky_vong 0 "aw guard post → như trên" aw7 guard post
 aw7 init >/dev/null 2>&1
 dung "init lại: không nhân đôi dòng exclude" bang "$(grep -cx '/.claude/' "$R7/.git/info/exclude")" 1
 ky_vong 2 "init lại với version khác → SAI THAM SỐ (dùng aw upgrade)" aw7 init --version 2099.1.2

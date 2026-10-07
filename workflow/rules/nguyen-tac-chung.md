@@ -27,8 +27,9 @@ Mỗi phase khai báo `exit_machine` và `exit_human`:
 Tiêu chí nào diễn đạt được dưới dạng máy thì phải để máy kiểm. "Agent tự đánh
 giá là đã đạt" không phải tiêu chí.
 
-**Agent không tự duyệt.** Không tự đổi quyết định D-xx sang `đã duyệt`, không tự
-đổi `[CẦN-HỎI]` sang `đã trả lời`. Checker dùng LLM chỉ được **chặn**, không bao
+**Agent không tự duyệt.** Không tick ô "Người duyệt …" (spec, D-xx), không sửa hay
+xoá `<!-- dấu duyệt: … -->` máy ghi cạnh tick, không tự đổi `[CẦN-HỎI]` sang
+`đã trả lời`. Agent sửa nội dung đã được tick thì phải **bỏ** tick. Checker dùng LLM chỉ được **chặn**, không bao
 giờ là bên nói "đạt" — không có file phát hiện nghĩa là checker chưa chạy.
 
 **Flow không tắc.** Checker chính xác (hợp đồng output của chính phase) thì chặn.

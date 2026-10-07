@@ -19,18 +19,19 @@ Quy ước sẵn có phải tuân theo:
 
 ## Quyết định (D-xx)
 
-Mỗi lựa chọn mà người khác có thể chọn khác. Người duyệt **từng** D. Mục này được
-phép rỗng — khi đó ghi "Không có quyết định cần duyệt." và xoá mẫu bên dưới.
+Mỗi lựa chọn mà người khác có thể chọn khác. Người duyệt **từng** D bằng cách tick
+ô "Người duyệt quyết định" của D đó. Mục này được phép rỗng — khi đó ghi "Không có
+quyết định cần duyệt." và xoá mẫu bên dưới.
 
 ### D-01 — <vấn đề cần quyết>
 
 - tac_gia: `<nguoi | agent>`
-- Trạng thái: `đề xuất`   <!-- đề xuất | đã duyệt | mở lại — CHỈ NGƯỜI đổi sang đã duyệt -->
 - Phương án A: <...> — được: <...> / mất: <...>
 - Phương án B: <...> — được: <...> / mất: <...>
 - Chọn: <A> — vì <...>
 - Khó đảo ngược vì: <...>
-<!-- Khi mở lại: đổi Trạng thái thành `mở lại` và thêm dòng
+- [ ] **Người duyệt quyết định**   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick. Máy ghi dấu duyệt (hash của D) cạnh tick; D đổi sau đó thì bị chặn tới khi người duyệt lại -->
+<!-- Khi mở lại: bỏ tick và thêm dòng
 - Lý do mở lại: <...> -->
 <!-- Mode 2 (tac_gia: nguoi): agent không sửa mục này, chỉ thêm
 - Phản biện (agent): <...> -->

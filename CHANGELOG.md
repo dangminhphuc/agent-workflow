@@ -11,6 +11,32 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Đổi
+- **Duyệt bằng ô tick thay cho gõ chữ.** `spec.md` có ô
+  `- [ ] **Người duyệt spec**` ở phần đầu file thay cho dòng
+  `Trạng thái spec: đề xuất | đã duyệt`; mỗi D-xx trong `tdd.md` có ô
+  `- [ ] **Người duyệt quyết định**` thay cho `Trạng thái: …`. D chưa tick mà có
+  `Lý do mở lại:` là D đang mở lại. Gặp dạng cũ thì `aw check` báo cách đổi.
+  Việc đã bắt đầu vẫn chạy bằng engine ghim trong `intake.md`, không bị ảnh hưởng.
+- `/clarify` sửa spec đã duyệt (sửa YC hay đổi nhãn nguồn) thì bỏ tick, người
+  tick lại — không còn ngoại lệ "giữ nguyên Trạng thái spec".
+
+### Thêm
+- **Dấu duyệt:** lần đầu thấy tick, máy ghi hash nội dung (spec, hoặc từng D) cạnh
+  tick, `<!-- dấu duyệt: … -->`. Nội dung đổi sau đó mà tick còn thì
+  `aw check spec|design|plan` chặn "đổi sau duyệt". Duyệt lại: xoá dấu, giữ tick.
+  Dòng trống, chú thích và `- Phản biện (agent):` không tính vào hash. Hash
+  `based_on` bỏ qua dấu duyệt nên máy ghi dấu không làm artifact phía sau lỗi thời.
+- **Parser ô duyệt chặt:** đúng chỗ (spec trước `##` đầu tiên, D trong mục của nó),
+  đúng một ô; ô trong chú thích hay khối code không tính; dòng mang nhãn ô duyệt
+  mà sai dạng là lỗi.
+- **`aw guard pre|post`** — hook PreToolUse/PostToolUse cho Claude Code: ô được
+  tick trong lúc lệnh của agent chạy, hoặc ô có dấu mà nội dung đã đổi, bị bỏ tick
+  và agent được báo (mã 2). Người tự thêm vào `.claude/settings.json` — xem
+  adapters/claude-code/README.md. Cần wrapper `aw` mới để có lệnh `aw guard`.
+
 ## [2026.10.9]
 
 ### Thêm

@@ -61,7 +61,8 @@ Kiểm mười một điều:
 5. Mục `[CẦN-HỎI]` có `Mức chặn: chặn | chặn review | không chặn`. Mục `chặn`
    còn `Trạng thái: mở` thì chặn vào design (chore: plan); mục `chặn review` còn
    mở thì `implement` cảnh báo, `review` chặn.
-6. `spec.md` có `Mức rủi ro: cao | thường` và `Trạng thái spec: đề xuất | đã duyệt`.
+6. `spec.md` có `Mức rủi ro: cao | thường` và đúng một ô `- [ ] **Người duyệt spec**`
+   ở phần đầu file; đã tick thì dấu duyệt máy ghi phải còn khớp nội dung.
 7. `open-questions.md` khớp `spec.md` theo chiều ngược lại: mỗi mục trỏ về một YC
    có thật; `Trạng thái` là `mở | đã trả lời`; `mở` thì spec phải còn `[CẦN-HỎI]`;
    `đã trả lời` thì phải có dòng "Trả lời" và spec đã đổi nhãn nguồn.

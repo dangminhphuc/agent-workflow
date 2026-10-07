@@ -9,7 +9,7 @@ based_on: []
 
 - **Mức rủi ro:** `<cao | thường>`
 - **Lý do:** <cao khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
-- **Trạng thái spec:** `đề xuất`   <!-- đề xuất | đã duyệt — CHỈ NGƯỜI đổi sang đã duyệt; sửa nội dung thì agent đặt lại đề xuất -->
+- [ ] **Người duyệt spec** — đã đọc và đồng ý toàn bộ spec   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick, sửa nội dung thì agent bỏ tick. Máy ghi dấu duyệt (hash nội dung) cạnh tick; nội dung đổi sau đó thì bị chặn tới khi người duyệt lại -->
 
 ## Nguồn
 

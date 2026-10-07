@@ -17,7 +17,7 @@ exit_human:
   - Chủ repo duyệt danh sách yêu cầu và phần "Ngoài phạm vi"
   - Chủ repo duyệt nhãn "Mức chặn" của từng [CẦN-HỎI] (chặn | chặn review | không chặn)
   - Chủ repo duyệt "Mức rủi ro" (cao → design chạy Mode 2, người phác D-xx trước)
-  - Duyệt xong, chủ repo tự đổi "Trạng thái spec" sang "đã duyệt" — design (chore thì plan) chặn tới lúc đó
+  - Duyệt xong, chủ repo tự tick ô "Người duyệt spec" — design (chore thì plan) chặn tới lúc đó
 needs_clean_context: true
 ---
 
@@ -142,11 +142,11 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
     lõi, hoặc thay đổi khó đảo ngược (xem cả "Ràng buộc & phụ thuộc"); còn lại
     `thường`. Ghi lý do một dòng. Nhãn này quyết định `02-design` chạy Mode 1 hay Mode 2.
 
-12. **Ghi `Trạng thái spec: đề xuất`.** Mỗi lần sửa nội dung spec (kể cả chạy lại
-    phase) đều đặt lại `đề xuất` — bản người đã duyệt không còn là bản này.
-    Ngoại lệ duy nhất: lệnh `clarify` sửa một YC theo câu trả lời mà
-    người vừa xác nhận trong hội thoại — giữ nguyên trạng thái, người không phải
-    sửa tay lại.
+12. **Để ô `- [ ] **Người duyệt spec**` chưa tick.** Mỗi lần sửa nội dung spec
+    (kể cả chạy lại phase, kể cả `clarify`) đều **bỏ tick** — bản người đã duyệt
+    không còn là bản này. Khi người tick, máy ghi dấu duyệt (hash nội dung) cạnh
+    tick; nội dung đổi sau đó mà tick còn thì `aw check` chặn, và hook `aw guard`
+    (nếu repo cài) tự bỏ tick. Không bao giờ sửa hay xoá `<!-- dấu duyệt: … -->`.
 
 13. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> spec.md intake.md`.
     `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì
@@ -175,7 +175,7 @@ Checker chặn nếu hai file lệch nhau.
 - Hạ `Mức rủi ro` hoặc `Mức chặn` xuống để khỏi bị chặn.
 - Ghi `Ưu tiên: nên có` khi nguồn không nói vậy — để plan hoãn được cho nhẹ việc.
 - Tự phân xử mâu thuẫn giữa các nguồn ("chọn bên an toàn hơn").
-- **Tự đổi `Trạng thái spec` sang `đã duyệt`.** Chỉ người làm việc này.
+- **Tick ô "Người duyệt spec"**, hay sửa/xoá dấu duyệt cạnh nó. Chỉ người làm việc này.
 - Viết code, kể cả code minh hoạ.
 
 ## Điều kiện ra
@@ -184,7 +184,8 @@ Checker chặn nếu hai file lệch nhau.
 - `aw check spec` ra `[x] ĐẠT` — mọi YC có đúng một nhãn nguồn hợp
   lệ, `Ưu tiên` hợp lệ và ít nhất một tiêu chí chấp nhận; mọi `[CẦN-HỎI]` có mục
   trong `open-questions.md` với giả định tạm và mức chặn hợp lệ; trạng thái hai
-  file khớp nhau; spec có `Mức rủi ro` và `Trạng thái spec` hợp lệ; có đủ các mục
+  file khớp nhau; spec có `Mức rủi ro` hợp lệ và đúng một ô duyệt ở phần đầu file,
+  tick thì dấu duyệt còn khớp nội dung; có đủ các mục
   "Ràng buộc & phụ thuộc", "Ngoài phạm vi", "Mâu thuẫn giữa các nguồn" với nội
   dung thật; mỗi mâu thuẫn trỏ tới điểm mù hoặc nguồn đã chốt.
 
@@ -192,8 +193,10 @@ Checker chặn nếu hai file lệch nhau.
 - Duyệt yêu cầu và "Ngoài phạm vi" — chỗ hiểu lệch nhau nhiều nhất, máy không
   kiểm thay được.
 - Duyệt nhãn `Mức chặn` và `Mức rủi ro` do agent đề xuất.
-- Đổi `Trạng thái spec` sang `đã duyệt`. `02-design` (chore: `03-plan`) chặn
-  cho tới lúc đó — gate người để lại dấu vết trong file, như D-xx.
+- Tick ô "Người duyệt spec". `02-design` (chore: `03-plan`) chặn cho tới lúc
+  đó — gate người để lại dấu vết trong file, như D-xx. Sửa spec sau khi đã tick
+  thì phải duyệt lại: đọc chỗ đổi rồi xoá `<!-- dấu duyệt: … -->` (giữ tick), hoặc
+  tick lại nếu tick đã bị bỏ.
 
 Mục `[CẦN-HỎI]` còn mở không được để `05-review` kết luận "đạt" cho YC đó; mục
 `chặn` hoặc `chặn review` còn mở thì `05-review` chặn hẳn.

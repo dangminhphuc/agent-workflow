@@ -201,7 +201,7 @@ buoc_quy_tac_repo() {
 luat_tom_tat() {
   printf '1. **Bàn giao bằng file.** Phase không được nhận đầu vào từ hội thoại phía trên.\n'
   printf '2. **Không tự tuyên bố đạt** với điều kiện ra loại MÁY — phải chạy `aw check …` và dán kết quả thật.\n'
-  printf '3. **Agent không tự duyệt.** Không tự đổi D-xx sang `đã duyệt`; checker LLM chỉ được chặn.\n'
+  printf '3. **Agent không tự duyệt.** Không tick ô "Người duyệt …" (spec, D-xx), không sửa dấu duyệt; sửa nội dung đã tick thì bỏ tick. Checker LLM chỉ được chặn.\n'
   printf '4. **Không vượt phạm vi phase.** Việc thuộc phase khác thì ghi lại, không làm luôn.\n'
   printf '5. **Không xoá artifact của phase trước.** Chạy lại là cập nhật, không viết đè trắng.\n'
   printf '6. **Mọi yêu cầu phải truy được về nguồn.**\n'

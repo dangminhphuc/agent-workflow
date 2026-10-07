@@ -23,6 +23,7 @@
 #   aw adapter build <agent> [--out <dir>] [--force]
 #   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw rename <branch>
 #   aw rules <phase>                       phase: spec design plan implement review
+#   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md
 #
 # Biến môi trường:
 #   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);
@@ -357,7 +358,7 @@ case "$LENH" in
     can_repo
     _v=$(version_theo_viec "${1:-}") || exit $?
     chuyen "$_v" "$LENH" "$@" ;;
-  feature|input|rename|worktree|adapter|rules)
+  feature|input|rename|worktree|adapter|rules|guard)
     can_repo
     _v=$(version_viec) || exit $?
     chuyen "$_v" "$LENH" "$@" ;;

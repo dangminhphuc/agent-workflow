@@ -11,6 +11,7 @@
 #   aw-engine rules <phase>
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine rename <new-branch>
+#   aw-engine guard pre|post                      hook gác ô duyệt (Claude Code)
 #   aw-engine worktree new <type> <desc> [--create --base <ref>]
 #   aw-engine worktree status <branch>
 #   aw-engine worktree remove <branch> [--delete-branch]
@@ -77,6 +78,7 @@ case "$LENH" in
   rules)     can_repo; exec sh "$T/quy-tac-repo.sh" "$@" ;;
   based-on)  can_repo; exec sh "$T/cap-nhat-based-on.sh" "$@" ;;
   rename)    can_repo; exec sh "$T/doi-ten-feature.sh" "$@" ;;
+  guard)     can_repo; exec sh "$T/gac-duyet.sh" "$@" ;;
   worktree)
     can_repo
     sub="${1:-}"; [ $# -gt 0 ] && shift

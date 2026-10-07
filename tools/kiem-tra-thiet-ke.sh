@@ -7,7 +7,8 @@
 #   1. Đầu vào: spec chưa qua checker của spec (entry check = checker phase trước).
 #   2. Đầu vào: còn điểm mù "Mức chặn: chặn" chưa được trả lời.
 #   3. tdd.md thiếu mục bắt buộc, hoặc mục bỏ trống mà không ghi "Không áp dụng: <lý do>".
-#   4. D-xx thiếu/ sai "Trạng thái" hoặc "tac_gia"; "mở lại" không có lý do; mã trùng.
+#   4. D-xx thiếu/ sai ô duyệt (tools/lib/duyet.sh) hoặc "tac_gia"; mã trùng; D đã
+#      tick mà nội dung đổi sau đó (dấu duyệt không khớp).
 #   5. "Dựa trên: D-xx" trỏ về D không tồn tại.
 #   6. Mục "Ánh xạ YC" bỏ sót YC của spec, hoặc trỏ về YC không có.
 #   7. Mode 2: spec "Mức rủi ro: cao" mà không có D-xx nào do người viết.
@@ -29,6 +30,8 @@ kq_khai kiem-tra-thiet-ke.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/duyet.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -72,10 +75,17 @@ while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] 
 $qtl
 EOF
 
+# Ô duyệt từng D-xx — trạng thái lấy từ thư viện chung, không tự đọc lại.
+kld=$(kc_loi_duyet "$TDD" tdd)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$kld
+EOF
+DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
+
 PHF="$PH"; PH_THIEU=0
 [ -f "$PH" ] || { PH_THIEU=1; PHF=/dev/null; }
 
-awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
+awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function gia_tri(s) {
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
@@ -91,6 +101,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
 
   BEGIN {
     n_loi = loi_truoc
+    n_kv = split(dtt, kv, ";"); for (i = 1; i <= n_kv; i++) if (kv[i] != "") { split(kv[i], kv2, "="); d_tt[kv2[1]] = kv2[2] }
     muc[1] = "Bối cảnh code hiện có"; muc[2] = "Quyết định"; muc[3] = "Mô hình dữ liệu"
     muc[4] = "Contract"; muc[5] = "Flow"; muc[6] = "Phi chức năng"
     muc[7] = "Chiến lược test"; muc[8] = "Ánh xạ YC"; n_muc = 8
@@ -128,9 +139,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
       next
     }
     if (sect == "Quyết định" && cur != "") {
-      if ($0 ~ /Trạng thái[^:]*:/) d_tt[cur] = gia_tri($0)
       if ($0 ~ /tac_gia[^:]*:/)    d_tg[cur] = gia_tri($0)
-      if ($0 ~ /Lý do mở lại[^:]*:/ && gia_tri($0) != "" && gia_tri($0) !~ /^<.*>$/) d_ly_do[cur] = 1
     }
 
     if (dong_noi_dung($0)) {
@@ -168,12 +177,9 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     }
 
     # 4. D-xx
-    tt_hl["đề xuất"] = 1; tt_hl["đã duyệt"] = 1; tt_hl["mở lại"] = 1
+    # Ô duyệt (thiếu, sai dạng, đổi sau duyệt) đã báo ở trên — thư viện duyet.sh.
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
-      if (!(d in d_tt))            loi(d ": thiếu dòng \"Trạng thái:\" (đề xuất | đã duyệt | mở lại)")
-      else if (!(d_tt[d] in tt_hl)) loi(d ": \"Trạng thái: " d_tt[d] "\" không hợp lệ. Chỉ chấp nhận: đề xuất | đã duyệt | mở lại")
-      else if (d_tt[d] == "mở lại" && !(d in d_ly_do)) loi(d ": đang \"mở lại\" nhưng thiếu dòng \"Lý do mở lại:\"")
       if (!(d in d_tg))                               loi(d ": thiếu dòng \"tac_gia:\" (nguoi | agent)")
       else if (d_tg[d] != "nguoi" && d_tg[d] != "agent") loi(d ": \"tac_gia: " d_tg[d] "\" không hợp lệ. Chỉ chấp nhận: nguoi | agent")
       if (d_tg[d] == "nguoi") co_nguoi = 1
@@ -212,7 +218,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" '
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
     print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện Chặn."
-    print "Bước tiếp: NGƯỜI duyệt từng D-xx (đổi Trạng thái sang \"đã duyệt\"). /plan sẽ chặn nếu còn D chưa duyệt."
+    print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Người duyệt quyết định\"). /plan sẽ chặn nếu còn D chưa duyệt."
   }
 ' "$SPEC" "$TDD" "$PHF"
 ma=$?

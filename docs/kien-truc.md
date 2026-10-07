@@ -236,8 +236,30 @@ trong chính quá trình xây repo này, ở phase `review`.
 
 Gate người cố định ở `intake`, `spec`, `design`, `review` (và `ship` nếu dùng).
 Gate nào có phase máy chạy ngay sau thì phải để lại **dấu vết trong file** để
-phase sau chặn được: D-xx có `Trạng thái`, spec có `Trạng thái spec`. Gate chỉ
-nằm trong tài liệu thì agent chạy tiếp được trên một spec chưa ai đọc.
+phase sau chặn được: spec và mỗi D-xx có một **ô duyệt** `- [ ] **Người duyệt …**`.
+Gate chỉ nằm trong tài liệu thì agent chạy tiếp được trên một spec chưa ai đọc.
+
+Ô duyệt là checkbox chứ không phải chữ gõ tay (`đề xuất` → `đã duyệt`): gõ sai một
+dấu là checker không nhận. Đổi lại, LLM quen tick checklist khi xong việc, nên ô
+duyệt có thêm hai lớp, cùng nằm ở `tools/lib/duyet.sh`:
+
+- **Dấu duyệt.** Lần đầu thấy tick, máy ghi hash nội dung (spec, hoặc riêng D đó)
+  vào cuối dòng: `<!-- dấu duyệt: <hex> -->`. Nội dung đổi mà tick còn thì
+  `aw check` chặn ("đổi sau duyệt"). Đây là chỗ trước kia máy mù: agent sửa spec
+  mà quên đặt lại trạng thái thì bản "đã duyệt" không còn là bản người đọc. Hash bỏ
+  qua dòng trống, chú thích, và `- Phản biện (agent):` dưới D — agent phản biện ở
+  Mode 2 mà không làm mất duyệt. `file_hash` (based_on) bỏ qua dấu duyệt, nên máy
+  ghi dấu không làm artifact phía sau lỗi thời.
+- **Hook `aw guard`** (Claude Code, người tự cài — adapter không ghi settings).
+  `pre` trước mỗi lệnh ghi của agent: ghi dấu cho ô người vừa tick, đặt mốc. `post`
+  sau lệnh đó: ô tick mà chưa có dấu thì được tick **trong lúc lệnh của agent
+  chạy** → bỏ tick, trả mã 2 để agent đọc lý do; ô có dấu mà nội dung đổi cũng bỏ
+  tick. Không cần đọc JSON của tool (không có jq trong yêu cầu môi trường): so
+  trạng thái file trước/sau là đủ, và bắt được cả Edit, Write lẫn `sed -i` qua Bash.
+
+Parser chỉ nhận ô duyệt đúng chỗ: spec ở phần đầu file (trước `##` đầu tiên), D-xx
+trong mục `### D-NN` của nó, đúng một ô; ô trong chú thích hay khối ``` không được
+tính; dòng mang nhãn ô duyệt mà sai dạng là lỗi, không đoán.
 `plan` và `implement` **không có người**: chúng chỉ thực thi những gì đã duyệt
 ở `spec` và `design`. Đặt người ở đó chỉ tạo thêm một chỗ duyệt văn xuôi mà
 không có quyết định thật nào để duyệt.
@@ -337,10 +359,12 @@ các mục còn mở: `aw pending` xếp thứ tự bằng máy (mức chặn �
 `bắt buộc` trước → nhiều task đứng trên giả định hơn → mã YC) và chỉ ra mục nào
 đang chặn phase kế tiếp; agent hỏi **từng mục một**, đưa phương án lấy từ nguồn,
 ghi nguyên văn câu trả lời của người. Agent không tự trả lời và không tự hạ mức.
-Câu trả lời của người trong hội thoại **chính là** gate người của điểm mù: không
-có bước sửa tay `đề xuất` → `đã duyệt` nào thêm, kể cả khi YC phải sửa theo câu
-trả lời (người xác nhận các dòng sẽ đổi trước khi agent ghi; `Trạng thái spec`
-giữ nguyên). Dấu vết nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn.
+Câu trả lời của người trong hội thoại **chính là** gate người của điểm mù; dấu vết
+nằm ở dòng `Trả lời:` — ai, ngày, nguyên văn. Nhưng spec đã được tick duyệt thì
+sửa YC (hay chỉ đổi nhãn nguồn) làm nó khác bản đã duyệt: agent bỏ tick, người
+tick lại. Trước kia `Trạng thái spec` được giữ nguyên ở đây cho đỡ một bước; khi
+duyệt gắn với hash nội dung thì ngoại lệ đó không còn đứng được — máy không phân
+biệt "sửa người vừa xác nhận" với "sửa người chưa thấy".
 
 Cùng lệnh đó dẫn người **phân xử phát hiện của checker LLM** (`phat-hien-*.md`):
 đồng ý thì agent sửa đúng chỗ (người xem trước → sau) rồi ghi `đã sửa`; bác bỏ
@@ -533,14 +557,16 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    không báo lỗi cú pháp; nó chỉ trả về giá trị rỗng, và lỗi sẽ lộ ra muộn ở
    chỗ khác.
 
-7. **"Duyệt" là một dòng chữ trong file** (D-xx trong `tdd.md`, `Trạng thái spec`
-   trong `spec.md`). Máy phân biệt được `đề xuất` với
-   `đã duyệt`, và `tac_gia: agent` với `tac_gia: nguoi`, nhưng không biết **ai** ghi
-   dòng đó. Agent vi phạm luật mà tự ghi thì checker không bắt được. Từ bản 2026.10.6
-   artifact không nằm trong git nên cũng không còn `git blame` hay diff PR để
-   soi — chỉ người đọc lại file ở máy mới thấy. `Trạng thái spec` còn yếu
-   hơn D-xx một bậc: agent sửa nội dung spec mà quên đặt lại `đề xuất` thì bản
-   "đã duyệt" không còn là bản người đọc — máy không phát hiện được.
+7. **"Duyệt" là một ô tick trong file** (ô "Người duyệt spec" trong `spec.md`, ô
+   "Người duyệt quyết định" của từng D-xx). Máy không biết **ai** tick. Hook
+   `aw guard` bắt agent tick trong lúc lệnh của nó chạy — nhưng chỉ khi repo cài
+   hook, và chỉ với agent có hook (Claude Code). Không có hook thì agent vi phạm
+   luật mà tự tick vẫn lọt; artifact không nằm trong git (từ 2026.10.6) nên cũng
+   không có `git blame` để soi. Hook cũng không phân biệt được agent cố tình tự
+   tính hash rồi ghi dấu giả, và sẽ bỏ nhầm tick nếu người tick đúng lúc một lệnh
+   dài của agent đang chạy (người tick lại). Dấu duyệt bắt được nội dung đổi sau
+   khi tick ở mọi agent — trừ khi nội dung đổi **trước** lần ghi dấu đầu tiên
+   (người tick, rồi agent sửa trước khi có `aw check` hay hook nào chạy).
 
 8. **`review` không chạy lại test.** Nó đọc dòng kết quả trong `ket-qua-kiem-thu.md`;
    sửa code sau lần chạy `aw check implement` cuối cùng thì kết quả đó đã cũ.
