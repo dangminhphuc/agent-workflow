@@ -1,7 +1,7 @@
 ---
 id: design
 name: Thiết kế kỹ thuật
-summary: Viết Technical Design Document — tách lựa chọn thành quyết định D-xx để người duyệt
+summary: Bước 3/6 · Cần spec đã duyệt. Viết tdd.md, tách mỗi lựa chọn thành quyết định D-xx để người duyệt
 required: true
 approval_gate: true
 inputs:
@@ -30,7 +30,7 @@ Viết ra mọi thông tin `04-implement` cần để làm đúng kỹ thuật, 
 trúc sẵn có của repo đích**, và tách các lựa chọn thật thành mục **D-xx** để
 người *quyết định* chứ không phải đọc duyệt cả một bài văn xuôi.
 
-**Loại việc `chore` không có phase này** — đi thẳng `/plan`. Checker chặn nếu
+**Loại việc `chore` không có phase này** — đi thẳng `/aw-plan`. Checker chặn nếu
 chạy design cho chore. Với `refactor`/`perf`, design là phần việc chính: cấu trúc
 đích và quyết định D-xx về cách chuyển sang đó.
 
@@ -38,7 +38,7 @@ chạy design cho chore. Với `refactor`/`perf`, design là phần việc chín
 
 - `spec.md`, `open-questions.md` — phải qua được `aw check spec`, và
   ô "Approved by human" đã tick và dấu duyệt còn khớp nội dung. Chưa tick thì
-  dừng lại: lệnh `/design` chạy **cổng duyệt** (`aw approval design`) trước tiên —
+  dừng lại: lệnh `/aw-design` chạy **cổng duyệt** (`aw approval design`) trước tiên —
   cho người thấy rõ còn gì chờ duyệt rồi hỏi bằng hộp xác nhận; agent không tick hộ.
 - Code hiện có của repo đích
 - Quy tắc riêng của repo cho phase này — `aw rules design`, đọc từng file nó in ra
@@ -99,7 +99,7 @@ Mở lại **đúng một D-xx**, sửa tại chỗ (lịch sử để git giữ
 trong file). Bỏ tick ô duyệt của D đó và thêm `Reopen reason:` — chưa tick mà có
 lý do là `reopened`. Grep
 `Based on: D-xx` trong `plan.md` ra các task bị ảnh hưởng; chỉ các task đó đặt
-lại `[ ]`. Người chỉ duyệt lại D đang mở. `/plan` chặn cho tới khi D đó được
+lại `[ ]`. Người chỉ duyệt lại D đang mở. `/aw-plan` chặn cho tới khi D đó được
 duyệt lại.
 
 ## Đầu ra

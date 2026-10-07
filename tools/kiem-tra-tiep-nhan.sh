@@ -31,7 +31,7 @@ kq_khai kiem-tra-tiep-nhan.sh \
 
 DIR="${1:-.}"
 MD="$DIR/intake.md"
-[ -f "$MD" ] || { echo "LỖI: không tìm thấy $MD — chạy /intake trước" >&2; exit 2; }
+[ -f "$MD" ] || { echo "LỖI: không tìm thấy $MD — chạy /aw-intake trước" >&2; exit 2; }
 
 MJ=$(kc_mau_jira "$(kc_conventions "$DIR")")
 

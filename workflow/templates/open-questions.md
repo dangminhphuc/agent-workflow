@@ -7,8 +7,8 @@
 
      | Mức               | Khi nào                                  | Chặn gì                                              |
      |-------------------|------------------------------------------|------------------------------------------------------|
-     | `blocking`        | Sai giả định thì cả thiết kế đổi hướng   | Phase ngay sau spec: /design (chore: /plan) và mọi phase sau |
-     | `review-blocking` | Sai thì làm lại một phần code            | Flow đi tiếp trên giả định tạm; /review chặn         |
+     | `blocking`        | Sai giả định thì cả thiết kế đổi hướng   | Phase ngay sau spec: /aw-design (chore: /aw-plan) và mọi phase sau |
+     | `review-blocking` | Sai thì làm lại một phần code            | Flow đi tiếp trên giả định tạm; /aw-review chặn         |
      | `non-blocking`    | Sai thì sửa nhỏ, chấp nhận giao trước    | Không chặn; review ghi YC đó `pending`               |
 
      "Nếu giả định sai" là căn cứ để chọn mức. Agent không được hạ mức để khỏi bị chặn.

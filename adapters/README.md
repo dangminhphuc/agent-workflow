@@ -29,8 +29,8 @@ Chữ riêng của một agent chỉ được nằm trong hook:
 | Hook | Việc | Claude Code | Cursor |
 |---|---|---|---|
 | `ad_tham_so` | Cách viết tham số của lệnh trong lời dặn | `$ARGUMENTS` (agent thay) | `<tham-số>` (agent chép nguyên văn) |
-| `ad_dau_lenh <id> <mô-tả> <gợi-ý>` | Đầu file lệnh | frontmatter `description`, `argument-hint` | `# /<id> — <mô-tả>` |
-| `ad_mo_dau_lenh <id> <gợi-ý> <arguments>` | Khối ngay sau cảnh báo | (rỗng) | Cách lấy `<tham-số>` |
+| `ad_dau_lenh <lệnh> <name> <summary> <gợi-ý>` | Đầu file lệnh (`<lệnh>` = `aw-<id>`) | frontmatter `description` (= summary), `argument-hint` | `# /<lệnh> — <name>` + summary |
+| `ad_mo_dau_lenh <lệnh> <gợi-ý> <arguments>` | Khối ngay sau cảnh báo | (rỗng) | Cách lấy `<tham-số>` |
 | `ad_hoi_lua_chon` | Lệnh khai `choice_ui: true` | `AskUserQuestion` | Tool hỏi lựa chọn nếu có, không thì đánh số |
 | `ad_hoi_cong_duyet <phase>` | Hộp xác nhận của cổng duyệt | `AskUserQuestion` + `preview` | Tool hoặc đánh số, không preview |
 | `ad_danh_cho` | Một dòng: file dành cho agent nào | "Dành cho Claude Code… không có `AskUserQuestion` → dừng" | "Dành cho Cursor…" |

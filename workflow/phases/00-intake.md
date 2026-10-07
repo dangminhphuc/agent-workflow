@@ -1,7 +1,7 @@
 ---
 id: intake
-name: Tiếp nhận
-summary: Điểm xuất phát bắt buộc — ghi loại việc và input làm gốc cho mọi phase sau
+name: Tiếp nhận việc
+summary: Bước 1/6 · Bắt đầu việc mới từ ticket, URL hoặc file: chốt loại việc, tạo worktree, ghi intake.md
 required: true
 inputs:
   - confluence
@@ -62,7 +62,7 @@ luật của hai loại xung đột nhau.
 
 ## Tham số của lệnh là input
 
-`/intake JIRA-123 https://confluence/…` — tham số là **danh sách input**, không
+`/aw-intake JIRA-123 https://confluence/…` — tham số là **danh sách input**, không
 phải tên feature. Tên feature luôn lấy từ branch (xem mục dưới).
 
 **Nhãn do máy gán.** Luôn chạy `aw input`, truyền nguyên văn tham
@@ -90,7 +90,7 @@ hỏi người, người đồng ý mới ghi thành dòng riêng.
 | `KHÔNG CÓ THAM SỐ` | Hỏi người dùng, chạy lại script với **nguyên văn** câu trả lời |
 | `ĐƯỜNG DẪN KHÔNG TỒN TẠI` | Hỏi lại, không tự đoán |
 
-## Chạy lại `/intake`
+## Chạy lại `/aw-intake`
 
 Đã có `intake.md` thì chạy lại là **gộp thêm input**, không viết lại:
 
@@ -107,13 +107,13 @@ Không có đường xoá input qua lệnh — muốn bỏ thì người sửa t
 gộp thêm để agent không lặng lẽ làm mất một nguồn.
 
 `intake.md` đổi thì `spec.md` (ghi `based_on: intake.md`) thành **lỗi thời**:
-chạy lại `/spec` để đọc input mới. Các phase sau cảnh báo, `review` chặn nếu còn.
+chạy lại `/aw-spec` để đọc input mới. Các phase sau cảnh báo, `review` chặn nếu còn.
 
 ## Tạo worktree
 
 Worktree là **bắt buộc**. Checkout chính luôn đứng ở `nhanh_goc` và chỉ dùng để
-chạy `/intake`; mỗi việc làm trong một worktree riêng, một phiên agent riêng.
-`aw feature` ra `ĐANG Ở CHECKOUT CHÍNH` khi đang ở checkout chính — với `/intake` nghĩa là
+chạy `/aw-intake`; mỗi việc làm trong một worktree riêng, một phiên agent riêng.
+`aw feature` ra `ĐANG Ở CHECKOUT CHÍNH` khi đang ở checkout chính — với `/aw-intake` nghĩa là
 "tạo worktree", với mọi lệnh khác nghĩa là "dừng lại".
 
 Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Làm theo thứ tự:
@@ -134,10 +134,10 @@ Agent **không quyết** worktree đặt ở đâu hay tạo từ base nào. Là
    nguyên cả hai vào `intake.md`.
 6. Ghi `intake.md` vào `<worktree>/.agent-workflow/<tên>/`, chạy checker trên
    thư mục đó, rồi **dừng**: người chuẩn bị môi trường (lệnh `LENH_CHUAN_BI_WT`
-   script in ra) và mở phiên agent **mới** trong worktree để chạy `/spec`.
+   script in ra) và mở phiên agent **mới** trong worktree để chạy `/aw-spec`.
 
 `ĐÃ CÓ WORKTREE` (branch đã có worktree): không tạo gì — bảo người mở phiên ở đường dẫn
-script in ra, rồi chạy lại `/intake` ở đó nếu cần gộp thêm input.
+script in ra, rồi chạy lại `/aw-intake` ở đó nếu cần gộp thêm input.
 
 **Vì sao ghi Base.** Checker phía sau so diff với điểm rẽ nhánh khỏi base này.
 So với `nhanh_goc` khi base là `origin/main` (local đang chậm) hay `release/*`

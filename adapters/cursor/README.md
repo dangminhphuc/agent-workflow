@@ -25,8 +25,8 @@ repo, thân phase) **giống hệt** bản Claude Code — `tools/chay-thu.sh` k
 
 | Nguồn trung lập | Artifact Cursor |
 |---|---|
-| `workflow/phases/<id>.md` | `.cursor/commands/<id>.md` — lệnh `/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review` |
-| `commands:` trong `workflow.yaml` | `.cursor/commands/<id>.md` — `/import`, `/clarify` |
+| `workflow/phases/<id>.md` | `.cursor/commands/aw-<id>.md` — lệnh `/aw-intake`, `/aw-spec`, `/aw-design`, `/aw-plan`, `/aw-implement`, `/aw-review`, `/aw-ship` |
+| `commands:` trong `workflow.yaml` | `.cursor/commands/aw-<id>.md` — `/aw-import`, `/aw-clarify` |
 | Phase có `requires_fresh_agent: true` | `.cursor/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh riêng |
 | `llm_checker:` của phase | `.cursor/agents/soat-<id>.md` — subagent checker LLM (`soat-thiet-ke`) |
 | `workflow.yaml` + tóm tắt luật | `.cursor/skills/quy-trinh-agent/SKILL.md` |
@@ -46,7 +46,7 @@ Codex) trong Settings của Cursor.
 ## Tham số của lệnh: `<tham-số>`
 
 Cursor không thay biến trong file lệnh (không có `$ARGUMENTS`): chữ người gõ sau
-`/spec` đi kèm tin nhắn. Mỗi lệnh sinh ra có mục "Tham số của lệnh trong Cursor"
+`/aw-spec` đi kèm tin nhắn. Mỗi lệnh sinh ra có mục "Tham số của lệnh trong Cursor"
 dặn agent: `<tham-số>` là đúng phần chữ đó, chép nguyên văn; không gõ gì thì bỏ hẳn.
 
 Đây là chỗ yếu hơn Claude Code (máy thay, không phải LLM chép), nên **engine chặn**
@@ -58,9 +58,9 @@ thư mục việc tên `<tham-số>` hay mục `[HUMAN]` rác.
 
 ### 1. Ngữ cảnh sạch cho phase rà soát
 
-`/review` bắt buộc chạy qua subagent `ra-soat-doc-lap` (`.cursor/agents/`). Bản Cursor
+`/aw-review` bắt buộc chạy qua subagent `ra-soat-doc-lap` (`.cursor/agents/`). Bản Cursor
 chưa có subagent (trước 2.4) thì không tự động hoá được: **người tự mở chat mới**,
-gõ `/review` ở đó — không rà soát bằng chính chat vừa viết code.
+gõ `/aw-review` ở đó — không rà soát bằng chính chat vừa viết code.
 
 ### 2. Hook gác ô duyệt
 
@@ -77,10 +77,10 @@ Lệnh `/…` trong `.cursor/commands/`. Skill `quy-trinh-agent` được Cursor
 
 ### 5. Checker LLM
 
-`/design` bảo agent gọi subagent `soat-thiet-ke` sau khi viết `tdd.md`.
+`/aw-design` bảo agent gọi subagent `soat-thiet-ke` sau khi viết `tdd.md`.
 `aw check design` fail nếu chưa có `phat-hien-thiet-ke.md` — quên gọi cũng không lọt.
 
-### 6. Câu hỏi lựa chọn (`/clarify`)
+### 6. Câu hỏi lựa chọn (`/aw-clarify`)
 
 Có tool hỏi lựa chọn của Cursor (vd `AskQuestion`, tuỳ bản và IDE/CLI) thì dùng;
 không có thì in lựa chọn đánh số. Lời dặn **luôn** có lối tự nhập và "Chat về câu
@@ -96,8 +96,8 @@ nguyên trong khối text agent in ngay trước câu hỏi.
 
 Cursor chạy nhiều model; chế độ Auto có thể đổi model giữa các phase. Cổng máy
 (`aw check`) không đổi theo model, nhưng chất lượng spec, thiết kế và phát hiện của
-checker LLM thì có. Nên chọn cố định một model cho phiên chạy phase, nhất là `/design`
-(subagent `soat-thiet-ke`) và `/review`.
+checker LLM thì có. Nên chọn cố định một model cho phiên chạy phase, nhất là `/aw-design`
+(subagent `soat-thiet-ke`) và `/aw-review`.
 
 ## Hook gác ô duyệt
 

@@ -40,6 +40,13 @@ DOCS="$ART/.engine"
 CONV_DOC="$DOCS/conventions.md"
 FD='<thư-mục-feature>'
 
+# Tên lệnh trong repo đích: /aw-<id> (file commands/aw-<id>.md). Tiền tố gom mọi
+# lệnh của quy trình lại khi gõ "/aw-" và không đụng lệnh của team. Dấu "-" chứ
+# không phải "aw:" (thư mục con): agent nào cũng hiểu tên file thường, và tên
+# trùng nhau giữa các adapter (Cursor nạp .claude/ để tương thích, .cursor/ che).
+TIEN_TO_LENH="aw-"
+ten_lenh() { printf '%s%s' "$TIEN_TO_LENH" "$1"; }
+
 # ad_bi_theo_doi <file> -> 0 nếu git đang theo dõi file đó trong OUT. File của
 # bộ cài cũ đã commit vào base: không ghi đè (sẽ thành thay đổi lọt vào commit).
 ad_bi_theo_doi() {
@@ -136,6 +143,14 @@ kiem_tra_nguon() {
     ""|true) ;;
     *) echo "LỖI: $_file khai approval_gate \"$_ag\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
   esac
+  _mc=$(fm_scalar "$_src" runs_on_main_checkout)
+  case "$_mc" in
+    ""|true) ;;
+    *) echo "LỖI: $_file khai runs_on_main_checkout \"$_mc\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
+  esac
+  if [ "$_mc" = true ] && [ "$_ar" = input ]; then
+    echo "LỖI: $_file khai cả runs_on_main_checkout và arguments: input — phase input đã có lối riêng ở checkout chính." >&2; _bad=1
+  fi
   _lc=$(fm_scalar "$_src" llm_checker)
   if [ -n "$_lc" ] && [ ! -f "$ROOT/$_lc" ]; then
     echo "LỖI: $_file khai llm_checker \"$_lc\" nhưng không có file đó." >&2
@@ -169,12 +184,12 @@ mo_ta_output() {
 
 # Buoc 0 cua moi lenh: xac dinh feature. Thu tu branch -> tham so -> hoi la
 # giao dien chung giua cac adapter, nen no nam trong engine (aw feature), khong trong prompt.
-#   buoc_xac_dinh_feature <cách-viết-tham-số> [input]
+#   buoc_xac_dinh_feature <cách-viết-tham-số> [input] [true = phase có việc ở checkout chính]
 buoc_xac_dinh_feature() {
   printf '## Bước 0 — Xác định feature (luôn làm trước)\n\n'
   if [ "${2:-}" = "input" ]; then
     # Tham so cua lenh la INPUT, khong phai ten feature: khong truyen vao aw feature,
-    # neu khong "/intake JIRA-123" se tao thu muc artifact ten JIRA-123.
+    # neu khong "/aw-intake JIRA-123" se tao thu muc artifact ten JIRA-123.
     printf 'Chạy `aw feature` — **không** truyền tham số của lệnh: tham số là input, không phải tên feature.\n\n'
     printf 'Đọc khối `Kết quả` cuối output — làm theo nhãn được đánh `[x]`:\n\n'
     printf -- '- **ĐÃ XÁC ĐỊNH:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
@@ -184,7 +199,11 @@ buoc_xac_dinh_feature() {
     printf 'Chạy `aw feature %s`.\n\n' "$1"
     printf 'Đọc khối `Kết quả` cuối output — làm theo nhãn được đánh `[x]`:\n\n'
     printf -- '- **ĐÃ XÁC ĐỊNH:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
-    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/intake` ở checkout chính). Không tự chuyển thư mục.\n'
+    if [ "${3:-}" = "true" ]; then
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → làm theo mục "Ở checkout chính" trong mô tả phase (không cần thư mục feature). Không tự chuyển thư mục.\n'
+    else
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/aw-intake` ở checkout chính). Không tự chuyển thư mục.\n'
+    fi
     printf -- '- **CẦN HỎI NGƯỜI:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
     printf -- '- **TÊN KHÔNG HỢP LỆ:** tên không hợp lệ → báo lại cho người dùng.\n\n'
   fi
@@ -192,7 +211,7 @@ buoc_xac_dinh_feature() {
   printf 'Mọi `aw check` chạy đúng version engine ghi ở dòng `Engine:` của `intake.md` — không tự đổi dòng đó.\n\n'
 }
 
-# Buoc 0b cua /intake: tham so -> dong "## Input". Nhan do engine gan, khong do
+# Buoc 0b cua /aw-intake: tham so -> dong "## Input". Nhan do engine gan, khong do
 # agent doan; nguyen van di qua heredoc co nhay de khong bi shell dien giai.
 #   buoc_phan_loai_input <cách-viết-tham-số>
 buoc_phan_loai_input() {
@@ -215,9 +234,9 @@ buoc_phan_loai_input() {
 # chọn thì in lựa chọn đánh số.
 buoc_cong_duyet() {
   case "$1" in
-    design) _cd_gi="spec"; _cd_lenh="/design" ;;
-    plan)   _cd_gi="mọi quyết định D-xx (chore: spec)"; _cd_lenh="/plan" ;;
-    *)      _cd_gi="phần trước"; _cd_lenh="/$1" ;;
+    design) _cd_gi="spec"; _cd_lenh="/aw-design" ;;
+    plan)   _cd_gi="mọi quyết định D-xx (chore: spec)"; _cd_lenh="/aw-plan" ;;
+    *)      _cd_gi="phần trước"; _cd_lenh="/$(ten_lenh "$1")" ;;
   esac
   printf '## Bước 1 — Cổng duyệt (làm ngay sau Bước 0, trước mọi việc khác)
 
@@ -245,7 +264,7 @@ buoc_cong_duyet() {
   printf '3. **Dừng — tôi duyệt sau** → không làm gì của phase. Nhắc: duyệt xong thì gõ lại `%s`.
 
 ' "$_cd_lenh"
-  printf 'Người gõ "duyệt hộ", "tick giúp", "ok cứ làm đi"… thì **từ chối** một dòng (chỉ người được tick — ô duyệt là bằng chứng người đã đọc), chỉ lại đúng file và dòng, rồi hỏi lại hộp này. Người muốn sửa nội dung thì đó là việc của phase trước (`/spec`, hoặc `/design` cho D-xx) — nói vậy, không sửa ở đây.
+  printf 'Người gõ "duyệt hộ", "tick giúp", "ok cứ làm đi"… thì **từ chối** một dòng (chỉ người được tick — ô duyệt là bằng chứng người đã đọc), chỉ lại đúng file và dòng, rồi hỏi lại hộp này. Người muốn sửa nội dung thì đó là việc của phase trước (`/aw-spec`, hoặc `/aw-design` cho D-xx) — nói vậy, không sửa ở đây.
 
 '
 }
@@ -285,9 +304,11 @@ luat_tom_tat() {
 #
 #   ad_tham_so                     cách viết tham số của lệnh trong lời dặn
 #                                  (Claude Code: $ARGUMENTS — agent tự thay)
-#   ad_dau_lenh <id> <mô-tả> <gợi-ý-tham-số>
-#                                  phần đầu file lệnh (frontmatter…)
-#   ad_mo_dau_lenh <id> <gợi-ý-tham-số> <arguments>
+#   ad_dau_lenh <lệnh> <name> <summary> <gợi-ý-tham-số>
+#                                  phần đầu file lệnh (frontmatter…); <lệnh> là tên
+#                                  người gõ, không có "/" (vd aw-spec). Mô tả hiện
+#                                  trong menu là <summary> — <name> lặp lại tên phase
+#   ad_mo_dau_lenh <lệnh> <gợi-ý-tham-số> <arguments>
 #                                  khối ngay sau cảnh báo của mọi lệnh (rỗng được)
 #   ad_hoi_lua_chon                lệnh khai choice_ui: true — cách hỏi lựa chọn
 #   ad_hoi_cong_duyet <phase>      phase khai approval_gate: true — hộp xác nhận
@@ -361,10 +382,10 @@ sinh_command() {
   if [ "$args" = "input" ]; then hint='[mã-issue | URL | đường-dẫn …]'; else hint='[tên-feature]'; fi
   ts=$(_hk ad_tham_so)
 
-  _hk ad_dau_lenh "$id" "$name — $summary" "$hint"
+  _hk ad_dau_lenh "$(ten_lenh "$id")" "$name" "$summary" "$hint"
   canh_bao "$file"
-  _hk ad_mo_dau_lenh "$id" "$hint" "$args"
-  buoc_xac_dinh_feature "$ts" "$args"
+  _hk ad_mo_dau_lenh "$(ten_lenh "$id")" "$hint" "$args"
+  buoc_xac_dinh_feature "$ts" "$args" "$(fm_scalar "$src" runs_on_main_checkout)"
   [ "$args" = "input" ] && buoc_phan_loai_input "$ts"
   if [ "$(fm_scalar "$src" approval_gate)" = "true" ]; then
     buoc_cong_duyet "$id"
@@ -453,16 +474,16 @@ ad_sinh() {
     [ -n "$id" ] || continue
     src="$ROOT/$file"
     if [ ! -f "$src" ]; then
-      echo "  CẢNH BÁO: bỏ qua /$id — không tìm thấy $file" >&2
+      echo "  CẢNH BÁO: bỏ qua /$(ten_lenh "$id") — không tìm thấy $file" >&2
       continue
     fi
     if [ "$(fm_scalar "$src" status)" = "chưa hiện thực" ]; then
-      echo "  skip    /$id (status: chưa hiện thực)"
+      echo "  skip    /$(ten_lenh "$id") (status: chưa hiện thực)"
       continue
     fi
     kiem_tra_nguon "$src" "$file" || exit 4
-    kiem_tra_ghi_de "$L/$id.md"
-    sinh_command "$id" "$file" "$req" "$when" | ghi_file "$L/$id.md"
+    kiem_tra_ghi_de "$L/$(ten_lenh "$id").md"
+    sinh_command "$id" "$file" "$req" "$when" | ghi_file "$L/$(ten_lenh "$id").md"
     if [ "$(fm_scalar "$src" requires_fresh_agent)" = "true" ]; then REV_SRC="$src"; REV_FILE="$file"; fi
     lc=$(fm_scalar "$src" llm_checker)
     [ -n "$lc" ] && CHECKERS="$CHECKERS $lc"
@@ -532,13 +553,13 @@ ad_sinh() {
       ""|mixed) ;;
       *) echo "LỖI: $cfile khai arguments \"$cargs\" — lệnh tiện ích chỉ nhận \"mixed\" (bỏ trống = tên feature)." >&2; exit 4 ;;
     esac
-    kiem_tra_ghi_de "$L/$cid.md"
+    kiem_tra_ghi_de "$L/$(ten_lenh "$cid").md"
     {
       _h=$(fm_scalar "$csrc" argument_hint); _h=${_h:-[tên-feature]}
       ts=$(_hk ad_tham_so)
-      _hk ad_dau_lenh "$cid" "$(fm_scalar "$csrc" name) — $(fm_scalar "$csrc" summary)" "$_h"
+      _hk ad_dau_lenh "$(ten_lenh "$cid")" "$(fm_scalar "$csrc" name)" "$(fm_scalar "$csrc" summary)" "$_h"
       canh_bao "$cfile"
-      _hk ad_mo_dau_lenh "$cid" "$_h" "$cargs"
+      _hk ad_mo_dau_lenh "$(ten_lenh "$cid")" "$_h" "$cargs"
       if [ "$cargs" = "mixed" ]; then
         printf 'Tham số: `%s`\n\n' "$ts"
         buoc_xac_dinh_feature '<tên-feature nếu người dùng truyền>'
@@ -549,7 +570,7 @@ ad_sinh() {
       doc_truoc
       printf -- '---\n'
       md_body "$csrc"
-    } | ghi_file "$L/$cid.md"
+    } | ghi_file "$L/$(ten_lenh "$cid").md"
   done < "$CMD_LIST"
 
   # ---------- skill tổng ----------
@@ -572,13 +593,13 @@ ad_sinh() {
       nm=$(fm_scalar "$src" name)
       oo=$(fm_list "$src" outputs | tr '\n' ',' | sed 's/,$//; s/,/, /g')
       if [ "$req" = "true" ]; then bb="có"; else bb="không"; fi
-      printf '| `/%s` | %s | %s | %s |\n' "$id" "$nm" "${oo:-—}" "$bb"
+      printf '| `/%s` | %s | %s | %s |\n' "$(ten_lenh "$id")" "$nm" "${oo:-—}" "$bb"
     done < "$PH_LIST"
     if [ -s "$CMD_LIST" ]; then
       printf '\n## Lệnh tiện ích (không phải phase)\n\n'
       while IFS='|' read -r cid cfile; do
         [ -n "$cid" ] || continue
-        printf -- '- `/%s` — %s\n' "$cid" "$(fm_scalar "$ROOT/$cfile" summary)"
+        printf -- '- `/%s` — %s\n' "$(ten_lenh "$cid")" "$(fm_scalar "$ROOT/$cfile" summary)"
       done < "$CMD_LIST"
     fi
     printf '\n## Luật không được vi phạm\n\n'

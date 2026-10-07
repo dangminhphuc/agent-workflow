@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Phân loại tham số của /intake thành các dòng của mục "## Input" trong intake.md.
+# Phân loại tham số của /aw-intake thành các dòng của mục "## Input" trong intake.md.
 #
 #   aw input [--skip <intake.md>] <tham-số>
 #   aw input [--skip <intake.md>] - <<'HET_INPUT'
@@ -21,7 +21,7 @@
 # chép nguyên văn. Tách từng token sẽ biến một câu thành vài "input" rác và làm
 # mất câu gốc. Nguồn nhận ra được trong câu chỉ là ĐỀ XUẤT (in ra stderr).
 #
-# --skip <intake.md>: bỏ các input đã có trong file đó (chạy lại /intake = gộp thêm).
+# --skip <intake.md>: bỏ các input đã có trong file đó (chạy lại /aw-intake = gộp thêm).
 # So theo định danh đã chuẩn hoá: ABC-1 và .../browse/ABC-1 là một nguồn.
 #
 # Stdout: đúng các dòng ghi vào "## Input" (rỗng = không có input mới).

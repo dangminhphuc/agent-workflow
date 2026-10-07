@@ -1,7 +1,7 @@
 ---
 id: import
-name: Import artifact từ ngoài
-summary: Đưa artifact làm bằng tool khác vào đúng phase — chỉ sắp xếp lại, không thêm nội dung
+name: Nhập artifact ngoài
+summary: Đưa spec/tdd/plan viết bằng tool khác vào quy trình: chỉ sắp lại theo mẫu, không thêm nội dung
 arguments: mixed
 argument_hint: <file-nguồn> <spec.md|tdd.md|plan.md> [tên-feature]
 ---

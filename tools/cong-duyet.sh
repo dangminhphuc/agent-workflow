@@ -2,8 +2,8 @@
 # Cổng duyệt khi vào phase — in cho NGƯỜI biết còn gì chờ mình duyệt, bằng lời
 # dễ đọc, dựng từ file (không để agent tự diễn giải).
 #
-#   aw approval design <thư-mục-feature>   vào /design: spec đã được duyệt chưa
-#   aw approval plan   <thư-mục-feature>   vào /plan: mọi D-xx đã được duyệt chưa
+#   aw approval design <thư-mục-feature>   vào /aw-design: spec đã được duyệt chưa
+#   aw approval plan   <thư-mục-feature>   vào /aw-plan: mọi D-xx đã được duyệt chưa
 #                                          (chore không có design: hỏi spec)
 #
 # Lệnh này KHÔNG duyệt gì. Agent in nguyên văn stdout cho người rồi hỏi bằng hộp
@@ -33,21 +33,21 @@ REPO=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)
 tuong_doi() { if [ -n "$REPO" ]; then printf '%s' "${1#"$REPO"/}"; else printf '%s' "$1"; fi; }
 
 if [ "$PHASE" = design ] && [ "$LOAI" = chore ]; then
-  echo "LỖI: loại việc chore không có phase design — đi thẳng /plan." >&2; exit 2
+  echo "LỖI: loại việc chore không có phase design — đi thẳng /aw-plan." >&2; exit 2
 fi
 if [ "$PHASE" = plan ] && [ "$LOAI" != chore ]; then CONG=tdd; else CONG=spec; fi
 
 # ------------------------------------------------------------------ spec
 if [ "$CONG" = spec ]; then
   SPEC="$DIR/spec.md"; OQF="$DIR/open-questions.md"; [ -f "$OQF" ] || OQF=/dev/null
-  [ -f "$SPEC" ] || { echo "LỖI: không tìm thấy $SPEC — chạy /spec trước." >&2; exit 2; }
+  [ -f "$SPEC" ] || { echo "LỖI: không tìm thấy $SPEC — chạy /aw-spec trước." >&2; exit 2; }
   dy_dong_dau "$SPEC" spec >/dev/null
   TT=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
   DONG=$(dy_quet "$SPEC" spec | awk -F'|' '$1 == "O" { print $5; exit }')
   LOI=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "L" { print "            " $2 }')
   F=$(tuong_doi "$SPEC")
 
-  echo "CỔNG DUYỆT — vào /$PHASE cần spec đã được bạn duyệt"
+  echo "CỔNG DUYỆT — vào /aw-$PHASE cần spec đã được bạn duyệt"
   echo "Việc:        $VIEC"
   case "$TT" in
     approved)
@@ -100,8 +100,8 @@ if [ "$CONG" = spec ]; then
       for (i = 1; i <= n_npv && i <= 6; i++) print "       - " npv[i]
       if (n_npv > 6) print "       … và " (n_npv - 6) " mục nữa"
       if (phase == "design") {
-        if (rui_ro == "high") hq = "/design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại"
-        else if (rui_ro == "normal") hq = "/design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
+        if (rui_ro == "high") hq = "/aw-design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại"
+        else if (rui_ro == "normal") hq = "/aw-design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
         else hq = "chưa có nhãn hợp lệ — aw check spec sẽ chặn"
       } else hq = "chore không có design"
       printf "  %d. Risk: %s — %s\n", ++k, (rui_ro == "" ? "?" : rui_ro), hq
@@ -109,7 +109,7 @@ if [ "$CONG" = spec ]; then
       for (i = 1; i <= n_oq; i++) if (tt[oq[i]] != "answered") { mo++; dmc[mc[oq[i]]]++; if (mc[oq[i]] == "blocking") mo_chan = mo_chan " " oq[i] }
       if (mo == 0) printf "  %d. Điểm mù còn mở: 0\n", ++k
       else printf "  %d. Điểm mù còn mở: %d (blocking: %d · review-blocking: %d · non-blocking: %d)%s\n", ++k, mo, dmc["blocking"] + 0, dmc["review-blocking"] + 0, dmc["non-blocking"] + 0, \
-             (mo_chan == "" ? "" : " — mục \"blocking\" phải trả lời qua /clarify trước:" mo_chan)
+             (mo_chan == "" ? "" : " — mục \"blocking\" phải trả lời qua /aw-clarify trước:" mo_chan)
       print ""
       t = ""
       split("FILE JIRA CONFLUENCE INFERRED OPEN-QUESTION", lb, " ")
@@ -122,7 +122,7 @@ fi
 
 # ------------------------------------------------------------------ tdd (D-xx)
 TDD="$DIR/tdd.md"; PH="$DIR/phat-hien-thiet-ke.md"
-[ -f "$TDD" ] || { echo "LỖI: không tìm thấy $TDD — chạy /design trước." >&2; exit 2; }
+[ -f "$TDD" ] || { echo "LỖI: không tìm thấy $TDD — chạy /aw-design trước." >&2; exit 2; }
 dy_dong_dau "$TDD" tdd >/dev/null
 DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
 DNR=$(dy_quet "$TDD" tdd | awk -F'|' '$1 == "O" { printf "%s=%s;", $2, $5 }')
@@ -151,7 +151,7 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" '
   idx == 2 && ph != "" && /Mức[^:]*:/ && !/Mức chặn/ { muc[ph] = ra($0) }
   END {
     for (i = 1; i <= n; i++) if (tt[ds[i]] != "approved") cho++
-    print "CỔNG DUYỆT — vào /plan cần mọi quyết định D-xx đã được bạn duyệt"
+    print "CỔNG DUYỆT — vào /aw-plan cần mọi quyết định D-xx đã được bạn duyệt"
     print "Việc:        " viec
     if (n == 0) { print "Trạng thái:  ✓ KHÔNG CÓ QUYẾT ĐỊNH NÀO CẦN DUYỆT"; exit 0 }
     if (cho == 0) { print "Trạng thái:  ✓ ĐÃ DUYỆT ĐỦ " n "/" n " quyết định"; exit 0 }
@@ -177,7 +177,7 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" '
     print "Cách duyệt:  đọc từng D ở trên, đổi \"- [ ] **" nhan "**\" thành \"- [x] **" nhan "**\""
     print "             ở dòng ghi bên cạnh. Không đồng ý thì để trống và nói agent cần sửa gì."
     c = 0; cc = 0; for (i = 1; i <= nph; i++) { x = xl[dsph[i]]; if (x == "" || x == "chưa") { c++; if (muc[dsph[i]] == "Chặn") cc++ } }
-    if (c) print "Lưu ý:       còn " c " phát hiện của checker LLM chưa phân xử (mức Chặn: " cc ") — chạy /clarify"
+    if (c) print "Lưu ý:       còn " c " phát hiện của checker LLM chưa phân xử (mức Chặn: " cc ") — chạy /aw-clarify"
     exit 1
   }
 ' "$TDD" "$PHF"

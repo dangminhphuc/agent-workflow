@@ -16,15 +16,18 @@
 #   aw upgrade <YYYY.M.N>
 #   aw version
 #   aw doctor
-#   aw check <name> <feature-dir>          name: intake spec design plan implement review repro perf
+#   aw check <name> <feature-dir>          name: intake spec design plan implement review repro perf ship
 #   aw worktree new <type> <desc> [--create --base <ref>]
 #   aw worktree status <branch>
 #   aw worktree remove <branch> [--delete-branch]
+#   aw ship targets|status <feature-dir>   nhánh đích được phép / trạng thái MR của việc
+#   aw ship create <feature-dir> --target <branch> [--draft] [--allow-extra-commits] [--url <link>]
+#   aw ship sweep [<branch>] [--apply]     dọn worktree + branch của việc đã merge (từ checkout chính)
 #   aw adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]   bỏ trống agent = ADAPTER trong config.sh
 #   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw rename <branch>
 #   aw rules <phase>                       phase: spec design plan implement review
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
-#   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /design, /plan gọi)
+#   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
 #
 # Biến môi trường:
 #   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);
@@ -33,7 +36,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.12"
+AW_WRAPPER_VERSION="2026.10.13"
 AW_PROTOCOL=1
 AW_MIRROR_MAC_DINH="https://github.com/dangminhphuc/agent-workflow/releases/download"
 
@@ -381,6 +384,11 @@ case "$LENH" in
     can_repo
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" approval "$@" ;;
+  # ship targets|create|status <feature-dir>: engine của việc; sweep: không có feature-dir → version của bản clone.
+  ship)
+    can_repo
+    _v=$(version_theo_viec "${2:-}") || exit $?
+    chuyen "$_v" ship "$@" ;;
   feature|input|rename|worktree|adapter|rules|guard)
     can_repo
     _v=$(version_viec) || exit $?

@@ -4,7 +4,7 @@
 #
 #   aw-engine version
 #   aw-engine init [--adapter <id>[,<id>…]] [--test-cmd "<cmd>"] [--force]
-#   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement review repro perf
+#   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement review repro perf ship
 #   aw-engine feature [name]
 #   aw-engine input [--skip <intake.md>] <args|->
 #   aw-engine pending <feature-dir>
@@ -16,6 +16,9 @@
 #   aw-engine worktree new <type> <desc> [--create --base <ref>]
 #   aw-engine worktree status <branch>
 #   aw-engine worktree remove <branch> [--delete-branch]
+#   aw-engine ship targets|status <feature-dir>
+#   aw-engine ship create <feature-dir> --target <branch> [--draft] [--allow-extra-commits] [--url <link>]
+#   aw-engine ship sweep [<branch>] [--apply]       dọn việc đã merge — từ checkout chính
 #   aw-engine adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]   bỏ trống agent = ADAPTER trong config.sh
 #
 # Engine tự biết thư mục của mình (AW_ENGINE) — đó là đường dẫn trong engine,
@@ -89,6 +92,13 @@ case "$LENH" in
       status) exec sh "$T/don-worktree.sh" "$@" ;;
       remove) exec sh "$T/don-worktree.sh" "$@" --remove ;;
       *) sai 2 "Dùng: aw worktree new|status|remove …" ;;
+    esac ;;
+  ship)
+    can_repo
+    case "${1:-}" in
+      targets|create|status) exec sh "$T/gui-mr.sh" "$@" ;;
+      sweep) shift; exec sh "$T/don-viec-da-merge.sh" "$@" ;;
+      *) sai 2 "Dùng: aw ship targets|create|status <feature-dir> … | aw ship sweep [<branch>] [--apply]" ;;
     esac ;;
   adapter)
     [ "${1:-}" = build ] || sai 2 "Dùng: aw adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]"

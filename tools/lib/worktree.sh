@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Worktree là BẮT BUỘC: checkout chính chỉ đứng ở nhánh gốc và chỉ chạy /intake;
+# Worktree là BẮT BUỘC: checkout chính chỉ đứng ở nhánh gốc và chỉ chạy /aw-intake;
 # mỗi việc làm trong một worktree riêng, một phiên agent riêng.
 #
 # Không dùng "rev-parse --path-format=absolute" (cần git ≥ 2.31): tự đổi sang

@@ -477,7 +477,7 @@ viet_spec; thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [OPEN-QUESTION]" sh "$CHK" "$F"
 thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
-ky_vong 1 "spec đã duyệt mà bị sửa (vd /clarify đổi nhãn) thì phải duyệt lại" sh "$CHK" "$F"
+ky_vong 1 "spec đã duyệt mà bị sửa (vd /aw-clarify đổi nhãn) thì phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời + spec đổi nhãn nguồn + người duyệt lại thì cho qua" sh "$CHK" "$F"
 thay "$F/open-questions.md" '- **Answer:** qua email' '- **Answer:** <người trả lời ghi vào đây>'
@@ -793,6 +793,85 @@ rm -f "$F/ket-qua-kiem-thu.md"
 ky_vong 1 "chặn khi chưa có ket-qua-kiem-thu.md" sh "$CHK" "$F"
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
 
+# ---------------------------------------------------------------- kiem-tra-gui-mr (aw check ship)
+echo ""
+echo "kiem-tra-gui-mr.sh (aw check ship)"
+SHC="$T/kiem-tra-gui-mr.sh"
+# viet_mr — mô tả MR điền đủ theo mẫu (comment của mẫu giữ nguyên: là lời dặn, không tính)
+viet_mr() {
+  cat > "$F/merge-request.md" <<'EOF'
+# ABC-1: hiện a và b trên màn hình y
+
+<!-- lời dặn của mẫu: <…> <test> -->
+
+## Problem
+
+- **Current:** màn hình y không có a
+- **Expected:** có a và b
+- **Root cause:** chưa làm
+
+## Changes
+
+- Màn hình y hiện a và b
+- **Breaking change:** None
+- **Edge cases:** None
+
+## External Impact
+
+None
+
+## Out of Scope
+
+None
+
+## Deployment
+
+- **Dependencies:** None
+- **Order:** không có ràng buộc
+- **Migration / Config:** None
+- **Rollback:** revert MR là đủ
+
+## Testing
+
+- **Added:** test/a.test.js — có a và b
+- **Commands:** `npm test` → xanh
+
+## Open Questions
+
+None
+
+Refs: ABC-1
+EOF
+}
+ky_vong 2 "chưa có merge-request.md → THIẾU ĐẦU VÀO" sh "$SHC" "$F"
+viet_mr
+ky_vong 0 "mô tả MR đủ mục, review đạt → ĐẠT" sh "$SHC" "$F"
+thay "$F/merge-request.md" '# ABC-1: hiện a và b trên màn hình y' '# <JIRA-KEY>: <verb> <what> <where>'
+ky_vong 1 "tiêu đề còn chữ giữ chỗ → chặn" sh "$SHC" "$F"
+viet_mr; thay "$F/merge-request.md" '## Out of Scope
+
+None
+
+' ''
+ky_vong 1 "xoá mất một mục của mẫu → chặn (không áp dụng thì ghi None)" sh "$SHC" "$F"
+dung "…đúng lý do" sh -c "sh '$SHC' '$F' | grep -q 'Thiếu mục \"## Out of Scope\"'"
+viet_mr; thay "$F/merge-request.md" '- **Added:** test/a.test.js — có a và b
+- **Commands:** `npm test` → xanh' '<!-- chưa viết -->'
+ky_vong 1 "Testing chỉ có comment → chặn (mục bắt buộc trống)" sh "$SHC" "$F"
+viet_mr; thay "$F/merge-request.md" '- **Added:** test/a.test.js — có a và b' '- **Added:** <test> — <chứng minh gì>'
+ky_vong 1 "còn chữ giữ chỗ của mẫu ngoài comment → chặn" sh "$SHC" "$F"
+viet_mr; thay "$F/merge-request.md" '# ABC-1: hiện a và b trên màn hình y' '# hiện a và b trên màn hình y'
+ky_vong 0 "tiêu đề thiếu mã Jira của intake → chỉ cảnh báo" sh "$SHC" "$F"
+dung "…có cảnh báo" sh -c "sh '$SHC' '$F' | grep -q 'CẢNH BÁO.*ABC-1'"
+viet_mr
+printf '\n## Lens 3 — Quality\n\n### [Blocker] tràn bộ nhớ\n' >> "$F/review.md"
+ky_vong 1 "review.md còn [Blocker] → chặn" sh "$SHC" "$F"
+viet_review
+printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n' > "$F/review.md"
+ky_vong 1 "aw check review không đạt → chặn" sh "$SHC" "$F"
+viet_review
+ky_vong 0 "aw-engine check ship → đúng checker" sh "$AWE" check ship "$F"
+
 # ---------------------------------------------------------------- quy tac repo
 echo ""
 echo "quy tắc riêng của repo (quy_tac_*, aw rules)"
@@ -878,7 +957,7 @@ ky_vong 0 "bỏ hết khoá → review như cũ" sh "$T/kiem-tra-ra-soat.sh" "$F
 
 # ---------------------------------------------------------------- liet ke cau hoi
 echo ""
-echo "liet-ke-viec-cho.sh (/clarify)"
+echo "liet-ke-viec-cho.sh (/aw-clarify)"
 CHK="$T/liet-ke-viec-cho.sh"
 LQ="$TMP/lq"; rm -rf "$LQ"; mkdir -p "$LQ"
 cat > "$LQ/spec.md" <<'EOF'
@@ -933,7 +1012,7 @@ printf '### T-01\n- On assumption: **yes** — `open-questions.md` § YC-003\n##
 dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định hơn thì trước" bang "$(thu_tu)" "YC-005 YC-004 YC-003 YC-002 YC-001 "
 dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task on assumption: 2 (T-01 T-02)'"
 dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
-dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-005.*ĐANG CHẶN /implement'"
+dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-005.*ĐANG CHẶN /aw-implement'"
 dung "khối Kết quả: [x] CÓ VIỆC ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ VIỆC ĐANG CHẶN'"
 thay "$LQ/open-questions.md" '`blocking`
 - **Status:** `open`' '`non-blocking`
@@ -1003,7 +1082,7 @@ thu_tu_all() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \([A-Z]*
 ky_vong 1 "phát hiện Chặn chưa xử lý → ĐANG CHẶN" sh "$CHK" "$LQ"
 dung "xếp: điểm mù chặn → phát hiện Chặn → chặn review → phát hiện Cảnh báo → không chặn" \
   bang "$(thu_tu_all)" "YC-005 PH-02 PH-04 YC-002 PH-01 YC-001 "
-dung "…phát hiện Chặn đánh dấu ĐANG CHẶN /plan" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'PH-02.*ĐANG CHẶN /plan'"
+dung "…phát hiện Chặn đánh dấu ĐANG CHẶN /aw-plan" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'PH-02.*ĐANG CHẶN /aw-plan'"
 dung "…in vị trí + vấn đề của phát hiện" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Vấn đề: chọn gRPC mà không nêu D'"
 dung "phát hiện đã đóng chỉ nằm ở [ĐÃ XỬ LÝ], không đánh số" sh -c \
   "o=\$(sh '$CHK' '$LQ' 2>/dev/null); echo \"\$o\" | grep -q '^  - PH-03' && echo \"\$o\" | grep -q '^  - PH-05' && ! echo \"\$o\" | grep -q '^  [0-9]*\. PH-0[35]'"
@@ -1050,45 +1129,51 @@ O="$TMP/out1"; mkdir -p "$O"
 ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
-for f in commands/intake.md commands/spec.md commands/design.md commands/plan.md commands/implement.md commands/review.md \
-         commands/import.md commands/clarify.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
+for f in commands/aw-intake.md commands/aw-spec.md commands/aw-design.md commands/aw-plan.md commands/aw-implement.md commands/aw-review.md \
+         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
-[ -f "$O/.claude/commands/ship.md" ] && du=0
-dung "sinh đúng bộ file, bỏ qua phase chưa hiện thực" test "$du" = 1
-dung "command có bước xác định feature bằng aw feature" grep -q 'aw feature \$ARGUMENTS' "$O/.claude/commands/design.md"
-dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O/.claude/commands/design.md"
+dung "sinh đúng bộ file" test "$du" = 1
+dung "/aw-ship: điều kiện ra máy là aw check ship" grep -q '`aw check ship <thư-mục-feature>`' "$O/.claude/commands/aw-ship.md"
+dung "/aw-ship: ở checkout chính thì làm mục \"Ở checkout chính\", không dừng" sh -c \
+  "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*mục \"Ở checkout chính\"' '$O/.claude/commands/aw-ship.md' && ! grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' '$O/.claude/commands/aw-ship.md'"
+dung "…lệnh khác vẫn dừng lại ở checkout chính" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$O/.claude/commands/aw-review.md"
+dung "/aw-ship: không bắt buộc, có mẫu merge-request.md" sh -c \
+  "grep -q 'Bắt buộc:\*\* không' '$O/.claude/commands/aw-ship.md' && grep -q 'templates/merge-request.md' '$O/.claude/commands/aw-ship.md'"
+dung "skill liệt kê /aw-ship" grep -q '| `/aw-ship` |' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
+dung "command có bước xác định feature bằng aw feature" grep -q 'aw feature \$ARGUMENTS' "$O/.claude/commands/aw-design.md"
+dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O/.claude/commands/aw-design.md"
 dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
-dung "command design gọi checker LLM" grep -q 'soat-thiet-ke' "$O/.claude/commands/design.md"
-dung "lệnh /clarify có bước xác định feature + chạy aw pending" sh -c \
-  "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/clarify.md' && grep -q 'aw pending' '$O/.claude/commands/clarify.md'"
-dung "lệnh /clarify hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
-  "grep -q 'AskUserQuestion' '$O/.claude/commands/clarify.md' && grep -q 'Chat về câu này' '$O/.claude/commands/clarify.md'"
+dung "command design gọi checker LLM" grep -q 'soat-thiet-ke' "$O/.claude/commands/aw-design.md"
+dung "lệnh /aw-clarify có bước xác định feature + chạy aw pending" sh -c \
+  "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/aw-clarify.md' && grep -q 'aw pending' '$O/.claude/commands/aw-clarify.md'"
+dung "lệnh /aw-clarify hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
+  "grep -q 'AskUserQuestion' '$O/.claude/commands/aw-clarify.md' && grep -q 'Chat về câu này' '$O/.claude/commands/aw-clarify.md'"
 dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng đầu nhãn" sh -c \
-  "grep -q 'Nghĩ kỹ trước khi hỏi' '$O/.claude/commands/clarify.md' && grep -q 'bắt đầu bằng.*(Đề xuất)' '$O/.claude/commands/clarify.md'"
-dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/clarify.md"
-dung "lệnh /clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-hien-thiet-ke.md' "$O/.claude/commands/clarify.md"
-dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O/.claude/commands/import.md'"
-dung "/design có cổng duyệt: aw approval design + hộp xác nhận AskUserQuestion" sh -c \
-  "grep -q 'Bước 1 — Cổng duyệt' '$O/.claude/commands/design.md' && grep -q 'aw approval design' '$O/.claude/commands/design.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/design.md'"
+  "grep -q 'Nghĩ kỹ trước khi hỏi' '$O/.claude/commands/aw-clarify.md' && grep -q 'bắt đầu bằng.*(Đề xuất)' '$O/.claude/commands/aw-clarify.md'"
+dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/aw-clarify.md"
+dung "lệnh /aw-clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-hien-thiet-ke.md' "$O/.claude/commands/aw-clarify.md"
+dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O/.claude/commands/aw-import.md'"
+dung "/aw-design có cổng duyệt: aw approval design + hộp xác nhận AskUserQuestion" sh -c \
+  "grep -q 'Bước 1 — Cổng duyệt' '$O/.claude/commands/aw-design.md' && grep -q 'aw approval design' '$O/.claude/commands/aw-design.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-design.md'"
 dung "…ba lựa chọn cố định, có preview, từ chối duyệt hộ" sh -c \
-  "grep -q 'Tôi đã duyệt xong — kiểm lại' '$O/.claude/commands/design.md' && grep -q 'Giải thích từng điểm cần duyệt' '$O/.claude/commands/design.md' && grep -q 'Dừng — tôi duyệt sau' '$O/.claude/commands/design.md' && grep -q 'preview' '$O/.claude/commands/design.md' && grep -q 'duyệt hộ' '$O/.claude/commands/design.md'"
-dung "/plan có cổng duyệt aw approval plan" grep -q 'aw approval plan' "$O/.claude/commands/plan.md"
-dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Cổng duyệt' '$O/.claude/commands/implement.md' && ! grep -q 'Cổng duyệt' '$O/.claude/commands/spec.md'"
-dung "lệnh /import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/import.md"
-dung "skill liệt kê lệnh tiện ích" grep -q '/clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
+  "grep -q 'Tôi đã duyệt xong — kiểm lại' '$O/.claude/commands/aw-design.md' && grep -q 'Giải thích từng điểm cần duyệt' '$O/.claude/commands/aw-design.md' && grep -q 'Dừng — tôi duyệt sau' '$O/.claude/commands/aw-design.md' && grep -q 'preview' '$O/.claude/commands/aw-design.md' && grep -q 'duyệt hộ' '$O/.claude/commands/aw-design.md'"
+dung "/aw-plan có cổng duyệt aw approval plan" grep -q 'aw approval plan' "$O/.claude/commands/aw-plan.md"
+dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Cổng duyệt' '$O/.claude/commands/aw-implement.md' && ! grep -q 'Cổng duyệt' '$O/.claude/commands/aw-spec.md'"
+dung "lệnh /aw-import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/aw-import.md"
+dung "skill liệt kê lệnh tiện ích" grep -q '/aw-clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase>" sh -c \
-  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O/.claude/commands/'\$p.md || exit 1; done"
-dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/intake.md'"
+  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/ra-soat-doc-lap.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/soat-thiet-ke.md"
 
-printf '# tôi tự viết\n' > "$O/.claude/commands/spec.md"
+printf '# tôi tự viết\n' > "$O/.claude/commands/aw-spec.md"
 ky_vong 3 "từ chối ghi đè file người viết tay" sh "$BUILD" --out "$O"
-dung "nội dung người viết còn nguyên" sh -c "head -1 '$O/.claude/commands/spec.md' | grep -q 'tôi tự viết'"
+dung "nội dung người viết còn nguyên" sh -c "head -1 '$O/.claude/commands/aw-spec.md' | grep -q 'tôi tự viết'"
 ky_vong 0 "--force thì cho phép ghi đè" sh "$BUILD" --out "$O" --force
 
-# lenh do lan cai truoc sinh ra ma nay khong con (vd /ideation -> /intake)
+# lenh do lan cai truoc sinh ra ma nay khong con (vd /ideation -> /aw-intake)
 printf -- '---\n---\n> **File này được SINH TỰ ĐỘNG** từ `workflow/phases/00-ideation.md`\n' > "$O/.claude/commands/ideation.md"
 printf '# lệnh tôi tự viết\n' > "$O/.claude/commands/cua-toi.md"
 sh "$BUILD" --out "$O" >/dev/null 2>&1
@@ -1110,7 +1195,7 @@ tao_fake
 thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - kế hoạch trông có vẻ hợp lý'
 O2="$TMP/out2"; mkdir -p "$O2"
 ky_vong 4 "từ chối build khi exit_machine không phải lệnh chạy được" sh "$FAKE/adapters/claude-code/build.sh" --out "$O2"
-dung "không để lại file viết dở khi build hỏng" sh -c "[ ! -f '$O2/.claude/commands/plan.md' ] && [ -z \"\$(find '$O2' -name '*.tmp')\" ]"
+dung "không để lại file viết dở khi build hỏng" sh -c "[ ! -f '$O2/.claude/commands/aw-plan.md' ] && [ -z \"\$(find '$O2' -name '*.tmp')\" ]"
 
 tao_fake
 thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - aw check khong-ton-tai'
@@ -1123,6 +1208,16 @@ ky_vong 4 "từ chối build khi llm_checker trỏ tới file không tồn tại
 tao_fake
 thay "$FAKE/workflow/phases/00-intake.md" 'arguments: input' 'arguments: gi-cung-duoc'
 ky_vong 4 "từ chối build khi arguments không phải \"input\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5"
+
+tao_fake
+thay "$FAKE/workflow/phases/06-ship.md" 'runs_on_main_checkout: true' 'runs_on_main_checkout: co'
+ky_vong 4 "từ chối build khi runs_on_main_checkout khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5b"
+
+tao_fake
+thay "$FAKE/workflow/phases/06-ship.md" 'required: false' 'required: false
+status: chưa hiện thực'
+ky_vong 0 "phase status: chưa hiện thực → build vẫn đạt" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out5c"
+dung "…nhưng không sinh lệnh cho nó" test ! -e "$TMP/out5c/.claude/commands/aw-ship.md"
 
 tao_fake
 rm -f "$FAKE/workflow/clarify.md"
@@ -1156,7 +1251,7 @@ ds_tuong_doi() { (cd "$1" && find . -type f | sed 's|^\./||' | LC_ALL=C sort); }
 dung "cùng bộ file với Claude Code (commands/, agents/, skills/) — trùng tên để che bản .claude/" \
   bang "$(ds_tuong_doi "$O3/.cursor")" "$(ds_tuong_doi "$TMP/out1/.claude" | grep -v '^commands/cua-toi.md$')"
 dung "…chỉ ghi vào .cursor/" bang "$(ls -A "$O3")" ".cursor"
-dung "…bỏ qua phase chưa hiện thực" test ! -e "$O3/.cursor/commands/ship.md"
+dung "…có /aw-ship" test -f "$O3/.cursor/commands/aw-ship.md"
 dung "không còn \$ARGUMENTS (Cursor không thay biến)" sh -c "! grep -rqF '\$ARGUMENTS' '$O3/.cursor'"
 dung "không gọi tool riêng của Claude Code (AskUserQuestion, multiSelect, trường preview/questions)" \
   sh -c "! grep -rqE 'AskUserQuestion|multiSelect|\`preview\`:|\`questions\`' '$O3/.cursor'"
@@ -1166,35 +1261,35 @@ dung "lệnh là markdown thường: dòng đầu '# /<id> — …', không fron
   "for f in '$O3'/.cursor/commands/*.md; do id=\$(basename \"\$f\" .md); head -1 \"\$f\" | grep -q \"^# /\$id — \" || exit 1; done"
 dung "mọi lệnh có mục tham số của Cursor (<tham-số> chép nguyên văn)" sh -c \
   "for f in '$O3'/.cursor/commands/*.md; do grep -q '## Tham số của lệnh trong Cursor' \"\$f\" && grep -q 'chép nguyên văn' \"\$f\" || exit 1; done"
-dung "/design xác định feature bằng aw feature <tham-số>" grep -qF 'aw feature <tham-số>' "$O3/.cursor/commands/design.md"
-dung "/intake: aw feature không tham số, input đi qua heredoc với <tham-số>" sh -c \
-  "grep -q 'Chạy \`aw feature\` — \*\*không\*\* truyền' '$O3/.cursor/commands/intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/intake.md' | grep -qx '<tham-số>'"
-dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O3/.cursor/commands/design.md"
-dung "/design gọi subagent checker LLM soat-thiet-ke" grep -q 'subagent `soat-thiet-ke`' "$O3/.cursor/commands/design.md"
-dung "/review bắt buộc subagent ra-soat-doc-lap" grep -q 'subagent `ra-soat-doc-lap`' "$O3/.cursor/commands/review.md"
+dung "/aw-design xác định feature bằng aw feature <tham-số>" grep -qF 'aw feature <tham-số>' "$O3/.cursor/commands/aw-design.md"
+dung "/aw-intake: aw feature không tham số, input đi qua heredoc với <tham-số>" sh -c \
+  "grep -q 'Chạy \`aw feature\` — \*\*không\*\* truyền' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
+dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O3/.cursor/commands/aw-design.md"
+dung "/aw-design gọi subagent checker LLM soat-thiet-ke" grep -q 'subagent `soat-thiet-ke`' "$O3/.cursor/commands/aw-design.md"
+dung "/aw-review bắt buộc subagent ra-soat-doc-lap" grep -q 'subagent `ra-soat-doc-lap`' "$O3/.cursor/commands/aw-review.md"
 dung "subagent: frontmatter name trùng tên file (Cursor nạp .cursor/agents/)" sh -c \
   "for f in '$O3'/.cursor/agents/*.md; do head -1 \"\$f\" | grep -qx -- '---' && sed -n 2p \"\$f\" | grep -qx \"name: \$(basename \"\$f\" .md)\" || exit 1; done"
 dung "skill: frontmatter name quy-trinh-agent + description" sh -c \
   "sed -n 2p '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' | grep -qx 'name: quy-trinh-agent' && sed -n 3p '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' | grep -q '^description: '"
-dung "/clarify hỏi lựa chọn kiểu Cursor: tool nếu có, không thì đánh số" sh -c \
-  "grep -q '## Cách hỏi lựa chọn trong Cursor' '$O3/.cursor/commands/clarify.md' && grep -q 'AskQuestion' '$O3/.cursor/commands/clarify.md' && grep -q 'đánh số' '$O3/.cursor/commands/clarify.md'"
+dung "/aw-clarify hỏi lựa chọn kiểu Cursor: tool nếu có, không thì đánh số" sh -c \
+  "grep -q '## Cách hỏi lựa chọn trong Cursor' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'AskQuestion' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'đánh số' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…luôn có lối tự nhập và Chat về câu này (tool không chắc tự thêm)" sh -c \
-  "grep -q 'Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này' '$O3/.cursor/commands/clarify.md' && grep -q 'Chat về câu này' '$O3/.cursor/commands/clarify.md'"
+  "grep -q 'Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Chat về câu này' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…(Đề xuất) đứng đầu nhãn, phân tích trước khi hỏi" sh -c \
-  "grep -q 'bắt đầu bằng.*(Đề xuất)' '$O3/.cursor/commands/clarify.md' && grep -q 'Nghĩ kỹ trước khi hỏi' '$O3/.cursor/commands/clarify.md'"
-dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O3/.cursor/commands/import.md' && ! grep -q 'Cách hỏi lựa chọn' '$TMP/out1/.claude/commands/import.md'"
-dung "/design, /plan có cổng duyệt aw approval + hộp xác nhận Cursor" sh -c \
-  "grep -q 'aw approval design' '$O3/.cursor/commands/design.md' && grep -q 'aw approval plan' '$O3/.cursor/commands/plan.md' && grep -q '### Hộp xác nhận trong Cursor' '$O3/.cursor/commands/plan.md'"
+  "grep -q 'bắt đầu bằng.*(Đề xuất)' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Nghĩ kỹ trước khi hỏi' '$O3/.cursor/commands/aw-clarify.md'"
+dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O3/.cursor/commands/aw-import.md' && ! grep -q 'Cách hỏi lựa chọn' '$TMP/out1/.claude/commands/aw-import.md'"
+dung "/aw-design, /aw-plan có cổng duyệt aw approval + hộp xác nhận Cursor" sh -c \
+  "grep -q 'aw approval design' '$O3/.cursor/commands/aw-design.md' && grep -q 'aw approval plan' '$O3/.cursor/commands/aw-plan.md' && grep -q '### Hộp xác nhận trong Cursor' '$O3/.cursor/commands/aw-plan.md'"
 dung "…phase không khai approval_gate thì không có" sh -c \
-  "for p in intake spec implement review; do ! grep -q 'Cổng duyệt' '$O3/.cursor/commands/'\$p.md || exit 1; done"
+  "for p in intake spec implement review; do ! grep -q 'Cổng duyệt' '$O3/.cursor/commands/aw-'\$p.md || exit 1; done"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase>; intake thì không" sh -c \
-  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/intake.md'"
+  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/aw-intake.md'"
 dung "skill liệt kê phase và lệnh tiện ích" sh -c \
-  "grep -q '| \`/design\` |' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' && grep -q '/clarify' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md'"
+  "grep -q '| \`/aw-design\` |' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' && grep -q '/aw-clarify' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md'"
 
-printf '# tôi tự viết\n' > "$O3/.cursor/commands/spec.md"
+printf '# tôi tự viết\n' > "$O3/.cursor/commands/aw-spec.md"
 ky_vong 3 "từ chối ghi đè file người viết tay" sh "$CB" --out "$O3"
-dung "…nội dung người viết còn nguyên" sh -c "head -1 '$O3/.cursor/commands/spec.md' | grep -q 'tôi tự viết'"
+dung "…nội dung người viết còn nguyên" sh -c "head -1 '$O3/.cursor/commands/aw-spec.md' | grep -q 'tôi tự viết'"
 ky_vong 0 "--force thì cho phép ghi đè" sh "$CB" --out "$O3" --force
 printf -- '> **File này được SINH TỰ ĐỘNG** từ `workflow/phases/00-ideation.md`\n' > "$O3/.cursor/commands/ideation.md"
 printf -- '> **File này được SINH TỰ ĐỘNG** — agent cũ\n' > "$O3/.cursor/agents/cu.md"
@@ -1208,17 +1303,17 @@ ky_vong 2 "tham số lạ → SAI THAM SỐ" sh "$CB" --out "$O3" --khac
 
 # File .cursor/ git đang theo dõi (team commit lệnh trùng tên): bỏ qua, không đụng
 RT="$TMP/cur-team"; mkdir -p "$RT/.cursor/commands"; git -C "$RT" init -q
-printf '# lệnh spec của team\n' > "$RT/.cursor/commands/spec.md"
+printf '# lệnh spec của team\n' > "$RT/.cursor/commands/aw-spec.md"
 git -C "$RT" add -A; git -C "$RT" -c user.name=t -c user.email=t@t commit -q -m team
 ky_vong 0 "file git đang theo dõi → bỏ qua, build vẫn đạt" sh "$CB" --out "$RT"
-dung "…nội dung của team giữ nguyên, cây sạch" sh -c "grep -q 'của team' '$RT/.cursor/commands/spec.md' && [ -z \"\$(git -C '$RT' status --porcelain -- .cursor/commands/spec.md)\" ]"
+dung "…nội dung của team giữ nguyên, cây sạch" sh -c "grep -q 'của team' '$RT/.cursor/commands/aw-spec.md' && [ -z \"\$(git -C '$RT' status --porcelain -- .cursor/commands/aw-spec.md)\" ]"
 
 # Định nghĩa quy trình lỗi: MỌI adapter phải từ chối, không để lại file viết dở
 for ad in claude-code cursor; do
   tao_fake
   thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - kế hoạch trông có vẻ hợp lý'
   ky_vong 4 "$ad: từ chối build khi exit_machine không phải lệnh chạy được" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-1"
-  dung "$ad: …không để lại file viết dở" sh -c "[ -z \"\$(find '$TMP/f-$ad-1' -name '*.tmp' 2>/dev/null)\" ] && [ ! -e '$TMP/f-$ad-1/.claude/commands/plan.md' ] && [ ! -e '$TMP/f-$ad-1/.cursor/commands/plan.md' ]"
+  dung "$ad: …không để lại file viết dở" sh -c "[ -z \"\$(find '$TMP/f-$ad-1' -name '*.tmp' 2>/dev/null)\" ] && [ ! -e '$TMP/f-$ad-1/.claude/commands/aw-plan.md' ] && [ ! -e '$TMP/f-$ad-1/.cursor/commands/aw-plan.md' ]"
   tao_fake
   thay "$FAKE/workflow/phases/03-plan.md" '  - aw check plan' '  - aw check khong-ton-tai'
   ky_vong 4 "$ad: từ chối build khi aw check trỏ tới checker không có" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-2"
@@ -1269,7 +1364,7 @@ for d in "$DC"/*/; do
 done
 dung "ngoài hook, output của mọi adapter giống hệt nhau từng byte" test "$dc_khac" = 0
 dung "…phép đối chiếu không rỗng: hook thật sự được gọi (cổng duyệt, hỏi lựa chọn, tham số)" sh -c \
-  "grep -q '<<ad_hoi_cong_duyet design>>' '$dau/goc/commands/design.md' && grep -q '<<ad_hoi_lua_chon>>' '$dau/goc/commands/clarify.md' && grep -q 'aw feature <<ad_tham_so>>' '$dau/goc/commands/spec.md' && grep -q '<<ad_danh_cho>>' '$dau/goc/agents/ra-soat-doc-lap.md'"
+  "grep -q '<<ad_hoi_cong_duyet design>>' '$dau/goc/commands/aw-design.md' && grep -q '<<ad_hoi_lua_chon>>' '$dau/goc/commands/aw-clarify.md' && grep -q 'aw feature <<ad_tham_so>>' '$dau/goc/commands/aw-spec.md' && grep -q '<<ad_danh_cho>>' '$dau/goc/agents/ra-soat-doc-lap.md'"
 dung "…và phần dùng chung không chứa chữ riêng của agent nào" sh -c \
   "! grep -rqE 'AskUserQuestion|AskQuestion|\\\$ARGUMENTS|<tham-số>|\\.claude/|\\.cursor/' '$dau/goc'"
 
@@ -1284,10 +1379,10 @@ cau_hoi() { grep -o '`[^`]*bạn muốn làm gì?`' "$1" | LC_ALL=C sort -u; }
 nhan_cd() { grep -oE '`(Tôi đã duyệt xong — kiểm lại|Giải thích từng điểm cần duyệt|Dừng — tôi duyệt sau)`' "$1" | tr '\n' '|'; }
 cd_khac=0
 for p in design plan; do
-  q0=$(cau_hoi "$DT/claude-code/.claude/commands/$p.md"); n0=$(nhan_cd "$DT/claude-code/.claude/commands/$p.md")
+  q0=$(cau_hoi "$DT/claude-code/.claude/commands/aw-$p.md"); n0=$(nhan_cd "$DT/claude-code/.claude/commands/aw-$p.md")
   [ -n "$q0" ] && [ "$n0" = '`Tôi đã duyệt xong — kiểm lại`|`Giải thích từng điểm cần duyệt`|`Dừng — tôi duyệt sau`|' ] || { cd_khac=1; echo "        claude-code /$p: thiếu câu hỏi hay nhãn"; }
   for d in "$DT"/*/; do
-    f=$(find "$d" -path "*/commands/$p.md" | head -1)
+    f=$(find "$d" -path "*/commands/aw-$p.md" | head -1)
     [ "$(cau_hoi "$f")" = "$q0" ] || { cd_khac=1; echo "        $(basename "$d") /$p: câu hỏi cổng duyệt khác"; }
     [ "$(nhan_cd "$f")" = "$n0" ] || { cd_khac=1; echo "        $(basename "$d") /$p: ba nhãn / thứ tự khác"; }
   done
@@ -1318,7 +1413,7 @@ cursor $(cat "$ROOT/VERSION")"
 dung "…cả hai bộ giống hệt khi build riêng" sh -c "diff -r '$TMP/ca-hai-2/.claude' '$DT/claude-code/.claude' && diff -r '$TMP/ca-hai-2/.cursor' '$DT/cursor/.cursor'"
 ky_vong 2 "tools/sinh-adapter.sh: một id không có → SAI THAM SỐ, không sinh gì" sh "$T/sinh-adapter.sh" "claude-code khong-co" "$TMP/ca-hai-3"
 dung "…không sinh adapter nào" sh -c "[ ! -e '$TMP/ca-hai-3/.claude' ] && [ ! -e '$TMP/ca-hai-3/.agent-workflow' ]"
-mkdir -p "$TMP/ca-hai-4/.cursor/commands"; printf '# tự viết\n' > "$TMP/ca-hai-4/.cursor/commands/spec.md"
+mkdir -p "$TMP/ca-hai-4/.cursor/commands"; printf '# tự viết\n' > "$TMP/ca-hai-4/.cursor/commands/aw-spec.md"
 ky_vong 3 "một adapter hỏng (file viết tay) → mã của adapter đó" sh "$T/sinh-adapter.sh" claude-code,cursor "$TMP/ca-hai-4"
 dung "…adapter kia vẫn sinh đủ, dấu build chỉ ghi adapter đạt" sh -c \
   "diff -r '$TMP/ca-hai-4/.claude' '$DT/claude-code/.claude' && grep -q '^claude-code ' '$TMP/ca-hai-4/.agent-workflow/.adapters' && ! grep -q '^cursor ' '$TMP/ca-hai-4/.agent-workflow/.adapters'"
@@ -1364,7 +1459,7 @@ awd "$R9" init --version "$VDEV" --test-cmd true >/dev/null 2>&1
 CV9="$R9/.git/agent-workflow/conventions.md"
 ky_vong 6 "checkout chính → ĐANG Ở CHECKOUT CHÍNH (worktree bắt buộc)" awd "$R9" feature
 ky_vong 6 "…kể cả khi có tham số" awd "$R9" feature feat_abc
-dung "…và in danh sách việc cần làm: mở worktree / chạy /intake" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 | grep -q 'CHECKOUT CHÍNH'"
+dung "…và in danh sách việc cần làm: mở worktree / chạy /aw-intake" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 | grep -q 'CHECKOUT CHÍNH'"
 
 W4="$TMP/repo9.wt/khong-khop"
 g9 worktree add -q -b khong-khop "$W4" main
@@ -1381,7 +1476,7 @@ dung "branch khớp thì thắng tham số" test "$(awd "$W4" feature khac 2>/de
 dung "in 'Đang làm với:'" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 >/dev/null | grep -q 'Đang làm với: .agent-workflow/feat_them-todo'"
 g9 worktree remove --force "$W4"
 
-# ---------------------------------------------------------------- tao worktree (/intake)
+# ---------------------------------------------------------------- tao worktree (/aw-intake)
 echo ""
 echo "aw worktree new (tao-worktree.sh)"
 thay "$CV9" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: release/*'
@@ -1405,7 +1500,7 @@ dung "AW_THU_MUC_WORKTREE ghi đè vị trí theo máy" sh -c "cd '$R9' && AW_TH
 GOC9=$(git -C "$R9" rev-parse main)
 ky_vong 0 "base không có gì của quy trình vẫn tạo được worktree" awd "$R9" worktree new chore khong-bo-cai --create --base khong-co-gi
 W0="$TMP/repo9.wt/chore_khong-bo-cai"
-dung "…worktree mới có adapter sinh sẵn" test -f "$W0/.claude/commands/spec.md"
+dung "…worktree mới có adapter sinh sẵn" test -f "$W0/.claude/commands/aw-spec.md"
 dung "…file adapter bị exclude: worktree sạch" sh -c "[ -z \"\$(git -C '$W0' status --porcelain)\" ]"
 dung "…artifact viết vào cũng bị exclude" sh -c "mkdir -p '$W0/.agent-workflow/chore_khong-bo-cai' && printf x > '$W0/.agent-workflow/chore_khong-bo-cai/intake.md' && [ -z \"\$(git -C '$W0' status --porcelain)\" ]"
 dung "…không có commit nào vào base, checkout chính sạch" sh -c "[ \"\$(git -C '$R9' rev-parse main)\" = '$GOC9' ] && [ -z \"\$(git -C '$R9' status --porcelain)\" ]"
@@ -1450,7 +1545,7 @@ ky_vong 0 "aw init --adapter claude-code,cursor" awd "$R10" init --version "$VDE
 dung "…config.sh ghi ADAPTER=\"claude-code cursor\"" grep -qx 'ADAPTER="claude-code cursor"' "$C10/config.sh"
 dung "…exclude có đường dẫn của MỌI adapter" sh -c \
   "for p in /.agent-workflow/ /.claude/ /.cursor/commands/ /.cursor/agents/ /.cursor/skills/quy-trinh-agent/; do grep -qxF \"\$p\" '$R10/.git/info/exclude' || exit 1; done"
-dung "…sinh cả hai bộ ở checkout chính" sh -c "[ -f '$R10/.claude/commands/intake.md' ] && [ -f '$R10/.cursor/commands/intake.md' ] && [ -f '$R10/.cursor/agents/ra-soat-doc-lap.md' ]"
+dung "…sinh cả hai bộ ở checkout chính" sh -c "[ -f '$R10/.claude/commands/aw-intake.md' ] && [ -f '$R10/.cursor/commands/aw-intake.md' ] && [ -f '$R10/.cursor/agents/ra-soat-doc-lap.md' ]"
 dung "…cả hai bộ giống hệt build riêng (không ảnh hưởng nhau)" sh -c "diff -r '$R10/.claude' '$TMP/doi-chieu-that/claude-code/.claude' && diff -r '$R10/.cursor' '$TMP/doi-chieu-that/cursor/.cursor'"
 dung "…dấu build ghi cả hai, đúng version" bang "$(cat "$R10/.agent-workflow/.adapters")" "claude-code $VDEV
 cursor $VDEV"
@@ -1463,7 +1558,7 @@ ky_vong 0 "aw doctor: mọi mục ✓ với hai adapter" awd "$R10" doctor
 dung "…liệt kê từng adapter của worktree" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q '✓ cursor (engine $VDEV)'"
 
 W10=$(awd "$R10" worktree new feature hai-agent --create --base main 2>/dev/null)
-dung "worktree mới có cả .claude/ và .cursor/" sh -c "[ -n '$W10' ] && [ -f '$W10/.claude/commands/spec.md' ] && [ -f '$W10/.cursor/commands/spec.md' ]"
+dung "worktree mới có cả .claude/ và .cursor/" sh -c "[ -n '$W10' ] && [ -f '$W10/.claude/commands/aw-spec.md' ] && [ -f '$W10/.cursor/commands/aw-spec.md' ]"
 dung "…giống hệt build riêng" sh -c "diff -r '$W10/.claude' '$TMP/doi-chieu-that/claude-code/.claude' && diff -r '$W10/.cursor' '$TMP/doi-chieu-that/cursor/.cursor'"
 dung "…worktree sạch (mọi file sinh ra bị exclude)" sh -c "[ -z \"\$(git -C '$W10' status --porcelain --untracked-files=all)\" ]"
 dung "…dấu build của worktree có cả hai" sh -c "grep -q '^claude-code ' '$W10/.agent-workflow/.adapters' && grep -q '^cursor ' '$W10/.agent-workflow/.adapters'"
@@ -1482,7 +1577,7 @@ ky_vong 0 "doctor: bộ lệnh sinh từ engine khác chỉ là thông tin (vi�
 dung "…nói rõ version của bộ lệnh và của bản clone" sh -c "cd '$W10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q 'claude-code sinh từ engine 2000.1.1, bản clone dùng $VDEV'"
 rm -rf "$W10/.cursor" "$W10/.claude"
 ky_vong 0 "aw adapter build (không id) → mọi adapter trong config.sh" awd "$W10" adapter build
-dung "…sinh lại cả hai, dấu build đúng version" sh -c "[ -f '$W10/.claude/commands/plan.md' ] && [ -f '$W10/.cursor/commands/plan.md' ] && [ \"\$(cat '$W10/.agent-workflow/.adapters')\" = 'claude-code $VDEV
+dung "…sinh lại cả hai, dấu build đúng version" sh -c "[ -f '$W10/.claude/commands/aw-plan.md' ] && [ -f '$W10/.cursor/commands/aw-plan.md' ] && [ \"\$(cat '$W10/.agent-workflow/.adapters')\" = 'claude-code $VDEV
 cursor $VDEV' ]"
 rm -rf "$W10/.cursor"
 ky_vong 2 "aw adapter build claude-code,khong-co → SAI THAM SỐ" awd "$W10" adapter build claude-code,khong-co
@@ -1496,10 +1591,10 @@ awd "$W10" adapter build >/dev/null 2>&1
 cp "$C10/config.sh" "$TMP/config10.bak"
 sed 's/^ADAPTER=.*/ADAPTER="cursor,claude-code"/' "$TMP/config10.bak" > "$C10/config.sh"
 W11=$(awd "$R10" worktree new chore dau-phay --create --base main 2>/dev/null)
-dung "ADAPTER viết bằng dấu phẩy → worktree có cả hai bộ" sh -c "[ -f '$W11/.claude/commands/spec.md' ] && [ -f '$W11/.cursor/commands/spec.md' ]"
+dung "ADAPTER viết bằng dấu phẩy → worktree có cả hai bộ" sh -c "[ -f '$W11/.claude/commands/aw-spec.md' ] && [ -f '$W11/.cursor/commands/aw-spec.md' ]"
 sed 's/^ADAPTER=.*/ADAPTER=""/' "$TMP/config10.bak" > "$C10/config.sh"
 W12=$(awd "$R10" worktree new chore bo-trong --create --base main 2>/dev/null)
-dung "ADAPTER bỏ trống → chỉ claude-code (như trước khi có nhiều adapter)" sh -c "[ -f '$W12/.claude/commands/spec.md' ] && [ ! -e '$W12/.cursor' ]"
+dung "ADAPTER bỏ trống → chỉ claude-code (như trước khi có nhiều adapter)" sh -c "[ -f '$W12/.claude/commands/aw-spec.md' ] && [ ! -e '$W12/.cursor' ]"
 sed 's/^ADAPTER=.*/ADAPTER="claude-code khong-co"/' "$TMP/config10.bak" > "$C10/config.sh"
 ky_vong 0 "ADAPTER có id sai → worktree vẫn tạo được" awd "$R10" worktree new chore id-sai --create --base main
 dung "…nhưng cảnh báo rõ, không sinh nửa vời" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore id-sai-2 --create --base main 2>&1 >/dev/null | grep -q 'CẢNH BÁO: ADAPTER=\"claude-code khong-co\"' && [ ! -e '$TMP/repo10.wt/chore_id-sai-2/.claude' ]"
@@ -1529,17 +1624,17 @@ W6="$TMP/repo9.wt/chore_in-base"
 ky_vong 0 "đã merge: remove --delete-branch gỡ worktree và xoá branch" awd "$R9" worktree remove chore_in-base --delete-branch
 dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] && ! git -C '$R9' rev-parse --verify --quiet refs/heads/chore_in-base"
 
-IN="$R9/.claude/commands/intake.md"
-dung "/intake: tham số là input, không truyền vào aw feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'aw feature \$ARGUMENTS' '$IN'"
-dung "/intake: đang ở checkout chính thì dẫn tới aw worktree new" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*aw worktree new' "$IN"
-dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$R9/.claude/commands/spec.md"
-dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'aw feature \$ARGUMENTS' "$R9/.claude/commands/spec.md"
-dung "/intake: tham số đi qua aw input bằng heredoc nguyên văn" sh -c "grep -q 'aw input .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
+IN="$R9/.claude/commands/aw-intake.md"
+dung "/aw-intake: tham số là input, không truyền vào aw feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'aw feature \$ARGUMENTS' '$IN'"
+dung "/aw-intake: đang ở checkout chính thì dẫn tới aw worktree new" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*aw worktree new' "$IN"
+dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$R9/.claude/commands/aw-spec.md"
+dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'aw feature \$ARGUMENTS' "$R9/.claude/commands/aw-spec.md"
+dung "/aw-intake: tham số đi qua aw input bằng heredoc nguyên văn" sh -c "grep -q 'aw input .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
 dung "aw init chép rules/templates/checkers của engine vào .agent-workflow/.engine/ (bị exclude)" sh -c "[ -f '$R9/.agent-workflow/.engine/templates/spec.md' ] && [ -f '$R9/.agent-workflow/.engine/rules/nguyen-tac-chung.md' ] && grep -qx '$VDEV' '$R9/.agent-workflow/.engine/VERSION'"
 dung "…conventions.md trong đó trỏ tới cấu hình của bản clone" sh -c "grep -q '^mau_branch:' '$R9/.agent-workflow/.engine/conventions.md'"
 dung "mọi đường dẫn .agent-workflow/.engine/… mà lệnh sinh ra nhắc tới đều có thật" sh -c "cd '$R9' && for p in \$(grep -rhoE '\.agent-workflow/\.engine/[A-Za-z0-9_./-]+\.md' .claude | sort -u); do [ -e \"\$p\" ] || { echo \$p; exit 1; }; done"
 
-# ---------------------------------------------------------------- phan loai input (/intake)
+# ---------------------------------------------------------------- phan loai input (/aw-intake)
 echo ""
 echo "aw input (phan-loai-input.sh)"
 mkdir -p "$R9/docs"; printf 'x\n' > "$R9/docs/a.md"
@@ -1573,9 +1668,9 @@ dung "…và không in dòng input nào" test -z "$(ra '<tham-số>')"
 ky_vong 4 "câu thật có nhắc chữ <tham-số> vẫn là LỜI NGƯỜI DÙNG" pl "sửa lỗi hiển thị <tham-số> trong trang"
 # Chạy NGUYÊN VĂN khối aw input do adapter sinh ra, như agent quên thay tham số
 for ad in claude-code cursor; do
-  case $ad in claude-code) f="$TMP/doi-chieu-that/claude-code/.claude/commands/intake.md" ;; *) f="$TMP/doi-chieu-that/cursor/.cursor/commands/intake.md" ;; esac
+  case $ad in claude-code) f="$TMP/doi-chieu-that/claude-code/.claude/commands/aw-intake.md" ;; *) f="$TMP/doi-chieu-that/cursor/.cursor/commands/aw-intake.md" ;; esac
   awk '/^```sh$/ { k = 1; next } k && /^```$/ { exit } k' "$f" | sed 's/^aw input \[--skip [^]]*\] /aw input /' > "$TMP/khoi-input-$ad.sh"
-  dung "$ad: khối aw input trong /intake là lệnh chạy được (có heredoc HET_INPUT)" sh -c "grep -q '^aw input - <<.HET_INPUT.\$' '$TMP/khoi-input-$ad.sh' && tail -1 '$TMP/khoi-input-$ad.sh' | grep -qx HET_INPUT"
+  dung "$ad: khối aw input trong /aw-intake là lệnh chạy được (có heredoc HET_INPUT)" sh -c "grep -q '^aw input - <<.HET_INPUT.\$' '$TMP/khoi-input-$ad.sh' && tail -1 '$TMP/khoi-input-$ad.sh' | grep -qx HET_INPUT"
   ky_vong 2 "$ad: chạy khối đó khi chưa thay tham số → engine chặn (SAI CÁCH GỌI)" sh -c "cd '$R9' && aw() { AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' \"\$@\"; } && . '$TMP/khoi-input-$ad.sh'"
   sed 's/^<tham-số>$/ABC-123/; s/^\$ARGUMENTS$/ABC-123/' "$TMP/khoi-input-$ad.sh" > "$TMP/khoi-input-$ad-thay.sh"
   dung "$ad: …thay đúng tham số thì ra nhãn [JIRA]" sh -c "cd '$R9' && aw() { AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' \"\$@\"; } && . '$TMP/khoi-input-$ad-thay.sh' 2>/dev/null | grep -q 'JIRA.* ABC-123'"
@@ -1605,7 +1700,7 @@ dung "stdin: nguyên văn giữ dấu nháy, \$, backtick, nhiều dòng" bang "
   > Sửa \"phí\" khi \$amount < 0 — xem ${BT}x${BT}
   > dòng hai"
 
-# --skip: chay lai /intake = gop them
+# --skip: chay lai /aw-intake = gop them
 cat > "$TMP/intake-cu.md" <<'HET'
 - **Type:** `feature`
 - **Goal:** x
@@ -1686,7 +1781,7 @@ dung "…đúng lý do: spec.md lỗi thời vì intake.md" sh -c "sh '$T/kiem-t
 viet_intake; viet_spec
 
 thay "$F/intake.md" '`feature`' '`chore`'
-ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /intake" sh "$CHK" "$F"
+ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /aw-intake" sh "$CHK" "$F"
 dung "…và có in cảnh báo lệch tiền tố" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*feat_'"
 viet_intake
 
@@ -1920,7 +2015,7 @@ OUT_CD=$(sh "$CD" design "$F" 2>/dev/null)
 dung "…chỉ đúng file và dòng phải tick" sh -c "printf '%s' \"\$1\" | grep -q 'mở .agent-workflow/[^ ]*/spec.md, dòng [0-9]'" _ "$OUT_CD"
 dung "…liệt kê YC [INFERRED] kèm tên" sh -c "printf '%s' \"\$1\" | grep -q 'YC-003 — log khi từ chối'" _ "$OUT_CD"
 dung "…liệt kê Ngoài phạm vi" sh -c "printf '%s' \"\$1\" | grep -q 'màn hình z'" _ "$OUT_CD"
-dung "…nói hệ quả của mức rủi ro (Mode 1/2)" sh -c "printf '%s' \"\$1\" | grep -q 'Risk: normal — /design chạy Mode 1'" _ "$OUT_CD"
+dung "…nói hệ quả của mức rủi ro (Mode 1/2)" sh -c "printf '%s' \"\$1\" | grep -q 'Risk: normal — /aw-design chạy Mode 1'" _ "$OUT_CD"
 dung "…đếm điểm mù còn mở theo mức chặn" sh -c "printf '%s' \"\$1\" | grep -q 'Điểm mù còn mở: 1 (blocking: 0 · review-blocking: 0 · non-blocking: 1)'" _ "$OUT_CD"
 dung "…không tự tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
 thay "$F/spec.md" '- [ ] **Approved by human** — đã đọc' '- [x] **Approved by human** — đã đọc'
@@ -1929,10 +2024,10 @@ thay "$F/spec.md" 'có log' 'có log Warn'
 ky_vong 1 "spec đổi sau duyệt → CHƯA DUYỆT" sh "$CD" design "$F"
 dung "…nói rõ đã đổi sau khi duyệt và cách duyệt lại" sh -c "sh '$CD' design '$F' 2>/dev/null | grep -q 'ĐÃ ĐỔI SAU KHI DUYỆT' && sh '$CD' design '$F' 2>/dev/null | grep -q 'xoá \"<!-- approval-hash'"
 viet_spec; viet_tdd
-ky_vong 0 "/plan: mọi D đã tick → ĐÃ DUYỆT" sh "$CD" plan "$F"
+ky_vong 0 "/aw-plan: mọi D đã tick → ĐÃ DUYỆT" sh "$CD" plan "$F"
 thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**
 - Critique (agent): cân nhắc DB'
-ky_vong 1 "/plan: còn D chưa tick → CHƯA DUYỆT" sh "$CD" plan "$F"
+ky_vong 1 "/aw-plan: còn D chưa tick → CHƯA DUYỆT" sh "$CD" plan "$F"
 OUT_CD=$(sh "$CD" plan "$F" 2>/dev/null)
 dung "…đếm D chưa duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'CÒN 1/1 QUYẾT ĐỊNH CHƯA DUYỆT'" _ "$OUT_CD"
 dung "…tên D, dòng, tác giả, lựa chọn, có phản biện" sh -c "printf '%s' \"\$1\" | grep -q 'D-01 — lưu ở đâu' && printf '%s' \"\$1\" | grep -q 'dòng [0-9]* · chưa tick' && printf '%s' \"\$1\" | grep -q 'tác giả: agent · Choice: file · có 1 phản biện'" _ "$OUT_CD"
@@ -1949,7 +2044,7 @@ ky_vong 1 "chore chạy design thì bị chặn" sh "$T/kiem-tra-thiet-ke.sh" "$
 
 thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
 ky_vong 1 "chore: aw approval plan hỏi duyệt SPEC (không có tdd.md)" sh "$T/cong-duyet.sh" plan "$F"
-dung "…đúng cổng spec, không nói Mode" sh -c "sh '$T/cong-duyet.sh' plan '$F' 2>/dev/null | grep -q 'vào /plan cần spec' && sh '$T/cong-duyet.sh' plan '$F' 2>/dev/null | grep -q 'chore không có design'"
+dung "…đúng cổng spec, không nói Mode" sh -c "sh '$T/cong-duyet.sh' plan '$F' 2>/dev/null | grep -q 'vào /aw-plan cần spec' && sh '$T/cong-duyet.sh' plan '$F' 2>/dev/null | grep -q 'chore không có design'"
 ky_vong 2 "chore: aw approval design → SAI THAM SỐ" sh "$T/cong-duyet.sh" design "$F"
 ky_vong 1 "chore: plan chặn khi người chưa duyệt spec" sh "$T/kiem-tra-ke-hoach.sh" "$F"
 viet_spec; ghi_based_on
@@ -2012,7 +2107,7 @@ printf '# quy ước cũ của team\n```conventions\nmau_branch: feat_* chore_*\
 printf 'LENH_KIEM_THU="make test"\nLENH_CHUAN_BI_WT="npm ci"\n' > "$RL/.agent-workflow/.quy-trinh/cau-hinh.sh"
 printf 'url=x\nadapter=claude-code\n' > "$RL/.agent-workflow/.quy-trinh/nguon.txt"
 printf 'echo cu\n' > "$RL/.agent-workflow/.quy-trinh/tools/xac-dinh-feature.sh"
-printf -- '---\n---\n> **File này được SINH TỰ ĐỘNG** — bản 1.x\nsh .agent-workflow/.quy-trinh/tools/x.sh\n' > "$RL/.claude/commands/spec.md"
+printf -- '---\n---\n> **File này được SINH TỰ ĐỘNG** — bản 1.x\nsh .agent-workflow/.quy-trinh/tools/x.sh\n' > "$RL/.claude/commands/aw-spec.md"
 printf '# lệnh team tự viết\n' > "$RL/.claude/commands/cua-team.md"
 printf 'x\n' > "$RL/.agent-workflow/feat_cu/intake.md"
 git -C "$RL" add -A; git -C "$RL" -c user.name=t -c user.email=t@t commit -q -m "bo cai 1.x"
@@ -2023,13 +2118,13 @@ ky_vong 2 "--from-legacy ở repo không có bộ cài cũ → SAI THAM SỐ" sh
 ky_vong 0 "aw init --from-legacy" awd "$RL" init --from-legacy --version "$VDEV"
 dung "…conventions.md cũ chuyển vào .git/agent-workflow/" cmp -s "$RL/.agent-workflow/conventions.md" "$CL/conventions.md"
 dung "…lệnh trong cau-hinh.sh cũ chuyển sang config.sh" sh -c "grep -qx 'LENH_KIEM_THU=\"make test\"' '$CL/config.sh' && grep -qx 'LENH_CHUAN_BI_WT=\"npm ci\"' '$CL/config.sh' && grep -qx 'ADAPTER=\"claude-code\"' '$CL/config.sh'"
-dung "…không xoá gì của bộ cài cũ" sh -c "[ -f '$RL/.agent-workflow/.quy-trinh/cau-hinh.sh' ] && [ -f '$RL/.agent-workflow/conventions.md' ] && [ -f '$RL/.claude/commands/spec.md' ]"
+dung "…không xoá gì của bộ cài cũ" sh -c "[ -f '$RL/.agent-workflow/.quy-trinh/cau-hinh.sh' ] && [ -f '$RL/.agent-workflow/conventions.md' ] && [ -f '$RL/.claude/commands/aw-spec.md' ]"
 dung "…không commit gì, cây làm việc sạch" sh -c "[ \"\$(git -C '$RL' rev-parse HEAD)\" = '$GOCL' ] && [ -z \"\$(git -C '$RL' status --porcelain)\" ]"
-dung "…file .claude/ cũ git đang theo dõi: adapter bỏ qua, nội dung giữ nguyên" grep -q 'bản 1.x' "$RL/.claude/commands/spec.md"
+dung "…file .claude/ cũ git đang theo dõi: adapter bỏ qua, nội dung giữ nguyên" grep -q 'bản 1.x' "$RL/.claude/commands/aw-spec.md"
 dung "…lệnh người viết tay giữ nguyên" grep -q 'team tự viết' "$RL/.claude/commands/cua-team.md"
-dung "…sinh các lệnh mới chưa có" sh -c "[ -f '$RL/.claude/commands/design.md' ] && grep -q 'aw feature' '$RL/.claude/commands/design.md'"
+dung "…sinh các lệnh mới chưa có" sh -c "[ -f '$RL/.claude/commands/aw-design.md' ] && grep -q 'aw feature' '$RL/.claude/commands/aw-design.md'"
 OUTL=$(awd "$RL" init --from-legacy 2>/dev/null)
-dung "…in hướng dẫn tự dọn bằng PR: git rm bộ cài cũ" sh -c "printf '%s' \"\$1\" | grep -q 'git rm -r -q -- .agent-workflow/.quy-trinh/' && printf '%s' \"\$1\" | grep -q 'git rm -r -q -- .claude/commands/spec.md'" _ "$OUTL"
+dung "…in hướng dẫn tự dọn bằng PR: git rm bộ cài cũ" sh -c "printf '%s' \"\$1\" | grep -q 'git rm -r -q -- .agent-workflow/.quy-trinh/' && printf '%s' \"\$1\" | grep -q 'git rm -r -q -- .claude/commands/aw-spec.md'" _ "$OUTL"
 dung "…không đề nghị xoá lệnh người viết tay" sh -c "! printf '%s' \"\$1\" | grep -q 'cua-team.md'" _ "$OUTL"
 dung "…chạy lại giữ cấu hình đã chuyển" sh -c "grep -qx 'LENH_KIEM_THU=\"make test\"' '$CL/config.sh'"
 ky_vong 0 "repo cũ: tạo worktree từ base vẫn chứa bộ cài 1.x" awd "$RL" worktree new feature sau-chuyen --create --base main
@@ -2178,7 +2273,7 @@ dung "…ghi version, checksums, conventions.md, config.sh vào .git/agent-workf
 dung "…engine vào cache theo version, có dấu sha256" sh -c "[ -f '$AWH/engine/2099.1.1/bin/aw-engine' ] && [ -s '$AWH/engine/2099.1.1/.aw-sha256' ]"
 dung "…sha ghim khớp SHA256SUMS của bản phát hành" sh -c "grep -qF \"\$(awk '\$2 == \"agent-workflow-2099.1.1.tar.gz\" { print \$1 }' '$MIR/2099.1.1/SHA256SUMS')\" '$C7/checksums'"
 dung "…exclude /.agent-workflow/ và /.claude/" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qx '/.claude/' '$R7/.git/info/exclude'"
-dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/intake.md"
+dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/aw-intake.md"
 dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)" "$GOC7"
 dung "…cây làm việc sạch: file sinh ra không lọt vào git status" sh -c "[ -z \"\$(git -C '$R7' status --porcelain)\" ]"
 ky_vong 0 "aw guard pre → chuyển sang engine của bản clone (chưa có việc nào: không làm gì)" aw7 guard pre
@@ -2232,6 +2327,147 @@ ky_vong 9 "aw pending cũng theo version của việc" aw7 pending .agent-workfl
 ky_vong 9 "…aw questions (tên cũ) vẫn qua wrapper, theo version của việc" aw7 questions .agent-workflow/feat_a
 rm -rf "$R7/.agent-workflow"
 dung "wrapper và VERSION cùng version (đóng gói kiểm lại)" bang "$(awk -F'"' '/^AW_WRAPPER_VERSION=/ { print $2 }' "$ROOT/bin/aw")" "$(cat "$ROOT/VERSION")"
+
+# ---------------------------------------------------------------- aw ship (gui-mr.sh, don-viec-da-merge.sh)
+# Việc đã qua review nằm trong worktree; origin là repo bare; gh là bản giả
+# (ghi lại tham số, trạng thái PR đọc từ $FG/state).
+echo ""
+echo "aw ship targets|create|status|sweep (gui-mr.sh, don-viec-da-merge.sh)"
+tao_fixture 2>/dev/null
+viet_mr
+printf '/.agent-workflow/\n' >> "$R/.git/info/exclude"
+g add -A; g commit -q -m "lam x"
+ky_vong 0 "fixture: code đã commit, aw check ship đạt" sh "$SHC" "$F"
+WS="$TMP/ship-wt"; FS="$WS/.agent-workflow/feat_x"
+g checkout -q main
+g worktree add -q "$WS" feat_x
+mv "$R/.agent-workflow" "$WS/"
+export AW_REPO="$WS"
+RMS="$TMP/ship-remote.git"; git init -q --bare "$RMS"
+g remote add origin "$RMS"; g push -q origin main; g push -q origin main:develop
+# uat: gốc khác, không có commit "goc" của main → MR vào uat kéo theo commit ngoài việc
+UATC=$(git -C "$R" -c user.name=t -c user.email=t@t commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m uat)
+g push -q origin "$UATC:refs/heads/uat"
+thay "$CFG/conventions.md" 'nhanh_dich_mr:' 'nhanh_dich_mr: develop uat main'
+thay "$CFG/conventions.md" 'nen_tang_mr:' 'nen_tang_mr: github'
+
+FB="$TMP/fakebin"; FG="$TMP/fakegh"; mkdir -p "$FB" "$FG"
+cat > "$FB/gh" <<'EOF'
+#!/bin/sh
+case "$1 $2" in
+  "pr create")
+    printf 'OPEN\n' > "$FG/state"; git rev-parse HEAD > "$FG/head"; printf '%s\n' "$*" >> "$FG/args"
+    while [ $# -gt 0 ]; do [ "$1" = --body-file ] && cp "$2" "$FG/body"; shift; done
+    echo "https://github.com/o/r/pull/7" ;;
+  "pr list") [ "$(cat "$FG/state" 2>/dev/null)" = OPEN ] && echo "https://github.com/o/r/pull/7"; exit 0 ;;
+  "pr view") [ "$(cat "$FG/state")" = ERR ] && exit 1; echo "$(cat "$FG/state") $(cat "$FG/head")" ;;
+  "auth status") exit 0 ;;
+  *) exit 1 ;;
+esac
+EOF
+chmod +x "$FB/gh"
+sg() { PATH="$FB:$PATH" FG="$FG" sh "$T/gui-mr.sh" "$@"; }
+sw() { (cd "$R" && AW_REPO="$R" PATH="$FB:$PATH" FG="$FG" sh "$T/don-viec-da-merge.sh" "$@"); }
+
+ky_vong 2 "create thiếu --target → SAI THAM SỐ (người chọn đích)" sg create "$FS"
+TG=$(sg targets "$FS" 2>/dev/null)
+ky_vong 0 "targets liệt kê nhánh đích" sg targets "$FS"
+dung "…theo thứ tự nhanh_dich_mr" bang "$(printf '%s\n' "$TG" | sed 's/^ *\[[0-9]*\] \([^ ]*\).*/\1/' | tr '\n' ' ')" "develop uat main "
+dung "…đánh dấu base của việc" sh -c "printf '%s\n' \"\$1\" | grep -q '\[3\] main  ← base của việc'" _ "$TG"
+dung "…cảnh báo nhánh sẽ kéo theo commit ngoài việc" sh -c "printf '%s\n' \"\$1\" | grep -q '\[2\] uat  ⚠ kéo theo 1 commit ngoài việc'" _ "$TG"
+ky_vong 2 "đích ngoài nhanh_dich_mr → từ chối" sg create "$FS" --target khac
+printf 'nhap\n' > "$WS/nhap.txt"
+ky_vong 1 "worktree còn file chưa commit → CHƯA ĐỦ ĐIỀU KIỆN" sg create "$FS" --target develop
+rm -f "$WS/nhap.txt"
+ky_vong 4 "MR vào uat kéo theo commit ngoài việc → người quyết" sg create "$FS" --target uat
+dung "…không push, không tạo MR" sh -c "[ ! -f '$FG/args' ] && [ -z \"\$(git -C '$RMS' branch --list feat_x)\" ]"
+thay "$CFG/conventions.md" 'nen_tang_mr: github' 'nen_tang_mr: gitlab'
+# Không có glab (PATH chỉ có gh giả): server không hỗ trợ push options → push thường + link điền sẵn
+sl() { PATH="$FB:/usr/bin:/bin" FG="$FG" sh "$T/gui-mr.sh" "$@"; }
+SLO=$(sl create "$FS" --target develop 2>&1)
+ky_vong 8 "GitLab, không có glab, server không nhận push options → KHÔNG TẠO ĐƯỢC MR" sl create "$FS" --target develop
+dung "…vẫn push được branch (push thường)" test "$(git -C "$RMS" rev-parse feat_x 2>/dev/null)" = "$(git -C "$WS" rev-parse HEAD)"
+dung "…chỉ cách ghi lại bằng --url" sh -c "printf '%s\n' \"\$1\" | grep -q 'aw ship create .* --target develop --url'" _ "$SLO"
+dung "…mô tả để sẵn ở mo-ta-mr.md cho người dán (đã bỏ comment)" sh -c "grep -q '^## Problem' '$FS/mo-ta-mr.md' && ! grep -q '<!--' '$FS/mo-ta-mr.md'"
+# link điền sẵn: gọi thẳng hàm (origin https giả — không cần mạng)
+LK="$TMP/link-repo"; git init -q "$LK"; git -C "$LK" remote add origin "git@gitlab.example:g/r.git"
+printf '## Problem\n\nmột dòng\n' > "$TMP/mo-ta.md"
+LKO=$(sh -c ". '$T/lib/md.sh'; . '$T/lib/mr.sh'; mr_link_tay '$LK' gitlab feat_x develop 'ABC-1: hiện a' '$TMP/mo-ta.md'")
+dung "link tạo tay GitLab điền sẵn nguồn, đích, tiêu đề, mô tả (mã hoá URL, UTF-8)" bang "$LKO" \
+  "https://gitlab.example/g/r/-/merge_requests/new?merge_request%5Bsource_branch%5D=feat_x&merge_request%5Btarget_branch%5D=develop&merge_request%5Btitle%5D=ABC-1%3A%20hi%E1%BB%87n%20a&merge_request%5Bdescription%5D=%23%23%20Problem%0A%0Am%E1%BB%99t%20d%C3%B2ng%0A"
+LKO=$(sh -c ". '$T/lib/md.sh'; . '$T/lib/mr.sh'; mr_link_tay '$LK' github feat_x develop 'T' '$TMP/mo-ta.md'")
+dung "link tạo tay GitHub: compare + title + body" bang "$LKO" "https://gitlab.example/g/r/compare/develop...feat_x?expand=1&title=T&body=%23%23%20Problem%0A%0Am%E1%BB%99t%20d%C3%B2ng%0A"
+
+FB2="$TMP/fakebin-chua-dang-nhap"; mkdir -p "$FB2"; printf '#!/bin/sh\nexit 1\n' > "$FB2/gh"; chmod +x "$FB2/gh"
+dung "gh đã cài mà chưa đăng nhập → không dùng, nói cách đăng nhập" sh -c \
+  "PATH='$FB2:/usr/bin:/bin'; . '$T/lib/md.sh'; . '$T/lib/mr.sh'; ! mr_cli github '$LK' >/dev/null && printf '%s' \"\$MR_CLI_LY_DO\" | grep -q 'gh chưa đăng nhập vào gitlab.example (gh auth login --hostname gitlab.example)'"
+
+# Server GitLab (giả): nhận push options, in link MR như GitLab
+git -C "$RMS" config receive.advertisePushOptions true
+cat > "$RMS/hooks/post-receive" <<'EOF'
+#!/bin/sh
+i=0
+while [ $i -lt "${GIT_PUSH_OPTION_COUNT:-0}" ]; do
+  eval "v=\$GIT_PUSH_OPTION_$i"; printf '%s\n' "$v" >> "FGDIR/push-options"; i=$((i + 1))
+done
+echo "View merge request for feat_x:"
+echo "  https://gitlab.example/g/r/-/merge_requests/12"
+EOF
+sed -i.bak "s#FGDIR#$FG#" "$RMS/hooks/post-receive" && rm -f "$RMS/hooks/post-receive.bak"
+chmod +x "$RMS/hooks/post-receive"
+git -C "$WS" -c user.name=t -c user.email=t@t commit -q --allow-empty -m "them commit cho push"
+URLG=$(sl create "$FS" --target develop 2>/dev/null)
+dung "GitLab, không có glab → tạo MR bằng git push options, stdout là URL" bang "$URLG" "https://gitlab.example/g/r/-/merge_requests/12"
+dung "…push options: create, target, title, xoá source branch" sh -c \
+  "grep -qx merge_request.create '$FG/push-options' && grep -qx merge_request.target=develop '$FG/push-options' && grep -qx 'merge_request.title=ABC-1: hiện a và b trên màn hình y' '$FG/push-options' && grep -qx merge_request.remove_source_branch '$FG/push-options'"
+dung "…ship.md ghi MR (gitlab, open)" grep -q '| develop | open | .* | https://gitlab.example/g/r/-/merge_requests/12 |' "$FS/ship.md"
+ky_vong 3 "status không có glab, git chưa thấy merge → giữ open (CÒN MR ĐANG MỞ)" sl status "$FS"
+# squash merge trên server: một commit mang đúng toàn bộ thay đổi của branch
+SQ="$TMP/squash-clone"; git clone -q -b develop "$RMS" "$SQ" 2>/dev/null
+git -C "$SQ" fetch -q origin feat_x && git -C "$SQ" -c user.name=t -c user.email=t@t merge -q --squash origin/feat_x >/dev/null 2>&1 &&
+  git -C "$SQ" -c user.name=t -c user.email=t@t commit -q -m "ABC-1 (squash)" && git -C "$SQ" push -q origin develop 2>/dev/null
+dung "…squash merge: đầu branch KHÔNG nằm trong develop" sh -c "git -C '$WS' fetch -q origin && ! git -C '$WS' merge-base --is-ancestor HEAD origin/develop"
+ky_vong 0 "status không có glab: nhận ra squash merge bằng patch-id → ĐÃ MERGE HẾT" sl status "$FS"
+# dọn cho phần GitHub phía sau: develop về main, bỏ server giả, bỏ MR GitLab
+rm -f "$RMS/hooks/post-receive" "$FS/ship.md" "$FS/mo-ta-mr.md"; git -C "$RMS" config --unset receive.advertisePushOptions
+git -C "$RMS" update-ref refs/heads/develop "$(git -C "$R" rev-parse main)"
+git -C "$WS" reset -q --hard HEAD~1; git -C "$WS" push -q -f origin feat_x 2>/dev/null
+thay "$CFG/conventions.md" 'nen_tang_mr: gitlab' 'nen_tang_mr: github'
+
+URLS=$(sg create "$FS" --target develop 2>/dev/null)
+dung "create develop → ĐÃ TẠO MR, stdout là URL" bang "$URLS" "https://github.com/o/r/pull/7"
+dung "…gh nhận đúng nguồn/đích và tiêu đề" sh -c "grep -q -- '--head feat_x --base develop --title ABC-1: hiện a và b trên màn hình y' '$FG/args'"
+dung "…mô tả gửi đi bỏ dòng tiêu đề và comment của mẫu" sh -c "grep -q '^## Problem' '$FG/body' && ! grep -q '<!--' '$FG/body' && ! grep -q '^# ABC-1' '$FG/body'"
+dung "…branch đã lên origin" test "$(git -C "$RMS" rev-parse feat_x 2>/dev/null)" = "$(git -C "$WS" rev-parse HEAD)"
+dung "…ship.md ghi MR: đích, open, sha đầu branch, URL" grep -qxF "| develop | open | $(git -C "$WS" rev-parse HEAD) | https://github.com/o/r/pull/7 |" "$FS/ship.md"
+ky_vong 5 "create lại cùng đích → ĐÃ CÓ MR ĐANG MỞ, không tạo thêm" sg create "$FS" --target develop
+dung "…gh pr create chỉ được gọi một lần" test "$(wc -l < "$FG/args" | tr -d ' ')" = 1
+
+ky_vong 3 "status: PR mở → CÒN MR ĐANG MỞ" sg status "$FS"
+printf 'ERR\n' > "$FG/state"
+ky_vong 6 "status: không hỏi được nền tảng, git không thấy merge → CHƯA RÕ" sg status "$FS"
+printf 'CLOSED\n' > "$FG/state"
+ky_vong 4 "status: PR bị đóng → người quyết" sg status "$FS"
+printf 'MERGED\n' > "$FG/state"
+ky_vong 0 "status: PR đóng rồi mở lại và merge → ĐÃ MERGE HẾT (closed không phải trạng thái cuối)" sg status "$FS"
+dung "…ship.md ghi merged" grep -q '| develop | merged |' "$FS/ship.md"
+
+ky_vong 2 "sweep trong worktree → từ chối (chạy từ checkout chính)" sh -c "cd '$WS' && PATH='$FB:$PATH' FG='$FG' sh '$T/don-viec-da-merge.sh'"
+git -C "$WS" -c user.name=t -c user.email=t@t commit -q --allow-empty -m "sau khi merge"
+ky_vong 7 "sweep: branch local có commit chưa vào MR đã merge → chặn" sw --apply
+dung "…worktree còn nguyên" test -d "$WS"
+git -C "$WS" reset -q --hard HEAD~1
+SWO=$(sw 2>/dev/null)
+ky_vong 0 "sweep không --apply → chỉ in" sw
+dung "…báo việc dọn được, kể cả xoá origin/feat_x" sh -c "printf '%s\n' \"\$1\" | grep -q 'dọn được: .*xoá origin/feat_x'" _ "$SWO"
+dung "…không đụng gì" sh -c "[ -d '$WS' ] && git -C '$R' rev-parse --verify --quiet refs/heads/feat_x"
+ky_vong 0 "sweep --apply → dọn" sw --apply
+dung "…worktree đã gỡ" test ! -e "$WS"
+dung "…branch local đã xoá" sh -c "! git -C '$R' rev-parse --verify --quiet refs/heads/feat_x"
+dung "…origin/feat_x đã xoá" sh -c "[ -z \"\$(git -C '$RMS' branch --list feat_x)\" ]"
+dung "…artifact, kể cả ship.md, chép vào archive" test -f "$CFG/archive/feat_x/feat_x/ship.md"
+ky_vong 0 "sweep lần nữa: không còn gì để dọn" sw
+export AW_REPO="$R"
 
 # ---------------------------------------------------------------- tong ket
 echo ""

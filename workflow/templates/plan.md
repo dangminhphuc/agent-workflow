@@ -45,7 +45,7 @@ kiểm tra bằng máy sẽ fail.
 ## Manual verification
 
 YC không test tự động được, kèm lý do. Không ghi ở đây mà cũng không có test gắn
-tag `covers:` thì `/implement` cảnh báo, `/review` chặn.
+tag `covers:` thì `/aw-implement` cảnh báo, `/aw-review` chặn.
 
 | ID | Why not automated |
 |---|---|

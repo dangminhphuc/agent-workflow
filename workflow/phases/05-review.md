@@ -1,7 +1,7 @@
 ---
 id: review
-name: Rà soát
-summary: Rà soát độc lập bằng ngữ cảnh sạch — cổng chặn cuối
+name: Rà soát độc lập
+summary: Bước 6/6 · Subagent ngữ cảnh sạch đối chiếu diff với spec, thiết kế, kế hoạch; ghi review.md
 required: true
 inputs:
   - intake.md

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Đề xuất / tạo worktree cho một việc — dùng ở /intake. Worktree là BẮT BUỘC:
+# Đề xuất / tạo worktree cho một việc — dùng ở /aw-intake. Worktree là BẮT BUỘC:
 # checkout chính chỉ đứng ở nhánh gốc, mỗi việc một worktree, một phiên agent.
 #
 #   aw worktree new <loại-việc> <mô-tả>                        # chỉ in đề xuất
@@ -201,5 +201,5 @@ if [ -n "$lenh" ]; then
 else
   echo "  2. NGƯỜI chuẩn bị môi trường (cài dependency, .env…) — khai LENH_CHUAN_BI_WT trong cau-hinh.sh để lần sau có lệnh sẵn" >&2
 fi
-echo "  3. NGƯỜI mở phiên agent MỚI tại $DUONG rồi chạy /spec" >&2
+echo "  3. NGƯỜI mở phiên agent MỚI tại $DUONG rồi chạy /aw-spec" >&2
 echo "$DUONG"

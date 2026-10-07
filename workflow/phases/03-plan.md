@@ -1,7 +1,7 @@
 ---
 id: plan
-name: Kế hoạch
-summary: Chia thiết kế đã duyệt thành task thực thi được — chỉ quản lý thực thi
+name: Lập kế hoạch
+summary: Bước 4/6 · Cần D-xx đã duyệt. Chia thiết kế thành task nhỏ, có thứ tự, ghi plan.md
 required: true
 approval_gate: true
 inputs:
@@ -35,7 +35,7 @@ duyệt.
 
 - `spec.md`, `tdd.md` — phải qua được `aw check design`, và **mọi D-xx đã
   được người duyệt** (tick, dấu duyệt khớp nội dung). Còn D chưa tick, `reopened`,
-  hay đổi sau khi tick thì dừng lại: lệnh `/plan` chạy **cổng duyệt**
+  hay đổi sau khi tick thì dừng lại: lệnh `/aw-plan` chạy **cổng duyệt**
   (`aw approval plan`) trước tiên — cho người thấy rõ D nào chờ duyệt rồi hỏi bằng
   hộp xác nhận; agent không tick hộ.
 - `open-questions.md` — để biết task nào đứng trên giả định tạm
@@ -69,12 +69,12 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
    — nói rõ với người duyệt plan rằng lần giao này thiếu yêu cầu đó.
 
 4. **Manual verification.** YC không test tự động được thì ghi vào mục
-   "Manual verification" kèm lý do — nếu không, `/implement` cảnh báo và
-   `/review` chặn vì YC chưa có test.
+   "Manual verification" kèm lý do — nếu không, `/aw-implement` cảnh báo và
+   `/aw-review` chặn vì YC chưa có test.
 
 5. **Theo loại việc:**
    - `bugfix`: task đầu tiên là **viết test tái hiện**, tách khỏi task sửa code —
-     `/implement` phải chạy `aw check repro` giữa hai task đó.
+     `/aw-implement` phải chạy `aw check repro` giữa hai task đó.
    - `perf`: task đầu tiên là **đo trước** (`aw check perf <thư-mục-feature> --before`).
    - `refactor`/`perf`: test cũ nào dự kiến phải sửa (vd đổi import khi dời module)
      thì khai sẵn ở "Modified existing tests".

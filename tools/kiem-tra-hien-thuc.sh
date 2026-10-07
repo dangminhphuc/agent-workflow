@@ -126,7 +126,7 @@ if [ -n "$cb" ]; then
   echo ""
   n_cb=$(printf '%s\n' "$cb" | wc -l | tr -d ' ')
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
-  echo "  Cảnh báo không chặn implement, nhưng /review sẽ CHẶN nếu còn."
+  echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Xử lý: thêm test gắn tag, ghi \"Manual verification\", ghi file vào \"Unplanned\", chạy lại phase lỗi thời, hoặc trả lời điểm mù."
 fi
 

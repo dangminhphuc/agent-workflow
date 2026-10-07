@@ -49,7 +49,7 @@ if ! sh "$HERE/kiem-tra-ke-hoach.sh" "$DIR" >/dev/null 2>&1; then
 fi
 
 if [ ! -f "$KQ" ]; then
-  loi_truoc "Không có ket-qua-kiem-thu.md — /implement chưa chạy aw check implement."
+  loi_truoc "Không có ket-qua-kiem-thu.md — /aw-implement chưa chạy aw check implement."
 elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
   loi_truoc "ket-qua-kiem-thu.md ghi mã thoát khác 0 — test chưa xanh."
 fi

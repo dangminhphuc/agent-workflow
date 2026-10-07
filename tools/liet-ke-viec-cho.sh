@@ -12,9 +12,9 @@
 #
 # Thứ tự nhóm (nhóm chặn phase sớm hơn đứng trước):
 #   1. Điểm mù thiếu/sai "Blocking" (checker spec đang chặn)
-#   2. Điểm mù `blocking`             — chặn /design (chore: /plan)
-#   3. Phát hiện mức `Chặn`         — chặn checker của phase ghi ra nó (thiết kế: /plan)
-#   4. Điểm mù `review-blocking`      — chặn /review
+#   2. Điểm mù `blocking`             — chặn /aw-design (chore: /aw-plan)
+#   3. Phát hiện mức `Chặn`         — chặn checker của phase ghi ra nó (thiết kế: /aw-plan)
+#   4. Điểm mù `review-blocking`      — chặn /aw-review
 #   5. Phát hiện mức `Cảnh báo`     — không chặn
 #   6. Điểm mù `non-blocking`       — không chặn
 # Trong nhóm điểm mù: YC "must" trước "should", rồi nhiều task trong plan.md
@@ -44,8 +44,8 @@ SPEC="$DIR/spec.md"
 OQ="$DIR/open-questions.md"
 PLAN="$DIR/plan.md"
 
-[ -f "$SPEC" ] || { echo "LỖI: không tìm thấy $SPEC — chạy /spec trước" >&2; exit 2; }
-[ -f "$OQ" ]   || { echo "LỖI: không tìm thấy $OQ — /spec chưa rà điểm mù" >&2; exit 2; }
+[ -f "$SPEC" ] || { echo "LỖI: không tìm thấy $SPEC — chạy /aw-spec trước" >&2; exit 2; }
+[ -f "$OQ" ]   || { echo "LỖI: không tìm thấy $OQ — /aw-spec chưa rà điểm mù" >&2; exit 2; }
 
 LOAI=$(kc_loai "$DIR")
 
@@ -128,7 +128,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
     mo_ta[0] = "điểm mù thiếu hoặc sai \"Blocking\" — checker của spec chặn; NGƯỜI gán: blocking | review-blocking | non-blocking"
     mo_ta[1] = "điểm mù: sai giả định thì cả thiết kế đổi hướng — chặn /" csp
     mo_ta[2] = "phát hiện của checker LLM, NGƯỜI phân xử: đồng ý (sửa → đã sửa) hoặc bác bỏ kèm lý do"
-    mo_ta[3] = "điểm mù: flow đi tiếp trên giả định tạm; /review chặn tới khi có câu trả lời"
+    mo_ta[3] = "điểm mù: flow đi tiếp trên giả định tạm; /aw-review chặn tới khi có câu trả lời"
     mo_ta[4] = "phát hiện của checker LLM, không chặn — vẫn nên phân xử trước khi phase sau dựa vào"
     mo_ta[5] = "điểm mù: giao được trên giả định tạm; review ghi YC đó \"pending\""
     # Phase nào chặn "ngay": phase kế tiếp, hoặc mọi phase sau khi đã qua phase bị chặn
@@ -186,7 +186,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
         printf "[%s] %s\n", nhom[g], mo_ta[g]
         g_truoc = g
       }
-      dc = (q in dang_chan) ? (dang_chan[q] == "?" ? "   ← ĐANG CHẶN" : "   ← ĐANG CHẶN /" dang_chan[q]) : ""
+      dc = (q in dang_chan) ? (dang_chan[q] == "?" ? "   ← ĐANG CHẶN" : "   ← ĐANG CHẶN /aw-" dang_chan[q]) : ""
       if (g == 2 || g == 4) {
         printf "  %d. %s%s%s\n", i, ph_ma[q], (ph_ten[q] != "" ? " — " ph_ten[q] : ""), dc
         printf "     Nguồn: %s · Loại: %s · Vị trí: %s\n", ph_nguon[q], \
