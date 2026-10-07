@@ -349,6 +349,52 @@ kc_nhay_cam() {
   done | sort -u
 }
 
+# ------------------------------------------------------------------ trạng thái sạch
+# Phiên kết thúc phải để lại code người sau dùng được ngay: không dấu xung đột
+# merge sót, không test bị tắt/khoanh vùng lén. Đọc phần diff so với base.
+
+# Mẫu mặc định (ERE) cho test bị bỏ qua / chạy riêng — repo cài từ trước chưa có
+# khoá mau_bo_qua_test. Không dùng \b (không chuẩn POSIX).
+KC_BO_QUA_TEST_MAC_DINH='\.only\(|\.skip\(|(^|[^A-Za-z0-9_])(fit|fdescribe|xit|xdescribe|xtest)\(|@Disabled|@Ignore|pytest\.mark\.skip|t\.Skip\(|#\[ignore\]'
+
+# kc_dau_xung_dot <thư-mục-feature> — file thay đổi còn dấu xung đột merge -> chặn
+kc_dau_xung_dot() {
+  _top=$(kc_top "$1") || return 0
+  kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
+    [ "$_s" = D ] && continue
+    _f=${_q:-$_p}
+    [ -f "$_top/$_f" ] || continue
+    _n=$(grep -n -E '^(<<<<<<<|>>>>>>>)( |$)' "$_top/$_f" 2>/dev/null | head -1 | cut -d: -f1)
+    [ -n "$_n" ] && echo "$_f:$_n: còn dấu xung đột merge — giải quyết xung đột rồi chạy lại"
+  done
+}
+
+# kc_test_bo_qua <thư-mục-feature> — dòng THÊM MỚI trong file test khớp
+# mau_bo_qua_test (mặc định: .only/.skip/fit/xit/@Disabled/pytest.mark.skip…).
+# Test tắt hay khoanh vùng làm "test xanh" mất nghĩa -> cảnh báo, review chặn.
+# File ghi (trong backtick) ở "Unplanned" của plan.md thì miễn: đã nêu ra cho người.
+kc_test_bo_qua() {
+  _top=$(kc_top "$1") || return 0
+  _mb=$(kc_mb "$1") || return 0
+  _bq_m=$(conv_get "$(kc_conventions "$1")" mau_bo_qua_test)
+  _bq_m=${_bq_m:-$KC_BO_QUA_TEST_MAC_DINH}
+  _khai=$(kc_bang_backtick "$1/plan.md" "Unplanned")
+  kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
+    [ "$_s" = D ] && continue
+    _f=${_q:-$_p}
+    kc_khop_khoa "$1" mau_file_test "$_f" || continue
+    printf '%s\n' "$_khai" | grep -qxF "$_f" && continue
+    if [ "$_s" = A ] && ! git -C "$_top" cat-file -e "$_mb:$_f" 2>/dev/null; then
+      cat "$_top/$_f" 2>/dev/null
+    else
+      git -C "$_top" diff -U0 "$_mb" -- "$_f" 2>/dev/null | awk '/^\+/ && !/^\+\+\+/ { print substr($0, 2) }'
+    fi | grep -E "$_bq_m" 2>/dev/null | head -1 | while IFS= read -r _l; do
+      _l=$(printf '%s' "$_l" | sed 's/^[ \t]*//' | cut -c1-80)
+      echo "$_f: thêm test bị bỏ qua / chạy riêng ($_l) — test xanh khi có test bị tắt không chứng minh gì. Bỏ đánh dấu; thật sự cần tắt thì ghi file (trong backtick) vào \"Unplanned\" của plan.md kèm lý do để người rà soát quyết"
+    done
+  done
+}
+
 # kc_chore_dependency <thư-mục-feature> — chore đụng file dependency mà plan.md thiếu
 # bảng "Dependency upgrades" hợp lệ; nâng major không được là chore.
 kc_chore_dependency() {

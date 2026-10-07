@@ -218,13 +218,13 @@ viet_plan() {
 - Covers: `YC-001`
 - Based on: `D-01`
 - Expected files: `src/*` `test/*`
-- Verify: `npm test` → xanh
+- Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
 
 ### T-02 — b
 - Covers: `YC-002`
 - Expected files: `src/b.txt`
-- Verify: `npm test` → xanh
+- Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
 
 ## Deferred
@@ -307,6 +307,11 @@ ghi_based_on() {
   fi
 }
 
+# ghi_bang_chung_task — task xong bằng máy: aw task done ghi ket-qua-task.md
+ghi_bang_chung_task() {
+  for _t in T-01 T-02; do sh "$T/task.sh" done "$F" "$_t" >/dev/null 2>&1; done
+}
+
 # tao_fixture [loai] [branch]
 tao_fixture() {
   LOAI="${1:-feature}"; _br="${2:-feat_x}"
@@ -346,6 +351,7 @@ tao_fixture() {
     printf 'moi\n' > "$R/src/a.txt"
   fi
   [ "$LOAI" = "perf" ] && sh "$T/kiem-tra-hieu-nang.sh" "$F" --after >/dev/null 2>&1
+  ghi_bang_chung_task
   sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
   ghi_tree_review   # rà soát diễn ra sau implement
 }
@@ -717,7 +723,7 @@ ky_vong 1 "chặn task Dựa trên D không có trong tdd.md" sh "$CHK" "$F"
 viet_plan; thay "$F/plan.md" '- Expected files: `src/b.txt`' ''
 ky_vong 1 "chặn task thiếu File dự kiến" sh "$CHK" "$F"
 
-viet_plan; thay "$F/plan.md" '- Verify: `npm test` → xanh
+viet_plan; thay "$F/plan.md" '- Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
 
 ## Deferred' '- Verify: <lệnh cụ thể>
@@ -848,6 +854,7 @@ viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / co
 ky_vong 1 "chặn finding bảo mật mà Lens 3 không có finding nào" sh "$CHK" "$F"
 dung "…đúng lý do: thiếu finding ở Lens 3" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 không có finding nào'"
 thay "$F/review.md" '- None' '### [Should fix] token cứng
+- Category: hardcoded-secret
 - Location: `src/a.txt:1`
 - Problem: token trong code'
 ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
@@ -863,6 +870,7 @@ dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'không ghi \"- None\"'"
 viet_review; thay "$F/review.md" '## Lens 3 — Quality' '## Ghi chú'
 ky_vong 1 "chặn khi thiếu mục Lens 3 — Quality" sh "$CHK" "$F"
 L3_SF='### [Should fix] trùng hàm
+- Category: duplicate-code
 - Location: `src/a.txt:1`
 - Problem: có sẵn hàm tương tự'
 viet_review; thay "$F/review.md" '- None' "$L3_SF"
@@ -871,9 +879,11 @@ viet_review; thay "$F/review.md" '- None' "- None
 $L3_SF"
 ky_vong 1 "chặn Lens 3 vừa \"- None\" vừa có finding" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Category: duplicate-code
 - Problem: có sẵn hàm tương tự'
 ky_vong 1 "chặn [Should fix] thiếu Location" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Category: duplicate-code
 - Location: `file:dòng`'
 ky_vong 1 "chặn Location giữ chỗ của mẫu (không phải file:dòng)" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
@@ -881,7 +891,17 @@ viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
 ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
 ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Location: `src/a.txt:1`'
+ky_vong 1 "chặn [Should fix] thiếu Category" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu dòng \"- Category: <loại>\"'"
+viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/duplicate-code/Trùng Code/')"
+ky_vong 1 "chặn Category không phải kebab-case" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên
+- Category: Tên Tuỳ Ý'
+ky_vong 0 "[Nit] không bắt Category" sh "$CHK" "$F"
 L3_B='### [Blocker] mất dữ liệu
+- Category: data-loss
 - Location: `src/a.txt:1`
 - Problem: ghi đè'
 viet_review; thay "$F/review.md" '- None' "$L3_B"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
@@ -2696,6 +2716,195 @@ dung "…origin/feat_x đã xoá" sh -c "[ -z \"\$(git -C '$RMS' branch --list f
 dung "…artifact, kể cả ship.md, chép vào archive" test -f "$CFG/archive/feat_x/feat_x/ship.md"
 ky_vong 0 "sweep lần nữa: không còn gì để dọn" sw
 export AW_REPO="$R"
+
+# ---------------------------------------------------------------- aw ready (san-sang.sh)
+echo ""
+echo "san-sang.sh (aw ready)"
+tao_fixture
+SS="$T/san-sang.sh"
+CH="$CFG/config.sh"; cp "$CH" "$TMP/ch-ss.bak"
+ky_vong 0 "fixture đủ cấu hình, test xanh → SẴN SÀNG" sh "$SS" "$F"
+dung "…in bước tiếp" sh -c "sh '$SS' '$F' 2>/dev/null | grep -q '^Bước tiếp: '"
+ky_vong 2 "thiếu thư mục feature → SAI THAM SỐ" sh "$SS"
+printf 'LENH_KIEM_THU="echo LOI-CO-SAN; false"\n%s\n' "$BM_XANH" > "$CH"
+ky_vong 1 "test ĐỎ trên code hiện tại → CHƯA SẴN SÀNG" sh "$SS" "$F"
+dung "…in output thật của lệnh test" sh -c "sh '$SS' '$F' 2>/dev/null | grep -q 'LOI-CO-SAN'"
+ky_vong 0 "--no-test: không chạy test, chỉ kiểm đã khai" sh "$SS" "$F" --no-test
+printf 'LENH_KIEM_THU="true"\n' > "$CH"
+ky_vong 1 "chưa khai LENH_KIEM_TRA_BAO_MAT → CHƯA SẴN SÀNG" sh "$SS" "$F"
+printf 'LENH_KIEM_THU=""\n%s\n' "$BM_XANH" > "$CH"
+ky_vong 1 "chưa khai LENH_KIEM_THU → CHƯA SẴN SÀNG" sh "$SS" "$F" --no-test
+cp "$TMP/ch-ss.bak" "$CH"
+thay "$CFG/conventions.md" 'mau_file_test: ' 'mau_file_test_cu: '
+ky_vong 1 "conventions.md thiếu mau_file_test → CHƯA SẴN SÀNG" sh "$SS" "$F"
+thay "$CFG/conventions.md" 'mau_file_test_cu: ' 'mau_file_test: '
+# tk_plan_t2 <dòng Verify + Status> — plan gốc, thay riêng hai dòng cuối của T-02
+tk_plan_t2() { viet_plan; ghi_based_on; thay "$F/plan.md" '- Verify: `test -f src/a.txt` → có file
+- Status: `[x]`
+
+## Deferred' "$1
+
+## Deferred"; }
+tk_plan_t2 '- Verify: `test -f src/a.txt` → có file
+- Status: `[ ]`'
+dung "tiến độ: bước tiếp chỉ đúng task kế" sh -c "sh '$SS' '$F' 2>/dev/null | grep -q 'Bước tiếp: /aw-implement — task tiếp: T-02'"
+
+# ---------------------------------------------------------------- aw task (task.sh)
+echo ""
+echo "task.sh (aw task)"
+TK="$T/task.sh"; HT="$T/kiem-tra-hien-thuc.sh"
+dung "next → T-02 (stdout)" bang "$(sh "$TK" next "$F" 2>/dev/null)" "T-02"
+ky_vong 1 "implement chặn task chưa làm [ ]" sh "$HT" "$F"
+dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'T-02 chưa làm'"
+ky_vong 1 "done khi chưa start → TỪ CHỐI" sh "$TK" done "$F" T-02
+ky_vong 0 "start T-02 → [~]" sh "$TK" start "$F" T-02
+dung "…plan.md ghi [~]" grep -q '^- Status: `\[~\]`' "$F/plan.md"
+ky_vong 0 "start lại task đang [~] → không lỗi" sh "$TK" start "$F" T-02
+ky_vong 1 "start task đã [x] → TỪ CHỐI" sh "$TK" start "$F" T-01
+thay "$F/plan.md" '- Based on: `D-01`
+- Expected files: `src/*` `test/*`
+- Verify: `test -f src/a.txt` → có file
+- Status: `[x]`' '- Based on: `D-01`
+- Expected files: `src/*` `test/*`
+- Verify: `test -f src/a.txt` → có file
+- Status: `[ ]`'
+ky_vong 1 "WIP=1: start task khác khi T-02 đang [~] → TỪ CHỐI" sh "$TK" start "$F" T-01
+dung "next ưu tiên task đang [~]" bang "$(sh "$TK" next "$F" 2>/dev/null)" "T-02"
+ky_vong 1 "implement chặn task [~]" sh "$HT" "$F"
+ky_vong 0 "done T-02, Verify xanh → [x]" sh "$TK" done "$F" T-02
+dung "…ghi bằng chứng xanh vào ket-qua-task.md" sh -c "grep -q '^## T-02' '$F/ket-qua-task.md' && awk '/^## T-02/{p=1} p && /Mã thoát/{print; exit}' '$F/ket-qua-task.md' | grep -q '\`0\`'"
+ky_vong 0 "start T-01 sau khi T-02 xong" sh "$TK" start "$F" T-01
+ky_vong 0 "done T-01" sh "$TK" done "$F" T-01
+ky_vong 4 "mọi task [x] → next HẾT TASK" sh "$TK" next "$F"
+ky_vong 0 "implement ĐẠT khi mọi task xong bằng máy" sh "$HT" "$F"
+
+viet_plan; ghi_based_on
+mv "$F/ket-qua-task.md" "$TMP/kqt.bak"
+ky_vong 1 "implement chặn [x] tự đánh, không có bằng chứng" sh "$HT" "$F"
+dung "…đúng lý do, chỉ lệnh sửa" sh -c "sh '$HT' '$F' | grep -q 'không có bằng chứng.*aw task done'"
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
+ky_vong 1 "review cũng chặn [x] không có bằng chứng" sh "$T/kiem-tra-ra-soat.sh" "$F"
+mv "$TMP/kqt.bak" "$F/ket-qua-task.md"
+thay "$F/plan.md" '- Expected files: `src/b.txt`
+- Verify: `test -f src/a.txt`' '- Expected files: `src/b.txt`
+- Verify: `test -d src`'
+ky_vong 1 "implement chặn khi Verify đổi sau khi task xong" sh "$HT" "$F"
+dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'T-02: lệnh Verify trong plan.md đã đổi'"
+
+# Đỏ liên tiếp → DỪNG (điều kiện dừng của vòng lặp)
+viet_plan; ghi_based_on
+tk_plan_t2 '- Verify: `echo VERIFY-DO; false` → xanh
+- Status: `[ ]`'
+sh "$TK" start "$F" T-02 >/dev/null 2>&1
+ky_vong 1 "done, Verify đỏ → giữ [~]" sh "$TK" done "$F" T-02
+dung "…ghi output đỏ thật" grep -q 'VERIFY-DO' "$F/ket-qua-task.md"
+dung "…đỏ liên tiếp: 1" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/ket-qua-task.md' T-02 'Đỏ liên tiếp'")" "1"
+ky_vong 1 "đỏ lần 2" sh "$TK" done "$F" T-02
+ky_vong 6 "đỏ lần 3 = SO_LAN_DO_TOI_DA mặc định → DỪNG" sh "$TK" done "$F" T-02
+ky_vong 6 "next cũng DỪNG ở task đó" sh "$TK" next "$F"
+printf 'SO_LAN_DO_TOI_DA=5\n' >> "$CFG/config.sh"
+ky_vong 0 "SO_LAN_DO_TOI_DA=5 → next còn cho làm" sh "$TK" next "$F"
+cp "$TMP/ch-ss.bak" "$CFG/config.sh"
+tk_plan_t2 '- Verify: `test -f src/a.txt` → xanh
+- Status: `[~]`'
+ky_vong 0 "sửa xong, Verify xanh → [x]" sh "$TK" done "$F" T-02
+dung "…xanh thì đỏ liên tiếp về 0" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/ket-qua-task.md' T-02 'Đỏ liên tiếp'")" "0"
+
+# Kiểm chứng thủ công
+tk_plan_t2 '- Verify: mở màn hình y thấy b
+- Status: `[~]`'
+ky_vong 1 "Verify không có lệnh, không --manual → TỪ CHỐI" sh "$TK" done "$F" T-02
+ky_vong 1 "--manual bằng chứng giữ chỗ → TỪ CHỐI" sh "$TK" done "$F" T-02 --manual "<bằng chứng>"
+ky_vong 0 "--manual có bằng chứng → [x]" sh "$TK" done "$F" T-02 --manual "mở y, thấy b ở góc phải"
+dung "implement ĐẠT kèm lưu ý task thủ công" sh -c "sh '$HT' '$F' | grep -q 'LƯU Ý.*thủ công: T-02'"
+tk_plan_t2 '- Verify: `true` → xanh
+- Status: `[~]`'
+ky_vong 1 "--manual khi Verify có lệnh → TỪ CHỐI" sh "$TK" done "$F" T-02 --manual "đã xem"
+
+# Phụ thuộc
+viet_plan; ghi_based_on
+thay "$F/plan.md" '- Status: `[x]`' '- Status: `[ ]`'
+thay "$F/plan.md" '- Status: `[x]`' '- Status: `[ ]`'
+thay "$F/plan.md" '- Covers: `YC-002`' '- Covers: `YC-002`
+- Depends on: T-01'
+ky_vong 1 "start task phụ thuộc chưa [x] → TỪ CHỐI" sh "$TK" start "$F" T-02
+dung "next chọn T-01 trước" bang "$(sh "$TK" next "$F" 2>/dev/null)" "T-01"
+thay "$F/plan.md" '- Expected files: `src/*` `test/*`
+- Verify: `test -f src/a.txt` → có file
+- Status: `[ ]`' '- Expected files: `src/*` `test/*`
+- Verify: `test -f src/a.txt` → có file
+- Status: `[~]`'
+ky_vong 2 "task không có trong plan.md: sai mã → SAI THAM SỐ" sh "$TK" start "$F" X-1
+ky_vong 1 "task không có trong plan.md → TỪ CHỐI" sh "$TK" start "$F" T-09
+viet_plan; ghi_based_on; ghi_bang_chung_task
+
+# ---------------------------------------------------------------- trạng thái sạch
+echo ""
+echo "trạng thái sạch (implement/review)"
+sh "$HT" "$F" >/dev/null 2>&1; ghi_tree_review
+ky_vong 0 "fixture sạch → review ĐẠT" sh "$T/kiem-tra-ra-soat.sh" "$F"
+printf 'moi\n<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> feat\n' > "$R/src/a.txt"
+ky_vong 1 "implement chặn dấu xung đột merge" sh "$HT" "$F"
+dung "…chỉ đúng file:dòng" sh -c "sh '$HT' '$F' | grep -q 'src/a.txt:2: còn dấu xung đột merge'"
+printf 'moi\n' > "$R/src/a.txt"
+printf '// covers: YC-001, YC-002\nit.only("a", () => {})\n' > "$R/test/a.test.js"
+ky_vong 0 "test mới .only chỉ CẢNH BÁO ở implement" sh "$HT" "$F"
+dung "…có in cảnh báo" sh -c "sh '$HT' '$F' | grep -q 'CẢNH BÁO.*test/a.test.js: thêm test bị bỏ qua'"
+ghi_tree_review
+ky_vong 1 "…review CHẶN" sh "$T/kiem-tra-ra-soat.sh" "$F"
+thay "$F/plan.md" '| Task | What came up | Extra files | Resolution |
+|---|---|---|---|' '| Task | What came up | Extra files | Resolution |
+|---|---|---|---|
+| T-01 | test a chỉ chạy được riêng | `test/a.test.js` | người quyết |'
+dung "khai file ở Unplanned → hết cảnh báo" sh -c "! sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua'"
+viet_plan; ghi_based_on
+g checkout -q main
+printf '// covers: YC-001, YC-002\nit.skip("cu", () => {})\n' > "$R/test/a.test.js"; g add test; g commit -q -m "test cu"
+g checkout -q feat_x; g rebase -q --autostash main
+dung "dòng .skip có sẵn trên base không tính (chỉ dòng thêm mới)" sh -c "! sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua'"
+thay "$CFG/conventions.md" 'mau_bo_qua_test:' 'mau_bo_qua_test: SKIPME'
+printf 'SKIPME\n' >> "$R/test/a.test.js"
+dung "mau_bo_qua_test riêng của repo được dùng" sh -c "sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua / chạy riêng (SKIPME)'"
+thay "$CFG/conventions.md" 'mau_bo_qua_test: SKIPME' 'mau_bo_qua_test:'
+
+# ---------------------------------------------------------------- nhật ký harness (aw journal)
+echo ""
+echo "nhat-ky.sh (aw journal)"
+NK="$T/nhat-ky.sh"; JD="$CFG/journal"
+tao_fixture
+rm -rf "$JD"
+ky_vong 0 "aw-engine check vẫn ĐẠT qua nhật ký" sh "$AWE" check plan "$F"
+dung "…ghi một dòng checks.tsv" sh -c "awk -F'\t' '\$3 == \"plan\" && \$4 == 0' '$JD/checks.tsv' | grep -q ."
+dung "…stdout của checker vẫn chảy ra" sh -c "sh '$AWE' check plan '$F' 2>/dev/null | grep -q 'ĐẠT'"
+thay "$F/plan.md" '`YC-002`' '`YC-999`'
+ky_vong 1 "check KHÔNG ĐẠT giữ mã thoát qua nhật ký" sh "$AWE" check plan "$F"
+dung "…ghi vi phạm đầu tiên" sh -c "awk -F'\t' '\$3 == \"plan\" && \$4 == 1 && \$5 != \"\"' '$JD/checks.tsv' | grep -q YC-999"
+viet_plan; ghi_based_on
+n0=$(wc -l < "$JD/checks.tsv")
+AW_JOURNAL=0 sh "$AWE" check plan "$F" >/dev/null 2>&1
+dung "AW_JOURNAL=0 → không ghi" bang "$(wc -l < "$JD/checks.tsv")" "$n0"
+ky_vong 0 "journal add env" sh "$NK" add env "thiếu node_modules trong worktree mới"
+dung "…ghi failures.tsv đúng lớp" sh -c "awk -F'\t' '\$3 == \"env\"' '$JD/failures.tsv' | grep -q node_modules"
+ky_vong 2 "journal add lớp lạ → SAI THAM SỐ" sh "$NK" add mood "buồn"
+ky_vong 2 "journal add thiếu mô tả → SAI THAM SỐ" sh "$NK" add env ""
+ky_vong 0 "journal report" sh "$NK"
+dung "…có ba phần" sh -c "sh '$NK' 2>/dev/null | grep -q 'Thất bại theo lớp' && sh '$NK' 2>/dev/null | grep -q 'Checker (aw check)' && sh '$NK' 2>/dev/null | grep -q 'Finding của review'"
+viet_review; thay "$F/review.md" '- None' "$L3_SF"; ghi_tree_review
+ky_vong 0 "review ĐẠT ghi finding theo Category" sh "$T/kiem-tra-ra-soat.sh" "$F"
+dung "…findings.tsv có duplicate-code" sh -c "awk -F'\t' '\$4 == \"duplicate-code\"' '$JD/findings.tsv' | grep -q ."
+sh "$T/kiem-tra-ra-soat.sh" "$F" >/dev/null 2>&1
+dung "review chạy lại không nhân đôi" bang "$(awk -F'\t' '$4 == "duplicate-code"' "$JD/findings.tsv" | wc -l | tr -d ' ')" "1"
+F2="$R/.agent-workflow/feat_y"; cp -R "$F" "$F2"
+dung "loại lặp ở việc thứ hai → GỢI Ý nâng thành luật" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F2' | grep -q 'GỢI Ý.*duplicate-code.*2 việc'"
+dung "report đánh dấu loại lặp lại" sh -c "sh '$NK' 2>/dev/null | grep -q 'duplicate-code.*lặp lại'"
+rm -rf "$F2"; viet_review
+
+# ---------------------------------------------------------------- wrapper → lệnh mới
+echo ""
+echo "wrapper: ready, task, journal"
+ky_vong 0 "aw journal → engine" aw7 journal
+ky_vong 2 "aw task sai tham số → engine trả SAI THAM SỐ" aw7 task lam-gi
+ky_vong 2 "aw ready thiếu thư mục → engine trả SAI THAM SỐ" aw7 ready
 
 # ---------------------------------------------------------------- tong ket
 echo ""

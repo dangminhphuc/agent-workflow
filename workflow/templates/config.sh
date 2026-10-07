@@ -39,6 +39,10 @@ LENH_KIEM_THU=""
 # của Sonar chỉ chặn ở CI.
 LENH_KIEM_TRA_BAO_MAT=""
 
+# Số lần một task được đỏ liên tiếp (aw task done) trước khi máy báo DỪNG — lặp
+# tiếp là đoán mò; agent ghi "Unplanned" và báo người. Bỏ trống = 3.
+SO_LAN_DO_TOI_DA=""
+
 # Lệnh đo hiệu năng — chỉ dùng cho loại việc perf. Phải in một dòng
 # "KET_QUA: <số> <đơn vị>", vd: KET_QUA: 138 ms
 LENH_DO_HIEU_NANG=""

@@ -21,6 +21,7 @@ nen_tang_mr:
 bo_qua: package-lock.json yarn.lock pnpm-lock.yaml
 mau_file_test: *.test.* *.spec.* *_test.* test/* tests/*
 the_covers: covers:
+mau_bo_qua_test:
 mau_code_production: src/*
 mau_code_nhay_cam:
 mau_file_dependency: package.json package-lock.json yarn.lock pnpm-lock.yaml
@@ -44,6 +45,7 @@ quy_tac_review:
 | `bo_qua` | File thay đổi mà không cần nằm trong "Expected files" (lockfile, file sinh tự động…) |
 | `mau_file_test` | File nào là file test — để tìm tag `covers:` |
 | `the_covers` | Chuỗi đứng trước mã YC trong test, vd `// covers: YC-001, YC-002` |
+| `mau_bo_qua_test` | Regex (ERE) cho test bị tắt / chạy riêng trong **dòng thêm mới** của file test. Khớp thì `/aw-implement` cảnh báo, `/aw-review` chặn — trừ file khai ở "Unplanned" của `plan.md`. Bỏ trống = mặc định: `.only(` `.skip(` `fit(` `fdescribe(` `xit(` `xdescribe(` `xtest(` `@Disabled` `@Ignore` `pytest.mark.skip` `t.Skip(` `#[ignore]` |
 | `loai_theo_tien_to` | Tiền tố branch → loại việc. `/aw-intake` dùng để gợi ý; loại trong `intake.md` lệch tiền tố thì cảnh báo, `review` chặn |
 | `mau_code_production` | Code chạy trên production. `chore` đụng vào là chặn; `bugfix`/`perf` đo "trước" thì chưa được đụng |
 | `mau_code_nhay_cam` | Mẫu glob code nhạy cảm về bảo mật, vd `src/auth/* src/payment/* */crypto/*`. Diff đụng vào (kể cả đổi tên từ/đến) thì `review.md` phải có dòng `- Security reviewer: <tên người>` — một NGƯỜI rà bảo mật đã đọc Lens 4 và diff; thiếu là `aw check review` chặn. Bỏ trống = không bật luật này |

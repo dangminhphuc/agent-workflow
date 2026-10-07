@@ -26,6 +26,9 @@
 #   aw adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]   bỏ trống agent = ADAPTER trong config.sh
 #   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw rename <branch>
 #   aw rules <phase>                       phase: spec design plan implement review
+#   aw ready <feature-dir> [--no-test]     worktree sẵn sàng chưa (test xanh trên base…), bước tiếp
+#   aw task start|done|next <feature-dir> [T-NN] [--manual "<bằng chứng>"]   trạng thái task do máy giữ
+#   aw journal [report] | aw journal add <layer> "<mô tả>"   nhật ký thất bại của harness
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
 #
@@ -36,7 +39,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.14"
+AW_WRAPPER_VERSION="2026.10.15"
 AW_PROTOCOL=1
 AW_MIRROR_MAC_DINH="https://github.com/dangminhphuc/agent-workflow/releases/download"
 
@@ -384,12 +387,20 @@ case "$LENH" in
     can_repo
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" approval "$@" ;;
+  ready)
+    can_repo
+    _v=$(version_theo_viec "${1:-}") || exit $?
+    chuyen "$_v" ready "$@" ;;
+  task)
+    can_repo
+    _v=$(version_theo_viec "${2:-}") || exit $?
+    chuyen "$_v" task "$@" ;;
   # ship targets|create|status <feature-dir>: engine của việc; sweep: không có feature-dir → version của bản clone.
   ship)
     can_repo
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" ship "$@" ;;
-  feature|input|rename|worktree|adapter|rules|guard)
+  feature|input|rename|worktree|adapter|rules|guard|journal)
     can_repo
     _v=$(version_viec) || exit $?
     chuyen "$_v" "$LENH" "$@" ;;
