@@ -3,7 +3,7 @@
 # này với AW_REPO, AW_CONFIG đã đặt — xem tools/lib/moi-truong.sh.
 #
 #   aw-engine version
-#   aw-engine init [--adapter <id>] [--test-cmd "<cmd>"] [--force]
+#   aw-engine init [--adapter <id>[,<id>…]] [--test-cmd "<cmd>"] [--force]
 #   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement review repro perf
 #   aw-engine feature [name]
 #   aw-engine input [--skip <intake.md>] <args|->
@@ -16,7 +16,7 @@
 #   aw-engine worktree new <type> <desc> [--create --base <ref>]
 #   aw-engine worktree status <branch>
 #   aw-engine worktree remove <branch> [--delete-branch]
-#   aw-engine adapter build <agent> [--out <dir>] [--force]
+#   aw-engine adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]   bỏ trống agent = ADAPTER trong config.sh
 #
 # Engine tự biết thư mục của mình (AW_ENGINE) — đó là đường dẫn trong engine,
 # không phải đường dẫn repo hay cấu hình.
@@ -91,10 +91,15 @@ case "$LENH" in
       *) sai 2 "Dùng: aw worktree new|status|remove …" ;;
     esac ;;
   adapter)
-    [ "${1:-}" = build ] && [ -n "${2:-}" ] || sai 2 "Dùng: aw adapter build <agent> [--out <dir>] [--force]"
-    ag=$2; shift 2
-    [ -f "$AW_ENGINE/adapters/$ag/build.sh" ] ||
-      sai 2 "LỖI: không có adapter \"$ag\" (có: $(ls "$AW_ENGINE/adapters" | grep -v '^lib$' | tr '\n' ' '))."
+    [ "${1:-}" = build ] || sai 2 "Dùng: aw adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]"
+    shift
+    . "$T/lib/adapter.sh"
+    ag=""
+    case "${1:-}" in ""|--*) ;; *) ag=$(al_chuan "$1"); shift ;; esac
+    if [ -z "$ag" ]; then
+      can_repo; ag=$(al_doc "$AW_CONFIG/config.sh")
+    fi
+    _e=$(al_kiem "$AW_ENGINE" "$ag" 2>&1) || sai 2 "$_e"
     out=""; force=""
     while [ $# -gt 0 ]; do
       case "$1" in

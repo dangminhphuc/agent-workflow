@@ -177,12 +177,15 @@ echo "Đã tạo worktree $DUONG (branch $TEN, base $GOC @ $sha)" >&2
 # Adapter cho worktree mới — file sinh ra nằm trong đường dẫn đã exclude (aw init).
 # Stdout của build chuyển sang stderr: stdout của script này chỉ là đường dẫn.
 ENG="${AW_ENGINE:-$(CDPATH= cd -- "$HERE/.." && pwd)}"
-AD=""; [ -f "$CH" ] && AD=$(. "$CH" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}")
-AD=${AD:-claude-code}
-if [ -f "$ENG/adapters/$AD/build.sh" ]; then
+# Mọi adapter trong ADAPTER (config.sh): ai mở worktree bằng agent nào cũng có lệnh.
+. "$HERE/lib/adapter.sh"
+AD=$(al_doc "$CH")
+if al_kiem "$ENG" "$AD" 2>/dev/null; then
   echo "" >&2
   sh "$ENG/tools/sinh-adapter.sh" "$AD" "$DUONG" >&2 ||
-    echo "CẢNH BÁO: sinh adapter $AD vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build $AD" >&2
+    echo "CẢNH BÁO: sinh adapter ($AD) vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build" >&2
+else
+  echo "CẢNH BÁO: ADAPTER=\"$AD\" trong config.sh có id engine không có ($(al_co "$ENG")) — worktree không có lệnh cho agent. Sửa config.sh rồi chạy trong worktree: aw adapter build" >&2
 fi
 echo "" >&2
 echo "Ghi vào intake.md, ngay dưới \"Type\":" >&2

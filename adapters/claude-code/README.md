@@ -13,8 +13,14 @@ Thường bạn không gọi trực tiếp — `aw init` (ở checkout chính) v
 (vd bộ cài cũ còn trong base, hay `settings.json` của team) thì adapter bỏ qua.
 
 Lời dặn trong lệnh sinh ra chỉ gọi `aw …` — luật nằm trong checker của engine.
-Phần dùng chung với adapter khác ở `adapters/lib/chung.sh` (xem
-[../README.md](../README.md)).
+Việc sinh dùng chung với adapter khác (`adapters/lib/chung.sh`); file này chỉ khai
+hook riêng của Claude Code (xem [../README.md](../README.md#hook-của-adapter)).
+
+Mỗi file sinh ra có dòng **"Dành cho Claude Code"**: Cursor nạp `.claude/` để tương
+thích (bật sẵn), mà lời dặn ở đây gọi tool `AskUserQuestion` của Claude Code. Agent
+không có tool đó thì dừng, dùng bản cùng tên trong thư mục của nó (`.cursor/`). Team
+dùng cả hai agent: `ADAPTER="claude-code cursor"` — xem
+[../README.md](../README.md#nhiều-adapter-trong-một-bản-clone).
 
 `--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (`SAI THAM SỐ`).
 
@@ -191,6 +197,9 @@ checklist khi xong việc. Thêm đoạn này vào `.claude/settings.json` (ho�
   hook không phân biệt được.
 - Hook chạy `aw` qua wrapper, bằng engine của bản clone (`aw version`). Việc cũ
   còn dạng `Trạng thái spec:` thì hook không đụng tới.
+- Cursor cũng chạy hook trong `.claude/settings.json` (chế độ tương thích). Team có
+  thêm `.cursor/hooks.json` thì một lệnh có thể chạy `aw guard` hai lần — vô hại, có
+  test. Cấu hình cho Cursor: [../cursor/README.md](../cursor/README.md#hook-gác-ô-duyệt).
 
 ## Hook — vì sao adapter không tự ghi settings.json
 
@@ -241,16 +250,5 @@ giá là đã đạt.
 
 ## Viết adapter mới
 
-1. Tạo `adapters/<id>/build.sh`, nhận `--out <thư-mục>`; từ chối `--out` nằm
-   trong repo agent-workflow (`SAI THAM SỐ`), như adapter Claude Code.
-2. Tạo `adapters/<id>/exclude` liệt kê đường dẫn adapter sinh ra (vd `/.cursor/rules/agent-workflow/`)
-   — `aw init` thêm vào `.git/info/exclude`.
-3. Nạp `tools/lib/md.sh`, `tools/lib/ket-qua.sh`, `tools/lib/bang-lenh.sh`, rồi
-   `adapters/lib/chung.sh` (đặt `ROOT`, `OUT`, `FORCE`, `DA_SINH` trước). Dùng
-   `kiem_tra_nguon`, `ghi_file`, `kiem_tra_ghi_de`, `buoc_xac_dinh_feature`,
-   `buoc_phan_loai_input`, `doc_truoc`, `don_file_cu` — đừng viết lại.
-4. Lời dặn agent chỉ gọi `aw …` (`aw feature`, `aw check <tên>`, `aw input`…) và
-   đọc mẫu/luật trong `.agent-workflow/.engine/`. Không nhúng luật vào prompt.
-5. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
-   LLM, câu hỏi lựa chọn, hộp xác nhận của cổng duyệt), **ghi rõ trong output** thay vì bỏ qua.
-6. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.
+Xem [../README.md](../README.md#viết-adapter-mới): adapter chỉ khai hook, việc sinh
+nằm trong `adapters/lib/chung.sh`.

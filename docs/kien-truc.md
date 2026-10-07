@@ -533,9 +533,12 @@ Không phase nào khác phải sửa — vì không phase nào biết gì về p
 
 ## Cách thêm một adapter
 
-Xem `adapters/README.md` (hợp đồng: `build.sh`, file `exclude`, thư viện
-`adapters/lib/chung.sh`, ghi chú Codex/Cursor) và `adapters/claude-code/README.md`,
-mục "Viết adapter mới". Adapter chỉ dặn agent gọi `aw …`, không mang luật. Điểm quan trọng
+Xem `adapters/README.md` (hợp đồng: `build.sh`, file `exclude`, hook của adapter,
+nhiều adapter, mục "Viết adapter mới"). Việc sinh nằm trong `adapters/lib/chung.sh`
+(`ad_sinh`); adapter chỉ khai hook — chữ riêng của agent (cách hỏi lựa chọn, cách
+viết tham số, đầu file). Test đối chiếu build mọi adapter với hook thay bằng tên và
+đòi output giống hệt nhau: hợp đồng phase không thể lệch giữa các agent.
+Adapter chỉ dặn agent gọi `aw …`, không mang luật. Điểm quan trọng
 nhất: với mỗi khả năng không dịch được sang agent đích (subagent, hook, MCP),
 adapter phải **ghi rõ trong output** rằng người dùng phải tự làm — không im lặng
 bỏ qua. Bỏ qua âm thầm khiến quy trình *nhìn như* đang chạy đủ trong khi đã mất

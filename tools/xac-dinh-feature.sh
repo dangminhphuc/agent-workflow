@@ -30,6 +30,15 @@ mt_dat "$HERE"
 ART=$MT_ART_DIR
 CONV="$MT_CONV"
 
+# Chữ giữ chỗ của adapter còn nguyên (agent quên chép phần người gõ sau tên lệnh:
+# Cursor <tham-số>, Claude Code $ARGUMENTS) — không được thành tên thư mục việc.
+case "${1:-}" in
+  *"<"*|*">"*|*'$'*)
+    echo "LỖI: tham số \"$1\" là chữ giữ chỗ của lệnh, chưa được thay." >&2
+    echo "  Agent: chép NGUYÊN VĂN phần người gõ sau tên lệnh; người không gõ gì thì chạy aw feature không tham số." >&2
+    exit 2 ;;
+esac
+
 if wt_la_chinh "$MT_REPO"; then
   echo "ĐANG Ở CHECKOUT CHÍNH ($(wt_chinh "$MT_REPO")) — quy trình bắt buộc làm trong worktree." >&2
   ds=$(git -C "$MT_REPO" worktree list 2>/dev/null | tail -n +2)

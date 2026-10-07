@@ -60,6 +60,15 @@ if [ -z "$(printf '%s' "$VAN" | tr -d ' \t\n\r')" ]; then
   exit 3
 fi
 
+# Chữ giữ chỗ của adapter còn nguyên (Cursor <tham-số>, Claude Code $ARGUMENTS):
+# agent quên chép phần người gõ. Đừng ghi nó thành một mục [HUMAN].
+case "$(printf '%s' "$VAN" | tr -d ' \t\n\r')" in
+  '<tham-số>'|'$ARGUMENTS')
+    echo "LỖI: tham số là chữ giữ chỗ của lệnh (\"$VAN\"), chưa được thay." >&2
+    echo "  Agent: chép NGUYÊN VĂN phần người gõ sau tên lệnh; người không gõ gì thì để trống (KHÔNG CÓ THAM SỐ)." >&2
+    exit 2 ;;
+esac
+
 MJ=$(kc_mau_jira "$CONV")
 MC=$(conv_get "$CONV" mien_confluence)
 TMPD=$(mktemp -d 2>/dev/null) || { TMPD="${TMPDIR:-/tmp}/pli.$$"; mkdir -p "$TMPD"; }

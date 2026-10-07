@@ -68,7 +68,7 @@ adapters:
     status: planned
   - id: cursor
     dir: adapters/cursor
-    status: planned
+    status: active
   - id: copilot
     dir: adapters/copilot
     status: planned

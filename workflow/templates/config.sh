@@ -2,7 +2,10 @@
 # Nằm ở $(git rev-parse --git-common-dir)/agent-workflow/ — KHÔNG commit, dùng chung
 # mọi worktree. Do NGƯỜI sửa; aw init / aw upgrade không ghi đè.
 
-# Adapter sinh lệnh cho agent đang dùng (aw adapter build <agent>).
+# Adapter sinh lệnh cho agent team dùng — một hoặc nhiều id, cách nhau dấu cách:
+#   ADAPTER="claude-code"            chỉ Claude Code (.claude/)
+#   ADAPTER="claude-code cursor"     cả hai — mỗi worktree có cả .claude/ lẫn .cursor/
+# Sửa xong thì chạy aw init (thêm exclude) rồi aw adapter build ở checkout chính.
 ADAPTER="claude-code"
 
 # Lệnh kiểm thử — điều kiện ra của phase 04-implement.
