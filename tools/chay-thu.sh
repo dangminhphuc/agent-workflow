@@ -375,12 +375,18 @@ for m in "blocking" "review-blocking" "non-blocking"; do
   ky_vong 0 "mức chặn hợp lệ: $m" sh "$CHK" "$F"
 done
 
-# Nhãn cũ (trước khi có 3 mức): chặn kèm hướng dẫn đổi — "cục bộ" có hai đích, người chọn
+# Nhãn cũ: chặn kèm hướng dẫn đổi sang Blocking — "cục bộ" có hai đích, người chọn
 viet_spec; thay "$F/open-questions.md" '- **Blocking:** `non-blocking`' '- **Mức ảnh hưởng:** `cục bộ`'
 ky_vong 1 "chặn nhãn cũ \"Mức ảnh hưởng\"" sh "$CHK" "$F"
-dung "…kèm hướng dẫn đổi sang Mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'đã đổi thành \"Blocking'"
+dung "…kèm hướng dẫn đổi sang Blocking" sh -c "sh '$CHK' '$F' | grep -q 'đã đổi thành \"Blocking'"
+# Việc tạo trước khi đổi sang tiếng Anh: "Mức chặn" tiếng Việt cũng là nhãn cũ
+viet_spec; thay "$F/open-questions.md" '- **Blocking:** `non-blocking`' '- **Mức chặn:** `không chặn`'
+ky_vong 1 "chặn nhãn cũ \"Mức chặn\"" sh "$CHK" "$F"
+dung "…kèm hướng dẫn đổi sang Blocking" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: nhãn cũ.*đã đổi thành \"Blocking'"
 viet_spec; thay "$F/open-questions.md" '`non-blocking`' '`toàn bộ thiết kế`'
-ky_vong 1 "chặn giá trị cũ \"toàn bộ thiết kế\" dưới nhãn Mức chặn" sh "$CHK" "$F"
+ky_vong 1 "chặn giá trị cũ \"toàn bộ thiết kế\" dưới nhãn Blocking" sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" '`non-blocking`' '`không chặn`'
+ky_vong 1 "chặn giá trị tiếng Việt cũ \"không chặn\" dưới nhãn Blocking" sh "$CHK" "$F"
 
 viet_spec; thay "$F/spec.md" '- **Risk:** `normal`' ''
 ky_vong 1 "chặn spec thiếu Mức rủi ro" sh "$CHK" "$F"
