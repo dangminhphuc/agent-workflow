@@ -120,7 +120,7 @@ Cách đọc:
 
 Điểm xuất phát bắt buộc của mọi việc. `intake.md` trả lời đúng ba câu:
 
-1. **Loại việc** — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
+1. **Loại việc** (dòng `Type`) — `feature | bugfix | refactor | perf | chore`. Gợi ý từ tiền tố
    branch (`loai_theo_tien_to` trong `conventions.md`), **người xác nhận**, và
    `intake.md` là nguồn sự thật. Loại lệch tiền tố branch thì cảnh báo, `review`
    chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên bằng
@@ -128,7 +128,7 @@ Cách đọc:
 2. **Input** — tài liệu có định danh (`[JIRA]`, `[CONFLUENCE]`, `[FILE]`), hoặc
    lời người dùng **chép nguyên văn** (`[NGƯỜI-DÙNG]`). Không có `[SUY-RA]` ở đây:
    suy đoán của agent mà vào input thì mọi phase sau truy về nó như có nguồn.
-3. **Mục tiêu** một câu.
+3. **Mục tiêu** một câu (dòng `Goal`).
 
 Kèm dòng **Base** — base người chọn khi tạo worktree (xem dưới); checker phía sau
 so diff với base này — và dòng **Engine**: version engine của việc, mọi `aw check`

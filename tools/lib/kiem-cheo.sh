@@ -138,7 +138,7 @@ kc_pham_vi() {
 }
 
 # ------------------------------------------------------------------ theo loại việc
-# Loại việc có MỘT nguồn sự thật: dòng "Loại việc:" trong intake.md.
+# Loại việc có MỘT nguồn sự thật: dòng "- **Type:**" trong intake.md.
 
 LOAI_HOP_LE="feature bugfix refactor perf chore"
 
@@ -154,7 +154,7 @@ kc_loai() {
   [ -f "$1/intake.md" ] || return 0
   awk '
     { sub(/\r$/, "") }
-    /Loại việc[^:]*:/ {
+    /^[ \t]*-[ \t]+\*\*Type:\*\*/ {
       s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
       gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
     }

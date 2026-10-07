@@ -11,6 +11,16 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Đổi
+- **Đầu mục của `intake.md` sang tiếng Anh:** `# Tiếp nhận` → `# Intake`,
+  `Loại việc:` → `Type:`, `Mục tiêu:` → `Goal:` (`Base:`, `Engine:`, `## Input`
+  giữ nguyên). `aw check intake` và luật theo loại việc chỉ đọc dòng
+  `- **Type:**` / `- **Goal:**`. Việc đã bắt đầu không bị ảnh hưởng: nó chạy hết
+  bằng version ghi ở dòng `Engine:`. Việc mới tạo bằng bản này phải dùng đầu mục
+  mới.
+
 ## [2026.10.9]
 
 ### Thêm

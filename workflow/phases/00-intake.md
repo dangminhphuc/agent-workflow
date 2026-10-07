@@ -94,12 +94,12 @@ hỏi người, người đồng ý mới ghi thành dòng riêng.
 
 Đã có `intake.md` thì chạy lại là **gộp thêm input**, không viết lại:
 
-1. Không tạo lại từ mẫu. **Giữ nguyên** `Loại việc` và `Mục tiêu`.
+1. Không tạo lại từ mẫu. **Giữ nguyên** dòng `Type` và `Goal`.
 2. Chạy `aw input --skip <thư-mục-feature>/intake.md -` — nó bỏ các
    input đã có (so theo định danh: `ABC-1` và `…/browse/ABC-1` là một nguồn).
    **Thêm** stdout vào cuối `## Input`.
 3. Input mới làm loại việc có vẻ khác đi (vd thêm incident note vào việc
-   `feature`): **nêu ra cho người**, không tự sửa `Loại việc`. Người đổi loại
+   `feature`): **nêu ra cho người**, không tự sửa dòng `Type`. Người đổi loại
    thì xác nhận lại như lần đầu (và đổi tên bằng `aw rename` nếu lệch tiền tố).
 4. Chạy checker, dừng cho người xác nhận **các input mới**.
 
@@ -165,13 +165,15 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
    - tài liệu: `[CONFLUENCE]` / `[JIRA]` / `[FILE]` + định danh (URL, mã issue, đường dẫn);
    - lời người dùng: `[NGƯỜI-DÙNG]`, **chép nguyên văn** ở dòng `>` bên dưới.
 
-3. **Ghi mục tiêu** một câu, và hai dòng **Base**, **Engine** đúng như `aw worktree new` in ra.
+3. **Ghi mục tiêu** một câu vào dòng `Goal`, và hai dòng **Base**, **Engine** đúng như `aw worktree new` in ra.
 
 4. Chạy `aw check intake` rồi dừng lại cho người xác nhận.
 
 ## Đầu ra
 
-- `intake.md` — theo `templates/intake.md`.
+- `intake.md` — theo `templates/intake.md`. Đầu mục viết tiếng Anh, giữ đúng như
+  mẫu (`Type`, `Base`, `Engine`, `Goal`, `## Input`) — checker đọc theo đúng chữ đó;
+  nội dung điền vào vẫn viết tiếng Việt.
 
 `01-spec` đọc các tài liệu được liệt kê, và trích lời người dùng bằng nhãn
 `[FILE] intake.md § Input`.
@@ -183,7 +185,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
   và sai lệch của lớp đó sẽ được spec gắn nhãn như có nguồn đàng hoàng.
 - Tự gán nhãn input, hay sửa dòng `aw input` in ra.
 - Ghi `[SUY-RA]` vào input, hay ghi lời người dùng mà không phải nguyên văn.
-- Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi `Loại việc`.
+- Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi dòng `Type`.
   Suy đoán của agent vào input thì mọi phase sau truy về nó như thể có nguồn.
 - Tự chốt loại việc thay người.
 - Tự chọn base, tự điền `--base`, hay tạo worktree trước khi người chọn.
@@ -194,7 +196,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 ## Điều kiện ra
 
 **Máy:**
-- `aw check intake` ra `[x] ĐẠT` — loại việc hợp lệ, có mục tiêu, có ít
+- `aw check intake` ra `[x] ĐẠT` — loại việc (`Type`) hợp lệ, có mục tiêu (`Goal`), có ít
   nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
   `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
   có dòng `Engine:` dạng `YYYY.M.N` khớp engine đang chạy.

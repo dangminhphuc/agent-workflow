@@ -71,12 +71,12 @@ F="$R/.agent-workflow/feat_x"
 
 viet_intake() {
   cat > "$F/intake.md" <<EOF
-# Tiếp nhận — x
+# Intake — x
 
-- **Loại việc:** \`$LOAI\`   <!-- người xác nhận -->
+- **Type:** \`$LOAI\`   <!-- người xác nhận -->
 - **Base:** \`main\` @ \`$(git -C "$R" rev-parse --short main 2>/dev/null)\`
 - **Engine:** $(cat "$ROOT/VERSION")
-- **Mục tiêu:** làm x
+- **Goal:** làm x
 
 ## Input
 
@@ -1240,8 +1240,8 @@ dung "stdin: nguyên văn giữ dấu nháy, \$, backtick, nhiều dòng" bang "
 
 # --skip: chay lai /intake = gop them
 cat > "$TMP/intake-cu.md" <<'HET'
-- **Loại việc:** `feature`
-- **Mục tiêu:** x
+- **Type:** `feature`
+- **Goal:** x
 
 ## Input
 
@@ -1271,7 +1271,7 @@ ky_vong 1 "chặn loại việc ngoài 5 loại" sh "$CHK" "$F"
 ky_vong 1 "spec chặn khi intake.md không đạt (entry check)" sh "$T/kiem-tra-truy-vet.sh" "$F"
 viet_intake
 
-thay "$F/intake.md" '- **Mục tiêu:** làm x' '- **Mục tiêu:** <một câu>'
+thay "$F/intake.md" '- **Goal:** làm x' '- **Goal:** <một câu>'
 ky_vong 1 "chặn mục tiêu còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_intake
 
@@ -1721,9 +1721,9 @@ dung "…lấy version, checksums, conventions.md của team" sh -c "grep -qx 20
 ky_vong 9 "--from repo không có file version → KHÔNG HỢP LỆ" sh -c "cd '$R8' && AW_HOME='$AWH' sh '$ROOT/bin/aw' init --from '$R7'"
 # aw check chạy đúng version ghi trong intake.md của việc, không theo version của bản clone
 mkdir -p "$R7/.agent-workflow/feat_a"
-printf -- '- **Loại việc:** `feature`\n- **Engine:** 2099.1.1\n' > "$R7/.agent-workflow/feat_a/intake.md"
+printf -- '- **Type:** `feature`\n- **Engine:** 2099.1.1\n' > "$R7/.agent-workflow/feat_a/intake.md"
 ky_vong 1 "intake ghim 2099.1.1, bản clone 2099.1.2 → chấm bằng 2099.1.1 (KHÔNG ĐẠT, không phải KHÔNG HỢP LỆ)" aw7 check intake .agent-workflow/feat_a
-printf -- '- **Loại việc:** `feature`\n- **Engine:** 2099.1.3\n' > "$R7/.agent-workflow/feat_a/intake.md"
+printf -- '- **Type:** `feature`\n- **Engine:** 2099.1.3\n' > "$R7/.agent-workflow/feat_a/intake.md"
 ky_vong 9 "intake ghim version không có và không tải được → KHÔNG HỢP LỆ" aw7 check intake .agent-workflow/feat_a
 dung "…không âm thầm chạy bằng version khác" sh -c "cd '$R7' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' check intake .agent-workflow/feat_a 2>&1 | grep -q 'engine 2099.1.3 không có trong cache'"
 printf -- '- **Engine:** v9\n' > "$R7/.agent-workflow/feat_a/intake.md"
