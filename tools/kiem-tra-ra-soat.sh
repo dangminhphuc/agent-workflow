@@ -24,6 +24,13 @@
 #      dinh; verdict ngoai pass / finding / not applicable; finding hoac
 #      not applicable khong co vi tri / ly do; co finding ma Lens 3 khong co
 #      finding nao.
+#   9. Lens 3 — Quality: thieu muc; khong co finding nao ma cung khong ghi
+#      "- None" (hoac ghi "- None" ma van co finding); tieu de / gia tri con
+#      chu giu cho; [Blocker] / [Should fix] thieu "Location:" dang file:dong;
+#      [Blocker] thieu "Failure scenario:".
+#  10. Conclusion: "Blocker findings: <n>" thieu hoac khac so muc [Blocker].
+#  11. "Reviewed tree:" thieu hoac khac dau van tay code hien tai — code doi
+#      sau khi ra soat thi ket luan khong con noi ve code nay.
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
 # hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
@@ -174,6 +181,72 @@ BM
     [ "$nf" -gt 0 ] || loi_truoc "Lens 4 có \"finding\" nhưng Lens 3 không có finding nào — mỗi finding bảo mật phải thành một mục [Blocker] / [Should fix] / [Nit] ở Lens 3"
   fi
 fi
+
+# Lens 3 — Quality và Conclusion: finding phải đủ để người khác kiểm lại, và
+# số Blocker ở kết luận phải khớp số mục — không thì aw check ship đếm một
+# đằng, người đọc kết luận một nẻo.
+l3=$(awk '
+  function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+  function gt(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); return trim(s) }
+  function giu_cho(s) { return s == "" || s ~ /^`?<[^>]*>`?$/ }
+  function dong_muc() {
+    if (muc == "") return
+    if (giu_cho(ten)) print "Lens 3: finding [" muc "] còn tiêu đề giữ chỗ của mẫu \"<tiêu đề>\""
+    if (muc == "Blocker" || muc == "Should fix") {
+      if (!co_loc) print "Lens 3 [" muc "] \"" ten "\": thiếu dòng \"- Location: `file:dòng`\""
+      else if (loc !~ /[^ `:]+:[0-9]+/) print "Lens 3 [" muc "] \"" ten "\": Location \"" loc "\" không có dạng file:dòng (số dòng thật)"
+    }
+    if (muc == "Blocker" && giu_cho(kb))
+      print "Lens 3 [Blocker] \"" ten "\": thiếu \"- Failure scenario:\" — đầu vào cụ thể → kết quả sai"
+    muc = ""
+  }
+  { sub(/\r$/, "") }
+  /<!--/ && !/-->/ { cm = 1 }
+  cm { if (/-->/) cm = 0; next }
+  /^##[ \t]+Lens 3/ { trong = 1; co_l3 = 1; next }
+  /^##[ \t]/ {
+    if (trong) dong_muc()
+    trong = 0
+    if ($0 ~ /^##[ \t]+Conclusion/) kl = 1; else kl = 0
+    next
+  }
+  trong && /^###[ \t]/ {
+    dong_muc()
+    if (match($0, /\[(Blocker|Should fix|Nit)\]/)) {
+      muc = substr($0, RSTART + 1, RLENGTH - 2); ten = trim(substr($0, RSTART + RLENGTH))
+      co_loc = 0; loc = ""; kb = ""; n_f++; if (muc == "Blocker") n_b++
+    } else print "Lens 3: tiêu đề \"" $0 "\" không có mức [Blocker] / [Should fix] / [Nit]"
+    next
+  }
+  trong && /^[ \t]*-[ \t]*None[ \t]*$/ { none = 1; next }
+  trong && muc != "" && /^[ \t]*-[ \t]*\**Location\**:/ { co_loc = 1; loc = gt($0); next }
+  trong && muc != "" && /^[ \t]*-[ \t]*\**Failure scenario\**:/ { kb = gt($0); next }
+  kl && /^[ \t]*-[ \t]*\**Blocker findings\**:/ { co_kl = 1; kl_b = gt($0) }
+  END {
+    if (trong) dong_muc()
+    if (!co_l3) { print "review.md thiếu mục \"## Lens 3 — Quality\" — có finding thì ghi, không có thì ghi đúng một dòng \"- None\""; exit }
+    if (n_f == 0 && !none) print "Lens 3 không có finding nào mà cũng không ghi \"- None\" — không phân biệt được \"không thấy lỗi\" với \"chưa rà\""
+    if (n_f > 0 && none) print "Lens 3 vừa ghi \"- None\" vừa có " n_f " finding — bỏ một trong hai"
+    if (!co_kl) print "Conclusion thiếu dòng \"- Blocker findings: <n>\""
+    else if (kl_b !~ /^[0-9]+$/) print "Conclusion: \"Blocker findings: " kl_b "\" không phải số"
+    else if (kl_b + 0 != n_b + 0) print "Conclusion ghi Blocker findings: " kl_b " nhưng Lens 3 có " (n_b + 0) " mục [Blocker]"
+  }
+' "$REVIEW")
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<L3
+$l3
+L3
+
+# Reviewed tree: kết luận rà soát chỉ đúng cho đúng code đã rà.
+rt=$(awk '{ sub(/\r$/, "") } /^[ \t]*-[ \t]*\**Reviewed tree\**:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[` \t]/, "", s); print s; exit }' "$REVIEW")
+vt=$(kc_van_tay "$DIR")
+case "$rt" in
+  "") loi_truoc "review.md thiếu dòng \"- Reviewed tree: \`<sha>\`\" — chép dòng Tree của ket-qua-kiem-thu.md${vt:+ (hiện tại: $vt)}" ;;
+  "<"*">") loi_truoc "review.md: \"Reviewed tree\" còn chữ giữ chỗ — chép dòng Tree của ket-qua-kiem-thu.md${vt:+ (hiện tại: $vt)}" ;;
+  *)
+    if [ -z "$vt" ]; then loi_truoc "Không tính được dấu vân tay code hiện tại (git) — không xác nhận được review còn đúng"
+    elif [ "$rt" != "$vt" ]; then loi_truoc "review.md đã rà Tree $rt nhưng code hiện tại là $vt — code đổi sau khi rà soát; chạy lại aw check implement rồi /aw-review"
+    fi ;;
+esac
 
 # Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.
 cb_base=$(kc_base_la "$DIR")

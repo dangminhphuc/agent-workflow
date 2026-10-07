@@ -81,7 +81,11 @@ Vi phạm thì thêm finding ở Lens 3, mức do bạn phán. Quy tắc repo x�
 
 ### 3. Chất lượng (`## Lens 3 — Quality`)
 Lỗi đúng/sai, chỗ có thể dùng lại thứ đã có, chỗ phức tạp quá mức cần thiết.
-Mỗi finding phải có `file:dòng` và mức độ.
+Mỗi finding là một mục `### [Blocker|Should fix|Nit] <tiêu đề>`. `Blocker` và
+`Should fix` có `- Location: \`file:dòng\`` (số dòng thật); `Blocker` thêm
+`- Failure scenario:` — đầu vào cụ thể → kết quả sai, để người khác tái hiện được.
+Không có finding nào thì ghi đúng một dòng `- None` — để "không thấy lỗi" khác
+"chưa rà".
 
 ### 4. Bảo mật (`## Lens 4 — Security`)
 Máy quét (`ket-qua-bao-mat.md`) bắt mẫu đã biết — secret lộ, CVE, pattern SAST.
@@ -130,9 +134,14 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
 - `review.md` — theo `templates/review.md`. Đầu mục, tên trường và giá trị viết tiếng
   Anh, giữ đúng như mẫu (`## Lens 1/2/3/4`, verdict `pass | partial | fail | pending`,
   `## Repo rules` với `pass | violation | not applicable`, `## Lens 4 — Security` với
-  `pass | finding | not applicable`, `Repro test fails because:`,
+  `pass | finding | not applicable`, `Repro test fails because:`, `- None`,
+  `- Reviewed tree:`, `- Blocker findings: <n>`,
   `[Blocker] / [Should fix] / [Nit]`) — checker đọc theo đúng chữ đó; nội dung điền
   vào viết tiếng Việt.
+
+Dòng `- Reviewed tree:` ở đầu `review.md`: chép dòng `Tree` của
+`ket-qua-kiem-thu.md` (máy đã kiểm nó khớp code). Code đổi sau khi rà thì kết luận
+không còn nói về code đó — máy chặn, rà lại.
 
 ## Cấm
 
@@ -165,7 +174,12 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
     "Repo rules" của `review.md` có kết luận hợp lệ cho **từng** file;
   - `## Lens 4 — Security` có đủ bảy hạng mục, verdict `pass | finding | not applicable`,
     `finding` / `not applicable` có vị trí / lý do, và có `finding` thì Lens 3 phải
-    có ít nhất một finding.
+    có ít nhất một finding;
+  - `## Lens 3 — Quality` có ít nhất một finding **hoặc** đúng dòng `- None` (không
+    cả hai), không còn chữ giữ chỗ của mẫu; `[Blocker]` / `[Should fix]` có
+    `Location` dạng `file:dòng`; `[Blocker]` có `Failure scenario`;
+  - `## Conclusion` có `- Blocker findings: <n>` với `n` bằng số mục `[Blocker]`;
+  - `- Reviewed tree:` khớp dấu vân tay code hiện tại.
 - Diff được so với **base ghi trong `intake.md`**, không phải `nhanh_goc`. Base
   không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)
   thì checker **chỉ cảnh báo** — nêu ra cho người.

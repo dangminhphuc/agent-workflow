@@ -383,7 +383,7 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 | `design` | `aw check design` | Spec chưa được người duyệt (hoặc đổi sau khi duyệt), điểm mù `blocking` còn mở, thiếu mục, D-xx thiếu/sai ô duyệt hoặc đổi sau khi duyệt, `Based on` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `aw check plan` | D-xx chưa được người duyệt (hoặc đổi sau khi duyệt), task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |
 | `implement` | `aw check implement` | Test chưa xanh, quét bảo mật chưa khai hoặc đỏ, task còn dở |
-| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test hoặc quét bảo mật chưa xanh, kết quả lỗi thời so với code, Lens 4 thiếu hạng mục / thiếu lý do, hoặc **còn cảnh báo** |
+| `review` | `aw check review` | Bỏ sót yêu cầu, kết luận "pass" khi còn giả định chưa xác nhận, điểm mù `blocking`/`review-blocking` còn mở, test hoặc quét bảo mật chưa xanh, kết quả lỗi thời so với code, Lens 4 thiếu hạng mục / thiếu lý do, Lens 3 trống mà không ghi `- None` / finding thiếu `file:dòng` / Blocker thiếu kịch bản lỗi, số Blocker ở Conclusion lệch, code đổi sau khi rà (`Reviewed tree`), hoặc **còn cảnh báo** |
 
 Mọi script in khối **Kết quả** ở cuối output (ra stderr), đánh `[x]` vào đúng
 một nhãn — người và agent đọc nhãn, không đọc mã số:

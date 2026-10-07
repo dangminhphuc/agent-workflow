@@ -2,6 +2,10 @@
 
 > Sinh bởi phase `05-review`, chạy bằng ngữ cảnh sạch.
 
+<!-- Tree của code đã rà: chép dòng "- Tree:" trong ket-qua-kiem-thu.md (máy đã kiểm
+     nó khớp code hiện tại). Code đổi sau khi rà thì máy chặn — rà lại. -->
+- Reviewed tree: `<sha>`
+
 ## Lens 1 — Spec conformance
 
 Mọi mã `YC` trong `spec.md` phải có mặt ở bảng này.
@@ -44,6 +48,10 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
 ## Lens 3 — Quality
 
+<!-- Không có finding nào: xoá ba mục mẫu, ghi đúng một dòng "- None".
+     [Blocker] / [Should fix]: Location dạng `file:dòng` (số dòng thật).
+     [Blocker]: thêm Failure scenario — đầu vào cụ thể → kết quả sai. -->
+
 ### [Blocker] <tiêu đề>
 - Location: `file:dòng`
 - Problem: <...>
@@ -81,5 +89,5 @@ phạm vi, artifact lỗi thời). Còn mục nào thì review không đạt.
 
 ## Conclusion
 
-- Blocker findings: <n>
+- Blocker findings: <n>   <!-- phải bằng số mục [Blocker] ở Lens 3 -->
 - Mergeable: <no / yes after fixing Blockers>

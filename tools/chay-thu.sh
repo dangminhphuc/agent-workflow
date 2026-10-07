@@ -263,7 +263,20 @@ viet_review() {
   printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n' > "$F/review.md"
   [ "$LOAI" = "bugfix" ] && printf '\n- Repro test fails because: grep không thấy "moi" trong src/a.txt\n' >> "$F/review.md"
   viet_lens4
+  printf '\n## Lens 3 — Quality\n\n- None\n\n## Conclusion\n\n- Blocker findings: 0\n- Mergeable: yes\n' >> "$F/review.md"
+  ghi_tree_review
   return 0
+}
+
+# van_tay — dấu vân tay code hiện tại (như checker tính)
+van_tay() { sh -c ". '$T/lib/md.sh'; . '$T/lib/kiem-cheo.sh'; kc_van_tay '$F'"; }
+
+# ghi_tree_review — ghi / cập nhật dòng "Reviewed tree" theo code hiện tại
+# (người rà soát rà lại sau khi code đổi)
+ghi_tree_review() {
+  grep -v '^- Reviewed tree:' "$F/review.md" > "$F/review.md.tmp"
+  { printf -- '- Reviewed tree: `%s`\n\n' "$(van_tay)"; cat "$F/review.md.tmp"; } > "$F/review.md"
+  rm -f "$F/review.md.tmp"
 }
 
 # viet_lens4 — bảng Lens 4 đủ bảy hạng mục, kết luận hợp lệ
@@ -334,6 +347,7 @@ tao_fixture() {
   fi
   [ "$LOAI" = "perf" ] && sh "$T/kiem-tra-hieu-nang.sh" "$F" --after >/dev/null 2>&1
   sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+  ghi_tree_review   # rà soát diễn ra sau implement
 }
 
 # ---------------------------------------------------------------- fixture goc
@@ -833,12 +847,67 @@ ky_vong 1 "chặn finding không có vị trí" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / config | finding | `src/a.txt:1` token cứng |'
 ky_vong 1 "chặn finding bảo mật mà Lens 3 không có finding nào" sh "$CHK" "$F"
 dung "…đúng lý do: thiếu finding ở Lens 3" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 không có finding nào'"
-printf '\n## Lens 3 — Quality\n\n### [Should fix] token cứng\n- Location: `src/a.txt:1`\n- Problem: token trong code\n' >> "$F/review.md"
+thay "$F/review.md" '- None' '### [Should fix] token cứng
+- Location: `src/a.txt:1`
+- Problem: token trong code'
 ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
 viet_review; cp "$ROOT/workflow/templates/review.md" "$TMP/review-mau.md"
 awk '/^## Lens 4/ { p = 1 } /^## Carried-over/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
 printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n\n' > "$F/review.md"; cat "$TMP/lens4-mau.md" >> "$F/review.md"
 ky_vong 1 "chặn bảng Lens 4 chép nguyên mẫu chưa điền" sh "$CHK" "$F"
+# ---- Lens 3 — Quality, Conclusion, Reviewed tree
+viet_review; thay "$F/review.md" '- None
+' ''
+ky_vong 1 "chặn Lens 3 không finding mà không ghi \"- None\"" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'không ghi \"- None\"'"
+viet_review; thay "$F/review.md" '## Lens 3 — Quality' '## Ghi chú'
+ky_vong 1 "chặn khi thiếu mục Lens 3 — Quality" sh "$CHK" "$F"
+L3_SF='### [Should fix] trùng hàm
+- Location: `src/a.txt:1`
+- Problem: có sẵn hàm tương tự'
+viet_review; thay "$F/review.md" '- None' "$L3_SF"
+ky_vong 0 "Lens 3 có finding đủ Location file:dòng thì cho qua" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' "- None
+$L3_SF"
+ky_vong 1 "chặn Lens 3 vừa \"- None\" vừa có finding" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Problem: có sẵn hàm tương tự'
+ky_vong 1 "chặn [Should fix] thiếu Location" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Location: `file:dòng`'
+ky_vong 1 "chặn Location giữ chỗ của mẫu (không phải file:dòng)" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
+- Location: `src/a.txt:1`'
+ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
+ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
+L3_B='### [Blocker] mất dữ liệu
+- Location: `src/a.txt:1`
+- Problem: ghi đè'
+viet_review; thay "$F/review.md" '- None' "$L3_B"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 1 "chặn [Blocker] thiếu Failure scenario" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu \"- Failure scenario:\"'"
+viet_review; thay "$F/review.md" '- None' "$L3_B
+- Failure scenario: <đầu vào cụ thể → kết quả sai>"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 1 "chặn Failure scenario giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' "$L3_B
+- Failure scenario: lưu hai lần → bản ghi đầu mất"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 0 "[Blocker] đủ trường, Conclusion khớp số → review đạt (ship mới chặn)" sh "$CHK" "$F"
+thay "$F/review.md" '- Blocker findings: 1' '- Blocker findings: 0'
+ky_vong 1 "chặn Conclusion ghi số Blocker lệch số mục" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Blocker findings: 0 nhưng Lens 3 có 1'"
+viet_review; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: <n>'
+ky_vong 1 "chặn Conclusion còn giữ chỗ <n>" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- Blocker findings: 0
+' ''
+ky_vong 1 "chặn Conclusion thiếu dòng Blocker findings" sh "$CHK" "$F"
+viet_review; grep -v '^- Reviewed tree:' "$F/review.md" > "$TMP/rv" && cp "$TMP/rv" "$F/review.md"
+ky_vong 1 "chặn review.md thiếu Reviewed tree" sh "$CHK" "$F"
+dung "…lời nhắc có giá trị hiện tại" sh -c "sh '$CHK' '$F' | grep -q 'hiện tại: [0-9a-f]\{40\}'"
+viet_review; thay "$F/review.md" "- Reviewed tree: \`$(van_tay)\`" '- Reviewed tree: `0000000000000000000000000000000000000000`'
+ky_vong 1 "chặn Reviewed tree khác code hiện tại" sh "$CHK" "$F"
+viet_review
+
 # Bảng khác nhắc mã YC ở cột lý do không được ghi đè kết luận của Lens 1
 viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |' '| Authn / authz | pass | khớp YC-002 |'
 ky_vong 0 "dòng Lens 4 nhắc YC-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
@@ -852,9 +921,12 @@ thay "$F/plan.md" '|---|---|---|---|
 | T-01 | cần README | `README.md` | đã ghi |
 '
 sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
-ky_vong 0 "ghi file vào Phát sinh (chạy lại implement) thì cho qua" sh "$CHK" "$F"
+ky_vong 1 "chạy lại implement mà chưa rà lại → chặn Reviewed tree cũ" sh "$CHK" "$F"
+dung "…đúng lý do: code đổi sau khi rà soát" sh -c "sh '$CHK' '$F' | grep -q 'code đổi sau khi rà soát'"
+ghi_tree_review
+ky_vong 0 "ghi file vào Phát sinh (chạy lại implement, rà lại) thì cho qua" sh "$CHK" "$F"
 rm -f "$R/README.md"; viet_plan; ghi_based_on
-sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 printf '// covers: YC-001\n' > "$R/test/a.test.js"
 ky_vong 1 "CỔNG CUỐI: chặn YC chưa có test gắn tag" sh "$CHK" "$F"
@@ -864,10 +936,10 @@ thay "$F/plan.md" '| ID | Why not automated |
 |---|---|
 | YC-002 | cần kiểm bằng mắt trên UI |
 '
-sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "ghi Kiểm chứng thủ công có lý do thì cho qua" sh "$CHK" "$F"
 printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"; viet_plan; ghi_based_on
-sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 # Không test nào gắn tag: danh sách dòng tag rỗng không được làm kiểm chéo câm
 printf '// chua gan tag\n' > "$R/test/a.test.js"
@@ -1934,7 +2006,7 @@ dung "…đúng lý do: file của người khác bị tính ngoài phạm vi" s
 SHA_MH=$(git -C "$R" rev-parse --short moi-hon)
 thay "$F/intake.md" "\`main\` @ \`$SHA_MAIN\`" "\`moi-hon\` @ \`$SHA_MH\`"
 ghi_based_on
-sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "ghi đúng base → diff chỉ còn việc của mình, review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
 dung "…nhưng base lạ (xếp chồng) thì review CẢNH BÁO" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' | grep -q 'CẢNH BÁO.*Base \"moi-hon\"'"
 thay "$CFG/conventions.md" 'mau_nhanh_phat_hanh:' 'mau_nhanh_phat_hanh: moi-*'
@@ -1999,8 +2071,10 @@ thay "$F/plan.md" '| Test file | Reason |
 |---|---|
 | `test/a.test.js` | đổi import do dời module |
 '
+ghi_tree_review
 ky_vong 0 "khai ở \"Test cũ bị sửa\" thì review cho qua" sh "$T/kiem-tra-ra-soat.sh" "$F"
 g checkout -q -- test/a.test.js; viet_plan; ghi_based_on
+sh "$T/kiem-tra-hien-thuc.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 rm -f "$R/test/a.test.js"
 ky_vong 1 "implement chặn refactor XOÁ test cũ" sh "$T/kiem-tra-hien-thuc.sh" "$F"

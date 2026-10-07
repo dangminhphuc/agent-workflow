@@ -35,6 +35,12 @@ ngầm giữa các bản.
 - **`Blocker`** gồm thêm: lỗ hổng bảo mật khai thác được, mất/lộ dữ liệu, breaking
   change chưa khai.
 
+- **Siết `aw check review`:** Lens 3 phải có finding hoặc đúng dòng `- None`, không
+  còn chữ giữ chỗ; `[Blocker]`/`[Should fix]` có `Location` dạng `file:dòng`;
+  `[Blocker]` có `Failure scenario`; `Blocker findings: <n>` ở Conclusion bằng số mục
+  `[Blocker]`; dòng mới `- Reviewed tree:` phải khớp dấu vân tay code hiện tại (code
+  đổi sau khi rà → rà lại).
+
 ### Sửa
 - Lens 1 chỉ đọc dòng bảng có ô đầu là mã YC — bảng khác nhắc `YC-NNN` ở cột lý do
   không còn ghi đè kết luận.
@@ -44,7 +50,8 @@ ngầm giữa các bản.
   KHÔNG ĐẠT tới khi người khai (`aw init` không ghi đè `config.sh`; chép khối chú
   thích từ `workflow/templates/config.sh`). Việc chuyển sang engine này giữa chừng có `ket-qua-kiem-thu.md` cũ
   (không có `Tree`) → chạy lại `aw check implement` trước `/aw-review`.
-- `review.md` thiếu `## Lens 4 — Security` → `aw check review` KHÔNG ĐẠT.
+- `review.md` thiếu `## Lens 4 — Security`, `## Lens 3` không finding cũng không
+  `- None`, thiếu `Blocker findings` hay `Reviewed tree` → `aw check review` KHÔNG ĐẠT.
 
 ## [2026.10.13]
 

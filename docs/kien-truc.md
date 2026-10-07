@@ -444,6 +444,19 @@ biết `pass` có đúng không (giới hạn 12), nhưng biết người rà đ
 Parser Lens 1 chỉ đọc dòng bảng có **ô đầu** là mã YC: dòng Authn của Lens 4 hay
 nhắc YC Phân quyền ở cột lý do, trước đây sẽ ghi đè kết luận của YC đó.
 
+### Lens 3 và Conclusion: máy kiểm hình dạng, không kiểm nội dung
+
+Trước đây Lens 3 để trống vẫn ĐẠT, và `Blocker findings: <n>` không ai đối chiếu
+— `aw check ship` đếm `### [Blocker]` một đằng, người đọc kết luận một nẻo. Nay máy
+kiểm phần chính xác: Lens 3 có finding **hoặc** `- None` (danh sách trống và "chưa
+rà" trông giống nhau, nên phải nói ra), finding đủ trường để người khác kiểm lại
+(`Location` có số dòng; `Blocker` có kịch bản lỗi), và số ở Conclusion khớp số mục.
+Finding có đúng không vẫn là việc của người.
+
+`- Reviewed tree:` gắn kết luận vào đúng code đã rà — cùng dấu vân tay với
+`ket-qua-*.md`. Không có nó, chạy lại `aw check implement` sau khi sửa code làm
+kết quả máy mới lại, còn `review.md` cũ vẫn qua dù nói về code khác.
+
 ### Test ↔ YC và phạm vi diff
 
 Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặn):
