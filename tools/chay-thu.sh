@@ -81,7 +81,7 @@ viet_intake() {
 ## Input
 
 - \`[JIRA]\` ABC-1
-- \`[NGƯỜI-DÙNG]\`
+- \`[HUMAN]\`
   > cần làm x cho màn hình y
 EOF
 }
@@ -1213,7 +1213,7 @@ ky_vong 3 "không có tham số → KHÔNG CÓ THAM SỐ (hỏi người dùng)"
 ky_vong 3 "tham số chỉ có khoảng trắng / dòng trống → KHÔNG CÓ THAM SỐ" pl "
   "
 ky_vong 4 "câu chữ tự do → LỜI NGƯỜI DÙNG" pl "sửa phí hoàn tiền bị âm ABC-123"
-dung "…cả chuỗi là MỘT mục [NGƯỜI-DÙNG] nguyên văn" bang "$(ra 'sửa phí hoàn tiền bị âm ABC-123')" "- ${BT}[NGƯỜI-DÙNG]${BT}
+dung "…cả chuỗi là MỘT mục [HUMAN] nguyên văn" bang "$(ra 'sửa phí hoàn tiền bị âm ABC-123')" "- ${BT}[HUMAN]${BT}
   > sửa phí hoàn tiền bị âm ABC-123"
 dung "…mã Jira trong câu chỉ là ĐỀ XUẤT (stderr)" sh -c "printf '%s\n' \"\$1\" | grep -A3 'Đề xuất tách thêm' | grep -q 'ABC-123'" _ "$(loi 'sửa phí hoàn tiền bị âm ABC-123')"
 ky_vong 4 "đường dẫn không có file nằm trong câu chữ thì không chặn" pl "sửa lỗi trong src/khong-co.js"
@@ -1234,7 +1234,7 @@ awd "$R9" input - > "$TMP/nv.out" 2>/dev/null <<'HET_INPUT'
 Sửa "phí" khi $amount < 0 — xem `x`
 dòng hai
 HET_INPUT
-dung "stdin: nguyên văn giữ dấu nháy, \$, backtick, nhiều dòng" bang "$(cat "$TMP/nv.out")" "- ${BT}[NGƯỜI-DÙNG]${BT}
+dung "stdin: nguyên văn giữ dấu nháy, \$, backtick, nhiều dòng" bang "$(cat "$TMP/nv.out")" "- ${BT}[HUMAN]${BT}
   > Sửa \"phí\" khi \$amount < 0 — xem ${BT}x${BT}
   > dòng hai"
 
@@ -1247,7 +1247,7 @@ cat > "$TMP/intake-cu.md" <<'HET'
 
 - `[JIRA]` [ABC-123](https://x.atlassian.net/browse/ABC-123)
 - `[FILE]` ./docs/a.md
-- `[NGƯỜI-DÙNG]`
+- `[HUMAN]`
   > sửa phí   hoàn tiền
   > bị âm
 HET
@@ -1276,7 +1276,7 @@ ky_vong 1 "chặn mục tiêu còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_intake
 
 thay "$F/intake.md" '- `[JIRA]` ABC-1
-- `[NGƯỜI-DÙNG]`
+- `[HUMAN]`
   > cần làm x cho màn hình y
 ' ''
 ky_vong 1 "chặn khi không có input nào" sh "$CHK" "$F"
@@ -1287,7 +1287,7 @@ ky_vong 1 "chặn [SUY-RA] trong input" sh "$CHK" "$F"
 viet_intake
 
 thay "$F/intake.md" '  > cần làm x cho màn hình y' ''
-ky_vong 1 "chặn [NGƯỜI-DÙNG] không kèm nguyên văn" sh "$CHK" "$F"
+ky_vong 1 "chặn [HUMAN] không kèm nguyên văn" sh "$CHK" "$F"
 viet_intake
 
 rm -f "$F/intake.md"

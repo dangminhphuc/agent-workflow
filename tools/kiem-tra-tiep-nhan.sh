@@ -9,7 +9,7 @@
 #   - Mục "Input" không có nguồn nào, nhãn không hợp lệ, hay có [SUY-RA].
 #     Input chỉ nhận tài liệu có định danh hoặc lời người dùng CHÉP NGUYÊN VĂN —
 #     suy đoán của agent mà vào đây thì mọi phase sau sẽ truy về nó như có nguồn.
-#   - [NGƯỜI-DÙNG] không kèm nguyên văn.
+#   - [HUMAN] không kèm nguyên văn.
 #   - [JIRA] mà định danh không có mã khớp mau_jira (conventions.md).
 #   - Thiếu dòng "Base:" dạng `<ref>` @ `<sha>` (tao-worktree.sh in ra), hoặc sha
 #     không phải tổ tiên của HEAD. Checker phía sau so diff với base này — base
@@ -72,11 +72,11 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
   }
   function dong_cho() {
-    if (cho_nv) loi("Input #" n_in ": [NGƯỜI-DÙNG] không kèm lời người dùng chép nguyên văn")
+    if (cho_nv) loi("Input #" n_in ": [HUMAN] không kèm lời người dùng chép nguyên văn")
     cho_nv = 0
   }
   BEGIN { n_loi = n_base; n = split(loai_hl, a, " "); for (i = 1; i <= n; i++) hl[a[i]] = 1
-          nhan["CONFLUENCE"]=1; nhan["JIRA"]=1; nhan["FILE"]=1; nhan["NGƯỜI-DÙNG"]=1 }
+          nhan["CONFLUENCE"]=1; nhan["JIRA"]=1; nhan["FILE"]=1; nhan["HUMAN"]=1 }
   { sub(/\r$/, "") }
 
   !co_loai && /^[ \t]*-[ \t]+\*\*Type:\*\*/ { co_loai = 1; loai = gia_tri($0) }
@@ -91,12 +91,12 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     t = substr($0, RSTART + 1, RLENGTH - 2); rest = substr($0, RSTART + RLENGTH)
     n_in++
     if (t == "SUY-RA") { loi("Input #" n_in ": [SUY-RA] không được là input — input chỉ là tài liệu hoặc lời người dùng nguyên văn"); next }
-    if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | FILE | NGƯỜI-DÙNG)"); next }
+    if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | FILE | HUMAN)"); next }
     gsub(/<!--.*-->/, "", rest); gsub(/^[`* \t]+|[ \t]+$/, "", rest)
-    if (t == "NGƯỜI-DÙNG" && (rest == "" || rest ~ /^<.*>$/)) cho_nv = 1
-    else if (t != "NGƯỜI-DÙNG" && rest == "") loi("Input #" n_in ": [" t "] thiếu định danh (URL, mã issue, đường dẫn)")
+    if (t == "HUMAN" && (rest == "" || rest ~ /^<.*>$/)) cho_nv = 1
+    else if (t != "HUMAN" && rest == "") loi("Input #" n_in ": [" t "] thiếu định danh (URL, mã issue, đường dẫn)")
     # Chỗ giữ chỗ còn sót (vd dòng mẫu chưa sửa) — nếu lọt, spec sẽ truy về một nguồn không có thật
-    else if (t != "NGƯỜI-DÙNG" && (rest ~ /<[^>]*>/ || rest ~ /\((URL|https?:\/\/…)\)/)) loi("Input #" n_in ": [" t "] còn chỗ giữ chỗ chưa điền — " rest)
+    else if (t != "HUMAN" && (rest ~ /<[^>]*>/ || rest ~ /\((URL|https?:\/\/…)\)/)) loi("Input #" n_in ": [" t "] còn chỗ giữ chỗ chưa điền — " rest)
     else if (t == "JIRA" && rest !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)")) loi("Input #" n_in ": [JIRA] không có mã issue khớp mau_jira (" mj ") — " rest)
     dem[t]++
     next

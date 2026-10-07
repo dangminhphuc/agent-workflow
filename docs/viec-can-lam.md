@@ -39,7 +39,7 @@ Bước 2 của phase ("trích nguyên văn") không để lại dấu vết: m�
 ghi câu trích. Đề xuất thêm `- Trích: > "…"` dưới mỗi YC.
 
 - Người duyệt so YC với câu gốc ngay trong spec.
-- Nguồn `[FILE]` (kể cả `[NGƯỜI-DÙNG]` nằm trong `intake.md`): máy kiểm được câu
+- Nguồn `[FILE]` (kể cả `[HUMAN]` nằm trong `intake.md`): máy kiểm được câu
   trích có thật trong file nguồn bằng `grep -F` → thu hẹp điểm yếu 3 trong
   `docs/kien-truc.md`. Confluence/Jira: chỉ giúp người đọc.
 - Cần quyết: bắt buộc hay tuỳ chọn; một hay nhiều câu trích; chuẩn hoá khoảng

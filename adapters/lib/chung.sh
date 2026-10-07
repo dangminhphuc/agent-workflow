@@ -174,7 +174,7 @@ buoc_phan_loai_input() {
   printf '```sh\naw input [--skip %s/intake.md] - <<'"'"'HET_INPUT'"'"'\n%s\nHET_INPUT\n```\n\n' "$FD" "$1"
   printf 'Stdout là **đúng các dòng** ghi vào `## Input` — chép nguyên, không sửa. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:\n\n'
   printf -- '- **NGUỒN:** các tham số đều là nguồn. Stdout rỗng = không có input mới.\n'
-  printf -- '- **LỜI NGƯỜI DÙNG:** tham số là lời người dùng → stdout là một mục `[NGƯỜI-DÙNG]` nguyên văn. Nếu stderr có "Đề xuất tách thêm": hỏi người, chỉ ghi các dòng đó khi người đồng ý.\n'
+  printf -- '- **LỜI NGƯỜI DÙNG:** tham số là lời người dùng → stdout là một mục `[HUMAN]` nguyên văn. Nếu stderr có "Đề xuất tách thêm": hỏi người, chỉ ghi các dòng đó khi người đồng ý.\n'
   printf -- '- **KHÔNG CÓ THAM SỐ:** không có tham số → hỏi người dùng input, rồi chạy lại lệnh trên với **nguyên văn câu trả lời**.\n'
   printf -- '- **ĐƯỜNG DẪN KHÔNG TỒN TẠI:** có đường dẫn không tồn tại → hỏi lại người dùng. Không tự đoán đường dẫn.\n\n'
 }

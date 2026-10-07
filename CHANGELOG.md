@@ -20,6 +20,11 @@ ngầm giữa các bản.
   `- **Type:**` / `- **Goal:**`. Việc đã bắt đầu không bị ảnh hưởng: nó chạy hết
   bằng version ghi ở dòng `Engine:`. Việc mới tạo bằng bản này phải dùng đầu mục
   mới.
+- **Nhãn input `[NGƯỜI-DÙNG]` → `[HUMAN]`:** lời người vận hành workflow chép
+  nguyên văn trong `## Input` của `intake.md`. Đổi để không nhầm với "người dùng"
+  cuối của sản phẩm trong tài liệu nghiệp vụ, và khớp cặp máy / người
+  (`exit_machine` / `exit_human`). `aw input` in `[HUMAN]`; `aw check intake`
+  chỉ nhận `[HUMAN]`.
 
 ## [2026.10.9]
 

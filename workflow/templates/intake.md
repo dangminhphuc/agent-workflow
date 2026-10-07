@@ -15,5 +15,5 @@ issue, đường dẫn); lời người dùng thì chép **nguyên văn** ở d�
 
 - `[JIRA]` <mã issue + URL, vd [ABC-123](https://…)>   <!-- hoặc [CONFLUENCE] / [FILE]; không dùng thì xoá dòng -->
 
-- `[NGƯỜI-DÙNG]`
+- `[HUMAN]`
   > <chép nguyên văn lời người dùng>

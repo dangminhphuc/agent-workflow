@@ -44,7 +44,7 @@ Nó cho biết **loại việc** và **danh sách input**. Đọc hết từng i
 | `[CONFLUENCE]` | MCP Atlassian, đọc page | `[CONFLUENCE]` URL page + tên heading |
 | `[JIRA]` | MCP Atlassian, đọc issue | `[JIRA]` mã issue + URL |
 | `[FILE]` (kể cả incident note) | Đọc trực tiếp | `[FILE]` đường dẫn + heading |
-| `[NGƯỜI-DÙNG]` | Đọc nguyên văn trong `intake.md` | `[FILE] intake.md § Input` |
+| `[HUMAN]` | Đọc nguyên văn trong `intake.md` | `[FILE] intake.md § Input` |
 
 Chưa có `intake.md`: dừng lại và chạy `/intake` trước. Không đọc nguồn nào nằm
 ngoài danh sách input — muốn thêm nguồn thì thêm vào `intake.md` trước.

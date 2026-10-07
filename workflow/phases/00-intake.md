@@ -78,7 +78,7 @@ không sửa dòng nó in ra. Luật (mẫu khai trong `conventions.md`):
 | Còn lại | không nhận ra |
 
 **Lời người dùng.** Chỉ cần **một** token không nhận ra, **cả chuỗi** là lời
-người dùng: một mục `[NGƯỜI-DÙNG]` chép nguyên văn (`LỜI NGƯỜI DÙNG`). Tách từng từ sẽ biến
+người dùng: một mục `[HUMAN]` chép nguyên văn (`LỜI NGƯỜI DÙNG`). Tách từng từ sẽ biến
 một câu thành vài "input" rác và làm mất câu gốc. Nguồn nhận ra được nằm trong
 câu (vd `ABC-123` trong "sửa phí hoàn tiền ABC-123") chỉ là **đề xuất tách thêm**:
 hỏi người, người đồng ý mới ghi thành dòng riêng.
@@ -86,7 +86,7 @@ hỏi người, người đồng ý mới ghi thành dòng riêng.
 | Kết quả `[x]` | Làm gì |
 |---|---|
 | `NGUỒN` | Chép stdout (rỗng = không có input mới) |
-| `LỜI NGƯỜI DÙNG` | Chép mục `[NGƯỜI-DÙNG]`; hỏi người về "đề xuất tách thêm" nếu có |
+| `LỜI NGƯỜI DÙNG` | Chép mục `[HUMAN]`; hỏi người về "đề xuất tách thêm" nếu có |
 | `KHÔNG CÓ THAM SỐ` | Hỏi người dùng, chạy lại script với **nguyên văn** câu trả lời |
 | `ĐƯỜNG DẪN KHÔNG TỒN TẠI` | Hỏi lại, không tự đoán |
 
@@ -163,7 +163,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 
 2. **Ghi input** bằng `aw input` (mục "Tham số của lệnh là input"):
    - tài liệu: `[CONFLUENCE]` / `[JIRA]` / `[FILE]` + định danh (URL, mã issue, đường dẫn);
-   - lời người dùng: `[NGƯỜI-DÙNG]`, **chép nguyên văn** ở dòng `>` bên dưới.
+   - lời người dùng: `[HUMAN]`, **chép nguyên văn** ở dòng `>` bên dưới.
 
 3. **Ghi mục tiêu** một câu vào dòng `Goal`, và hai dòng **Base**, **Engine** đúng như `aw worktree new` in ra.
 
@@ -197,7 +197,7 @@ LỆ, không chạy tạm bằng version khác. So version: khớp chính xác `
 
 **Máy:**
 - `aw check intake` ra `[x] ĐẠT` — loại việc (`Type`) hợp lệ, có mục tiêu (`Goal`), có ít
-  nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[NGƯỜI-DÙNG]` có nguyên văn,
+  nhất một input với nhãn hợp lệ, không `[SUY-RA]`, `[HUMAN]` có nguyên văn,
   `[JIRA]` có mã khớp `mau_jira`, có dòng `Base:` mà sha là tổ tiên của HEAD,
   có dòng `Engine:` dạng `YYYY.M.N` khớp engine đang chạy.
   Loại lệch tiền tố branch thì cảnh báo; `review` chặn.

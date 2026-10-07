@@ -17,7 +17,7 @@
 #   - file có thật trong repo                -> [FILE]
 #   - trông như đường dẫn mà không có file   -> lỗi (ĐƯỜNG DẪN KHÔNG TỒN TẠI), không tự đoán
 #   - còn lại                                -> không nhận ra
-# Có token KHÔNG NHẬN RA thì CẢ CHUỖI là lời người dùng: một mục [NGƯỜI-DÙNG]
+# Có token KHÔNG NHẬN RA thì CẢ CHUỖI là lời người dùng: một mục [HUMAN]
 # chép nguyên văn. Tách từng token sẽ biến một câu thành vài "input" rác và làm
 # mất câu gốc. Nguồn nhận ra được trong câu chỉ là ĐỀ XUẤT (in ra stderr).
 #
@@ -35,7 +35,7 @@ kq_khai phan-loai-input.sh \
   "1=ĐƯỜNG DẪN KHÔNG TỒN TẠI — hỏi lại người, không tự đoán" \
   "2=SAI CÁCH GỌI" \
   "3=KHÔNG CÓ THAM SỐ — hỏi người input" \
-  "4=LỜI NGƯỜI DÙNG — stdout là mục [NGƯỜI-DÙNG] nguyên văn"
+  "4=LỜI NGƯỜI DÙNG — stdout là mục [HUMAN] nguyên văn"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/kiem-cheo.sh"
 
@@ -86,7 +86,7 @@ chuan_hoa() { printf '%s\n' "$1" | awk '{ $1 = $1; if (NF) { o = o (o == "" ? ""
 # ---- 1. Input đã có (--skip): khoá "NHÃN<TAB>định-danh" mỗi dòng ----
 if [ -n "$TRU" ]; then
   awk -v re="$MJ" '
-    function in_nv() { if (nv != "") print "NGƯỜI-DÙNG\t" nv; nv = ""; cho = 0 }
+    function in_nv() { if (nv != "") print "HUMAN\t" nv; nv = ""; cho = 0 }
     { sub(/\r$/, "") }
     /^##[ \t]/ { if (vao) in_nv(); vao = ($0 ~ /^##[ \t]+Input/); next }
     !vao { next }
@@ -103,7 +103,7 @@ if [ -n "$TRU" ]; then
         if (match(r, /https?:\/\/[^ \t)>]+/)) { s = substr(r, RSTART, RLENGTH); sub(/\/+$/, "", s); print "CONFLUENCE\t" s }
       } else if (t == "FILE") {
         n = split(r, a, /[ \t]+/); for (i = 1; i <= n; i++) if (a[i] != "") { s = a[i]; sub(/^\.\//, "", s); print "FILE\t" s; break }
-      } else if (t == "NGƯỜI-DÙNG") {
+      } else if (t == "HUMAN") {
         cho = 1; gsub(/^[ \t]+|[ \t]+$/, "", r); if (r != "") nv = r
       }
       next
@@ -111,7 +111,7 @@ if [ -n "$TRU" ]; then
     cho && /^[ \t]*>/ { s = $0; sub(/^[ \t]*>[ \t]*/, "", s); if (s != "") nv = nv (nv == "" ? "" : " ") s; next }
     END { if (vao) in_nv() }
   ' "$TRU" | awk -F'\t' 'BEGIN { OFS = "\t" }
-    $1 == "NGƯỜI-DÙNG" { v = $2; gsub(/[ \t]+/, " ", v); gsub(/^ | $/, "", v); $2 = v }
+    $1 == "HUMAN" { v = $2; gsub(/[ \t]+/, " ", v); gsub(/^ | $/, "", v); $2 = v }
     { print }' > "$TMPD/da-co"
 fi
 
@@ -178,14 +178,14 @@ in_nguon() {
   done < "$1"
 }
 
-# ---- 3. Lời người dùng: cả chuỗi là một mục [NGƯỜI-DÙNG] nguyên văn ----
+# ---- 3. Lời người dùng: cả chuỗi là một mục [HUMAN] nguyên văn ----
 # Token không nhận ra, hoặc đường dẫn không có file nằm lẫn trong câu chữ -> không
 # chặn: đó là lời người dùng, không phải một nguồn gõ sai.
 if [ "$n_khong" -gt 0 ]; then
-  if grep -qxF "NGƯỜI-DÙNG	$(chuan_hoa "$VAN")" "$TMPD/da-co"; then
+  if grep -qxF "HUMAN	$(chuan_hoa "$VAN")" "$TMPD/da-co"; then
     echo "  (lời người dùng này đã có trong intake.md, bỏ qua)" >&2
   else
-    printf -- '- `[NGƯỜI-DÙNG]`\n'
+    printf -- '- `[HUMAN]`\n'
     printf '%s\n' "$VAN" | sed 's/^/  > /; s/[ \t]*$//'
   fi
   de_xuat=$(in_nguon "$TMPD/nguon" 2>/dev/null)

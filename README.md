@@ -126,7 +126,7 @@ Cách đọc:
    chặn — **không có ngoại lệ**: sửa loại, hoặc đổi tên bằng
    `aw rename` (đổi cả branch, thư mục artifact và thư mục worktree).
 2. **Input** — tài liệu có định danh (`[JIRA]`, `[CONFLUENCE]`, `[FILE]`), hoặc
-   lời người dùng **chép nguyên văn** (`[NGƯỜI-DÙNG]`). Không có `[SUY-RA]` ở đây:
+   lời người dùng **chép nguyên văn** (`[HUMAN]`). Không có `[SUY-RA]` ở đây:
    suy đoán của agent mà vào input thì mọi phase sau truy về nó như có nguồn.
 3. **Mục tiêu** một câu (dòng `Goal`).
 
@@ -189,7 +189,7 @@ chối xoá branch thì bạn tự quyết `git branch -D`.
 Nhãn input do **máy** gán: `aw input` nhận mã Jira (`mau_jira`),
 URL Confluence (`mien_confluence`), file có thật trong repo. Chỉ cần một từ không
 nhận ra thì **cả chuỗi** là lời người dùng, chép nguyên văn thành một mục
-`[NGƯỜI-DÙNG]` — vd `/intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
+`[HUMAN]` — vd `/intake sửa phí hoàn tiền bị âm ABC-123`; mã `ABC-123` trong
 câu chỉ là đề xuất tách thêm, bạn đồng ý mới thành input riêng. Chạy lại `/intake`
 trong worktree đã có `intake.md` thì **gộp thêm** input mới (bỏ trùng), giữ nguyên
 loại việc; `spec.md` khi đó thành lỗi thời và phải chạy lại `/spec`.
@@ -323,7 +323,7 @@ thì agent không được tự tuyên bố đạt — phải chạy lệnh:
 
 | Phase | Lệnh | Bắt cái gì |
 |---|---|---|
-| `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[NGƯỜI-DÙNG]` không kèm nguyên văn |
+| `intake` | `aw check intake` | Loại việc ngoài 5 loại, thiếu mục tiêu, không có input, `[SUY-RA]` trong input, `[HUMAN]` không kèm nguyên văn |
 | `spec` | `aw check spec` | Yêu cầu không truy được về nguồn → agent bịa yêu cầu; thiếu phần bắt buộc theo loại việc; `open-questions.md` lệch spec; `Mức chặn` thiếu/sai |
 | `design` | `aw check design` | Spec chưa được người duyệt, điểm mù `chặn` còn mở, thiếu mục, D-xx sai trạng thái, `Dựa trên` trỏ sai, YC chưa ánh xạ, rủi ro cao mà thiếu bản phác của người, checker LLM chưa chạy hoặc còn phát hiện `Chặn` |
 | `plan` | `aw check plan` | D-xx chưa được người duyệt, task thừa, và **yêu cầu bị bỏ sót** (kiểm hai chiều) |

@@ -81,14 +81,14 @@ tiêu**. Trước đây `ideation` chỉ chạy khi không có BRD; giờ nó b�
 
 Điều giữ cho `00` không thành một lớp diễn giải chen giữa BRD và spec: nó chỉ
 **trỏ tới** tài liệu, và input chỉ nhận tài liệu có định danh hoặc lời người dùng
-**chép nguyên văn** (`[NGƯỜI-DÙNG]`). `[SUY-RA]` bị cấm ở input — nếu không, điều
+**chép nguyên văn** (`[HUMAN]`). `[SUY-RA]` bị cấm ở input — nếu không, điều
 agent tự suy ra sẽ sang spec với nhãn `[FILE] intake.md` như có nguồn thật.
 
 **Nhãn input do máy gán** (`aw input`), không do agent đoán:
 checker chỉ kiểm được cú pháp nhãn, nên agent gắn `[JIRA]` cho một URL GitHub
 vẫn lọt tới `spec`. Luật chọn quyết định trên **cả chuỗi**, không trên từng từ:
 một từ không nhận ra là cả tham số thành lời người dùng nguyên văn. Tách từng từ
-sẽ biến một câu thành vài input rác và làm mất câu gốc — đúng thứ `[NGƯỜI-DÙNG]`
+sẽ biến một câu thành vài input rác và làm mất câu gốc — đúng thứ `[HUMAN]`
 sinh ra để giữ. Chạy lại `/intake` chỉ **gộp thêm** (không xoá, không đổi loại
 việc), và `spec.md` ghi `based_on: intake.md` để input mới làm spec lỗi thời.
 
