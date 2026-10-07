@@ -477,7 +477,7 @@ protected branch. Gồm ba phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.11/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.12/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
