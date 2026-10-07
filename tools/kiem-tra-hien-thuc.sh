@@ -14,16 +14,16 @@
 #        test do, chua khai / khai sai LENH_KIEM_TRA_BAO_MAT hoac lenh quet do,
 #        con task dang lam do [~] hoac chua lam [ ]; task [x] khong co bang
 #        chung xanh trong ket-qua-task.md (aw task done) khop lenh Verify; file
-#        con dau xung dot merge; file khai o quy_tac_implement
+#        con dau xung dot merge; file khai o rules_implement
 #        (conventions.md) khong co hoac chua commit.
 #        Theo loai viec (intake.md): bugfix thieu tai-hien.md do; refactor/perf
 #        xoa test cu; perf thieu so do truoc/sau; chore dung code production,
 #        nang dependency khong khai, hoac dung file dependency ma SCA chua xanh.
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
-#        test moi bi tat / chay rieng (.only, .skip… — mau_bo_qua_test),
+#        test moi bi tat / chay rieng (.only, .skip… — skipped_test_regex),
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
 #        diem mu muc "chan review" chua tra loi.
-# Luu y (khong chan): diff dung mau_code_nhay_cam — review se can nguoi ra bao mat;
+# Luu y (khong chan): diff dung sensitive_code — review se can nguoi ra bao mat;
 #        task kiem chung thu cong (aw task done --manual).
 #
 # Cau hinh: $AW_CONFIG/config.sh (xem lib/moi-truong.sh)
@@ -156,7 +156,7 @@ fi
 nc=$(kc_nhay_cam "$DIR")
 if [ -n "$nc" ]; then
   echo ""
-  echo "  [LƯU Ý] Diff đụng code nhạy cảm (mau_code_nhay_cam): $(printf '%s\n' "$nc" | head -5 | tr '\n' ' ')"
+  echo "  [LƯU Ý] Diff đụng code nhạy cảm (sensitive_code): $(printf '%s\n' "$nc" | head -5 | tr '\n' ' ')"
   echo "  /aw-review sẽ cần một NGƯỜI rà bảo mật ghi tên vào \"Security reviewer\" của review.md."
 fi
 

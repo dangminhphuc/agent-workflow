@@ -132,7 +132,7 @@ Loại việc lấy từ `intake.md`. Các luật dưới là **chặn** ngay �
 | `bugfix` | Viết test tái hiện → chạy `aw check repro <thư-mục-feature>` **trước khi sửa code** → mới sửa | `tai-hien.md`: test đỏ khi diff mới chỉ đụng file test. Thiếu, hoặc ghi xanh → chặn |
 | `refactor` | Không xoá test cũ. Sửa test cũ thì khai ở "Modified existing tests" | Xoá test cũ → chặn; sửa chưa khai → cảnh báo |
 | `perf` | Như refactor; `aw check perf <thư-mục-feature> --before` **trước khi sửa**, `--after` sau khi sửa | `do-hieu-nang.md` thiếu một trong hai số đo → chặn |
-| `chore` | Không đụng code production. Dependency upgrades thì khai ở "Dependency upgrades" | Đụng `mau_code_production` → chặn; đụng `mau_file_dependency` mà không khai, hoặc khai major → chặn; đụng `mau_file_dependency` mà `ket-qua-bao-mat.md` không có lệnh nhóm `sca` chạy xanh → chặn (mức patch/minor không nói gì về CVE/license) |
+| `chore` | Không đụng code production. Dependency upgrades thì khai ở "Dependency upgrades" | Đụng `production_code` → chặn; đụng `dependency_files` mà không khai, hoặc khai major → chặn; đụng `dependency_files` mà `ket-qua-bao-mat.md` không có lệnh nhóm `sca` chạy xanh → chặn (mức patch/minor không nói gì về CVE/license) |
 
 Quên chạy `tai-hien` / `--before` mà đã sửa code: script **từ chối**. Hoàn tác phần
 sửa (`git stash`), chạy lại, rồi `git stash pop`. Đây là chủ ý: bằng chứng "trước
@@ -150,7 +150,7 @@ khi sửa" chỉ có giá trị khi nó thật sự được lấy trước khi 
 | Loại việc lệch tiền tố branch | Sửa loại trong `intake.md`, hoặc `aw rename` |
 | refactor/perf: test cũ bị sửa mà chưa khai | Khai ở "Modified existing tests" + lý do, hoặc hoàn tác |
 | Điểm mù `Blocking: review-blocking` còn mở | Nhờ người chạy lệnh `clarify` để chốt — agent không tự trả lời |
-| Dòng **thêm mới** trong file test có `.only(`, `.skip(`, `xit(`, `@Disabled`… (`mau_bo_qua_test`) | Bỏ đánh dấu; thật sự cần tắt thì ghi file vào "Unplanned" kèm lý do |
+| Dòng **thêm mới** trong file test có `.only(`, `.skip(`, `xit(`, `@Disabled`… (`skipped_test_regex`) | Bỏ đánh dấu; thật sự cần tắt thì ghi file vào "Unplanned" kèm lý do |
 
 Cảnh báo không chặn ở đây để flow không tắc vì checker hay báo nhầm. Nhưng
 `05-review` là cổng chặn cuối: cảnh báo nào còn thì review **không đạt**. Xử lý

@@ -63,7 +63,7 @@ CHỈ refactor / perf. Test có sẵn trên nhánh gốc mà bị sửa hay đ�
 
 ## Dependency upgrades
 
-CHỈ chore. Diff đụng `mau_file_dependency` thì phải khai từng thư viện. Chỉ
+CHỈ chore. Diff đụng `dependency_files` thì phải khai từng thư viện. Chỉ
 `patch | minor`; nâng major là việc `refactor` riêng.
 
 | Library | Old → new | Level |

@@ -85,7 +85,7 @@ này áp dụng cho phần nội dung agent viết vào.
 ## 7. Quy tắc riêng của repo
 
 Repo đích có thể khai quy tắc riêng cho từng phase — hướng dẫn viết code, skill
-của agent, chuẩn kiến trúc, thuật ngữ nghiệp vụ. Khai ở khoá `quy_tac_<phase>`
+của agent, chuẩn kiến trúc, thuật ngữ nghiệp vụ. Khai ở khoá `rules_<phase>`
 trong `conventions.md`; nội dung là file đã commit trong repo.
 
 - **Đầu phase:** chạy `aw rules <phase>`, đọc **từng file** nó in ra. Không in gì

@@ -109,7 +109,7 @@ agent chép kết quả), **máy chặn phần chính xác**, **người phán p
 | `bugfix` | Có `tai-hien.md` ghi lúc diff chỉ đụng file test, `Kết quả: ĐỎ` | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
 | `refactor` | Xoá test cũ; sửa test cũ không khai; YC giữ nguyên không có test trên nhánh gốc | Diff test cũ chỉ đổi import | Heuristic "chỉ đổi import" phụ thuộc ngôn ngữ, hay báo nhầm |
 | `perf` | Thiếu số đo trước hoặc sau (`do-hieu-nang.md`) | Đạt mục tiêu chưa | Số đo dao động; chặn theo ngưỡng sẽ chặn nhầm |
-| `chore` | Đụng `mau_code_production`; đụng dependency mà không khai; khai `major` | Mức phiên bản khai đúng | Cú pháp phiên bản mỗi hệ sinh thái mỗi khác |
+| `chore` | Đụng `production_code`; đụng dependency mà không khai; khai `major` | Mức phiên bản khai đúng | Cú pháp phiên bản mỗi hệ sinh thái mỗi khác |
 
 Không dựng lại code cũ trong worktree để chạy test tái hiện: trông chặt hơn nhưng
 cho kết luận sai mà tự tin (đỏ vì thiếu hàm vẫn tính là "tái hiện được").
@@ -128,7 +128,7 @@ artifact sang feature khác là lỗi im lặng, khó phát hiện về sau.
 
 ### Worktree bắt buộc, base do người chọn
 
-Mỗi việc làm trong một worktree riêng; checkout chính chỉ đứng ở `nhanh_goc` và
+Mỗi việc làm trong một worktree riêng; checkout chính chỉ đứng ở `base_branch` và
 chỉ chạy `/aw-intake`. Mọi lệnh khác chạy ở checkout chính bị `aw feature`
 chặn (`ĐANG Ở CHECKOUT CHÍNH`) — chốt đặt ở script mọi phase đều gọi, không phải trong từng phase.
 Hệ quả mong muốn: "mỗi phase chạy được từ phiên trắng" không còn là khuyến nghị
@@ -147,7 +147,7 @@ thao tác mạng làm kết quả phụ thuộc thời điểm chạy — nó in
 `origin/main`, và `git push` trơn trong worktree sẽ đẩy thẳng lên `main`.
 
 Base được ghi vào `intake.md` (`ref @ sha`) và checker so diff với điểm rẽ nhánh
-khỏi base đó thay vì `nhanh_goc`. Đo trên repo thử: việc chỉ sửa một file, tạo từ
+khỏi base đó thay vì `base_branch`. Đo trên repo thử: việc chỉ sửa một file, tạo từ
 `origin/main` trong khi `main` local chậm 2 commit — so với `main` thì phạm vi
 diff thấy thêm file của đồng nghiệp; tạo từ `release/1.2` thì thấy thêm commit
 bump version của nhánh phát hành. Ref không còn (branch cha đã xoá) thì dùng sha.
@@ -493,7 +493,7 @@ kết quả máy mới lại, còn `review.md` cũ vẫn qua dù nói về code 
 `security` không phải loại việc (xem trên) — nhưng "rủi ro cao" vẫn cần luật. Loại
 việc nói **thay đổi gì về hành vi**; rủi ro bảo mật lại nằm ở **chỗ code bị đụng**:
 sửa chữ trên màn hình đăng nhập là `feature` bình thường, sửa hàm kiểm token thì
-không. Vì vậy luật bám vào đường dẫn: `mau_code_nhay_cam` trong `conventions.md`,
+không. Vì vậy luật bám vào đường dẫn: `sensitive_code` trong `conventions.md`,
 team tự khai thư mục auth, thanh toán, crypto… Diff đụng vào (kể cả đổi tên ra
 khỏi đó) thì review cần một **người** rà bảo mật, ghi ở `- Security reviewer:`.
 
@@ -521,7 +521,7 @@ Phiên kết thúc phải để lại code người sau dùng được ngay. Ph�
 **chặn** ở `implement`: task `[ ]` còn sót (implement xong là mọi task xong — task
 người quyết bỏ thì xoá khỏi plan, YC sang "Deferred"), dấu xung đột merge trong
 file đã đổi. Phần hay báo nhầm thì **cảnh báo** rồi `review` chặn: dòng *thêm mới*
-trong file test khớp `mau_bo_qua_test` (`.only(`, `.skip(`, `xit(`, `@Disabled`…) —
+trong file test khớp `skipped_test_regex` (`.only(`, `.skip(`, `xit(`, `@Disabled`…) —
 "test xanh" mất nghĩa khi có test bị tắt. Chỉ xét dòng thêm mới so với base, để
 test đã bị tắt từ trước không đổ lên việc này; tắt có chủ ý thì khai file ở
 "Unplanned".
@@ -552,7 +552,7 @@ rà soát dùng lại.
 
 ### Quy tắc riêng của repo
 
-Repo đích khai file quy tắc cho từng phase ở khoá `quy_tac_<phase>` của
+Repo đích khai file quy tắc cho từng phase ở khoá `rules_<phase>` của
 `conventions.md`; agent lấy danh sách bằng `aw rules <phase>`. Ba lựa chọn:
 
 - **Đọc lúc chạy, không chép vào lệnh lúc build.** `conventions.md` do người sửa
@@ -610,7 +610,8 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Cơ chế | Nằm ở | Ghi chú |
 |---|---|---|
 | Xác định feature | `tools/xac-dinh-feature.sh` (`aw feature`) | Đọc gốc worktree từ `AW_REPO`; thư mục artifact là `$AW_REPO/.agent-workflow/<tên>` |
-| Đọc `conventions.md` | `conv_get` trong `tools/lib/md.sh` | Chỉ đọc khối ` ```conventions `; phần còn lại là văn xuôi cho người |
+| Đọc `conventions.md` | `conv_get` trong `tools/lib/md.sh` | Chỉ đọc khối ` ```conventions `; phần còn lại là văn xuôi cho người. Dòng `#` trong khối là chú thích; giải thích khoá ở `workflow/templates/conventions-reference.md` (theo engine, không nằm trong file của repo đích) |
+| Kiểm `conventions.md` | `tools/kiem-tra-quy-uoc.sh` (`aw conventions check`) | Khoá biết = khoá trong mẫu của engine + `rules_<phase>`; khoá lạ, trùng, dòng sai dạng là lỗi vì parser bỏ qua chúng ngầm. `aw ready` gọi lệnh này — một chỗ kiểm duy nhất |
 | Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` — POSIX, CRLF/LF cho cùng kết quả |
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm in phát hiện; `implement` gọi là cảnh báo, `review` gọi là lỗi |
 | Mức chặn của điểm mù | `kc_diem_mu_mo` trong `tools/lib/kiem-cheo.sh` | Cùng một hàm: `design` (chore: `plan`) chặn mức `blocking`; `implement` cảnh báo, `review` chặn mức `blocking` + `review-blocking` |
@@ -623,7 +624,7 @@ Checker LLM (`workflow/checkers/*.md`) có frontmatter `id`, `summary`, `inputs`
 | Một awk đọc nhiều file | Mọi `kiem-tra-*.sh`, `kiem-cheo.sh` | Xác định file bằng `FILENAME == ARGV[i]`, **không** đếm `FNR==1`: file 0 byte không có dòng nào, bộ đếm lệch và file sau bị đọc như file trước |
 
 Phạm vi diff so với `git merge-base <base> HEAD` **tới cây làm việc** (`<base>` là
-dòng Base của `intake.md`, thiếu thì `nhanh_goc`), cộng file mới chưa track —
+dòng Base của `intake.md`, thiếu thì `base_branch`), cộng file mới chưa track —
 rộng hơn `<base>...HEAD`, để thay đổi chưa commit
 trong lúc `implement` cũng bị thấy. Thư mục `.agent-workflow/` luôn được bỏ qua.
 

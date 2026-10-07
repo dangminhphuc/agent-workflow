@@ -2,7 +2,7 @@
 # Tạo và theo dõi MR/PR của việc đang làm. Chạy TRONG worktree của việc.
 #
 #   aw ship targets <thư-mục-feature>
-#       liệt kê nhánh đích được phép (khoá nhanh_dich_mr) để NGƯỜI chọn
+#       liệt kê nhánh đích được phép (khoá mr_target_branches) để NGƯỜI chọn
 #   aw ship create <thư-mục-feature> --target <nhánh> [--draft] [--allow-extra-commits] [--url <link>]
 #       push branch, tạo MR, ghi <thư-mục-feature>/ship.md
 #   aw ship status <thư-mục-feature>
@@ -10,7 +10,7 @@
 #
 # create chặn khi:
 #   - aw check ship chưa ĐẠT, hoặc worktree còn thay đổi chưa commit;
-#   - nhánh đích không khớp nhanh_dich_mr (bỏ trống = nhanh_goc) hay không có trên origin;
+#   - nhánh đích không khớp mr_target_branches (bỏ trống = base_branch) hay không có trên origin;
 #   - MR sẽ kéo theo commit KHÔNG thuộc việc (có trong đích? không; có trong base
 #     của việc? có) — vd việc dựa trên develop mà gửi vào main. Người quyết:
 #     đổi đích, tách branch, hoặc chấp nhận bằng --allow-extra-commits.
@@ -30,7 +30,7 @@ case "$SUB" in
     kq_khai "aw ship targets" \
       "0=ĐÃ LIỆT KÊ — stdout là các nhánh đích; NGƯỜI chọn một" \
       "2=SAI THAM SỐ" \
-      "3=KHÔNG CÓ NHÁNH ĐÍCH — không nhánh nào trên origin khớp nhanh_dich_mr" ;;
+      "3=KHÔNG CÓ NHÁNH ĐÍCH — không nhánh nào trên origin khớp mr_target_branches" ;;
   create)
     kq_khai "aw ship create" \
       "0=ĐÃ TẠO MR — stdout là URL" \
@@ -67,10 +67,10 @@ if wt_la_chinh "$R"; then
   exit 2
 fi
 
-# Nhánh đích được phép: mẫu glob trong nhanh_dich_mr, theo thứ tự khai; bỏ trống = nhanh_goc.
+# Nhánh đích được phép: mẫu glob trong mr_target_branches, theo thứ tự khai; bỏ trống = base_branch.
 mau_dich() {
-  _md=$(conv_get "$CONV" nhanh_dich_mr)
-  [ -n "$_md" ] || { _md=$(conv_get "$CONV" nhanh_goc); _md=${_md:-main}; }
+  _md=$(conv_get "$CONV" mr_target_branches)
+  [ -n "$_md" ] || { _md=$(conv_get "$CONV" base_branch); _md=${_md:-main}; }
   printf '%s\n' "$_md"
 }
 lay_origin() { git -C "$R" fetch -q --prune origin 2>/dev/null || echo "  (không fetch được origin — dùng thông tin đã có)" >&2; }
@@ -108,9 +108,9 @@ case "$SUB" in
 targets)
   lay_origin
   ds=$(ds_dich)
-  [ -n "$ds" ] || { echo "Không nhánh nào trên origin khớp nhanh_dich_mr: $(mau_dich | tr '\n' ' ')" >&2; exit 3; }
+  [ -n "$ds" ] || { echo "Không nhánh nào trên origin khớp mr_target_branches: $(mau_dich | tr '\n' ' ')" >&2; exit 3; }
   nb=$(base_viec); nb=${nb#origin/}
-  echo "Nhánh đích (khoá nhanh_dich_mr: $(mau_dich | tr '\n' ' ' | sed 's/ $//')) — NGƯỜI chọn:" >&2
+  echo "Nhánh đích (khoá mr_target_branches: $(mau_dich | tr '\n' ' ' | sed 's/ $//')) — NGƯỜI chọn:" >&2
   i=0
   printf '%s\n' "$ds" | while IFS= read -r b; do
     i=$((i + 1)); ng=$(ngoai_viec "$b"); gc=""
@@ -139,7 +139,7 @@ create)
   lay_origin
   printf '%s\n' "$(ds_dich)" | grep -qxF "$DICH" || {
     echo "LỖI: \"$DICH\" không phải nhánh đích được phép, hoặc không có trên origin." >&2
-    echo "  Được phép: $(ds_dich | tr '\n' ' ')(khoá nhanh_dich_mr)" >&2
+    echo "  Được phép: $(ds_dich | tr '\n' ' ')(khoá mr_target_branches)" >&2
     exit 2
   }
 
@@ -245,7 +245,7 @@ create)
   fi
 
   # 3. Link tạo MR điền sẵn — người bấm tạo rồi đưa link MR cho agent ghi lại.
-  [ -n "$NT" ] || echo "Không biết nền tảng của origin — khai nen_tang_mr: github|gitlab trong conventions.md." >&2
+  [ -n "$NT" ] || echo "Không biết nền tảng của origin — khai mr_platform: github|gitlab trong conventions.md." >&2
   lt=$(mr_link_tay "$R" "$NT" "$B" "$DICH" "$TD" "$MO")
   echo "Tạo MR bằng tay${lt:+ (đã điền sẵn đích, tiêu đề, mô tả): $lt}" >&2
   echo "  Tiêu đề: $TD" >&2

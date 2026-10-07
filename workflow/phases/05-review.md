@@ -22,7 +22,7 @@ exit_machine:
 exit_human:
   - Người xác nhận kết luận rà soát và quyết định xử lý các finding mức Blocker
   - Người xác nhận base có chủ ý nếu checker cảnh báo base lạ (xếp chồng)
-  - Diff đụng code nhạy cảm (mau_code_nhay_cam) — một người rà bảo mật đọc Lens 4 và diff, tự ghi tên vào "Security reviewer"
+  - Diff đụng code nhạy cảm (sensitive_code) — một người rà bảo mật đọc Lens 4 và diff, tự ghi tên vào "Security reviewer"
 needs_clean_context: true
 requires_fresh_agent: true
 ---
@@ -114,7 +114,7 @@ Bảng cố định, **đủ cả bảy dòng**, không thêm bớt, không đ�
 | `SSRF / path traversal / deserialization` | URL, đường dẫn file, dữ liệu deserialize có đến từ input không tin cậy mà không giới hạn? |
 | `New dependencies` | Dependency mới / nâng bản: có cần thiết, được bảo trì, có trong kết quả SCA, license hợp lệ? |
 
-**Code nhạy cảm.** Repo khai `mau_code_nhay_cam` (vd `src/auth/* src/payment/*`)
+**Code nhạy cảm.** Repo khai `sensitive_code` (vd `src/auth/* src/payment/*`)
 mà diff đụng vào thì Lens 4 của agent chưa đủ: một **người** rà bảo mật đọc Lens 4
 và diff, rồi tự ghi `- Security reviewer: <tên>` ở đầu `review.md`. Agent **không**
 điền dòng này — để trống, nêu danh sách file nhạy cảm (`aw check review` in ra) và
@@ -190,7 +190,7 @@ không còn nói về code đó — máy chặn, rà lại.
   - mọi task `[x]` với bằng chứng xanh trong `ket-qua-task.md` khớp `Verify`;
     không file nào còn dấu xung đột merge;
   - luật theo loại việc (như `implement`), và bugfix có dòng `Repro test fails because:`;
-  - repo có quy tắc riêng (`quy_tac_*`): file khai có thật, đã commit, và mục
+  - repo có quy tắc riêng (`rules_*`): file khai có thật, đã commit, và mục
     "Repo rules" của `review.md` có kết luận hợp lệ cho **từng** file;
   - `## Lens 4 — Security` có đủ bảy hạng mục, verdict `pass | finding | not applicable`,
     `finding` / `not applicable` có vị trí / lý do, và có `finding` thì Lens 3 phải
@@ -201,9 +201,9 @@ không còn nói về code đó — máy chặn, rà lại.
     `Failure scenario`;
   - `## Conclusion` có `- Blocker findings: <n>` với `n` bằng số mục `[Blocker]`;
   - `- Reviewed tree:` khớp dấu vân tay code hiện tại;
-  - diff đụng `mau_code_nhay_cam` thì có `- Security reviewer: <tên người>` (không
+  - diff đụng `sensitive_code` thì có `- Security reviewer: <tên người>` (không
     trống, không giữ chỗ, không phải tên agent).
-- Diff được so với **base ghi trong `intake.md`**, không phải `nhanh_goc`. Base
+- Diff được so với **base ghi trong `intake.md`**, không phải `base_branch`. Base
   không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)
   thì checker **chỉ cảnh báo** — nêu ra cho người.
 

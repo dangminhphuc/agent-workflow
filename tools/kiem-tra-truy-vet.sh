@@ -3,7 +3,7 @@
 #
 #   aw check spec <thư-mục-feature>
 #
-# Chặn thêm: file khai ở quy_tac_spec (conventions.md) không có hoặc chưa commit.
+# Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -296,7 +296,7 @@ if [ -s "$BV" ]; then
   MB=$(kc_mb "$DIR")
   while IFS="$(printf '\t')" read -r yc f; do
     if [ -z "$MB" ]; then
-      echo "  [LỖI] $yc: không xác định được base để kiểm \"$f\" (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)"; n_bv=$((n_bv + 1))
+      echo "  [LỖI] $yc: không xác định được base để kiểm \"$f\" (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)"; n_bv=$((n_bv + 1))
     elif ! git -C "$DIR" cat-file -e "$MB:$f" 2>/dev/null; then
       echo "  [LỖI] $yc: \"$f\" không tồn tại trên base của việc — vùng này chưa có test bảo vệ. Viết test thành việc riêng trước, hoặc thu hẹp phạm vi."
       n_bv=$((n_bv + 1))

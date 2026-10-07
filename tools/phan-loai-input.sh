@@ -10,10 +10,10 @@
 # spec đi đọc sai chỗ, mà checker chỉ kiểm được cú pháp nhãn.
 #
 # Luật, cho từng token (tách theo khoảng trắng):
-#   - khớp mau_jira                         -> [JIRA]
-#   - URL có /browse/<mã khớp mau_jira>      -> [JIRA] <mã> — <URL>
-#   - URL khớp mien_confluence               -> [CONFLUENCE]
-#     (chưa khai mien_confluence: mọi URL còn lại -> [CONFLUENCE], kèm cảnh báo)
+#   - khớp jira_key_regex                         -> [JIRA]
+#   - URL có /browse/<mã khớp jira_key_regex>      -> [JIRA] <mã> — <URL>
+#   - URL khớp confluence_domains               -> [CONFLUENCE]
+#     (chưa khai confluence_domains: mọi URL còn lại -> [CONFLUENCE], kèm cảnh báo)
 #   - file có thật trong repo                -> [FILE]
 #   - trông như đường dẫn mà không có file   -> lỗi (ĐƯỜNG DẪN KHÔNG TỒN TẠI), không tự đoán
 #   - còn lại                                -> không nhận ra
@@ -70,7 +70,7 @@ case "$(printf '%s' "$VAN" | tr -d ' \t\n\r')" in
 esac
 
 MJ=$(kc_mau_jira "$CONV")
-MC=$(conv_get "$CONV" mien_confluence)
+MC=$(conv_get "$CONV" confluence_domains)
 TMPD=$(mktemp -d 2>/dev/null) || { TMPD="${TMPDIR:-/tmp}/pli.$$"; mkdir -p "$TMPD"; }
 kq_don 'rm -rf "$TMPD"'
 : > "$TMPD/nguon"; : > "$TMPD/thieu"; : > "$TMPD/da-co"; : > "$TMPD/khoa"
@@ -216,6 +216,6 @@ fi
 
 ra=$(in_nguon "$TMPD/nguon")
 [ -n "$ra" ] && printf '%s\n' "$ra"
-[ "$canh_bao_conf" = 1 ] && echo "CẢNH BÁO: conventions.md chưa khai mien_confluence — mọi URL không phải Jira được coi là [CONFLUENCE]. Người kiểm lại." >&2
+[ "$canh_bao_conf" = 1 ] && echo "CẢNH BÁO: conventions.md chưa khai confluence_domains — mọi URL không phải Jira được coi là [CONFLUENCE]. Người kiểm lại." >&2
 [ -z "$ra" ] && echo "Không có input mới." >&2
 exit 0

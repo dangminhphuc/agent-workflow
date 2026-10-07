@@ -12,7 +12,7 @@
 #       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
 #       ngược — mọi mã YC được task phủ, hoặc nằm ở "Deferred" (bắt yêu cầu sót)
 #   - Task thiếu "Verify", "Expected files"; "Based on: D-xx" trỏ về D không có.
-#   - File khai ở quy_tac_plan (conventions.md) không có hoặc chưa commit.
+#   - File khai ở rules_plan (conventions.md) không có hoặc chưa commit.
 # Cảnh báo: artifact lỗi thời; YC "Priority: must" nằm ở "Deferred".
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).

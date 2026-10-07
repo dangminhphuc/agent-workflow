@@ -7,7 +7,7 @@
 #   0. Dang o checkout CHINH -> ma 6. Worktree la bat buoc: moi viec lam trong
 #      worktree rieng; checkout chinh chi chay /aw-intake de tao worktree va /aw-ship
 #      de don viec da merge.
-#   1. Suy tu ten branch hien tai, neu khop mau_branch trong conventions.md;
+#   1. Suy tu ten branch hien tai, neu khop branch_patterns trong conventions.md;
 #   2. khong khop thi lay tham so;
 #   3. khong co tham so thi ma 3 — agent phai DUNG LAI HOI, khong tu dat ten.
 #
@@ -56,7 +56,7 @@ fi
 ten=""; tu=""
 branch=$(git -C "$MT_REPO" rev-parse --abbrev-ref HEAD 2>/dev/null)
 if [ -n "$branch" ] && [ "$branch" != "HEAD" ]; then
-  mau=$(conv_get "$CONV" mau_branch)
+  mau=$(conv_get "$CONV" branch_patterns)
   set -f
   # shellcheck disable=SC2086
   if [ -n "$mau" ] && khop_glob "$branch" $mau; then
@@ -73,7 +73,7 @@ fi
 
 if [ -z "$ten" ]; then
   echo "KHÔNG XÁC ĐỊNH ĐƯỢC FEATURE." >&2
-  echo "  Branch \"${branch:-?}\" không khớp mau_branch trong $ART/conventions.md, và không có tham số." >&2
+  echo "  Branch \"${branch:-?}\" không khớp branch_patterns trong $ART/conventions.md, và không có tham số." >&2
   echo "  Agent: DỪNG LẠI hỏi tên feature. Không tự đặt tên." >&2
   exit 3
 fi

@@ -4,7 +4,7 @@
 #   aw check repro <thư-mục-feature>
 #
 # Chạy SAU khi viết test tái hiện, TRƯỚC khi sửa code production:
-#   - diff so với base của việc (intake.md) chỉ được đụng file test (mau_file_test) và file bỏ qua;
+#   - diff so với base của việc (intake.md) chỉ được đụng file test (test_files) và file bỏ qua;
 #     đã đụng code production thì từ chối và KHÔNG ghi đè tai-hien.md cũ;
 #   - tự chạy LENH_KIEM_THU, tự ghi tai-hien.md (output thật, mã thoát, commit);
 #   - test phải ĐỎ (mã thoát ≠ 0). Xanh nghĩa là test không tái hiện được lỗi.
@@ -33,15 +33,15 @@ LENH_KIEM_THU=""
 [ -f "$CAUHINH" ] && . "$CAUHINH"
 [ -n "$LENH_KIEM_THU" ] || { echo "LỖI: chưa khai LENH_KIEM_THU trong $CAUHINH" >&2; exit 2; }
 
-DOI=$(kc_doi "$DIR") || { echo "LỖI: không xác định được base (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)." >&2; exit 2; }
+DOI=$(kc_doi "$DIR") || { echo "LỖI: không xác định được base (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)." >&2; exit 2; }
 
 n_test=0; ngoai=""
 TAB=$(printf '\t')
 while IFS="$TAB" read -r s p q; do
   [ -n "$p" ] || continue
   f=${q:-$p}
-  if kc_khop_khoa "$DIR" mau_file_test "$f"; then n_test=$((n_test + 1)); continue; fi
-  kc_khop_khoa "$DIR" bo_qua "$f" && continue
+  if kc_khop_khoa "$DIR" test_files "$f"; then n_test=$((n_test + 1)); continue; fi
+  kc_khop_khoa "$DIR" ignored_files "$f" && continue
   ngoai="$ngoai
   - $f"
 done <<EOF

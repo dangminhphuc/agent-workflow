@@ -4,8 +4,8 @@
 #   aw ready <thư-mục-feature> [--no-test]
 #
 # Bốn câu hỏi, mỗi câu một nhóm dòng ✓ / ✗ / ·:
-#   1. Cấu hình — conventions.md, config.sh có đủ khoá máy cần; file quy tắc
-#      repo (quy_tac_*) dùng được.
+#   1. Cấu hình — conventions.md hợp lệ (aw conventions check: khoá, giá trị,
+#      file quy tắc repo rules_*), config.sh có.
 #   2. Test được — LENH_KIEM_THU đã khai và XANH trên code hiện tại. Base đỏ thì
 #      mọi task sau không phân biệt được lỗi mình gây ra với lỗi có sẵn.
 #      --no-test: không chạy (vd lệnh test rất lâu), chỉ kiểm đã khai.
@@ -49,16 +49,15 @@ GOC="${AW_REPO:-$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)}"
 # ---- 1. Cấu hình ----
 echo "Cấu hình"
 if [ -f "$CONV" ]; then
-  co "conventions.md"
-  for k in nhanh_goc mau_file_test mau_branch; do
-    [ -n "$(conv_get "$CONV" "$k")" ] || khong "conventions.md: khoá \"$k\" trống — checker cần nó (sửa $CONV)"
-  done
-  qt=$( { kc_quy_tac_khoa_la "$GOC"; kc_quy_tac_loi "$GOC" review; } )
-  if [ -n "$qt" ]; then
-    printf '%s\n' "$qt" | while IFS= read -r l; do [ -n "$l" ] && echo "  ✗ $l"; done
-    n_x=$((n_x + $(printf '%s\n' "$qt" | grep -c .)))
+  # Một chỗ kiểm duy nhất: aw conventions check (khoá, giá trị, quy tắc repo).
+  qu=$(sh "$HERE/kiem-tra-quy-uoc.sh" 2>/dev/null)
+  if [ $? = 0 ]; then
+    co "conventions.md hợp lệ (aw conventions check)"
   else
-    co "quy tắc repo (quy_tac_*) dùng được"
+    printf '%s\n' "$qu" | grep '^  ✗ ' | while IFS= read -r l; do echo "  ✗ conventions.md: ${l#  ✗ }"; done
+    c=$(printf '%s\n' "$qu" | grep -c '^  ✗ ')
+    [ "$c" -gt 0 ] || khong "conventions.md: aw conventions check không chạy được — chạy tay để xem lỗi"
+    n_x=$((n_x + c))
   fi
 else
   khong "không có $CONV — chạy: aw init"

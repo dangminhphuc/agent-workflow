@@ -5,7 +5,7 @@
 
 BL_CHECKERS="intake spec design plan implement security review repro perf ship"
 
-# Phase đọc quy tắc riêng của repo (khoá quy_tac_<phase> trong conventions.md,
+# Phase đọc quy tắc riêng của repo (khoá rules_<phase> trong conventions.md,
 # `aw rules <phase>`). Adapter dùng để thêm bước đọc vào đúng các phase này.
 BL_QUY_TAC="spec design plan implement review"
 
