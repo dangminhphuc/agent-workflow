@@ -11,7 +11,7 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.17]
 
 Tinh gọn mọi thứ agent đọc để tiết kiệm ngữ cảnh. Luật không đổi, checker không đổi.
 
