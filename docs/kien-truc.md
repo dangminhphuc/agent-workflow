@@ -397,6 +397,36 @@ tự gom.
 *cái agent nói*, không kiểm được *cái đã xảy ra*. Tự chạy thì bỏ hẳn khoảng cách
 đó — agent không có chỗ nào để bịa.
 
+### Quét bảo mật: chạy ở implement, review kiểm độ mới
+
+Pipeline CI/CD chạy secret scan, SAST, SCA; quy trình trước đây thì không. Kết quả:
+việc qua `aw check review` local rồi mới bị pipeline chặn release. Sửa bằng cách
+chạy **đúng lệnh của CI** (`LENH_KIEM_TRA_BAO_MAT` trong `config.sh`, mỗi dòng
+`<nhóm>: <lệnh>`, nhóm `secret | sast | sca | other`) theo cùng mẫu với test: máy
+tự chạy, tự ghi `ket-qua-bao-mat.md`, chưa khai là KHÔNG ĐẠT.
+
+**Chạy ở `implement`, không ở `review`.** Lỗi quét ra là việc phải sửa code — việc
+của `implement`; review chạy ngữ cảnh trắng và bị **cấm sửa code**, nên quét ở đó
+chỉ để báo đỏ rồi quay về implement, tốn một vòng. Quét cũng chậm (SAST, SCA tải
+CSDL CVE), không nên chạy lại mỗi lần sửa một dòng `review.md`. Review chỉ kiểm
+phần chính xác: kết quả xanh, và còn mới.
+
+**Độ mới theo `Tree`, không theo SHA của HEAD.** `ket-qua-kiem-thu.md` và
+`ket-qua-bao-mat.md` ghi `HEAD`, `Tree`, thời điểm. `Tree` là tree SHA của nội dung
+worktree (đã commit + chưa commit + chưa track, trừ `.agent-workflow/`), tính bằng
+index tạm nên không đụng staging của người. So theo HEAD thì sửa code chưa commit
+sau khi chạy test vẫn lọt (diff mà checker so có tính file chưa commit); còn commit
+đúng code đã review (bước trước `/aw-ship`) lại làm kết quả "lỗi thời" dù code không
+đổi. `Tree` đúng cả hai chiều. HEAD ghi để người đọc, máy không so.
+
+Trước đây (giới hạn 8 cũ) review chỉ đọc dòng kết quả, sửa code sau lần chạy
+`implement` cuối vẫn qua — nay chặn.
+
+**Không bắt đủ ba nhóm.** Thiếu `secret`/`sast`/`sca` chỉ cảnh báo: repo có thể
+không dùng nhóm đó, và người khai `config.sh` biết pipeline của mình. Ngoại lệ là
+`chore` đụng file dependency — đúng chỗ SCA sinh ra để bắt — thì phải có lệnh `sca`
+xanh.
+
 ### Test ↔ YC và phạm vi diff
 
 Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặn):
@@ -585,9 +615,11 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    khi tick ở mọi agent — trừ khi nội dung đổi **trước** lần ghi dấu đầu tiên
    (người tick, rồi agent sửa trước khi có `aw check` hay hook nào chạy).
 
-8. **`review` không chạy lại test.** Nó đọc dòng kết quả trong `ket-qua-kiem-thu.md`;
-   sửa code sau lần chạy `aw check implement` cuối cùng thì kết quả đó đã cũ.
-   Chạy lại `implement` checker trước khi review là việc của người/agent.
+8. **`review` không chạy lại test hay quét.** Nó đọc kết quả và so `Tree` với code
+   hiện tại — biết kết quả **cũ**, không biết lệnh có **đủ**. `LENH_KIEM_TRA_BAO_MAT`
+   lệch pipeline (thiếu công cụ, ngưỡng lỏng hơn, rule khác) thì local vẫn xanh mà
+   CI vẫn chặn; đồng bộ với file pipeline là việc của người giữ `config.sh`. Lệnh
+   test/quét ghi file vào repo (không `.gitignore`) làm `Tree` đổi sau mỗi lần chạy.
 
 9. **Glob trong `conventions.md` và "Expected files" dùng `case` của shell**, nên
    `*` khớp cả `/` và không có `**`. `src/*` vì vậy rộng hơn người đọc tưởng.

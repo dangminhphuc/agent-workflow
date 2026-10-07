@@ -16,7 +16,7 @@
 #   aw upgrade <YYYY.M.N>
 #   aw version
 #   aw doctor
-#   aw check <name> <feature-dir>          name: intake spec design plan implement review repro perf ship
+#   aw check <name> <feature-dir>          name: intake spec design plan implement security review repro perf ship
 #   aw worktree new <type> <desc> [--create --base <ref>]
 #   aw worktree status <branch>
 #   aw worktree remove <branch> [--delete-branch]

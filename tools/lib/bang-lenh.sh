@@ -3,7 +3,7 @@
 # Một nguồn duy nhất: bin/aw-engine dùng để chạy, adapter dùng để kiểm
 # exit_machine trong frontmatter phase (aw check <tên>) có thật.
 
-BL_CHECKERS="intake spec design plan implement review repro perf ship"
+BL_CHECKERS="intake spec design plan implement security review repro perf ship"
 
 # Phase đọc quy tắc riêng của repo (khoá quy_tac_<phase> trong conventions.md,
 # `aw rules <phase>`). Adapter dùng để thêm bước đọc vào đúng các phase này.
@@ -17,6 +17,7 @@ bl_checker() {
     design)    echo kiem-tra-thiet-ke.sh ;;
     plan)      echo kiem-tra-ke-hoach.sh ;;
     implement) echo kiem-tra-hien-thuc.sh ;;
+    security)  echo kiem-tra-bao-mat.sh ;;
     review)    echo kiem-tra-ra-soat.sh ;;
     repro)     echo kiem-tra-tai-hien.sh ;;
     perf)      echo kiem-tra-hieu-nang.sh ;;

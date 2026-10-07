@@ -4,7 +4,7 @@
 #
 #   aw-engine version
 #   aw-engine init [--adapter <id>[,<id>…]] [--test-cmd "<cmd>"] [--force]
-#   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement review repro perf ship
+#   aw-engine check <name> <feature-dir> [args]   name: intake spec design plan implement security review repro perf ship
 #   aw-engine feature [name]
 #   aw-engine input [--skip <intake.md>] <args|->
 #   aw-engine pending <feature-dir>

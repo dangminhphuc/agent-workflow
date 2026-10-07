@@ -52,7 +52,7 @@ flowchart TD
     PHAC[/"Người phác D-xx trước<br/>(bắt buộc khi Risk: high)"/]
     DESIGN["02-design<br/>→ tdd.md (quyết định D-xx)<br/><i>MÁY: aw check design + checker LLM (chỉ chặn)</i><br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan<br/>→ plan.md<br/><i>MÁY: aw check plan</i>"]
-    IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md<br/><i>MÁY: aw check implement (tự chạy test)</i>"]
+    IMPL["04-implement<br/>→ diff + ket-qua-kiem-thu.md + ket-qua-bao-mat.md<br/><i>MÁY: aw check implement (tự chạy test + quét bảo mật)</i>"]
     REVIEW["05-review · ngữ cảnh trắng<br/>đọc mọi artifact + diff → review.md<br/><i>MÁY: aw check review</i><br/><i>NGƯỜI: xác nhận kết luận</i>"]
     SHIP["06-ship · tuỳ chọn<br/>→ merge-request.md, MR/PR (ship.md)<br/><i>MÁY: aw check ship</i><br/><i>NGƯỜI: chọn nhánh đích, merge</i>"]
 
@@ -93,7 +93,7 @@ Cách đọc:
 01-spec       [bắt buộc]  intake.md + các input nó liệt kê →  spec.md + open-questions.md
 02-design     [bắt buộc*] spec.md                            →  tdd.md          (*chore bỏ qua)
 03-plan       [bắt buộc]  spec.md + tdd.md                   →  plan.md
-04-implement  [bắt buộc]  plan.md + tdd.md                   →  diff + ket-qua-kiem-thu.md
+04-implement  [bắt buộc]  plan.md + tdd.md                   →  diff + ket-qua-kiem-thu.md + ket-qua-bao-mat.md
 05-review     [bắt buộc]  mọi artifact + diff                →  review.md
 06-ship       [tuỳ chọn]  review.md + mọi artifact + diff  →  merge-request.md + MR/PR (ship.md)
 ```
@@ -214,7 +214,7 @@ Loại việc **đổi luật** của các phase sau:
 | `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Repro test fails because: …") |
 | `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Modified existing tests" | Diff test cũ chỉ đổi import/cấu trúc |
 | `perf` | đủ | Như refactor + YC `performance` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
-| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
+| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) và lệnh quét nhóm `sca` phải chạy xanh | Mức phiên bản khai đúng |
 
 Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bugfix gấp),
 `security` (= bugfix/feature + rủi ro cao). `spike` nằm ngoài quy trình. Việc lai
@@ -395,6 +395,14 @@ Nhãn của từng script khai ở dòng `kq_khai` đầu script (`tools/lib/ket
 `ket-qua-kiem-thu.md`. Agent không có cơ hội viết lại kết quả bằng lời hay bịa
 một dòng "tất cả test đã xanh".
 
+Cùng cách đó với bảo mật: `aw check implement` (hoặc riêng `aw check security`)
+chạy từng lệnh trong `LENH_KIEM_TRA_BAO_MAT` — **đúng lệnh, config, ngưỡng của
+pipeline CI** (secret scan, SAST, SCA; mỗi dòng `<nhóm>: <lệnh>`) — và ghi
+`ket-qua-bao-mat.md`. Chưa khai là KHÔNG ĐẠT. Hai file kết quả ghi `Tree` — dấu vân
+tay nội dung code lúc chạy; `aw check review` chặn khi kết quả không xanh hoặc code
+đã đổi sau lần chạy (kể cả chưa commit). Nhờ vậy việc qua review local không còn
+bị pipeline chặn vì lỗi bảo mật mà máy dev chưa từng quét.
+
 Adapter tự từ chối build nếu một mục `exit_machine` không phải lệnh chạy được —
 nếu không, điều kiện loại NGƯỜI sẽ đội lốt loại MÁY và agent sẽ tự duyệt.
 
@@ -502,7 +510,7 @@ aw init --test-cmd "npm test"
   version          ← YYYY.M.N — engine cho việc MỚI
   checksums        ← sha256 đã ghim của từng version (định dạng sha256sum)
   conventions.md   ← bạn viết; aw chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
-  config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; không ghi đè
+  config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_KIEM_TRA_BAO_MAT, LENH_DO_HIEU_NANG (perf), LENH_CHUAN_BI_WT; không ghi đè
   archive/         ← artifact của worktree đã gỡ (aw worktree remove)
   ```
 

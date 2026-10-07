@@ -10,6 +10,7 @@ inputs:
   - tdd.md
   - plan.md
   - ket-qua-kiem-thu.md
+  - ket-qua-bao-mat.md
   - tai-hien.md (bugfix)
   - do-hieu-nang.md (perf)
   - diff
@@ -124,7 +125,12 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
 - `aw check review` ra `[x] ĐẠT`:
   - mọi `YC-NNN` có kết luận hợp lệ, không `[OPEN-QUESTION]` nào bị kết luận `pass`;
   - đầu vào qua `aw check plan` (kéo theo design và spec);
-  - `ket-qua-kiem-thu.md` có và ghi `Kết quả: XANH`;
+  - `ket-qua-kiem-thu.md` có và ghi `Kết quả: XANH`; `ket-qua-bao-mat.md` có và
+    ghi `Kết quả: XANH` (cùng lệnh quét với CI);
+  - cả hai file ghi `Tree` **khớp nội dung code hiện tại** — code đổi sau lần chạy
+    (kể cả chưa commit) thì bằng chứng hết giá trị: chạy lại `aw check implement`
+    (hoặc `aw check security`). Commit lại đúng code đó thì không tính là đổi;
+  - chore đụng file dependency: có lệnh nhóm `sca` chạy xanh;
   - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
     thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai, điểm mù
     `blocking` / `review-blocking` còn mở;

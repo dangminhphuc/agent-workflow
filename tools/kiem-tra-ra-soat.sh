@@ -7,7 +7,9 @@
 #   1. Moi ma YC trong spec.md deu co ket luan hop le trong review.md.
 #   2. Yeu cau gan [OPEN-QUESTION] khong duoc ket luan "pass".
 #   3. Dau vao khong qua kiem-tra-ke-hoach.sh (keo theo design va spec).
-#   4. ket-qua-kiem-thu.md thieu hoac ma thoat khac 0.
+#   4. ket-qua-kiem-thu.md thieu hoac ma thoat khac 0; ket-qua-bao-mat.md thieu
+#      hoac khong XANH; mot trong hai file khong ghi Tree hoac Tree khac noi dung
+#      code hien tai (code doi sau lan chay — bang chung het gia tri).
 #   5. Moi CANH BAO don tu cac phase truoc con ton tai: YC chua co test,
 #      diff ngoai pham vi, artifact loi thoi, loai viec lech branch, test cu
 #      bi sua chua khai, diem mu muc "review-blocking" chua tra loi. Giua flow
@@ -37,6 +39,7 @@ DIR="${1:-.}"
 SPEC="$DIR/spec.md"
 REVIEW="$DIR/review.md"
 KQ="$DIR/ket-qua-kiem-thu.md"
+KQBM="$DIR/ket-qua-bao-mat.md"
 
 [ -f "$SPEC" ]   || { echo "LỖI: không tìm thấy $SPEC" >&2; exit 2; }
 [ -f "$REVIEW" ] || { echo "LỖI: không tìm thấy $REVIEW" >&2; exit 2; }
@@ -53,6 +56,16 @@ if [ ! -f "$KQ" ]; then
 elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
   loi_truoc "ket-qua-kiem-thu.md ghi mã thoát khác 0 — test chưa xanh."
 fi
+if [ ! -f "$KQBM" ]; then
+  loi_truoc "Không có ket-qua-bao-mat.md — chưa quét bảo mật (aw check implement, hoặc aw check security)."
+elif ! grep -q '^- Kết quả: \*\*XANH\*\*' "$KQBM"; then
+  loi_truoc "ket-qua-bao-mat.md không XANH — còn lệnh quét bảo mật đỏ; CI sẽ chặn đúng chỗ này."
+fi
+# Độ mới: bằng chứng phải chạy trên đúng nội dung code đang review.
+moi=$( { kc_ket_qua_cu "$DIR" "$KQ" "aw check implement $DIR"; kc_ket_qua_cu "$DIR" "$KQBM" "aw check security $DIR (hoặc aw check implement)"; } )
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<MOI
+$moi
+MOI
 
 cb=$( { kc_chan_theo_loai "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 

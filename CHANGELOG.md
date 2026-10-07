@@ -11,6 +11,28 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **Cổng bảo mật bằng máy, khớp CI.** Khoá mới `LENH_KIEM_TRA_BAO_MAT` trong
+  `config.sh`: mỗi dòng `<nhóm>: <lệnh>` (`secret | sast | sca | other`), khai đúng
+  lệnh/config/ngưỡng của pipeline (gitleaks, semgrep, sonar-scanner, trivy, npm
+  audit…). `aw check implement` chạy chúng sau test và ghi `ket-qua-bao-mat.md`
+  (output thật từng lệnh); `aw check security` chỉ chạy phần quét. Chưa khai, khai
+  sai dạng, hay một lệnh đỏ → KHÔNG ĐẠT; thiếu nhóm `secret`/`sast`/`sca` chỉ cảnh báo.
+- **Độ mới của bằng chứng:** `ket-qua-kiem-thu.md` và `ket-qua-bao-mat.md` ghi `HEAD`,
+  `Tree` (dấu vân tay nội dung code lúc chạy) và thời điểm. `aw check review` chặn khi
+  file thiếu `Tree` hoặc `Tree` khác code hiện tại — sửa code sau lần chạy, kể cả chưa
+  commit, không còn lọt. Commit lại đúng code đã review thì không tính là đổi.
+- **chore đụng file dependency** phải có lệnh nhóm `sca` chạy xanh (CVE/license) —
+  mức patch/minor không nói gì về chúng.
+
+### Đổi (phá vỡ)
+- Bản clone có `config.sh` cũ chưa có `LENH_KIEM_TRA_BAO_MAT` → `aw check implement`
+  KHÔNG ĐẠT tới khi người khai (`aw init` không ghi đè `config.sh`; chép khối chú
+  thích từ `workflow/templates/config.sh`). Việc chuyển sang engine này giữa chừng có `ket-qua-kiem-thu.md` cũ
+  (không có `Tree`) → chạy lại `aw check implement` trước `/aw-review`.
+
 ## [2026.10.13]
 
 ### Đổi (phá vỡ thói quen gõ lệnh)
