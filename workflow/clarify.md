@@ -6,62 +6,64 @@ summary: Dẫn bạn chốt từng điểm mù và phát hiện của checker đ
 trace_rule: true
 ---
 
-# Chốt việc chờ người (clarify)
+# Settle what waits on the human (clarify)
 
-**Không phải phase** — chạy được bất cứ lúc nào sau `/aw-spec`. Gom mọi việc cần người quyết vào một hàng đợi, dẫn người đi từng mục. Agent **dẫn dắt** (phân tích, đặt câu hỏi, ghi lại); **người quyết**.
+**Not a phase** — runs any time after `/aw-spec`. Collects everything the human must decide into one queue and walks them through it item by item. The agent **guides** (analyses, asks, records); the **human decides**. Talk to the human in Vietnamese.
 
-## Hai nguồn
+## Two sources
 
-| Nguồn | File | Người làm gì | Chặn gì |
+| Source | File | Human does | Blocks |
 |---|---|---|---|
-| Điểm mù | `open-questions.md` | **Trả lời** (thường phải hỏi PO/BA) | Theo `Blocking` (`rules/truy-vet-nguon.md`) |
-| Phát hiện checker LLM | `phat-hien-<checker>.md` (hiện có `phat-hien-thiet-ke.md`) | **Phân xử**: đồng ý (sửa) hoặc bác bỏ + lý do | `Chặn`: checker của phase đó (`thiết kế` → `/aw-plan`); `Cảnh báo`: không |
+| Open question | `open-questions.md` | **Answers** (often has to ask PO/BA) | By `Blocking` (`rules/truy-vet-nguon.md`) |
+| LLM checker finding | `phat-hien-<checker>.md` (currently `phat-hien-thiet-ke.md`) | **Arbitrates**: agree (fix) or reject + reason | `Chặn`: that phase's checker (`thiết kế` → `/aw-plan`); `Cảnh báo`: nothing |
 
-Hai file giữ riêng (mỗi file một bên ghi, `based_on` băm cả file); chỉ gộp ở chỗ người nhìn. Mức chặn do agent đề xuất, **chỉ người** được đổi.
+The two files stay separate (one writer each, `based_on` hashes whole files); they merge only in what the human sees. Blocking levels are proposed by the agent, changed **only by the human**.
 
-## 1. Liệt kê — cho agent đọc, KHÔNG dán cho người
+## 1. List — for you to read, NOT to paste
 
-`aw pending <thư-mục-feature>` — thứ tự do máy xếp, agent không xếp lại: chưa phân mức → `blocking` → phát hiện `Chặn` → `review-blocking` → phát hiện `Cảnh báo` → `non-blocking` (trong nhóm điểm mù: `must` trước `should`, nhiều task đứng trên giả định hơn trước, rồi theo mã).
+`aw pending <thư-mục-feature>` — order set by the machine, never re-sort: unlevelled → `blocking` → `Chặn` findings → `review-blocking` → `Cảnh báo` findings → `non-blocking` (within questions: `must` before `should`, more tasks on the assumption first, then by id).
 
-Người chỉ thấy **một dòng**:
+The human sees **one line**:
 
 ```
 Còn 6 việc chờ bạn: 3 đang chặn (YC-001, YC-002 chặn /aw-design; PH-03 chặn /aw-plan), 3 chưa chặn. Bắt đầu từ YC-001.
 ```
 
-Người hỏi "cho xem hết" mới in danh sách (mã + tiêu đề + nhóm, mỗi mục một dòng).
+Print the full list (id + title + group, one per line) only if the human asks.
 
-| Kết quả `[x]` | Làm gì |
+| Result `[x]` | Do |
 |---|---|
-| `KHÔNG CÒN VIỆC CHỜ NGƯỜI` | Báo một dòng (kèm nhóm `[ĐÃ XỬ LÝ]` nếu có — bước 4), dừng |
-| `CÓ VIỆC ĐANG CHẶN` | Tóm tắt, sang bước 2 |
-| `CÒN VIỆC CHỜ NGƯỜI, CHƯA CHẶN` | Tóm tắt, hỏi lựa chọn "Giải quyết luôn" / "Để sau" |
-| `THIẾU ĐẦU VÀO` | Chưa có `spec.md`/`open-questions.md` → chạy `/aw-spec` trước |
+| `KHÔNG CÒN VIỆC CHỜ NGƯỜI` | One line (plus the `[ĐÃ XỬ LÝ]` group if any — step 4), stop |
+| `CÓ VIỆC ĐANG CHẶN` | Summary line, go to step 2 |
+| `CÒN VIỆC CHỜ NGƯỜI, CHƯA CHẶN` | Summary line, ask with choices "Giải quyết luôn" / "Để sau" |
+| `THIẾU ĐẦU VÀO` | No `spec.md`/`open-questions.md` → run `/aw-spec` first |
 
-## 2. Hỏi từng mục — MỘT mục mỗi lượt, theo thứ tự
+## 2. Ask one item per turn, in order
 
-### Nghĩ kỹ trước khi hỏi
+### Think before asking
 
-Lựa chọn là **phương án giải pháp**, không phải thủ tục. Trước mỗi mục:
-1. **Đọc đủ:** đoạn nguồn, YC trong `spec.md`, phần `tdd.md`/`plan.md`/code liên quan, `conventions.md`. Phát hiện LLM: đọc đúng chỗ `Vị trí`.
-2. **Tách quyết định:** mục gói nhiều quyết định độc lập → mỗi quyết định một câu hỏi, hỏi chung trong lượt đó (tối đa 4).
-3. **Tìm 2–3 phương án khác nhau về hệ quả** — từ nguồn, thực hành phổ biến, ràng buộc code hiện có. Không chêm phương án yếu; chỉ một phương án hợp lý thì đưa một.
-4. **Chọn đề xuất:** so đánh đổi (an toàn, chi phí làm lại, ảnh hưởng ngoài, đảo ngược được). Phương án đề xuất đứng **đầu**, nhãn bắt đầu bằng `(Đề xuất)`.
+Choices are **solution options**, not procedure. Before each item:
+1. **Read enough:** the source passage, the YC in `spec.md`, related `tdd.md`/`plan.md`/code, `conventions.md`. LLM finding: read exactly its `Vị trí`.
+2. **Split decisions:** an item bundling independent decisions → one question per decision, asked together in that turn (max 4).
+3. **Find 2–3 options that differ in consequences** — from the source, common practice, constraints of existing code. No filler options; only one sensible option → offer one.
+4. **Pick a recommendation:** weigh safety, rework cost, external impact, reversibility. The recommended option goes **first**, its label starts with `(Đề xuất)`.
 
-Mỗi lựa chọn: **nhãn** ngắn đúng phương án; **mô tả** một dòng hệ quả/đánh đổi (khác giả định tạm thì nói phải làm lại gì; lấy từ nguồn thì ghi nguồn, vd `theo Input 2 § 4`; trùng giả định tạm thì ghi "đang dùng làm giả định tạm").
+Each choice: a short **label** naming the option; a one-line **description** of consequence/trade-off (differs from the temporary assumption → say what must be redone; taken from the source → cite it, e.g. `theo Input 2 § 4`; equals the temporary assumption → say "đang dùng làm giả định tạm").
 
-Ngữ cảnh ngay trước câu hỏi, tối đa 4 dòng: mã · nhóm · đang chặn gì · vị trí trong hàng đợi; nguồn nói gì; vì sao đề xuất.
+Context right before the question, max 4 lines: id · group · what it blocks · position in queue; what the source says; why you recommend.
 
-Người **luôn** có hai lối ra, ở **cuối** danh sách: tự nhập câu trả lời khác, và "Chat về câu này" (trao đổi trước khi chốt):
+The human **always** has two exits, **last** in the list: type their own answer, and "Chat về câu này" (discuss before deciding):
 
 ```
   N.   Type something.  — tự nhập câu trả lời khác
   N+1. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
-Giao diện lựa chọn có sẵn hai lối này (vd Claude Code) → **không** thêm trùng. Không có giao diện lựa chọn → agent tự in hai dòng đó, đánh số tiếp.
+If the choice UI already provides them (e.g. Claude Code) → **do not** add duplicates. No choice UI → print those two lines yourself, numbered after the options.
 
-### 2a. Điểm mù
+### 2a. Open question
+
+Example (human-facing text stays Vietnamese):
 
 ```
 YC-006 · CHẶN REVIEW · 5/9 · 2 quyết định
@@ -81,11 +83,11 @@ Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu q
   …
 ```
 
-Thứ tự lựa chọn (tối đa 4): `(Đề xuất) <phương án>` → 1–2 phương án khác (có trong nguồn trước) → **Chưa trả lời được** (agent soạn tin gửi `<Ask>`). Ô tự nhập nhận cả "đổi mức chặn sang …" hay "bỏ qua".
+Order (max 4): `(Đề xuất) <option>` → 1–2 other options (from the source first) → **Chưa trả lời được** (you draft a message to `<Ask>`). Free text also accepts "đổi mức chặn sang …" or "bỏ qua".
 
-Mục `CHƯA PHÂN MỨC`: câu hỏi đầu là chọn mức (`blocking`/`review-blocking`/`non-blocking`), mức đề xuất theo "Nếu sai" đứng đầu — xong mới hỏi câu trả lời.
+`CHƯA PHÂN MỨC` item: the first question picks the level (`blocking`/`review-blocking`/`non-blocking`), the one implied by "Nếu sai" first as `(Đề xuất)` — then ask for the answer.
 
-### 2b. Phát hiện checker LLM
+### 2b. LLM checker finding
 
 ```
 PH-03 · CHẶN · đang chặn /aw-plan · 3/6 · quyết định ngầm
@@ -101,59 +103,59 @@ Xử lý phát hiện PH-03 thế nào?
   5. Chat about this.  — trao đổi thêm trước khi chốt
 ```
 
-Thứ tự (tối đa 4): `(Đề xuất) <cách sửa>` (sửa gì, ở mục nào) → 0–1 cách sửa khác hướng thật → **Bác bỏ** ("nhập lý do ở ô tự nhập") → mục `Cảnh báo`: **Để sau** (khi đó chỉ một cách sửa). Agent thấy phát hiện sai → đưa `(Đề xuất) Bác bỏ — <lý do>` lên đầu; người vẫn phải chọn. Bác bỏ không lý do → hỏi lý do (`aw check` chặn bác bỏ trống).
+Order (max 4): `(Đề xuất) <fix>` (what, which section) → 0–1 genuinely different fix → **Bác bỏ** ("nhập lý do ở ô tự nhập") → for `Cảnh báo`: **Để sau** (then only one fix). If you think the finding is wrong → put `(Đề xuất) Bác bỏ — <reason>` first; the human still chooses. Rejection without a reason → ask for it (`aw check` blocks empty rejections).
 
-### Chung
+### Always
 
-- Hỏi xong thì **dừng chờ người**. Không hỏi mục kế khi mục này chưa xong.
-- **Chat về câu này:** trả lời, giải thích hệ quả, trích thêm nguồn — **không ghi file**. Rõ rồi thì hỏi lại đúng câu đó bằng lựa chọn (sửa phương án theo trao đổi). Người nói ra quyết định trong lúc chat → xác nhận lại bằng lựa chọn trước khi ghi.
+- After asking, **stop and wait**. Never ask the next item before this one is done.
+- **"Chat về câu này" / "Chat about this":** answer, explain consequences, quote more source — **write no files**. Once clear, ask the same question again as choices (options updated by the discussion). A decision stated in chat → confirm it via choices before writing.
 
-## 3. Ghi lại
+## 3. Record
 
-### 3a. Điểm mù
+### 3a. Open question
 
-**Người trả lời:**
-1. `open-questions.md`: `Answer:` = **nguyên văn** lời người + ai trả lời + ngày (vd `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status: answered`. Người **chọn** phương án → nguyên văn là nhãn (bỏ `(Đề xuất)`) kèm `(chọn từ phương án agent đề xuất)`. Nhiều câu hỏi → ghi từng câu trả lời.
-2. `spec.md`: đổi nhãn nguồn của YC thành `[FILE]` open-questions.md § YC-NNN (hoặc nguồn người chỉ ra). Bỏ dòng `Assumption` của YC.
-3. **Trả lời khác giả định tạm:** sửa mô tả / tiêu chí của **chỉ YC đó**. Trước khi ghi, cho người xem các dòng sẽ đổi (trước → sau), hỏi "ghi như vậy được không?" (đồng ý trong hội thoại là đủ). Thêm `(đã xác nhận sửa YC-NNN)` cuối `Answer:`. Khớp giả định → chỉ đổi nhãn.
-4. Spec đã tick duyệt mà bước 2–3 làm đổi → **bỏ tick** (được bỏ, không bao giờ tick). Nhắc người tick lại ở tổng kết.
-5. `aw check spec <thư-mục-feature>`, dán kết quả thật. Không `[x] ĐẠT` → sửa cho khớp rồi mới sang mục kế.
+**Human answered:**
+1. `open-questions.md`: `Answer:` = the human's **verbatim** words + who + date (e.g. `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status: answered`. Human **picked** an option → verbatim = its label (without `(Đề xuất)`) plus `(chọn từ phương án agent đề xuất)`. Several questions → record each answer.
+2. `spec.md`: change the YC's source label to `[FILE]` open-questions.md § YC-NNN (or the source the human named). Remove that YC's `Assumption` line.
+3. **Answer differs from the assumption:** edit the description / criteria of **that YC only**. First show the lines that will change (before → after) and ask "ghi như vậy được không?" (agreement in chat is enough). Append `(đã xác nhận sửa YC-NNN)` to `Answer:`. Same as the assumption → only change the label.
+4. Spec was ticked and steps 2–3 changed it → **untick** (you may untick, never tick). Remind the human to re-tick in the summary.
+5. `aw check spec <thư-mục-feature>`, paste the real result. Not `[x] ĐẠT` → make the files agree before the next item.
 
-**Chưa trả lời được:** soạn tin gửi `Ask`, tự đủ ngữ cảnh (đọc không cần mở repo): câu hỏi, tài liệu nói gì, giả định đang dùng, hệ quả nếu sai, phase nào đang chờ. Giữ `open`, sang mục kế.
+**Cannot answer yet:** draft a message to `Ask`, self-contained (readable without the repo): the question, what the documents say, the assumption in use, impact if wrong, which phase is waiting. Keep `open`, next item.
 
-**Người đổi mức:** ghi đúng mức người nói vào `Blocking:`. Agent chỉ được **đề xuất nâng**, không tự hạ.
+**Human changes the level:** write exactly the level they said into `Blocking:`. You may only **propose raising** it, never lower it.
 
-### 3b. Phát hiện checker LLM
+### 3b. LLM checker finding
 
-**Đồng ý:**
-1. Cho người xem các dòng sẽ đổi trong `tdd.md` (trước → sau), hỏi "ghi như vậy được không?". Chỉ sửa đúng chỗ phát hiện chỉ ra.
-2. Cần quyết định (`quyết định ngầm`, `lệch D-xx` mà người muốn đổi D) → thêm/sửa D-xx, ô duyệt **chưa tick** (sửa D đã duyệt: theo "Mở lại một D-xx" của `/aw-design`).
-3. `yêu cầu mới` → **bỏ hành vi đó khỏi `tdd.md`**. Người muốn giữ → đó là yêu cầu mới: quay lại `/aw-spec`, không tự thêm YC.
-4. File phát hiện: `Xử lý: đã sửa`.
-5. `aw check design <thư-mục-feature>`, dán kết quả thật.
+**Agree:**
+1. Show the lines that will change in `tdd.md` (before → after), ask "ghi như vậy được không?". Edit only where the finding points.
+2. Needs a decision (`quyết định ngầm`, or `lệch D-xx` where the human wants to change the D) → add/edit a D-xx with an **unticked** box (editing an approved D: follow "Reopening a D-xx" in `/aw-design`).
+3. `yêu cầu mới` → **remove that behaviour from `tdd.md`**. Human wants to keep it → it is a new requirement: back to `/aw-spec`, never add a YC yourself.
+4. Findings file: `Xử lý: đã sửa`.
+5. `aw check design <thư-mục-feature>`, paste the real result.
 
-**Bác bỏ:** `Xử lý: bác bỏ: <lý do nguyên văn> — <ai>, <ngày>`. Không sửa `tdd.md`.
+**Reject:** `Xử lý: bác bỏ: <verbatim reason> — <who>, <date>`. Do not edit `tdd.md`.
 
-**Để sau** (chỉ `Cảnh báo`): giữ `chưa`, sang mục kế.
+**Để sau** (`Cảnh báo` only): keep `chưa`, next item.
 
-## 4. Tổng kết
+## 4. Summary
 
-Chạy lại `aw pending` (đọc, không dán), rồi nói ngắn:
-- còn gì đang chặn phase nào; câu hỏi nào đang chờ ai (tin đã soạn);
-- phát hiện đã đóng mà người chưa phân xử trong lượt này (nhóm `[ĐÃ XỬ LÝ]`, thường do agent tự sửa ở `/aw-design`): mã + một dòng;
-- D-xx mới/vừa sửa chờ duyệt; spec vừa bị bỏ tick → người tick lại;
-- artifact lỗi thời vì đầu vào đổi (`tdd.md`, `plan.md`): trả lời **khớp** giả định → chạy lại phase đó để ghi dấu; **khác** → phase đó làm lại phần "Nếu giả định sai", task đứng trên giả định đặt lại `[ ]` khi chạy lại `/aw-plan`. `tdd.md` vừa sửa mà đã có `plan.md` → chạy lại `/aw-plan`.
+Rerun `aw pending` (read, do not paste), then say briefly:
+- what still blocks which phase; which questions wait on whom (drafted messages);
+- findings closed but not arbitrated by the human this round (group `[ĐÃ XỬ LÝ]`, usually self-fixed in `/aw-design`): id + one line;
+- new/edited D-xx awaiting approval; spec just unticked → human re-ticks;
+- artifacts now stale because inputs changed (`tdd.md`, `plan.md`): answer **matches** the assumption → rerun that phase to refresh the input hash; **differs** → that phase redoes what "Nếu giả định sai" lists, and tasks on that assumption go back to `[ ]` when `/aw-plan` reruns. `tdd.md` just edited for a finding and `plan.md` exists → rerun `/aw-plan`.
 
-## Cấm
+## Forbidden
 
-- **Tự quyết** thay người: tự trả lời, tự đồng ý/bác bỏ, ghi `answered`/`đã sửa`/`bác bỏ` khi người chưa nói.
-- Ghi câu trả lời / lý do đã diễn giải thay vì nguyên văn.
-- Coi phương án đề xuất là quyết định khi người chưa chọn.
-- Hỏi khi chưa phân tích: chỉ đưa "giữ giả định / chưa trả lời được" khi có phương án thật; chêm phương án yếu; gộp quyết định độc lập vào một câu.
-- `(Đề xuất)` ở chỗ khác ngoài đầu nhãn, hoặc trên nhiều hơn một lựa chọn.
-- Tự hạ/đổi `Blocking` khi người chưa nói; đổi `Mức` của phát hiện.
-- Tick ô duyệt, sửa/xoá `<!-- approval-hash: … -->` (chỉ được **bỏ** tick spec ở 3a bước 4).
-- Sửa YC / `tdd.md` khi người chưa xác nhận các dòng sẽ đổi, hoặc ngoài phạm vi mục đang xử lý.
-- Trình bày nhiều mục một lúc; dán nguyên danh sách `aw pending` khi người không yêu cầu.
-- Làm mất lối tự nhập hoặc "Chat về câu này".
-- Sửa `plan.md` hay code, chạy lại checker LLM để "làm sạch" phát hiện — chỉ nói cần chạy lại phase nào.
+- **Deciding for the human:** answering, agreeing/rejecting, writing `answered`/`đã sửa`/`bác bỏ` before the human said so.
+- Paraphrasing answers or rejection reasons instead of verbatim.
+- Treating your recommendation as the decision before the human chose.
+- Asking without analysis: only "keep assumption / cannot answer" when real options exist; filler options; bundling independent decisions in one question.
+- `(Đề xuất)` anywhere but the start of a label, or on more than one option.
+- Lowering/changing `Blocking` without the human; changing a finding's `Mức`.
+- Ticking approval boxes, editing/deleting `<!-- approval-hash: … -->` (you may only **untick** the spec in 3a step 4).
+- Editing a YC / `tdd.md` before the human confirmed the changed lines, or outside the current item.
+- Presenting several items at once; pasting the `aw pending` list unasked.
+- Dropping the free-text or "Chat về câu này" exit.
+- Editing `plan.md` or code, or rerunning the LLM checker to "clean" findings — just say which phase to rerun.

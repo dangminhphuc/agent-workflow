@@ -1,50 +1,51 @@
-# Nguyên tắc chung
+# General rules
 
-Áp dụng cho mọi phase, mọi agent. Lý do của từng luật: `docs/kien-truc.md` trong repo engine.
+Apply to every phase and every agent. Rationale: `docs/kien-truc.md` in the engine repo.
 
-## 1. Bàn giao bằng file
+## 1. Hand off through files
 
-- Phase chỉ nhận đầu vào từ file trong `<artifact_dir>/<tên-branch>/`, không từ hội thoại phía trên.
-- Mỗi phase phải chạy được từ phiên trắng. Không chạy được = phase trước ghi thiếu.
+- A phase takes input only from files in `<artifact_dir>/<branch-name>/`, never from earlier chat.
+- Every phase must run from a blank session. If it cannot, the previous phase wrote too little.
 
-## 2. Điều kiện ra
+## 2. Exit conditions
 
-- **Máy** (`exit_machine`): chạy lệnh, đọc nhãn được đánh `[x]` trong khối `Kết quả` cuối output. Không tự tuyên bố đạt.
-- **Người** (`exit_human`): nêu ra rồi dừng. Không duyệt thay.
+- **Machine** (`exit_machine`): run the command, read the label marked `[x]` in the `Kết quả` block at the end of its output. Never declare a pass yourself.
+- **Human** (`exit_human`): state it, then stop. Never approve on the human's behalf.
 
-**Agent không tự duyệt:**
-- Không tick ô "Approved by human" (spec, D-xx). Không sửa/xoá `<!-- approval-hash: … -->`.
-- Không tự đổi `[OPEN-QUESTION]` sang `answered`.
-- Sửa nội dung đã tick thì **bỏ** tick.
-- Checker LLM chỉ được **chặn**, không bao giờ nói "đạt". Thiếu file phát hiện = checker chưa chạy.
+**The agent never approves:**
+- Never tick an "Approved by human" box (spec, D-xx). Never edit/delete `<!-- approval-hash: … -->`.
+- Never change `[OPEN-QUESTION]` to `answered` yourself.
+- If you edit content that is already ticked, **untick** it.
+- An LLM checker may only **block**, never pass. No findings file = the checker has not run.
 
-**Chặn hay cảnh báo:** checker hợp đồng output của chính phase thì chặn. Kiểm chéo giữa phase (artifact lỗi thời, test ↔ YC, phạm vi diff) chỉ cảnh báo — nhưng `05-review` chặn mọi cảnh báo còn lại. Xử lý cảnh báo ngay khi thấy.
+**Block or warn:** checks on the phase's own output contract block. Cross-phase checks (stale artifact, test ↔ YC, diff scope) only warn — but `05-review` blocks on any warning left. Fix warnings when you see them.
 
-## 3. Không vượt phạm vi phase
+## 3. Stay inside the phase
 
-Mỗi phase có mục **Cấm**. Việc thuộc phase khác: ghi vào artifact của phase đó, không làm luôn. Hay gặp nhất: `01-spec` chọn giải pháp kỹ thuật; `04-implement` sửa thêm chỗ "tiện tay".
+Each phase has a **Forbidden** section. Work that belongs to another phase: record it in that phase's artifact, do not do it. Most common: `01-spec` picking a technical solution; `04-implement` fixing things "while there".
 
-## 4. Không phá trạng thái sẵn có
+## 4. Do not destroy existing state
 
-Không xoá artifact của phase trước. Chạy lại phase = **cập nhật** (người có thể đã sửa tay), không viết đè trắng.
+Never delete a previous phase's artifact. Re-running a phase = **update** (the human may have edited by hand), not overwrite.
 
-## 5. Ngôn ngữ
+## 5. Language
 
-- Nội dung artifact, lời nói với người: tiếng Việt.
-- Định danh (mã YC, tên file, khoá cấu hình): tiếng Anh ASCII.
-- Heading, tên trường, giá trị, nhãn cố định trong mẫu (`Type`, `Risk`, `Source`, `## Out of scope`, `Blocking`, `## Lens 1`, `high`, `must`, `[INFERRED]`…): giữ **đúng chữ** như mẫu — checker đọc theo đó.
+- Artifact content and everything you say to the human: **Vietnamese**.
+- Identifiers (YC ids, file names, config keys): ASCII English.
+- Headings, field names, values and fixed labels from the templates (`Type`, `Risk`, `Source`, `## Out of scope`, `Blocking`, `## Lens 1`, `high`, `must`, `[INFERRED]`…): keep **exactly** as in the template — checkers match them literally.
+- Labels printed by `aw` (`ĐẠT`, `CẦN HỎI NGƯỜI`…) are Vietnamese; match them literally.
 
-## 6. Artifact viết cho người đọc — BẮT BUỘC
+## 6. Artifacts are written for humans — MANDATORY
 
-- Heading theo cấp, không nhảy cấp. Mỗi mục một ý; nhiều ý ngang hàng → danh sách hoặc bảng.
-- Điều quan trọng nhất (kết luận, quyết định, việc người cần làm) lên đầu mục.
-- Câu ngắn, từ thông dụng. Bỏ câu rào đón, nhắc lại, giải thích điều ai cũng biết.
-- Cú pháp mẫu/checker đòi thì giữ nguyên.
+- Headings by level, no skipped levels. One idea per item; parallel ideas → list or table.
+- Most important thing (conclusion, decision, what the human must do) first.
+- Short sentences, plain words. No hedging, no repetition, no explaining the obvious.
+- Syntax required by templates/checkers stays as is.
 
-## 7. Quy tắc riêng của repo
+## 7. Repo-specific rules
 
-Khai ở khoá `rules_<phase>` trong `conventions.md` (file đã commit trong repo).
+Declared under `rules_<phase>` in `conventions.md` (files committed in the repo).
 
-- **Đầu phase:** chạy `aw rules <phase>`, đọc **từng file** nó in ra (kể cả `SKILL.md` — đọc như tài liệu thường). Không in gì = không có. `KHAI SAI` → dừng, báo người sửa `conventions.md`, không đoán file thay thế.
-- **Ưu tiên:** quy tắc repo xếp **dưới** `spec.md`, `tdd.md`, `plan.md` và luật quy trình. Mâu thuẫn → làm theo artifact, nêu mâu thuẫn ra (`04-implement`: mục "Unplanned"). Không vì quy tắc mà vượt phạm vi phase.
-- **`05-review`** đối chiếu diff với mọi file quy tắc, mỗi file một kết luận trong `review.md`.
+- **At phase start:** run `aw rules <phase>`, read **every file** it prints (including `SKILL.md` — read it as a normal document). Prints nothing = none. `KHAI SAI` → stop, ask the human to fix `conventions.md`; do not guess a replacement.
+- **Priority:** repo rules rank **below** `spec.md`, `tdd.md`, `plan.md` and the workflow rules. On conflict follow the artifact and report the conflict (`04-implement`: "Unplanned"). Never leave the phase scope because of a repo rule.
+- **`05-review`** checks the diff against every rule file, one verdict per file in `review.md`.

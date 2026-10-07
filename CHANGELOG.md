@@ -11,6 +11,37 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+Tinh gọn mọi thứ agent đọc để tiết kiệm ngữ cảnh. Luật không đổi, checker không đổi.
+
+### Đổi
+- **Nội dung agent đọc lúc chạy chuyển sang tiếng Anh, chỉ giữ chỉ thị**: thân
+  `workflow/phases/*.md`, `clarify.md`, `import.md`, `rules/`, checker LLM, và lời dặn
+  adapter sinh ra. Lý do thiết kế chuyển hết về `docs/kien-truc.md`. Nội dung người
+  đọc giữ tiếng Việt: `name`/`summary` (menu lệnh), mẫu artifact, output và nhãn
+  `Kết quả` của `aw`, câu hỏi và lựa chọn hiện cho người. Agent được dặn nói với người
+  và viết artifact bằng tiếng Việt.
+- **Mỗi luật một chỗ**: bảng mức chặn của điểm mù ở `rules/truy-vet-nguon.md`; danh sách
+  điều checker kiểm không lặp trong file phase; hợp đồng vào/ra chỉ do adapter dựng.
+- **Lệnh chỉ bắt đọc file cần thiết**: `rules/truy-vet-nguon.md` chỉ cho lệnh khai
+  `trace_rule: true` (spec, design, clarify, import); `conventions.md` thành "tra khi
+  cần". `/aw-review` chỉ bàn giao cho subagent `ra-soat-doc-lap`, không nạp mô tả phase
+  vào phiên chính.
+- Kích thước một lần gọi lệnh (file lệnh + file bắt buộc đọc), byte: `/aw-intake`
+  34,6K → 13,1K; `/aw-spec` 34,7K → 15,5K; `/aw-design` 33,4K → 16,6K; `/aw-plan`
+  31,1K → 11,0K; `/aw-implement` 34,2K → 12,1K; `/aw-review` 35,7K → 3,4K (subagent
+  15,4K → 8,8K); `/aw-clarify` 39,2K → 20,0K. Chữ tiếng Anh còn tốn ít token hơn trên
+  mỗi byte.
+- `README.md` (54K → 13K) chỉ còn hướng dẫn dùng; `docs/kien-truc.md` (53K → 27K) gọn
+  lại, giữ đủ lý do.
+
+### Thêm
+- `AGENTS.md` (và `CLAUDE.md` trỏ tới nó): bản đồ repo, quy ước code, cách kiểm và phát
+  hành — cho agent phát triển chính repo này.
+- Frontmatter `trace_rule: true` cho phase / lệnh tiện ích.
+- Test: mọi lệnh sinh ra có đủ hợp đồng phase; `/aw-review` chỉ bàn giao.
+
 ## [2026.10.16]
 
 `conventions.md` dễ cấu hình hơn cho người, và có lệnh kiểm sau khi sửa.

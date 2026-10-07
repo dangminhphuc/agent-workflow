@@ -12,105 +12,105 @@ outputs:
 exit_machine:
   - aw check intake
 exit_human:
-  - Người CHỌN BASE cho worktree (agent chỉ đưa đề xuất của aw worktree new)
-  - Người xác nhận LOẠI VIỆC (chọn sai loại là sai luật cả chuỗi phía sau)
-  - Người xác nhận danh sách input, và lời mình được chép đúng nguyên văn
+  - The HUMAN CHOOSES THE BASE for the worktree (the agent only relays the aw worktree new proposal)
+  - The human confirms the WORK TYPE (wrong type = wrong rules for every later phase)
+  - The human confirms the input list, and that their own words were copied verbatim
 needs_clean_context: true
 arguments: input
 ---
 
-# Phase 00 — Tiếp nhận
+# Phase 00 — Intake
 
-## Mục tiêu
+## Goal
 
-Trả lời đúng ba câu, ghi vào `intake.md`:
-1. **Loại việc** — `feature`, `bugfix`, `refactor`, `perf` hay `chore`. Loại việc đổi luật của các phase sau.
-2. **Input** — tài liệu có định danh, hoặc lời người dùng. Mọi `YC-xxx` về sau truy về đây.
-3. **Mục tiêu** một câu.
+Answer exactly three questions in `intake.md`:
+1. **Work type** — `feature`, `bugfix`, `refactor`, `perf` or `chore`. It changes the rules of later phases.
+2. **Input** — documents with identifiers, or the user's own words. Every later `YC-xxx` traces back here.
+3. **Goal** in one sentence.
 
-## Loại việc
+## Work type
 
-Xếp theo **thay đổi gì về hành vi**:
+Classify by **what changes in behaviour**:
 
 ```
-Có sửa code chạy trên production không?
-├─ Không → chore
-└─ Có → Hành vi quan sát từ ngoài có đổi không?
-        ├─ Không → nhanh hơn / ít tài nguyên hơn? → có: perf / không: refactor
-        └─ Có → Hành vi hiện tại đang SAI so với tài liệu / ý định?
-                ├─ Có  → bugfix
-                └─ Không → feature
+Does it change code that runs in production?
+├─ No → chore
+└─ Yes → Does externally observable behaviour change?
+        ├─ No → faster / fewer resources? → yes: perf / no: refactor
+        └─ Yes → Is the current behaviour WRONG vs docs / intent?
+                ├─ Yes → bugfix
+                └─ No  → feature
 ```
 
-| Loại | Luật khác biệt |
+| Type | Extra rules |
 |---|---|
-| `feature` | Quy trình chuẩn |
-| `bugfix` | Spec có "Reproduction"; test tái hiện phải **đỏ trên code chưa sửa** (`aw check repro`) |
-| `refactor` | YC chỉ `preserve`/`structural`; YC preserve có test bảo vệ sẵn trên nhánh gốc; không xoá test cũ, sửa test cũ phải khai |
-| `perf` | Như refactor + YC `performance` có số liệu, số đo trước/sau do máy ghi (`aw check perf`) |
-| `chore` | Không có design; không đụng code production; nâng dependency phải khai (major = refactor) |
+| `feature` | Standard flow |
+| `bugfix` | Spec has "Reproduction"; repro test must be **red on unfixed code** (`aw check repro`) |
+| `refactor` | YCs only `preserve`/`structural`; preserve YCs have a protecting test already on the base branch; never delete old tests, declare edited ones |
+| `perf` | Like refactor + `performance` YC with numbers, before/after measured by the machine (`aw check perf`) |
+| `chore` | No design phase; no production code; declare dependency bumps (major = refactor) |
 
-- Không phải loại riêng: `utils` (thêm hàm dùng chung = feature, gom code trùng = refactor), `hotfix` (= bugfix gấp), `security` (= bugfix/feature + rủi ro cao).
-- `spike` nằm ngoài quy trình (output là kết luận, không phải code để merge).
-- Việc vừa loại này vừa loại kia → **tách hai việc** (hai worktree).
+- Not separate types: `utils` (new shared helper = feature, dedupe = refactor), `hotfix` (= urgent bugfix), `security` (= bugfix/feature + high risk).
+- `spike` is outside the workflow (its output is a conclusion, not mergeable code).
+- Work that is two types at once → **split into two jobs** (two worktrees).
 
-## Tham số của lệnh = input
+## Command arguments = input
 
-`/aw-intake JIRA-123 https://confluence/…` — tham số là danh sách input, không phải tên feature (tên feature lấy từ branch).
+`/aw-intake JIRA-123 https://confluence/…` — arguments are the input list, not the feature name (feature name comes from the branch).
 
-**Nhãn do máy gán** (`aw input`, xem Bước 0b): chép **đúng stdout** vào `## Input`, không tự gán, không sửa. Chỉ cần một token không nhận ra là **cả chuỗi** thành một mục `[HUMAN]` nguyên văn; nguồn nằm trong câu (vd `ABC-123` trong "sửa phí hoàn tiền ABC-123") chỉ là **đề xuất tách thêm** — hỏi người, đồng ý mới ghi dòng riêng.
+**Labels are assigned by the machine** (`aw input`, see Step 0b): copy **stdout exactly** into `## Input`; never label or edit yourself. A single unrecognised token makes the **whole string** one verbatim `[HUMAN]` entry; a source inside the sentence (e.g. `ABC-123` in "sửa phí hoàn tiền ABC-123") is only a **split suggestion** — ask the human, add a separate line only if they agree.
 
-## Tạo worktree (đang ở checkout chính)
+## Create the worktree (on the main checkout)
 
-Worktree bắt buộc. Checkout chính luôn đứng ở `base_branch`, chỉ dùng chạy `/aw-intake`. `ĐANG Ở CHECKOUT CHÍNH` với `/aw-intake` = tạo worktree; với lệnh khác = dừng.
+Worktrees are mandatory. The main checkout stays on `base_branch` and only runs `/aw-intake`. `ĐANG Ở CHECKOUT CHÍNH` means "create a worktree" for `/aw-intake`, "stop" for any other command.
 
-Agent **không quyết** vị trí worktree hay base. Theo thứ tự:
+The agent **never decides** worktree location or base. In order:
 
-1. Đọc input, **chốt loại việc với người** (cây phân loại ở trên).
-2. Chọn mô tả ngắn: chữ thường ASCII, số, `-` (vd `phi-hoan-tien`).
-3. `aw worktree new <loại-việc> <mô-tả>` — **chỉ in đề xuất**: tên theo `type_by_prefix` (branch, thư mục worktree, thư mục artifact cùng một tên), đường dẫn theo `worktree_dir`, danh sách **base** kèm dữ kiện. Dấu ★ là gợi ý của máy, không phải của agent.
-4. Đưa **nguyên văn** đề xuất cho người; người **chọn base** và xác nhận tên (muốn tên khác → đổi `<mô-tả>`, chạy lại bước 3).
-5. `aw worktree new <loại-việc> <mô-tả> --create --base <ref>` với **đúng ref người chọn**. Chép nguyên hai dòng `Base:` và `Engine:` nó in vào `intake.md`.
-6. Ghi `intake.md` vào `<worktree>/.agent-workflow/<tên>/`, chạy `aw check intake` trên thư mục đó, rồi **dừng**: người chạy lệnh chuẩn bị (`LENH_CHUAN_BI_WT` script in ra) và mở phiên agent **mới** trong worktree để chạy `/aw-spec`. Phiên mới: `aw ready <thư-mục-feature>` cho biết môi trường đủ chưa và bước tiếp.
+1. Read the input, **agree the work type with the human** (tree above).
+2. Pick a short description: lowercase ASCII, digits, `-` (e.g. `phi-hoan-tien`).
+3. `aw worktree new <type> <description>` — **only prints a proposal**: name from `type_by_prefix` (branch, worktree dir and artifact dir share one name), path from `worktree_dir`, candidate **bases** with facts. ★ is the machine's suggestion, not yours.
+4. Show the proposal **verbatim**; the human **chooses the base** and confirms the name (other name → change `<description>`, rerun step 3).
+5. `aw worktree new <type> <description> --create --base <ref>` with **exactly the human's ref**. Copy the `Base:` and `Engine:` lines it prints into `intake.md`.
+6. Write `intake.md` to `<worktree>/.agent-workflow/<name>/`, run `aw check intake` on that dir, then **stop**: the human runs the prepare command (`LENH_CHUAN_BI_WT`, printed) and opens a **new** agent session in the worktree for `/aw-spec`. In the new session `aw ready <thư-mục-feature>` reports whether the environment is ready and the next step.
 
-`ĐÃ CÓ WORKTREE`: không tạo gì — bảo người mở phiên ở đường dẫn script in, chạy lại `/aw-intake` ở đó nếu cần gộp input.
+`ĐÃ CÓ WORKTREE`: create nothing — tell the human to open a session at the printed path and rerun `/aw-intake` there if input must be added.
 
-- **Base:** checker so diff với điểm rẽ khỏi base này. Base là branch việc khác (xếp chồng) được, review sẽ cảnh báo.
-- **Engine:** mọi checker của việc chạy đúng version này (khớp chính xác `YYYY.M.N`). Không tải được version đó → checker báo KHÔNG HỢP LỆ. Nâng engine giữa chừng không đổi luật việc đang làm.
+- **Base:** checkers diff against the fork point from this base. Stacking on another job's branch is allowed; review will warn.
+- **Engine:** every checker of this job runs exactly this version (`YYYY.M.N`, exact match). Not available → checker reports KHÔNG HỢP LỆ. Upgrading the engine mid-job does not change this job's rules.
 
-## Đang trong worktree
+## Inside the worktree
 
-- Gợi ý loại từ tiền tố branch (`type_by_prefix`), đối chiếu input, hỏi người xác nhận.
-- Loại người chốt lệch tiền tố branch → **không ngoại lệ**: sửa loại, hoặc `aw rename` (đổi branch, thư mục artifact, worktree; người mở phiên mới ở đường dẫn mới).
+- Suggest the type from the branch prefix (`type_by_prefix`), check against the input, ask the human to confirm.
+- Type confirmed by the human differs from the branch prefix → **no exceptions**: fix the type, or `aw rename` (renames branch, artifact dir, worktree; human opens a new session at the new path).
 
-**Chạy lại khi đã có `intake.md` = gộp thêm input:**
-1. Không tạo lại từ mẫu. Giữ nguyên `Type` và `Goal`.
-2. `aw input --skip <thư-mục-feature>/intake.md -` — bỏ input đã có (so theo định danh: `ABC-1` và `…/browse/ABC-1` là một). **Thêm** stdout vào cuối `## Input`.
-3. Input mới làm loại việc có vẻ khác → **nêu cho người**, không tự sửa `Type`. Người đổi loại → xác nhận lại như lần đầu (`aw rename` nếu lệch tiền tố).
-4. Chạy checker, dừng cho người xác nhận **input mới**.
+**Re-running with an existing `intake.md` = append input:**
+1. Do not recreate from the template. Keep `Type` and `Goal`.
+2. `aw input --skip <thư-mục-feature>/intake.md -` — skips inputs already present (by identifier: `ABC-1` and `…/browse/ABC-1` are the same). **Append** stdout to the end of `## Input`.
+3. New input suggests a different type → **tell the human**, do not edit `Type`. If the human changes it, confirm as the first time (`aw rename` if the prefix no longer matches).
+4. Run the checker, stop for the human to confirm the **new inputs**.
 
-Không xoá input qua lệnh — người sửa tay. `intake.md` đổi → `spec.md` lỗi thời: chạy lại `/aw-spec` (phase sau cảnh báo, review chặn).
+No command removes input — the human edits by hand. A changed `intake.md` makes `spec.md` stale: rerun `/aw-spec` (later phases warn, review blocks).
 
-## Đầu ra
+## Output
 
-`intake.md` theo `templates/intake.md`:
-- `Type`, `Goal` (một câu), `Base`, `Engine` (đúng như `aw worktree new` in).
-- `## Input`: tài liệu `[CONFLUENCE]`/`[JIRA]`/`[FILE]` + định danh; lời người `[HUMAN]` **nguyên văn** ở dòng `>` bên dưới.
+`intake.md` per `templates/intake.md`:
+- `Type`, `Goal` (one sentence), `Base`, `Engine` (exactly as `aw worktree new` printed).
+- `## Input`: documents `[CONFLUENCE]`/`[JIRA]`/`[FILE]` + identifier; human words `[HUMAN]` **verbatim** on the `>` line below.
 
-`01-spec` trích lời người bằng nhãn `[FILE] intake.md § Input`.
+`01-spec` cites human words as `[FILE] intake.md § Input`.
 
-## Cấm
+## Forbidden
 
-- **Tóm tắt, diễn giải, trích yêu cầu** từ tài liệu nguồn — chỉ trỏ tới nó.
-- Tự gán nhãn input, sửa dòng `aw input` in, ghi `[INFERRED]` vào input, ghi lời người không nguyên văn.
-- Chạy lại mà viết lại `intake.md` từ đầu, hay tự đổi `Type`.
-- Tự chốt loại việc; tự chọn base / điền `--base`; tạo worktree trước khi người chọn.
-- Tự sửa dòng `Engine:`.
-- Tự chuyển phiên sang worktree mới.
-- Chốt phạm vi hoặc giải pháp kỹ thuật.
+- **Summarising, paraphrasing or quoting requirements** from sources — only point to them.
+- Labelling input yourself, editing `aw input` lines, `[INFERRED]` in input, non-verbatim human words.
+- Rewriting `intake.md` from scratch on rerun, or changing `Type` yourself.
+- Deciding the work type; choosing the base / filling `--base`; creating the worktree before the human chooses.
+- Editing the `Engine:` line.
+- Switching your session into the new worktree.
+- Fixing scope or technical solution.
 
-## Điều kiện ra
+## Exit conditions
 
-**Máy:** `aw check intake` ra `[x] ĐẠT` — `Type` hợp lệ, có `Goal`, ít nhất một input nhãn hợp lệ, không `[INFERRED]`, `[HUMAN]` có nguyên văn, `[JIRA]` có mã khớp `jira_key_regex`, `Base:` có sha là tổ tiên của HEAD, `Engine:` dạng `YYYY.M.N` khớp engine đang chạy. Loại lệch tiền tố branch: cảnh báo (review chặn).
+**Machine:** `aw check intake` → `[x] ĐẠT` — valid `Type`, has `Goal`, ≥ 1 validly labelled input, no `[INFERRED]`, `[HUMAN]` has verbatim text, `[JIRA]` key matches `jira_key_regex`, `Base:` sha is an ancestor of HEAD, `Engine:` is `YYYY.M.N` and matches the running engine. Type vs branch prefix mismatch: warning (review blocks).
 
-**Người:** chọn base, xác nhận loại việc và input.
+**Human:** chooses the base, confirms work type and input.

@@ -42,35 +42,35 @@ ad_mo_dau_lenh() { :; }
 # Cursor nạp .claude/ để tương thích (bật sẵn): lời dặn dưới đây gọi tool riêng
 # của Claude Code, agent khác làm theo sẽ sai mà không ai thấy.
 ad_danh_cho() {
-  printf '**Dành cho Claude Code.** Không có tool `AskUserQuestion` = bạn là agent khác (vd Cursor nạp `.claude/`) → **dừng**, dùng bản cùng tên trong thư mục của agent đó (Cursor: `.cursor/`).'
+  printf '**Dành cho Claude Code.** No `AskUserQuestion` tool = you are another agent (e.g. Cursor loading `.claude/`) → **stop**, use the same-named file in your own folder (Cursor: `.cursor/`).'
 }
 
 # Lenh khai choice_ui: true — "cau hoi lua chon" trong mo ta trung lap dich sang
 # tool AskUserQuestion cua Claude Code. O "Other" cua tool la lua chon tu nhap.
 ad_hoi_lua_chon() {
-  printf '## Cách hỏi lựa chọn trong Claude Code\n\n'
-  printf 'Mỗi lượt hỏi = **một lần gọi `AskUserQuestion`**, `multiSelect: false`; nhiều quyết định của một mục = nhiều phần tử `questions` trong **cùng** lần gọi (tối đa 4). Không in lựa chọn thành văn bản.\n\n'
-  printf -- '- `question`: một câu, kết thúc `?`. `header` (≤ 12 ký tự): mã và vị trí, vd `YC-001 1/8`.\n'
-  printf -- '- `options` (≤ 4) theo thứ tự mô tả bên dưới; `label` của phương án đề xuất **bắt đầu bằng** `(Đề xuất)`; `description` = hệ quả một dòng.\n'
-  printf -- '- **Không** thêm "Khác" hay "Chat về câu này": Claude Code tự có "Type something" và "Chat about this". Người chọn "Chat about this" → trả lời văn bản thường; rõ rồi thì gọi lại `AskUserQuestion` cho đúng câu đó.\n\n'
+  printf '## Asking choice questions in Claude Code\n\n'
+  printf 'Each question turn = **one `AskUserQuestion` call**, `multiSelect: false`; several decisions of one item = several `questions` entries in the **same** call (max 4). Never print options as text. Question and option text are in Vietnamese.\n\n'
+  printf -- '- `question`: one sentence ending with `?`. `header` (≤ 12 chars): id and position, e.g. `YC-001 1/8`.\n'
+  printf -- '- `options` (≤ 4) in the order described below; the recommended option'"'"'s `label` **starts with** `(Đề xuất)`; `description` = one-line consequence.\n'
+  printf -- '- **Do not** add "Other" or "Chat về câu này": Claude Code already provides "Type something" and "Chat about this". If the human picks "Chat about this" → answer in plain text; once clear, call `AskUserQuestion` again for the same question.\n\n'
 }
 
 # Hộp xác nhận của cổng duyệt (approval_gate: true) → AskUserQuestion. preview hiện
 # khi người rê vào lựa chọn: để người thấy đúng việc phải làm mà không phải cuộn lên.
 ad_hoi_cong_duyet() {
-  printf '### Hộp xác nhận trong Claude Code\n\n'
-  printf '**Một lần gọi `AskUserQuestion`**, `multiSelect: false`, một câu hỏi. Khối ```` ```text ```` stdout đứng **ngay trước** lần gọi (tối đa một câu mở đầu).\n\n'
+  printf '### Confirmation box in Claude Code\n\n'
+  printf '**One `AskUserQuestion` call**, `multiSelect: false`, one question. The ```` ```text ```` stdout block goes **right before** the call (at most one intro sentence).\n\n'
   if [ "$1" = design ]; then
-    printf -- '- `question`: `Spec chưa được duyệt nên chưa vào /aw-design được — bạn muốn làm gì?` (stdout ghi `ĐÃ ĐỔI SAU KHI DUYỆT`: `Spec đã đổi sau khi bạn duyệt nên chưa vào /aw-design được — bạn muốn làm gì?`) · `header`: `Duyệt spec`\n'
+    printf -- '- `question`: `Spec chưa được duyệt nên chưa vào /aw-design được — bạn muốn làm gì?` (stdout says `ĐÃ ĐỔI SAU KHI DUYỆT`: `Spec đã đổi sau khi bạn duyệt nên chưa vào /aw-design được — bạn muốn làm gì?`) · `header`: `Duyệt spec`\n'
   else
-    printf -- '- `question`: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?` (số lấy ở dòng `Trạng thái`) · `header`: `Duyệt D-xx`\n'
-    printf -- '- Chore (stdout là cổng duyệt **spec**): `question` = `Spec chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?`, `header` = `Duyệt spec`.\n'
+    printf -- '- `question`: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?` (numbers from the `Trạng thái` line) · `header`: `Duyệt D-xx`\n'
+    printf -- '- Chore (stdout is the **spec** gate): `question` = `Spec chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?`, `header` = `Duyệt spec`.\n'
   fi
-  printf -- '- `options` — đúng ba, đúng thứ tự, nhãn giữ nguyên, **không** gắn `(Đề xuất)`:\n'
-  printf '  1. `Tôi đã duyệt xong — kiểm lại` · `description`: `Agent chạy lại kiểm tra; đạt thì vào phase ngay.` · `preview`: phần `Cách duyệt` của stdout.\n'
-  printf '  2. `Giải thích từng điểm cần duyệt` · `description`: `Agent đi qua từng mục, nói nguồn và hậu quả. Không tick hộ.` · `preview`: phần `Nên đọc kỹ…` (spec) hoặc `Chưa duyệt:` (D-xx).\n'
+  printf -- '- `options` — exactly three, in order, labels verbatim, **no** `(Đề xuất)`:\n'
+  printf '  1. `Tôi đã duyệt xong — kiểm lại` · `description`: `Agent chạy lại kiểm tra; đạt thì vào phase ngay.` · `preview`: the `Cách duyệt` part of stdout.\n'
+  printf '  2. `Giải thích từng điểm cần duyệt` · `description`: `Agent đi qua từng mục, nói nguồn và hậu quả. Không tick hộ.` · `preview`: the `Nên đọc kỹ…` (spec) or `Chưa duyệt:` (D-xx) part.\n'
   printf '  3. `Dừng — tôi duyệt sau` · `description`: `Không chạy phase này. Duyệt xong thì gõ lại lệnh.`\n'
-  printf -- '- Không thêm lựa chọn khác (Claude Code tự có "Type something", "Chat about this"). Người gõ chữ → xử lý như trên (kể cả "duyệt hộ" → từ chối).\n\n'
+  printf -- '- No other options (Claude Code adds "Type something", "Chat about this"). Typed text → handle as above ("duyệt hộ" → refuse).\n\n'
 }
 
 ad_sinh "$@"

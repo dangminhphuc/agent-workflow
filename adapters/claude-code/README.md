@@ -23,12 +23,12 @@ dùng bản `.cursor/`.
 | `commands:` trong `workflow.yaml` | `.claude/commands/aw-<id>.md` (`/aw-import`, `/aw-clarify`) |
 | Phase `requires_fresh_agent: true` (`05-review`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch, mang mô tả phase đầy đủ |
 | `llm_checker:` (`workflow/checkers/<id>.md`) | `.claude/agents/soat-<id>.md` |
-| `approval_gate: true` (`02-design`, `03-plan`) | Bước "Cổng duyệt": `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
+| `approval_gate: true` (`02-design`, `03-plan`) | Bước "Approval gate": `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
 Mỗi lệnh phase gồm:
 
-1. **Bước 0** — `aw feature $ARGUMENTS`: suy feature từ branch → tham số → hỏi người. Ở checkout
+1. **Step 0** — `aw feature $ARGUMENTS`: suy feature từ branch → tham số → hỏi người. Ở checkout
    chính: dừng (trừ `arguments: input` — `/aw-intake` đề xuất worktree — và
    `runs_on_main_checkout: true` — `/aw-ship` dọn việc đã merge). Logic nằm trong script, không
    trong prompt.
@@ -37,7 +37,7 @@ Mỗi lệnh phase gồm:
 3. **Mô tả phase** lấy nguyên văn từ thân file nguồn. Riêng phase `requires_fresh_agent`: lệnh
    chỉ bàn giao cho subagent, không nạp mô tả vào phiên chính.
 
-Lệnh tiện ích chỉ có Bước 0 và thân file (`argument_hint`, `arguments: mixed` khi tham số có thứ
+Lệnh tiện ích chỉ có Step 0 và thân file (`argument_hint`, `arguments: mixed` khi tham số có thứ
 khác ngoài tên feature). Luật theo loại việc nằm hoàn toàn trong thân phase và checker — adapter
 không sinh nhánh nào theo loại.
 

@@ -1,49 +1,49 @@
-# Luật: Truy vết nguồn
+# Rule: source traceability
 
-Áp dụng cho `01-spec`; checker của `02-design`, `03-plan`, `05-review` chạy lại checker của spec.
+Applies to `01-spec`; the checkers of `02-design`, `03-plan`, `05-review` re-run the spec checker.
 
-Lỗi nguy hiểm nhất: agent tự nghĩ ra yêu cầu rồi trình bày như thể tài liệu đã nói. Luật này biến nó thành lỗi máy kiểm được.
+Most dangerous failure: the agent invents a requirement and presents it as if the source said it. This rule turns that into a machine-checkable error.
 
-## Nhãn nguồn
+## Source labels
 
-Mỗi `### YC-NNN` trong `spec.md` có **đúng một** dòng `Source:` mang một nhãn:
+Every `### YC-NNN` in `spec.md` has **exactly one** `Source:` line with one label:
 
-| Nhãn | Nghĩa | Kèm theo |
+| Label | Meaning | Must include |
 |---|---|---|
-| `[CONFLUENCE]` | Trích từ page Confluence | URL page + heading |
-| `[JIRA]` | Trích từ issue Jira | Mã issue + URL |
-| `[FILE]` | Trích từ file trong repo | Đường dẫn + heading |
-| `[INFERRED]` | Quyết định kỹ thuật tự suy ra | Lý do + YC gốc nó phục vụ |
-| `[OPEN-QUESTION]` | Chưa có nguồn, dùng giả định tạm | Mục cùng mã trong `open-questions.md` |
+| `[CONFLUENCE]` | Quoted from a Confluence page | Page URL + heading |
+| `[JIRA]` | Quoted from a Jira issue | Issue key + URL |
+| `[FILE]` | Quoted from a file in the repo | Path + heading |
+| `[INFERRED]` | Technical decision you derived | Reason + the YC it serves |
+| `[OPEN-QUESTION]` | No source yet, temporary assumption | Entry with the same id in `open-questions.md` |
 
-Không có nhãn thứ sáu. Không xếp được vào năm nhãn → không phải yêu cầu → ghi vào `open-questions.md`.
+No sixth label. Does not fit the five → not a requirement → put it in `open-questions.md`.
 
-## `[INFERRED]` hay `[OPEN-QUESTION]`
+## `[INFERRED]` vs `[OPEN-QUESTION]`
 
-- `[INFERRED]` — quyết định **kỹ thuật** tài liệu không cần nói, ai đọc cũng thấy hiển nhiên. Vd: index cột `created_at` khi BRD đòi lọc theo ngày.
-- `[OPEN-QUESTION]` — quyết định **nghiệp vụ** tài liệu bỏ trống, người khác có thể chọn khác. Vd: BRD nói "thông báo" nhưng không nói email hay in-app.
+- `[INFERRED]` — a **technical** decision the source need not state, obvious to any reader. E.g. index on `created_at` when the BRD asks to filter by date.
+- `[OPEN-QUESTION]` — a **business** decision the source leaves open, someone could choose differently. E.g. BRD says "notify" but not email vs in-app.
 
-Phép thử: BA/PO có thể nói "không, ý tôi khác" → `[OPEN-QUESTION]`. Gắn `[INFERRED]` cho quyết định nghiệp vụ là vi phạm nặng hơn bỏ trống nhãn — máy không bắt được.
+Test: could the BA/PO say "no, I meant something else"? → `[OPEN-QUESTION]`. Labelling a business decision `[INFERRED]` is worse than a missing label — no machine catches it.
 
-## Mức chặn của `[OPEN-QUESTION]`
+## Blocking levels of `[OPEN-QUESTION]`
 
-Agent đề xuất `Blocking`, người duyệt. Chọn theo "nếu giả định sai thì phải làm lại gì". Chỉ người được hạ mức.
+The agent proposes `Blocking`, the human approves. Choose by "if the assumption is wrong, what must be redone". Only the human may lower it.
 
-| Mức | Khi nào | Chặn gì |
+| Level | When | What it blocks |
 |---|---|---|
-| `blocking` | Sai thì cả thiết kế đổi hướng | `02-design` (chore: `03-plan`) và mọi phase sau, tới khi `answered` |
-| `review-blocking` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `04-implement` cảnh báo, `05-review` chặn |
-| `non-blocking` | Sai thì sửa nhỏ, giao trước được | Không chặn; review ghi YC đó `pending` |
+| `blocking` | Wrong → the whole design changes direction | `02-design` (chore: `03-plan`) and every later phase, until `answered` |
+| `review-blocking` | Wrong → part of the code is redone | Flow continues on the assumption; `04-implement` warns, `05-review` blocks |
+| `non-blocking` | Wrong → small fix, may ship first | Nothing; review marks that YC `pending` |
 
-Trả lời một điểm mù: ghi `Answer:`, đổi `Status: answered`, **và** đổi nhãn nguồn của YC trong spec (vd `[FILE]` open-questions.md § YC-002). Hai file lệch nhau thì checker chặn.
+Answering an open question: write `Answer:`, set `Status: answered`, **and** change the YC's source label in the spec (e.g. `[FILE]` open-questions.md § YC-002). The checker blocks if the two files disagree.
 
-## `aw check spec <thư-mục-feature>` kiểm
+## `aw check spec <thư-mục-feature>` checks
 
-1. Mỗi `### YC-NNN` có đúng một `Source:` hợp lệ. Vùng YC kết thúc ở heading `##`/`###` kế tiếp (dòng `Source:` dưới `### Ghi chú` không tính cho YC trên). Mã YC không trùng.
-2. Mỗi YC có `Priority: must | should` và ít nhất một `- [ ] …` có nội dung thật (không `<...>`, không trong comment HTML).
-3. Mỗi `[OPEN-QUESTION]` có mục cùng mã trong `open-questions.md`, có `Assumption`, có `Blocking` hợp lệ.
-4. Ngược lại: mỗi mục `open-questions.md` trỏ về YC có thật; `Status: open | answered`; `open` ↔ spec còn `[OPEN-QUESTION]`; `answered` ↔ có `Answer` và spec đã đổi nhãn. File 0 byte hợp lệ (đã rà, không có điểm mù).
-5. `spec.md` có `Risk: high | normal` và đúng một ô `- [ ] **Approved by human**` ở phần đầu; đã tick thì dấu duyệt phải khớp nội dung.
-6. Có đủ `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` với nội dung thật (không có gì thì ghi thẳng "Không có…" / "Không phát hiện mâu thuẫn.").
-7. Mỗi dòng mâu thuẫn có cột "Xử lý" trỏ tới điểm mù (`open-questions.md § YC-NNN`) hoặc nguồn đã chốt (`[CONFLUENCE]` `[JIRA]` `[FILE]`). Agent tự phân xử mâu thuẫn nghiệp vụ = tự nghĩ ra yêu cầu.
-8. Mục `blocking` còn `open` chặn design (chore: plan); `review-blocking` còn mở: implement cảnh báo, review chặn.
+1. Every `### YC-NNN` has exactly one valid `Source:`. A YC's region ends at the next `##`/`###` heading (a `Source:` under `### Ghi chú` does not count for the YC above). No duplicate ids.
+2. Every YC has `Priority: must | should` and at least one real `- [ ] …` (not `<...>`, not inside an HTML comment).
+3. Every `[OPEN-QUESTION]` has a same-id entry in `open-questions.md` with `Assumption` and a valid `Blocking`.
+4. Reverse: every `open-questions.md` entry points to a real YC; `Status: open | answered`; `open` ↔ spec still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and the spec label was changed. A 0-byte file is valid (reviewed, nothing found).
+5. `spec.md` has `Risk: high | normal` and exactly one `- [ ] **Approved by human**` box in the header; if ticked, the approval hash must match the content.
+6. `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` exist with real content (nothing → write "Không có…" / "Không phát hiện mâu thuẫn.").
+7. Every conflict row's "Resolution" column points to an open question (`open-questions.md § YC-NNN`) or a settled source (`[CONFLUENCE]` `[JIRA]` `[FILE]`). Resolving a business conflict yourself = inventing a requirement.
+8. `blocking` still `open` blocks design (chore: plan); `review-blocking` open: implement warns, review blocks.

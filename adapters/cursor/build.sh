@@ -36,48 +36,48 @@ ad_dau_lenh() {
 }
 
 ad_mo_dau_lenh() {
-  printf '## Tham số của lệnh trong Cursor\n\n'
-  printf 'Cursor không thay biến: phần chữ người gõ sau `/%s` (gợi ý: `%s`) đi kèm tin nhắn. Bên dưới, `<tham-số>` là **đúng phần chữ đó, chép nguyên văn** (không tóm tắt, không sửa, không thêm bớt dấu nháy).\n\n' "$1" "$2"
-  printf -- '- Không gõ gì: bỏ hẳn `<tham-số>` khỏi lệnh `aw …` (`aw feature`, không phải `aw feature ""`).\n'
+  printf '## Command arguments in Cursor\n\n'
+  printf 'Cursor does not substitute variables: the text typed after `/%s` (hint: `%s`) comes with the message. Below, `<tham-số>` means **exactly that text, copied verbatim** (no summarising, no fixes, no added/removed quotes).\n\n' "$1" "$2"
+  printf -- '- Nothing typed: drop `<tham-số>` from `aw …` entirely (`aw feature`, not `aw feature ""`).\n'
   if [ "$3" = "input" ]; then
-    printf -- '- Không gõ gì: dòng giữa heredoc của `aw input` để trống — engine trả `KHÔNG CÓ THAM SỐ`.\n'
+    printf -- '- Nothing typed: leave the line inside the `aw input` heredoc empty — the engine returns `KHÔNG CÓ THAM SỐ`.\n'
   fi
-  printf -- '- **Không bao giờ** chạy lệnh còn nguyên chữ `<tham-số>` (engine từ chối: `SAI CÁCH GỌI` / `TÊN KHÔNG HỢP LỆ`).\n\n'
+  printf -- '- **Never** run a command still containing the literal `<tham-số>` (the engine refuses: `SAI CÁCH GỌI` / `TÊN KHÔNG HỢP LỆ`).\n\n'
 }
 
 ad_danh_cho() {
-  printf '**Dành cho Cursor.** Cursor cũng nạp bản Claude Code ở `.claude/`: gặp lệnh, subagent, skill cùng tên thì dùng bản `.cursor/` này.'
+  printf '**Dành cho Cursor.** Cursor also loads the Claude Code copies in `.claude/`: for a same-named command, subagent or skill, use this `.cursor/` one.'
 }
 
 # Lenh khai choice_ui: true. Cursor co the co tool hoi lua chon, co the khong (tuy
 # ban, IDE hay CLI) — loi dan phai chay dung ca hai truong hop, va luon chua loi
 # tu nhap / "Chat ve cau nay" vi khong chac tool tu them.
 ad_hoi_lua_chon() {
-  printf '## Cách hỏi lựa chọn trong Cursor\n\n'
-  printf 'Mỗi lượt hỏi = **một câu hỏi lựa chọn**, hỏi xong **dừng chờ** người. Nhiều quyết định của một mục: hỏi từng cái, trong cùng lượt.\n\n'
-  printf -- '- Câu hỏi: một câu, kết thúc `?`, mở đầu bằng mã và vị trí, vd `YC-001 1/8`.\n'
-  printf -- '- ≤ 4 lựa chọn theo thứ tự mô tả bên dưới; nhãn phương án đề xuất **bắt đầu bằng** `(Đề xuất)`; mỗi lựa chọn kèm hệ quả một dòng.\n'
-  printf -- '- Có tool hỏi lựa chọn của Cursor (vd `AskQuestion`) thì dùng. Không có hoặc lỗi: in lựa chọn đánh số `1.` `2.` … — người trả lời bằng số hoặc chữ.\n'
-  printf -- '- **Luôn** còn lối tự nhập và "Chat về câu này". Tool không tự có thì ghi dòng cuối: `Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này.`\n\n'
+  printf '## Asking choice questions in Cursor\n\n'
+  printf 'Each question turn = **one choice question**, then **stop and wait**. Several decisions of one item: ask each, in the same turn. Question and option text are in Vietnamese.\n\n'
+  printf -- '- Question: one sentence ending with `?`, starting with id and position, e.g. `YC-001 1/8`.\n'
+  printf -- '- ≤ 4 options in the order described below; the recommended label **starts with** `(Đề xuất)`; each option has a one-line consequence.\n'
+  printf -- '- If a Cursor choice tool exists (e.g. `AskQuestion`), use it. None or it fails: print numbered options `1.` `2.` … — the human answers by number or text.\n'
+  printf -- '- **Always** keep the free-text and "Chat về câu này" exits. If the tool does not add them, end with the line: `Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này.`\n\n'
 }
 
 # Hộp xác nhận của cổng duyệt (approval_gate: true). Câu hỏi và ba nhãn giống hệt
 # bản Claude Code (test đối chiếu kiểm); Cursor không có preview nên phần
 # "Cách duyệt" phải nằm nguyên trong khối text in ngay trước.
 ad_hoi_cong_duyet() {
-  printf '### Hộp xác nhận trong Cursor\n\n'
-  printf '**Một câu hỏi lựa chọn**: có tool (vd `AskQuestion`) thì dùng; không thì in ba lựa chọn đánh số rồi dừng chờ. Cursor không có ô xem trước: phần `Cách duyệt` phải nằm **đủ** trong khối ```` ```text ```` in ngay trước câu hỏi.\n\n'
+  printf '### Confirmation box in Cursor\n\n'
+  printf '**One choice question**: use a Cursor choice tool (e.g. `AskQuestion`) if present; otherwise print the three numbered options and wait. Cursor has no hover preview: the `Cách duyệt` part must be **complete** in the ```` ```text ```` block printed right before the question.\n\n'
   if [ "$1" = design ]; then
-    printf -- '- Câu hỏi: `Spec chưa được duyệt nên chưa vào /aw-design được — bạn muốn làm gì?` (stdout ghi `ĐÃ ĐỔI SAU KHI DUYỆT`: `Spec đã đổi sau khi bạn duyệt nên chưa vào /aw-design được — bạn muốn làm gì?`)\n'
+    printf -- '- Question: `Spec chưa được duyệt nên chưa vào /aw-design được — bạn muốn làm gì?` (stdout says `ĐÃ ĐỔI SAU KHI DUYỆT`: `Spec đã đổi sau khi bạn duyệt nên chưa vào /aw-design được — bạn muốn làm gì?`)\n'
   else
-    printf -- '- Câu hỏi: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?` (số lấy ở dòng `Trạng thái`)\n'
-    printf -- '- Chore (stdout là cổng duyệt **spec**): `Spec chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?`\n'
+    printf -- '- Question: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?` (numbers from the `Trạng thái` line)\n'
+    printf -- '- Chore (stdout is the **spec** gate): `Spec chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?`\n'
   fi
-  printf -- '- Lựa chọn — đúng ba, đúng thứ tự, nhãn giữ nguyên, **không** gắn `(Đề xuất)`:\n'
+  printf -- '- Options — exactly three, in order, labels verbatim, **no** `(Đề xuất)`:\n'
   printf '  1. `Tôi đã duyệt xong — kiểm lại` — chạy lại kiểm tra; đạt thì vào phase ngay.\n'
   printf '  2. `Giải thích từng điểm cần duyệt` — đi qua từng mục, nói nguồn và hậu quả. Không tick hộ.\n'
   printf '  3. `Dừng — tôi duyệt sau` — không chạy phase này; duyệt xong gõ lại lệnh.\n'
-  printf -- '- Không thêm lựa chọn khác. Người gõ chữ → xử lý như trên (kể cả "duyệt hộ" → từ chối).\n\n'
+  printf -- '- No other options. Typed text → handle as above ("duyệt hộ" → refuse).\n\n'
 }
 
 ad_sinh "$@"

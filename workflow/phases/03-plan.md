@@ -17,51 +17,51 @@ exit_human: []
 needs_clean_context: true
 ---
 
-# Phase 03 — Kế hoạch
+# Phase 03 — Plan
 
-## Mục tiêu
+## Goal
 
-Chia `tdd.md` **đã duyệt** thành task thực thi được. `plan.md` chỉ quản lý thực thi — **không có lựa chọn kỹ thuật mới** (phase này không có gate người).
+Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages execution — **no new technical choices** (this phase has no human gate).
 
-## Đầu vào
+## Input
 
-- `spec.md`, `tdd.md` — qua `aw check design`, **mọi D-xx đã được người duyệt** (tick, dấu duyệt khớp).
-- `open-questions.md` — để biết task nào đứng trên giả định tạm.
-- `aw rules plan` — đọc từng file nó in.
+- `spec.md`, `tdd.md` — pass `aw check design`, **every D-xx approved by the human** (ticked, hash matches).
+- `open-questions.md` — to know which tasks stand on a temporary assumption.
+- `aw rules plan` — read every file it prints.
 
-`chore` (không có `tdd.md`): đầu vào là `spec.md` — qua `aw check spec`, đã tick "Approved by human", không còn điểm mù `blocking` mở. Task không có `Based on: D-xx`.
+`chore` (no `tdd.md`): input is `spec.md` — passes `aw check spec`, "Approved by human" ticked, no open `blocking` question. Tasks have no `Based on: D-xx`.
 
-## Việc phải làm
+## Steps
 
-1. **Chia task.** Mỗi task:
-   - `Covers:` ≥ 1 mã `YC-NNN` có trong `spec.md`;
-   - `Based on: D-xx` nếu thực thi một quyết định;
+1. **Split into tasks.** Each task:
+   - `Covers:` ≥ 1 `YC-NNN` from `spec.md`;
+   - `Based on: D-xx` if it implements a decision;
    - `Design: tdd.md § …`;
-   - `Expected files:` — đường dẫn trong backtick, glob được (`src/todo/*`) — dùng để kiểm phạm vi diff;
-   - `Verify:` — lệnh trong backtick + quan sát gì;
-   - `Depends on:` nếu có;
-   - đủ nhỏ để xong trong một lượt và tự nó không làm hỏng build.
-2. **Task đứng trên giả định tạm:** `On assumption: **yes** — open-questions.md § YC-NNN`, không thì `no`.
-3. **Hoãn có lý do:** YC không task nào phủ → `## Deferred` + lý do. Ưu tiên hoãn `should`; hoãn `must` thì checker cảnh báo — nói rõ với người.
-4. **`## Manual verification`:** YC không test tự động được + lý do (thiếu → implement cảnh báo, review chặn).
-5. **Theo loại việc:**
-   - `bugfix`: task đầu là **viết test tái hiện**, tách khỏi task sửa (`aw check repro` chạy giữa hai task).
-   - `perf`: task đầu là **đo trước** (`aw check perf <thư-mục-feature> --before`).
-   - `refactor`/`perf`: test cũ dự kiến phải sửa → khai ở `## Modified existing tests`.
-   - `chore`: nâng dependency → `## Dependency upgrades` (chỉ `patch | minor`).
-6. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md` (chore: bỏ `tdd.md`).
+   - `Expected files:` — paths in backticks, globs allowed (`src/todo/*`) — used to check diff scope;
+   - `Verify:` — command in backticks + what to observe;
+   - `Depends on:` if any;
+   - small enough to finish in one go without breaking the build on its own.
+2. **Tasks on a temporary assumption:** `On assumption: **yes** — open-questions.md § YC-NNN`, else `no`.
+3. **Defer with a reason:** a YC no task covers → `## Deferred` + reason. Prefer deferring `should`; deferring `must` warns — tell the human.
+4. **`## Manual verification`:** YCs that cannot be tested automatically + reason (missing → implement warns, review blocks).
+5. **By work type:**
+   - `bugfix`: first task **writes the repro test**, separate from the fix task (`aw check repro` runs between them).
+   - `perf`: first task **measures before** (`aw check perf <thư-mục-feature> --before`).
+   - `refactor`/`perf`: old tests expected to change → `## Modified existing tests`.
+   - `chore`: dependency bumps → `## Dependency upgrades` (`patch | minor` only).
+6. **Record inputs:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md` (chore: drop `tdd.md`).
 
-## Đầu ra
+## Output
 
-`plan.md` theo `templates/plan.md`.
+`plan.md` per `templates/plan.md`.
 
-## Cấm
+## Forbidden
 
-- **Viết code.**
-- Lựa chọn kỹ thuật không có trong `tdd.md` — quay lại `02-design` (mở lại/thêm D).
-- Task không ánh xạ về `YC-NNN` nào; task kiểu "refactor toàn bộ module X", "dọn code cũ" (không có tiêu chí xong).
-- Thêm yêu cầu không có trong `spec.md` — quay lại `01-spec`.
+- **Writing code.**
+- Technical choices not in `tdd.md` — go back to `02-design` (reopen/add a D).
+- Tasks that map to no `YC-NNN`; tasks like "refactor all of module X", "clean up old code" (no done criterion).
+- Requirements not in `spec.md` — go back to `01-spec`.
 
-## Điều kiện ra
+## Exit conditions
 
-**Máy:** `aw check plan` ra `[x] ĐẠT` — đầu vào qua `aw check design`, mọi D đã duyệt; mọi task có `Covers:` hợp lệ, `Expected files:`, `Verify:` không rỗng, `Based on:` trỏ D có thật; mọi YC có task phủ **hoặc** nằm ở "Deferred" kèm lý do.
+**Machine:** `aw check plan` → `[x] ĐẠT` — input passes `aw check design`, every D approved; every task has valid `Covers:`, non-empty `Expected files:`, `Verify:`, `Based on:` pointing to a real D; every YC covered by a task **or** in "Deferred" with a reason.

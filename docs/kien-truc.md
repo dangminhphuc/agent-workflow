@@ -275,6 +275,11 @@ Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đ
 
 - File phase chỉ giữ **chỉ thị** (mục tiêu, đầu vào, việc phải làm, cấm, điều kiện ra); lý do nằm
   ở file này.
+- **Agent đọc tiếng Anh, người đọc tiếng Việt.** Cùng một ý, tiếng Việt tốn nhiều token hơn đáng
+  kể, nên thân phase, rules, checker LLM và lời dặn adapter viết tiếng Anh. Mọi thứ người thấy giữ
+  tiếng Việt: `name`/`summary`, mẫu artifact, output và nhãn `Kết quả` của `aw`, câu hỏi/lựa chọn
+  hiện cho người; agent được dặn nói và viết artifact bằng tiếng Việt. Nhãn của `aw` được nhắc
+  nguyên văn trong chữ tiếng Anh như hằng số.
 - Mỗi luật một chỗ: bảng mức chặn ở `rules/truy-vet-nguon.md`; hợp đồng vào/ra do adapter dựng từ
   frontmatter, thân phase không lặp lại.
 - `rules/truy-vet-nguon.md` chỉ nạp cho lệnh khai `trace_rule: true`; `conventions.md` để "tra khi

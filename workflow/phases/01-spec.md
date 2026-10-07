@@ -14,93 +14,93 @@ outputs:
 exit_machine:
   - aw check spec
 exit_human:
-  - Chủ repo duyệt danh sách yêu cầu và phần "Out of scope"
-  - Chủ repo duyệt nhãn "Blocking" của từng [OPEN-QUESTION] (blocking | review-blocking | non-blocking)
-  - Chủ repo duyệt "Risk" (high → design chạy Mode 2, người phác D-xx trước)
-  - Duyệt xong, chủ repo tự tick ô "Approved by human" — design (chore thì plan) chặn tới lúc đó
+  - Repo owner reviews the requirement list and "Out of scope"
+  - Repo owner approves the "Blocking" level of every [OPEN-QUESTION] (blocking | review-blocking | non-blocking)
+  - Repo owner approves "Risk" (high → design runs Mode 2, the human drafts D-xx first)
+  - Then the repo owner ticks "Approved by human" — design (chore: plan) blocks until then
 needs_clean_context: true
 trace_rule: true
 ---
 
-# Phase 01 — Đặc tả
+# Phase 01 — Spec
 
-## Mục tiêu
+## Goal
 
-Biến yêu cầu nghiệp vụ thành đặc tả **kiểm chứng được**, và lộ ra chỗ nguồn nói chưa rõ hoặc mâu thuẫn. **Không sinh yêu cầu mới** — chỉ dịch và làm sắc yêu cầu đã có. Luật nhãn nguồn: `rules/truy-vet-nguon.md`.
+Turn business requirements into a **verifiable** spec, and expose where sources are unclear or contradict each other. **Never create requirements** — only translate and sharpen existing ones. Source-label rule: `rules/truy-vet-nguon.md`.
 
-## Đầu vào
+## Input
 
-- `intake.md` — phải qua `aw check intake`. Chưa có → dừng, chạy `/aw-intake`.
-- Mọi input liệt kê trong `intake.md`. Không đọc nguồn ngoài danh sách (muốn thêm → thêm vào `intake.md` trước).
-- `aw rules spec` — đọc từng file nó in.
+- `intake.md` — must pass `aw check intake`. Missing → stop, run `/aw-intake`.
+- Every input listed in `intake.md`. Read nothing outside that list (to add a source, add it to `intake.md` first).
+- `aw rules spec` — read every file it prints.
 
-| Input | Cách đọc | Nhãn nguồn trong spec |
+| Input | How to read | Source label in spec |
 |---|---|---|
 | `[CONFLUENCE]` | MCP Atlassian | `[CONFLUENCE]` URL + heading |
-| `[JIRA]` | MCP Atlassian | `[JIRA]` mã issue + URL |
-| `[FILE]` (kể cả incident note) | Đọc trực tiếp | `[FILE]` đường dẫn + heading |
-| `[HUMAN]` | Nguyên văn trong `intake.md` | `[FILE] intake.md § Input` |
+| `[JIRA]` | MCP Atlassian | `[JIRA]` key + URL |
+| `[FILE]` (incl. incident notes) | Read directly | `[FILE]` path + heading |
+| `[HUMAN]` | Verbatim text in `intake.md` | `[FILE] intake.md § Input` |
 
-## Theo loại việc
+## By work type
 
-| Loại | Spec phải có thêm |
+| Type | Spec must also have |
 |---|---|
 | `bugfix` | `## Reproduction`: `Steps to reproduce:`, `Actual behavior:`, `Expected behavior:` |
-| `refactor` | Mỗi YC có `Type: preserve \| structural`, **không có YC hành vi mới**. YC preserve có `Protected by: \`<file test>\`` — file **có sẵn trên nhánh gốc** |
-| `perf` | Như refactor + ít nhất một `Type: performance` có `Target:` bằng số |
+| `refactor` | Every YC has `Type: preserve \| structural`, **no new behaviour**. Preserve YCs have `Protected by: \`<test file>\`` — the file **already exists on the base branch** |
+| `perf` | Like refactor + at least one `Type: performance` with a numeric `Target:` |
 
-Refactor vùng chưa có test bảo vệ → checker chặn. Viết test thành việc riêng trước, hoặc thu hẹp phạm vi.
+Refactoring an area with no protecting test → checker blocks. Write the tests as a separate job first, or narrow the scope.
 
-## Việc phải làm
+## Steps
 
-1. **Đọc hết nguồn.** Ghi định danh chính xác và **phiên bản** đã đọc (Confluence: số version; Jira: `updated`; `[FILE]`: sha commit) vào `## Sources`. Không đọc lướt rồi tóm tắt.
-2. **Trích nguyên văn** câu mang yêu cầu trước khi diễn giải — tách "nguồn nói gì" khỏi "ta hiểu thế nào".
-3. **Viết YC kiểm chứng được.** Mỗi `YC-NNN`:
-   - ít nhất một `- [ ] …` **quan sát được từ ngoài** ("dưới 300ms với 10k bản ghi", không phải "phải nhanh");
-   - `Priority: must | should` — `should` **chỉ khi nguồn nói vậy** ("nice to have", "phase 2 nếu kịp"); nguồn im lặng = `must`.
-4. **Rà NFR.** Với từng nhóm: việc có đụng không, nguồn nói gì?
+1. **Read every source fully.** Record exact identifiers and the **version** read (Confluence: page version; Jira: `updated`; `[FILE]`: commit sha) in `## Sources`. Do not skim and summarise.
+2. **Quote requirement sentences verbatim** before interpreting — separate "what the source says" from "how we read it".
+3. **Write verifiable YCs.** Each `YC-NNN`:
+   - at least one `- [ ] …` **observable from outside** ("under 300ms with 10k records", not "must be fast");
+   - `Priority: must | should` — `should` **only if the source says so** ("nice to have", "phase 2 if time"); source silent = `must`.
+4. **Check NFRs.** For each group: does the work touch it, what does the source say?
 
-   | Nhóm | Câu hỏi |
+   | Group | Questions |
    |---|---|
-   | Phân quyền | Ai được xem / sửa / duyệt? Vai trò nào bị chặn? |
-   | Audit | Có phải lưu ai, lúc nào, giá trị cũ? |
-   | Hiệu năng | Bao nhiêu bản ghi, người dùng đồng thời? |
-   | Dữ liệu nhạy cảm | Dữ liệu cá nhân, tài chính? Che, mã hoá, thời hạn lưu? |
-   | Tương thích ngược | API / file / báo cáo bên ngoài nào đang dùng thứ sắp đổi? |
-   | Lỗi & khôi phục | Hệ thống ngoài lỗi thì sao? Thử lại, đảo ngược? |
+   | Authorisation | Who may view / edit / approve? Which roles are blocked? |
+   | Audit | Must who/when/old value be recorded? |
+   | Performance | How many records, concurrent users? |
+   | Sensitive data | Personal or financial data? Masking, encryption, retention? |
+   | Backward compatibility | Which external API / file / report uses what will change? |
+   | Failure & recovery | External system fails → then what? Retry, rollback? |
 
-   Nguồn có nói → YC. Có đụng mà nguồn im lặng → `[OPEN-QUESTION]` (thường `review-blocking`). Không đụng → bỏ qua. Không bịa số liệu.
-5. **Bối cảnh:** vai trò người dùng theo nguồn vào `## Context`. Từ dễ hiểu lệch ("kỳ", "hạch toán") → `## Glossary` (tuỳ chọn), mỗi thuật ngữ kèm nguồn.
-6. **Gắn nhãn nguồn** cho từng YC.
-7. **Tách điểm mù:** chỗ nguồn không rõ → `[OPEN-QUESTION]` + mục trong `open-questions.md` với giả định tạm, "nếu sai phải làm lại gì", và `Blocking` đề xuất (bảng mức chặn trong `rules/truy-vet-nguon.md`). Chỉ `blocking` dừng flow ngay; lệnh `clarify` dẫn người trả lời.
-8. **Rà mâu thuẫn** giữa các nguồn vào `## Source conflicts`. Cột "Xử lý" **chỉ** trỏ tới điểm mù (`open-questions.md § YC-NNN`) hoặc nguồn đã chốt (comment `[JIRA]` của PO, page `[CONFLUENCE]` mới hơn…). Không có → "Không phát hiện mâu thuẫn."
-9. **`## Out of scope`:** liệt kê thẳng điều *không* làm — chặn phase sau làm quá tay. Không có → "Không có."
-10. **`## Constraints & dependencies`:** hệ thống ngoài, quy định pháp lý–kế toán, deadline, việc team khác — kèm nguồn. Không có → "Không có ràng buộc hay phụ thuộc ngoài."
-11. **Đề xuất `Risk`:** `high` khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược; còn lại `normal`. Lý do một dòng. `high` → design chạy Mode 2.
-12. **Để ô `- [ ] **Approved by human**` chưa tick.** Mỗi lần sửa nội dung spec (kể cả chạy lại, kể cả `clarify`) đều **bỏ tick**. Tick + nội dung đổi → `aw check` chặn (hook `aw guard`, nếu cài, tự bỏ tick).
-13. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> spec.md intake.md`.
+   Source says → YC. Touched but source silent → `[OPEN-QUESTION]` (usually `review-blocking`). Not touched → skip. Never invent numbers.
+5. **Context:** user roles per the source in `## Context`. Ambiguous domain terms ("kỳ", "hạch toán") → `## Glossary` (optional), each with its source.
+6. **Label the source** of every YC.
+7. **Split out open questions:** unclear in the source → `[OPEN-QUESTION]` + entry in `open-questions.md` with the temporary assumption, "if wrong, redo what", and a proposed `Blocking` (levels table in `rules/truy-vet-nguon.md`). Only `blocking` stops the flow now; the `clarify` command walks the human through answers.
+8. **Check conflicts** between sources in `## Source conflicts`. The "Resolution" column may **only** point to an open question (`open-questions.md § YC-NNN`) or a settled source (PO's `[JIRA]` comment, newer `[CONFLUENCE]` page…). None → "Không phát hiện mâu thuẫn."
+9. **`## Out of scope`:** list plainly what is *not* done — stops later phases overreaching. None → "Không có."
+10. **`## Constraints & dependencies`:** external systems, legal/accounting rules, deadlines, other teams' work — with sources. None → "Không có ràng buộc hay phụ thuộc ngoài."
+11. **Propose `Risk`:** `high` when touching money/accounting, new integrations, core schema, or hard-to-reverse changes; otherwise `normal`. One-line reason. `high` → design runs Mode 2.
+12. **Leave `- [ ] **Approved by human**` unticked.** Every content edit of the spec (rerun, `clarify` included) **unticks** it. Ticked + content changed → `aw check` blocks (the `aw guard` hook, if installed, unticks).
+13. **Record inputs:** `aw based-on <thư-mục-feature> spec.md intake.md`.
 
-## Đầu ra
+## Output
 
-- `spec.md` theo `templates/spec.md`.
-- `open-questions.md` theo `templates/open-questions.md` — **luôn tồn tại**; không có điểm mù thì ghi "No open questions" (file rỗng = đã rà; thiếu file = chưa rà).
+- `spec.md` per `templates/spec.md`.
+- `open-questions.md` per `templates/open-questions.md` — **always exists**; no open questions → write "No open questions" (empty file = reviewed; missing file = not reviewed).
 
-## Cấm
+## Forbidden
 
-- Bịa yêu cầu không truy được về nguồn.
-- **Chọn giải pháp kỹ thuật** (thư viện, bảng, module) — việc của `02-design`.
-- Tự chọn một cách hiểu cho chỗ mơ hồ mà không ghi `[OPEN-QUESTION]`.
-- Gắn `[INFERRED]` cho quyết định nghiệp vụ; hạ `Risk`/`Blocking` để khỏi bị chặn; ghi `should` khi nguồn không nói.
-- Tự phân xử mâu thuẫn nguồn ("chọn bên an toàn hơn").
-- **Tick ô "Approved by human"**, sửa/xoá dấu duyệt.
-- Viết code, kể cả minh hoạ.
+- Requirements that do not trace to a source.
+- **Choosing a technical solution** (library, tables, modules) — that is `02-design`.
+- Picking one reading of an ambiguity without an `[OPEN-QUESTION]`.
+- `[INFERRED]` on a business decision; lowering `Risk`/`Blocking` to avoid blocks; `should` the source did not say.
+- Resolving source conflicts yourself ("pick the safer side").
+- **Ticking "Approved by human"**, editing/deleting the approval hash.
+- Writing code, even illustrative.
 
-## Điều kiện ra
+## Exit conditions
 
-**Máy:** `aw check spec` ra `[x] ĐẠT` (danh sách kiểm: `rules/truy-vet-nguon.md`).
+**Machine:** `aw check spec` → `[x] ĐẠT` (checklist: `rules/truy-vet-nguon.md`).
 
-**Người:**
-- Duyệt YC và "Out of scope"; duyệt `Blocking` và `Risk`.
-- Tick "Approved by human". `02-design` (chore: `03-plan`) chặn tới lúc đó. Sửa spec sau khi tick → duyệt lại: đọc chỗ đổi rồi xoá `<!-- approval-hash: … -->` (giữ tick), hoặc tick lại nếu tick đã bị bỏ.
+**Human:**
+- Reviews YCs and "Out of scope"; approves `Blocking` and `Risk`.
+- Ticks "Approved by human". `02-design` (chore: `03-plan`) blocks until then. Spec edited after the tick → re-approve: read the change and delete `<!-- approval-hash: … -->` (keep the tick), or re-tick if it was removed.
 
-Điểm mù còn mở: review không được kết luận `pass` cho YC đó; `blocking`/`review-blocking` còn mở thì review chặn.
+Open questions still open: review may not mark that YC `pass`; `blocking`/`review-blocking` still open → review blocks.
