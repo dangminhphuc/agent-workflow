@@ -210,9 +210,9 @@ Loại việc **đổi luật** của các phase sau:
 |---|---|---|---|
 | `feature` | đủ | — | — |
 | `bugfix` | đủ | Spec có "Reproduction". `aw check repro` tự chạy test khi diff **mới chỉ đụng file test**, ghi `tai-hien.md`; test phải **đỏ** | Test đỏ **đúng vì bug** (review ghi "Test tái hiện đỏ vì: …") |
-| `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Test cũ bị sửa" | Diff test cũ chỉ đổi import/cấu trúc |
+| `refactor` | đủ | YC chỉ `giữ nguyên \| cấu trúc`; YC giữ nguyên có `Protected by:` file test **có sẵn trên nhánh gốc**. Xoá test cũ → chặn; sửa test cũ phải khai ở "Modified existing tests" | Diff test cũ chỉ đổi import/cấu trúc |
 | `perf` | đủ | Như refactor + YC `performance` có số liệu; `aw check perf --before/--after` tự đo, ghi `do-hieu-nang.md` | Số đo có đạt mục tiêu (đo dao động nên máy không chặn theo ngưỡng) |
-| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Nâng dependency" (chỉ `vá \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
+| `chore` | bỏ design | Diff đụng `mau_code_production` → chặn; đụng `mau_file_dependency` thì plan phải có bảng "Dependency upgrades" (chỉ `patch \| minor` — major là `refactor`) | Mức phiên bản khai đúng |
 
 Không phải loại riêng: `utils` (= feature hoặc refactor), `hotfix` (= bugfix gấp),
 `security` (= bugfix/feature + rủi ro cao). `spike` nằm ngoài quy trình. Việc lai
@@ -293,22 +293,22 @@ Hai cách làm:
   phương án agent đưa ra.
 
 **Mở lại quyết định:** mở lại đúng một D-xx, sửa tại chỗ (lịch sử để git giữ), ghi
-trạng thái `reopened` + dòng `Reopen reason:`. Grep `Dựa trên: D-xx` ra các task bị ảnh hưởng, chỉ
+trạng thái `reopened` + dòng `Reopen reason:`. Grep `Based on: D-xx` ra các task bị ảnh hưởng, chỉ
 các task đó đặt lại `[ ]`; người chỉ duyệt lại D đang mở.
 
 ### `03-plan` — quản lý thực thi
 
-`plan.md` chỉ còn phần thực thi: task, thứ tự/phụ thuộc, `Phủ: YC-xxx`,
-`Dựa trên: D-xx`, `Theo: tdd.md § …`, File dự kiến, Cách kiểm chứng, task dựa
-trên giả định, trạng thái, Phát sinh, Hoãn lại. Nó tách khỏi `tdd.md` để việc
+`plan.md` chỉ còn phần thực thi: task, thứ tự/phụ thuộc, `Covers: YC-xxx`,
+`Based on: D-xx`, `Design: tdd.md § …`, Expected files, Verify, task dựa
+trên giả định, trạng thái, Unplanned, Deferred. Nó tách khỏi `tdd.md` để việc
 tick task không bao giờ sửa vào tài liệu thiết kế đã duyệt.
 
 ### `04-implement` — code + test
 
 - Test gắn tag `covers: YC-xxx`. YC chưa có test → **cảnh báo**. YC không test tự
   động được ghi `Kiểm chứng: thủ công` + lý do.
-- So `git diff --name-only <nhánh-gốc>...HEAD` với "File dự kiến" (cho phép glob)
-  và "Phát sinh" của plan. File ngoài phạm vi → **cảnh báo**.
+- So `git diff --name-only <nhánh-gốc>...HEAD` với "Expected files" (cho phép glob)
+  và "Unplanned" của plan. File ngoài phạm vi → **cảnh báo**.
 
 ### `05-review` — rà soát độc lập
 
@@ -393,8 +393,8 @@ chặn nếu còn artifact lỗi thời.
 
 | Kiểm chéo | Cách kiểm | Xử lý |
 |---|---|---|
-| Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Kiểm chứng thủ công" + lý do trong `plan.md` |
-| Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "File dự kiến" + "Phát sinh" + `bo_qua` | Hoàn tác, hoặc ghi vào "Phát sinh" |
+| Test ↔ YC | Tìm `covers: YC-xxx` trong file khớp `mau_file_test` | Thêm test, hoặc ghi "Manual verification" + lý do trong `plan.md` |
+| Phạm vi diff | File đổi so với merge-base của base trong `intake.md` (kể cả chưa commit, file mới) so với "Expected files" + "Unplanned" + `bo_qua` | Hoàn tác, hoặc ghi vào "Unplanned" |
 | Lỗi thời | `based_on` so với hash hiện tại | Chạy lại phase sinh ra artifact đó |
 | Điểm mù | `Mức chặn: chặn review` (hoặc `chặn`) còn `mở` trong `open-questions.md` | Chốt với người qua `/clarify` |
 
@@ -565,7 +565,7 @@ prompt — adapter nào cũng dùng chung. Branch có `/` được đổi thành
 | `the_covers` | `covers:` | Tag đứng trước mã YC trong test |
 | `loai_theo_tien_to` | `feat_=feature fix_=bugfix` | Tiền tố branch → loại việc (gợi ý ở `/intake`, đối chiếu ở review) |
 | `mau_code_production` | `src/*` | Code production — `chore` không được đụng; bugfix/perf đo "trước" khi chưa đụng |
-| `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Nâng dependency" |
+| `mau_file_dependency` | `package.json` | Manifest/lockfile — `chore` đụng vào thì phải khai "Dependency upgrades" |
 | `quy_tac_<phase>` | `quy_tac_implement: docs/coding-style.md .claude/skills/api/SKILL.md` | Quy tắc riêng của repo — xem bên dưới |
 
 Danh sách cách nhau bằng dấu cách; trong glob, `*` khớp cả `/`.

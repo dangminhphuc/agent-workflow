@@ -19,10 +19,10 @@ Kết luận hợp lệ: `đạt` / `đạt một phần` / `chưa đạt` / `ch
      bạn xác nhận nó đỏ ĐÚNG VÌ BUG, không phải vì lỗi biên dịch / thiếu hàm. -->
 - Test tái hiện đỏ vì: <trích dòng lỗi trong tai-hien.md>
 
-<!-- refactor / perf: với từng file ở "Test cũ bị sửa" của plan.md, xác nhận diff chỉ
+<!-- refactor / perf: với từng file ở "Modified existing tests" của plan.md, xác nhận diff chỉ
      đổi import/cấu trúc, không đổi assertion.
      perf: đọc do-hieu-nang.md, kết luận YC hiệu năng đạt/chưa đạt theo số đo.
-     chore: xác nhận mức "vá | minor" ở "Nâng dependency" là đúng.
+     chore: xác nhận mức "patch | minor" ở "Dependency upgrades" là đúng.
      Loại việc khác: xoá mục này. -->
 
 ## Lăng kính 2 — Đúng thiết kế và phạm vi

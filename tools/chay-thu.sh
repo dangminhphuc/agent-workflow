@@ -200,50 +200,50 @@ EOF
 
 viet_plan() {
   cat > "$F/plan.md" <<'EOF'
-# Kế hoạch — x
+# Plan — x
 
-## Task
+## Tasks
 
 ### T-01 — a
-- Phủ: `YC-001`
-- Dựa trên: `D-01`
-- File dự kiến: `src/*` `test/*`
-- Cách kiểm chứng: `npm test` → xanh
-- Trạng thái: `[x]`
+- Covers: `YC-001`
+- Based on: `D-01`
+- Expected files: `src/*` `test/*`
+- Verify: `npm test` → xanh
+- Status: `[x]`
 
 ### T-02 — b
-- Phủ: `YC-002`
-- File dự kiến: `src/b.txt`
-- Cách kiểm chứng: `npm test` → xanh
-- Trạng thái: `[x]`
+- Covers: `YC-002`
+- Expected files: `src/b.txt`
+- Verify: `npm test` → xanh
+- Status: `[x]`
 
-## Hoãn lại
+## Deferred
 
-| Mã | Lý do hoãn |
+| ID | Reason |
 |---|---|
 
-## Kiểm chứng thủ công
+## Manual verification
 
-| Mã | Lý do |
+| ID | Why not automated |
 |---|---|
 
-## Test cũ bị sửa
+## Modified existing tests
 
-| File test | Lý do sửa |
+| Test file | Reason |
 |---|---|
 
-## Nâng dependency
+## Dependency upgrades
 
-| Thư viện | Cũ → mới | Mức |
+| Library | Old → new | Level |
 |---|---|---|
 
-## Phát sinh
+## Unplanned
 
-| Task | Phát sinh gì | File | Xử lý |
+| Task | What came up | Extra files | Resolution |
 |---|---|---|---|
 EOF
   if [ "$LOAI" = "chore" ]; then
-    thay "$F/plan.md" '- Dựa trên: `D-01`
+    thay "$F/plan.md" '- Based on: `D-01`
 ' ''
     thay "$F/plan.md" '`src/*` `test/*`' '`docs/*`'
   fi
@@ -584,7 +584,7 @@ rm -f "$F/phat-hien-thiet-ke.md"
 ky_vong 1 "chặn khi tdd.md không qua checker của design" sh "$CHK" "$F"
 viet_tdd; ghi_based_on
 
-viet_plan; thay "$F/plan.md" '- Phủ: `YC-002`' '- Phủ: `YC-001`'
+viet_plan; thay "$F/plan.md" '- Covers: `YC-002`' '- Covers: `YC-001`'
 ky_vong 1 "chặn YÊU CẦU BỊ BỎ SÓT (chiều ngược)" sh "$CHK" "$F"
 thay "$F/plan.md" '|---|---|
 ' '|---|---|
@@ -604,19 +604,19 @@ ky_vong 1 "chặn hoãn lại bỏ trống lý do" sh "$CHK" "$F"
 viet_plan; thay "$F/plan.md" '`YC-002`' '`YC-999`'
 ky_vong 1 "chặn task trỏ về mã YC không tồn tại (chiều xuôi)" sh "$CHK" "$F"
 
-viet_plan; thay "$F/plan.md" '- Dựa trên: `D-01`' '- Dựa trên: `D-07`'
+viet_plan; thay "$F/plan.md" '- Based on: `D-01`' '- Based on: `D-07`'
 ky_vong 1 "chặn task Dựa trên D không có trong tdd.md" sh "$CHK" "$F"
 
-viet_plan; thay "$F/plan.md" '- File dự kiến: `src/b.txt`' ''
+viet_plan; thay "$F/plan.md" '- Expected files: `src/b.txt`' ''
 ky_vong 1 "chặn task thiếu File dự kiến" sh "$CHK" "$F"
 
-viet_plan; thay "$F/plan.md" '- Cách kiểm chứng: `npm test` → xanh
-- Trạng thái: `[x]`
+viet_plan; thay "$F/plan.md" '- Verify: `npm test` → xanh
+- Status: `[x]`
 
-## Hoãn' '- Cách kiểm chứng: <lệnh cụ thể>
-- Trạng thái: `[x]`
+## Deferred' '- Verify: <lệnh cụ thể>
+- Status: `[x]`
 
-## Hoãn'
+## Deferred'
 ky_vong 1 "chặn chỗ giữ chỗ chưa điền" sh "$CHK" "$F"
 viet_plan; ghi_based_on
 
@@ -633,11 +633,11 @@ printf 'LENH_KIEM_THU="false"\n' > "$CH"
 ky_vong 1 "chặn khi test đỏ" sh "$CHK" "$F"
 
 printf 'LENH_KIEM_THU="true"\n' > "$CH"
-thay "$F/plan.md" '- Trạng thái: `[x]`
+thay "$F/plan.md" '- Status: `[x]`
 
-## Hoãn' '- Trạng thái: `[~]`
+## Deferred' '- Status: `[~]`
 
-## Hoãn'
+## Deferred'
 ky_vong 1 "chặn khi còn task đang làm dở" sh "$CHK" "$F"
 viet_plan; ghi_based_on
 
@@ -696,9 +696,9 @@ rm -f "$R/README.md"; viet_plan; ghi_based_on
 
 printf '// covers: YC-001\n' > "$R/test/a.test.js"
 ky_vong 1 "CỔNG CUỐI: chặn YC chưa có test gắn tag" sh "$CHK" "$F"
-thay "$F/plan.md" '| Mã | Lý do |
+thay "$F/plan.md" '| ID | Why not automated |
 |---|---|
-' '| Mã | Lý do |
+' '| ID | Why not automated |
 |---|---|
 | YC-002 | cần kiểm bằng mắt trên UI |
 '
@@ -863,7 +863,7 @@ EOF
 thu_tu() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \(YC-[0-9]*\).*/\1/p' | tr '\n' ' '; }
 ky_vong 1 "còn điểm mù \"chặn\" mở → ĐANG CHẶN" sh "$CHK" "$LQ"
 dung "xếp: chặn → chặn review → không chặn; bắt buộc trước nên có" bang "$(thu_tu)" "YC-005 YC-004 YC-002 YC-003 YC-001 "
-printf '### T-01\n- Đứng trên giả định tạm: **có** — `open-questions.md` § YC-003\n### T-02\n- Đứng trên giả định tạm: **có** — § YC-003\n' > "$LQ/plan.md"
+printf '### T-01\n- On assumption: **yes** — `open-questions.md` § YC-003\n### T-02\n- On assumption: **yes** — § YC-003\n' > "$LQ/plan.md"
 dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định hơn thì trước" bang "$(thu_tu)" "YC-005 YC-004 YC-003 YC-002 YC-001 "
 dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task đứng trên giả định: 2 (T-01 T-02)'"
 dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
@@ -1409,9 +1409,9 @@ rm -f "$R/test/moi.test.js"; viet_spec; ghi_based_on
 printf '// covers: YC-001, YC-002\n// doi import\n' > "$R/test/a.test.js"
 ky_vong 0 "sửa test cũ chưa khai chỉ CẢNH BÁO ở implement" sh "$T/kiem-tra-hien-thuc.sh" "$F"
 ky_vong 1 "…nhưng review chặn" sh "$T/kiem-tra-ra-soat.sh" "$F"
-thay "$F/plan.md" '| File test | Lý do sửa |
+thay "$F/plan.md" '| Test file | Reason |
 |---|---|
-' '| File test | Lý do sửa |
+' '| Test file | Reason |
 |---|---|
 | `test/a.test.js` | đổi import do dời module |
 '
@@ -1467,19 +1467,19 @@ g checkout -q -- src/a.txt
 
 printf '{"dependencies":{"lodash":"4.17.21"}}\n' > "$R/package.json"
 ky_vong 1 "chore nâng dependency không khai thì chặn" sh "$T/kiem-tra-hien-thuc.sh" "$F"
-thay "$F/plan.md" '| Thư viện | Cũ → mới | Mức |
+thay "$F/plan.md" '| Library | Old → new | Level |
 |---|---|---|
-' '| Thư viện | Cũ → mới | Mức |
+' '| Library | Old → new | Level |
 |---|---|---|
-| lodash | 4.17.20 → 4.17.21 | vá |
+| lodash | 4.17.20 → 4.17.21 | patch |
 '
 ky_vong 0 "khai nâng bản vá thì cho qua" sh "$T/kiem-tra-hien-thuc.sh" "$F"
-thay "$F/plan.md" '| vá |' '| major |'
+thay "$F/plan.md" '| patch |' '| major |'
 ky_vong 1 "nâng major không được là chore" sh "$T/kiem-tra-hien-thuc.sh" "$F"
 rm -f "$R/package.json"; viet_plan; ghi_based_on
 
-thay "$F/plan.md" '- File dự kiến: `docs/*`' '- Dựa trên: `D-01`
-- File dự kiến: `docs/*`'
+thay "$F/plan.md" '- Expected files: `docs/*`' '- Based on: `D-01`
+- Expected files: `docs/*`'
 ky_vong 1 "chore: task Dựa trên D-xx bị chặn (không có tdd.md)" sh "$T/kiem-tra-ke-hoach.sh" "$F"
 viet_plan; ghi_based_on
 

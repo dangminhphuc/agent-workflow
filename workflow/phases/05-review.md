@@ -70,7 +70,7 @@ tới đây; `chặn` / `chặn review` còn mở thì máy chặn.
 - Code có theo đúng các D-xx đã duyệt và contract/mô hình dữ liệu trong `tdd.md`?
 - Thay đổi nào **không** thuộc task nào? Task nào đánh dấu xong nhưng diff
   không có dấu vết?
-- Có mục "Phát sinh" nào bị xử lý lặng lẽ thay vì nêu ra?
+- Có mục "Unplanned" nào bị xử lý lặng lẽ thay vì nêu ra?
 
 Thêm: đối chiếu diff với **từng file** quy tắc riêng của repo (`aw rules review` —
 hợp quy tắc của mọi phase). Mỗi file một dòng trong mục "Quy tắc repo" của
@@ -97,9 +97,9 @@ Máy kiểm lại mọi luật chặn của `implement`. Phần người phải 
 | Loại | Người rà soát làm gì |
 |---|---|
 | `bugfix` | Đọc `tai-hien.md`: test đỏ **đúng vì bug**, không phải vì lỗi biên dịch/thiếu hàm. Ghi `Test tái hiện đỏ vì: <trích output>` — thiếu dòng này thì máy chặn |
-| `refactor`/`perf` | Với từng file ở "Test cũ bị sửa": diff chỉ đổi import/cấu trúc, **không đổi assertion** |
+| `refactor`/`perf` | Với từng file ở "Modified existing tests": diff chỉ đổi import/cấu trúc, **không đổi assertion** |
 | `perf` | Đọc `do-hieu-nang.md`, kết luận YC hiệu năng `đạt`/`chưa đạt` theo số đo — tính cả độ dao động |
-| `chore` | Mức `vá | minor` khai ở "Nâng dependency" là đúng (major phải là refactor riêng) |
+| `chore` | Mức `patch | minor` khai ở "Dependency upgrades" là đúng (major phải là refactor riêng) |
 
 ## Đầu ra
 

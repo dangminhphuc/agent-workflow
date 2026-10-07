@@ -70,7 +70,7 @@ fi
 dang_do=$(awk '
   { sub(/\r$/, "") }
   /^###[ \t]+T-/ { match($0, /T-[0-9]+/); cur = substr($0, RSTART, RLENGTH) }
-  cur != "" && /Trạng thái:/ && /\[~\]/ { print cur }
+  cur != "" && /^[ \t]*-[ \t]*\**Status\**:/ && /\[~\]/ { print cur }
 ' "$PLAN")
 
 for t in $dang_do; do
@@ -127,7 +127,7 @@ if [ -n "$cb" ]; then
   n_cb=$(printf '%s\n' "$cb" | wc -l | tr -d ' ')
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /review sẽ CHẶN nếu còn."
-  echo "  Xử lý: thêm test gắn tag, ghi \"Kiểm chứng thủ công\", ghi file vào \"Phát sinh\", chạy lại phase lỗi thời, hoặc trả lời điểm mù."
+  echo "  Xử lý: thêm test gắn tag, ghi \"Manual verification\", ghi file vào \"Unplanned\", chạy lại phase lỗi thời, hoặc trả lời điểm mù."
 fi
 
 echo ""

@@ -306,14 +306,14 @@ Rủi ro thường dùng Mode 1: agent viết cả `tdd.md`, người duyệt.
 ### Mở lại một quyết định
 
 Mở lại **đúng một D-xx**, sửa tại chỗ; lịch sử để git giữ, không giữ bản cũ trong
-file. D đó mang trạng thái `reopened` + lý do. Grep `Dựa trên: D-xx` ra task và test
+file. D đó mang trạng thái `reopened` + lý do. Grep `Based on: D-xx` ra task và test
 bị ảnh hưởng; chỉ các task đó đặt lại `[ ]`, người chỉ duyệt lại D đang mở.
 
 ### Vì sao `plan` vẫn tách khỏi `tdd.md`
 
-`plan.md` chỉ còn quản lý thực thi: task, phụ thuộc, `Phủ: YC`, `Dựa trên: D-xx`,
-`Theo: tdd.md § …`, File dự kiến, Cách kiểm chứng, trạng thái, Phát sinh, Hoãn
-lại. Giữ riêng vì hai lẽ: plan là ranh giới do **phiên khác** đặt cho
+`plan.md` chỉ còn quản lý thực thi: task, phụ thuộc, `Covers: YC`, `Based on: D-xx`,
+`Design: tdd.md § …`, Expected files, Verify, trạng thái, Unplanned,
+Deferred. Giữ riêng vì hai lẽ: plan là ranh giới do **phiên khác** đặt cho
 `implement`, và tick task không được phép sửa vào `tdd.md` đã duyệt.
 
 ## Giả định chưa xác nhận
@@ -368,8 +368,8 @@ Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặ
 
 - Test gắn tag `covers: YC-xxx`. YC chưa có test thì cảnh báo; YC không test tự
   động được ghi `Kiểm chứng: thủ công` + lý do.
-- So `git diff --name-only <nhánh-gốc>...HEAD` với "File dự kiến" (cho phép glob)
-  và "Phát sinh" trong plan.
+- So `git diff --name-only <nhánh-gốc>...HEAD` với "Expected files" (cho phép glob)
+  và "Unplanned" trong plan.
 
 Mẫu file test, cú pháp tag, nhánh gốc và danh sách file bỏ qua khai trong
 `conventions.md` của repo đích — phần máy đọc phải parse được bằng sh/awk.
@@ -546,7 +546,7 @@ Nói thẳng để người đọc sau khỏi phải tự phát hiện:
    sửa code sau lần chạy `aw check implement` cuối cùng thì kết quả đó đã cũ.
    Chạy lại `implement` checker trước khi review là việc của người/agent.
 
-9. **Glob trong `conventions.md` và "File dự kiến" dùng `case` của shell**, nên
+9. **Glob trong `conventions.md` và "Expected files" dùng `case` của shell**, nên
    `*` khớp cả `/` và không có `**`. `src/*` vì vậy rộng hơn người đọc tưởng.
 
 10. **Artifact không đi theo PR.** Reviewer của PR chỉ thấy code; đặc tả và quyết

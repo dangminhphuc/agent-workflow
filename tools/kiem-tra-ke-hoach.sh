@@ -10,10 +10,10 @@
 #     chúng chỉ được thực thi những gì người đã duyệt.
 #   - Kiểm HAI CHIỀU phủ YC:
 #       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
-#       ngược — mọi mã YC được task phủ, hoặc nằm ở "Hoãn lại" (bắt yêu cầu sót)
-#   - Task thiếu "Cách kiểm chứng", "File dự kiến"; "Dựa trên: D-xx" trỏ về D không có.
+#       ngược — mọi mã YC được task phủ, hoặc nằm ở "Deferred" (bắt yêu cầu sót)
+#   - Task thiếu "Verify", "Expected files"; "Based on: D-xx" trỏ về D không có.
 #   - File khai ở quy_tac_plan (conventions.md) không có hoặc chưa commit.
-# Cảnh báo: artifact lỗi thời; YC "Priority: must" nằm ở "Hoãn lại".
+# Cảnh báo: artifact lỗi thời; YC "Priority: must" nằm ở "Deferred".
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -36,7 +36,7 @@ LOAI=$(kc_loai "$DIR")
 n_loi=0
 
 # chore không có design: entry check lùi về checker của spec, và không có tdd.md
-# (task nào ghi "Dựa trên: D-xx" sẽ bị chặn vì không có D nào).
+# (task nào ghi "Based on: D-xx" sẽ bị chặn vì không có D nào).
 if [ "$LOAI" = "chore" ]; then
   for f in "$SPEC" "$PLAN"; do
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
@@ -110,7 +110,7 @@ awk -v loi_truoc="$n_loi" '
   }
 
   # ---- File 3: plan.md ----
-  $0 ~ /^##[ \t]+Hoãn lại/ { sect = "hoan"; cur = ""; next }
+  $0 ~ /^##[ \t]+Deferred/ { sect = "hoan"; cur = ""; next }
   $0 ~ /^##[ \t]/          { sect = "";     cur = ""; next }
 
   $0 ~ /^###[ \t]+T-/ {
@@ -126,16 +126,16 @@ awk -v loi_truoc="$n_loi" '
     co_mat_hoan[c] = 1
     ly_do = trim(f[3])
     if (ly_do == "" || ly_do ~ /^<.*>$/)
-      loi(c ": nằm ở \"Hoãn lại\" nhưng không ghi lý do")
+      loi(c ": nằm ở \"Deferred\" nhưng không ghi lý do")
     else
       hoan[c] = 1
     next
   }
 
-  cur != "" && $0 ~ /Phủ:/ {
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Covers\**:/ {
     thu_ma($0, "YC-[0-9]+")
     if (n_tim == 0) {
-      loi(cur ": dòng \"Phủ:\" không trỏ về mã YC nào")
+      loi(cur ": dòng \"Covers:\" không trỏ về mã YC nào")
     } else {
       for (i = 1; i <= n_tim; i++) {
         c = ma_tim[i]
@@ -147,28 +147,28 @@ awk -v loi_truoc="$n_loi" '
     next
   }
 
-  cur != "" && $0 ~ /Dựa trên:/ {
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Based on\**:/ {
     thu_ma($0, "D-[0-9]+")
     for (i = 1; i <= n_tim; i++) {
       d = ma_tim[i]
-      if (!(d in co_d)) loi(cur ": \"Dựa trên: " d "\" nhưng tdd.md không có " d)
+      if (!(d in co_d)) loi(cur ": \"Based on: " d "\" nhưng tdd.md không có " d)
       else dua_tren[d] = dua_tren[d] " " cur
     }
     next
   }
 
-  cur != "" && $0 ~ /File dự kiến:/ {
-    v = $0; sub(/^.*File dự kiến:[ \t]*/, "", v); v = trim(v)
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/ {
+    v = $0; sub(/^[^:]*:[ \t]*/, "", v); v = trim(v)
     co_fdk_dong[cur] = 1
-    if (v == "" || v ~ /<[^>]*>/) loi(cur ": \"File dự kiến\" trống hoặc còn chỗ giữ chỗ — implement dùng nó để kiểm phạm vi diff")
+    if (v == "" || v ~ /<[^>]*>/) loi(cur ": \"Expected files\" trống hoặc còn chỗ giữ chỗ — implement dùng nó để kiểm phạm vi diff")
     next
   }
 
-  cur != "" && $0 ~ /Cách kiểm chứng:/ {
-    v = $0; sub(/^.*Cách kiểm chứng:[ \t]*/, "", v); v = trim(v)
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Verify\**:/ {
+    v = $0; sub(/^[^:]*:[ \t]*/, "", v); v = trim(v)
     co_kc_dong[cur] = 1
-    if (v == "")            loi(cur ": \"Cách kiểm chứng\" để trống")
-    else if (v ~ /<[^>]*>/) loi(cur ": \"Cách kiểm chứng\" còn chỗ giữ chỗ chưa điền — " v)
+    if (v == "")            loi(cur ": \"Verify\" để trống")
+    else if (v ~ /<[^>]*>/) loi(cur ": \"Verify\" còn chỗ giữ chỗ chưa điền — " v)
     next
   }
 
@@ -186,15 +186,15 @@ awk -v loi_truoc="$n_loi" '
 
     for (i = 1; i <= n_task; i++) {
       t = dsach_task[i]
-      if (!(t in co_phu))      loi(t ": thiếu dòng \"Phủ:\" — task không ánh xạ được về yêu cầu nào")
-      if (!(t in co_kc_dong))  loi(t ": thiếu dòng \"Cách kiểm chứng:\"")
-      if (!(t in co_fdk_dong)) loi(t ": thiếu dòng \"File dự kiến:\"")
+      if (!(t in co_phu))      loi(t ": thiếu dòng \"Covers:\" — task không ánh xạ được về yêu cầu nào")
+      if (!(t in co_kc_dong))  loi(t ": thiếu dòng \"Verify:\"")
+      if (!(t in co_fdk_dong)) loi(t ": thiếu dòng \"Expected files:\"")
     }
 
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
       if (!(c in duoc_phu) && !(c in co_mat_hoan))
-        loi(c ": không task nào phủ, cũng không nằm ở mục \"Hoãn lại\"")
+        loi(c ": không task nào phủ, cũng không nằm ở mục \"Deferred\"")
     }
 
     print ""
@@ -209,7 +209,7 @@ awk -v loi_truoc="$n_loi" '
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
       if ((c in hoan) && uu_tien[c] != "should")
-        print "  [CẢNH BÁO] " c ": Priority must nhưng nằm ở \"Hoãn lại\" — người duyệt plan phải đồng ý giao thiếu."
+        print "  [CẢNH BÁO] " c ": Priority must nhưng nằm ở \"Deferred\" — người duyệt plan phải đồng ý giao thiếu."
     }
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }

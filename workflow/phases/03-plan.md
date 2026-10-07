@@ -41,30 +41,31 @@ duyệt.
 Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (phải qua
 `aw check spec`, có `Status: approved` và không còn điểm mù
 `Mức chặn: chặn` đang mở — các cổng này vốn nằm ở design), và task không có
-`Dựa trên: D-xx`.
+`Based on: D-xx`.
 
 ## Việc phải làm
 
 1. **Chia task.** Mỗi task phải có:
-   - `Phủ:` ít nhất một mã `YC-NNN` trong `spec.md`;
-   - `Dựa trên: D-xx` nếu nó thực thi một quyết định (để khi D bị mở lại, grep
+   - `Covers:` ít nhất một mã `YC-NNN` trong `spec.md`;
+   - `Based on: D-xx` nếu nó thực thi một quyết định (để khi D bị mở lại, grep
      ra đúng task bị ảnh hưởng);
-   - `Theo: tdd.md § …` — mục thiết kế nó hiện thực;
-   - `File dự kiến:` — đường dẫn trong backtick, cho phép glob (`src/todo/*`).
+   - `Design: tdd.md § …` — mục thiết kế nó hiện thực;
+   - `Expected files:` — đường dẫn trong backtick, cho phép glob (`src/todo/*`).
      `04-implement` dùng dòng này để kiểm phạm vi diff;
-   - `Cách kiểm chứng:` — test nào, lệnh nào, quan sát gì;
-   - `Phụ thuộc:` task phải xong trước (nếu có);
+   - `Verify:` — test nào, lệnh nào, quan sát gì;
+   - `Depends on:` task phải xong trước (nếu có);
    - đủ nhỏ để hoàn thành trong một lượt làm việc và tự nó không làm hỏng build.
 
-2. **Đánh dấu task đứng trên giả định tạm** (mục `[OPEN-QUESTION]`). Giả định sai thì
+2. **Đánh dấu task đứng trên giả định tạm** (mục `[OPEN-QUESTION]`): dòng
+   `On assumption: **yes** — open-questions.md § YC-NNN`, không thì `no`. Giả định sai thì
    người cần biết ngay phải làm lại task nào.
 
-3. **Hoãn lại có lý do.** YC không có task nào phủ thì ghi vào "Hoãn lại" kèm lý do.
+3. **Hoãn có lý do.** YC không có task nào phủ thì ghi vào "Deferred" kèm lý do.
    Ưu tiên hoãn YC `should`. Hoãn YC `must` thì checker cảnh báo (không chặn)
    — nói rõ với người duyệt plan rằng lần giao này thiếu yêu cầu đó.
 
-4. **Kiểm chứng thủ công.** YC không test tự động được thì ghi vào mục
-   "Kiểm chứng thủ công" kèm lý do — nếu không, `/implement` cảnh báo và
+4. **Manual verification.** YC không test tự động được thì ghi vào mục
+   "Manual verification" kèm lý do — nếu không, `/implement` cảnh báo và
    `/review` chặn vì YC chưa có test.
 
 5. **Theo loại việc:**
@@ -72,15 +73,18 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
      `/implement` phải chạy `aw check repro` giữa hai task đó.
    - `perf`: task đầu tiên là **đo trước** (`aw check perf <thư-mục-feature> --before`).
    - `refactor`/`perf`: test cũ nào dự kiến phải sửa (vd đổi import khi dời module)
-     thì khai sẵn ở "Test cũ bị sửa".
-   - `chore`: có nâng dependency thì khai ở "Nâng dependency" (chỉ `vá | minor`).
+     thì khai sẵn ở "Modified existing tests".
+   - `chore`: có nâng dependency thì khai ở "Dependency upgrades" (chỉ `patch | minor`).
 
 6. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md`
    (chore: bỏ `tdd.md`).
 
 ## Đầu ra
 
-- `plan.md` — theo `templates/plan.md`
+- `plan.md` — theo `templates/plan.md`. Đầu mục, tên trường và giá trị viết tiếng
+  Anh, giữ đúng như mẫu (`## Tasks`, `Covers:`, `Expected files:`, `Verify:`,
+  `Status: [ ] | [~] | [x]`, `## Deferred`, `## Unplanned`…) — checker đọc theo
+  đúng chữ đó; nội dung điền vào viết tiếng Việt.
 
 ## Cấm
 
@@ -97,7 +101,7 @@ Loại việc `chore` không có `tdd.md`: đầu vào lùi về `spec.md` (ph�
 **Máy:**
 - `aw check plan` ra `[x] ĐẠT`:
   - đầu vào qua `aw check design`, mọi D-xx `approved`;
-  - mọi task có `Phủ:` hợp lệ, `File dự kiến:`, `Cách kiểm chứng:` không rỗng;
-    `Dựa trên:` trỏ về D có thật;
-  - mọi YC được ít nhất một task phủ, **hoặc** nằm ở "Hoãn lại" kèm lý do. Kiểm
+  - mọi task có `Covers:` hợp lệ, `Expected files:`, `Verify:` không rỗng;
+    `Based on:` trỏ về D có thật;
+  - mọi YC được ít nhất một task phủ, **hoặc** nằm ở "Deferred" kèm lý do. Kiểm
     hai chiều mới bắt được lỗi bỏ sót — kiểm một chiều chỉ bắt được lỗi thừa.

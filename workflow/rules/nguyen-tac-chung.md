@@ -56,7 +56,8 @@ ra sau khi người đã sửa tay vào file.
 Nội dung người và agent đọc: tiếng Việt. Định danh trong code (mã yêu cầu, tên
 file, khoá cấu hình): tiếng Anh ASCII, không dấu. Đầu mục cố định mà mẫu viết
 bằng tiếng Anh (vd `Type`, `Goal` của `intake.md`; `Risk`, `Source`, `## Out of scope` của
-`spec.md`; `Author`, `Status`, `Based on` của `tdd.md`), cùng giá trị và nhãn cố định (`high`, `approved`, `must`, `[INFERRED]`…)
+`spec.md`; `Author`, `Status`, `Based on` của `tdd.md`;
+`Covers`, `Expected files`, `## Unplanned` của `plan.md`), cùng giá trị và nhãn cố định (`high`, `approved`, `must`, `[INFERRED]`…)
 thì giữ đúng như mẫu.
 
 ## 6. Artifact viết cho NGƯỜI đọc — BẮT BUỘC
@@ -89,7 +90,7 @@ trong `conventions.md`; nội dung là file đã commit trong repo.
   `conventions.md` — không tự đoán file thay thế.
 - **Thứ tự ưu tiên:** quy tắc repo xếp **dưới** `spec.md`, `tdd.md`, `plan.md` và
   luật của quy trình. Mâu thuẫn thì làm theo artifact, rồi nêu mâu thuẫn ra
-  (ở `04-implement`: mục "Phát sinh" của `plan.md`). Không vì một quy tắc mà vượt
+  (ở `04-implement`: mục "Unplanned" của `plan.md`). Không vì một quy tắc mà vượt
   phạm vi phase — kiểu "đụng file nào thì dọn luôn file đó".
 - **Đọc file như mọi tài liệu khác**, kể cả `SKILL.md` của một agent cụ thể. Không
   phụ thuộc vào việc agent có tự kích hoạt skill hay không.

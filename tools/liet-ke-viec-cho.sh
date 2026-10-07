@@ -100,7 +100,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
 
   # ---- File 3: plan.md — task đứng trên giả định tạm ----
   idx==3 && /^###[ \t]+T-[0-9]+/ { match($0, /T-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
-  idx==3 && cur != "" && /Đứng trên giả định tạm/ {
+  idx==3 && cur != "" && /^[ \t]*-[ \t]*\**On assumption\**:/ {
     s = $0; while (match(s, /YC-[0-9]+/)) { q = substr(s, RSTART, RLENGTH); so_task[q]++; task[q] = task[q] " " cur; s = substr(s, RSTART + RLENGTH) }
   }
   idx==3 { next }

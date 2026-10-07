@@ -55,7 +55,16 @@ ngầm giữa các bản.
   reverse because`, `Lý do mở lại` → `Reopen reason`, `Phản biện (agent)` →
   `Critique (agent)`; `Dựa trên:` → `Based on:`, `Không áp dụng:` → `Not
   applicable:`. `aw check design` và `aw check plan` (D-xx phải `approved`) đọc
-  tên mới. `Dựa trên: D-xx` của task trong `plan.md` chưa đổi.
+  tên mới.
+- **`plan.md` sang tiếng Anh:** `# Kế hoạch` → `# Plan`, `## Task` → `## Tasks`;
+  trường của task: `Phủ` → `Covers`, `Dựa trên` → `Based on`, `Theo` → `Design`,
+  `Phụ thuộc` → `Depends on` (`không` → `none`), `File dự kiến` → `Expected
+  files`, `Cách kiểm chứng` → `Verify`, `Đứng trên giả định tạm: không | có` →
+  `On assumption: no | yes`, `Trạng thái` → `Status` (`[ ] [~] [x]` giữ nguyên);
+  mục `Hoãn lại` → `Deferred`, `Kiểm chứng thủ công` → `Manual verification`,
+  `Test cũ bị sửa` → `Modified existing tests`, `Nâng dependency` → `Dependency
+  upgrades` (cột `Library | Old → new | Level`, mức `vá` → `patch`), `Phát sinh`
+  → `Unplanned`. `aw check plan/implement/review` và `aw pending` đọc tên mới.
 
 ## [2026.10.9]
 

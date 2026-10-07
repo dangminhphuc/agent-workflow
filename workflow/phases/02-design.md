@@ -94,7 +94,7 @@ nhờ người phác** — checker sẽ chặn.
 
 Mở lại **đúng một D-xx**, sửa tại chỗ (lịch sử để git giữ, không giữ bản cũ
 trong file). Đổi `Status: reopened` và thêm `Reopen reason:`. Grep
-`Dựa trên: D-xx` trong `plan.md` ra các task bị ảnh hưởng; chỉ các task đó đặt
+`Based on: D-xx` trong `plan.md` ra các task bị ảnh hưởng; chỉ các task đó đặt
 lại `[ ]`. Người chỉ duyệt lại D đang mở. `/plan` chặn cho tới khi D đó được
 duyệt lại.
 
