@@ -39,18 +39,18 @@ Bước 2 của phase ("trích nguyên văn") không để lại dấu vết: m�
 ghi câu trích. Đề xuất thêm `- Trích: > "…"` dưới mỗi YC.
 
 - Người duyệt so YC với câu gốc ngay trong spec.
-- Nguồn `[FILE]` (kể cả `[NGƯỜI-DÙNG]` nằm trong `intake.md`): máy kiểm được câu
+- Nguồn `[FILE]` (kể cả `[HUMAN]` nằm trong `intake.md`): máy kiểm được câu
   trích có thật trong file nguồn bằng `grep -F` → thu hẹp điểm yếu 3 trong
   `docs/kien-truc.md`. Confluence/Jira: chỉ giúp người đọc.
 - Cần quyết: bắt buộc hay tuỳ chọn; một hay nhiều câu trích; chuẩn hoá khoảng
   trắng/xuống dòng khi so khớp thế nào.
 
-### 6. Gợi ý nhãn `Mức rủi ro` bằng từ khoá
+### 6. Gợi ý nhãn `Risk` bằng từ khoá
 
-Khoá mới `tu_khoa_rui_ro_cao` trong `conventions.md`; spec ghi `thường` mà chứa
+Khoá mới `tu_khoa_rui_ro_cao` trong `conventions.md`; spec ghi `normal` mà chứa
 từ khoá thì **cảnh báo** (không chặn — từ khoá hay báo nhầm).
 
 ## Ngoài phạm vi (luật mới, cần quyết định độ chặt)
 
-Checker hiện vẫn **cho qua**: `Nguồn: [JIRA]` không mã issue; `[SUY-RA]` không
+Checker hiện vẫn **cho qua**: `Source: [JIRA]` không mã issue; `[INFERRED]` không
 lý do; nguồn không có trong `intake.md`.

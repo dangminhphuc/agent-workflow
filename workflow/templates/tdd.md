@@ -2,42 +2,42 @@
 based_on: []
 ---
 
-# Thiết kế kỹ thuật — <TÊN TÍNH NĂNG>
+# Technical Design — <TÊN TÍNH NĂNG>
 
 > Technical Design Document, sinh bởi phase `02-design`. Output duy nhất của thiết kế.
 > `based_on` do `aw based-on` ghi — không sửa tay.
-> Mục không áp dụng ghi `Không áp dụng: <lý do>`, không bỏ trống.
+> Mục không áp dụng ghi `Not applicable: <lý do>`, không bỏ trống.
 
-## Bối cảnh code hiện có
+## Existing code
 
-| Module / file | Vai trò hiện tại | Sẽ đụng tới thế nào |
+| Module / file | Current role | Planned change |
 |---|---|---|
 | | | |
 
-Quy ước sẵn có phải tuân theo:
+Conventions to follow:
 - <...>
 
-## Quyết định (D-xx)
+## Decisions (D-xx)
 
 Mỗi lựa chọn mà người khác có thể chọn khác. Người duyệt **từng** D. Mục này được
 phép rỗng — khi đó ghi "Không có quyết định cần duyệt." và xoá mẫu bên dưới.
 
 ### D-01 — <vấn đề cần quyết>
 
-- tac_gia: `<nguoi | agent>`
-- Trạng thái: `đề xuất`   <!-- đề xuất | đã duyệt | mở lại — CHỈ NGƯỜI đổi sang đã duyệt -->
-- Phương án A: <...> — được: <...> / mất: <...>
-- Phương án B: <...> — được: <...> / mất: <...>
-- Chọn: <A> — vì <...>
-- Khó đảo ngược vì: <...>
-<!-- Khi mở lại: đổi Trạng thái thành `mở lại` và thêm dòng
-- Lý do mở lại: <...> -->
-<!-- Mode 2 (tac_gia: nguoi): agent không sửa mục này, chỉ thêm
-- Phản biện (agent): <...> -->
+- Author: `<human | agent>`
+- Status: `proposed`   <!-- proposed | approved | reopened — CHỈ NGƯỜI đổi sang approved -->
+- Option A: <...> — pros: <...> / cons: <...>
+- Option B: <...> — pros: <...> / cons: <...>
+- Choice: <A> — vì <...>
+- Hard to reverse because: <...>
+<!-- Khi mở lại: đổi Status thành `reopened` và thêm dòng
+- Reopen reason: <...> -->
+<!-- Mode 2 (Author: human): agent không sửa mục này, chỉ thêm
+- Critique (agent): <...> -->
 
-## Mô hình dữ liệu
+## Data model
 
-Dựa trên: <D-xx, nếu có>
+Based on: <D-xx, nếu có>
 
 <Bảng/entity, cột, ràng buộc, di trú. ERD bằng Mermaid:>
 
@@ -47,7 +47,7 @@ erDiagram
 
 ## Contract / API
 
-Dựa trên: <D-xx, nếu có>
+Based on: <D-xx, nếu có>
 
 <Endpoint / hàm công khai / sự kiện: đầu vào, đầu ra, lỗi.>
 
@@ -59,18 +59,18 @@ Dựa trên: <D-xx, nếu có>
 sequenceDiagram
 ```
 
-## Phi chức năng
+## Non-functional
 
 <Hiệu năng, bảo mật, khả năng quan sát, tương thích ngược — kèm số liệu.>
 
-## Chiến lược test
+## Test strategy
 
 <Mức test (unit/integration/e2e) cho từng phần; YC nào chỉ kiểm chứng thủ công và vì sao.>
 
-## Ánh xạ YC
+## YC mapping
 
 Mọi YC trong `spec.md` phải có mặt ở đây.
 
-| YC | Mục thiết kế đáp ứng |
+| YC | Design section |
 |---|---|
 | YC-001 | § Contract / API |

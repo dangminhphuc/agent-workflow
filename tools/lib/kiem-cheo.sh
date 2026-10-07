@@ -45,7 +45,7 @@ kc_loi_thoi() {
 }
 
 # kc_test_yc <thư-mục-feature>
-# YC nào chưa có test gắn tag, chưa ghi "Kiểm chứng thủ công", chưa hoãn lại.
+# YC nào chưa có test gắn tag, chưa ghi "Manual verification", chưa ở "Deferred".
 kc_test_yc() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/spec.md" ] || return 0
@@ -81,8 +81,8 @@ kc_test_yc() {
       next
     }
     idx==2 && /^###[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); ds[++n]=substr($0, RSTART, RLENGTH); next }
-    idx==3 && /^##[ \t]+Kiểm chứng thủ công/ { sect="tc"; next }
-    idx==3 && /^##[ \t]+Hoãn lại/            { sect="hl"; next }
+    idx==3 && /^##[ \t]+Manual verification/ { sect="tc"; next }
+    idx==3 && /^##[ \t]+Deferred/            { sect="hl"; next }
     idx==3 && /^##[ \t]/                     { sect=""; next }
     idx==3 && sect!="" && /^[ \t]*\|/ && /YC-[0-9]+/ {
       split($0, f, "|"); ly=f[3]; gsub(/^[ \t]+|[ \t]+$/, "", ly)
@@ -93,7 +93,7 @@ kc_test_yc() {
       for (i=1; i<=n; i++) {
         c=ds[i]
         if (!(c in co_test) && !(c in ngoai_le))
-          print c ": chưa có test gắn \"" tag " " c "\", cũng không ghi ở \"Kiểm chứng thủ công\" của plan.md"
+          print c ": chưa có test gắn \"" tag " " c "\", cũng không ghi ở \"Manual verification\" của plan.md"
       }
     }
   ' "$_ds" "$_d/spec.md" "$_d/plan.md" 2>/dev/null
@@ -101,8 +101,8 @@ kc_test_yc() {
 }
 
 # kc_pham_vi <thư-mục-feature>
-# File thay đổi so với base của việc mà không nằm trong "File dự kiến" hay
-# "Phát sinh" của plan.md, và không thuộc danh sách bỏ qua.
+# File thay đổi so với base của việc mà không nằm trong "Expected files" hay
+# "Unplanned" của plan.md, và không thuộc danh sách bỏ qua.
 kc_pham_vi() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/plan.md" ] || return 0
@@ -112,12 +112,12 @@ kc_pham_vi() {
     echo "Không kiểm được phạm vi diff: không tìm thấy base \"$(kc_base "$_d")\" (dòng Base: trong intake.md, hoặc nhanh_goc trong conventions.md)"; return 0; }
   _bo=$(conv_get "$_conv" bo_qua)
 
-  # Mẫu được phép: token trong backtick ở dòng "File dự kiến:" và mục "Phát sinh".
+  # Mẫu được phép: token trong backtick ở dòng "Expected files:" và mục "Unplanned".
   _cho=$(awk '
     { sub(/\r$/, "") }
-    /^##[ \t]+Phát sinh/ { ps=1; next }
+    /^##[ \t]+Unplanned/ { ps=1; next }
     /^##[ \t]/           { ps=0 }
-    ps==1 || /File dự kiến:/ {
+    ps==1 || /^[ \t]*-[ \t]*\**Expected files\**:/ {
       s=$0
       while (match(s, /`[^`]+`/)) { print substr(s, RSTART+1, RLENGTH-2); s=substr(s, RSTART+RLENGTH) }
     }
@@ -132,13 +132,13 @@ kc_pham_vi() {
       khop_glob "$_f" $_bo && continue
       # shellcheck disable=SC2086
       khop_glob "$_f" $_cho && continue
-      echo "$_f: thay đổi ngoài phạm vi — không có trong \"File dự kiến\" hay \"Phát sinh\" của plan.md"
+      echo "$_f: thay đổi ngoài phạm vi — không có trong \"Expected files\" hay \"Unplanned\" của plan.md"
     done
   set +f
 }
 
 # ------------------------------------------------------------------ theo loại việc
-# Loại việc có MỘT nguồn sự thật: dòng "Loại việc:" trong intake.md.
+# Loại việc có MỘT nguồn sự thật: dòng "- **Type:**" trong intake.md.
 
 LOAI_HOP_LE="feature bugfix refactor perf chore"
 
@@ -154,7 +154,7 @@ kc_loai() {
   [ -f "$1/intake.md" ] || return 0
   awk '
     { sub(/\r$/, "") }
-    /Loại việc[^:]*:/ {
+    /^[ \t]*-[ \t]+\*\*Type:\*\*/ {
       s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
       gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
     }
@@ -162,17 +162,17 @@ kc_loai() {
 }
 
 # kc_spec_chua_duyet <thư-mục-feature> -> in lý do nếu spec.md chưa được NGƯỜI duyệt
-# ("Trạng thái spec: đã duyệt"). Dùng làm cổng vào phase ngay sau spec.
+# ("Status: approved" trong spec.md). Dùng làm cổng vào phase ngay sau spec.
 kc_spec_chua_duyet() {
   [ -f "$1/spec.md" ] || return 0
   _tt=$(awk '
     { sub(/\r$/, "") }
-    /Trạng thái spec[^:]*:/ {
+    /^[ \t]*-[ \t]*\**Status\**:/ {
       s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
       gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
     }
   ' "$1/spec.md")
-  [ "$_tt" = "đã duyệt" ] || echo "spec.md chưa được người duyệt (Trạng thái spec: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
+  [ "$_tt" = "approved" ] || echo "spec.md chưa được người duyệt (Status: ${_tt:-?}). Người đọc spec rồi tự đổi sang \"đã duyệt\"."
 }
 
 kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
@@ -301,14 +301,14 @@ kc_test_cu_xoa() {
 }
 
 # kc_test_cu_sua <thư-mục-feature> — refactor/perf: test cũ bị sửa/đổi tên mà chưa
-# khai trong bảng "Test cũ bị sửa" của plan.md
+# khai trong bảng "Modified existing tests" của plan.md
 kc_test_cu_sua() {
-  _khai=$(kc_bang_backtick "$1/plan.md" "Test cũ bị sửa")
+  _khai=$(kc_bang_backtick "$1/plan.md" "Modified existing tests")
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     case "$_s" in M|R) ;; *) continue ;; esac
     kc_khop_khoa "$1" mau_file_test "$_p" || continue
     printf '%s\n' "$_khai" | grep -qxF "$_p" && continue
-    echo "$_p: test cũ bị sửa nhưng chưa khai trong \"Test cũ bị sửa\" của plan.md (kèm lý do)"
+    echo "$_p: test cũ bị sửa nhưng chưa khai trong \"Modified existing tests\" của plan.md (kèm lý do)"
   done
 }
 
@@ -322,24 +322,24 @@ kc_chore_production() {
 }
 
 # kc_chore_dependency <thư-mục-feature> — chore đụng file dependency mà plan.md thiếu
-# bảng "Nâng dependency" hợp lệ; nâng major không được là chore.
+# bảng "Dependency upgrades" hợp lệ; nâng major không được là chore.
 kc_chore_dependency() {
   _co=$(kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     kc_khop_khoa "$1" mau_file_dependency "$_p" && echo "$_p"; done)
   [ -n "$_co" ] || return 0
   awk '
     { sub(/\r$/, "") }
-    /^##[ \t]/ { vao = (index($0, "Nâng dependency") > 0); next }
+    /^##[ \t]/ { vao = (index($0, "Dependency upgrades") > 0); next }
     vao && /^[ \t]*\|/ {
       n = split($0, f, "|"); if (n < 5) next
       ten = f[2]; muc = f[n-1]
       gsub(/[ \t`*]/, "", ten); gsub(/^[ \t`*]+|[ \t`*]+$/, "", muc)
-      if (ten == "" || ten ~ /^-+$/ || ten == "Thưviện" || ten ~ /^</) next
+      if (ten == "" || ten ~ /^-+$/ || ten == "Library" || ten ~ /^</) next
       dong++
       if (muc == "major") print ten ": nâng major không được là chore — tách sang branch refactor riêng"
-      else if (muc != "vá" && muc != "minor") print ten ": mức \"" muc "\" không hợp lệ trong \"Nâng dependency\" (vá | minor)"
+      else if (muc != "patch" && muc != "minor") print ten ": Level \"" muc "\" không hợp lệ trong \"Dependency upgrades\" (patch | minor)"
     }
-    END { if (dong == 0) print "Diff đụng file dependency nhưng plan.md chưa có bảng \"Nâng dependency\" (thư viện, cũ → mới, mức vá | minor)" }
+    END { if (dong == 0) print "Diff đụng file dependency nhưng plan.md chưa có bảng \"Dependency upgrades\" (Library, Old → new, Level patch | minor)" }
   ' "$1/plan.md" 2>/dev/null || echo "Diff đụng file dependency nhưng không có plan.md"
 }
 
@@ -389,39 +389,39 @@ kc_canh_bao_theo_loai() {
 }
 
 # ------------------------------------------------------------------ điểm mù
-# Ba mức chặn của một điểm mù ([CẦN-HỎI]) — người duyệt nhãn ở gate spec:
-#   chặn         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore: plan)
-#   chặn review  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
-#   không chặn   sai thì sửa nhỏ                 → giao được; review ghi YC đó "chờ xác nhận"
+# Ba mức chặn của một điểm mù ([OPEN-QUESTION]) — người duyệt nhãn ở gate spec:
+#   blocking         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore: plan)
+#   review-blocking  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
+#   non-blocking     sai thì sửa nhỏ                 → giao được; review ghi YC đó "pending"
 
-MUC_CHAN_HOP_LE="chặn|chặn review|không chặn"
+MUC_CHAN_HOP_LE="blocking|review-blocking|non-blocking"
 
 # kc_diem_mu <thư-mục-feature> -> mỗi mục trong open-questions.md một dòng
-# "<mã>|<mức chặn>|<trạng thái>". Thiếu dòng Mức chặn thì mức rỗng.
+# "<mã>|<blocking>|<status>". Thiếu dòng Blocking thì mức rỗng.
 kc_diem_mu() {
   [ -s "$1/open-questions.md" ] || return 0
   awk '
     function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     { sub(/\r$/, "") }
-    /^##[ \t]+YC-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /YC-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "mở"; next }
+    /^##[ \t]+YC-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /YC-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "open"; next }
     /^##?[ \t]/ { if (q != "") print q "|" m "|" t; q = ""; next }
-    q != "" && /^[ \t]*-[ \t]*[*]*Mức chặn[^:]*:/  { m = gia_tri($0) }
-    q != "" && /^[ \t]*-[ \t]*[*]*Trạng thái[^:]*:/ { t = gia_tri($0) }
+    q != "" && /^[ \t]*-[ \t]*\**Blocking\**:/ { m = gia_tri($0) }
+    q != "" && /^[ \t]*-[ \t]*\**Status\**:/   { t = gia_tri($0) }
     END { if (q != "") print q "|" m "|" t }
   ' "$1/open-questions.md"
 }
 
 # kc_diem_mu_mo <thư-mục-feature> <mức...> -> điểm mù CÒN MỞ thuộc các mức đã cho.
-# Gọi với "chặn" làm cổng vào design (chore: plan); với "chặn" + "chặn review"
+# Gọi với "blocking" làm cổng vào design (chore: plan); với "blocking" + "review-blocking"
 # ở implement (cảnh báo) và review (chặn).
 kc_diem_mu_mo() {
   _dm_d="$1"; shift
   kc_diem_mu "$_dm_d" | while IFS='|' read -r _q _m _t; do
-    [ "$_t" = "đã trả lời" ] && continue
+    [ "$_t" = "answered" ] && continue
     for _w in "$@"; do
       [ "$_m" = "$_w" ] || continue
       case "$_m" in
-        chặn) echo "$_q: điểm mù mức \"chặn\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh clarify dẫn dắt việc này)" ;;
+        blocking) echo "$_q: điểm mù mức \"blocking\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh clarify dẫn dắt việc này)" ;;
         *)    echo "$_q: điểm mù mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh clarify dẫn dắt việc này)" ;;
       esac
     done

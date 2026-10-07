@@ -26,7 +26,7 @@ kèm lý do. Vì vậy báo nhầm chỉ tốn thời gian người; bỏ sót m
 
 | Loại | Nghĩa | Mức |
 |---|---|---|
-| `lệch D-xx` | Mục ghi `Dựa trên: D-xx` nhưng nội dung trái với D đó, hoặc làm theo phương án D đã loại | Chặn |
+| `lệch D-xx` | Mục ghi `Based on: D-xx` nhưng nội dung trái với D đó, hoặc làm theo phương án D đã loại | Chặn |
 | `quyết định ngầm` | Một lựa chọn người khác có thể chọn khác (nhất là khó đảo ngược: schema, contract ngoài, thư viện, di trú dữ liệu) nằm trong văn xuôi mà không được nêu thành D-xx | Chặn |
 | `YC chưa được thiết kế` | YC có trong ánh xạ nhưng mục được trỏ tới không thực sự nói cách đáp ứng nó | Chặn |
 | `mâu thuẫn nội bộ` | Hai mục của `tdd.md` nói trái nhau (vd ERD khác contract) | Chặn |
@@ -34,7 +34,7 @@ kèm lý do. Vì vậy báo nhầm chỉ tốn thời gian người; bỏ sót m
 | `trái quy tắc repo` | `tdd.md` trái một file quy tắc của repo (`aw rules design`: chuẩn kiến trúc, pattern bị cấm…) mà không có D-xx nào nêu ra và giải thích | Chặn |
 | `mơ hồ` | Mục đủ mục nhưng `implement` sẽ phải tự đoán | Cảnh báo |
 
-Ở Mode 2 (`tac_gia: nguoi`): **không** chặn quyết định của người chỉ vì bạn
+Ở Mode 2 (`Author: human`): **không** chặn quyết định của người chỉ vì bạn
 thích phương án khác — đó là phản biện, ghi mức `Cảnh báo`. Chỉ chặn khi phần
 agent viết lệch khỏi quyết định của người.
 

@@ -185,7 +185,7 @@ if [ -f "$ENG/adapters/$AD/build.sh" ]; then
     echo "CẢNH BÁO: sinh adapter $AD vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build $AD" >&2
 fi
 echo "" >&2
-echo "Ghi vào intake.md, ngay dưới \"Loại việc\":" >&2
+echo "Ghi vào intake.md, ngay dưới \"Type\":" >&2
 echo "  - **Base:** \`$GOC\` @ \`$sha\`" >&2
 ev=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
 [ -n "$ev" ] && echo "  - **Engine:** $ev" >&2
