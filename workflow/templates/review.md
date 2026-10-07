@@ -5,6 +5,9 @@
 <!-- Tree của code đã rà: chép dòng "- Tree:" trong ket-qua-kiem-thu.md (máy đã kiểm
      nó khớp code hiện tại). Code đổi sau khi rà thì máy chặn — rà lại. -->
 - Reviewed tree: `<sha>`
+<!-- Chỉ khi diff đụng mau_code_nhay_cam: NGƯỜI rà bảo mật tự ghi tên sau khi đọc
+     Lens 4 và diff. Agent không điền. Không đụng: xoá dòng này. -->
+- Security reviewer: <tên người>
 
 ## Lens 1 — Spec conformance
 

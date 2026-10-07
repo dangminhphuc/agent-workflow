@@ -21,6 +21,7 @@ exit_machine:
 exit_human:
   - Người xác nhận kết luận rà soát và quyết định xử lý các finding mức Blocker
   - Người xác nhận base có chủ ý nếu checker cảnh báo base lạ (xếp chồng)
+  - Diff đụng code nhạy cảm (mau_code_nhay_cam) — một người rà bảo mật đọc Lens 4 và diff, tự ghi tên vào "Security reviewer"
 needs_clean_context: true
 requires_fresh_agent: true
 ---
@@ -105,6 +106,12 @@ Bảng cố định, **đủ cả bảy dòng**, không thêm bớt, không đ�
 | `SSRF / path traversal / deserialization` | URL, đường dẫn file, dữ liệu deserialize có đến từ input không tin cậy mà không giới hạn? |
 | `New dependencies` | Dependency mới / nâng bản: có cần thiết, được bảo trì, có trong kết quả SCA, license hợp lệ? |
 
+**Code nhạy cảm.** Repo khai `mau_code_nhay_cam` (vd `src/auth/* src/payment/*`)
+mà diff đụng vào thì Lens 4 của agent chưa đủ: một **người** rà bảo mật đọc Lens 4
+và diff, rồi tự ghi `- Security reviewer: <tên>` ở đầu `review.md`. Agent **không**
+điền dòng này — để trống, nêu danh sách file nhạy cảm (`aw check review` in ra) và
+dừng chờ người.
+
 Verdict mỗi dòng: `pass` / `finding` (kèm `file:dòng`, **và** thêm finding ở Lens 3
 với mức do bạn phán) / `not applicable` (kèm lý do — vd "diff không có input từ
 ngoài"). `not applicable` là kết luận sau khi đã đọc diff, không phải cách bỏ qua
@@ -151,6 +158,8 @@ không còn nói về code đó — máy chặn, rà lại.
   task mới — nếu không, findings sẽ biến mất vào một diff không ai kiểm lại.
 - Nâng một góp ý phong cách lên mức `Chặn`.
 - Kết luận `pass` cho yêu cầu đang đứng trên giả định chưa được xác nhận.
+- Tự điền `Security reviewer` — kể cả tên người dùng đang chat với mình. Người
+  rà bảo mật tự ghi tên sau khi đọc.
 - Ghi `not applicable` cho cả bảng Lens 4 mà không đọc diff, hoặc hạ một lỗ hổng
   khai thác được xuống `Should fix` vì "khó xảy ra".
 
@@ -179,7 +188,9 @@ không còn nói về code đó — máy chặn, rà lại.
     cả hai), không còn chữ giữ chỗ của mẫu; `[Blocker]` / `[Should fix]` có
     `Location` dạng `file:dòng`; `[Blocker]` có `Failure scenario`;
   - `## Conclusion` có `- Blocker findings: <n>` với `n` bằng số mục `[Blocker]`;
-  - `- Reviewed tree:` khớp dấu vân tay code hiện tại.
+  - `- Reviewed tree:` khớp dấu vân tay code hiện tại;
+  - diff đụng `mau_code_nhay_cam` thì có `- Security reviewer: <tên người>` (không
+    trống, không giữ chỗ, không phải tên agent).
 - Diff được so với **base ghi trong `intake.md`**, không phải `nhanh_goc`. Base
   không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)
   thì checker **chỉ cảnh báo** — nêu ra cho người.

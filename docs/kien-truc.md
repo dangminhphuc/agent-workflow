@@ -457,6 +457,21 @@ Finding có đúng không vẫn là việc của người.
 `ket-qua-*.md`. Không có nó, chạy lại `aw check implement` sau khi sửa code làm
 kết quả máy mới lại, còn `review.md` cũ vẫn qua dù nói về code khác.
 
+### Code nhạy cảm: theo rủi ro, không theo loại việc
+
+`security` không phải loại việc (xem trên) — nhưng "rủi ro cao" vẫn cần luật. Loại
+việc nói **thay đổi gì về hành vi**; rủi ro bảo mật lại nằm ở **chỗ code bị đụng**:
+sửa chữ trên màn hình đăng nhập là `feature` bình thường, sửa hàm kiểm token thì
+không. Vì vậy luật bám vào đường dẫn: `mau_code_nhay_cam` trong `conventions.md`,
+team tự khai thư mục auth, thanh toán, crypto… Diff đụng vào (kể cả đổi tên ra
+khỏi đó) thì review cần một **người** rà bảo mật, ghi ở `- Security reviewer:`.
+
+Máy chỉ kiểm dòng đó có, không giữ chỗ, không phải tên agent rõ ràng — nó không
+biết ai gõ dòng đó (giới hạn 7, như ô duyệt; hook `aw guard` hiện chỉ gác
+`spec.md`/`tdd.md`). Luật này đặt việc "cần người" thành cổng máy để không bị
+quên; chuyện agent cố tình điền thay người thì chỉ chặn được bằng lời dặn và
+review của MR. Bỏ trống khoá = không bật luật — repo cài từ trước không bị chặn bất ngờ.
+
 ### Test ↔ YC và phạm vi diff
 
 Hai kiểm chéo của `implement`, đều chỉ **cảnh báo** (`review` chặn):

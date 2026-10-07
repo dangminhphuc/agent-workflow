@@ -20,6 +20,7 @@
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
 #        diem mu muc "chan review" chua tra loi.
+# Luu y (khong chan): diff dung mau_code_nhay_cam — review se can nguoi ra bao mat.
 #
 # Cau hinh: $AW_CONFIG/config.sh (xem lib/moi-truong.sh)
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -143,6 +144,14 @@ if [ -n "$cb" ]; then
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Xử lý: thêm test gắn tag, ghi \"Manual verification\", ghi file vào \"Unplanned\", chạy lại phase lỗi thời, hoặc trả lời điểm mù."
+fi
+
+# Code nhạy cảm: không phải vi phạm — báo sớm để kịp hẹn người rà bảo mật.
+nc=$(kc_nhay_cam "$DIR")
+if [ -n "$nc" ]; then
+  echo ""
+  echo "  [LƯU Ý] Diff đụng code nhạy cảm (mau_code_nhay_cam): $(printf '%s\n' "$nc" | head -5 | tr '\n' ' ')"
+  echo "  /aw-review sẽ cần một NGƯỜI rà bảo mật ghi tên vào \"Security reviewer\" của review.md."
 fi
 
 echo ""

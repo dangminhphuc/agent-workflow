@@ -41,6 +41,12 @@ ngầm giữa các bản.
   `[Blocker]`; dòng mới `- Reviewed tree:` phải khớp dấu vân tay code hiện tại (code
   đổi sau khi rà → rà lại).
 
+- **Code nhạy cảm cần người rà bảo mật.** Khoá mới `mau_code_nhay_cam` trong
+  `conventions.md` (glob, vd `src/auth/* src/payment/*`; bỏ trống = tắt). Diff đụng
+  vào thì `review.md` phải có `- Security reviewer: <tên người>` — `aw check review`
+  chặn khi thiếu, còn giữ chỗ, hay là tên agent; `exit_human` của review thêm bước
+  người rà bảo mật xác nhận; `aw check implement` in `[LƯU Ý]` (không chặn).
+
 ### Sửa
 - Lens 1 chỉ đọc dòng bảng có ô đầu là mã YC — bảng khác nhắc `YC-NNN` ở cột lý do
   không còn ghi đè kết luận.

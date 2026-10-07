@@ -31,6 +31,9 @@
 #  10. Conclusion: "Blocker findings: <n>" thieu hoac khac so muc [Blocker].
 #  11. "Reviewed tree:" thieu hoac khac dau van tay code hien tai — code doi
 #      sau khi ra soat thi ket luan khong con noi ve code nay.
+#  12. Diff dung code nhay cam (mau_code_nhay_cam trong conventions.md) ma
+#      review.md thieu "- Security reviewer: <ten nguoi>" (trong, giu cho, hay
+#      ghi ten agent).
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
 # hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
@@ -247,6 +250,21 @@ case "$rt" in
     elif [ "$rt" != "$vt" ]; then loi_truoc "review.md đã rà Tree $rt nhưng code hiện tại là $vt — code đổi sau khi rà soát; chạy lại aw check implement rồi /aw-review"
     fi ;;
 esac
+
+# Code nhạy cảm: một NGƯỜI rà bảo mật phải đọc Lens 4 và diff. Máy không biết ai
+# viết dòng tên (như mọi ô của người) — chỉ chặn khi thiếu, và khi rõ là agent.
+nc=$(kc_nhay_cam "$DIR")
+if [ -n "$nc" ]; then
+  srv=$(awk '{ sub(/\r$/, "") } /^[ \t]*-[ \t]*\**Security reviewer\**:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[`*]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }' "$REVIEW")
+  ds_nc=$(printf '%s\n' "$nc" | head -5 | tr '\n' ' ' | sed 's/ $//')
+  [ "$(printf '%s\n' "$nc" | wc -l | tr -d ' ')" -gt 5 ] && ds_nc="$ds_nc …"
+  case "$(printf '%s' "$srv" | tr 'A-Z' 'a-z')" in
+    "") loi_truoc "Diff đụng code nhạy cảm (mau_code_nhay_cam: $ds_nc) — review.md cần dòng \"- Security reviewer: <tên người>\": một NGƯỜI rà bảo mật đọc Lens 4 và diff rồi tự ghi tên" ;;
+    "<"*">") loi_truoc "Diff đụng code nhạy cảm ($ds_nc) — \"Security reviewer\" còn chữ giữ chỗ; người rà bảo mật tự ghi tên" ;;
+    claude|claude\ code|agent|ai|assistant|subagent|cursor|copilot|codex|none|n/a|-)
+      loi_truoc "Diff đụng code nhạy cảm ($ds_nc) — \"Security reviewer: $srv\" không phải một người. Agent không tự xác nhận thay người rà bảo mật" ;;
+  esac
+fi
 
 # Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.
 cb_base=$(kc_base_la "$DIR")

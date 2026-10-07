@@ -908,6 +908,25 @@ viet_review; thay "$F/review.md" "- Reviewed tree: \`$(van_tay)\`" '- Reviewed t
 ky_vong 1 "chặn Reviewed tree khác code hiện tại" sh "$CHK" "$F"
 viet_review
 
+# ---- Code nhạy cảm (mau_code_nhay_cam) → cần người rà bảo mật
+viet_review
+ky_vong 0 "không khai mau_code_nhay_cam → không đòi Security reviewer" sh "$CHK" "$F"
+cp "$CFG/conventions.md" "$TMP/conv-nc.bak"
+thay "$CFG/conventions.md" 'mau_code_nhay_cam:' 'mau_code_nhay_cam: src/*'
+ky_vong 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" sh "$CHK" "$F"
+dung "…đúng lý do, nêu file nhạy cảm" sh -c "sh '$CHK' '$F' | grep -q 'code nhạy cảm (mau_code_nhay_cam: src/a.txt)'"
+dung "…implement chỉ LƯU Ý, không chặn" sh -c "sh '$T/kiem-tra-hien-thuc.sh' '$F' | grep -q 'LƯU Ý.*src/a.txt' && sh '$T/kiem-tra-hien-thuc.sh' '$F' >/dev/null 2>&1"
+printf -- '- Security reviewer: <tên người>\n' >> "$F/review.md"
+ky_vong 1 "chặn Security reviewer còn giữ chỗ" sh "$CHK" "$F"
+viet_review; printf -- '- Security reviewer: Claude\n' >> "$F/review.md"
+ky_vong 1 "chặn Security reviewer là tên agent" sh "$CHK" "$F"
+viet_review; printf -- '- **Security reviewer:** Nguyễn Văn A — 2026-10-07\n' >> "$F/review.md"
+ky_vong 0 "Security reviewer là người → cho qua" sh "$CHK" "$F"
+thay "$CFG/conventions.md" 'mau_code_nhay_cam: src/*' 'mau_code_nhay_cam: src/auth/*'
+viet_review
+ky_vong 0 "diff không đụng mẫu nhạy cảm → không đòi" sh "$CHK" "$F"
+cp "$TMP/conv-nc.bak" "$CFG/conventions.md"
+
 # Bảng khác nhắc mã YC ở cột lý do không được ghi đè kết luận của Lens 1
 viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |' '| Authn / authz | pass | khớp YC-002 |'
 ky_vong 0 "dòng Lens 4 nhắc YC-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"

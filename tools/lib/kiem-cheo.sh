@@ -338,6 +338,17 @@ kc_chore_production() {
   done | sort -u
 }
 
+# kc_nhay_cam <thư-mục-feature> -> file thay đổi khớp mau_code_nhay_cam (mỗi dòng
+# một file, bỏ trùng). Đổi tên tính cả đường dẫn cũ lẫn mới: dời code ra khỏi thư
+# mục nhạy cảm cũng là đụng vào nó.
+kc_nhay_cam() {
+  kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
+    for _f in "$_p" $_q; do
+      kc_khop_khoa "$1" mau_code_nhay_cam "$_f" && echo "$_f"
+    done
+  done | sort -u
+}
+
 # kc_chore_dependency <thư-mục-feature> — chore đụng file dependency mà plan.md thiếu
 # bảng "Dependency upgrades" hợp lệ; nâng major không được là chore.
 kc_chore_dependency() {
