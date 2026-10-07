@@ -1,9 +1,9 @@
 ---
 id: ship
 name: Gửi MR và dọn việc
-summary: Tạo MR/PR vào nhánh đích, theo dõi tới khi merge rồi dọn worktree và branch
+summary: Bước 7 (tuỳ chọn) · Tạo MR/PR vào nhánh đích, theo dõi tới khi merge rồi dọn worktree và branch
 required: false
-when: việc đã qua /review và cần gửi MR/PR
+when: việc đã qua /aw-review và cần gửi MR/PR
 runs_on_main_checkout: true
 inputs:
   - intake.md
@@ -18,6 +18,7 @@ inputs:
 outputs:
   - merge-request.md
   - ship.md (aw ship create ghi — không sửa tay)
+  - mo-ta-mr.md (aw ship create ghi khi chưa gửi được mô tả — để người dán)
 exit_machine:
   - aw check ship
 exit_human:
@@ -79,7 +80,7 @@ nói mục nào lấy từ artifact nào.
 
 Chạy `aw check ship <thư-mục-feature>` tới khi `[x] ĐẠT`. Nó chặn cả khi
 `aw check review` chưa đạt hay `review.md` còn finding `[Blocker]` — khi đó
-quay lại `/implement` + `/review`, không sửa ở đây.
+quay lại `/aw-implement` + `/aw-review`, không sửa ở đây.
 
 ### Bước 2 — Người chọn nhánh đích
 
@@ -101,28 +102,42 @@ Người đồng ý thì:
 aw ship create <thư-mục-feature> --target <nhánh-người-chọn> [--draft]
 ```
 
+Engine không giữ token. Nó tạo MR theo đường đầu tiên dùng được:
+
+1. `gh` / `glab` đã cài **và đã đăng nhập** — gửi đủ tiêu đề và mô tả.
+2. GitLab mà không có `glab`: tạo MR ngay trong `git push` (push options) — chỉ
+   cần quyền git sẵn có. Chỉ gửi được tiêu đề: lệnh để mô tả ở
+   `<thư-mục-feature>/mo-ta-mr.md`, **đưa người nội dung đó** để dán vào MR.
+3. Còn lại: in link tạo MR đã điền sẵn đích, tiêu đề, mô tả.
+
+Không tự cài `gh`/`glab`, không xin token, không đăng nhập hộ.
+
 Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:
 
-- **ĐÃ TẠO MR:** stdout là URL — đưa cho người. `ship.md` đã ghi MR.
+- **ĐÃ TẠO MR:** stdout là URL — đưa cho người. `ship.md` đã ghi MR. Lệnh báo
+  "Mô tả CHƯA gửi" thì đưa người nội dung `mo-ta-mr.md` để dán.
 - **ĐÃ CÓ MR ĐANG MỞ:** không tạo thêm; lệnh chỉ push commit mới lên branch (MR
   tự cập nhật). Đưa URL cũ. Muốn đổi mô tả thì sửa trên nền tảng — engine không
   ghi đè mô tả MR.
 - **CHƯA ĐỦ ĐIỀU KIỆN:** `aw check ship` chưa đạt hoặc còn thay đổi chưa commit.
-  Commit là việc của `/implement` (code) — không commit hộ thay đổi lạ.
+  Commit là việc của `/aw-implement` (code) — không commit hộ thay đổi lạ.
 - **KÉO THEO COMMIT NGOÀI VIỆC:** in danh sách commit cho người. Người quyết:
   chọn đích khác, tách branch mới từ đích rồi cherry-pick, hoặc chấp nhận (base
   có chủ ý chứa các commit đó) — chỉ khi người nói chấp nhận mới thêm
   `--allow-extra-commits`.
-- **KHÔNG TẠO ĐƯỢC MR:** thiếu `gh`/`glab` (hoặc chưa đăng nhập) hay nền tảng
-  từ chối. Đưa người link tạo tay mà lệnh in ra; người tạo xong đưa link thì
-  ghi lại: `aw ship create <thư-mục-feature> --target <nhánh> --url <link>`.
+- **KHÔNG TẠO ĐƯỢC MR:** branch đã push; không đường tự động nào dùng được (lý do
+  in phía trên, vd `gh chưa đăng nhập`). Đưa người link điền sẵn mà lệnh in ra;
+  người tạo xong đưa link MR thì ghi lại:
+  `aw ship create <thư-mục-feature> --target <nhánh> --url <link>`.
 
 ### Bước 4 — Theo dõi
 
-`aw ship status <thư-mục-feature>` hỏi nền tảng và cập nhật `ship.md`:
+`aw ship status <thư-mục-feature>` hỏi nền tảng và cập nhật `ship.md`. Không có
+`gh`/`glab` dùng được thì trạng thái suy từ git: nhận ra merge thường và squash
+merge sạch; MR bị đóng hay squash có sửa xung đột thì không thấy — người kiểm trên web.
 
-- **CÒN MR ĐANG MỞ:** chờ review. Góp ý review cần sửa code → `/implement` (task
-  mới trong `plan.md`), rồi `/review` lại, rồi chạy lại `aw ship create … --target
+- **CÒN MR ĐANG MỞ:** chờ review. Góp ý review cần sửa code → `/aw-implement` (task
+  mới trong `plan.md`), rồi `/aw-review` lại, rồi chạy lại `aw ship create … --target
   <cùng nhánh>`: nó push commit mới vào MR cũ, không tạo MR mới.
 - **ĐÃ MERGE HẾT:** báo người: mở phiên ở **checkout chính** và gõ lệnh này để dọn.
 - **CÓ MR BỊ ĐÓNG KHÔNG MERGE / CHƯA RÕ:** nêu ra, người quyết.

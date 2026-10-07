@@ -1,7 +1,7 @@
 ---
 id: implement
 name: Hiện thực
-summary: Thực thi từng task trong kế hoạch; test xanh mới tính là xong
+summary: Bước 5/6 · Làm từng task trong plan.md; task chỉ xong khi test xanh
 required: true
 inputs:
   - intake.md

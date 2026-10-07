@@ -6,7 +6,7 @@
 # Chặn:
 #   1. Đầu vào không qua aw check review (cổng chặn cuối).
 #   2. review.md còn finding [Blocker] — mức đó nghĩa là "không được merge";
-#      sửa là quay lại /implement rồi rà soát lại, không phải mở MR kèm lỗi.
+#      sửa là quay lại /aw-implement rồi rà soát lại, không phải mở MR kèm lỗi.
 #   3. merge-request.md: thiếu; dòng đầu không phải "# <tiêu đề>"; tiêu đề còn
 #      chữ giữ chỗ <…>; xoá mất mục của mẫu (mục không áp dụng ghi "None", mục
 #      bị xoá trông như bị quên); Problem / Changes / Testing để trống; còn
@@ -29,7 +29,7 @@ DIR="${1:-.}"
 MR="$DIR/merge-request.md"
 REVIEW="$DIR/review.md"
 
-[ -f "$REVIEW" ] || { echo "LỖI: không tìm thấy $REVIEW — chạy /review trước." >&2; exit 2; }
+[ -f "$REVIEW" ] || { echo "LỖI: không tìm thấy $REVIEW — chạy /aw-review trước." >&2; exit 2; }
 [ -f "$MR" ]     || { echo "LỖI: không tìm thấy $MR — viết theo mẫu templates/merge-request.md." >&2; exit 2; }
 
 n=0
@@ -39,7 +39,7 @@ sh "$HERE/kiem-tra-ra-soat.sh" "$DIR" >/dev/null 2>&1 ||
   loi "Đầu vào chưa đạt: aw check review không ĐẠT — chạy nó để xem chi tiết."
 
 nb=$(awk '{ sub(/\r$/, "") } /^###[ \t]+\[Blocker\]/ && !/<tiêu đề>/' "$REVIEW" | wc -l | tr -d ' ')
-[ "$nb" = 0 ] || loi "review.md còn $nb finding [Blocker] — không được merge. Sửa ở /implement rồi chạy lại /review."
+[ "$nb" = 0 ] || loi "review.md còn $nb finding [Blocker] — không được merge. Sửa ở /aw-implement rồi chạy lại /aw-review."
 
 # Nội dung đã bỏ comment HTML (kể cả comment nhiều dòng)
 than=$(awk '{ sub(/\r$/, "") }

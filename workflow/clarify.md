@@ -1,13 +1,13 @@
 ---
 id: clarify
 choice_ui: true
-name: Làm rõ với người
-summary: Gom mọi việc đang chờ người quyết (điểm mù, phát hiện của checker LLM) theo thứ tự phải chốt trước để không phase nào bị chặn, rồi dẫn người đi từng mục
+name: Chốt việc chờ người
+summary: Dẫn bạn chốt từng điểm mù và phát hiện của checker đang chặn phase, việc gấp nhất trước
 ---
 
 # Làm rõ với người (clarify)
 
-**Không phải phase.** Lệnh này chạy được bất cứ lúc nào sau `/spec`. Nó gom
+**Không phải phase.** Lệnh này chạy được bất cứ lúc nào sau `/aw-spec`. Nó gom
 **mọi việc máy/LLM cần người quyết** vào một hàng đợi và dẫn người đi từng mục.
 Việc của agent là **dẫn dắt**: đặt câu hỏi, ghi lại quyết định. Việc **quyết**
 là của người.
@@ -16,8 +16,8 @@ là của người.
 
 | Nguồn | File | Người làm gì | Chặn gì |
 |---|---|---|---|
-| Điểm mù | `open-questions.md` (do `/spec` ghi) | **Trả lời** — thường phải hỏi PO/BA | Theo `Blocking` (bảng dưới) |
-| Phát hiện checker LLM | `phat-hien-<checker>.md` (hiện có `phat-hien-thiet-ke.md`) | **Phân xử** — đồng ý (sửa) hoặc bác bỏ kèm lý do | Mức `Chặn`: checker của phase đó (`thiết kế` → `/plan`); `Cảnh báo`: không chặn |
+| Điểm mù | `open-questions.md` (do `/aw-spec` ghi) | **Trả lời** — thường phải hỏi PO/BA | Theo `Blocking` (bảng dưới) |
+| Phát hiện checker LLM | `phat-hien-<checker>.md` (hiện có `phat-hien-thiet-ke.md`) | **Phân xử** — đồng ý (sửa) hoặc bác bỏ kèm lý do | Mức `Chặn`: checker của phase đó (`thiết kế` → `/aw-plan`); `Cảnh báo`: không chặn |
 
 Không gộp hai file: mỗi file có một bên ghi và một vòng đời riêng, và `based_on`
 băm cả file — gộp lại thì checker LLM ghi phát hiện sẽ làm `tdd.md` "lỗi thời".
@@ -27,11 +27,11 @@ Hàng đợi chỉ gộp ở **chỗ người nhìn**, không gộp chỗ lưu.
 
 | Mức | Khi nào | Chặn gì |
 |---|---|---|
-| `blocking` | Sai giả định thì cả thiết kế đổi hướng | `/design` (chore: `/plan`) và mọi phase sau |
-| `review-blocking` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `/implement` cảnh báo, `/review` chặn |
+| `blocking` | Sai giả định thì cả thiết kế đổi hướng | `/aw-design` (chore: `/aw-plan`) và mọi phase sau |
+| `review-blocking` | Sai thì làm lại một phần code | Flow đi tiếp trên giả định tạm; `/aw-implement` cảnh báo, `/aw-review` chặn |
 | `non-blocking` | Sai thì sửa nhỏ, chấp nhận giao trước | Không chặn; `review` ghi YC đó `pending` |
 
-Mức do agent đề xuất ở `/spec`, **người** duyệt. Chỉ người được đổi mức.
+Mức do agent đề xuất ở `/aw-spec`, **người** duyệt. Chỉ người được đổi mức.
 
 ## Việc phải làm
 
@@ -50,7 +50,7 @@ Trong nhóm điểm mù: YC `must` trước `should` → nhiều task đứng tr
 **Không dán danh sách cho người.** Người chỉ thấy một dòng tóm tắt:
 
 ```
-Còn 6 việc chờ bạn: 3 đang chặn (YC-001, YC-002 chặn /design; PH-03 chặn /plan), 3 chưa chặn. Bắt đầu từ YC-001.
+Còn 6 việc chờ bạn: 3 đang chặn (YC-001, YC-002 chặn /aw-design; PH-03 chặn /aw-plan), 3 chưa chặn. Bắt đầu từ YC-001.
 ```
 
 Người hỏi "cho xem hết" thì mới in danh sách (mã + tiêu đề + nhóm, mỗi mục một dòng).
@@ -62,7 +62,7 @@ Người hỏi "cho xem hết" thì mới in danh sách (mã + tiêu đề + nh�
 - **CÓ VIỆC ĐANG CHẶN:** tóm tắt như trên, sang bước 2.
 - **CÒN VIỆC CHỜ NGƯỜI, CHƯA CHẶN:** tóm tắt, rồi hỏi bằng lựa chọn: "Giải quyết
   luôn" / "Để sau". Để sau thì dừng.
-- **THIẾU ĐẦU VÀO:** chưa có `spec.md` / `open-questions.md` → chạy `/spec` trước.
+- **THIẾU ĐẦU VÀO:** chưa có `spec.md` / `open-questions.md` → chạy `/aw-spec` trước.
 
 ### 2. Hỏi từng mục bằng câu hỏi lựa chọn — MỘT mục mỗi lượt, theo thứ tự
 
@@ -124,7 +124,7 @@ Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu q
   1. (Đề xuất) 403 problem+json, mã lỗi riêng — đang dùng làm giả định tạm
   2. 404 — giấu route khỏi bên dò quét; đối tác khó debug
   3. 403 không body chi tiết — đơn giản; đối tác phải hỏi support
-  4. Chưa trả lời được — soạn tin gửi chủ admin-portal; /review sẽ chặn
+  4. Chưa trả lời được — soạn tin gửi chủ admin-portal; /aw-review sẽ chặn
   5. Type something.  — tự nhập câu trả lời khác
   6. Chat about this.  — trao đổi thêm trước khi chốt
 
@@ -153,7 +153,7 @@ trả lời.
 #### 2b. Phát hiện của checker LLM
 
 ```
-PH-03 · CHẶN · đang chặn /plan · 3/6 · quyết định ngầm
+PH-03 · CHẶN · đang chặn /aw-plan · 3/6 · quyết định ngầm
 tdd.md § Contract API: chọn gRPC cho webhook nội bộ nhưng không nêu thành D-xx.
   Checker nói: khó đảo ngược (contract ngoài); người khác có thể chọn REST.
   Vì sao đề xuất: hai service gọi tới đều đã có client gRPC (src/clients/*); đổi REST là thêm việc.
@@ -230,11 +230,11 @@ tự hạ.
    phát hiện chỉ ra.
 2. Phát hiện cần một quyết định (`quyết định ngầm`, `lệch D-xx` mà người muốn đổi
    D): thêm/sửa D-xx với ô duyệt **chưa tick** (sửa D đã duyệt thì theo mục "Mở
-   lại một quyết định" của `/design`). **Không** tick — người duyệt D như mọi D
+   lại một quyết định" của `/aw-design`). **Không** tick — người duyệt D như mọi D
    khác.
 3. Phát hiện `yêu cầu mới`: người đồng ý là **bỏ hành vi đó khỏi `tdd.md`**.
    Người muốn giữ hành vi đó thì đó là yêu cầu mới — báo người phải quay lại
-   `/spec`, không tự thêm YC.
+   `/aw-spec`, không tự thêm YC.
 4. Trong file phát hiện: `Xử lý:` → `đã sửa`.
 5. Chạy `aw check design <thư-mục-feature>` và dán kết quả thật.
 
@@ -251,7 +251,7 @@ rồi nói ngắn gọn:
 - còn gì đang chặn phase nào;
 - câu hỏi nào đang chờ ai (các mục đã soạn tin nhắn);
 - **phát hiện đã đóng mà người chưa phân xử trong lượt này** (nhóm `[ĐÃ XỬ LÝ]`
-  — thường là agent tự sửa ở bước checker của `/design`): liệt kê mã + một dòng
+  — thường là agent tự sửa ở bước checker của `/aw-design`): liệt kê mã + một dòng
   để người biết, người muốn xem lại mục nào thì xử lý như mục mới;
 - D-xx mới hoặc vừa sửa đang chờ người duyệt; spec vừa bị bỏ tick vì sửa theo
   câu trả lời — người tick lại;
@@ -259,8 +259,8 @@ rồi nói ngắn gọn:
   `based_on`): điểm mù trả lời **khớp** giả định → chạy lại phase đó để ghi lại
   dấu đầu vào; **khác** giả định → phase đó phải làm lại phần ghi ở "Nếu giả
   định sai", và task trong `plan.md` đứng trên giả định đó đặt lại `[ ]` khi
-  chạy lại `/plan`. `tdd.md` vừa sửa theo phát hiện mà đã có `plan.md` → chạy
-  lại `/plan`.
+  chạy lại `/aw-plan`. `tdd.md` vừa sửa theo phát hiện mà đã có `plan.md` → chạy
+  lại `/aw-plan`.
 
 ## Cấm
 

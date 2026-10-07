@@ -89,7 +89,7 @@ checker chỉ kiểm được cú pháp nhãn, nên agent gắn `[JIRA]` cho m�
 vẫn lọt tới `spec`. Luật chọn quyết định trên **cả chuỗi**, không trên từng từ:
 một từ không nhận ra là cả tham số thành lời người dùng nguyên văn. Tách từng từ
 sẽ biến một câu thành vài input rác và làm mất câu gốc — đúng thứ `[HUMAN]`
-sinh ra để giữ. Chạy lại `/intake` chỉ **gộp thêm** (không xoá, không đổi loại
+sinh ra để giữ. Chạy lại `/aw-intake` chỉ **gộp thêm** (không xoá, không đổi loại
 việc), và `spec.md` ghi `based_on: intake.md` để input mới làm spec lỗi thời.
 
 **Nguồn sự thật của loại việc** là `intake.md` (người xác nhận). Tiền tố branch
@@ -129,7 +129,7 @@ artifact sang feature khác là lỗi im lặng, khó phát hiện về sau.
 ### Worktree bắt buộc, base do người chọn
 
 Mỗi việc làm trong một worktree riêng; checkout chính chỉ đứng ở `nhanh_goc` và
-chỉ chạy `/intake`. Mọi lệnh khác chạy ở checkout chính bị `aw feature`
+chỉ chạy `/aw-intake`. Mọi lệnh khác chạy ở checkout chính bị `aw feature`
 chặn (`ĐANG Ở CHECKOUT CHÍNH`) — chốt đặt ở script mọi phase đều gọi, không phải trong từng phase.
 Hệ quả mong muốn: "mỗi phase chạy được từ phiên trắng" không còn là khuyến nghị
 mà là cấu trúc — tạo worktree xong thì người **phải** mở phiên mới ở đó.

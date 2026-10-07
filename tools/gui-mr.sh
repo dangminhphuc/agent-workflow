@@ -4,7 +4,7 @@
 #   aw ship targets <thư-mục-feature>
 #       liệt kê nhánh đích được phép (khoá nhanh_dich_mr) để NGƯỜI chọn
 #   aw ship create <thư-mục-feature> --target <nhánh> [--draft] [--allow-extra-commits] [--url <link>]
-#       push branch, tạo MR bằng gh/glab, ghi <thư-mục-feature>/ship.md
+#       push branch, tạo MR, ghi <thư-mục-feature>/ship.md
 #   aw ship status <thư-mục-feature>
 #       hỏi nền tảng trạng thái từng MR trong ship.md, ghi lại
 #
@@ -15,7 +15,9 @@
 #     của việc? có) — vd việc dựa trên develop mà gửi vào main. Người quyết:
 #     đổi đích, tách branch, hoặc chấp nhận bằng --allow-extra-commits.
 #   - đã có MR đang mở vào đúng đích đó: chỉ push commit mới, không tạo thêm, in URL.
-# Không có gh/glab: in link tạo MR bằng tay; người tạo xong thì ghi lại bằng --url.
+# Cách tạo MR (xem tools/lib/mr.sh): gh/glab đã đăng nhập → GitLab: git push
+# options (không cần token, chỉ gửi tiêu đề; mô tả để ở mo-ta-mr.md cho người dán)
+# → link tạo tay điền sẵn; người tạo xong thì ghi lại bằng --url.
 # Engine không merge, không duyệt MR.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -36,14 +38,14 @@ case "$SUB" in
       "2=SAI THAM SỐ" \
       "4=KÉO THEO COMMIT NGOÀI VIỆC — người quyết, xem danh sách phía trên" \
       "5=ĐÃ CÓ MR ĐANG MỞ — đã push commit mới, không tạo MR thêm; stdout là URL" \
-      "8=KHÔNG TẠO ĐƯỢC MR — thiếu gh/glab hoặc nền tảng từ chối; tạo tay rồi ghi bằng --url" ;;
+      "8=KHÔNG TẠO ĐƯỢC MR — đã in link tạo tay điền sẵn; tạo xong ghi lại bằng --url" ;;
   status)
     kq_khai "aw ship status" \
       "0=ĐÃ MERGE HẾT — dọn từ checkout chính: aw ship sweep" \
       "2=SAI THAM SỐ — hoặc việc chưa có MR (ship.md)" \
       "3=CÒN MR ĐANG MỞ — chờ review/merge" \
       "4=CÓ MR BỊ ĐÓNG KHÔNG MERGE — người quyết" \
-      "6=CHƯA RÕ — không hỏi được nền tảng (thiếu gh/glab, hoặc merge kiểu squash mà git không nhận ra)" ;;
+      "6=CHƯA RÕ — gh/glab hỏi lỗi, và git không thấy MR đã merge" ;;
   *) kq_khai "aw ship" "2=SAI THAM SỐ"
      echo "Dùng: aw ship targets|create|status <thư-mục-feature> … | aw ship sweep [<branch>] [--apply]" >&2; exit 2 ;;
 esac
@@ -165,60 +167,91 @@ create)
     echo "  --allow-extra-commits: người đã chấp nhận." >&2
   fi
 
+  NT=$(mr_nen_tang "$R" "$CONV")
+  HEADSHA=$(git -C "$R" rev-parse HEAD)
+  # ghi_mr <url> — thêm/thay dòng MR của đích này trong ship.md
+  ghi_mr() {
+    { sm_dong "$SHIP" | awk -F'|' -v d="$DICH" '$1 != d'; printf '%s|open|%s|%s\n' "$DICH" "$HEADSHA" "$1"; } |
+      sm_ghi "$SHIP" "$FT" "$NT" "$B"
+  }
+
   # Đã có MR đang mở vào đích này: chỉ push commit mới (sửa theo review) — MR tự cập nhật.
   cu=$(sm_dong "$SHIP" | awk -F'|' -v d="$DICH" '$1 == d && $2 == "open" { print $4; exit }')
   if [ -n "$cu" ]; then
     git -C "$R" push -q -u origin "$B" || { echo "LỖI: git push origin $B thất bại — xem thông báo của git phía trên." >&2; exit 8; }
+    ghi_mr "$cu"
     echo "Đã có MR đang mở vào $DICH — đã push $B, MR tự cập nhật." >&2
     echo "$cu"; exit 5
   fi
 
-  NT=$(mr_nen_tang "$R" "$CONV")
   # MR mở từ trước (tạo tay, phiên khác) mà ship.md chưa có: ghi lại, không tạo thêm.
   [ -n "$URL" ] || URL=$(mr_tim "$R" "$NT" "$B" "$DICH")
   if [ -n "$URL" ]; then
     git -C "$R" push -q -u origin "$B" 2>/dev/null || true
-    echo "  ghi     MR đã có: $URL" >&2
-  else
-    if ! git -C "$R" push -q -u origin "$B"; then
-      echo "LỖI: git push origin $B thất bại — xem thông báo của git phía trên." >&2; exit 8
-    fi
+    ghi_mr "$URL"
+    echo "MR $B → $DICH (đã có): $URL — ghi vào $SHIP" >&2
+    echo "$URL"; exit 0
+  fi
+
+  TD=$(awk '{ sub(/\r$/, "") } /^# / { sub(/^# /, ""); print; exit }' "$DIR/merge-request.md")
+  # Mô tả gửi đi: bỏ dòng tiêu đề và comment HTML (lời dặn của mẫu). Đường không
+  # gửi được mô tả thì để file này lại cho người dán.
+  MO="$DIR/mo-ta-mr.md"
+  awk '{ sub(/\r$/, "") } !dau && /^# / { dau = 1; next } { print }' "$DIR/merge-request.md" |
+    awk '{
+      s = $0; o = ""
+      while (s != "") {
+        if (trong) { i = index(s, "-->"); if (!i) { s = ""; break } s = substr(s, i + 3); trong = 0 }
+        else { i = index(s, "<!--"); if (!i) { o = o s; s = ""; break } o = o substr(s, 1, i - 1); s = substr(s, i + 4); trong = 1 }
+      }
+      if (o ~ /^[ \t]*$/ && $0 !~ /^[ \t]*$/) next
+      print o
+    }' | cat -s | sed '/./,$!d' > "$MO"
+
+  # 1. CLI đã đăng nhập: gửi đủ tiêu đề + mô tả.
+  if mr_cli "$NT" "$R" >/dev/null; then
+    mc=$MR_CLI_TEN
+    git -C "$R" push -q -u origin "$B" || { echo "LỖI: git push origin $B thất bại — xem thông báo của git phía trên." >&2; exit 8; }
     echo "  push    $B → origin/$B" >&2
-    TD=$(awk '{ sub(/\r$/, "") } /^# / { sub(/^# /, ""); print; exit }' "$DIR/merge-request.md")
-    MO="${TMPDIR:-/tmp}/aw-mr.$$"; kq_don 'rm -f "$MO"'
-    # Mô tả gửi đi: bỏ dòng tiêu đề và comment HTML (lời dặn của mẫu).
-    awk '{ sub(/\r$/, "") } !dau && /^# / { dau = 1; next } { print }' "$DIR/merge-request.md" |
-      awk '{
-        s = $0; o = ""
-        while (s != "") {
-          if (trong) { i = index(s, "-->"); if (!i) { s = ""; break } s = substr(s, i + 3); trong = 0 }
-          else { i = index(s, "<!--"); if (!i) { o = o s; s = ""; break } o = o substr(s, 1, i - 1); s = substr(s, i + 4); trong = 1 }
-        }
-        if (o ~ /^[ \t]*$/ && $0 !~ /^[ \t]*$/) next
-        print o
-      }' | cat -s | sed '/./,$!d' > "$MO"
-    if ! mc=$(mr_cli "$NT"); then
-      [ -n "$NT" ] || echo "Không biết nền tảng của origin — khai nen_tang_mr: github|gitlab trong conventions.md." >&2
-      [ -z "$NT" ] || echo "Máy không có $( [ "$NT" = github ] && echo gh || echo glab ) — không tạo MR tự động được." >&2
-      lt=$(mr_link_tay "$R" "$NT" "$B" "$DICH")
-      echo "Tạo MR bằng tay${lt:+: $lt}" >&2
-      echo "  Tiêu đề: $TD" >&2
-      echo "  Mô tả:   nội dung merge-request.md (bỏ dòng tiêu đề và comment)" >&2
-      echo "Tạo xong thì ghi lại: aw ship create $DIR --target $DICH --url <link MR>" >&2
-      exit 8
-    fi
     URL=$(mr_tao "$R" "$NT" "$B" "$DICH" "$TD" "$MO" "$DRAFT") || {
-      echo "LỖI: $mc không tạo được MR — thông báo phía trên. Tạo tay: $(mr_link_tay "$R" "$NT" "$B" "$DICH")" >&2
+      echo "LỖI: $mc không tạo được MR — thông báo phía trên. Tạo tay: $(mr_link_tay "$R" "$NT" "$B" "$DICH" "$TD" "$MO")" >&2
       echo "  rồi ghi lại: aw ship create $DIR --target $DICH --url <link MR>" >&2
       exit 8
     }
+    rm -f "$MO"
+    ghi_mr "$URL"
+    echo "MR $B → $DICH: $URL (ghi vào $SHIP)" >&2
+    echo "$URL"; exit 0
+  fi
+  echo "  ($MR_CLI_LY_DO)" >&2
+
+  # 2. GitLab không có glab: tạo MR ngay trong lần push (push options) — chỉ cần quyền git.
+  if [ "$NT" = gitlab ]; then
+    URL=$(mr_tao_push "$R" "$B" "$DICH" "$TD" "$DRAFT"); km=$?
+    if [ "$km" = 1 ]; then
+      echo "  push kèm push options bị từ chối — push thường." >&2
+      git -C "$R" push -q -u origin "$B" || { echo "LỖI: git push origin $B thất bại — xem thông báo của git phía trên." >&2; exit 8; }
+    fi
+    if [ "$km" = 0 ]; then
+      ghi_mr "$URL"
+      echo "MR $B → $DICH: $URL (tạo bằng git push options, ghi vào $SHIP)" >&2
+      echo "  Mô tả CHƯA gửi (push option không chứa được xuống dòng): mở MR → Edit, dán nội dung $MO" >&2
+      echo "$URL"; exit 0
+    fi
+    [ "$km" != 2 ] || echo "  push xong nhưng server không tạo MR (push options bị tắt?)." >&2
+  else
+    git -C "$R" push -q -u origin "$B" || { echo "LỖI: git push origin $B thất bại — xem thông báo của git phía trên." >&2; exit 8; }
+    echo "  push    $B → origin/$B" >&2
   fi
 
-  HEADSHA=$(git -C "$R" rev-parse HEAD)
-  { sm_dong "$SHIP" | awk -F'|' -v d="$DICH" '$1 != d'; printf '%s|open|%s|%s\n' "$DICH" "$HEADSHA" "$URL"; } |
-    sm_ghi "$SHIP" "$FT" "$NT" "$B"
-  echo "MR $B → $DICH: $URL (ghi vào $SHIP)" >&2
-  echo "$URL"
+  # 3. Link tạo MR điền sẵn — người bấm tạo rồi đưa link MR cho agent ghi lại.
+  [ -n "$NT" ] || echo "Không biết nền tảng của origin — khai nen_tang_mr: github|gitlab trong conventions.md." >&2
+  lt=$(mr_link_tay "$R" "$NT" "$B" "$DICH" "$TD" "$MO")
+  echo "Tạo MR bằng tay${lt:+ (đã điền sẵn đích, tiêu đề, mô tả): $lt}" >&2
+  echo "  Tiêu đề: $TD" >&2
+  echo "  Mô tả:   $MO (link không chứa thì dán nội dung file này)" >&2
+  echo "Tạo xong thì ghi lại: aw ship create $DIR --target $DICH --url <link MR>" >&2
+  exit 8
   ;;
 # ------------------------------------------------------------------ status
 status)

@@ -1,7 +1,7 @@
 ---
 id: spec
-name: Đặc tả
-summary: Chưng cất BRD/PRD/ticket thành đặc tả kiểm chứng được và soi ra điểm mù
+name: Viết đặc tả
+summary: Bước 2/6 · Biến BRD/PRD/ticket thành spec.md kiểm chứng được và liệt kê điểm mù cần người chốt
 required: true
 inputs:
   - intake.md
@@ -46,7 +46,7 @@ Nó cho biết **loại việc** và **danh sách input**. Đọc hết từng i
 | `[FILE]` (kể cả incident note) | Đọc trực tiếp | `[FILE]` đường dẫn + heading |
 | `[HUMAN]` | Đọc nguyên văn trong `intake.md` | `[FILE] intake.md § Input` |
 
-Chưa có `intake.md`: dừng lại và chạy `/intake` trước. Không đọc nguồn nào nằm
+Chưa có `intake.md`: dừng lại và chạy `/aw-intake` trước. Không đọc nguồn nào nằm
 ngoài danh sách input — muốn thêm nguồn thì thêm vào `intake.md` trước.
 
 ## Theo loại việc
@@ -149,7 +149,7 @@ không có test rồi tưởng là an toàn là rủi ro lớn nhất của refa
     (nếu repo cài) tự bỏ tick. Không bao giờ sửa hay xoá `<!-- approval-hash: … -->`.
 
 13. **Ghi dấu đầu vào:** `aw based-on <thư-mục-feature> spec.md intake.md`.
-    `intake.md` đổi sau đó (`/intake` chạy lại gộp thêm input, đổi loại việc) thì
+    `intake.md` đổi sau đó (`/aw-intake` chạy lại gộp thêm input, đổi loại việc) thì
     spec thành lỗi thời — cảnh báo ở các phase sau, `review` chặn; phải chạy lại
     phase này để đọc input mới.
 

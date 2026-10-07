@@ -40,7 +40,7 @@ TDD="$DIR/tdd.md"
 PH="$DIR/phat-hien-thiet-ke.md"
 
 if [ "$(kc_loai "$DIR")" = "chore" ]; then
-  echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /plan."
+  echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
   echo ""
   echo "KHÔNG ĐẠT."
   exit 1
@@ -218,7 +218,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
     print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện Chặn."
-    print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Approved by human\"). /plan sẽ chặn nếu còn D chưa duyệt."
+    print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Approved by human\"). /aw-plan sẽ chặn nếu còn D chưa duyệt."
   }
 ' "$SPEC" "$TDD" "$PHF"
 ma=$?

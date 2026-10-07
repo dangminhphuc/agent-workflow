@@ -27,7 +27,7 @@
 #   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw rename <branch>
 #   aw rules <phase>                       phase: spec design plan implement review
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
-#   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /design, /plan gọi)
+#   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
 #
 # Biến môi trường:
 #   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);
@@ -36,7 +36,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.12"
+AW_WRAPPER_VERSION="2026.10.13"
 AW_PROTOCOL=1
 AW_MIRROR_MAC_DINH="https://github.com/dangminhphuc/agent-workflow/releases/download"
 

@@ -11,20 +11,37 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.13]
+
+### Đổi (phá vỡ thói quen gõ lệnh)
+- **Mọi lệnh có tiền tố `aw-`:** `/aw-intake`, `/aw-spec`, `/aw-design`, `/aw-plan`,
+  `/aw-implement`, `/aw-review`, `/aw-ship`, `/aw-import`, `/aw-clarify` (file
+  `commands/aw-<id>.md`, cả Claude Code lẫn Cursor). Gõ `/aw-` là lọc ra đủ lệnh của
+  quy trình. `aw adapter build` / `aw worktree new` tự xoá file lệnh cũ (`intake.md`…)
+  do engine sinh; file người viết tay giữ nguyên. Dùng `aw-` chứ không `aw:` (thư mục
+  con): Cursor chưa chắc hiểu thư mục con, và hai adapter phải trùng tên lệnh.
+- **Description lệnh viết lại:** chỉ còn `summary` (bỏ ghép `<name> — <summary>`),
+  nói "khi nào chạy, chạy xong có gì", phase ghi `Bước n/6`, phase có cổng duyệt nói
+  trước điều kiện duyệt. `name` mới: Tiếp nhận việc, Viết đặc tả, Thiết kế kỹ thuật,
+  Lập kế hoạch, Hiện thực, Rà soát độc lập, Gửi MR và dọn việc, Nhập artifact ngoài,
+  Chốt việc chờ người. Hook adapter `ad_dau_lenh <lệnh> <name> <summary> <gợi-ý>`.
 
 ### Thêm
-- **Phase `06-ship` (`/ship`, tuỳ chọn) — gửi MR/PR và dọn việc.** Trong worktree:
+- **Phase `06-ship` (`/aw-ship`, tuỳ chọn) — gửi MR/PR và dọn việc.** Trong worktree:
   agent viết `merge-request.md` theo mẫu, `aw check ship` chặn khi review chưa đạt,
   còn `[Blocker]`, mô tả thiếu mục hay còn chữ giữ chỗ. `aw ship targets` liệt kê
-  nhánh đích (khoá mới `nhanh_dich_mr`, vd `develop uat/* main`) cho người chọn;
-  `aw ship create --target <nhánh>` push và tạo MR bằng `gh`/`glab` (khoá mới
-  `nen_tang_mr`), chặn khi MR kéo theo commit không thuộc việc
-  (`--allow-extra-commits` khi người chấp nhận), ghi `ship.md`; chạy lại cùng đích
-  chỉ push thêm. Không có CLI: in link tạo tay, ghi lại bằng `--url`.
-  `aw ship status` hỏi trạng thái MR. Ở checkout chính: `aw ship sweep [--apply]`
-  gỡ worktree, xoá branch local và trên origin của việc đã merge — xoá cứng chỉ khi
-  đầu branch trùng sha MR đã merge.
+  nhánh đích (khoá mới `nhanh_dich_mr`, vd `develop uat/* main`) cho người chọn.
+  `aw ship create --target <nhánh>` push và tạo MR, chặn khi MR kéo theo commit không
+  thuộc việc (`--allow-extra-commits` khi người chấp nhận), ghi `ship.md`; chạy lại
+  cùng đích chỉ push thêm. `aw ship status` hỏi trạng thái MR. Ở checkout chính:
+  `aw ship sweep [--apply]` gỡ worktree, xoá branch local và trên origin của việc đã
+  merge — xoá cứng chỉ khi đầu branch trùng sha MR đã merge.
+- **Tạo MR không cần token:** `gh`/`glab` đã cài **và đăng nhập** thì dùng (khoá mới
+  `nen_tang_mr`, bỏ trống = đoán từ origin); GitLab không có `glab` → git push
+  options (`merge_request.create`, chỉ cần quyền git; mô tả để ở `mo-ta-mr.md` cho
+  người dán); còn lại → link tạo MR điền sẵn đích, tiêu đề, mô tả, ghi lại bằng
+  `--url`. Không có CLI thì trạng thái suy từ git, nhận ra cả squash merge sạch
+  (patch-id).
 - Frontmatter phase `runs_on_main_checkout: true`: lệnh không dừng ở checkout chính
   mà làm theo mục "Ở checkout chính" của phase.
 

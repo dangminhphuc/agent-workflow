@@ -28,11 +28,11 @@ dùng cả hai agent: `ADAPTER="claude-code cursor"` — xem
 
 | Nguồn trung lập | Artifact Claude Code |
 |---|---|
-| `workflow/phases/<id>.md` | `.claude/commands/<id>.md` — slash command (`/intake`, `/spec`, `/design`, `/plan`, `/implement`, `/review`, `/ship`) |
+| `workflow/phases/<id>.md` | `.claude/commands/aw-<id>.md` — slash command (`/aw-intake`, `/aw-spec`, `/aw-design`, `/aw-plan`, `/aw-implement`, `/aw-review`, `/aw-ship`) |
 | Phase có `requires_fresh_agent: true` (`05-review.md`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch |
 | `llm_checker:` của phase → `workflow/checkers/<id>.md` | `.claude/agents/soat-<id>.md` — subagent checker LLM (hiện có `soat-thiet-ke`) |
 | Phase có `approval_gate: true` (`02-design.md`, `03-plan.md`) | Bước "Cổng duyệt" trong lệnh phase: `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
-| `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/<id>.md` — lệnh tiện ích `/import`, `/clarify` |
+| `commands:` trong `workflow.yaml` → `workflow/<id>.md` | `.claude/commands/aw-<id>.md` — lệnh tiện ích `/aw-import`, `/aw-clarify` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
 
 Phase có `status: chưa hiện thực` bị bỏ qua (hiện tại: không có). Phase khai
@@ -44,14 +44,14 @@ Mỗi command sinh ra gồm ba phần:
 1. **Bước 0 — xác định feature:** chạy
    `aw feature $ARGUMENTS`. Engine suy
    từ tên branch theo `conventions.md` → không khớp thì lấy tham số lệnh (vd
-   `/spec feat_tao-todo`) → không có thì ra `CẦN HỎI NGƯỜI` và command bảo agent dừng hỏi.
+   `/aw-spec feat_tao-todo`) → không có thì ra `CẦN HỎI NGƯỜI` và command bảo agent dừng hỏi.
    Đang ở checkout chính thì ra `ĐANG Ở CHECKOUT CHÍNH`: worktree là bắt buộc, command bảo agent dừng
    và nhờ người mở phiên mới trong worktree của việc.
    Agent in `Đang làm với: …` rồi mới đọc/ghi trong `.agent-workflow/<tên-branch>/`.
    Logic nằm trong script chứ không trong prompt, để mọi adapter dùng chung.
 
    Ngoại lệ: phase khai `arguments: input` (hiện chỉ `00-intake`). Khi đó tham số
-   lệnh là **input** (`/intake JIRA-123 …`), adapter **không** truyền nó vào
+   lệnh là **input** (`/aw-intake JIRA-123 …`), adapter **không** truyền nó vào
    `aw feature`, và `ĐANG Ở CHECKOUT CHÍNH` dẫn tới bước đề xuất
    worktree bằng `aw worktree new` — người chọn base rồi mới tạo. Adapter từ chối build (`ĐỊNH NGHĨA QUY TRÌNH LỖI`) nếu `arguments` mang giá
    trị khác `input`.
@@ -62,13 +62,13 @@ Mỗi command sinh ra gồm ba phần:
 Lệnh tiện ích (`commands:` — không phải phase) chỉ có Bước 0 và thân file nguồn,
 không có hợp đồng vào/ra. Frontmatter: `name`, `summary`, tuỳ chọn
 `argument_hint` (mặc định `[tên-feature]`) và `arguments: mixed` khi tham số còn
-thứ khác ngoài tên feature (như `/import <file> <artifact> [tên-feature]`).
+thứ khác ngoài tên feature (như `/aw-import <file> <artifact> [tên-feature]`).
 
 ## Loại việc không cần gì từ adapter
 
 Luật theo loại việc (`feature | bugfix | refactor | perf | chore`, ghi trong
-`intake.md` ở `/intake`) nằm **hoàn toàn** trong thân file phase và trong các
-script kiểm tra — adapter không sinh nhánh nào theo loại. `/design` với `chore`
+`intake.md` ở `/aw-intake`) nằm **hoàn toàn** trong thân file phase và trong các
+script kiểm tra — adapter không sinh nhánh nào theo loại. `/aw-design` với `chore`
 vẫn được sinh ra; chính `aw check design` chặn khi chạy design cho chore.
 Adapter mới vì thế không phải biết gì về loại việc.
 
@@ -119,7 +119,7 @@ D-xx và quyết định ngầm. *Cách gọi* lượt đó là đặc thù agen
 dùng tự chạy — không được coi "không có file phát hiện" là đạt.
 
 Adapter này dịch nó thành subagent `soat-thiet-ke` (thân lấy từ
-`workflow/checkers/thiet-ke.md`); command `/design` bảo agent gọi subagent đó sau
+`workflow/checkers/thiet-ke.md`); command `/aw-design` bảo agent gọi subagent đó sau
 khi viết xong `tdd.md`. `aw check design` fail nếu chưa có
 `phat-hien-thiet-ke.md` — nên quên gọi subagent cũng không lọt.
 
@@ -136,8 +136,8 @@ lời khác / hỏi lại để trao đổi" — mô tả trung lập đã nói 
 
 ### 7. Hộp xác nhận của cổng duyệt
 
-Phase khai `approval_gate: true` có bước "Cổng duyệt": người gõ `/design` (hay
-`/plan`) khi phần trước chưa duyệt thì agent chạy `aw approval <phase>`, in
+Phase khai `approval_gate: true` có bước "Cổng duyệt": người gõ `/aw-design` (hay
+`/aw-plan`) khi phần trước chưa duyệt thì agent chạy `aw approval <phase>`, in
 nguyên văn bản tóm tắt máy dựng, rồi hỏi bằng hộp xác nhận ba lựa chọn cố định
 (*Tôi đã duyệt xong — kiểm lại* · *Giải thích từng điểm cần duyệt* · *Dừng — tôi
 duyệt sau*). Phần chung (`buoc_cong_duyet` trong `adapters/lib/chung.sh`) là luồng
@@ -155,7 +155,7 @@ trong prompt.
 Sau khi sinh xong, adapter xoá mọi file trong `.claude/commands/` và
 `.claude/agents/` **mang dấu "SINH TỰ ĐỘNG"** mà lần build này không sinh ra — tức
 lệnh của phase đã đổi tên hoặc bị bỏ. Không dọn thì repo đích vẫn còn lệnh cũ
-(vd `/ideation` sau khi đổi thành `/intake`) chạy theo luật cũ. File không có dấu
+(vd `/ideation` sau khi đổi thành `/aw-intake`) chạy theo luật cũ. File không có dấu
 đó là do người viết, adapter không đụng tới.
 
 ## Hook gác ô duyệt

@@ -5,8 +5,8 @@
 #   (hoặc trực tiếp: sh adapters/claude-code/build.sh --out <thu-muc> [--force])
 #
 # Sinh ra trong repo dich:
-#   .claude/commands/<id>.md            slash command cho tung phase
-#   .claude/commands/<id>.md            lenh tien ich (commands: trong manifest) —
+#   .claude/commands/aw-<id>.md            slash command cho tung phase
+#   .claude/commands/aw-<id>.md            lenh tien ich (commands: trong manifest) —
 #                                       import, clarify
 #   .claude/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
 #   .claude/agents/soat-<checker>.md    subagent cho tung checker LLM
@@ -31,8 +31,9 @@ ad_tham_so() { printf '%s' '$ARGUMENTS'; }
 
 ad_dau_lenh() {
   printf -- '---\n'
-  printf 'description: %s\n' "$2"
-  printf 'argument-hint: %s\n' "$3"
+  # Nháy kép: summary có thể chứa ": " — YAML không nhận ở giá trị không nháy.
+  printf 'description: "%s"\n' "$(printf '%s' "$3" | sed 's/[\\"]/\\&/g')"
+  printf 'argument-hint: %s\n' "$4"
   printf -- '---\n\n'
 }
 
@@ -64,12 +65,12 @@ ad_hoi_cong_duyet() {
   printf '### Hộp xác nhận trong Claude Code\n\n'
   printf 'Hộp xác nhận là **một lần gọi tool `AskUserQuestion`**, `multiSelect: false`, một phần tử trong `questions`:\n\n'
   if [ "$1" = design ]; then
-    printf -- '- `question`: `Spec chưa được duyệt nên chưa vào /design được — bạn muốn làm gì?` (stdout ghi `ĐÃ ĐỔI SAU KHI DUYỆT` thì: `Spec đã đổi sau khi bạn duyệt nên chưa vào /design được — bạn muốn làm gì?`)\n'
+    printf -- '- `question`: `Spec chưa được duyệt nên chưa vào /aw-design được — bạn muốn làm gì?` (stdout ghi `ĐÃ ĐỔI SAU KHI DUYỆT` thì: `Spec đã đổi sau khi bạn duyệt nên chưa vào /aw-design được — bạn muốn làm gì?`)\n'
     printf -- '- `header`: `Duyệt spec`\n'
   else
-    printf -- '- `question`: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /plan được — bạn muốn làm gì?` — số lấy ở dòng `Trạng thái` của stdout.\n'
+    printf -- '- `question`: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?` — số lấy ở dòng `Trạng thái` của stdout.\n'
     printf -- '- `header`: `Duyệt D-xx`\n'
-    printf -- '- Việc chore (stdout là cổng duyệt **spec**): `question` là `Spec chưa được duyệt nên chưa vào /plan được — bạn muốn làm gì?`, `header` là `Duyệt spec`.\n'
+    printf -- '- Việc chore (stdout là cổng duyệt **spec**): `question` là `Spec chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?`, `header` là `Duyệt spec`.\n'
   fi
   printf -- '- `options` (đúng ba, đúng thứ tự, nhãn giữ nguyên; **không** gắn `(Đề xuất)` — đây không phải chọn phương án):\n'
   printf '  1. `label`: `Tôi đã duyệt xong — kiểm lại` · `description`: `Agent chạy lại kiểm tra; đạt thì vào phase ngay.` · `preview`: chép phần `Cách duyệt` của stdout (file, dòng, dòng trước → sau).\n'

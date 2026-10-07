@@ -5,7 +5,7 @@
 #   (hoặc trực tiếp: sh adapters/cursor/build.sh --out <thu-muc> [--force])
 #
 # Sinh ra trong repo dich:
-#   .cursor/commands/<id>.md            lenh / cho tung phase va lenh tien ich
+#   .cursor/commands/aw-<id>.md            lenh / cho tung phase va lenh tien ich
 #   .cursor/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
 #   .cursor/agents/soat-<checker>.md    subagent cho tung checker LLM
 #   .cursor/skills/quy-trinh-agent/SKILL.md
@@ -32,7 +32,7 @@ ad_tham_so() { printf '%s' '<tham-số>'; }
 
 # Lệnh của Cursor là markdown thường — không frontmatter.
 ad_dau_lenh() {
-  printf '# /%s — %s\n\n' "$1" "$2"
+  printf '# /%s — %s\n\n%s\n\n' "$1" "$2" "$3"
 }
 
 ad_mo_dau_lenh() {
@@ -71,10 +71,10 @@ ad_hoi_cong_duyet() {
   printf '### Hộp xác nhận trong Cursor\n\n'
   printf 'Hộp xác nhận là **một câu hỏi lựa chọn**: có tool hỏi lựa chọn của Cursor (vd `AskQuestion`) thì dùng nó; không có thì in ba lựa chọn đánh số rồi dừng chờ người trả lời.\n\n'
   if [ "$1" = design ]; then
-    printf -- '- Câu hỏi: `Spec chưa được duyệt nên chưa vào /design được — bạn muốn làm gì?` (stdout ghi `ĐÃ ĐỔI SAU KHI DUYỆT` thì: `Spec đã đổi sau khi bạn duyệt nên chưa vào /design được — bạn muốn làm gì?`)\n'
+    printf -- '- Câu hỏi: `Spec chưa được duyệt nên chưa vào /aw-design được — bạn muốn làm gì?` (stdout ghi `ĐÃ ĐỔI SAU KHI DUYỆT` thì: `Spec đã đổi sau khi bạn duyệt nên chưa vào /aw-design được — bạn muốn làm gì?`)\n'
   else
-    printf -- '- Câu hỏi: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /plan được — bạn muốn làm gì?` — số lấy ở dòng `Trạng thái` của stdout.\n'
-    printf -- '- Việc chore (stdout là cổng duyệt **spec**): câu hỏi là `Spec chưa được duyệt nên chưa vào /plan được — bạn muốn làm gì?`.\n'
+    printf -- '- Câu hỏi: `Còn <N>/<tổng> quyết định chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?` — số lấy ở dòng `Trạng thái` của stdout.\n'
+    printf -- '- Việc chore (stdout là cổng duyệt **spec**): câu hỏi là `Spec chưa được duyệt nên chưa vào /aw-plan được — bạn muốn làm gì?`.\n'
   fi
   printf -- '- Lựa chọn (đúng ba, đúng thứ tự, nhãn giữ nguyên; **không** gắn `(Đề xuất)` — đây không phải chọn phương án):\n'
   printf '  1. `Tôi đã duyệt xong — kiểm lại` — Agent chạy lại kiểm tra; đạt thì vào phase ngay.\n'

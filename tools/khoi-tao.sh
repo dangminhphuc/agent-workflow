@@ -142,7 +142,7 @@ echo ""
 echo "Xong. Không có file nào cần commit. Bước tiếp theo:"
 n=1
 if ! grep -q 'LENH_KIEM_THU="[^"]' "$CH" 2>/dev/null; then
-  echo "  $n. Khai lệnh kiểm thử trong $CH (chưa khai thì /implement không đạt)"; n=$((n + 1))
+  echo "  $n. Khai lệnh kiểm thử trong $CH (chưa khai thì /aw-implement không đạt)"; n=$((n + 1))
 fi
 echo "  $n. Sửa $CONV: mẫu tên branch, nhánh gốc, vị trí worktree, mẫu file test…"; n=$((n + 1))
-echo "  $n. Mở agent ở checkout chính, chạy /intake — nó đề xuất worktree cho việc"
+echo "  $n. Mở agent ở checkout chính, chạy /aw-intake — nó đề xuất worktree cho việc"
