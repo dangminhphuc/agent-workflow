@@ -134,8 +134,8 @@ máy thì với phiên đó coi như không có. Ranh giới:
 | Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của repo đích, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
-Hiện thực tới đâu: `conventions.md` (dưới đây). ADR từ D-xx, luật nghiệp vụ `BR-`, kiểm chéo
-lỗi thời: các bước sau.
+Hiện thực tới đâu: `conventions.md`, mẫu điểm vào và lệnh kiểm (dưới đây). ADR từ D-xx, luật
+nghiệp vụ `BR-`, kiểm chéo lỗi thời: các bước sau.
 
 ### `conventions.md` trong git, bản clone chỉ ghi đè khoá máy
 
@@ -160,6 +160,20 @@ lỗi thời: các bước sau.
   đã có — nếu tạo, mẫu sẽ thay giá trị team đang dùng. `aw init --from` chỉ bỏ `conventions.md` của
   repo cấu hình khi repo đích đã có file (nếu chưa, bỏ là clone mới chạy bằng mẫu).
 
+
+### Điểm vào và lệnh kiểm của repo đích: khuyến nghị, không ép
+
+- **Mẫu, không checker.** `templates/repo-dich/AGENTS.md`, `Makefile`; `aw init` chỉ nhắc khi repo
+  chưa có `AGENTS.md` lẫn `CLAUDE.md`. Máy kiểm được file *có*, không kiểm được nó trả lời đúng năm
+  câu của phiên mới — chặn theo "có file" chỉ sinh file rỗng cho qua cổng. Mỗi repo cũng đã có bố
+  trí riêng; engine ép một bố trí là đòi sửa repo để hợp công cụ.
+- **`AGENTS.md` chỉ trỏ tới, 50–100 dòng.** Chép luật vào đó là luật có hai chỗ, một chỗ sẽ cũ —
+  tài liệu lệch code còn tệ hơn không có. Nó đọc vào mọi phiên, nên mỗi dòng tốn ngữ cảnh mọi lần.
+- **Lệnh kiểm nằm trong git (`make test`), `config.sh` chỉ trỏ tới.** Chép lệnh vào `config.sh`
+  (ngoài git, mỗi máy một bản) thì local và CI lệch dần: local xanh mà pipeline chặn. Target mẫu
+  chưa khai thoát mã 1 — "quên khai" không bao giờ thành xanh, đúng như `LENH_KIEM_THU` trống.
+- `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn; cách nạp theo phạm vi diff
+  là bước sau.
 
 ## Hai loại điều kiện ra
 
@@ -424,7 +438,8 @@ tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã
 12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `LENH_KIEM_THU`.
 13. **File máy ghi giả được** (`ket-qua-task.md`, `ket-qua-kiem-thu.md`): chặn việc *quên*, không chặn
     gian lận có chủ ý; review ngữ cảnh sạch là lớp sau.
-. **Việc không thấy quy ước mới của chính nó** — đúng ý đồ, nhưng việc sửa `conventions.md` để
+14. **Nhật ký harness chỉ ở từng máy**; `Category` tự do có thể đếm hụt.
+15. **Việc không thấy quy ước mới của chính nó** — đúng ý đồ, nhưng việc sửa `conventions.md` để
     hợp lệ hoá thay đổi của mình (vd thêm `production_code`) sẽ bị chấm theo luật cũ tới khi merge.
 16. **Quy ước chưa commit ở checkout chính** có hiệu lực ngay cho mọi việc rẽ từ base chưa có file;
     trước khi pull bản đã merge, người phải xoá bản chưa track (git từ chối ghi đè).

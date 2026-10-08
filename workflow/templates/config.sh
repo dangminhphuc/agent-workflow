@@ -10,6 +10,9 @@ ADAPTER="claude-code"
 
 # Lệnh kiểm thử — điều kiện ra của phase 04-implement.
 # Bỏ trống thì phase implement sẽ KHÔNG ĐẠT, không phải "bỏ qua".
+# Nên trỏ tới lệnh ĐÃ COMMIT mà CI cũng chạy, vd LENH_KIEM_THU="make test" — lệnh thật
+# nằm trong git, sửa một chỗ là local và CI cùng đổi. Mẫu Makefile:
+# .agent-workflow/.engine/templates/repo-dich/Makefile
 LENH_KIEM_THU=""
 
 # Lệnh quét bảo mật — cũng là điều kiện ra của 04-implement; 05-review chặn khi
@@ -24,7 +27,15 @@ LENH_KIEM_THU=""
 # repo; mã thoát khác 0 = ĐỎ, nên lệnh phải tự thoát khác 0 khi vượt ngưỡng.
 # Báo cáo (json, sarif…) ghi ra ngoài repo hoặc vào chỗ .gitignore — file lạ trong
 # repo làm kết quả bị coi là lỗi thời. Dòng trống và dòng bắt đầu bằng # bỏ qua.
-# Ví dụ (sửa theo pipeline của bạn):
+# Nên khai qua target đã commit mà CI cũng gọi (mẫu Makefile ở trên):
+#
+# LENH_KIEM_TRA_BAO_MAT="
+# secret: make security-secret
+# sast: make security-sast
+# sca: make security-sca
+# "
+#
+# Hoặc chép thẳng lệnh từ pipeline (sửa theo pipeline của bạn):
 #
 # LENH_KIEM_TRA_BAO_MAT="
 # secret: gitleaks detect --no-banner --redact --exit-code 1 --config .gitleaks.toml

@@ -2843,6 +2843,19 @@ dung "….engine/conventions.md là quy ước hiệu lực của việc" grep -
 cp "$RQ/$DQ" "$TMP/qu-repo.bak"
 ky_vong 0 "aw init ở repo đã có quy ước" sh -c "AW_REPO='$RQ' AW_CONFIG='$CQ' AW_ENGINE='$ROOT' sh '$ROOT/bin/aw-engine' init --test-cmd true"
 dung "…không tạo bản clone, không đụng file của repo" sh -c "[ ! -f '$CQ/conventions.md' ] && cmp -s '$TMP/qu-repo.bak' '$RQ/$DQ'"
+# mẫu cho repo đích: AGENTS.md (điểm vào), Makefile (lệnh kiểm trong git)
+MAUD="$ROOT/workflow/templates/repo-dich"
+dung "aw init nhắc tạo AGENTS.md khi repo chưa có" sh -c "AW_REPO='$RQ' AW_CONFIG='$CQ' AW_ENGINE='$ROOT' sh '$ROOT/bin/aw-engine' init 2>&1 | grep -q 'Repo chưa có AGENTS.md'"
+printf '# AGENTS.md\n' > "$RQ/AGENTS.md"
+dung "…không nhắc khi đã có" sh -c "! (AW_REPO='$RQ' AW_CONFIG='$CQ' AW_ENGINE='$ROOT' sh '$ROOT/bin/aw-engine' init 2>&1 | grep -q 'Repo chưa có AGENTS.md')"
+rm -f "$RQ/AGENTS.md"
+dung "mẫu AGENTS.md, Makefile có trong .agent-workflow/.engine/templates/repo-dich/" sh -c "[ -f '$WQ/.agent-workflow/.engine/templates/repo-dich/AGENTS.md' ] && [ -f '$WQ/.agent-workflow/.engine/templates/repo-dich/Makefile' ]"
+dung "mẫu AGENTS.md (bỏ chú thích) ≤ 100 dòng, có đủ mục cho phiên mới" sh -c "n=\$(sed '/^<!--/,/^-->/d' '$MAUD/AGENTS.md' | wc -l) && [ \$n -le 100 ] && for h in Map Commands Rules Decisions Status; do grep -q \"^## \$h\$\" '$MAUD/AGENTS.md' || exit 1; done"
+if command -v make >/dev/null 2>&1; then
+  mkdir -p "$TMP/mk"; cp "$MAUD/Makefile" "$TMP/mk/"
+  ky_vong 2 "mẫu Makefile: target chưa khai → thất bại, không bao giờ xanh" make -s -C "$TMP/mk" test
+  ky_vong 2 "…make security cũng thất bại khi nhóm nào chưa khai" make -s -C "$TMP/mk" security
+fi
 RQC="$TMP/repo-qu-cu"; mkdir -p "$RQC"; git -C "$RQC" init -q; mkdir -p "$RQC/.git/agent-workflow"
 printf '# của tôi\n' > "$RQC/.git/agent-workflow/conventions.md"
 ky_vong 0 "aw init ở repo chỉ có quy ước trong bản clone (init bằng engine cũ)" sh -c "AW_REPO='$RQC' AW_CONFIG='$RQC/.git/agent-workflow' AW_ENGINE='$ROOT' sh '$ROOT/bin/aw-engine' init --test-cmd true"
