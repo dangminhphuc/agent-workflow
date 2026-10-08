@@ -11,7 +11,10 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.22]
+
+Skill, subagent của team gọi được theo phase (`uses_<phase>`, `aw uses`), không chỉ đọc như tài liệu.
+Cần cài lại wrapper `aw`.
 
 ### Thêm
 - **Skill, subagent của team gọi theo phase** — khoá mới `uses_<phase>` trong `conventions.md`
