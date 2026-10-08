@@ -145,4 +145,6 @@ Chưa kiểm trên một phiên Cursor thật — kiểm khi có dịp và ghi l
 ## Kết quả
 
 Như Claude Code: khối `Kết quả` cuối output — `ĐÃ SINH`, `SAI THAM SỐ`,
-`CÓ FILE VIẾT TAY`, `ĐỊNH NGHĨA QUY TRÌNH LỖI` (spec nguồn sai, hoặc adapter thiếu hook).
+`CÓ FILE VIẾT TAY`, `ĐỊNH NGHĨA QUY TRÌNH LỖI` (spec nguồn sai, hoặc adapter thiếu hook),
+`SAI CHUẨN Cursor` (file sinh ra không đúng định dạng Cursor đọc — vd lệnh có frontmatter, subagent
+`name` khác tên file; file sai không được ghi — xem [../README.md](../README.md#chuẩn-định-dạng-của-agent)).

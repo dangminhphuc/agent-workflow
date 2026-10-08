@@ -24,6 +24,12 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 AD_ID=claude-code
 AD_TEN="Claude Code"
 AD_GOC=.claude
+# Chuẩn định dạng Claude Code (docs.claude.com: slash commands, subagents, skills) —
+# adapters/lib/dinh-dang.sh kiểm mọi file sinh ra theo đây trước khi ghi.
+AD_LENH_FM=co
+AD_LENH_KHOA="description argument-hint allowed-tools model disable-model-invocation"
+AD_AGENT_KHOA="name description tools disallowedTools model permissionMode skills hooks color"
+AD_SKILL_KHOA="name description allowed-tools model license metadata disable-model-invocation user-invocable argument-hint"
 . "$ROOT/adapters/lib/chung.sh"
 
 # Claude Code thay $ARGUMENTS bằng phần người gõ sau tên lệnh.
@@ -33,7 +39,8 @@ ad_dau_lenh() {
   printf -- '---\n'
   # Nháy kép: summary có thể chứa ": " — YAML không nhận ở giá trị không nháy.
   printf 'description: "%s"\n' "$(printf '%s' "$3" | sed 's/[\\"]/\\&/g')"
-  printf 'argument-hint: %s\n' "$4"
+  # Nháy kép: gợi ý hay mở bằng "[" — YAML không nháy hiểu thành danh sách.
+  printf 'argument-hint: "%s"\n' "$(printf '%s' "$4" | sed 's/[\\"]/\\&/g')"
   printf -- '---\n\n'
 }
 

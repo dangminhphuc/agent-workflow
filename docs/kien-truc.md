@@ -509,6 +509,12 @@ của agent). Test đối chiếu đòi output mọi adapter giống hệt nhau 
 nào không dịch được sang agent đích (subagent, hook, MCP) thì **ghi rõ trong output** người phải
 tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã mất ràng buộc.
 
+File sinh ra còn phải đúng **định dạng** agent đọc (`adapters/lib/dinh-dang.sh`), và phép kiểm này
+**chặn** chứ không cảnh báo: nó chính xác (YAML, khoá, tên — không phán đoán), còn lỗi thì im lặng ở
+phía agent — frontmatter hỏng hay `name` lệch tên file làm lệnh biến khỏi menu, subagent không gọi
+được, không ai được báo. Test đối chiếu không bắt được loại lỗi này vì nó thay hook bằng tên; chuẩn
+riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` cạnh hook, luật chung một chỗ.
+
 ## Những chỗ thiết kế này yếu
 
 1. **`06-ship` chỉ lo MR**, không lo deploy/tag/release note. Không có `gh`/`glab` thì trạng thái MR
