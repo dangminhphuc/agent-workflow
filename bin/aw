@@ -45,13 +45,13 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.20"
+AW_WRAPPER_VERSION="2026.10.21"
 AW_PROTOCOL=1
-AW_MIRROR_MAC_DINH="https://github.com/dangminhphuc/agent-workflow/releases/download"
+AW_MIRROR_DEFAULT="https://github.com/dangminhphuc/agent-workflow/releases/download"
 
 AW_HOME="${AW_HOME:-${HOME:-}/.agent-workflow}"
 AW_CACHE="${AW_CACHE:-$AW_HOME/engine}"
-AW_MIRROR="${AW_MIRROR:-$AW_MIRROR_MAC_DINH}"
+AW_MIRROR="${AW_MIRROR:-$AW_MIRROR_DEFAULT}"
 
 # ------------------------------------------------------------------ Kết quả
 # Cùng dạng khối "Kết quả" của engine: người và agent đọc NHÃN, không đọc mã số.
@@ -369,7 +369,7 @@ cmd_doctor() {
     for _p in $_ds; do
       grep -qxF "$_p" "$_ex" 2>/dev/null && co "info/exclude có $_p" || khong "info/exclude thiếu $_p — chạy: aw init"
     done
-    # Dấu build adapter ở worktree hiện tại (sinh-adapter.sh ghi "<id> <version>").
+    # Dấu build adapter ở worktree hiện tại (adapter-build.sh ghi "<id> <version>").
     _dau="$AW_REPO/.agent-workflow/.adapters"
     echo "Adapter ở worktree này ($_ad)"
     if [ ! -f "$_dau" ]; then

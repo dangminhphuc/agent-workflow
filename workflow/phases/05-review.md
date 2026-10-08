@@ -9,11 +9,11 @@ inputs:
   - open-questions.md
   - tdd.md
   - plan.md
-  - ket-qua-task.md
-  - ket-qua-kiem-thu.md
-  - ket-qua-bao-mat.md
-  - tai-hien.md (bugfix)
-  - do-hieu-nang.md (perf)
+  - task-results.md
+  - test-results.md
+  - security-results.md
+  - repro.md (bugfix)
+  - perf.md (perf)
   - diff
 outputs:
   - review.md
@@ -53,7 +53,7 @@ Go through **every** `YC-NNN`: which code satisfies it, verdict `pass` / `fail` 
 - Does the code follow the approved D-xx, contract and data model of `tdd.md`?
 - Changes belonging to no task? Tasks `[x]` with no trace in the diff?
 - "Unplanned" items handled silently instead of reported?
-- Manually verified tasks (`ket-qua-task.md`): does the evidence really prove the task is done?
+- Manually verified tasks (`task-results.md`): does the evidence really prove the task is done?
 
 **Repo rules** (`aw rules review` — all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved D-xx that breaks a rule → `not applicable`, name the D.
 
@@ -94,14 +94,14 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 
 | Type | Do |
 |---|---|
-| `bugfix` | Read `tai-hien.md`: the test is red **because of the bug** (not a compile error/missing function). Write `Repro test fails because: <quoted output>` (missing → block) |
+| `bugfix` | Read `repro.md`: the test is red **because of the bug** (not a compile error/missing function). Write `Repro test fails because: <quoted output>` (missing → block) |
 | `refactor`/`perf` | For each file in "Modified existing tests": the diff only changes imports/structure, **no assertion changes** |
-| `perf` | Read `do-hieu-nang.md`, judge the performance YC by the numbers, allowing for noise |
+| `perf` | Read `perf.md`, judge the performance YC by the numbers, allowing for noise |
 | `chore` | The `patch \| minor` level in "Dependency upgrades" is right (major = separate refactor) |
 
 ## Output
 
-`review.md` per `templates/review.md`. `- Reviewed tree:` = the `Tree` line of `ket-qua-kiem-thu.md`; code changed after review → machine blocks, review again.
+`review.md` per `templates/review.md`. `- Reviewed tree:` = the `Tree` line of `test-results.md`; code changed after review → machine blocks, review again.
 
 ## Forbidden
 
@@ -116,7 +116,7 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 
 **Machine:** `aw check review` → `[x] ĐẠT`:
 - every `YC-NNN` has a valid verdict, no `[OPEN-QUESTION]` is `pass`; input passes `aw check plan`;
-- `ket-qua-kiem-thu.md` and `ket-qua-bao-mat.md` say `Kết quả: XANH` with `Tree` matching current code (code changed → rerun `aw check implement` or `aw check security`; recommitting the same code is not a change); chore touching dependencies has a green `sca` command;
+- `test-results.md` and `security-results.md` say `Kết quả: XANH` with `Tree` matching current code (code changed → rerun `aw check implement` or `aw check security`; recommitting the same code is not a change); chore touching dependencies has a green `sca` command;
 - **no implement warning left**; every task `[x]` with evidence matching `Verify`; no merge conflict markers; work-type rules;
 - `## Repo rules` has a valid verdict for **each** rule file (declared file exists, committed);
 - each `Promote: adr` D has an ADR matching the approved D; the ADR directory passes `aw adr check`;

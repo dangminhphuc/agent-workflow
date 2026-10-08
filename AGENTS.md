@@ -14,11 +14,11 @@ workflow/rules/*.md      luật chung — agent đọc lúc chạy
 workflow/templates/      mẫu artifact (người đọc), conventions.md, config.sh, conventions-reference.md
 bin/aw                   wrapper cài global: chọn version, tải + kiểm sha256
 bin/aw-engine            điểm vào engine: init, check, worktree, adapter, feature…
-adapters/lib/chung.sh    bộ sinh dùng chung (ad_sinh); adapters/<id>/build.sh chỉ khai hook
-tools/kiem-tra-*.sh      checker máy (`aw check <tên>`); tên đăng ký ở tools/lib/bang-lenh.sh
+adapters/lib/common.sh   bộ sinh dùng chung (ad_sinh); adapters/<id>/build.sh chỉ khai hook
+tools/check-*.sh         checker máy (`aw check <tên>`); tên đăng ký ở tools/lib/commands.sh
 tools/*.sh               lệnh khác của aw (worktree, task, ship, journal, approval, guard…)
-tools/lib/               md.sh (YAML con, conventions), kiem-cheo.sh, duyet.sh, task.sh, ket-qua.sh…
-tools/chay-thu.sh        toàn bộ test hồi quy (~1000 ca, ~4 phút)
+tools/lib/               md.sh (YAML con, conventions), cross-check.sh, approval-tick.sh, task.sh, result.sh…
+tools/run-tests.sh       toàn bộ test hồi quy (~1000 ca, ~4 phút)
 ```
 
 ## Ngôn ngữ
@@ -32,18 +32,21 @@ tools/chay-thu.sh        toàn bộ test hồi quy (~1000 ca, ~4 phút)
 - **Bắt buộc:** mọi mẫu (`workflow/templates/`) và artifact do agent tạo/sửa — kể cả heading, tên
   trường, từ khoá, giá trị enum mà mẫu chưa có — phải là **tiếng Anh**. Tiếng Việt chỉ ở nội dung
   dưới heading và placeholder (`<tiêu đề>`). Không dịch heading/từ khoá tiếng Anh sẵn có. Luật cho
-  agent lúc chạy: `workflow/rules/nguyen-tac-chung.md` §5.
-- Tên hàm/biến shell: tiếng Việt không dấu (`kq_khai`, `ghi_file`), giữ theo code xung quanh.
+  agent lúc chạy: `workflow/rules/general.md` §5.
+- Tên file, khoá `config.sh`, biến môi trường, artifact, subagent: tiếng Anh (`check-spec.sh`,
+  `TEST_CMD`, `test-results.md`, `independent-reviewer`). Đổi tên thứ người dùng đã khai/thấy thì
+  giữ đọc được tên cũ (xem `tools/lib/config.sh`).
+- Tên hàm/biến nội bộ trong shell: tiếng Việt không dấu (`kq_khai`, `ghi_file`), giữ theo code xung quanh.
 
 ## Quy ước code
 
 - **POSIX sh + awk + sed + git.** Không bash-ism, không Node/Python, không jq. Regex ERE, không
   `{n}` (mawk). awk đọc nhiều file: `FILENAME == ARGV[i]`, không `FNR==1`.
-- Mọi script khai nhãn kết quả bằng `kq_khai` (`tools/lib/ket-qua.sh`), in khối `Kết quả` ra stderr.
+- Mọi script khai nhãn kết quả bằng `kq_khai` (`tools/lib/result.sh`), in khối `Kết quả` ra stderr.
   Prompt/tài liệu nói theo **nhãn**, không theo mã thoát.
-- Tool đọc đường dẫn repo/cấu hình **chỉ** từ `AW_REPO`, `AW_CONFIG` (`tools/lib/moi-truong.sh`).
+- Tool đọc đường dẫn repo/cấu hình **chỉ** từ `AW_REPO`, `AW_CONFIG` (`tools/lib/env.sh`).
 - Adapter build chạy `set -e`: `[ … ] && printf` ở cuối khối/vòng lặp sẽ giết pipeline — dùng `if`.
-- Chữ riêng của một agent chỉ nằm trong hook adapter; test đối chiếu (`AW_DOI_CHIEU=1`) đòi output
+- Chữ riêng của một agent chỉ nằm trong hook adapter; test đối chiếu (`AW_COMPARE=1`) đòi output
   mọi adapter giống hệt nhau.
 - Luật mới: checker chính xác thì chặn; kiểm chéo/hay báo nhầm thì cảnh báo ở implement, chặn ở
   review. Lý do ghi vào `docs/kien-truc.md`, không vào file phase.
@@ -53,7 +56,7 @@ tools/chay-thu.sh        toàn bộ test hồi quy (~1000 ca, ~4 phút)
 ## Kiểm
 
 ```sh
-sh tools/chay-thu.sh                     # phải ra [x] MỌI CA ĐẠT
+sh tools/run-tests.sh                     # phải ra [x] MỌI CA ĐẠT
 sh adapters/claude-code/build.sh --out <thư-mục-git-tạm>   # xem lệnh sinh ra
 ```
 
@@ -63,6 +66,6 @@ chiều (chặn đúng lúc, cho qua đúng lúc). Đổi chữ mà test grep �
 ## Phát hành
 
 1. Ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md` (tiếng Việt).
-2. `sh tools/chuan-bi-phat-hanh.sh` — đặt `YYYY.M.N` vào VERSION, `bin/aw`, CHANGELOG, README.
+2. `sh tools/prepare-release.sh` — đặt `YYYY.M.N` vào VERSION, `bin/aw`, CHANGELOG, README.
 3. PR vào `main`; CI `kiem-tra` chạy test + kiểm version. Merge → workflow `release` tự tạo tag +
    Release. **Không tự tạo tag tay** trước khi merge.

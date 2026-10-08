@@ -8,18 +8,19 @@
 #                                                task mà Verify không có lệnh (thủ công)
 #
 # `done` chạy lệnh trong cặp backtick đầu tiên của dòng "Verify" ở gốc repo, ghi
-# output thật vào ket-qua-task.md (mục "## T-NN", lần chạy sau thay lần trước).
+# output thật vào task-results.md (mục "## T-NN", lần chạy sau thay lần trước).
 # aw check implement chặn task [x] không có bằng chứng xanh khớp lệnh Verify
 # hiện tại — tự sửa ô Status thành [x] không qua được.
 #
-# Đỏ liên tiếp: mỗi lần `done` đỏ tăng một, xanh về 0. Tới SO_LAN_DO_TOI_DA
+# Đỏ liên tiếp: mỗi lần `done` đỏ tăng một, xanh về 0. Tới MAX_RED_RUNS
 # (config.sh, mặc định 3) thì `done` và `next` báo DỪNG: lặp tiếp là đoán mò —
 # ghi "Unplanned" và báo người. Đây là điều kiện dừng của vòng lặp implement.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$HERE/lib/ket-qua.sh"
+. "$HERE/lib/result.sh"
+. "$HERE/lib/config.sh"
 kq_khai task.sh \
   "0=XONG — start: đã đánh [~] · done: Verify XANH, đã đánh [x] · next: stdout là task tiếp" \
   "1=TỪ CHỐI / ĐỎ — lý do phía trên; sửa trong task này rồi chạy lại" \
@@ -28,7 +29,7 @@ kq_khai task.sh \
   "5=KẸT — task còn lại đều chờ phụ thuộc chưa xong: xem \"Depends on\" trong plan.md, báo người" \
   "6=DỪNG — task đỏ liên tiếp tới giới hạn: ghi \"Unplanned\" trong plan.md và báo người, không thử tiếp"
 . "$HERE/lib/md.sh"
-. "$HERE/lib/kiem-cheo.sh"
+. "$HERE/lib/cross-check.sh"
 . "$HERE/lib/task.sh"
 
 dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [T-NN] [--manual \"<bằng chứng>\"]" >&2; exit 2; }
@@ -36,14 +37,14 @@ dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [T-NN] [--man
 LENH="${1:-}"; DIR="${2:-}"; TASK="${3:-}"
 case "$LENH" in next|start|done) ;; *) dung ;; esac
 [ -n "$DIR" ] || dung
-PLAN="$DIR/plan.md"; KQ="$DIR/ket-qua-task.md"
+PLAN="$DIR/plan.md"; KQ="$DIR/task-results.md"
 [ -f "$PLAN" ] || { echo "LỖI: không tìm thấy $PLAN" >&2; exit 2; }
 
-SO_LAN_DO_TOI_DA=3
+MAX_RED_RUNS=3
 CH=$(kc_cau_hinh "$DIR")
 # shellcheck disable=SC1090
-[ -f "$CH" ] && . "$CH"
-case "$SO_LAN_DO_TOI_DA" in ""|*[!0-9]*|0) SO_LAN_DO_TOI_DA=3 ;; esac
+ch_nap "$CH"
+case "$MAX_RED_RUNS" in ""|*[!0-9]*|0) MAX_RED_RUNS=3 ;; esac
 
 do_lien_tiep() { _n=$(tk_bc "$KQ" "$1" "Đỏ liên tiếp"); echo "${_n:-0}"; }
 
@@ -56,8 +57,8 @@ if [ "$LENH" = next ]; then
     echo "Còn $con nhưng đều chờ phụ thuộc chưa [x]." >&2; exit 5
   fi
   n=$(do_lien_tiep "$t")
-  if [ "$n" -ge "$SO_LAN_DO_TOI_DA" ]; then
-    echo "$t đã đỏ $n lần liên tiếp (giới hạn SO_LAN_DO_TOI_DA=$SO_LAN_DO_TOI_DA)." >&2
+  if [ "$n" -ge "$MAX_RED_RUNS" ]; then
+    echo "$t đã đỏ $n lần liên tiếp (giới hạn MAX_RED_RUNS=$MAX_RED_RUNS)." >&2
     exit 6
   fi
   echo "$t"
@@ -67,7 +68,7 @@ if [ "$LENH" = next ]; then
     [ "$st" = "~" ] && echo "  đang làm dở — làm cho xong task này trước (WIP=1)" || echo "  bắt đầu: aw task start $DIR $t"
     [ -n "$v" ] && echo "  kiểm chứng: aw task done $DIR $t   (chạy: $v)" \
                 || echo "  kiểm chứng: thủ công — aw task done $DIR $t --manual \"<bằng chứng>\""
-    [ "$n" -gt 0 ] && echo "  đã đỏ $n/$SO_LAN_DO_TOI_DA lần liên tiếp"
+    [ "$n" -gt 0 ] && echo "  đã đỏ $n/$MAX_RED_RUNS lần liên tiếp"
   } >&2
   exit 0
 fi
@@ -180,8 +181,8 @@ if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
 
 if [ "$ma" -ne 0 ]; then
   [ "$st" = x ] && tk_dat "$PLAN" "$TASK" "~"
-  echo "$TASK: Verify ĐỎ (mã $ma) — ở [~]. Đỏ liên tiếp: $do_moi/$SO_LAN_DO_TOI_DA."
-  if [ "$do_moi" -ge "$SO_LAN_DO_TOI_DA" ]; then
+  echo "$TASK: Verify ĐỎ (mã $ma) — ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
+  if [ "$do_moi" -ge "$MAX_RED_RUNS" ]; then
     echo "DỪNG: đỏ $do_moi lần liên tiếp. Ghi vào \"Unplanned\" (đã thử gì, lỗi gì) và báo người — đừng thử tiếp."
     exit 6
   fi

@@ -13,7 +13,7 @@
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$HERE/lib/ket-qua.sh"
+. "$HERE/lib/result.sh"
 case "${1:-}" in
   promote) kq_khai adr.sh \
     "0=ĐÃ NÂNG — ADR và chỉ mục đã ghi trong worktree, commit cùng việc" \
@@ -26,9 +26,9 @@ case "${1:-}" in
 esac
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"
-. "$HERE/lib/duyet.sh"
+. "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
-. "$HERE/lib/moi-truong.sh"
+. "$HERE/lib/env.sh"
 mt_dat
 
 DUNG="Dùng: aw adr promote <thư-mục-feature> D-NN | aw adr check"

@@ -71,7 +71,7 @@ The agent **never decides** worktree location or base. In order:
 3. `aw worktree new <type> <description>` — **only prints a proposal**: name from `type_by_prefix` (branch, worktree dir and artifact dir share one name), path from `worktree_dir`, candidate **bases** with facts. ★ is the machine's suggestion, not yours.
 4. Show the proposal **verbatim**; the human **chooses the base** and confirms the name (other name → change `<description>`, rerun step 3).
 5. `aw worktree new <type> <description> --create --base <ref>` with **exactly the human's ref**. Copy the `Base:` and `Engine:` lines it prints into `intake.md`.
-6. Write `intake.md` to `<worktree>/.agent-workflow/<name>/`, run `aw check intake` on that dir, then **stop**: the human runs the prepare command (`LENH_CHUAN_BI_WT`, printed) and opens a **new** agent session in the worktree for `/aw-spec`. In the new session `aw ready <thư-mục-feature>` reports whether the environment is ready and the next step.
+6. Write `intake.md` to `<worktree>/.agent-workflow/<name>/`, run `aw check intake` on that dir, then **stop**: the human runs the prepare command (`WORKTREE_SETUP_CMD`, printed) and opens a **new** agent session in the worktree for `/aw-spec`. In the new session `aw ready <thư-mục-feature>` reports whether the environment is ready and the next step.
 
 `ĐÃ CÓ WORKTREE`: create nothing — tell the human to open a session at the printed path and rerun `/aw-intake` there if input must be added.
 

@@ -14,8 +14,8 @@ trace_rule: true
 
 | Source | File | Human does | Blocks |
 |---|---|---|---|
-| Open question | `open-questions.md` | **Answers** (often has to ask PO/BA) | By `Blocking` (`rules/truy-vet-nguon.md`) |
-| LLM checker finding | `phat-hien-<checker>.md` (currently `phat-hien-thiet-ke.md`) | **Arbitrates**: agree (fix) or reject + reason | `Chặn`: that phase's checker (`thiết kế` → `/aw-plan`); `Cảnh báo`: nothing |
+| Open question | `open-questions.md` | **Answers** (often has to ask PO/BA) | By `Blocking` (`rules/source-tracing.md`) |
+| LLM checker finding | `<checker>-findings.md` (currently `design-findings.md`) | **Arbitrates**: agree (fix) or reject + reason | `Chặn`: that phase's checker (`thiết kế` → `/aw-plan`); `Cảnh báo`: nothing |
 
 The two files stay separate (one writer each, `based_on` hashes whole files); they merge only in what the human sees. Blocking levels are proposed by the agent, changed **only by the human**.
 

@@ -50,15 +50,15 @@ jobs:
 
       - name: Kiểm version (VERSION, bin/aw, CHANGELOG)
         if: steps.v.outputs.bo_qua != '1'
-        run: sh tools/kiem-tra-phat-hanh.sh
+        run: sh tools/check-release.sh
 
       - name: Test
         if: steps.v.outputs.bo_qua != '1'
-        run: sh tools/chay-thu.sh
+        run: sh tools/run-tests.sh
 
       - name: Đóng gói
         if: steps.v.outputs.bo_qua != '1'
-        run: sh tools/dong-goi.sh dist HEAD
+        run: sh tools/package.sh dist HEAD
 
       - name: Ghi chú phát hành từ CHANGELOG.md
         if: steps.v.outputs.bo_qua != '1'

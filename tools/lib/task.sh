@@ -8,7 +8,7 @@
 #   - Status: `[ ]` | `[~]` | `[x]`
 #
 # Trạng thái chỉ được nâng lên [x] bằng `aw task done` — lệnh đó chạy lệnh trong
-# "Verify" và ghi bằng chứng vào ket-qua-task.md (xem tools/task.sh).
+# "Verify" và ghi bằng chứng vào task-results.md (xem tools/task.sh).
 
 # tk_ds <plan.md> -> mỗi task một dòng "T-NN|<s>|<phụ thuộc cách dấu phẩy>|<lệnh verify>"
 # <s>: ' ' chưa làm, '~' đang làm, 'x' xong, '?' không đọc được ô Status.
@@ -88,13 +88,13 @@ tk_dat() {
 }
 
 # ------------------------------------------------------------------ bằng chứng task
-# ket-qua-task.md: mỗi task một mục "## T-NN", do `aw task done` ghi (không ai sửa tay).
+# task-results.md: mỗi task một mục "## T-NN", do `aw task done` ghi (không ai sửa tay).
 #   - Lệnh: `<lệnh verify lúc chạy>`
 #   - Mã thoát: `<n>`
 #   - Lần chạy: <n>        (đếm cả lần đỏ — giới hạn vòng lặp đọc số này)
 #   - HEAD / Tree / Thời điểm (kc_dong_moi)
 
-# tk_bc <ket-qua-task.md> <T-NN> <khoá> -> giá trị dòng "- <khoá>:" trong mục của task
+# tk_bc <task-results.md> <T-NN> <khoá> -> giá trị dòng "- <khoá>:" trong mục của task
 tk_bc() {
   [ -f "$1" ] || return 0
   awk -v t="$2" -v k="$3" '
@@ -108,17 +108,17 @@ tk_bc() {
   ' "$1"
 }
 
-# tk_thieu_bang_chung <thư-mục-feature> -> task [x] mà ket-qua-task.md không có
+# tk_thieu_bang_chung <thư-mục-feature> -> task [x] mà task-results.md không có
 # bằng chứng xanh khớp lệnh Verify hiện tại. Mỗi dòng một phát hiện.
 tk_thieu_bang_chung() {
-  _tk_kq="$1/ket-qua-task.md"
+  _tk_kq="$1/task-results.md"
   tk_ds "$1/plan.md" | while IFS='|' read -r _t _s _d _v; do
     [ "$_s" = x ] || continue
     _v=$(printf '%s' "$_v" | sed 's/¦/|/g')
     _ma=$(tk_bc "$_tk_kq" "$_t" "Mã thoát")
     _l=$(tk_bc "$_tk_kq" "$_t" "Lệnh")
     if [ -z "$_ma" ]; then
-      echo "$_t đánh [x] nhưng không có bằng chứng trong ket-qua-task.md — trạng thái chỉ lên [x] bằng: aw task done $1 $_t"
+      echo "$_t đánh [x] nhưng không có bằng chứng trong task-results.md — trạng thái chỉ lên [x] bằng: aw task done $1 $_t"
     elif [ "$_ma" != 0 ]; then
       echo "$_t đánh [x] nhưng lần chạy Verify gần nhất ĐỎ (mã $_ma) — sửa rồi chạy lại: aw task done $1 $_t"
     elif [ "$_l" != "$_v" ]; then

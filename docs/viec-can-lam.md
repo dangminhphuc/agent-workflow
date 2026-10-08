@@ -6,7 +6,7 @@
 
 - YC không có `Nguồn:` lọt qua khi có heading `###` phụ bên dưới.
 - `open-questions.md` 0 byte làm lệch thứ tự file (spec, design; review đồng bộ).
-- Kiểm chéo test ↔ YC im lặng khi chưa test nào gắn `covers:` (`kiem-cheo.sh`).
+- Kiểm chéo test ↔ YC im lặng khi chưa test nào gắn `covers:` (`cross-check.sh`).
 - `spec.md` ghi `based_on: intake.md` → đổi intake sau khi viết spec thì review chặn.
 - Gate duyệt spec — design (chore: plan) chặn khi chưa duyệt. (Nay là ô duyệt
   `- [ ] **Approved by human**` kèm dấu duyệt — xem docs/kien-truc.md.)
