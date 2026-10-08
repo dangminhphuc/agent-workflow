@@ -3191,6 +3191,52 @@ thay "$F/tdd.md" 'Module `src/a.txt`.' 'Module `test/a.test.js`.'
 dung "…Scope không khớp → không in" sh -c "! sh '$KT' design '$F' 2>/dev/null | grep -q 'billing.md'"
 tao_fixture
 
+# ---------------------------------------------------------------- kiến thức bền lỗi thời (kiểm chéo)
+echo ""
+echo "Kiểm chéo kiến thức bền ↔ diff: implement cảnh báo, review đòi verdict"
+tao_fixture
+HT="$T/kiem-tra-hien-thuc.sh"; RS="$T/kiem-tra-ra-soat.sh"
+# Tài liệu nằm ở base: tài liệu module src/ (diff đụng src/a.txt) và lib/ (không đụng),
+# ADR accepted phạm vi src/*, luật active phạm vi src/* chưa có test covers.
+g checkout -q main
+mkdir -p "$R/lib" "$R/docs/adr" "$R/docs/product/rules"
+printf '# src\n' > "$R/src/ARCHITECTURE.md"; printf '# lib\n' > "$R/lib/ARCHITECTURE.md"
+printf '# ADR-0001: x\n\n- Status: accepted\n- Scope: `src/*`\n\n## Decision\n\n- Choice: x\n' > "$R/docs/adr/0001-cu.md"
+printf '# ADR\n\n| ADR | Title | Status | Scope |\n|---|---|---|---|\n| [0001](0001-cu.md) | x | accepted | `src/*` |\n' > "$R/docs/adr/README.md"
+printf '# Business rules — kho\n\n### BR-KHO-001: y\n- Rule: y\n- Scope: `src/*`\n- Source: `[JIRA]` ABC-9 (version: v1)\n- Status: active\n- Acceptance:\n  - y\n' > "$R/docs/product/rules/kho.md"
+g add src/ARCHITECTURE.md lib/ARCHITECTURE.md docs/adr docs/product; g commit -q -m "kien thuc ben"
+g checkout -q feat_x; g merge -q main
+kt_ah() { sh -c ". '$T/lib/md.sh'; . '$T/lib/kiem-cheo.sh'; . '$T/lib/sha256.sh'; . '$T/lib/duyet.sh'; . '$T/lib/adr.sh'; . '$T/lib/luat.sh'; . '$T/lib/kien-thuc.sh'; kt_anh_huong '$F'" | cut -d'|' -f1,2 | sort | tr '\n' ' '; }
+dung "tài liệu bị diff ảnh hưởng: module cha, ADR và file luật có Scope khớp; bỏ module khác" bang "$(kt_ah)" "docs/adr/0001-cu.md|0 docs/product/rules/kho.md|0 src/ARCHITECTURE.md|0 "
+ky_vong 0 "implement: tài liệu có thể lỗi thời → vẫn ĐẠT (chỉ cảnh báo)" sh "$HT" "$F"
+dung "…cảnh báo nêu tài liệu và file đổi" sh -c "sh '$HT' '$F' 2>/dev/null | grep -q 'CẢNH BÁO.*diff đụng src/a.txt (phạm vi của src/ARCHITECTURE.md) mà src/ARCHITECTURE.md không đổi'"
+dung "…không nêu tài liệu module khác" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -q 'lib/ARCHITECTURE.md'"
+dung "…cảnh báo luật active trong phạm vi diff chưa có test covers" sh -c "sh '$HT' '$F' 2>/dev/null | grep -q 'CẢNH BÁO.*BR-KHO-001.*chưa test nào gắn tag covers'"
+viet_review
+ky_vong 1 "review: thiếu mục Durable knowledge → KHÔNG ĐẠT" sh "$RS" "$F"
+dung "…nêu thiếu mục" sh -c "sh '$RS' '$F' 2>/dev/null | grep -q 'thiếu mục \"## Durable knowledge\"'"
+# dk_review <bảng> — thêm mục Durable knowledge vào review.md
+dk_review() { viet_review; printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; ghi_tree_review; }
+DK_DU='| `src/ARCHITECTURE.md` | pass | |
+| `docs/adr/0001-cu.md` | pass | |
+| `docs/product/rules/kho.md` | not applicable | đổi chữ, không đổi luật kho |'
+dk_review "$DK_DU"
+ky_vong 0 "review: mỗi tài liệu bị ảnh hưởng có verdict hợp lệ → ĐẠT" sh "$RS" "$F"
+dk_review "$(printf '%s\n' "$DK_DU" | grep -v 'docs/adr')"
+ky_vong 1 "review: thiếu verdict cho một tài liệu → KHÔNG ĐẠT" sh "$RS" "$F"
+dk_review "$(printf '%s\n' "$DK_DU" | sed 's#| `src/ARCHITECTURE.md` | pass | |#| `src/ARCHITECTURE.md` | updated | |#')"
+ky_vong 1 "review: updated mà diff không đổi tài liệu → KHÔNG ĐẠT" sh "$RS" "$F"
+dk_review "$(printf '%s\n' "$DK_DU" | sed 's#đổi chữ, không đổi luật kho##')"
+ky_vong 1 "review: not applicable thiếu lý do → KHÔNG ĐẠT" sh "$RS" "$F"
+dk_review "$(printf '%s\n' "$DK_DU" | sed 's#| `docs/adr/0001-cu.md` | pass |#| `docs/adr/0001-cu.md` | ok |#')"
+ky_vong 1 "review: verdict lạ → KHÔNG ĐẠT" sh "$RS" "$F"
+# Diff sửa luôn tài liệu → implement hết cảnh báo cho nó; review nhận "updated"
+printf 'cập nhật\n' >> "$R/src/ARCHITECTURE.md"
+dung "…diff sửa tài liệu → implement không còn cảnh báo cho nó" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -q 'mà src/ARCHITECTURE.md không đổi'"
+dk_review "$(printf '%s\n' "$DK_DU" | sed 's#| `src/ARCHITECTURE.md` | pass | |#| `src/ARCHITECTURE.md` | updated | |#')"
+ky_vong 0 "…review: updated cho tài liệu đã sửa → ĐẠT" sh "$RS" "$F"
+tao_fixture
+
 # ---------------------------------------------------------------- wrapper → lệnh mới
 echo ""
 echo "wrapper: ready, task, journal"

@@ -134,8 +134,11 @@ máy thì với phiên đó coi như không có. Ranh giới:
 | Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của repo đích, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
-Hiện thực tới đâu: `conventions.md`, mẫu điểm vào và lệnh kiểm, ADR từ D-xx, luật nghiệp vụ `BR-`
-(dưới đây). Kiểm chéo lỗi thời: bước sau.
+Các mục dưới: `conventions.md` trong git, mẫu điểm vào và lệnh kiểm, ADR từ D-xx, luật nghiệp vụ
+`BR-`, kiểm chéo lỗi thời. Ba rủi ro chung: **lỗi thời** (tài liệu lệch code còn tệ hơn không có —
+mục kiểm chéo), **nhồi nhét** (chỉ thứ người chọn nâng, không chép PRD — mục ADR, luật), **nguồn đổi
+sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu" máy chỉ kiểm điều kiện cần (đủ file,
+`aw knowledge` in đúng file); phép thử với phiên agent thật là bước tay (README).
 
 ### `conventions.md` trong git, bản clone chỉ ghi đè khoá máy
 
@@ -224,6 +227,22 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
   `Status: superseded by BR-…`; đổi luật cũ là một PR có người duyệt, không đi qua lệnh nâng.
 - `aw rule check` chặn hình thức (ID duy nhất, đủ trường, `Source` có nhãn và phiên bản, `Status` hợp
   lệ, `superseded by` trỏ tới luật có thật); luật active chưa có test `covers:` chỉ cảnh báo.
+
+### Kiểm chéo lỗi thời: cảnh báo ở implement, verdict ở review
+
+Tài liệu lệch code đẩy agent đi sai mà nó vẫn tin là đúng. Máy không biết một thay đổi có làm tài
+liệu sai không, nhưng biết diff có đụng **phạm vi** của tài liệu không:
+
+- Phạm vi: tài liệu module = thư mục chứa nó; ADR accepted = `Scope`; file luật = hợp `Scope` các luật
+  active. Diff không tính chính các tài liệu và thư mục ADR/luật.
+- Đụng phạm vi mà tài liệu không đổi → **cảnh báo** ở implement: hay báo nhầm (sửa lỗi nhỏ không đổi
+  kiến trúc), chặn ở đây làm tắc flow và người học cách lách.
+- Review **chặn** khi thiếu verdict cho tài liệu bị ảnh hưởng (`## Durable knowledge`): `pass` (đã
+  đọc, vẫn đúng), `updated` (sửa trong diff — máy kiểm có sửa thật), `not applicable` + lý do. Máy
+  không kiểm verdict đúng — như `## Repo rules`; tài liệu sai mà không ai sửa là finding của Lens 3.
+- Luật active trong phạm vi diff chưa có test `covers:` chỉ cảnh báo ở implement, không thành điều
+  kiện review: thiếu test cho luật cũ không phải lỗi của việc này.
+- Hình thức thư mục ADR chỉ chặn việc có nâng ADR: thư mục hỏng sẵn trên base không được chặn mọi việc.
 
 ## Hai loại điều kiện ra
 
@@ -503,3 +522,6 @@ tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã
     Tương tự, nguồn mới mâu thuẫn với luật `BR-` active chỉ agent spec và người phát hiện.
 20. **PRD đổi sau khi luật đã nâng**: máy không theo dõi Confluence/Jira; phiên bản ghi trong `Source`
     chỉ cho người so tay. Luật cũ vẫn `active` tới khi một việc thay nó.
+21. **Phạm vi thô**: glob `case` (`*` khớp cả `/`), tài liệu module phủ cả thư mục — sửa một file test
+    trong `src/` cũng đòi verdict cho `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen
+    tay ghi `pass` không đọc.

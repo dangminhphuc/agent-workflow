@@ -49,6 +49,16 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 |---|---|---|
 | `docs/coding-style.md` | pass | |
 
+## Durable knowledge
+
+<!-- Mỗi tài liệu `aw check implement` / `aw check review` báo bị diff đụng phạm vi (tài liệu
+     module, ADR, file luật BR-) một dòng — thiếu là máy chặn. Không có: xoá mục này.
+     Verdict: pass (đã đọc, vẫn đúng) | updated (đã sửa trong diff) | not applicable (kèm lý do). -->
+
+| File | Verdict | Reason |
+|---|---|---|
+| `src/<module>/ARCHITECTURE.md` | pass | |
+
 ## Lens 3 — Quality
 
 <!-- Không có finding nào: xoá ba mục mẫu, ghi đúng một dòng "- None".

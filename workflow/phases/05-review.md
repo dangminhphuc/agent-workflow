@@ -57,6 +57,8 @@ Go through **every** `YC-NNN`: which code satisfies it, verdict `pass` / `fail` 
 
 **Repo rules** (`aw rules review` — all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved D-xx that breaks a rule → `not applicable`, name the D.
 
+**Durable knowledge**: for each module doc / ADR / rule file whose scope the diff touches (`aw check review` lists them), one row in `## Durable knowledge`: `pass` (read it, still true) / `updated` (changed in this diff) / `not applicable` (+ reason). A doc the change makes wrong and nobody updated → `Should fix` in Lens 3.
+
 ### 3. Quality (`## Lens 3 — Quality`)
 Correctness bugs, reuse of what exists, needless complexity. Each finding `### [Blocker|Should fix|Nit] <title>`:
 - `Blocker`, `Should fix`: `- Location: \`file:line\`` (real line) and `- Category: <kebab-case>` (e.g. `missing-null-check`). Run `aw journal` to **reuse existing names**.
@@ -119,6 +121,7 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 - `## Repo rules` has a valid verdict for **each** rule file (declared file exists, committed);
 - each `Promote: adr` D has an ADR matching the approved D; the ADR directory passes `aw adr check`;
 - each `Promote: BR-…` YC has a rule block matching the approved YC;
+- `## Durable knowledge` has a valid verdict for each doc whose scope the diff touches;
 - Lens 4 has seven valid rows; any `finding` → Lens 3 has at least one finding;
 - Lens 3 has findings **or** exactly `- None` (not both), no template placeholders; `Location`, `Category`, `Failure scenario` well-formed;
 - `## Conclusion` has `- Blocker findings: <n>` equal to the number of `[Blocker]` items; `- Reviewed tree:` matches the code;

@@ -205,7 +205,9 @@ adr_loi_viec() {
     fi
     rm -f "$_ass"
   done
-  adr_loi_hinh_thuc "$_aD"
+  # Hình thức thư mục ADR chỉ là việc của việc có nâng ADR: thư mục hỏng sẵn trên base
+  # không được chặn mọi việc khác (aw adr check báo riêng).
+  [ -z "$(d_nang_ds "$_aT")" ] || adr_loi_hinh_thuc "$_aD"
 }
 
 # adr_loi_truong <thư-mục-feature> -> lỗi các trường Promote / Scope / Supersedes

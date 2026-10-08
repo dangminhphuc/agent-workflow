@@ -37,6 +37,8 @@
 #      sau khi ra soat thi ket luan khong con noi ve code nay.
 #  13. ADR: D "Promote: adr" chua co ADR, ADR lech D da duyet, thu muc ADR sai hinh thuc.
 #  14. Luat: YC "Promote: BR-…" chua co khoi luat, hoac khoi lech YC da duyet.
+#  15. Diff dung pham vi tai lieu module / ADR / luat: review.md thieu "## Durable knowledge"
+#      hoac thieu verdict hop le (pass | updated | not applicable + ly do) cho tai lieu do.
 #  12. Diff dung code nhay cam (sensitive_code trong conventions.md) ma
 #      review.md thieu "- Security reviewer: <ten nguoi>" (trong, giu cho, hay
 #      ghi ten agent).
@@ -59,6 +61,7 @@ kq_khai kiem-tra-ra-soat.sh \
 . "$HERE/lib/duyet.sh"
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/luat.sh"
+. "$HERE/lib/kien-thuc.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -100,6 +103,11 @@ lvl=$(luat_loi_viec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "Luật: $l"; done <<LUAT
 $lvl
 LUAT
+# Kiến thức bền bị diff ảnh hưởng: mỗi tài liệu một verdict ở "## Durable knowledge".
+ktl=$(kt_loi_review "$DIR" "$REVIEW")
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KT
+$ktl
+KT
 
 cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 

@@ -50,6 +50,13 @@ Quy ước của repo đích vào git — bước đầu của "kiến thức b�
   khối thiếu hoặc lệch YC. `aw rule check` kiểm hình thức, cảnh báo luật chưa có test `covers: BR-…`.
   `aw knowledge spec` in luật active; `aw knowledge design` thêm luật có `Scope` khớp.
 
+- **Kiểm chéo kiến thức bền lỗi thời**: diff đụng phạm vi của tài liệu module (thư mục chứa nó), ADR
+  accepted (`Scope`) hay file luật (`Scope` của luật active) mà tài liệu không đổi → implement cảnh
+  báo; review chặn khi `## Durable knowledge` của `review.md` thiếu verdict hợp lệ cho tài liệu đó
+  (`pass | updated | not applicable` + lý do). Luật active trong phạm vi diff chưa có test `covers:`
+  → implement cảnh báo. Hình thức thư mục ADR chỉ chặn việc có nâng ADR.
+- Bỏ `docs/de-xuat-kien-thuc-ben.md` (đề xuất tạm): lý do đã ở `docs/kien-truc.md`.
+
 ### Tương thích
 - Repo init bằng engine cũ (quy ước chỉ ở bản clone) chạy như cũ; `aw conventions check` cảnh báo
   và in cách chuyển. `aw init`/`aw upgrade` không tự tạo file trong repo khi bản clone đã có.

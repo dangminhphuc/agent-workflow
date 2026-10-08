@@ -25,7 +25,9 @@
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
 #        test moi bi tat / chay rieng (.only, .skip… — skipped_test_regex),
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
-#        diem mu muc "chan review" chua tra loi.
+#        diem mu muc "chan review" chua tra loi; kien thuc ben co the loi thoi (diff dung
+#        pham vi tai lieu module / ADR / luat ma tai lieu khong doi); luat active trong
+#        pham vi diff chua co test covers.
 # Luu y (khong chan): diff dung sensitive_code — review se can nguoi ra bao mat;
 #        task kiem chung thu cong (aw task done --manual).
 #
@@ -46,6 +48,7 @@ kq_khai kiem-tra-hien-thuc.sh \
 . "$HERE/lib/duyet.sh"
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/luat.sh"
+. "$HERE/lib/kien-thuc.sh"
 
 DIR="${1:-.}"
 PLAN="$DIR/plan.md"
@@ -159,7 +162,7 @@ EOF
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; } )
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""
