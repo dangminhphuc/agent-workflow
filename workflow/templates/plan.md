@@ -4,10 +4,6 @@ based_on: []
 
 # Plan — <TÊN TÍNH NĂNG>
 
-> Sinh bởi phase `03-plan`, chỉ quản lý thực thi — mọi lựa chọn kỹ thuật nằm ở
-> `tdd.md`. Phase `04-implement` cập nhật trạng thái task ngay tại file này.
-> `based_on` do `aw based-on` ghi — không sửa tay.
-
 ## Tasks
 
 ### T-01 — <tiêu đề>

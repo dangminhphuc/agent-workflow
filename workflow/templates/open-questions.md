@@ -1,8 +1,5 @@
 # Open questions
 
-> Sinh bởi phase `01-spec`. File này phải tồn tại kể cả khi rỗng.
-> Rỗng = đã rà và không thấy gì. Thiếu file = chưa rà. Hai việc khác nhau.
-
 <!-- Blocking (agent đề xuất, NGƯỜI duyệt): blocking | review-blocking | non-blocking —
      chọn theo "nếu giả định sai thì phải làm lại gì"; bảng đầy đủ: rules/source-tracing.md.
      Agent không hạ mức để khỏi bị chặn. Lệnh `clarify` dẫn người trả lời từng mục.

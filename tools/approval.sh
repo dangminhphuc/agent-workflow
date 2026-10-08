@@ -22,6 +22,7 @@ kq_khai approval.sh \
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
+. "$HERE/lib/findings.sh"
 
 PHASE="${1:-}"; DIR="${2:-}"
 case "$PHASE" in design|plan) ;; *) echo "Dùng: aw approval design|plan <thư-mục-feature>" >&2; exit 2 ;; esac
@@ -130,7 +131,7 @@ LOI=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "L" { print "  " $2 }')
 F=$(tuong_doi "$TDD")
 PHF="$PH"; [ -f "$PH" ] || PHF=/dev/null
 
-awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" '
+awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" "$PH_AWK"'
   function ra(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
   function nap(s, m,   n, a, i, p) { n = split(s, a, ";"); for (i = 1; i <= n; i++) if (a[i] != "") { split(a[i], p, "="); m[p[1]] = p[2] } }
   BEGIN { nap(dtt, tt); nap(dnr, nr) }
@@ -147,8 +148,8 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" '
   idx == 1 && d != "" && /Reopen reason[^:]*:/ { ld[d] = ra($0) }
   idx == 1 && d != "" && /^[-*][ \t]*Critique \(agent\)/ { pb[d]++ }
   idx == 2 && /^###[ \t]+PH-[0-9]+/ { match($0, /PH-[0-9]+/); ph = substr($0, RSTART, RLENGTH); dsph[++nph] = ph; xl[ph] = ""; next }
-  idx == 2 && ph != "" && /Xử lý[^:]*:/ { xl[ph] = ra($0) }
-  idx == 2 && ph != "" && /Mức[^:]*:/ && !/Mức chặn/ { muc[ph] = ra($0) }
+  idx == 2 && ph != "" && ph_truong($0) == "xl" { xl[ph] = ph_chuan_xl(ra($0)) }
+  idx == 2 && ph != "" && ph_truong($0) == "muc" { muc[ph] = ph_chuan_muc(ra($0)) }
   END {
     for (i = 1; i <= n; i++) if (tt[ds[i]] != "approved") cho++
     print "CỔNG DUYỆT — vào /aw-plan cần mọi quyết định D-xx đã được bạn duyệt"
@@ -176,8 +177,8 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" '
     print ""
     print "Cách duyệt:  đọc từng D ở trên, đổi \"- [ ] **" nhan "**\" thành \"- [x] **" nhan "**\""
     print "             ở dòng ghi bên cạnh. Không đồng ý thì để trống và nói agent cần sửa gì."
-    c = 0; cc = 0; for (i = 1; i <= nph; i++) { x = xl[dsph[i]]; if (x == "" || x == "chưa") { c++; if (muc[dsph[i]] == "Chặn") cc++ } }
-    if (c) print "Lưu ý:       còn " c " phát hiện của checker LLM chưa phân xử (mức Chặn: " cc ") — chạy /aw-clarify"
+    c = 0; cc = 0; for (i = 1; i <= nph; i++) { x = xl[dsph[i]]; if (!ph_xong(x)) { c++; if (muc[dsph[i]] == "block") cc++ } }
+    if (c) print "Lưu ý:       còn " c " phát hiện của checker LLM chưa phân xử (block: " cc ") — chạy /aw-clarify"
     exit 1
   }
 ' "$TDD" "$PHF"

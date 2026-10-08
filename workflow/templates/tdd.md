@@ -4,10 +4,6 @@ based_on: []
 
 # Technical Design — <TÊN TÍNH NĂNG>
 
-> Technical Design Document, sinh bởi phase `02-design`. Output duy nhất của thiết kế.
-> `based_on` do `aw based-on` ghi — không sửa tay.
-> Mục không áp dụng ghi `Not applicable: <lý do>`, không bỏ trống.
-
 ## Existing code
 
 | Module / file | Current role | Planned change |

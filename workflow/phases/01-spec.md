@@ -26,40 +26,24 @@ trace_rule: true
 
 ## Goal
 
-Turn business requirements into a **verifiable** spec, and expose where sources are unclear or contradict each other. **Never create requirements** — only translate and sharpen existing ones. Source-label rule: `rules/source-tracing.md`.
+Turn business requirements into a **verifiable** spec, and expose where sources are unclear or contradict each other. **Never create requirements** — only translate and sharpen existing ones.
 
-## Input
+Read **only** the inputs listed in `intake.md` (to add a source, add it there first). `intake.md` must pass `aw check intake`; missing → `/aw-intake`.
 
-- `intake.md` — must pass `aw check intake`. Missing → stop, run `/aw-intake`.
-- Every input listed in `intake.md`. Read nothing outside that list (to add a source, add it to `intake.md` first).
-- `aw rules spec` — read every file it prints.
-- `aw knowledge spec <thư-mục-feature>` — read every file it prints: the repo's **active business rules** (`### BR-…`). A source that contradicts an active rule → a row in `## Source conflicts` or an `[OPEN-QUESTION]`; never pick a side yourself.
-
-| Input | How to read | Source label in spec |
+| Input | How to read | `Source:` label |
 |---|---|---|
 | `[CONFLUENCE]` | MCP Atlassian | `[CONFLUENCE]` URL + heading |
 | `[JIRA]` | MCP Atlassian | `[JIRA]` key + URL |
 | `[FILE]` (incl. incident notes) | Read directly | `[FILE]` path + heading |
 | `[HUMAN]` | Verbatim text in `intake.md` | `[FILE] intake.md § Input` |
 
-## By work type
-
-| Type | Spec must also have |
-|---|---|
-| `bugfix` | `## Reproduction`: `Steps to reproduce:`, `Actual behavior:`, `Expected behavior:` |
-| `refactor` | Every YC has `Type: preserve \| structural`, **no new behaviour**. Preserve YCs have `Protected by: \`<test file>\`` — the file **already exists on the base branch** |
-| `perf` | Like refactor + at least one `Type: performance` with a numeric `Target:` |
-
-Refactoring an area with no protecting test → checker blocks. Write the tests as a separate job first, or narrow the scope.
-
 ## Steps
 
-1. **Read every source fully.** Record exact identifiers and the **version** read (Confluence: page version; Jira: `updated`; `[FILE]`: commit sha) in `## Sources`. Do not skim and summarise.
-2. **Quote requirement sentences verbatim** before interpreting — separate "what the source says" from "how we read it".
-3. **Write verifiable YCs.** Each `YC-NNN`:
-   - at least one `- [ ] …` **observable from outside** ("under 300ms with 10k records", not "must be fast");
-   - `Priority: must | should` — `should` **only if the source says so** ("nice to have", "phase 2 if time"); source silent = `must`.
-4. **Check NFRs.** For each group: does the work touch it, what does the source say?
+1. **Read every source fully.** Record exact identifiers and the **version** read (Confluence page version, Jira `updated`, `[FILE]` commit sha) in `## Sources`.
+2. **Active business rules:** `aw knowledge spec <dir>` — read every file it prints (`### BR-…`). A source contradicting an active rule → a `## Source conflicts` row or an `[OPEN-QUESTION]`; never pick a side.
+3. **Quote requirement sentences verbatim** before interpreting — separate "what the source says" from "how we read it".
+4. **Write verifiable YCs.** Each `YC-NNN` has exactly one `Source:` label (`rules/source-tracing.md`), at least one `- [ ] …` **observable from outside** ("under 300ms with 10k records", not "must be fast"), and `Priority: must | should` — `should` **only if the source says so** ("nice to have", "phase 2 if time"); source silent = `must`.
+5. **Check NFRs.** For each group: does the work touch it, what does the source say?
 
    | Group | Questions |
    |---|---|
@@ -71,38 +55,31 @@ Refactoring an area with no protecting test → checker blocks. Write the tests 
    | Failure & recovery | External system fails → then what? Retry, rollback? |
 
    Source says → YC. Touched but source silent → `[OPEN-QUESTION]` (usually `review-blocking`). Not touched → skip. Never invent numbers.
-5. **Context:** user roles per the source in `## Context`. Ambiguous domain terms ("kỳ", "hạch toán") → `## Glossary` (optional), each with its source.
-6. **Label the source** of every YC.
-7. **Split out open questions:** unclear in the source → `[OPEN-QUESTION]` + entry in `open-questions.md` with the temporary assumption, "if wrong, redo what", and a proposed `Blocking` (levels table in `rules/source-tracing.md`). Only `blocking` stops the flow now; the `clarify` command walks the human through answers.
-8. **Check conflicts** between sources in `## Source conflicts`. The "Resolution" column may **only** point to an open question (`open-questions.md § YC-NNN`) or a settled source (PO's `[JIRA]` comment, newer `[CONFLUENCE]` page…). None → "Không phát hiện mâu thuẫn."
-9. **`## Out of scope`:** list plainly what is *not* done — stops later phases overreaching. None → "Không có."
+6. **`## Context`:** user roles per the source. Ambiguous domain terms ("kỳ", "hạch toán") → `## Glossary` (optional), each with its source.
+7. **Open questions:** unclear in the source → `[OPEN-QUESTION]` + an entry in `open-questions.md` with the temporary assumption, "if wrong, redo what" and a proposed `Blocking`. `open-questions.md` **always exists**; none → "No open questions" (missing file = not reviewed).
+8. **`## Source conflicts`:** "Resolution" may **only** point to an open question (`open-questions.md § YC-NNN`) or a settled source (PO's `[JIRA]` comment, newer `[CONFLUENCE]` page…). None → "Không phát hiện mâu thuẫn."
+9. **`## Out of scope`:** what is *not* done — stops later phases overreaching. None → "Không có."
 10. **`## Constraints & dependencies`:** external systems, legal/accounting rules, deadlines, other teams' work — with sources. None → "Không có ràng buộc hay phụ thuộc ngoài."
-11. **Propose `Risk`:** `high` when touching money/accounting, new integrations, core schema, or hard-to-reverse changes; otherwise `normal`. One-line reason. `high` → design runs Mode 2.
-   - A YC that stays true after this job (a business invariant, not a screen detail) with a durable source → propose `- Promote: BR-<MIỀN>-NNN` under it. The human decides by approving the spec; `[INFERRED]` / `[OPEN-QUESTION]` YCs cannot be promoted.
-12. **Leave `- [ ] **Approved by human**` unticked.** Every content edit of the spec (rerun, `clarify` included) **unticks** it. Ticked + content changed → `aw check` blocks (the `aw guard` hook, if installed, unticks).
-13. **Record inputs:** `aw based-on <thư-mục-feature> spec.md intake.md`.
+11. **Propose `Risk`:** `high` when touching money/accounting, new integrations, core schema, or hard-to-reverse changes; else `normal`. One-line reason. `high` → design runs Mode 2.
+    - A YC that stays true after this job (a business invariant, not a screen detail) with a durable source → propose `- Promote: BR-<DOMAIN>-NNN` under it. `[INFERRED]` / `[OPEN-QUESTION]` YCs cannot be promoted.
+12. **Leave `- [ ] **Approved by human**` unticked**; any content edit unticks it. Spec edited after the human ticked → the human re-approves: reads the change and deletes `<!-- approval-hash: … -->` (keeps the tick), or re-ticks.
+13. **Record inputs:** `aw based-on <dir> spec.md intake.md`.
 
-## Output
+## By work type
 
-- `spec.md` per `templates/spec.md`.
-- `open-questions.md` per `templates/open-questions.md` — **always exists**; no open questions → write "No open questions" (empty file = reviewed; missing file = not reviewed).
+| Type | Spec must also have |
+|---|---|
+| `bugfix` | `## Reproduction`: `Steps to reproduce:`, `Actual behavior:`, `Expected behavior:` |
+| `refactor` | Every YC has `Type: preserve \| structural`, **no new behaviour**. Preserve YCs have `Protected by: \`<test file>\`` — the file **already exists on the base branch** |
+| `perf` | Like refactor + at least one `Type: performance` with a numeric `Target:` |
+
+Refactoring an area with no protecting test → checker blocks. Write the tests as a separate job first, or narrow the scope.
 
 ## Forbidden
 
 - Requirements that do not trace to a source.
 - **Choosing a technical solution** (library, tables, modules) — that is `02-design`.
-- Picking one reading of an ambiguity without an `[OPEN-QUESTION]`.
+- Picking one reading of an ambiguity without an `[OPEN-QUESTION]`; resolving source conflicts yourself ("pick the safer side").
 - `[INFERRED]` on a business decision; lowering `Risk`/`Blocking` to avoid blocks; `should` the source did not say.
-- Resolving source conflicts yourself ("pick the safer side").
 - **Ticking "Approved by human"**, editing/deleting the approval hash.
 - Writing code, even illustrative.
-
-## Exit conditions
-
-**Machine:** `aw check spec` → `[x] ĐẠT` (checklist: `rules/source-tracing.md`).
-
-**Human:**
-- Reviews YCs and "Out of scope"; approves `Blocking` and `Risk`.
-- Ticks "Approved by human". `02-design` (chore: `03-plan`) blocks until then. Spec edited after the tick → re-approve: read the change and delete `<!-- approval-hash: … -->` (keep the tick), or re-tick if it was removed.
-
-Open questions still open: review may not mark that YC `pass`; `blocking`/`review-blocking` still open → review blocks.

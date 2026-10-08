@@ -11,6 +11,50 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.23]
+
+Lệnh và luật agent đọc gọn lại (ngữ cảnh mỗi phase nhỏ hơn khoảng 20–32%) mà không bỏ chỉ thị nào;
+prompt và mẫu hết nói ngược nhau; mỗi phase kết thúc bằng việc người cần làm và lệnh tiếp theo.
+
+### Đổi
+- **`design-findings.md` dùng trường tiếng Anh** như mọi artifact khác (`rules/general.md` § 5):
+  `Mức` → `Severity: block | warn`, `Loại` → `Category`, `Vị trí` → `Location`, `Vấn đề` →
+  `Problem`, `Xử lý: chưa | đã sửa | bác bỏ: <lý do>` → `Resolution: open | fixed | rejected: <lý do>`.
+  Giá trị `Category` thành kebab-case (`hidden-decision`, `deviates-from-decision`…). Việc tạo
+  trước đó vẫn đọc được trường cũ. Cách đọc nằm một chỗ: `tools/lib/findings.sh` (dùng chung cho
+  `aw check design`, `aw approval`, `aw pending`); tên trường chỉ khớp ở đầu dòng.
+- Mẫu `design-findings.md` liệt kê đủ 8 `Category` checker LLM dùng (trước thiếu `violates-repo-rule`,
+  `violates-adr`).
+- `/aw-implement`: bỏ "bước 0" thứ hai (`aw ready`) trùng số với Step 0 của lệnh.
+- `/aw-clarify`: lối thảo luận chỉ còn một tên — "Chat about this" (đúng nhãn người thấy).
+- Prompt spec / plan: placeholder `BR-<DOMAIN>-NNN`, `<domain>.md` như `/aw-bootstrap`.
+
+- **Lệnh sinh ra gọn hơn** (mọi adapter): đầu file một dòng; Step 0 đặt tên thư mục feature là
+  `<dir>` (thay `<thư-mục-feature>` lặp khắp file); "Phase contract" viết Reads/Writes mỗi thứ một
+  dòng, mẫu gom một dòng `Templates`; "Read first" + quy tắc repo gộp thành một dòng
+  `Before working`. Luật "không sửa dòng `Engine:`" và `aw journal add` chuyển về
+  `rules/general.md` (§ 4, § 8) — trước lặp trong từng lệnh.
+- **`/aw-implement` viết lại theo khung Goal → Steps → By work type → Forbidden → Common failures**
+  (nhỏ hơn 35%): bỏ `Input`/`Output`/`Exit conditions` trùng hợp đồng do adapter dựng, bỏ bảng
+  "Warning → Fix" — cách sửa nay nằm ngay trong cảnh báo của `aw check implement`.
+- **Mọi phase theo cùng khung** (intake, spec, design, plan, review, ship): bỏ `Input`/`Output`/
+  `Exit conditions` trùng hợp đồng do adapter dựng; điều checker hay chặn mà bước chưa nói gom vào
+  `Common failures`. Lệnh sinh ra nhỏ hơn 16% tổng; ngữ cảnh mỗi phase nhỏ hơn khoảng 20–32%.
+- `rules/general.md` và `rules/source-tracing.md` gọn lại (giữ số mục); danh sách "checker kiểm gì"
+  trong `source-tracing.md` thay bằng các lỗi hay gặp.
+- `/aw-clarify`: tên trường điểm mù đúng mẫu (`If wrong, redo`, trước còn ghi "Nếu giả định sai");
+  bỏ các dòng Forbidden lặp lại bước.
+- Cảnh báo "YC chưa có test" và "thay đổi ngoài phạm vi" ghi kèm cách sửa.
+- **Tin nhắn kết thúc phase thống nhất:** mọi lệnh phase kết thúc bằng `Kết quả:` · `Cần bạn:` ·
+  `Tiếp theo: /aw-…` (lệnh tiếp tính từ thứ tự phase trong manifest) — người thấy ngay việc của mình.
+- Mẫu `review.md`: `## Conclusion` lên đầu, thêm `Summary` (1–3 câu cho người đọc).
+- Mẫu artifact bỏ các dòng meta "Sinh bởi phase …"; `rules/general.md` § 6: agent xoá chú thích hướng
+  dẫn của mẫu khi ghi artifact (trừ dấu duyệt), § 4: không sửa `based_on` và `*-results.md`.
+
+### Bỏ
+- Mục `## Carried-over warnings` trong mẫu `review.md`: không phase nào dặn, không checker nào đọc —
+  cảnh báo còn sót đã bị `aw check review` chặn.
+
 ## [2026.10.22]
 
 Skill, subagent của team gọi được theo phase (`uses_<phase>`, `aw uses`), không chỉ đọc như tài liệu.

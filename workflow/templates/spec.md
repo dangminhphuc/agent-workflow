@@ -4,9 +4,6 @@ based_on: []
 
 # Spec — <TÊN TÍNH NĂNG>
 
-> Sinh bởi phase `01-spec`. Người sửa tay được; chạy lại phase sẽ cập nhật,
-> không ghi đè trắng. `based_on` do `aw based-on` ghi — không sửa tay.
-
 - **Risk:** `<high | normal>`
 - **Reason:** <high khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
 - [ ] **Approved by human** — đã đọc và đồng ý toàn bộ spec   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick, sửa nội dung thì agent bỏ tick. Máy ghi dấu duyệt (hash nội dung) cạnh tick; nội dung đổi sau đó thì bị chặn tới khi người duyệt lại -->

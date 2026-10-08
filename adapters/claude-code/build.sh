@@ -60,7 +60,7 @@ ad_goi_uses() {
 # Cursor nạp .claude/ để tương thích (bật sẵn): lời dặn dưới đây gọi tool riêng
 # của Claude Code, agent khác làm theo sẽ sai mà không ai thấy.
 ad_danh_cho() {
-  printf '**Dành cho Claude Code.** No `AskUserQuestion` tool = you are another agent (e.g. Cursor loading `.claude/`) → **stop**, use the same-named file in your own folder (Cursor: `.cursor/`).'
+  printf '**Dành cho Claude Code:** no `AskUserQuestion` tool = you are another agent → stop, use the same-named file in your own folder (Cursor: `.cursor/`).'
 }
 
 # Lenh khai choice_ui: true — "cau hoi lua chon" trong mo ta trung lap dich sang
@@ -70,7 +70,7 @@ ad_hoi_lua_chon() {
   printf 'Each question turn = **one `AskUserQuestion` call**, `multiSelect: false`; several decisions of one item = several `questions` entries in the **same** call (max 4). Never print options as text. Question and option text are in Vietnamese.\n\n'
   printf -- '- `question`: one sentence ending with `?`. `header` (≤ 12 chars): id and position, e.g. `YC-001 1/8`.\n'
   printf -- '- `options` (≤ 4) in the order described below; the recommended option'"'"'s `label` **starts with** `(Đề xuất)`; `description` = one-line consequence.\n'
-  printf -- '- **Do not** add "Other" or "Chat về câu này": Claude Code already provides "Type something" and "Chat about this". If the human picks "Chat about this" → answer in plain text; once clear, call `AskUserQuestion` again for the same question.\n\n'
+  printf -- '- **Do not** add "Other" or "Chat about this": Claude Code already provides "Type something" and "Chat about this". If the human picks "Chat about this" → answer in plain text; once clear, call `AskUserQuestion` again for the same question.\n\n'
 }
 
 # Hộp xác nhận của cổng duyệt (approval_gate: true) → AskUserQuestion. preview hiện

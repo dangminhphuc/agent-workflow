@@ -1,52 +1,48 @@
 # General rules
 
-Apply to every phase and every agent. Rationale: `docs/kien-truc.md` in the engine repo.
+Apply to every phase and every agent.
 
 ## 1. Hand off through files
 
-- A phase takes input only from files in `<artifact_dir>/<branch-name>/`, never from earlier chat.
-- Every phase must run from a blank session. If it cannot, the previous phase wrote too little.
+A phase takes input only from files in the feature dir, never from earlier chat — it must work from a blank session. If it cannot, the previous phase wrote too little.
 
-## 2. Exit conditions
+## 2. Exit conditions and approval
 
-- **Machine** (`exit_machine`): run the command, read the label marked `[x]` in the `Kết quả` block at the end of its output. Never declare a pass yourself.
-- **Human** (`exit_human`): state it, then stop. Never approve on the human's behalf.
-
-**The agent never approves:**
-- Never tick an "Approved by human" box (spec, D-xx). Never edit/delete `<!-- approval-hash: … -->`.
-- Never change `[OPEN-QUESTION]` to `answered` yourself.
-- If you edit content that is already ticked, **untick** it.
-- An LLM checker may only **block**, never pass. No findings file = the checker has not run.
-
-**Block or warn:** checks on the phase's own output contract block. Cross-phase checks (stale artifact, test ↔ YC, diff scope) only warn — but `05-review` blocks on any warning left. Fix warnings when you see them.
+- **Machine** (`Exit — MACHINE`): run the command, read the `[x]` label of its `Kết quả` block. Never declare a pass yourself.
+- **Human** (`Exit — HUMAN`): state it, then stop.
+- **The agent never approves:** never tick "Approved by human" (spec, D-xx), never edit/delete `<!-- approval-hash: … -->`, never set an open question to `answered` yourself. Editing ticked content → **untick** it.
+- An LLM checker may only **block**, never pass. No findings file = it has not run.
+- Checks on a phase's own output block. Cross-phase checks (stale artifact, test ↔ YC, diff scope) only warn — but `/aw-review` blocks on any warning left, so fix them when you see them.
 
 ## 3. Stay inside the phase
 
-Each phase has a **Forbidden** section. Work that belongs to another phase: record it in that phase's artifact, do not do it. Most common: `01-spec` picking a technical solution; `04-implement` fixing things "while there".
+Work that belongs to another phase: record it in that phase's artifact, do not do it.
 
 ## 4. Do not destroy existing state
 
-Never delete a previous phase's artifact. Re-running a phase = **update** (the human may have edited by hand), not overwrite.
+- Never delete a previous phase's artifact. Rerunning a phase = **update** (the human may have edited by hand), not overwrite.
+- Never edit the `Base:` or `Engine:` line of `intake.md` (every `aw check` of the job runs exactly that engine version), the `based_on` frontmatter (written by `aw based-on`) or any `*-results.md`.
 
 ## 5. Language
 
-- Artifact content and everything you say to the human: **Vietnamese**.
-- Identifiers (YC ids, file names, config keys): ASCII English.
-- Headings, field names, values and fixed labels from the templates (`Type`, `Risk`, `Source`, `## Out of scope`, `Blocking`, `## Lens 1`, `high`, `must`, `[INFERRED]`…): keep **exactly** as in the template — checkers match them literally.
-- **English structure — MANDATORY.** In every artifact or template you create or edit, all headings, field names, fixed keywords/labels and enum values are **English**, including ones the template does not have (e.g. a new `## Rollback plan`, not `## Kế hoạch rollback`). Vietnamese only in body text, list items and table cells under them. Never translate an existing English heading or keyword.
+- Artifact content and everything you say to the human: **Vietnamese**. Identifiers (YC ids, file names, config keys): ASCII English.
+- **Structure is English — MANDATORY:** headings, field names, fixed labels and enum values — including new ones the template lacks (`## Rollback plan`, not `## Kế hoạch rollback`). Keep the template's exactly (`Type`, `## Out of scope`, `Blocking`, `must`, `[INFERRED]`…): checkers match them literally. Vietnamese only in body text, list items and table cells.
 - Labels printed by `aw` (`ĐẠT`, `CẦN HỎI NGƯỜI`…) are Vietnamese; match them literally.
 
 ## 6. Artifacts are written for humans — MANDATORY
 
+- Most important thing first (conclusion, decision, what the human must do).
 - Headings by level, no skipped levels. One idea per item; parallel ideas → list or table.
-- Most important thing (conclusion, decision, what the human must do) first.
 - Short sentences, plain words. No hedging, no repetition, no explaining the obvious.
-- Syntax required by templates/checkers stays as is.
+- Writing from a template: delete its guidance comments (`<!-- … -->`) and the optional blocks you do not use. Never touch `<!-- approval-hash: … -->`.
 
 ## 7. Repo-specific rules, skills and subagents
 
-Declared in `conventions.md`: `rules_<phase>` = files to **read**; `uses_<phase>` = skills / subagents to **invoke** (`skill:<name>`, `agent:<name>`). All committed in the repo.
+Declared in conventions: `rules_<phase>` = files to **read** (`aw rules <phase>` — read every file, a `SKILL.md` too, as a normal document); `uses_<phase>` = skills / subagents to **invoke** (`aw uses <phase>` — invoke each entry as your command describes). Prints nothing = none. `KHAI SAI` → stop, ask the human to fix conventions; never guess.
 
-- **At phase start:** run `aw rules <phase>`, read **every file** it prints (a `SKILL.md` listed there is read as a normal document). Then run `aw uses <phase>` and invoke each entry as your command describes. Prints nothing = none. `KHAI SAI` → stop, ask the human to fix `conventions.md`; do not guess a replacement.
-- **Priority:** repo rules, skills and subagents rank **below** `spec.md`, `tdd.md`, `plan.md` and the workflow rules. On conflict follow the artifact and report the conflict (`04-implement`: "Unplanned"). Never leave the phase scope because of them.
-- **`05-review`** checks the diff against every rule file and every declared skill / subagent file (`aw rules review` prints them all), one verdict per file in `review.md`.
+- They rank **below** `spec.md`, `tdd.md`, `plan.md` and the workflow rules. On conflict follow the artifact and report the conflict (`04-implement`: "Unplanned"). Never leave the phase scope because of them.
+- `/aw-review` gives one verdict per rule file and per declared skill / subagent file (`aw rules review` prints them all).
+
+## 8. Harness gaps
+
+You failed and no checker caught it → `aw journal add <task|context|env|verify|state|model> "<what went wrong, where, what the harness lacks>"`.

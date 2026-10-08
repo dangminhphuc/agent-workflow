@@ -60,7 +60,7 @@ ad_goi_uses() {
 }
 
 ad_danh_cho() {
-  printf '**Dành cho Cursor.** Cursor also loads the Claude Code copies in `.claude/`: for a same-named command, subagent or skill, use this `.cursor/` one.'
+  printf '**Dành cho Cursor:** Cursor also loads `.claude/` — for a same-named command, subagent or skill, use this `.cursor/` copy.'
 }
 
 # Lenh khai choice_ui: true. Cursor co the co tool hoi lua chon, co the khong (tuy
@@ -72,7 +72,7 @@ ad_hoi_lua_chon() {
   printf -- '- Question: one sentence ending with `?`, starting with id and position, e.g. `YC-001 1/8`.\n'
   printf -- '- ≤ 4 options in the order described below; the recommended label **starts with** `(Đề xuất)`; each option has a one-line consequence.\n'
   printf -- '- If a Cursor choice tool exists (e.g. `AskQuestion`), use it. None or it fails: print numbered options `1.` `2.` … — the human answers by number or text.\n'
-  printf -- '- **Always** keep the free-text and "Chat về câu này" exits. If the tool does not add them, end with the line: `Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này.`\n\n'
+  printf -- '- **Always** keep the free-text and "Chat about this" exits. If the tool does not add them, end with the line: `Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này.`\n\n'
 }
 
 # Hộp xác nhận của cổng duyệt (approval_gate: true). Câu hỏi và ba nhãn giống hệt

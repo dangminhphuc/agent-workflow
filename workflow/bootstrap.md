@@ -28,7 +28,7 @@ Step 0 says **ĐANG Ở CHECKOUT CHÍNH** → only this section; write nothing i
 
 ## In the worktree
 
-Report file: `<thư-mục-feature>/bootstrap.md` (outside git). One commit per step below, on this branch; before each commit run that step's checks — red → do not commit.
+Report file: `<dir>/bootstrap.md` (outside git). One commit per step below, on this branch; before each commit run that step's checks — red → do not commit.
 
 ### 1. Survey (write nothing in the repo)
 

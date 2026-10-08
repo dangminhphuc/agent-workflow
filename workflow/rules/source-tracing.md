@@ -1,6 +1,6 @@
 # Rule: source traceability
 
-Applies to `01-spec`; the checkers of `02-design`, `03-plan`, `05-review` re-run the spec checker.
+Applies to `01-spec`; later checkers re-run the spec checker.
 
 Most dangerous failure: the agent invents a requirement and presents it as if the source said it. This rule turns that into a machine-checkable error.
 
@@ -37,13 +37,9 @@ The agent proposes `Blocking`, the human approves. Choose by "if the assumption 
 
 Answering an open question: write `Answer:`, set `Status: answered`, **and** change the YC's source label in the spec (e.g. `[FILE]` open-questions.md § YC-002). The checker blocks if the two files disagree.
 
-## `aw check spec <thư-mục-feature>` checks
+## Common failures
 
-1. Every `### YC-NNN` has exactly one valid `Source:`. A YC's region ends at the next `##`/`###` heading (a `Source:` under `### Ghi chú` does not count for the YC above). No duplicate ids.
-2. Every YC has `Priority: must | should` and at least one real `- [ ] …` (not `<...>`, not inside an HTML comment).
-3. Every `[OPEN-QUESTION]` has a same-id entry in `open-questions.md` with `Assumption` and a valid `Blocking`.
-4. Reverse: every `open-questions.md` entry points to a real YC; `Status: open | answered`; `open` ↔ spec still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and the spec label was changed. A 0-byte file is valid (reviewed, nothing found).
-5. `spec.md` has `Risk: high | normal` and exactly one `- [ ] **Approved by human**` box in the header; if ticked, the approval hash must match the content.
-6. `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` exist with real content (nothing → write "Không có…" / "Không phát hiện mâu thuẫn.").
-7. Every conflict row's "Resolution" column points to an open question (`open-questions.md § YC-NNN`) or a settled source (`[CONFLUENCE]` `[JIRA]` `[FILE]`). Resolving a business conflict yourself = inventing a requirement.
-8. `blocking` still `open` blocks design (chore: plan); `review-blocking` open: implement warns, review blocks.
+- A YC's region ends at the next `##`/`###` heading: a `Source:` or criterion under `### Ghi chú` does not count for the YC above (split a YC with `####`).
+- An acceptance criterion still `<...>` or inside an HTML comment does not count.
+- `open-questions.md` and the spec disagree: `open` ↔ YC still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and the YC label was changed.
+- `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` left empty — write "Không có…" / "Không phát hiện mâu thuẫn." instead.

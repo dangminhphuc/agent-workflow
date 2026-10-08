@@ -93,7 +93,7 @@ kc_test_yc() {
       for (i=1; i<=n; i++) {
         c=ds[i]
         if (!(c in co_test) && !(c in ngoai_le))
-          print c ": chưa có test gắn \"" tag " " c "\", cũng không ghi ở \"Manual verification\" của plan.md"
+          print c ": chưa có test gắn \"" tag " " c "\", cũng không ghi ở \"Manual verification\" của plan.md — thêm test gắn tag, hoặc ghi YC vào \"Manual verification\" kèm lý do"
       }
     }
   ' "$_ds" "$_d/spec.md" "$_d/plan.md" 2>/dev/null
@@ -132,7 +132,7 @@ kc_pham_vi() {
       khop_glob "$_f" $_bo && continue
       # shellcheck disable=SC2086
       khop_glob "$_f" $_cho && continue
-      echo "$_f: thay đổi ngoài phạm vi — không có trong \"Expected files\" hay \"Unplanned\" của plan.md"
+      echo "$_f: thay đổi ngoài phạm vi — không có trong \"Expected files\" hay \"Unplanned\" của plan.md — hoàn tác, hoặc ghi file (trong backtick) vào \"Unplanned\" kèm lý do"
     done
   set +f
 }

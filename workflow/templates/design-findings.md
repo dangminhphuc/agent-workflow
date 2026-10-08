@@ -1,13 +1,11 @@
-# Phát hiện của checker LLM — thiết kế
+# Design findings
 
-> Do checker LLM ghi (xem `checkers/design.md`). Checker chỉ được **chặn**,
-> không được duyệt. Không có file này = checker chưa chạy = KHÔNG ĐẠT.
-> Người là trọng tài: xác nhận (sửa `tdd.md` rồi ghi `đã sửa`) hoặc
-> `bác bỏ: <lý do>`. Lệnh `clarify` dẫn người phân xử từng mục.
+> Checker LLM chỉ được **chặn**, không được duyệt. Thiếu file này = checker chưa chạy.
+> Người phân xử từng mục qua `/aw-clarify`: đồng ý (sửa `tdd.md` → `fixed`) hoặc `rejected: <lý do>`.
 
 ### PH-01 — <tiêu đề>
-- Mức: `Chặn`   <!-- Chặn | Cảnh báo -->
-- Loại: `<lệch D-xx | quyết định ngầm | YC chưa được thiết kế | mâu thuẫn nội bộ | yêu cầu mới | mơ hồ>`
-- Vị trí: `tdd.md` § <mục>
-- Vấn đề: <...>
-- Xử lý: `chưa`   <!-- chưa | đã sửa | bác bỏ: <lý do> -->
+- Severity: `block`   <!-- block | warn -->
+- Category: `<deviates-from-decision | hidden-decision | undesigned-requirement | internal-contradiction | new-requirement | violates-repo-rule | violates-adr | ambiguous>`
+- Location: `tdd.md` § <mục>
+- Problem: <...>
+- Resolution: `open`   <!-- open | fixed | rejected: <lý do> — <ai>, <ngày> -->

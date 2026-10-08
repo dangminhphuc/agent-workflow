@@ -204,7 +204,7 @@ EOF
   cat > "$F/design-findings.md" <<'EOF'
 # Phát hiện
 
-Không có phát hiện mức Chặn.
+No blocking findings.
 EOF
 }
 
@@ -593,14 +593,22 @@ viet_spec; viet_tdd
 rm -f "$F/design-findings.md"
 ky_vong 1 "chặn khi checker LLM chưa chạy (không có file phát hiện ≠ đạt)" sh "$CHK" "$F"
 
-printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: `chưa`   <!-- chưa | đã sửa -->\n' > "$F/design-findings.md"
-ky_vong 1 "chặn phát hiện mức Chặn chưa xử lý" sh "$CHK" "$F"
+printf '### PH-01 — x\n- Severity: `block`\n- Resolution: `open`   <!-- open | fixed -->\n' > "$F/design-findings.md"
+ky_vong 1 "chặn phát hiện block chưa xử lý" sh "$CHK" "$F"
 
-printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: `bác bỏ:`\n' > "$F/design-findings.md"
+printf '### PH-01 — x\n- Severity: `block`\n- Resolution: `rejected:`\n' > "$F/design-findings.md"
 ky_vong 1 "chặn bác bỏ phát hiện mà không có lý do" sh "$CHK" "$F"
 
-printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: bác bỏ: D-01 đã nói rõ\n### PH-02 — y\n- Mức: `Cảnh báo`\n- Xử lý: chưa\n' > "$F/design-findings.md"
+printf '### PH-01 — x\n- Severity: `block`\n- Resolution: rejected: D-01 đã nói rõ\n### PH-02 — y\n- Severity: `warn`\n- Resolution: open\n' > "$F/design-findings.md"
 ky_vong 0 "bác bỏ có lý do + cảnh báo chưa xử lý thì cho qua" sh "$CHK" "$F"
+
+# Việc tạo trước khi đổi sang tiếng Anh: trường cũ (Mức / Xử lý) vẫn đọc được
+printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: `chưa`   <!-- chưa | đã sửa -->\n' > "$F/design-findings.md"
+ky_vong 1 "trường cũ: phát hiện Chặn chưa xử lý vẫn bị chặn" sh "$CHK" "$F"
+printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: bác bỏ: D-01 đã nói rõ\n### PH-02 — y\n- Mức: `Cảnh báo`\n- Xử lý: chưa\n' > "$F/design-findings.md"
+ky_vong 0 "trường cũ: bác bỏ có lý do + cảnh báo thì cho qua" sh "$CHK" "$F"
+printf '### PH-01 — x\n- Severity: `block`\n- Resolution: fixed\n- Problem: Location và Resolution: chưa rõ\n' > "$F/design-findings.md"
+ky_vong 0 "tên trường chỉ khớp ở đầu dòng, không khớp trong nội dung" sh "$CHK" "$F"
 
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
 ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
@@ -869,7 +877,7 @@ thay "$F/review.md" '- None' '### [Should fix] token cứng
 - Problem: token trong code'
 ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
 viet_review; cp "$ROOT/workflow/templates/review.md" "$TMP/review-mau.md"
-awk '/^## Lens 4/ { p = 1 } /^## Carried-over/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
+awk '/^## Lens 4/ { p = 1 } /^## Conclusion/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
 printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n\n' > "$F/review.md"; cat "$TMP/lens4-mau.md" >> "$F/review.md"
 ky_vong 1 "chặn bảng Lens 4 chép nguyên mẫu chưa điền" sh "$CHK" "$F"
 # ---- Lens 3 — Quality, Conclusion, Reviewed tree
@@ -1391,48 +1399,48 @@ cat > "$LQ/design-findings.md" <<'EOF'
 # Phát hiện
 
 ### PH-01 — cảnh báo
-- Mức: `Cảnh báo`
-- Vị trí: `tdd.md` § Flow
-- Vấn đề: mơ hồ
-- Xử lý: `chưa`
+- Severity: `warn`
+- Location: `tdd.md` § Flow
+- Problem: mơ hồ
+- Resolution: `open`
 
 ### PH-02 — chặn chưa xử lý
-- Mức: `Chặn`   <!-- Chặn | Cảnh báo -->
-- Loại: `quyết định ngầm`
-- Vị trí: `tdd.md` § Contract
-- Vấn đề: chọn gRPC mà không nêu D
-- Xử lý: `chưa`   <!-- chưa | đã sửa | bác bỏ: <lý do> -->
+- Severity: `block`   <!-- block | warn -->
+- Category: `hidden-decision`
+- Location: `tdd.md` § Contract
+- Problem: chọn gRPC mà không nêu D
+- Resolution: `open`   <!-- open | fixed | rejected: <lý do> -->
 
 ### PH-03 — đã sửa
-- Mức: `Chặn`
-- Xử lý: `đã sửa`
+- Severity: `block`
+- Resolution: `fixed`
 
 ### PH-04 — bác bỏ không lý do
-- Mức: `Chặn`
-- Xử lý: `bác bỏ:`
+- Severity: `block`
+- Resolution: `rejected:`
 
 ### PH-05 — bác bỏ có lý do
-- Mức: `Chặn`
-- Xử lý: `bác bỏ: D-02 đã chốt — PO, 2026-10-06`
+- Severity: `block`
+- Resolution: `rejected: D-02 đã chốt — PO, 2026-10-06`
 EOF
 thu_tu_all() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \([A-Z]*-[0-9]*\).*/\1/p' | tr '\n' ' '; }
 ky_vong 1 "phát hiện Chặn chưa xử lý → ĐANG CHẶN" sh "$CHK" "$LQ"
 dung "xếp: điểm mù chặn → phát hiện Chặn → chặn review → phát hiện Cảnh báo → không chặn" \
   bang "$(thu_tu_all)" "YC-005 PH-02 PH-04 YC-002 PH-01 YC-001 "
 dung "…phát hiện Chặn đánh dấu ĐANG CHẶN /aw-plan" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'PH-02.*ĐANG CHẶN /aw-plan'"
-dung "…in vị trí + vấn đề của phát hiện" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Vấn đề: chọn gRPC mà không nêu D'"
+dung "…in vị trí + vấn đề của phát hiện" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Problem: chọn gRPC mà không nêu D'"
 dung "phát hiện đã đóng chỉ nằm ở [ĐÃ XỬ LÝ], không đánh số" sh -c \
   "o=\$(sh '$CHK' '$LQ' 2>/dev/null); echo \"\$o\" | grep -q '^  - PH-03' && echo \"\$o\" | grep -q '^  - PH-05' && ! echo \"\$o\" | grep -q '^  [0-9]*\. PH-0[35]'"
 thay "$LQ/open-questions.md" '`blocking`
 - **Status:** `open`' '`non-blocking`
 - **Status:** `open`'
-thay "$LQ/design-findings.md" '`chưa`   <!-- chưa' '`đã sửa`   <!-- chưa'
-thay "$LQ/design-findings.md" '`bác bỏ:`' '`bác bỏ: trùng PH-02`'
+thay "$LQ/design-findings.md" '`open`   <!-- open' '`fixed`   <!-- open'
+thay "$LQ/design-findings.md" '`rejected:`' '`rejected: trùng PH-02`'
 ky_vong 3 "chỉ còn phát hiện Cảnh báo + điểm mù chưa chặn → chưa chặn" sh "$CHK" "$LQ"
 printf '# Open questions\n\nNo open questions.\n' > "$LQ/open-questions.md"
-printf '# Phát hiện\n\nKhông có phát hiện mức Chặn.\n' > "$LQ/design-findings.md"
+printf '# Phát hiện\n\nNo blocking findings.\n' > "$LQ/design-findings.md"
 ky_vong 0 "file phát hiện rỗng + không điểm mù → không còn việc" sh "$CHK" "$LQ"
-printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: `chưa`\n' > "$LQ/plan-findings.md"
+printf '### PH-01 — x\n- Severity: `block`\n- Resolution: `open`\n' > "$LQ/plan-findings.md"
 ky_vong 1 "checker mới (<id>-findings.md) tự được gom" sh "$CHK" "$LQ"
 rm -f "$LQ/plan-findings.md" "$LQ/design-findings.md" "$LQ/tdd.md"
 
@@ -1471,7 +1479,7 @@ for f in commands/aw-intake.md commands/aw-spec.md commands/aw-design.md command
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 dung "sinh đúng bộ file" test "$du" = 1
-dung "/aw-ship: điều kiện ra máy là aw check ship" grep -q '`aw check ship <thư-mục-feature>`' "$O/.claude/commands/aw-ship.md"
+dung "/aw-ship: điều kiện ra máy là aw check ship" grep -q '`aw check ship <dir>`' "$O/.claude/commands/aw-ship.md"
 dung "/aw-ship: ở checkout chính thì làm mục \"Ở checkout chính\", không dừng" sh -c \
   "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*\"On the main checkout\"' '$O/.claude/commands/aw-ship.md' && ! grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' '$O/.claude/commands/aw-ship.md'"
 dung "…lệnh khác vẫn dừng lại ở checkout chính" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' "$O/.claude/commands/aw-review.md"
@@ -1479,13 +1487,13 @@ dung "/aw-ship: không bắt buộc, có mẫu merge-request.md" sh -c \
   "grep -q 'Required:\*\* no' '$O/.claude/commands/aw-ship.md' && grep -q 'templates/merge-request.md' '$O/.claude/commands/aw-ship.md'"
 dung "skill liệt kê /aw-ship" grep -q '| `/aw-ship` |' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "command có bước xác định feature bằng aw feature" grep -q 'aw feature \$ARGUMENTS' "$O/.claude/commands/aw-design.md"
-dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O/.claude/commands/aw-design.md"
+dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <dir>`' "$O/.claude/commands/aw-design.md"
 dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
 dung "command design gọi checker LLM" grep -q 'design-checker' "$O/.claude/commands/aw-design.md"
 dung "lệnh /aw-clarify có bước xác định feature + chạy aw pending" sh -c \
   "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/aw-clarify.md' && grep -q 'aw pending' '$O/.claude/commands/aw-clarify.md'"
-dung "lệnh /aw-clarify hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
-  "grep -q 'AskUserQuestion' '$O/.claude/commands/aw-clarify.md' && grep -q 'Chat về câu này' '$O/.claude/commands/aw-clarify.md'"
+dung "lệnh /aw-clarify hỏi bằng AskUserQuestion, có Chat about this" sh -c \
+  "grep -q 'AskUserQuestion' '$O/.claude/commands/aw-clarify.md' && grep -q 'Chat about this' '$O/.claude/commands/aw-clarify.md'"
 dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng đầu nhãn" sh -c \
   "grep -q 'Think before asking' '$O/.claude/commands/aw-clarify.md' && grep -q 'starts with.*(Đề xuất)' '$O/.claude/commands/aw-clarify.md'"
 dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/aw-clarify.md"
@@ -1524,6 +1532,11 @@ dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -
 dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắt giữa chừng)" sh -c \
   "for f in '$O'/.claude/commands/aw-*.md; do tail -1 \"\$f\" | grep -q . || exit 1; grep -q '^## Phase contract\|^## Step 0' \"\$f\" || exit 1; done; grep -q 'Exit — MACHINE' '$O/.claude/commands/aw-implement.md'"
 dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
+dung "mọi lệnh phase kết thúc bằng Kết quả · Cần bạn" sh -c \
+  "for p in intake spec design plan implement review ship; do grep -q 'Cần bạn:' '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec có nhánh chore)" sh -c \
+  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore: .*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
+dung "…phase cuối không có lệnh tiếp theo" sh -c "! grep -q 'Tiếp theo:' '$O/.claude/commands/aw-ship.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/independent-reviewer.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/design-checker.md"
 dung "phase có quy tắc repo: lệnh gọi aw uses <phase>, subagent rà soát gọi aw uses review; intake thì không" sh -c \
@@ -1631,8 +1644,8 @@ dung "mọi lệnh có mục tham số của Cursor (<tham-số> chép nguyên v
   "for f in '$O3'/.cursor/commands/*.md; do grep -q '## Command arguments in Cursor' \"\$f\" && grep -q 'copied verbatim' \"\$f\" || exit 1; done"
 dung "/aw-design xác định feature bằng aw feature <tham-số>" grep -qF 'aw feature <tham-số>' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-intake: aw feature không tham số, input đi qua heredoc với <tham-số>" sh -c \
-  "grep -q 'Run \`aw feature\` — \*\*do not\*\* pass' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
-dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O3/.cursor/commands/aw-design.md"
+  "grep -q 'Run \`aw feature\` — \*\*without\*\* the command arguments' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
+dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <dir>`' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-design gọi subagent checker LLM design-checker" grep -q 'subagent `design-checker`' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-review bắt buộc subagent independent-reviewer" grep -q 'subagent `independent-reviewer`' "$O3/.cursor/commands/aw-review.md"
 dung "subagent: frontmatter name trùng tên file (Cursor nạp .cursor/agents/)" sh -c \
@@ -1643,8 +1656,8 @@ dung "subagent dặn chỉ gọi khi lệnh /aw-* yêu cầu" sh -c \
   "for f in '$O3'/.cursor/agents/*.md; do sed -n 3p \"\$f\" | grep -q 'Only call when an /aw-\* command instructs it' || exit 1; done"
 dung "/aw-clarify hỏi lựa chọn kiểu Cursor: tool nếu có, không thì đánh số" sh -c \
   "grep -q '## Asking choice questions in Cursor' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'AskQuestion' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'numbered' '$O3/.cursor/commands/aw-clarify.md'"
-dung "…luôn có lối tự nhập và Chat về câu này (tool không chắc tự thêm)" sh -c \
-  "grep -q 'Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Chat về câu này' '$O3/.cursor/commands/aw-clarify.md'"
+dung "…luôn có lối tự nhập và Chat about this (tool không chắc tự thêm)" sh -c \
+  "grep -q 'Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Chat about this' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…(Đề xuất) đứng đầu nhãn, phân tích trước khi hỏi" sh -c \
   "grep -q 'starts with.*(Đề xuất)' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Think before asking' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Asking choice questions' '$O3/.cursor/commands/aw-import.md' && ! grep -q 'Asking choice questions' '$TMP/out1/.claude/commands/aw-import.md'"
