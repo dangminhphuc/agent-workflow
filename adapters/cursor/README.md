@@ -30,6 +30,7 @@ repo, thân phase) **giống hệt** bản Claude Code — `tools/run-tests.sh` 
 | Phase có `requires_fresh_agent: true` | `.cursor/agents/independent-reviewer.md` — subagent ngữ cảnh riêng |
 | `llm_checker:` của phase | `.cursor/agents/<id>-checker.md` — subagent checker LLM (`design-checker`) |
 | `workflow.yaml` + tóm tắt luật | `.cursor/skills/agent-workflow/SKILL.md` |
+| Khoá `uses_<phase>` của `conventions.md` (lúc chạy) | Bước "Repo skills & subagents": `aw uses <phase>`; skill: dùng tool gọi skill nếu có, không thì đọc file (POC `cursor-agent` 2026-10: không có tool đó); subagent: giao việc |
 
 Lệnh của Cursor là markdown thường: dòng đầu `# /<id> — <mô tả>`, không frontmatter.
 

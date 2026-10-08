@@ -265,6 +265,15 @@ buoc_quy_tac_repo() {
   printf '**Repo-specific rules:** run `aw rules %s` — **ĐÃ LIỆT KÊ:** read every printed file before working (nothing printed = none) · **KHAI SAI:** stop, ask the human to fix `rules_*` in `%s`; never guess a replacement. Priority: `rules/general.md` § 7.\n\n' "$1" "$CONV_DOC"
 }
 
+# buoc_cong_cu_repo <phase> — skill / subagent của repo mà phase phải GỌI (khoá
+# uses_<phase>). Lấy LÚC CHẠY bằng `aw uses`, như quy tắc. Cách gọi là chữ riêng
+# của từng agent: hook ad_goi_uses.
+buoc_cong_cu_repo() {
+  printf '**Repo skills & subagents:** run `aw uses %s` — **ĐÃ LIỆT KÊ:** each line is `skill:<name> <file>` or `agent:<name> <file>` (nothing printed = none) · **KHAI SAI:** stop, ask the human to fix `uses_*` in `%s`; never guess a replacement · unknown command (old `aw` wrapper): tell the human to reinstall `aw`, then continue without this step.\n\n' "$1" "$CONV_DOC"
+  _hk ad_goi_uses
+  printf 'They rank like repo rules (`rules/general.md` § 7): below `spec.md`, `tdd.md`, `plan.md` and the workflow rules; never leave the phase scope because of them.\n\n'
+}
+
 # luat_tom_tat — bảy luật không được vi phạm, dùng trong file tổng của agent
 luat_tom_tat() {
   printf '1. **Hand off through files** — never take input from earlier chat.\n'
@@ -290,6 +299,7 @@ luat_tom_tat() {
 #                                  khối ngay sau cảnh báo của mọi lệnh (rỗng được)
 #   ad_hoi_lua_chon                lệnh khai choice_ui: true — cách hỏi lựa chọn
 #   ad_hoi_cong_duyet <phase>      phase khai approval_gate: true — hộp xác nhận
+#   ad_goi_uses                    cách gọi từng dòng `aw uses` in ra (skill:, agent:)
 #   ad_danh_cho                    một dòng: file dành cho agent nào; agent khác
 #                                  nạp nhầm thì phải làm gì
 #
@@ -303,7 +313,7 @@ luat_tom_tat() {
 # chữ riêng của một agent chỉ được nằm trong hook.
 # ======================================================================
 
-AD_HOOK="ad_tham_so ad_dau_lenh ad_mo_dau_lenh ad_hoi_lua_chon ad_hoi_cong_duyet ad_danh_cho"
+AD_HOOK="ad_tham_so ad_dau_lenh ad_mo_dau_lenh ad_hoi_lua_chon ad_hoi_cong_duyet ad_danh_cho ad_goi_uses"
 
 _hk() {
   if [ "${AW_COMPARE:-}" = 1 ]; then printf '<<%s>>\n' "$*"; return 0; fi
@@ -435,7 +445,7 @@ sinh_command() {
     return 0
   fi
   doc_truoc "$(fm_scalar "$src" trace_rule)"
-  case " $BL_QUY_TAC " in *" $id "*) buoc_quy_tac_repo "$id" ;; esac
+  case " $BL_QUY_TAC " in *" $id "*) buoc_quy_tac_repo "$id"; buoc_cong_cu_repo "$id" ;; esac
   printf -- '---\n'
   md_body "$src"
 }
@@ -491,6 +501,7 @@ ad_sinh() {
       printf '\nWrite `%s/review.md` per template `%s/templates/review.md`, then run `aw check review %s` and paste the real result. `templates/`, `rules/` below live in `%s/`.\n\n' "$FD" "$DOCS" "$FD" "$DOCS"
       doc_truoc
       buoc_quy_tac_repo review
+      buoc_cong_cu_repo review
       printf -- '---\n'
       md_body "$REV_SRC"
     } | ghi_file "$A/independent-reviewer.md"
@@ -597,7 +608,7 @@ ad_sinh() {
     luat_tom_tat
     printf '## Artifacts and commands\n\n'
     printf -- '- Job artifacts: `%s/<branch-name>/` (`aw feature`; outside git)\n' "$ART"
-    printf -- '- Repo conventions: `%s`; per-phase repo rules: `aw rules <phase>` (%s)\n' "$CONV_DOC" "$BL_QUY_TAC"
+    printf -- '- Repo conventions: `%s`; per-phase repo rules: `aw rules <phase>`, repo skills and subagents to invoke: `aw uses <phase>` (%s)\n' "$CONV_DOC" "$BL_QUY_TAC"
     printf -- '- Engine rules, templates, LLM checkers: `%s/`\n' "$DOCS"
     printf -- '- Machine checkers: `aw check <name> %s` — names: %s\n' "$FD" "$BL_CHECKERS"
     printf -- '- Session start: `aw ready %s` (environment ready?, next step)\n' "$FD"

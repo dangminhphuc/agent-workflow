@@ -333,7 +333,9 @@ tao_fixture() {
   printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
   # Quy tắc riêng của repo (rules_*): file phải đã commit vào base.
   printf '# quy tắc a\n' > "$R/docs/quy-tac.md"; printf '# quy tắc b\n' > "$R/docs/quy-tac-2.md"
-  g add src test docs; g commit -q -m goc
+  # Skill của team đã commit sẵn trong base (uses_*): có trong cây, không nằm trong diff của việc.
+  mkdir -p "$R/.claude/skills/go-senior"; printf -- '---\nname: go-senior\ndescription: x\n---\nthân\n' > "$R/.claude/skills/go-senior/SKILL.md"
+  g add src test docs .claude; g commit -q -m goc
   g checkout -q -b "$_br"
   viet_intake; viet_spec; viet_tdd; viet_plan; viet_review
   ghi_based_on
@@ -1157,7 +1159,7 @@ ky_vong 1 "skill trong /.claude/ bị exclude → chặn" sh "$QT" implement
 dung "…chỉ rõ git đang bỏ qua + git add -f" sh -c "sh '$QT' implement 2>&1 | grep -q 'git đang bỏ qua.*git add -f'"
 git -C "$R" -c user.name=t -c user.email=t@t add -f .claude/skills/x/SKILL.md >/dev/null 2>&1
 ky_vong 0 "…đã git add -f thì cho qua" sh "$QT" implement
-git -C "$R" rm -q --cached .claude/skills/x/SKILL.md >/dev/null 2>&1; rm -rf "$R/.claude"
+git -C "$R" rm -q --cached .claude/skills/x/SKILL.md >/dev/null 2>&1; rm -rf "$R/.claude/skills/x"
 
 for v in /etc/hosts ../x docs/../../x; do
   khai_qt implement "$v"
@@ -1194,6 +1196,101 @@ ky_vong 1 "review thiếu dòng cho quy tắc của phase khác (spec) → chặ
 dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'docs/quy-tac-2.md\": không có verdict'"
 cp "$TMP/conv-qt.bak" "$CONV"; viet_review
 ky_vong 0 "bỏ hết khoá → review như cũ" sh "$T/check-review.sh" "$F"
+
+# ---------------------------------------------------------------- skill / subagent cua repo
+echo ""
+echo "skill / subagent của repo (uses_*, aw uses)"
+US="$T/uses.sh"
+# khai_us <phase> <giá trị> — khai lại từ đầu một khoá uses_<phase>
+khai_us() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "uses_$1:" "uses_$1: $2"; }
+# skill_moi <tên> [dòng frontmatter thêm] — skill trong .claude/ (fixture exclude /.claude/ → add -f)
+skill_moi() {
+  mkdir -p "$R/.claude/skills/$1"
+  printf -- '---\nname: %s\ndescription: x\n%s---\nthân\n' "$1" "${2:+$2
+}" > "$R/.claude/skills/$1/SKILL.md"
+  g add -f ".claude/skills/$1/SKILL.md"
+}
+
+ky_vong 0 "không khai gì → aw uses ĐÃ LIỆT KÊ" sh "$US" implement
+dung "…stdout rỗng" bang "$(sh "$US" implement 2>/dev/null)" ""
+ky_vong 2 "aw uses thiếu phase → SAI THAM SỐ" sh "$US"
+ky_vong 2 "aw uses phase không có (intake) → SAI THAM SỐ" sh "$US" intake
+ky_vong 0 "aw-engine uses → đúng script" sh "$AWE" uses implement
+
+# go-senior đã commit trong base (tao_fixture).
+mkdir -p "$R/.cursor/agents"; printf -- '---\nname: db-migrator\ndescription: x\n---\nx\n' > "$R/.cursor/agents/db-migrator.md"
+g add -f .cursor/agents/db-migrator.md
+khai_us implement 'skill:go-senior agent:db-migrator skill:go-senior'
+ky_vong 0 "skill + subagent đã commit → ĐÃ LIỆT KÊ" sh "$US" implement
+dung "…in <mục> <file>, bỏ trùng; subagent tìm cả .cursor/" bang "$(sh "$US" implement 2>/dev/null | tr '\n' '|')" \
+  "skill:go-senior .claude/skills/go-senior/SKILL.md|agent:db-migrator .cursor/agents/db-migrator.md|"
+dung "…phase khác không thấy" bang "$(sh "$US" spec 2>/dev/null)" ""
+dung "…aw uses review chỉ in uses_review" bang "$(sh "$US" review 2>/dev/null)" ""
+dung "…aw rules review thêm file định nghĩa của mọi uses_*" bang "$(sh "$QT" review 2>/dev/null | tr '\n' ' ')" \
+  ".claude/skills/go-senior/SKILL.md .cursor/agents/db-migrator.md "
+dung "…aw rules implement thì không (chỉ rules_implement)" bang "$(sh "$QT" implement 2>/dev/null)" ""
+ky_vong 0 "…aw check implement cho qua" sh "$T/check-implement.sh" "$F"
+mkdir -p "$R/.claude/agents"; printf -- '---\nname: db-migrator\ndescription: x\n---\nx\n' > "$R/.claude/agents/db-migrator.md"
+g add -f .claude/agents/db-migrator.md
+dung "…có cả hai bản thì .claude/ trước" sh -c "sh '$US' implement 2>/dev/null | grep -qx 'agent:db-migrator .claude/agents/db-migrator.md'"
+
+khai_us implement 'skill:khong-co'
+for p in spec design plan implement; do
+  khai_us "$p" 'skill:khong-co'
+  ky_vong 1 "$p: skill khai mà không có trong repo → aw check $p chặn" sh "$T/check-$p.sh" "$F"
+done
+dung "…đúng lý do" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'uses \"skill:khong-co\": không có .claude/skills/khong-co/SKILL.md'"
+ky_vong 1 "…aw uses implement ra KHAI SAI" sh "$US" implement
+ky_vong 0 "…phase không khai thì không bị ảnh hưởng" sh "$T/check-spec.sh" "$F"
+ky_vong 1 "…review chặn (cổng cuối kiểm mọi khoá)" sh "$T/check-review.sh" "$F"
+khai_us implement 'agent:khong-co'
+dung "subagent không có → đúng lý do" sh -c "sh '$US' implement 2>&1 | grep -q 'không có .claude/agents/khong-co.md'"
+
+mkdir -p "$R/.claude/skills/chua-commit"; printf -- '---\nname: chua-commit\ndescription: x\n---\n' > "$R/.claude/skills/chua-commit/SKILL.md"
+khai_us implement 'skill:chua-commit'
+ky_vong 1 "skill chưa commit (bị exclude) → chặn" sh "$US" implement
+dung "…chỉ rõ git đang bỏ qua + git add -f" sh -c "sh '$US' implement 2>&1 | grep -q 'uses \"skill:chua-commit\".*git đang bỏ qua.*git add -f'"
+rm -rf "$R/.claude/skills/chua-commit"
+
+skill_moi chi-nguoi 'disable-model-invocation: true'
+khai_us implement 'skill:chi-nguoi'
+ky_vong 1 "skill disable-model-invocation: true → chặn (agent không gọi được)" sh "$US" implement
+dung "…đúng lý do" sh -c "sh '$US' implement 2>&1 | grep -q 'disable-model-invocation: true — agent không gọi được'"
+skill_moi chi-nguoi 'disable-model-invocation: false'
+ky_vong 0 "…false thì cho qua" sh "$US" implement
+printf -- '---\nname: chi-nguoi\ndescription: x\n---\ndisable-model-invocation: true\n' > "$R/.claude/skills/chi-nguoi/SKILL.md"
+ky_vong 0 "…chữ đó nằm trong thân (không phải frontmatter) thì cho qua" sh "$US" implement
+
+for v in 'skill:plugin-x:go' 'skill:Go_Senior' 'go-senior' 'mcp:atlassian' 'skill:'; do
+  khai_us implement "$v"
+  ky_vong 1 "mục sai dạng ($v) → chặn" sh "$US" implement
+done
+khai_us implement 'skill:plugin-x:go'
+dung "…tên plugin: bảo chép vào repo" sh -c "sh '$US' implement 2>&1 | grep -q 'của plugin.*chép nó vào .claude/skills/'"
+
+cp "$TMP/conv-qt.bak" "$CONV"
+thay "$CONV" 'uses_review:' 'uses_review:
+uses_implment: skill:go-senior'
+ky_vong 1 "khoá gõ nhầm (uses_implment) → aw uses chặn" sh "$US" implement
+dung "…đúng lý do" sh -c "sh '$US' implement 2>&1 | grep -q 'uses_implment.*không ứng với phase.*uses_implement'"
+ky_vong 1 "…aw rules cũng chặn (cùng conventions.md)" sh "$QT" implement
+
+# Gỡ file thêm trong khối này khỏi index: chúng lọt vào diff của việc, review sẽ chặn vì lý do khác.
+g rm -rqf --cached .claude/agents .claude/skills/chi-nguoi .cursor; rm -rf "$R/.claude/agents" "$R/.claude/skills/chi-nguoi" "$R/.cursor"
+sh "$T/check-implement.sh" "$F" >/dev/null 2>&1   # làm mới test-results.md theo cây đã dọn
+
+# Review: mỗi skill / subagent đã khai một kết luận, như file quy tắc
+khai_us implement 'skill:go-senior'
+viet_review
+ky_vong 1 "review.md thiếu kết luận cho skill đã khai → chặn" sh "$T/check-review.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'thiếu mục \"## Repo rules\"'"
+viet_review; them_muc_qt '| `.claude/skills/go-senior/SKILL.md` | pass | |'
+ky_vong 0 "có kết luận cho SKILL.md → cho qua" sh "$T/check-review.sh" "$F"
+khai_us review 'skill:go-senior'
+dung "uses_review → aw uses review in skill đó" sh -c "sh '$US' review 2>/dev/null | grep -qx 'skill:go-senior .claude/skills/go-senior/SKILL.md'"
+
+cp "$TMP/conv-qt.bak" "$CONV"; viet_review
+ky_vong 0 "bỏ hết khoá uses_* → review như cũ" sh "$T/check-review.sh" "$F"
 
 # ---------------------------------------------------------------- liet ke cau hoi
 echo ""
@@ -1429,6 +1526,11 @@ dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắ
 dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/independent-reviewer.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/design-checker.md"
+dung "phase có quy tắc repo: lệnh gọi aw uses <phase>, subagent rà soát gọi aw uses review; intake thì không" sh -c \
+  "for p in spec design plan implement; do grep -q \"aw uses \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done; grep -q 'aw uses review' '$O/.claude/agents/independent-reviewer.md' && ! grep -q 'aw uses' '$O/.claude/commands/aw-intake.md'"
+dung "…Claude Code gọi skill qua Skill tool, không đọc file; subagent qua subagent_type" sh -c \
+  "grep -q 'invoke it with the \*\*Skill tool\*\*' '$O/.claude/commands/aw-implement.md' && grep -q 'Skill(<name>)' '$O/.claude/commands/aw-implement.md' && grep -q 'subagent_type: <name>' '$O/.claude/commands/aw-implement.md'"
+dung "…lời dặn không chứa thứ Claude Code tự xử lý trong file lệnh (dòng chèn shell)" sh -c "! grep -q '!\`' '$O'/.claude/commands/aw-*.md '$O'/.claude/agents/*.md"
 
 printf '# tôi tự viết\n' > "$O/.claude/commands/aw-spec.md"
 ky_vong 3 "từ chối ghi đè file người viết tay" sh "$BUILD" --out "$O"
@@ -1552,6 +1654,8 @@ dung "…phase không khai approval_gate thì không có" sh -c \
   "for p in intake spec implement review; do ! grep -q 'Approval gate' '$O3/.cursor/commands/aw-'\$p.md || exit 1; done"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase>; intake thì không" sh -c \
   "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/aw-intake.md'"
+dung "phase có quy tắc repo: lệnh gọi aw uses <phase>; Cursor đọc file khi không có tool gọi skill" sh -c \
+  "for p in spec design plan implement; do grep -q \"aw uses \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; grep -q 'read the printed file' '$O3/.cursor/commands/aw-implement.md' && ! grep -q 'Skill tool' '$O3/.cursor/commands/aw-implement.md'"
 dung "skill liệt kê phase và lệnh tiện ích" sh -c \
   "grep -q '| \`/aw-design\` |' '$O3/.cursor/skills/agent-workflow/SKILL.md' && grep -q '/aw-clarify' '$O3/.cursor/skills/agent-workflow/SKILL.md'"
 
@@ -2870,6 +2974,8 @@ qu_loi "khoá khai hai lần" 'base_branch: main' 'base_branch: main
 base_branch: develop' 'khai lần hai'
 qu_loi "dòng thụt lề" 'covers_tag: ' '  covers_tag: ' 'không phải "khoá: giá trị"'
 qu_loi "rules_ phase lạ" 'rules_spec:' 'rules_spek:' 'khoá lạ "rules_spek"'
+qu_loi "uses_ phase lạ" 'uses_spec:' 'uses_spek:' 'khoá lạ "uses_spek"'
+qu_loi "uses_ khai skill không có" 'uses_implement:' 'uses_implement: skill:khong-co' 'uses "skill:khong-co"'
 qu_loi "khoá bắt buộc trống" 'branch_patterns: feat_* fix_* refactor_* perf_* chore_*' 'branch_patterns:' 'branch_patterns trống'
 qu_loi "mr_platform sai" 'mr_platform:' 'mr_platform: bitbucket' 'chỉ nhận github hoặc gitlab'
 qu_loi "type_by_prefix loại sai" 'perf_=perf' 'perf_=toc-do' 'loại "toc-do" không hợp lệ'
@@ -2882,8 +2988,8 @@ qu_loi "knowledge_adr_dir ngoài repo" 'knowledge_adr_dir: docs/adr' 'knowledge_
 qu_loi "knowledge_adr_dir trong .agent-workflow" 'knowledge_adr_dir: docs/adr' 'knowledge_adr_dir: .agent-workflow/adr' 'bị exclude'
 qu_loi "knowledge_rules_dir ngoài repo" 'knowledge_rules_dir: docs/product/rules' 'knowledge_rules_dir: /tmp/rules' 'phải là đường dẫn tương đối'
 qu_loi "base_branch không có" 'base_branch: main' 'base_branch: khong-co' 'không có trong repo'
-qu_loi "khối chưa đóng" 'rules_review:
-```' 'rules_review:' 'chưa đóng'
+qu_loi "khối chưa đóng" 'uses_review:
+```' 'uses_review:' 'chưa đóng'
 cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'sensitive_code:
 ' ''
 ky_vong 0 "thiếu khoá có trong mẫu → vẫn HỢP LỆ" sh "$QU"

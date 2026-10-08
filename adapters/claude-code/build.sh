@@ -48,6 +48,15 @@ ad_dau_lenh() {
 
 ad_mo_dau_lenh() { :; }
 
+# Mục `aw uses`: gọi skill qua Skill tool thì frontmatter (allowed-tools, hook),
+# thay tham số và dòng chèn lệnh shell mới có hiệu lực — đọc file thì mất hết.
+# Không viết nguyên văn biến tham số hay dấu chấm than liền backtick ở đây:
+# Claude Code xử lý chúng ngay trong file lệnh này.
+ad_goi_uses() {
+  printf -- '- `skill:<name>` → invoke it with the **Skill tool** (`skill: <name>`, `args: %s`) **before the first piece of work**, then follow what it returns. Never just read its file: that drops argument substitution, shell-injection lines, `allowed-tools` and its hooks. Skill tool denied → ask the human to approve it, or to allow `Skill(<name>)` in `.claude/settings.json`; do not fall back to reading.\n' "$FD"
+  printf -- '- `agent:<name>` → delegate to that subagent (`subagent_type: <name>`) the work its description covers, passing `%s` and the task. Do not do that work yourself instead.\n\n' "$FD"
+}
+
 # Cursor nạp .claude/ để tương thích (bật sẵn): lời dặn dưới đây gọi tool riêng
 # của Claude Code, agent khác làm theo sẽ sai mà không ai thấy.
 ad_danh_cho() {

@@ -31,7 +31,7 @@ Do each task in `plan.md` following `tdd.md`, **without leaving scope**. The typ
 - `plan.md` — the only source of work; passes `aw check plan`.
 - `tdd.md` — how (contract, data, flow, D-xx). `spec.md` — *why*, when needed.
 - `../conventions.md` — test file patterns, `covers:` tag syntax, base branch.
-- `aw rules implement` — coding style, skills, patterns. Read all **before the first task**.
+- `aw rules implement` — coding style, patterns; read all. `aw uses implement` — repo skills / subagents to invoke. Both **before the first task**.
 
 ## Steps
 

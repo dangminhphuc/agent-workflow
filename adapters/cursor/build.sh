@@ -51,6 +51,14 @@ ad_mo_dau_lenh() {
   printf -- '- **Never** run a command still containing the literal `<tham-số>` (the engine refuses: `SAI CÁCH GỌI` / `TÊN KHÔNG HỢP LỆ`).\n\n'
 }
 
+# Mục `aw uses`. POC với cursor-agent (2026-10): không có tool gọi skill theo tên,
+# agent tự đọc SKILL.md — frontmatter của skill không có hiệu lực. Bản Cursor nào
+# có tool đó thì dùng; không thì đọc file như chỉ dẫn.
+ad_goi_uses() {
+  printf -- '- `skill:<name>` → if you have a tool that invokes a skill by name, use it with `<name>`; otherwise **read the printed file** and follow it as instructions — **before the first piece of work**. Paths it mentions are relative to its own folder; its frontmatter (e.g. `allowed-tools`) does not apply.\n'
+  printf -- '- `agent:<name>` → delegate to subagent `<name>` the work its description covers, passing `%s` and the task (Cursor loads `.cursor/agents/` and `.claude/agents/`). No subagent support → read the printed file and do that work in this session following it.\n\n' "$FD"
+}
+
 ad_danh_cho() {
   printf '**Dành cho Cursor.** Cursor also loads the Claude Code copies in `.claude/`: for a same-named command, subagent or skill, use this `.cursor/` one.'
 }

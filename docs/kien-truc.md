@@ -416,6 +416,30 @@ Khoá `rules_<phase>` trong `conventions.md`, agent lấy bằng `aw rules <phas
   từng file. Tuân thủ thật là người phán.
 - Xếp **dưới** artifact: skill bảo "dọn file đụng tới" không thắng luật giữ diff trong phạm vi.
 
+### Skill, subagent gọi theo phase (`uses_<phase>`)
+
+`rules_*` chỉ cho agent **đọc**. Đọc `SKILL.md` thì agent theo được chữ, nhưng mất phần khung chạy
+skill xử lý: thay tham số, dòng chèn lệnh shell, `allowed-tools`, `hooks`. POC 2026-10 (Claude Code
+2.1.294, repo tạm, chạy `-p` không cấp quyền Bash): gọi qua Skill tool — kể cả từ trong lệnh
+`/aw-*` — cả bốn đều có hiệu lực, 4/4 lần; đọc file thì không cái nào. `cursor-agent` không có tool
+gọi skill, tự đọc file: không cái nào. Nên có khoá thứ hai, `uses_<phase>`, cho thứ phải **gọi**.
+
+- **Gọi tường minh theo lệnh phase**, không trông vào skill tự kích hoạt — vẫn đúng lý do ở trên
+  (agent khác không thấy skill; tự kích hoạt không chắc xảy ra). Cách gọi là chữ riêng của từng
+  agent (hook `ad_goi_uses`): Claude Code gọi Skill tool / `subagent_type`; Cursor đọc file khi
+  không có tool. Hook Claude không được viết nguyên văn biến tham số hay dấu chấm than liền
+  backtick: Claude Code xử lý chúng ngay trong file lệnh.
+- **Chỉ thứ nằm trong repo**: tên `skill:<tên>` / `agent:<tên>` phân giải ra file đã commit
+  (`.claude/` rồi `.cursor/`). Skill của plugin, skill cài cho cả máy: máy khác, CI, người review
+  không có, máy cũng không kiểm được — từ chối, bảo chép vào repo.
+- **Máy chặn phần chính xác**: dạng mục, file có / đã commit, skill có `disable-model-invocation:
+  true` (Skill tool từ chối hẳn — POC thấy — phase sẽ kẹt). Quyền `Skill(<tên>)` thì không kiểm:
+  có thể nằm ở cấu hình của máy; thiếu thì agent hỏi người, lời dặn bảo không quay về đọc file.
+- **Máy không biết agent đã gọi thật chưa.** Lưới cuối là review: `aw rules review` in thêm file
+  định nghĩa của mọi `uses_*`, `review.md` kết luận từng file như quy tắc.
+- **Đánh đổi**: skill cho model gọi thì model cũng tự gọi được ngoài phase — ngược "chỉ người kích
+  hoạt" (mục dưới). Đó là skill của team, team chọn; chỉ chặn mềm bằng `description`.
+
 ## Tiết kiệm ngữ cảnh của agent
 
 Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đọc. Vì vậy:

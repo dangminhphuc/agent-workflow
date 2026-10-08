@@ -11,6 +11,27 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **Skill, subagent của team gọi theo phase** — khoá mới `uses_<phase>` trong `conventions.md`
+  (`spec design plan implement review`), mục `skill:<tên>` / `agent:<tên>`, vd
+  `uses_implement: skill:go-senior agent:db-migrator`. Khác `rules_<phase>` (agent chỉ đọc file):
+  agent **gọi** skill qua cơ chế của nó, nên tham số, dòng chèn lệnh shell, `allowed-tools`, `hooks`
+  của skill có hiệu lực (Claude Code: Skill tool; Cursor không có tool gọi skill thì đọc file).
+  Hướng dẫn: README, mục "Skill, subagent của team cho từng phase".
+- Lệnh mới `aw uses <phase>` (mỗi dòng `<mục> <file>`); lệnh `/aw-spec` … `/aw-implement` và subagent
+  `independent-reviewer` gọi nó đầu phase. Adapter có hook mới `ad_goi_uses`. Cần wrapper `aw` mới.
+- Máy chặn (`aw uses`, `aw check` của phase, `aw conventions check`): mục sai dạng, tên của plugin
+  (có `:`), file không có trong `.claude/` / `.cursor/` của repo hay chưa commit, skill khai
+  `disable-model-invocation: true`, phase gõ nhầm (`uses_spek`).
+- Review: `aw rules review` in thêm file định nghĩa của mọi `uses_*`; `review.md` phải kết luận
+  từng file ở `## Repo rules`.
+
+### Đổi
+- Mẫu `conventions.md` có thêm khối `uses_*` (trống). Repo có sẵn: `aw conventions check` cảnh báo
+  thiếu khoá — chép khối đó từ mẫu, hoặc để vậy (coi như trống).
+
 ## [2026.10.21]
 
 Quy trình chỉ chạy khi người gõ lệnh. Tên script, khoá cấu hình, artifact và subagent đổi sang

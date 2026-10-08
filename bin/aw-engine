@@ -9,6 +9,7 @@
 #   aw-engine input [--skip <intake.md>] <args|->
 #   aw-engine pending <feature-dir>
 #   aw-engine rules <phase>
+#   aw-engine uses <phase>                        skill / subagent của repo mà phase phải gọi
 #   aw-engine knowledge spec|design <feature-dir> kiến thức bền phase phải đọc (luật BR-, ADR, tài liệu module)
 #   aw-engine adr promote <feature-dir> D-NN | adr check   nâng D-xx đã duyệt thành ADR; kiểm thư mục ADR
 #   aw-engine rule promote <feature-dir> YC-NNN | rule check   nâng YC đã duyệt thành luật BR-; kiểm luật
@@ -95,6 +96,7 @@ case "$LENH" in
   input)     can_repo; exec sh "$T/input.sh" "$@" ;;
   pending)   can_repo; exec sh "$T/pending.sh" "$@" ;;
   rules)     can_repo; exec sh "$T/rules.sh" "$@" ;;
+  uses)      can_repo; exec sh "$T/uses.sh" "$@" ;;
   knowledge) can_repo; exec sh "$T/knowledge.sh" "$@" ;;
   adr)       can_repo; exec sh "$T/adr.sh" "$@" ;;
   rule)      can_repo; exec sh "$T/rule.sh" "$@" ;;

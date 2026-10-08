@@ -209,6 +209,81 @@ src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module 
   hệ thống là gì, tổ chức ra sao, chạy và kiểm thế nào, vì sao code như vậy, đang ở đâu. Câu nào
   agent phải đoán là chỗ còn thiếu trong repo.
 
+### 4. Skill, subagent của team cho từng phase (tuỳ chọn)
+
+`aw` không cài skill, subagent hay plugin. Team tự đưa chúng vào repo, rồi khai trong
+`docs/agent-workflow/conventions.md` phase nào dùng gì. Có hai khoá, khác nhau ở chỗ agent **đọc**
+hay **gọi**:
+
+| Khoá | Agent làm gì | Dùng cho |
+|---|---|---|
+| `rules_<phase>` | Chạy `aw rules <phase>`, **đọc** từng file như tài liệu | Hướng dẫn viết code, `ARCHITECTURE.md`, checklist — chữ thuần |
+| `uses_<phase>` | Chạy `aw uses <phase>`, **gọi** từng skill / subagent qua cơ chế của agent | Skill dùng tham số, chèn lệnh shell, `allowed-tools`, hook; subagent cần giao việc |
+
+`<phase>` là `spec`, `design`, `plan`, `implement`, `review`.
+
+**Vì sao phải gọi mà không đọc.** Đọc `SKILL.md` như tài liệu thì agent vẫn làm theo chữ trong đó,
+nhưng mất phần Claude Code xử lý khi **chạy** skill. POC (Claude Code 2.1.294, 2026-10):
+
+| Tính năng của skill | Gọi qua Skill tool | Đọc như tài liệu |
+|---|---|---|
+| Thay tham số (`$ARGUMENTS`) | có | không |
+| Dòng chèn kết quả lệnh shell | có | không |
+| `allowed-tools` (không hỏi quyền) | có | không |
+| `hooks` trong frontmatter | có | không |
+
+Cursor (`cursor-agent`, 2026-10) không có tool gọi skill theo tên: với `uses_*`, agent Cursor vẫn
+đọc file và làm theo, frontmatter không có hiệu lực — như `rules_*`. Subagent thì Cursor gọi được.
+
+**Cách làm** — ví dụ cho phase implement dùng skill `go-senior` và subagent `db-migrator`:
+
+1. Đặt file vào repo. Cursor nạp cả `.claude/`, nên một bản dùng chung cho hai agent:
+   ```
+   .claude/skills/go-senior/SKILL.md     skill: name: go-senior (= tên thư mục)
+   .claude/agents/db-migrator.md         subagent: name: db-migrator (= tên file)
+   ```
+   - Skill **không** được có `disable-model-invocation: true` — agent sẽ không gọi được (máy chặn).
+   - Skill / subagent từ **plugin** hay cài cho cả máy (`~/.claude/skills/`): chép thư mục của nó
+     vào `.claude/skills/` của repo. Máy chỉ nhận thứ nằm trong repo — máy khác, CI, người review
+     cũng có đúng bản đó.
+2. Commit vào base. `aw init` exclude cả `/.claude/` (nơi adapter Claude Code sinh file), nên phải
+   thêm `-f`: `git add -f .claude/skills/go-senior .claude/agents/db-migrator.md`. File đã
+   commit thì sửa sau không cần `-f`; file **mới** thêm vào thư mục đó vẫn cần.
+3. Khai trong `conventions.md`, commit qua PR như mọi thay đổi quy ước:
+   ```
+   uses_implement: skill:go-senior agent:db-migrator
+   ```
+4. Claude Code: cho phép gọi skill không cần hỏi, trong `.claude/settings.json` của repo (commit
+   bằng `-f`) hoặc cấu hình của máy — không có thì mỗi lần agent gọi skill, người phải bấm duyệt:
+   ```json
+   { "permissions": { "allow": ["Skill(go-senior)"] } }
+   ```
+5. Kiểm: `aw conventions check` (khai sai thì ✗), `aw uses implement` in đúng
+   `skill:go-senior .claude/skills/go-senior/SKILL.md`.
+
+Không cần build lại adapter: lệnh `/aw-*` đọc `aw uses` lúc chạy. Sửa `conventions.md` có hiệu lực
+cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
+
+**Khi chạy phase**
+
+- Đầu phase, agent chạy `aw rules <phase>` (đọc), rồi `aw uses <phase>` và gọi từng mục trước việc
+  đầu tiên. Claude Code: skill qua Skill tool, subagent qua `subagent_type`.
+- Máy **chặn** phase (`aw check <phase>`, `aw uses` ra `KHAI SAI`) khi: mục sai dạng, tên có `:`
+  (plugin), file không có trong repo, chưa commit, hay skill khoá model; khoá gõ nhầm phase
+  (`uses_implment`).
+- Máy **không** kiểm được agent đã thật sự gọi skill hay chưa. Lưới cuối là review: `aw rules review`
+  in thêm file định nghĩa của **mọi** mục `uses_*`, và `review.md` phải có một dòng kết luận cho từng
+  file ở `## Repo rules` (thiếu là chặn) — người rà soát đối chiếu diff với skill đó.
+- Skill, subagent xếp **dưới** `spec.md`, `tdd.md`, `plan.md`: skill bảo refactor rộng thì agent vẫn
+  giữ diff trong phạm vi, ghi xung đột vào "Unplanned".
+
+**Lưu ý**
+
+- Skill cho phép model gọi thì model cũng có thể **tự** gọi nó ngoài phase, khi thấy việc khớp
+  `description`. Muốn hạn chế, viết rõ trong `description`: "Only use when an /aw-* command says so".
+- MCP server (`.mcp.json`) không khai ở đây: đó là cấu hình công cụ, agent dùng khi có sẵn.
+- Chỉ cần agent đọc chữ của skill (không dùng các tính năng ở bảng trên) thì khai đường dẫn
+  `SKILL.md` vào `rules_<phase>` là đủ.
 
 ### Lệnh
 
@@ -227,7 +302,7 @@ src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module 
 | `aw adapter build [a[,b]] [--out <dir>] [--force]` | Sinh lại adapter |
 | `aw adr promote <thư-mục-feature> D-NN` · `aw adr check` | Chép D-xx đã duyệt (`Promote: adr`) thành ADR trong repo · kiểm thư mục ADR |
 | `aw rule promote <thư-mục-feature> YC-NNN` · `aw rule check` | Chép YC đã duyệt (`Promote: BR-…`) thành luật nghiệp vụ · kiểm mọi luật `BR-` |
-| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
+| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules` · `aw uses` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
 | `aw guard pre\|post` | Hook gác ô duyệt |
 
 ### Nhiều agent trong một team
