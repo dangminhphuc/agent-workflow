@@ -91,6 +91,8 @@ Forgot `repro`/`--before` and already changed code → the script **refuses**: `
 | refactor/perf: old test edited, undeclared | Declare in "Modified existing tests", or revert |
 | `review-blocking` question still open | Ask the human to run `clarify` — never answer it yourself |
 | **New** test line with `.only(`, `.skip(`, `xit(`, `@Disabled`… (`skipped_test_regex`) | Remove it; if really needed, record the file in "Unplanned" + reason |
+| Durable knowledge may be stale: diff touches the scope of a module doc / ADR / rule file that did not change | Update that doc if the change makes it wrong; otherwise `review` gives a verdict |
+| Active `BR-` rule in the diff's scope has no `covers:` test | Add a test tagged `covers: BR-…` (warning only) |
 
 ## Output
 

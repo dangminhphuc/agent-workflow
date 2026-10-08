@@ -196,6 +196,12 @@ src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module 
 - **Luật nghiệp vụ bền** (`docs/product/rules/<miền>.md`): YC là bất biến nghiệp vụ, người duyệt spec
   kèm `- Promote: BR-<MIỀN>-NNN`, được `aw rule promote` chép thành khối `### BR-…` (nguồn có phiên
   bản). Phase spec đọc luật active qua `aw knowledge spec`; test gắn `covers: BR-…` như với YC.
+- **Chống lỗi thời**: diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi
+  → implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`
+  (`pass | updated | not applicable`).
+- **Phép thử tay** (khi đổi bố trí, hay mỗi bản phát hành): mở một phiên agent mới chỉ với repo, hỏi
+  hệ thống là gì, tổ chức ra sao, chạy và kiểm thế nào, vì sao code như vậy, đang ở đâu. Câu nào
+  agent phải đoán là chỗ còn thiếu trong repo.
 
 
 ### Lệnh
