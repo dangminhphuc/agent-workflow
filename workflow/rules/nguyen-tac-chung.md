@@ -33,6 +33,7 @@ Never delete a previous phase's artifact. Re-running a phase = **update** (the h
 - Artifact content and everything you say to the human: **Vietnamese**.
 - Identifiers (YC ids, file names, config keys): ASCII English.
 - Headings, field names, values and fixed labels from the templates (`Type`, `Risk`, `Source`, `## Out of scope`, `Blocking`, `## Lens 1`, `high`, `must`, `[INFERRED]`…): keep **exactly** as in the template — checkers match them literally.
+- **English structure — MANDATORY.** In every artifact or template you create or edit, all headings, field names, fixed keywords/labels and enum values are **English**, including ones the template does not have (e.g. a new `## Rollback plan`, not `## Kế hoạch rollback`). Vietnamese only in body text, list items and table cells under them. Never translate an existing English heading or keyword.
 - Labels printed by `aw` (`ĐẠT`, `CẦN HỎI NGƯỜI`…) are Vietnamese; match them literally.
 
 ## 6. Artifacts are written for humans — MANDATORY
