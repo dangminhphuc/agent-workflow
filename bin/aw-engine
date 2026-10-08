@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Điểm vào của engine. Wrapper `aw` (cài global) chọn đúng version rồi gọi file
-# này với AW_REPO, AW_CONFIG đã đặt — xem tools/lib/moi-truong.sh.
+# này với AW_REPO, AW_CONFIG đã đặt — xem tools/lib/env.sh.
 #
 #   aw-engine version
 #   aw-engine init [--adapter <id>[,<id>…]] [--test-cmd "<cmd>"] [--force]
@@ -34,7 +34,7 @@
 AW_ENGINE=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 export AW_ENGINE
 T="$AW_ENGINE/tools"
-. "$T/lib/bang-lenh.sh"
+. "$T/lib/commands.sh"
 
 # Giao thức giữa wrapper và engine. Wrapper cũ/mới hơn mà khác giao thức thì
 # dừng: đừng để wrapper truyền thiếu biến mà engine vẫn chạy.
@@ -42,7 +42,7 @@ AW_ENGINE_PROTOCOL=1
 
 sai() { # <mã> <thông báo...>
   _m=$1; shift
-  . "$T/lib/ket-qua.sh"
+  . "$T/lib/result.sh"
   kq_khai aw \
     "2=SAI THAM SỐ — xem thông báo phía trên" \
     "9=KHÔNG HỢP LỆ — engine không chạy được trong trạng thái này, lý do phía trên"
@@ -70,7 +70,7 @@ case "$LENH" in
     can_repo; ten=$1; shift
     # Ghim version theo việc: intake.md ghi Engine nào thì chỉ engine đó được chấm.
     if [ -f "$1/intake.md" ]; then
-      . "$T/lib/md.sh"; . "$T/lib/kiem-cheo.sh"
+      . "$T/lib/md.sh"; . "$T/lib/cross-check.sh"
       ev=$(kc_engine_dong "$1"); dang=$(cat "$AW_ENGINE/VERSION")
       if [ -n "$ev" ] && [ "$ev" != "$dang" ]; then
         sai 9 "LỖI: $1/intake.md ghim Engine $ev, đây là engine $dang — không chấm bằng version khác." \
@@ -87,41 +87,41 @@ case "$LENH" in
     _nk="${TMPDIR:-/tmp}/aw-nk.$$"
     { sh "$T/$s" "$@"; echo $? > "$_nk.ma"; } | tee "$_nk"
     _ma=$(cat "$_nk.ma" 2>/dev/null); _ma=${_ma:-1}
-    sh "$T/nhat-ky.sh" _check "$ten" "$1" "$_ma" "$_nk" >/dev/null 2>&1
+    sh "$T/journal.sh" _check "$ten" "$1" "$_ma" "$_nk" >/dev/null 2>&1
     rm -f "$_nk" "$_nk.ma"
     exit "$_ma" ;;
-  init)      can_repo; exec sh "$T/khoi-tao.sh" "$@" ;;
-  feature)   can_repo; exec sh "$T/xac-dinh-feature.sh" "$@" ;;
-  input)     can_repo; exec sh "$T/phan-loai-input.sh" "$@" ;;
-  pending)   can_repo; exec sh "$T/liet-ke-viec-cho.sh" "$@" ;;
-  rules)     can_repo; exec sh "$T/quy-tac-repo.sh" "$@" ;;
-  knowledge) can_repo; exec sh "$T/kien-thuc.sh" "$@" ;;
+  init)      can_repo; exec sh "$T/init.sh" "$@" ;;
+  feature)   can_repo; exec sh "$T/feature.sh" "$@" ;;
+  input)     can_repo; exec sh "$T/input.sh" "$@" ;;
+  pending)   can_repo; exec sh "$T/pending.sh" "$@" ;;
+  rules)     can_repo; exec sh "$T/rules.sh" "$@" ;;
+  knowledge) can_repo; exec sh "$T/knowledge.sh" "$@" ;;
   adr)       can_repo; exec sh "$T/adr.sh" "$@" ;;
-  rule)      can_repo; exec sh "$T/luat.sh" "$@" ;;
+  rule)      can_repo; exec sh "$T/rule.sh" "$@" ;;
   conventions)
     [ "${1:-}" = check ] || sai 2 "Dùng: aw conventions check"
-    shift; can_repo; exec sh "$T/kiem-tra-quy-uoc.sh" "$@" ;;
-  ready)     can_repo; exec sh "$T/san-sang.sh" "$@" ;;
+    shift; can_repo; exec sh "$T/check-conventions.sh" "$@" ;;
+  ready)     can_repo; exec sh "$T/ready.sh" "$@" ;;
   task)      can_repo; exec sh "$T/task.sh" "$@" ;;
-  journal)   can_repo; exec sh "$T/nhat-ky.sh" "$@" ;;
-  based-on)  can_repo; exec sh "$T/cap-nhat-based-on.sh" "$@" ;;
-  rename)    can_repo; exec sh "$T/doi-ten-feature.sh" "$@" ;;
-  guard)     can_repo; exec sh "$T/gac-duyet.sh" "$@" ;;
-  approval)  can_repo; exec sh "$T/cong-duyet.sh" "$@" ;;
+  journal)   can_repo; exec sh "$T/journal.sh" "$@" ;;
+  based-on)  can_repo; exec sh "$T/based-on.sh" "$@" ;;
+  rename)    can_repo; exec sh "$T/rename-feature.sh" "$@" ;;
+  guard)     can_repo; exec sh "$T/guard.sh" "$@" ;;
+  approval)  can_repo; exec sh "$T/approval.sh" "$@" ;;
   worktree)
     can_repo
     sub="${1:-}"; [ $# -gt 0 ] && shift
     case "$sub" in
-      new)    exec sh "$T/tao-worktree.sh" "$@" ;;
-      status) exec sh "$T/don-worktree.sh" "$@" ;;
-      remove) exec sh "$T/don-worktree.sh" "$@" --remove ;;
+      new)    exec sh "$T/worktree-new.sh" "$@" ;;
+      status) exec sh "$T/worktree-cleanup.sh" "$@" ;;
+      remove) exec sh "$T/worktree-cleanup.sh" "$@" --remove ;;
       *) sai 2 "Dùng: aw worktree new|status|remove …" ;;
     esac ;;
   ship)
     can_repo
     case "${1:-}" in
-      targets|create|status) exec sh "$T/gui-mr.sh" "$@" ;;
-      sweep) shift; exec sh "$T/don-viec-da-merge.sh" "$@" ;;
+      targets|create|status) exec sh "$T/ship.sh" "$@" ;;
+      sweep) shift; exec sh "$T/ship-sweep.sh" "$@" ;;
       *) sai 2 "Dùng: aw ship targets|create|status <feature-dir> … | aw ship sweep [<branch>] [--apply]" ;;
     esac ;;
   adapter)
@@ -143,7 +143,7 @@ case "$LENH" in
       esac
     done
     if [ -z "$out" ]; then can_repo; out=$AW_REPO; fi
-    exec sh "$T/sinh-adapter.sh" "$ag" "$out" $force ;;
+    exec sh "$T/adapter-build.sh" "$ag" "$out" $force ;;
   ""|-h|--help|help)
     awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
     [ -n "$LENH" ] || exit 2 ;;

@@ -8,11 +8,11 @@
 #   .claude/commands/aw-<id>.md            slash command cho tung phase
 #   .claude/commands/aw-<id>.md            lenh tien ich (commands: trong manifest) —
 #                                       import, clarify, bootstrap
-#   .claude/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
-#   .claude/agents/soat-<checker>.md    subagent cho tung checker LLM
-#   .claude/skills/quy-trinh-agent/SKILL.md
+#   .claude/agents/independent-reviewer.md   subagent ra soat (ngu canh sach)
+#   .claude/agents/<checker>-checker.md   subagent cho tung checker LLM
+#   .claude/skills/agent-workflow/SKILL.md
 #
-# Lop mong: viec sinh nam o adapters/lib/chung.sh (ad_sinh); file nay chi khai
+# Lop mong: viec sinh nam o adapters/lib/common.sh (ad_sinh); file nay chi khai
 # cac hook rieng cua Claude Code. File sinh ra nam trong .claude/ — aw init them
 # vao .git/info/exclude (xem file exclude canh build.sh), khong lot vao commit.
 #
@@ -25,12 +25,12 @@ AD_ID=claude-code
 AD_TEN="Claude Code"
 AD_GOC=.claude
 # Chuẩn định dạng Claude Code (docs.claude.com: slash commands, subagents, skills) —
-# adapters/lib/dinh-dang.sh kiểm mọi file sinh ra theo đây trước khi ghi.
+# adapters/lib/format.sh kiểm mọi file sinh ra theo đây trước khi ghi.
 AD_LENH_FM=co
 AD_LENH_KHOA="description argument-hint allowed-tools model disable-model-invocation"
 AD_AGENT_KHOA="name description tools disallowedTools model permissionMode skills hooks color"
 AD_SKILL_KHOA="name description allowed-tools model license metadata disable-model-invocation user-invocable argument-hint"
-. "$ROOT/adapters/lib/chung.sh"
+. "$ROOT/adapters/lib/common.sh"
 
 # Claude Code thay $ARGUMENTS bằng phần người gõ sau tên lệnh.
 ad_tham_so() { printf '%s' '$ARGUMENTS'; }

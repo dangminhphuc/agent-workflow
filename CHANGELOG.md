@@ -13,13 +13,45 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+Tên script, khoá cấu hình, artifact và subagent đổi sang tiếng Anh. Luật không đổi.
+Nội dung người đọc (output, nhãn `Kết quả`, mẫu artifact) vẫn tiếng Việt.
+
 ### Thêm
-- **Kiểm chuẩn định dạng của agent** khi sinh adapter (`adapters/lib/dinh-dang.sh`): mọi file
+- **Kiểm chuẩn định dạng của agent** khi sinh adapter (`adapters/lib/format.sh`): mọi file
   `aw init` / `aw adapter build` / `aw worktree new --create` sinh cho Claude Code và Cursor được kiểm
   trước khi ghi — frontmatter YAML hợp lệ, khoá thuộc chuẩn của agent, `name` khớp tên file / thư mục,
   skill theo chuẩn Agent Skills (`description` ≤ 1024 ký tự), lệnh Cursor không có frontmatter. Sai thì
   nhãn mới `SAI CHUẨN <agent>`, file sai không vào chỗ. Mỗi adapter khai chuẩn riêng (`AD_LENH_FM`,
   `AD_LENH_KHOA`, `AD_AGENT_KHOA`, `AD_SKILL_KHOA`) trong `build.sh`.
+
+### Đổi
+- **Script của engine** (`tools/`, `tools/lib/`, `adapters/lib/`): `kiem-tra-<x>.sh` →
+  `check-<phase>.sh`; `chay-thu.sh` → `run-tests.sh`; `chuan-bi-phat-hanh.sh` →
+  `prepare-release.sh`; `kiem-tra-phat-hanh.sh` → `check-release.sh`; `dong-goi.sh` →
+  `package.sh`; `khoi-tao.sh` → `init.sh`; `lib/ket-qua.sh` → `lib/result.sh`;
+  `lib/kiem-cheo.sh` → `lib/cross-check.sh`; `adapters/lib/chung.sh` → `adapters/lib/common.sh`…
+  (đầy đủ: `git log --stat`). Người dùng không bị ảnh hưởng — mọi lệnh vẫn gọi qua `aw …`.
+- **Khoá `config.sh`**: `LENH_KIEM_THU` → `TEST_CMD`, `LENH_KIEM_TRA_BAO_MAT` → `SECURITY_CMDS`,
+  `SO_LAN_DO_TOI_DA` → `MAX_RED_RUNS`, `LENH_DO_HIEU_NANG` → `PERF_CMD`, `LENH_CHUAN_BI_WT` →
+  `WORKTREE_SETUP_CMD`. **Tên cũ vẫn đọc được** (khoá mới thắng nếu khai cả hai); `aw ready`
+  nhắc đổi tên. Giữ tên cũ tới khi không còn việc nào ghim engine trước bản này.
+- Lệnh đo hiệu năng in `RESULT: <số> <đơn vị>` (`KET_QUA:` vẫn nhận).
+- Biến môi trường `AW_THU_MUC_WORKTREE` → `AW_WORKTREE_DIR`.
+- **Artifact của việc mới**: `ket-qua-kiem-thu.md` → `test-results.md`, `ket-qua-bao-mat.md` →
+  `security-results.md`, `ket-qua-task.md` → `task-results.md`, `tai-hien.md` → `repro.md`,
+  `do-hieu-nang.md` → `perf.md`, `mo-ta-mr.md` → `mr-description.md`,
+  `phat-hien-thiet-ke.md` → `design-findings.md` (mẫu chung `<checker>-findings.md`). Việc đang
+  làm ghim engine cũ nên giữ tên cũ.
+- **Subagent, skill, file luật**: `ra-soat-doc-lap` → `independent-reviewer`, `soat-thiet-ke` →
+  `design-checker` (mẫu `<id>-checker`), skill `quy-trinh-agent` → `agent-workflow`,
+  `rules/nguyen-tac-chung.md` → `rules/general.md`, `rules/truy-vet-nguon.md` →
+  `rules/source-tracing.md`, `checkers/thiet-ke.md` → `checkers/design.md`; frontmatter checker
+  `quy_tac` → `repo_rules`.
+- `aw adapter build` tự thêm mẫu exclude còn thiếu (skill Cursor đổi đường dẫn) và dọn skill
+  `quy-trinh-agent` cũ do engine sinh ra.
+- File mới từ 2026.10.18–2026.10.20: `kien-thuc.sh` → `knowledge.sh`, `luat.sh` → `rule.sh` (cả `tools/lib/`), mẫu
+  `templates/repo-dich/` → `templates/target-repo/` (`AGENTS.md`, `Makefile`). Lệnh `aw knowledge`,
+  `aw rule` không đổi.
 
 ### Sửa
 - Lệnh Claude Code: `argument-hint` đặt trong nháy kép — giá trị mở bằng `[` (vd `[tên-feature]`) YAML

@@ -26,7 +26,7 @@ trace_rule: true
 
 ## Goal
 
-Turn business requirements into a **verifiable** spec, and expose where sources are unclear or contradict each other. **Never create requirements** — only translate and sharpen existing ones. Source-label rule: `rules/truy-vet-nguon.md`.
+Turn business requirements into a **verifiable** spec, and expose where sources are unclear or contradict each other. **Never create requirements** — only translate and sharpen existing ones. Source-label rule: `rules/source-tracing.md`.
 
 ## Input
 
@@ -73,7 +73,7 @@ Refactoring an area with no protecting test → checker blocks. Write the tests 
    Source says → YC. Touched but source silent → `[OPEN-QUESTION]` (usually `review-blocking`). Not touched → skip. Never invent numbers.
 5. **Context:** user roles per the source in `## Context`. Ambiguous domain terms ("kỳ", "hạch toán") → `## Glossary` (optional), each with its source.
 6. **Label the source** of every YC.
-7. **Split out open questions:** unclear in the source → `[OPEN-QUESTION]` + entry in `open-questions.md` with the temporary assumption, "if wrong, redo what", and a proposed `Blocking` (levels table in `rules/truy-vet-nguon.md`). Only `blocking` stops the flow now; the `clarify` command walks the human through answers.
+7. **Split out open questions:** unclear in the source → `[OPEN-QUESTION]` + entry in `open-questions.md` with the temporary assumption, "if wrong, redo what", and a proposed `Blocking` (levels table in `rules/source-tracing.md`). Only `blocking` stops the flow now; the `clarify` command walks the human through answers.
 8. **Check conflicts** between sources in `## Source conflicts`. The "Resolution" column may **only** point to an open question (`open-questions.md § YC-NNN`) or a settled source (PO's `[JIRA]` comment, newer `[CONFLUENCE]` page…). None → "Không phát hiện mâu thuẫn."
 9. **`## Out of scope`:** list plainly what is *not* done — stops later phases overreaching. None → "Không có."
 10. **`## Constraints & dependencies`:** external systems, legal/accounting rules, deadlines, other teams' work — with sources. None → "Không có ràng buộc hay phụ thuộc ngoài."
@@ -99,7 +99,7 @@ Refactoring an area with no protecting test → checker blocks. Write the tests 
 
 ## Exit conditions
 
-**Machine:** `aw check spec` → `[x] ĐẠT` (checklist: `rules/truy-vet-nguon.md`).
+**Machine:** `aw check spec` → `[x] ĐẠT` (checklist: `rules/source-tracing.md`).
 
 **Human:**
 - Reviews YCs and "Out of scope"; approves `Blocking` and `Risk`.

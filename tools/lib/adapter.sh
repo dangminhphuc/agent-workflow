@@ -52,3 +52,22 @@ al_exclude() {
     [ -f "$1/adapters/$_i/exclude" ] && grep -v '^#' "$1/adapters/$_i/exclude"
   done | awk 'NF && !thay[$0]++'
 }
+
+# al_ghi_exclude <engine> <danh-sách> <thư-mục-trong-repo> -> thêm vào .git/info/exclude
+# (của git common dir) /.agent-workflow/ và mẫu của mọi adapter còn thiếu; in các mẫu
+# vừa thêm, cách nhau dấu cách. Không phải repo git: không làm gì. aw init và
+# aw adapter build đều gọi — adapter đổi đường dẫn sinh ra (vd skill đổi tên) thì
+# bản clone đã init từ trước vẫn không để lọt file sinh ra vào git status.
+al_ghi_exclude() {
+  _gc=$(git -C "$3" rev-parse --git-common-dir 2>/dev/null) || return 0
+  case "$_gc" in /*) ;; *) _gc="$(CDPATH= cd -- "$3" && pwd)/$_gc" ;; esac
+  _ex="$_gc/info/exclude"; mkdir -p "$_gc/info"
+  _them=""
+  for _p in /.agent-workflow/ $(al_exclude "$1" "$2"); do
+    grep -qxF "$_p" "$_ex" 2>/dev/null && continue
+    grep -qxF '# agent-workflow — aw init: file sinh ra / cục bộ, không commit' "$_ex" 2>/dev/null ||
+      printf '\n# agent-workflow — aw init: file sinh ra / cục bộ, không commit\n' >> "$_ex"
+    printf '%s\n' "$_p" >> "$_ex"; _them="$_them $_p"
+  done
+  printf '%s' "${_them# }"
+}

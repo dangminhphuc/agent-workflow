@@ -11,15 +11,15 @@ inputs:
   - open-questions.md
   - tdd.md
   - review.md
-  - ket-qua-kiem-thu.md
-  - ket-qua-bao-mat.md
-  - tai-hien.md (bugfix)
-  - do-hieu-nang.md (perf)
+  - test-results.md
+  - security-results.md
+  - repro.md (bugfix)
+  - perf.md (perf)
   - diff
 outputs:
   - merge-request.md
   - ship.md (written by aw ship create — never edit by hand)
-  - mo-ta-mr.md (written by aw ship create when the description could not be sent — for the human to paste)
+  - mr-description.md (written by aw ship create when the description could not be sent — for the human to paste)
 exit_machine:
   - aw check ship
 exit_human:
@@ -75,11 +75,11 @@ Creating an MR is **outward-facing**. Show the human: source → target, title, 
 aw ship create <thư-mục-feature> --target <human-chosen-branch> [--draft]
 ```
 
-The engine holds no token; it uses the first route that works: (1) logged-in `gh`/`glab` — sends everything; (2) GitLab without `glab` — push options, title only, description saved to `<thư-mục-feature>/mo-ta-mr.md` for the human to paste; (3) prints a prefilled MR link. Never install `gh`/`glab`, ask for tokens, or log in for the human.
+The engine holds no token; it uses the first route that works: (1) logged-in `gh`/`glab` — sends everything; (2) GitLab without `glab` — push options, title only, description saved to `<thư-mục-feature>/mr-description.md` for the human to paste; (3) prints a prefilled MR link. Never install `gh`/`glab`, ask for tokens, or log in for the human.
 
 | Result `[x]` | Do |
 |---|---|
-| `ĐÃ TẠO MR` | Give the URL (stdout). "Mô tả CHƯA gửi" → give the content of `mo-ta-mr.md` |
+| `ĐÃ TẠO MR` | Give the URL (stdout). "Mô tả CHƯA gửi" → give the content of `mr-description.md` |
 | `ĐÃ CÓ MR ĐANG MỞ` | Nothing new created; new commits pushed to the existing MR. Give its URL. The engine never overwrites the MR description |
 | `CHƯA ĐỦ ĐIỀU KIỆN` | `aw check ship` fails or uncommitted changes remain. Never commit unknown changes (that is `/aw-implement`'s job) |
 | `KÉO THEO COMMIT NGOÀI VIỆC` | Print the commit list. Human decides: other target, new branch + cherry-pick, or accept — add `--allow-extra-commits` only when the human says accept |

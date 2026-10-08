@@ -13,7 +13,7 @@ Nguồn khi chạy theo quy trình (thư mục .agent-workflow/<branch>/):
   Changes          ← tdd.md (D-xx đã duyệt), diff
   External Impact  ← review.md Lens 2
   Out of Scope     ← spec.md "Out of scope"
-  Testing          ← ket-qua-kiem-thu.md, tai-hien.md (bugfix), do-hieu-nang.md (perf)
+  Testing          ← test-results.md, repro.md (bugfix), perf.md (perf)
   Open Questions   ← open-questions.md
 Chỉ chép điều có trong artifact hoặc diff. Điều chưa chắc: ghi vào "Open
 Questions", không viết như sự thật.

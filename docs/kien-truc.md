@@ -17,7 +17,7 @@ tài liệu / lời người ─▶ 00-intake ─▶ intake.md
                                    ▼                       ▼
                                 03-plan ◀──────────────────┘
                                    ▼
-                                plan.md ─▶ 04-implement ─▶ diff + ket-qua-*.md
+                                plan.md ─▶ 04-implement ─▶ diff + *-results.md
                                                               ▼
                                                    05-review ─▶ review.md ─▶ [06-ship]
 ```
@@ -65,7 +65,7 @@ Mẫu chung cho bằng chứng theo loại: **máy tự chạy và tự ghi**, *
 
 | Loại | Máy chặn | Người phán | Vì sao không để máy phán |
 |---|---|---|---|
-| `bugfix` | `tai-hien.md` ghi lúc diff chỉ đụng file test, `ĐỎ` | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
+| `bugfix` | `repro.md` ghi lúc diff chỉ đụng file test, `ĐỎ` | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
 | `refactor` | Xoá test cũ; sửa test cũ không khai; YC preserve không có test trên nhánh gốc | Diff test cũ chỉ đổi import | "Chỉ đổi import" phụ thuộc ngôn ngữ, hay báo nhầm |
 | `perf` | Thiếu số đo trước/sau | Đạt mục tiêu chưa | Số đo dao động; chặn theo ngưỡng sẽ nhầm |
 | `chore` | Đụng `production_code`; dependency không khai; khai `major` | Mức phiên bản đúng | Cú pháp phiên bản mỗi hệ sinh thái mỗi khác |
@@ -111,12 +111,12 @@ Bộ cài cũ chép quy trình vào repo đích và bắt commit vào nhánh g�
 |---|---|
 | `bin/aw` | Tìm repo; chọn version (dòng `Engine:` hoặc file `version`); tải, kiểm sha256; chuyển lệnh kèm `AW_REPO`, `AW_CONFIG`, `AW_ENGINE` |
 | `bin/aw-engine` | Điểm vào engine |
-| `tools/lib/moi-truong.sh` | Tool đọc đường dẫn **chỉ** từ biến môi trường; không tự suy từ vị trí của nó |
+| `tools/lib/env.sh` | Tool đọc đường dẫn **chỉ** từ biến môi trường; không tự suy từ vị trí của nó |
 | `checksums` | sha256 ghim lần đầu. Lần sau phải khớp sha đã ghim, không tin lại `SHA256SUMS` (cùng nguồn với tarball, chỉ bắt file hỏng, không bắt nguồn bị tráo) |
 
 - Kênh tải: Release của repo này, file `agent-workflow-V.tar.gz` do workflow đóng gói — không dùng
   tarball GitHub tự sinh (byte không được hứa giữ nguyên).
-- **Version đặt trong PR** (`tools/chuan-bi-phat-hanh.sh`), không để CI tự tăng (bot phải commit
+- **Version đặt trong PR** (`tools/prepare-release.sh`), không để CI tự tăng (bot phải commit
   thẳng vào `main`, vượt bảo vệ nhánh). Merge chỉ *phát hành*: workflow `release` tạo tag + Release
   trong cùng job (tag tạo bằng `GITHUB_TOKEN` không kích được workflow khác). Hai PR cùng số: CI
   của PR chặn PR merge sau.
@@ -167,7 +167,7 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
 
 ### Điểm vào và lệnh kiểm của repo đích: khuyến nghị, không ép
 
-- **Mẫu, không checker.** `templates/repo-dich/AGENTS.md`, `Makefile`; `aw init` chỉ nhắc khi repo
+- **Mẫu, không checker.** `templates/target-repo/AGENTS.md`, `Makefile`; `aw init` chỉ nhắc khi repo
   chưa có `AGENTS.md` lẫn `CLAUDE.md`. Máy kiểm được file *có*, không kiểm được nó trả lời đúng năm
   câu của phiên mới — chặn theo "có file" chỉ sinh file rỗng cho qua cổng. Mỗi repo cũng đã có bố
   trí riêng; engine ép một bố trí là đòi sửa repo để hợp công cụ.
@@ -175,7 +175,7 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
   tài liệu lệch code còn tệ hơn không có. Nó đọc vào mọi phiên, nên mỗi dòng tốn ngữ cảnh mọi lần.
 - **Lệnh kiểm nằm trong git (`make test`), `config.sh` chỉ trỏ tới.** Chép lệnh vào `config.sh`
   (ngoài git, mỗi máy một bản) thì local và CI lệch dần: local xanh mà pipeline chặn. Target mẫu
-  chưa khai thoát mã 1 — "quên khai" không bao giờ thành xanh, đúng như `LENH_KIEM_THU` trống.
+  chưa khai thoát mã 1 — "quên khai" không bao giờ thành xanh, đúng như `TEST_CMD` trống.
 - `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn; cách nạp theo phạm vi diff
   là bước sau.
 
@@ -283,7 +283,7 @@ phải để lại dấu trong file: ô `- [ ] **Approved by human**` ở spec v
 trong tài liệu thì agent chạy tiếp trên spec chưa ai đọc.
 
 Checkbox chứ không phải chữ gõ tay (gõ sai một dấu là checker không nhận). Vì LLM quen tick
-checklist, ô duyệt có thêm hai lớp (`tools/lib/duyet.sh`):
+checklist, ô duyệt có thêm hai lớp (`tools/lib/approval-tick.sh`):
 
 - **Dấu duyệt**: lần đầu thấy tick, máy ghi hash nội dung `<!-- approval-hash: … -->`. Nội dung đổi
   mà tick còn → chặn. Hash bỏ qua dòng trống, chú thích, `- Critique (agent):` (Mode 2 phản biện
@@ -356,20 +356,20 @@ sửa theo câu trả lời thì bỏ tick, người tick lại — máy không 
 
 **Gộp ở chỗ người nhìn, không gộp chỗ lưu**: điểm mù và phát hiện LLM ở file riêng (mỗi file một
 bên ghi, checker LLM ghi đè cả file, `based_on` băm cả file — chung file thì checker ghi phát hiện
-làm `tdd.md` lỗi thời). Checker LLM mới chỉ cần ghi `phat-hien-<id>.md` đúng mẫu là `aw pending` gom.
+làm `tdd.md` lỗi thời). Checker LLM mới chỉ cần ghi `<id>-findings.md` đúng mẫu là `aw pending` gom.
 
 ## Bằng chứng do máy ghi
 
-- **Checker tự chạy test** và ghi `ket-qua-kiem-thu.md`: để agent dán kết quả thì chỉ kiểm được
+- **Checker tự chạy test** và ghi `test-results.md`: để agent dán kết quả thì chỉ kiểm được
   *cái agent nói*.
 - **Trạng thái task do máy giữ**: chỉ `aw task done` lên `[x]` — chạy lệnh của `Verify`, ghi
-  `ket-qua-task.md`, xanh mới đổi. Chặn `[x]` thiếu bằng chứng hoặc bằng chứng của lệnh `Verify`
+  `task-results.md`, xanh mới đổi. Chặn `[x]` thiếu bằng chứng hoặc bằng chứng của lệnh `Verify`
   cũ. **WIP = 1** (`start` từ chối khi đã có `[~]`). Thủ công thì `--manual "<bằng chứng>"`.
-  **Đỏ liên tiếp có trần** (`SO_LAN_DO_TOI_DA`) — điều kiện dừng của vòng lặp, không thì thử tới
+  **Đỏ liên tiếp có trần** (`MAX_RED_RUNS`) — điều kiện dừng của vòng lặp, không thì thử tới
   hết token. Vòng lặp nằm ở lệnh `aw`, nên agent nào chạy shell cũng lặp được.
 - **`aw ready`** đầu phiên: test xanh trên code chưa sửa. Base đỏ mà vẫn làm thì không phân biệt
   lỗi mình với lỗi có sẵn, và agent hay "sửa" test có sẵn. Nó cũng in bước tiếp.
-- **Quét bảo mật chạy ở `implement`** bằng đúng lệnh CI (`LENH_KIEM_TRA_BAO_MAT`, nhóm `secret |
+- **Quét bảo mật chạy ở `implement`** bằng đúng lệnh CI (`SECURITY_CMDS`, nhóm `secret |
   sast | sca | other`): lỗi quét ra là việc sửa code; review bị cấm sửa code, và quét chậm. Review
   chỉ kiểm kết quả xanh và **còn mới**. Thiếu nhóm chỉ cảnh báo; riêng chore đụng dependency phải
   có `sca` xanh.
@@ -381,7 +381,7 @@ làm `tdd.md` lỗi thời). Checker LLM mới chỉ cần ghi `phat-hien-<id>.m
 ## Review
 
 - **Phiên chính chỉ bàn giao**: lệnh `/aw-review` không nạp mô tả phase — subagent ngữ cảnh sạch
-  (`ra-soat-doc-lap`) mang mô tả đầy đủ và làm việc. Nạp vào phiên chính chỉ tốn ngữ cảnh.
+  (`independent-reviewer`) mang mô tả đầy đủ và làm việc. Nạp vào phiên chính chỉ tốn ngữ cảnh.
 - **Lens 4 — bảng bảy hạng mục cố định**: máy quét bắt *mẫu*, người rà bắt *ý đồ* (thiếu kiểm
   quyền, log lộ PII, IDOR). Danh sách mở thì "không thấy gì" và "không xét" trông như nhau. Máy
   kiểm hình dạng (đủ dòng, verdict hợp lệ, có vị trí/lý do), không biết `pass` có đúng không.
@@ -427,9 +427,9 @@ Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đ
   tiếng Việt: `name`/`summary`, mẫu artifact, output và nhãn `Kết quả` của `aw`, câu hỏi/lựa chọn
   hiện cho người; agent được dặn nói và viết artifact bằng tiếng Việt. Nhãn của `aw` được nhắc
   nguyên văn trong chữ tiếng Anh như hằng số.
-- Mỗi luật một chỗ: bảng mức chặn ở `rules/truy-vet-nguon.md`; hợp đồng vào/ra do adapter dựng từ
+- Mỗi luật một chỗ: bảng mức chặn ở `rules/source-tracing.md`; hợp đồng vào/ra do adapter dựng từ
   frontmatter, thân phase không lặp lại.
-- `rules/truy-vet-nguon.md` chỉ nạp cho lệnh khai `trace_rule: true`; `conventions.md` để "tra khi
+- `rules/source-tracing.md` chỉ nạp cho lệnh khai `trace_rule: true`; `conventions.md` để "tra khi
   cần", không bắt đọc hết.
 - Danh sách điều máy kiểm nằm trong checker và in ra khi vi phạm; file phase chỉ tóm tắt.
 
@@ -447,15 +447,15 @@ when: ...                   # chỉ khi required: false
 status: chưa hiện thực      # có mặt = adapter bỏ qua
 inputs: [intake.md, confluence, jira, file]
 outputs: [spec.md, open-questions.md]
-exit_machine: [aw check spec]          # phải là "aw check <tên>" có trong tools/lib/bang-lenh.sh
+exit_machine: [aw check spec]          # phải là "aw check <tên>" có trong tools/lib/commands.sh
 exit_human: [...]
 needs_clean_context: true   # chạy được từ phiên trắng
 requires_fresh_agent: true  # chạy qua subagent ngữ cảnh sạch; lệnh chính chỉ bàn giao
-llm_checker: workflow/checkers/thiet-ke.md
+llm_checker: workflow/checkers/design.md
 arguments: input            # tham số là input, không phải tên feature (00-intake)
 approval_gate: true         # mở đầu bằng cổng duyệt (02-design, 03-plan)
 runs_on_main_checkout: true # có việc ở checkout chính (06-ship)
-trace_rule: true            # lệnh bảo đọc rules/truy-vet-nguon.md
+trace_rule: true            # lệnh bảo đọc rules/source-tracing.md
 ---
 ```
 
@@ -466,25 +466,25 @@ kiện ra**. Mục **Cấm** chặn thất bại đặc trưng nhất: `01-spec`
 Lệnh tiện ích (`commands:` trong manifest — `import`, `clarify`, `bootstrap`): `id`, `name`, `summary`,
 tuỳ chọn `argument_hint`, `arguments: mixed`, `choice_ui: true`, `trace_rule: true`,
 `runs_on_main_checkout: true`. Checker LLM
-(`workflow/checkers/*.md`): `id`, `summary`, `inputs`, `output`, `quy_tac`; adapter biến thành
-subagent `soat-<id>`.
+(`workflow/checkers/*.md`): `id`, `summary`, `inputs`, `output`, `repo_rules`; adapter biến thành
+subagent `<id>-checker`.
 
 ## Hiện thực các cơ chế
 
 | Cơ chế | Nằm ở | Ghi chú |
 |---|---|---|
-| Xác định feature | `tools/xac-dinh-feature.sh` | Gốc worktree từ `AW_REPO` |
+| Xác định feature | `tools/feature.sh` | Gốc worktree từ `AW_REPO` |
 | Đọc `conventions.md` | `conv_get` (`tools/lib/md.sh`) | Chỉ đọc khối ` ```conventions ` |
 | Quy ước hiệu lực | `qu_hieu_luc` (`tools/lib/md.sh`); `mt_dat`, `kc_conventions` gọi | Repo (điểm rẽ khỏi base) + khoá máy của bản clone |
-| Kiểm `conventions.md` | `tools/kiem-tra-quy-uoc.sh` | Khoá biết = khoá trong mẫu + `rules_<phase>`; `aw ready` gọi |
-| Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` |
-| Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm; `implement` gọi là cảnh báo, `review` gọi là lỗi |
+| Kiểm `conventions.md` | `tools/check-conventions.sh` | Khoá biết = khoá trong mẫu + `rules_<phase>`; `aw ready` gọi |
+| Hash `based_on` | `tools/based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` |
+| Kiểm chéo | `tools/lib/cross-check.sh` | Một hàm; `implement` gọi là cảnh báo, `review` gọi là lỗi |
 | Mức chặn điểm mù | `kc_diem_mu_mo` | design (chore: plan) chặn `blocking`; implement cảnh báo, review chặn cả `review-blocking` |
-| Hàng đợi việc chờ người | `tools/liet-ke-viec-cho.sh` | Chỉ đọc |
-| Entry check | Đầu mỗi `kiem-tra-*.sh` | `ra-soat → ke-hoach → thiet-ke → truy-vet` |
+| Hàng đợi việc chờ người | `tools/pending.sh` | Chỉ đọc |
+| Entry check | Đầu mỗi `check-*.sh` | `review → plan → design → spec` |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | |
-| Tên checker, phase có quy tắc | `tools/lib/bang-lenh.sh` | Một bảng cho `aw check` và cho adapter |
-| Một awk đọc nhiều file | mọi `kiem-tra-*.sh` | Dùng `FILENAME == ARGV[i]`, **không** đếm `FNR==1` (file 0 byte làm lệch) |
+| Tên checker, phase có quy tắc | `tools/lib/commands.sh` | Một bảng cho `aw check` và cho adapter |
+| Một awk đọc nhiều file | mọi `check-*.sh` | Dùng `FILENAME == ARGV[i]`, **không** đếm `FNR==1` (file 0 byte làm lệch) |
 
 ## Tập con YAML
 
@@ -495,21 +495,21 @@ kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu h�
 ## Cách thêm một phase
 
 1. `workflow/phases/NN-<id>.md` với frontmatter đầy đủ; thêm vào `phases:` của `workflow.yaml`.
-2. Có `exit_machine` → script trong `tools/`, thêm tên vào `tools/lib/bang-lenh.sh`.
+2. Có `exit_machine` → script trong `tools/`, thêm tên vào `tools/lib/commands.sh`.
 3. Artifact mới → mẫu trong `workflow/templates/`.
-4. Ca kiểm trong `tools/chay-thu.sh`.
+4. Ca kiểm trong `tools/run-tests.sh`.
 5. Thử: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code` (VERSION khớp repo đích).
 
 Không phase nào khác phải sửa — không phase nào biết về phase sau nó (vì vậy `06-ship` thêm được sau).
 
 ## Cách thêm một adapter
 
-Xem `adapters/README.md`. Việc sinh ở `adapters/lib/chung.sh`; adapter chỉ khai hook (chữ riêng
+Xem `adapters/README.md`. Việc sinh ở `adapters/lib/common.sh`; adapter chỉ khai hook (chữ riêng
 của agent). Test đối chiếu đòi output mọi adapter giống hệt nhau khi hook thay bằng tên. Khả năng
 nào không dịch được sang agent đích (subagent, hook, MCP) thì **ghi rõ trong output** người phải
 tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã mất ràng buộc.
 
-File sinh ra còn phải đúng **định dạng** agent đọc (`adapters/lib/dinh-dang.sh`), và phép kiểm này
+File sinh ra còn phải đúng **định dạng** agent đọc (`adapters/lib/format.sh`), và phép kiểm này
 **chặn** chứ không cảnh báo: nó chính xác (YAML, khoá, tên — không phán đoán), còn lỗi thì im lặng ở
 phía agent — frontmatter hỏng hay `name` lệch tên file làm lệnh biến khỏi menu, subagent không gọi
 được, không ai được báo. Test đối chiếu không bắt được loại lỗi này vì nó thay hook bằng tên; chuẩn
@@ -535,8 +535,8 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 10. **Artifact không đi theo PR** — reviewer chỉ thấy code. D-xx người chọn nâng thì đi theo PR dưới
     dạng ADR; phần còn lại của `tdd.md` thì không.
 11. **Ghim sha256 là tin lần đầu (TOFU)**; repo cấu hình chung của team thu hẹp, không xoá rủi ro.
-12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `LENH_KIEM_THU`.
-13. **File máy ghi giả được** (`ket-qua-task.md`, `ket-qua-kiem-thu.md`): chặn việc *quên*, không chặn
+12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `TEST_CMD`.
+13. **File máy ghi giả được** (`task-results.md`, `test-results.md`): chặn việc *quên*, không chặn
     gian lận có chủ ý; review ngữ cảnh sạch là lớp sau.
 14. **Nhật ký harness chỉ ở từng máy**; `Category` tự do có thể đếm hụt.
 15. **Việc không thấy quy ước mới của chính nó** — đúng ý đồ, nhưng việc sửa `conventions.md` để

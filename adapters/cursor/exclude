@@ -2,4 +2,4 @@
 # Không exclude cả /.cursor/: team hay commit .cursor/rules, .cursor/hooks.json, .cursor/mcp.json.
 /.cursor/commands/
 /.cursor/agents/
-/.cursor/skills/quy-trinh-agent/
+/.cursor/skills/agent-workflow/

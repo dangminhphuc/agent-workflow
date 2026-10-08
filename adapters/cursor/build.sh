@@ -6,16 +6,16 @@
 #
 # Sinh ra trong repo dich:
 #   .cursor/commands/aw-<id>.md            lenh / cho tung phase va lenh tien ich
-#   .cursor/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
-#   .cursor/agents/soat-<checker>.md    subagent cho tung checker LLM
-#   .cursor/skills/quy-trinh-agent/SKILL.md
+#   .cursor/agents/independent-reviewer.md   subagent ra soat (ngu canh sach)
+#   .cursor/agents/<checker>-checker.md   subagent cho tung checker LLM
+#   .cursor/skills/agent-workflow/SKILL.md
 #
 # Ten lenh / subagent / skill TRUNG voi adapter Claude Code: Cursor nap ca .claude/
 # (che do tuong thich, bat san) va uu tien .cursor/ khi trung ten — ban nay che
 # ban cua Claude Code. File cua Claude Code con dong "Danh cho Claude Code" de
 # Cursor nap nham thi dung.
 #
-# Lop mong: viec sinh nam o adapters/lib/chung.sh (ad_sinh); file nay chi khai
+# Lop mong: viec sinh nam o adapters/lib/common.sh (ad_sinh); file nay chi khai
 # cac hook rieng cua Cursor. KHONG tu ghi .cursor/hooks.json — xem README.md.
 
 set -e
@@ -24,12 +24,12 @@ AD_ID=cursor
 AD_TEN=Cursor
 AD_GOC=.cursor
 # Chuẩn định dạng Cursor (cursor.com/docs: commands, subagents, skills) — lệnh là
-# markdown thường; adapters/lib/dinh-dang.sh kiểm mọi file sinh ra trước khi ghi.
+# markdown thường; adapters/lib/format.sh kiểm mọi file sinh ra trước khi ghi.
 AD_LENH_FM=khong
 AD_LENH_KHOA=""
 AD_AGENT_KHOA="name description model readonly is_background"
 AD_SKILL_KHOA="name description license compatibility metadata allowed-tools disable-model-invocation"
-. "$ROOT/adapters/lib/chung.sh"
+. "$ROOT/adapters/lib/common.sh"
 
 # Cursor không thay biến trong file lệnh: phần người gõ sau tên lệnh đi kèm tin
 # nhắn. Lời dặn gọi nó là <tham-số>; ad_mo_dau_lenh nói cách chép. Engine từ chối

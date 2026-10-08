@@ -15,7 +15,7 @@ Thư mục `adapters/<id>/` gồm:
 | `exclude` | Đường dẫn adapter sinh ra, mỗi dòng một mẫu (`/.claude/`). `aw init` thêm vào `.git/info/exclude` |
 | `README.md` | Biên dịch ra gì, cái gì không portable |
 
-**Toàn bộ việc sinh nằm trong `adapters/lib/chung.sh` (`ad_sinh`)**: lệnh cho từng
+**Toàn bộ việc sinh nằm trong `adapters/lib/common.sh` (`ad_sinh`)**: lệnh cho từng
 phase (Bước 0 xác định feature, phân loại input, cổng duyệt, hợp đồng phase, quy
 tắc repo, thân phase), lệnh tiện ích, subagent rà soát, subagent checker LLM,
 skill tổng; kiểm `exit_machine` là `aw check <tên>` có thật; không ghi đè file
@@ -40,7 +40,7 @@ Thiếu hook bắt buộc → build từ chối (`ĐỊNH NGHĨA QUY TRÌNH LỖ
 
 ### Chuẩn định dạng của agent
 
-Mọi file sinh ra được kiểm theo chuẩn của agent đọc nó (`adapters/lib/dinh-dang.sh`, chạy trong
+Mọi file sinh ra được kiểm theo chuẩn của agent đọc nó (`adapters/lib/format.sh`, chạy trong
 `ghi_file` **trước** khi file vào chỗ). Sai chuẩn thì agent lặng lẽ bỏ qua hay hiểu sai file (lệnh
 mất khỏi menu, subagent không gọi được) — nên build chặn: `SAI CHUẨN <agent>`, file sai không được ghi.
 
@@ -59,10 +59,10 @@ không tab, không khoá trùng, khoá thuộc danh sách trên; giá trị mở
 subagent, skill có `name` + `description`, `name` = tên file / tên thư mục, dạng `a-z0-9` nối `-`,
 ≤ 64 ký tự; skill: `description` ≤ 1024 ký tự, không `< >`; tên file lệnh cùng dạng; thân không
 rỗng; chỉ ghi vào `commands/<tên>.md`, `agents/<tên>.md`, `skills/<tên>/SKILL.md`. Thiếu biến chuẩn
-→ `ĐỊNH NGHĨA QUY TRÌNH LỖI`. Test: `tools/chay-thu.sh`, mục "chuẩn định dạng của agent".
+→ `ĐỊNH NGHĨA QUY TRÌNH LỖI`. Test: `tools/run-tests.sh`, mục "chuẩn định dạng của agent".
 
-**Test đối chiếu** (`tools/chay-thu.sh`, mục "đối chiếu mọi adapter"): build MỌI
-adapter trong `adapters/*/` với `AW_DOI_CHIEU=1` — hook in tên của nó thay cho nội
+**Test đối chiếu** (`tools/run-tests.sh`, mục "đối chiếu mọi adapter"): build MỌI
+adapter trong `adapters/*/` với `AW_COMPARE=1` — hook in tên của nó thay cho nội
 dung — và đòi output giống hệt nhau từng byte. Adapter mới tự động vào phép đối
 chiếu. Câu hỏi và ba nhãn của cổng duyệt cũng được so giữa các adapter.
 
@@ -130,12 +130,12 @@ phẩy): `ADAPTER="claude-code cursor"`. `aw init` exclude đường dẫn của
 - **`aw guard` chạy hai lần là vô hại** (Cursor có thể chạy cả hook của
   `.claude/settings.json` lẫn `.cursor/hooks.json`) — có test.
 - **Mỗi worktree chỉ một agent chạy tại một lúc**: mốc của hook gác ô duyệt
-  (`.agent-workflow/.gac-duyet-pre`) là một file chung trong worktree.
+  (`.agent-workflow/.guard-pre`) là một file chung trong worktree.
 
 ## Viết adapter mới
 
 1. Tạo `adapters/<id>/build.sh`: đặt `ROOT`, `AD_ID`, `AD_TEN`, `AD_GOC` (thư mục
-   gốc của agent, vd `.cursor`), source `adapters/lib/chung.sh`, định nghĩa các hook
+   gốc của agent, vd `.cursor`), source `adapters/lib/common.sh`, định nghĩa các hook
    (bảng trên) và chuẩn định dạng (`AD_LENH_FM`, `AD_*_KHOA` — mục "Chuẩn định dạng của agent"),
    rồi `ad_sinh "$@"`. Xem `adapters/cursor/build.sh` — chỉ có hook và chuẩn.
 2. Tạo `adapters/<id>/exclude` liệt kê đường dẫn adapter sinh ra. Chỉ exclude thư
@@ -147,5 +147,5 @@ phẩy): `ADAPTER="claude-code cursor"`. `aw init` exclude đường dẫn của
    LLM, câu hỏi lựa chọn, hộp xác nhận của cổng duyệt), **ghi rõ trong output và
    README** thay vì bỏ qua.
 5. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.
-6. Chạy `sh tools/chay-thu.sh`: phép đối chiếu tự lấy adapter mới; thêm test riêng
+6. Chạy `sh tools/run-tests.sh`: phép đối chiếu tự lấy adapter mới; thêm test riêng
    cho chữ trong hook của nó (như mục `adapters/cursor/build.sh`).

@@ -64,7 +64,7 @@ dòng Base. Bắt buộc; phải có trong repo (local hoặc origin).
 ### `worktree_dir`
 Mẫu đường dẫn worktree, tương đối với gốc repo (hoặc tuyệt đối). `{repo}` = tên repo
 gốc, `{ten}` = tên branch (`/` → `_`). Phải nằm **ngoài** repo. Mỗi máy ghi đè được
-bằng biến môi trường `AW_THU_MUC_WORKTREE`.
+bằng biến môi trường `AW_WORKTREE_DIR`.
 
 ### `release_branches`
 Mẫu glob nhánh phát hành, vd `release/*`. `aw worktree new` liệt kê làm ứng viên base
@@ -173,7 +173,7 @@ Phase: `spec` `design` `plan` `implement` `review`. Giá trị là danh sách fi
 - `review` đối chiếu diff với **mọi** khoá: `review.md` thiếu kết luận cho file nào
   thì chặn.
 - Tài liệu module (`src/<module>/ARCHITECTURE.md`, mẫu điểm vào ở
-  `templates/repo-dich/AGENTS.md`) khai ở `rules_design`, `rules_implement` để agent đọc
+  `templates/target-repo/AGENTS.md`) khai ở `rules_design`, `rules_implement` để agent đọc
   trước khi thiết kế / viết code.
 - Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md` và luật quy trình. Quy tắc máy
-  kiểm được (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` thay vì viết thành văn.
+  kiểm được (lint, type, kiến trúc) nên đưa vào `TEST_CMD` thay vì viết thành văn.

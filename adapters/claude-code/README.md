@@ -10,7 +10,7 @@ Thường không gọi trực tiếp — `aw init` và `aw worktree new … --cr
 trong `.claude/` (khai ở [`exclude`](exclude), `aw init` thêm vào `.git/info/exclude`). File
 `.claude/` git đang theo dõi thì bỏ qua. `--out` trỏ vào repo agent-workflow bị từ chối.
 
-Việc sinh dùng chung `adapters/lib/chung.sh`; file này chỉ khai hook
+Việc sinh dùng chung `adapters/lib/common.sh`; file này chỉ khai hook
 ([../README.md](../README.md#hook-của-adapter)). Mỗi file sinh ra có dòng **"Dành cho Claude
 Code"**: Cursor nạp `.claude/` để tương thích, nên agent không có `AskUserQuestion` thì dừng và
 dùng bản `.cursor/`.
@@ -21,10 +21,10 @@ dùng bản `.cursor/`.
 |---|---|
 | `workflow/phases/<id>.md` | `.claude/commands/aw-<id>.md` (`/aw-intake` … `/aw-ship`) |
 | `commands:` trong `workflow.yaml` | `.claude/commands/aw-<id>.md` (`/aw-import`, `/aw-clarify`, `/aw-bootstrap`) |
-| Phase `requires_fresh_agent: true` (`05-review`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch, mang mô tả phase đầy đủ |
-| `llm_checker:` (`workflow/checkers/<id>.md`) | `.claude/agents/soat-<id>.md` |
+| Phase `requires_fresh_agent: true` (`05-review`) | `.claude/agents/independent-reviewer.md` — subagent ngữ cảnh sạch, mang mô tả phase đầy đủ |
+| `llm_checker:` (`workflow/checkers/<id>.md`) | `.claude/agents/<id>-checker.md` |
 | `approval_gate: true` (`02-design`, `03-plan`) | Bước "Approval gate": `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
-| `workflow.yaml` + tóm tắt luật | `.claude/skills/quy-trinh-agent/SKILL.md` |
+| `workflow.yaml` + tóm tắt luật | `.claude/skills/agent-workflow/SKILL.md` |
 
 Mỗi lệnh phase gồm:
 
@@ -33,7 +33,7 @@ Mỗi lệnh phase gồm:
    `runs_on_main_checkout: true` — `/aw-ship` dọn việc đã merge). Logic nằm trong script, không
    trong prompt.
 2. **Hợp đồng phase** dựng từ frontmatter: đọc gì, ghi gì, mẫu nào, checker LLM, điều kiện ra
-   máy/người, file luật phải đọc (`trace_rule: true` thêm `truy-vet-nguon.md`).
+   máy/người, file luật phải đọc (`trace_rule: true` thêm `source-tracing.md`).
 3. **Mô tả phase** lấy nguyên văn từ thân file nguồn. Riêng phase `requires_fresh_agent`: lệnh
    chỉ bàn giao cho subagent, không nạp mô tả vào phiên chính.
 
@@ -45,11 +45,11 @@ không sinh nhánh nào theo loại.
 
 | Khả năng | Claude Code | Agent không có |
 |---|---|---|
-| Ngữ cảnh sạch cho review | Subagent `ra-soat-doc-lap` | Người tự mở phiên mới — adapter phải ghi rõ |
+| Ngữ cảnh sạch cho review | Subagent `independent-reviewer` | Người tự mở phiên mới — adapter phải ghi rõ |
 | Hook gác ô duyệt | `aw guard` (người tự cài, mục dưới) | Chỉ còn lời dặn + dấu duyệt mà `aw check` vẫn kiểm |
 | Confluence/Jira | MCP Atlassian | Tải tài liệu về repo, nhãn `[FILE]` |
 | Cách gọi | Slash command | Lời dặn / rules của agent đó |
-| Checker LLM | Subagent `soat-thiet-ke`; thiếu file phát hiện thì `aw check design` fail | Người tự chạy; không có file ≠ đạt |
+| Checker LLM | Subagent `design-checker`; thiếu file phát hiện thì `aw check design` fail | Người tự chạy; không có file ≠ đạt |
 | Câu hỏi lựa chọn (`choice_ui`) | `AskUserQuestion`; "Type something" / "Chat about this" có sẵn nên không thêm vào `options` | In lựa chọn đánh số + lối tự nhập / trao đổi |
 | Hộp xác nhận cổng duyệt | `AskUserQuestion` + `preview` (file/dòng phải tick) | In ba lựa chọn đánh số |
 

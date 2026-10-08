@@ -11,9 +11,9 @@ inputs:
 outputs:
   - diff
   - plan.md (task status updated)
-  - ket-qua-task.md
-  - ket-qua-kiem-thu.md
-  - ket-qua-bao-mat.md
+  - task-results.md
+  - test-results.md
+  - security-results.md
 exit_machine:
   - aw check implement
 exit_human: []
@@ -35,20 +35,20 @@ Do each task in `plan.md` following `tdd.md`, **without leaving scope**. The typ
 
 ## Steps
 
-0. **`aw ready <thư-mục-feature>` before the first task.** Tests red on untouched code = environment not prepared (`LENH_CHUAN_BI_WT`) or broken base → **stop, tell the human**. Never fix/disable existing tests.
+0. **`aw ready <thư-mục-feature>` before the first task.** Tests red on untouched code = environment not prepared (`WORKTREE_SETUP_CMD`) or broken base → **stop, tell the human**. Never fix/disable existing tests.
 1. **One task at a time, state kept by the machine** — never edit `Status` yourself, never batch tasks:
    - `aw task next <thư-mục-feature>` — next task (one in `[~]` comes first);
    - `aw task start <thư-mục-feature> T-NN` — `[ ]` → `[~]` (refused if another task is `[~]` or a dependency is not `[x]`);
-   - `aw task done <thư-mục-feature> T-NN` — runs the backticked `Verify` command, writes output to `ket-qua-task.md`; only **green** moves to `[x]`. Manual-only verify: `--manual "<what you did, what you saw>"`.
+   - `aw task done <thư-mục-feature> T-NN` — runs the backticked `Verify` command, writes output to `task-results.md`; only **green** moves to `[x]`. Manual-only verify: `--manual "<what you did, what you saw>"`.
    - `[x]` without green evidence matching the current `Verify` → `aw check implement` blocks (also when `Verify` is edited afterwards).
 2. **Tag tests** per `conventions.md` (e.g. `// covers: YC-001`). YC not testable automatically → `plan.md` "Manual verification" + reason.
-3. **Verify right after each task** (`aw task done`). Red → fix within that task, rerun. Red `SO_LAN_DO_TOI_DA` times in a row (default 3) → machine says **DỪNG**: record what you tried and the error in "Unplanned", tell the human.
+3. **Verify right after each task** (`aw task done`). Red → fix within that task, rerun. Red `MAX_RED_RUNS` times in a row (default 3) → machine says **DỪNG**: record what you tried and the error in "Unplanned", tell the human.
 4. **Something the plan did not foresee → stop and report.** Record it in `plan.md` "Unplanned". Touches a D-xx → reopen that D in `02-design`, not here.
 5. **Follow repo rules** in code you write. A rule asking for work outside the task or contradicting `tdd.md` → don't; record in "Unplanned".
 6. **Keep the diff in scope.** Touch files outside "Expected files" only when unavoidable — record the file (in backticks) + reason in "Unplanned".
    - The ADR task: `aw adr promote <thư-mục-feature> D-NN` — never write or edit an ADR by hand (the machine compares it with the approved D).
    - The rule task: `aw rule promote <thư-mục-feature> YC-NNN` — never write or edit a `BR-` block by hand (the machine compares it with the approved YC).
-7. **`aw check implement`** — runs the test command and security scans (`LENH_KIEM_TRA_BAO_MAT`, same as CI) itself and writes `ket-qua-kiem-thu.md`, `ket-qua-bao-mat.md` (never write these yourself). Scans only: `aw check security <thư-mục-feature>`.
+7. **`aw check implement`** — runs the test command and security scans (`SECURITY_CMDS`, same as CI) itself and writes `test-results.md`, `security-results.md` (never write these yourself). Scans only: `aw check security <thư-mục-feature>`.
 
 ## Running as a loop (optional)
 
@@ -73,10 +73,10 @@ Stop immediately when: something unforeseen (recorded in "Unplanned"); a file ou
 
 | Type | Order / rule | Machine checks |
 |---|---|---|
-| `bugfix` | Write repro test → `aw check repro <thư-mục-feature>` **before touching code** → then fix | `tai-hien.md`: test red while the diff touches only test files. Missing or green → block |
+| `bugfix` | Write repro test → `aw check repro <thư-mục-feature>` **before touching code** → then fix | `repro.md`: test red while the diff touches only test files. Missing or green → block |
 | `refactor` | Never delete old tests; declare edited ones in "Modified existing tests" | Deleted → block; undeclared edit → warn |
-| `perf` | Like refactor; `aw check perf <thư-mục-feature> --before` **before the change**, `--after` after | `do-hieu-nang.md` missing a measurement → block |
-| `chore` | No production code; declare "Dependency upgrades" | Touches `production_code` → block; touches `dependency_files` undeclared, declared major, or no green `sca` command in `ket-qua-bao-mat.md` → block |
+| `perf` | Like refactor; `aw check perf <thư-mục-feature> --before` **before the change**, `--after` after | `perf.md` missing a measurement → block |
+| `chore` | No production code; declare "Dependency upgrades" | Touches `production_code` → block; touches `dependency_files` undeclared, declared major, or no green `sca` command in `security-results.md` → block |
 
 Forgot `repro`/`--before` and already changed code → the script **refuses**: `git stash`, rerun, `git stash pop`.
 
@@ -97,22 +97,22 @@ Forgot `repro`/`--before` and already changed code → the script **refuses**: `
 ## Output
 
 - Code changes; `plan.md` updated (status, "Unplanned", "Manual verification").
-- Written by the machine: `ket-qua-task.md` (per-task evidence), `ket-qua-kiem-thu.md`, `ket-qua-bao-mat.md` (real output with `HEAD`, `Tree`, time). Changing code afterwards, even uncommitted → review blocks until rerun.
+- Written by the machine: `task-results.md` (per-task evidence), `test-results.md`, `security-results.md` (real output with `HEAD`, `Tree`, time). Changing code afterwards, even uncommitted → review blocks until rerun.
 
 ## Forbidden
 
 - Work not in `plan.md`; starting a task while another is `[~]`.
-- Editing `Status` yourself or writing `ket-qua-task.md`.
+- Editing `Status` yourself or writing `task-results.md`.
 - Editing `tdd.md`/`spec.md` — if wrong, stop and report.
 - **Declaring done without running tests.**
 - Editing/disabling tests to go green. An old test really wrong → "Unplanned".
 - `covers:` on a test that does not really check that YC.
 - Ignoring lint/type errors as "unrelated".
-- Making scans green by loosening tools (`nosemgrep`, `.gitleaksignore`, `.trivyignore`, lower thresholds, removing lines from `LENH_KIEM_TRA_BAO_MAT`). Real false positive → "Unplanned" + evidence; the human decides.
+- Making scans green by loosening tools (`nosemgrep`, `.gitleaksignore`, `.trivyignore`, lower thresholds, removing lines from `SECURITY_CMDS`). Real false positive → "Unplanned" + evidence; the human decides.
 
 ## Exit conditions — there is no separate test phase: not green = not done
 
-**Machine:** `aw check implement` → `[x] ĐẠT` — input passes `aw check plan`; test command and every scan **XANH** with real output in `ket-qua-kiem-thu.md` / `ket-qua-bao-mat.md`; each `Promote: adr` D has an ADR matching the approved D; each `Promote: BR-…` YC has a rule block matching the approved YC; **every** task `[x]` with green evidence matching the current `Verify`; no merge conflict markers. No test or scan command configured → **KHÔNG ĐẠT**, not "skipped".
+**Machine:** `aw check implement` → `[x] ĐẠT` — input passes `aw check plan`; test command and every scan **XANH** with real output in `test-results.md` / `security-results.md`; each `Promote: adr` D has an ADR matching the approved D; each `Promote: BR-…` YC has a rule block matching the approved YC; **every** task `[x]` with green evidence matching the current `Verify`; no merge conflict markers. No test or scan command configured → **KHÔNG ĐẠT**, not "skipped".
 
 ## When the agent fails and no checker caught it
 

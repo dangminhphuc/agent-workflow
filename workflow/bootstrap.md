@@ -40,13 +40,13 @@ Read README, existing `docs/`, CI pipeline files, build manifests, the top two d
 
 ### 3. `Makefile`
 
-None → copy `templates/repo-dich/Makefile`. Exists → add missing targets only: `setup test lint security security-secret security-sast security-sca`. Each target runs **exactly the command CI runs** (read the pipeline). No equivalent → keep `chua_khai` (exit 1) and list it in the report — never a target that is green by default. Switch CI to call `make …` only if CI behaviour stays identical. Report the `config.sh` lines each teammate sets locally: `LENH_KIEM_THU="make test"`, `LENH_KIEM_TRA_BAO_MAT` with `secret: make security-secret` etc.
+None → copy `templates/target-repo/Makefile`. Exists → add missing targets only: `setup test lint security security-secret security-sast security-sca`. Each target runs **exactly the command CI runs** (read the pipeline). No equivalent → keep `chua_khai` (exit 1) and list it in the report — never a target that is green by default. Switch CI to call `make …` only if CI behaviour stays identical. Report the `config.sh` lines each teammate sets locally: `TEST_CMD="make test"`, `SECURITY_CMDS` with `secret: make security-secret` etc.
 
 Check: `make setup`, `make test`, `make lint` on this worktree; record the real outcome.
 
 ### 4. `AGENTS.md` (+ `CLAUDE.md`)
 
-None → copy `templates/repo-dich/AGENTS.md`, fill every `<…>`, delete the leading comment block; a section that does not apply says `None`. **50–100 lines; points to, never copies rules.** `## Map`: one line per top-level directory. `## Commands`: only `make …`. `## Rules`: hard repo-wide constraints, one checkable line each, each with evidence. `## Decisions`: ADR directory index and module `ARCHITECTURE.md` files. `## Status`: where real progress lives (issue tracker, milestones, plans directory) — agent-workflow job state is outside git, never copied here. Repo uses Claude Code and has no `CLAUDE.md` → one line `@AGENTS.md`.
+None → copy `templates/target-repo/AGENTS.md`, fill every `<…>`, delete the leading comment block; a section that does not apply says `None`. **50–100 lines; points to, never copies rules.** `## Map`: one line per top-level directory. `## Commands`: only `make …`. `## Rules`: hard repo-wide constraints, one checkable line each, each with evidence. `## Decisions`: ADR directory index and module `ARCHITECTURE.md` files. `## Status`: where real progress lives (issue tracker, milestones, plans directory) — agent-workflow job state is outside git, never copied here. Repo uses Claude Code and has no `CLAUDE.md` → one line `@AGENTS.md`.
 
 ### 5. Module `ARCHITECTURE.md`
 

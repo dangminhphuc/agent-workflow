@@ -61,8 +61,8 @@ phases:
     when: the job passed /aw-review and needs an MR/PR (create it, follow until merged, clean up the worktree)
 
 rules:
-  - workflow/rules/nguyen-tac-chung.md
-  - workflow/rules/truy-vet-nguon.md
+  - workflow/rules/general.md
+  - workflow/rules/source-tracing.md
 
 adapters:
   - id: claude-code

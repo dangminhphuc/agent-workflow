@@ -10,14 +10,14 @@ Thường bạn không gọi trực tiếp: khai `ADAPTER="cursor"` (hay `"claud
 cho team dùng cả hai) trong `config.sh`, rồi `aw init` (ở checkout chính) và
 `aw worktree new … --create` (ở worktree mới) sẽ gọi nó. Mọi file sinh ra nằm trong
 các đường dẫn khai ở file [`exclude`](exclude): `/.cursor/commands/`,
-`/.cursor/agents/`, `/.cursor/skills/quy-trinh-agent/`. Adapter **không** exclude cả
+`/.cursor/agents/`, `/.cursor/skills/agent-workflow/`. Adapter **không** exclude cả
 `/.cursor/`, vì team hay commit `.cursor/rules/`, `.cursor/hooks.json`, `.cursor/mcp.json`.
 File trong `.cursor/` mà git đang theo dõi thì adapter bỏ qua.
 
-Việc sinh nằm trong `adapters/lib/chung.sh` (dùng chung với Claude Code); file
+Việc sinh nằm trong `adapters/lib/common.sh` (dùng chung với Claude Code); file
 `build.sh` chỉ khai hook riêng của Cursor (xem [../README.md](../README.md#hook-của-adapter)).
 Vì vậy hợp đồng phase (Bước 0, cổng duyệt, đọc vào / ghi ra, điều kiện ra, quy tắc
-repo, thân phase) **giống hệt** bản Claude Code — `tools/chay-thu.sh` kiểm từng byte.
+repo, thân phase) **giống hệt** bản Claude Code — `tools/run-tests.sh` kiểm từng byte.
 
 `--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (`SAI THAM SỐ`).
 
@@ -27,9 +27,9 @@ repo, thân phase) **giống hệt** bản Claude Code — `tools/chay-thu.sh` k
 |---|---|
 | `workflow/phases/<id>.md` | `.cursor/commands/aw-<id>.md` — lệnh `/aw-intake`, `/aw-spec`, `/aw-design`, `/aw-plan`, `/aw-implement`, `/aw-review`, `/aw-ship` |
 | `commands:` trong `workflow.yaml` | `.cursor/commands/aw-<id>.md` — `/aw-import`, `/aw-clarify`, `/aw-bootstrap` |
-| Phase có `requires_fresh_agent: true` | `.cursor/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh riêng |
-| `llm_checker:` của phase | `.cursor/agents/soat-<id>.md` — subagent checker LLM (`soat-thiet-ke`) |
-| `workflow.yaml` + tóm tắt luật | `.cursor/skills/quy-trinh-agent/SKILL.md` |
+| Phase có `requires_fresh_agent: true` | `.cursor/agents/independent-reviewer.md` — subagent ngữ cảnh riêng |
+| `llm_checker:` của phase | `.cursor/agents/<id>-checker.md` — subagent checker LLM (`design-checker`) |
+| `workflow.yaml` + tóm tắt luật | `.cursor/skills/agent-workflow/SKILL.md` |
 
 Lệnh của Cursor là markdown thường: dòng đầu `# /<id> — <mô tả>`, không frontmatter.
 
@@ -58,7 +58,7 @@ thư mục việc tên `<tham-số>` hay mục `[HUMAN]` rác.
 
 ### 1. Ngữ cảnh sạch cho phase rà soát
 
-`/aw-review` bắt buộc chạy qua subagent `ra-soat-doc-lap` (`.cursor/agents/`). Bản Cursor
+`/aw-review` bắt buộc chạy qua subagent `independent-reviewer` (`.cursor/agents/`). Bản Cursor
 chưa có subagent (trước 2.4) thì không tự động hoá được: **người tự mở chat mới**,
 gõ `/aw-review` ở đó — không rà soát bằng chính chat vừa viết code.
 
@@ -73,12 +73,12 @@ Atlassian thì đầu vào lùi về `file` — nhãn `[FILE]` kèm đường d�
 
 ### 4. Cách gọi
 
-Lệnh `/…` trong `.cursor/commands/`. Skill `quy-trinh-agent` được Cursor nạp khi liên quan.
+Lệnh `/…` trong `.cursor/commands/`. Skill `agent-workflow` được Cursor nạp khi liên quan.
 
 ### 5. Checker LLM
 
-`/aw-design` bảo agent gọi subagent `soat-thiet-ke` sau khi viết `tdd.md`.
-`aw check design` fail nếu chưa có `phat-hien-thiet-ke.md` — quên gọi cũng không lọt.
+`/aw-design` bảo agent gọi subagent `design-checker` sau khi viết `tdd.md`.
+`aw check design` fail nếu chưa có `design-findings.md` — quên gọi cũng không lọt.
 
 ### 6. Câu hỏi lựa chọn (`/aw-clarify`)
 
@@ -97,7 +97,7 @@ nguyên trong khối text agent in ngay trước câu hỏi.
 Cursor chạy nhiều model; chế độ Auto có thể đổi model giữa các phase. Cổng máy
 (`aw check`) không đổi theo model, nhưng chất lượng spec, thiết kế và phát hiện của
 checker LLM thì có. Nên chọn cố định một model cho phiên chạy phase, nhất là `/aw-design`
-(subagent `soat-thiet-ke`) và `/aw-review`.
+(subagent `design-checker`) và `/aw-review`.
 
 ## Hook gác ô duyệt
 

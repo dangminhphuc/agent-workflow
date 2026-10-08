@@ -2,7 +2,7 @@
 
 > Sinh bởi phase `05-review`, chạy bằng ngữ cảnh sạch.
 
-<!-- Tree của code đã rà: chép dòng "- Tree:" trong ket-qua-kiem-thu.md (máy đã kiểm
+<!-- Tree của code đã rà: chép dòng "- Tree:" trong test-results.md (máy đã kiểm
      nó khớp code hiện tại). Code đổi sau khi rà thì máy chặn — rà lại. -->
 - Reviewed tree: `<sha>`
 <!-- Chỉ khi diff đụng sensitive_code: NGƯỜI rà bảo mật tự ghi tên sau khi đọc
@@ -24,11 +24,11 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
 <!-- bugfix — BẮT BUỘC, máy chặn nếu thiếu. Máy chỉ biết test tái hiện đã đỏ;
      bạn xác nhận nó đỏ ĐÚNG VÌ BUG, không phải vì lỗi biên dịch / thiếu hàm. -->
-- Repro test fails because: <trích dòng lỗi trong tai-hien.md>
+- Repro test fails because: <trích dòng lỗi trong repro.md>
 
 <!-- refactor / perf: với từng file ở "Modified existing tests" của plan.md, xác nhận diff chỉ
      đổi import/cấu trúc, không đổi assertion.
-     perf: đọc do-hieu-nang.md, kết luận YC performance pass/fail theo số đo.
+     perf: đọc perf.md, kết luận YC performance pass/fail theo số đo.
      chore: xác nhận mức "patch | minor" ở "Dependency upgrades" là đúng.
      Loại việc khác: xoá mục này. -->
 

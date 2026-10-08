@@ -107,7 +107,7 @@ Mọi script in khối **Kết quả** cuối output, đánh `[x]` vào đúng m
 nhãn, không đọc mã thoát:
 
 ```
-Kết quả: kiem-tra-ke-hoach.sh
+Kết quả: check-plan.sh
   [ ] ĐẠT — được sang phase sau
   [x] KHÔNG ĐẠT — có vi phạm, sửa trong phase này
   [ ] THIẾU ĐẦU VÀO — chưa có file cần kiểm
@@ -149,7 +149,7 @@ aw init --test-cmd "npm test"
 version          ← engine cho việc MỚI
 checksums        ← sha256 đã ghim của từng version
 conventions.md   ← (tuỳ chọn) chỉ ghi đè khoá của máy: worktree_dir
-config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_KIEM_TRA_BAO_MAT, LENH_DO_HIEU_NANG, LENH_CHUAN_BI_WT
+config.sh        ← ADAPTER, TEST_CMD, SECURITY_CMDS, PERF_CMD, WORKTREE_SETUP_CMD
 archive/         ← artifact của worktree đã gỡ
 journal/         ← nhật ký harness (aw journal)
 ```
@@ -171,8 +171,9 @@ người chạy `aw init --from <url>` (`--force` để lấy đè bản ở má
 thì `--from` bỏ qua `conventions.md` của repo cấu hình (không để hai nguồn sự thật).
 
 **Lệnh test và quét bảo mật** trong `config.sh` là điều kiện ra của `implement` — bỏ trống là
-KHÔNG ĐẠT, không phải "bỏ qua". `LENH_KIEM_TRA_BAO_MAT` phải chép **đúng lệnh, config, ngưỡng
+KHÔNG ĐẠT, không phải "bỏ qua". `SECURITY_CMDS` phải chép **đúng lệnh, config, ngưỡng
 của pipeline CI**.
+Tên khoá trước 2026.10.21 (`LENH_KIEM_THU`, `LENH_KIEM_TRA_BAO_MAT`…) vẫn đọc được; `aw ready` nhắc đổi.
 
 ### 3. Repo đích: để một phiên agent mới không phải đoán (khuyến nghị)
 
@@ -189,8 +190,8 @@ docs/agent-workflow/conventions.md   quy ước quy trình (aw init tạo)
 src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module — đặt cạnh code
 ```
 
-- Mẫu: `.agent-workflow/.engine/templates/repo-dich/{AGENTS.md,Makefile}` (có sau `aw init`).
-- **Lệnh kiểm trong git**: `config.sh` khai `LENH_KIEM_THU="make test"` và `secret: make
+- Mẫu: `.agent-workflow/.engine/templates/target-repo/{AGENTS.md,Makefile}` (có sau `aw init`).
+- **Lệnh kiểm trong git**: `config.sh` khai `TEST_CMD="make test"` và `secret: make
   security-secret`… thay vì chép lệnh — sửa Makefile là local và CI cùng đổi.
 - Muốn agent đọc `ARCHITECTURE.md` của module trong phase: khai vào `rules_design`,
   `rules_implement` của `conventions.md` (`aw rules` in ra, review chấm từng file).
@@ -258,16 +259,16 @@ sweep --apply`) chép artifact vào `.git/agent-workflow/archive/<tên>/` trư�
 ## Chạy test và phát hành
 
 ```sh
-sh tools/chay-thu.sh
+sh tools/run-tests.sh
 ```
 
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng
 đúng chuỗi đó, không có `v`.
 
 1. Ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md`.
-2. Trong PR muốn phát hành: `sh tools/chuan-bi-phat-hanh.sh [YYYY.M.N]` — ghi version vào
+2. Trong PR muốn phát hành: `sh tools/prepare-release.sh [YYYY.M.N]` — ghi version vào
    `VERSION`, `bin/aw`, CHANGELOG, link tải trong README. Commit vào PR.
-3. Workflow `kiem-tra` chạy test + `tools/kiem-tra-phat-hanh.sh` (version nhất quán, tag chưa có).
+3. Workflow `kiem-tra` chạy test + `tools/check-release.sh` (version nhất quán, tag chưa có).
 4. Merge vào `main` → workflow `release` tự tạo tag + Release (tarball, `aw`, `SHA256SUMS`).
 
 Cách tay: đặt version như bước 2, merge, rồi `git tag -a V -m V && git push origin V` (hoặc tạo

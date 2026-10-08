@@ -19,7 +19,7 @@
 #   ## Decision      — nội dung D (trừ heading, ô duyệt, Promote/Scope/Supersedes)
 #   ## Sources       — "- YC-NNN (`<việc>`): <Source của YC trong spec>"
 #
-# Cần nạp trước: tools/lib/md.sh, tools/lib/sha256.sh, tools/lib/duyet.sh
+# Cần nạp trước: tools/lib/md.sh, tools/lib/sha256.sh, tools/lib/approval-tick.sh
 
 ADR_MAC_DINH="docs/adr"
 

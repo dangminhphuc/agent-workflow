@@ -10,14 +10,14 @@ inputs:
   - open-questions.md
 outputs:
   - tdd.md
-  - phat-hien-thiet-ke.md
+  - design-findings.md
 exit_machine:
   - aw check design
 exit_human:
   - The human approves EACH D-xx decision in tdd.md (ticks that D's "Approved by human" box)
   - The human arbitrates the LLM checker's findings (confirm, or reject with a reason)
 needs_clean_context: true
-llm_checker: workflow/checkers/thiet-ke.md
+llm_checker: workflow/checkers/design.md
 trace_rule: true
 ---
 
@@ -57,7 +57,7 @@ Mode 2 prevents anchoring on the agent's option. `high` with no `Author: human` 
    - A D that stays true after this job (cross-module, hard to reverse): propose `- Promote: adr` + `- Scope: <glob>`. The human decides by approving the D; `04-implement` copies it to an ADR.
 3. **Write the sections** per `templates/tdd.md`: data + ERD, contract/API, flow + sequence/state (Mermaid), non-functional, test strategy, YC → section mapping. A section relying on a D says `Based on: D-xx`. Not applicable: `Not applicable: <reason>`, never empty.
 4. **Record inputs:** `aw based-on <thư-mục-feature> tdd.md spec.md open-questions.md`.
-5. **Run the LLM checker** (separate subagent/session, per `checkers/thiet-ke.md`) → `phat-hien-thiet-ke.md`. Fix what you agree with (`Xử lý: đã sửa`); the human arbitrates the rest via `clarify`.
+5. **Run the LLM checker** (separate subagent/session, per `checkers/design.md`) → `design-findings.md`. Fix what you agree with (`Xử lý: đã sửa`); the human arbitrates the rest via `clarify`.
 6. **Run `aw check design`**, then stop for the human to approve each D.
 
 ## Reopening a D-xx
@@ -69,7 +69,7 @@ Mode 2 prevents anchoring on the agent's option. `high` with no `Author: human` 
 ## Output
 
 - `tdd.md` per `templates/tdd.md` — the only design output (no separate decisions file).
-- `phat-hien-thiet-ke.md` — written by the LLM checker.
+- `design-findings.md` — written by the LLM checker.
 
 ## Forbidden
 
@@ -82,6 +82,6 @@ Mode 2 prevents anchoring on the agent's option. `high` with no `Author: human` 
 
 ## Exit conditions
 
-**Machine:** `aw check design` → `[x] ĐẠT` — input passes the spec checker; all sections present; each D has exactly one box, ticked D has a matching hash; `Based on` valid; every YC mapped; `Promote` / `Scope` / `Supersedes` valid; Mode 2 has a human D; `phat-hien-thiet-ke.md` exists with no unresolved `Chặn` finding.
+**Machine:** `aw check design` → `[x] ĐẠT` — input passes the spec checker; all sections present; each D has exactly one box, ticked D has a matching hash; `Based on` valid; every YC mapped; `Promote` / `Scope` / `Supersedes` valid; Mode 2 has a human D; `design-findings.md` exists with no unresolved `Chặn` finding.
 
 **Human:** approves each D (ticks its box); arbitrates LLM checker findings.
