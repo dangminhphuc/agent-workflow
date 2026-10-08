@@ -148,6 +148,13 @@ Thư mục ADR, tương đối với gốc repo; mặc định `docs/adr`. Phả
 `README.md`; `aw adr check` kiểm hình thức (số không trùng, `Status: accepted | superseded by
 NNNN`, có `Scope`, chỉ mục khớp). Chỉ D-xx người duyệt kèm `- Promote: adr` mới được nâng.
 
+### `knowledge_rules_dir`
+Thư mục luật nghiệp vụ, mặc định `docs/product/rules`. `aw rule promote` ghi khối `### BR-<MIỀN>-NNN:`
+vào `<miền>.md` ở đây (tạo file nếu chưa có). Khối gồm `Rule`, `Scope`, `Source` (nhãn + `(version:
+…)`), `Quote` (chỉ `[HUMAN]`), `Status: active | superseded by BR-…`, `Acceptance`, `Origin`. Người dời
+khối sang tài liệu module được — `aw rule check` tìm theo ID trong thư mục này và `knowledge_files`.
+Test gắn `covers: BR-…` như với YC.
+
 ### `knowledge_files`
 Glob tài liệu module đã commit; mặc định `*/ARCHITECTURE.md`. Phạm vi của mỗi file là thư mục
 chứa nó: `aw knowledge design` in file đó khi `## Existing code` của `tdd.md` ghi một đường dẫn

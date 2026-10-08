@@ -42,6 +42,14 @@ Quy ước của repo đích vào git — bước đầu của "kiến thức b�
   (`knowledge_files`, mặc định `*/ARCHITECTURE.md`) liên quan đường dẫn trong `## Existing code`;
   phase design đọc trước khi khảo sát. Checker LLM thiết kế chặn `trái ADR`.
 
+- **Luật nghiệp vụ `BR-`** (`docs/product/rules/<miền>.md`, khoá `knowledge_rules_dir`): người quyết
+  trong YC — `- Promote: BR-<MIỀN>-NNN` dưới dấu duyệt spec. Spec chặn ID sai dạng, YC
+  `[INFERRED]`/`[OPEN-QUESTION]`, ID đã có ở việc khác; plan đòi task phủ YC ghi file luật;
+  `aw rule promote <thư-mục-feature> YC-NNN` chép tên, Description, tiêu chí, nguồn có phiên bản (lời
+  người: `[HUMAN]` + `Quote` nguyên văn), phạm vi từ `Expected files`; implement và review chặn khi
+  khối thiếu hoặc lệch YC. `aw rule check` kiểm hình thức, cảnh báo luật chưa có test `covers: BR-…`.
+  `aw knowledge spec` in luật active; `aw knowledge design` thêm luật có `Scope` khớp.
+
 ### Tương thích
 - Repo init bằng engine cũ (quy ước chỉ ở bản clone) chạy như cũ; `aw conventions check` cảnh báo
   và in cách chuyển. `aw init`/`aw upgrade` không tự tạo file trong repo khi bản clone đã có.

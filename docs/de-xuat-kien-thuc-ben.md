@@ -115,6 +115,11 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 
 ### D-07 — Nguồn của BR khi nâng từ YC (M4)
 
+> Khi làm (PR 4): người chọn YC qua trường `- Promote: BR-<MIỀN>-NNN` trong YC (dưới dấu duyệt spec),
+> không qua tham số `--id`/`--file`; file đích suy từ miền trong ID. Phiên bản viết `(version: …)`.
+> `[HUMAN]` không có ngày trong câu trả lời thì phiên bản là dấu duyệt spec. Chưa sinh chỉ mục
+> `docs/product/rules/README.md` — mỗi file miền là chỉ mục của miền đó.
+
 - Option A: Chỉ nâng YC có nguồn bền: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` trỏ tới file **đã
   commit**. Từ chối `[INFERRED]`, `[OPEN-QUESTION]`. Với `[FILE] intake.md` (lời người) và
   `[FILE] open-questions.md` (câu trả lời điểm mù): BR ghi `Source: [HUMAN] <ai>, <ngày>` và

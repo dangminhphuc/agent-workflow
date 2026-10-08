@@ -134,8 +134,8 @@ máy thì với phiên đó coi như không có. Ranh giới:
 | Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của repo đích, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
-Hiện thực tới đâu: `conventions.md`, mẫu điểm vào và lệnh kiểm, ADR từ D-xx (dưới đây). Luật
-nghiệp vụ `BR-`, kiểm chéo lỗi thời: các bước sau.
+Hiện thực tới đâu: `conventions.md`, mẫu điểm vào và lệnh kiểm, ADR từ D-xx, luật nghiệp vụ `BR-`
+(dưới đây). Kiểm chéo lỗi thời: bước sau.
 
 ### `conventions.md` trong git, bản clone chỉ ghi đè khoá máy
 
@@ -199,6 +199,31 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
   phình theo số module. Design gọi hai lần: trước khảo sát (chỉ mục) và sau khi ghi `Existing code`.
 - Đi ngược ADR mà không khai `Supersedes` máy không phát hiện được (cần hiểu nội dung) → checker LLM
   thiết kế chặn (`trái ADR`).
+
+### Luật nghiệp vụ `BR-`: YC đã duyệt thành bất biến của sản phẩm
+
+`YC-NNN` đánh số theo từng spec — việc sau không nhắc lại được, và luật từ PRD chỉ sống trong một
+`spec.md`. Luật `BR-` là phần của YC còn đúng sau việc: bất biến, không phải chi tiết màn hình.
+
+- **Không chép PRD**: chỉ YC người chọn. Chép toàn văn thì repo thành bản sao lệch của Confluence —
+  nhồi nhét làm agent đọc nhiều mà quyết định không tốt hơn.
+- **Người quyết trong YC**: `- Promote: BR-<MIỀN>-NNN` nằm dưới dấu duyệt spec. ID, file đích
+  (`<knowledge_rules_dir>/<miền>.md`), nội dung đều lấy từ artifact đã duyệt — lệnh không có tham số
+  `--id`, `--file` cho agent tự chọn. ID trùng luật của việc khác → spec chặn.
+- **Nguồn bền, có phiên bản**: `[JIRA]`/`[CONFLUENCE]` lấy phiên bản ở bảng `## Sources` của spec;
+  `[FILE]` lấy sha commit cuối của file. Lời người (`intake.md`, câu trả lời trong `open-questions.md`)
+  là trạng thái của việc, sẽ mất — nên ghi `[HUMAN]` và **chép nguyên văn** vào `Quote:`; phiên bản là
+  ngày trong câu trả lời, không có thì dấu duyệt spec. `[INFERRED]`/`[OPEN-QUESTION]` không nâng được:
+  luật phải truy được về người có quyền nói. Định dạng `(version: …)` thay cho `v<version>` vì phiên
+  bản Jira là thời điểm `updated`.
+- **Phạm vi máy suy**: `Expected files` của task phủ YC, trừ file test và thư mục ADR/luật — truy được,
+  không do agent khai.
+- **Khối tìm theo ID, không theo file**: người được dời khối vào `ARCHITECTURE.md` của module (một chỗ
+  cho mọi thứ của module); checker quét thư mục luật và `knowledge_files`.
+- Implement và review dựng lại khối từ YC và so (bỏ `Status`) — như ADR. Không xoá luật: đổi
+  `Status: superseded by BR-…`; đổi luật cũ là một PR có người duyệt, không đi qua lệnh nâng.
+- `aw rule check` chặn hình thức (ID duy nhất, đủ trường, `Source` có nhãn và phiên bản, `Status` hợp
+  lệ, `superseded by` trỏ tới luật có thật); luật active chưa có test `covers:` chỉ cảnh báo.
 
 ## Hai loại điều kiện ra
 
@@ -475,3 +500,6 @@ tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã
     có hai file trùng số (`aw adr check` chặn ở việc kế tiếp) và xung đột ở bảng chỉ mục — người
     đổi số, chạy lại `aw adr promote`.
 19. **"Đi ngược ADR" chỉ checker LLM thấy** — máy chỉ kiểm `Supersedes` khi D tự khai.
+    Tương tự, nguồn mới mâu thuẫn với luật `BR-` active chỉ agent spec và người phát hiện.
+20. **PRD đổi sau khi luật đã nâng**: máy không theo dõi Confluence/Jira; phiên bản ghi trong `Source`
+    chỉ cho người so tay. Luật cũ vẫn `active` tới khi một việc thay nó.

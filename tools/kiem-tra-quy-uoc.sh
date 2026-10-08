@@ -15,7 +15,7 @@
 #   - khoá bắt buộc trống: base_branch branch_patterns type_by_prefix test_files
 #   - giá trị sai dạng: mr_platform, type_by_prefix (cặp, loại, khớp branch_patterns),
 #     regex không biên dịch được hoặc dùng {n}, worktree_dir thiếu {ten} / nằm trong repo
-#   - knowledge_adr_dir tuyệt đối, có "..", hay nằm trong .agent-workflow/
+#   - knowledge_adr_dir, knowledge_rules_dir tuyệt đối, có "..", hay nằm trong .agent-workflow/
 #   - base_branch không có (local lẫn origin); file khai ở rules_* không dùng được
 #
 # Cảnh báo (!) — chạy được nhưng nhiều khả năng chưa đúng ý:
@@ -193,12 +193,14 @@ if [ -n "$BB" ] && ! git -C "$MT_REPO" rev-parse --verify --quiet "refs/heads/$B
   loi "base_branch \"$BB\" không có trong repo (cả local lẫn origin)"
 fi
 
-AD=$(gt knowledge_adr_dir)
-case "$AD" in
-  "") ;;
-  /*|*..*) loi "knowledge_adr_dir \"$AD\" phải là đường dẫn tương đối trong repo, không có \"..\"" ;;
-  .agent-workflow*) loi "knowledge_adr_dir \"$AD\" nằm trong .agent-workflow/ (bị exclude) — ADR phải vào git" ;;
-esac
+for k in knowledge_adr_dir knowledge_rules_dir; do
+  AD=$(gt $k)
+  case "$AD" in
+    "") ;;
+    /*|*..*) loi "$k \"$AD\" phải là đường dẫn tương đối trong repo, không có \"..\"" ;;
+    .agent-workflow*) loi "$k \"$AD\" nằm trong .agent-workflow/ (bị exclude) — kiến thức bền phải vào git" ;;
+  esac
+done
 qt=$(kc_quy_tac_loi "$MT_REPO" review)
 [ -n "$qt" ] && { printf '%s\n' "$qt" | while IFS= read -r l; do echo "  ✗ $l"; done; n_x=$((n_x + $(printf '%s\n' "$qt" | grep -c .))); }
 [ "$n_x" = "$n_truoc" ] && echo "  ✓ giá trị đúng dạng"

@@ -47,6 +47,7 @@ Do each task in `plan.md` following `tdd.md`, **without leaving scope**. The typ
 5. **Follow repo rules** in code you write. A rule asking for work outside the task or contradicting `tdd.md` → don't; record in "Unplanned".
 6. **Keep the diff in scope.** Touch files outside "Expected files" only when unavoidable — record the file (in backticks) + reason in "Unplanned".
    - The ADR task: `aw adr promote <thư-mục-feature> D-NN` — never write or edit an ADR by hand (the machine compares it with the approved D).
+   - The rule task: `aw rule promote <thư-mục-feature> YC-NNN` — never write or edit a `BR-` block by hand (the machine compares it with the approved YC).
 7. **`aw check implement`** — runs the test command and security scans (`LENH_KIEM_TRA_BAO_MAT`, same as CI) itself and writes `ket-qua-kiem-thu.md`, `ket-qua-bao-mat.md` (never write these yourself). Scans only: `aw check security <thư-mục-feature>`.
 
 ## Running as a loop (optional)
@@ -109,7 +110,7 @@ Forgot `repro`/`--before` and already changed code → the script **refuses**: `
 
 ## Exit conditions — there is no separate test phase: not green = not done
 
-**Machine:** `aw check implement` → `[x] ĐẠT` — input passes `aw check plan`; test command and every scan **XANH** with real output in `ket-qua-kiem-thu.md` / `ket-qua-bao-mat.md`; each `Promote: adr` D has an ADR matching the approved D; **every** task `[x]` with green evidence matching the current `Verify`; no merge conflict markers. No test or scan command configured → **KHÔNG ĐẠT**, not "skipped".
+**Machine:** `aw check implement` → `[x] ĐẠT` — input passes `aw check plan`; test command and every scan **XANH** with real output in `ket-qua-kiem-thu.md` / `ket-qua-bao-mat.md`; each `Promote: adr` D has an ADR matching the approved D; each `Promote: BR-…` YC has a rule block matching the approved YC; **every** task `[x]` with green evidence matching the current `Verify`; no merge conflict markers. No test or scan command configured → **KHÔNG ĐẠT**, not "skipped".
 
 ## When the agent fails and no checker caught it
 

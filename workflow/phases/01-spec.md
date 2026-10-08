@@ -33,6 +33,7 @@ Turn business requirements into a **verifiable** spec, and expose where sources 
 - `intake.md` — must pass `aw check intake`. Missing → stop, run `/aw-intake`.
 - Every input listed in `intake.md`. Read nothing outside that list (to add a source, add it to `intake.md` first).
 - `aw rules spec` — read every file it prints.
+- `aw knowledge spec <thư-mục-feature>` — read every file it prints: the repo's **active business rules** (`### BR-…`). A source that contradicts an active rule → a row in `## Source conflicts` or an `[OPEN-QUESTION]`; never pick a side yourself.
 
 | Input | How to read | Source label in spec |
 |---|---|---|
@@ -77,6 +78,7 @@ Refactoring an area with no protecting test → checker blocks. Write the tests 
 9. **`## Out of scope`:** list plainly what is *not* done — stops later phases overreaching. None → "Không có."
 10. **`## Constraints & dependencies`:** external systems, legal/accounting rules, deadlines, other teams' work — with sources. None → "Không có ràng buộc hay phụ thuộc ngoài."
 11. **Propose `Risk`:** `high` when touching money/accounting, new integrations, core schema, or hard-to-reverse changes; otherwise `normal`. One-line reason. `high` → design runs Mode 2.
+   - A YC that stays true after this job (a business invariant, not a screen detail) with a durable source → propose `- Promote: BR-<MIỀN>-NNN` under it. The human decides by approving the spec; `[INFERRED]` / `[OPEN-QUESTION]` YCs cannot be promoted.
 12. **Leave `- [ ] **Approved by human**` unticked.** Every content edit of the spec (rerun, `clarify` included) **unticks** it. Ticked + content changed → `aw check` blocks (the `aw guard` hook, if installed, unticks).
 13. **Record inputs:** `aw based-on <thư-mục-feature> spec.md intake.md`.
 
