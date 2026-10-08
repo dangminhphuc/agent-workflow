@@ -11,6 +11,13 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.20]
+
+### Thay đổi
+- **Luật cấu trúc tiếng Anh** (`rules/nguyen-tac-chung.md` §5, `AGENTS.md`): mọi heading, tên trường,
+  từ khoá, giá trị enum trong mẫu và artifact agent tạo/sửa phải là tiếng Anh — kể cả heading mẫu
+  chưa có. Tiếng Việt chỉ ở nội dung bên dưới.
+
 ## [2026.10.19]
 
 ### Thêm

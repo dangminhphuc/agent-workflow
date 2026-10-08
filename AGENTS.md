@@ -29,6 +29,10 @@ tools/chay-thu.sh        toàn bộ test hồi quy (~1000 ca, ~4 phút)
   tiếng Việt. Artifact agent viết ra: tiếng Việt.
 - Heading/tên trường/giá trị cố định trong mẫu (`## Out of scope`, `Blocking`, `must`…): tiếng
   Anh, checker đọc đúng chữ — đổi là phải đổi checker + test.
+- **Bắt buộc:** mọi mẫu (`workflow/templates/`) và artifact do agent tạo/sửa — kể cả heading, tên
+  trường, từ khoá, giá trị enum mà mẫu chưa có — phải là **tiếng Anh**. Tiếng Việt chỉ ở nội dung
+  dưới heading và placeholder (`<tiêu đề>`). Không dịch heading/từ khoá tiếng Anh sẵn có. Luật cho
+  agent lúc chạy: `workflow/rules/nguyen-tac-chung.md` §5.
 - Tên hàm/biến shell: tiếng Việt không dấu (`kq_khai`, `ghi_file`), giữ theo code xung quanh.
 
 ## Quy ước code
