@@ -11,10 +11,11 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.18]
 
-Quy ước của repo đích vào git — bước đầu của "kiến thức bền nằm trong repo" (xem
-`docs/kien-truc.md`, mục "Trạng thái của việc và kiến thức bền").
+Kiến thức bền của repo đích vào git: quy ước, mẫu điểm vào và lệnh kiểm, ADR từ D-xx, luật nghiệp
+vụ `BR-`, kiểm chéo lỗi thời. Trạng thái của việc vẫn ngoài git như cũ. Lý do: `docs/kien-truc.md`,
+mục "Trạng thái của việc và kiến thức bền".
 
 ### Đổi
 - **`conventions.md` nằm trong repo đích** ở `docs/agent-workflow/conventions.md`, commit qua PR —
