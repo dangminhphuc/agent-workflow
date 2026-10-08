@@ -11,7 +11,7 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.20]
 
 ### Thay đổi
 - **Luật cấu trúc tiếng Anh** (`rules/nguyen-tac-chung.md` §5, `AGENTS.md`): mọi heading, tên trường,
