@@ -145,8 +145,9 @@ cảnh báo).
 ### `rules_<phase>`
 Phase: `spec` `design` `plan` `implement` `review`. Giá trị là danh sách file, vd
 `rules_implement: docs/coding-style.md .claude/skills/api-pattern/SKILL.md`.
-- Agent lấy danh sách bằng `aw rules <phase>` và đọc từng file. Đọc lúc chạy: sửa
-  khoá là có hiệu lực ngay, không cần build lại adapter.
+- Agent lấy danh sách bằng `aw rules <phase>` và đọc từng file. Đọc lúc chạy, không cần
+  build lại adapter; việc đang làm theo quy ước tại điểm rẽ khỏi base của nó (mục
+  "Location & machine overrides"), nên sửa khoá có hiệu lực cho việc sau khi merge.
 - File phải **đã commit** vào base (worktree mới chỉ có file đã commit); không có hay
   chưa commit thì `aw check` của phase đó chặn. Phase gõ nhầm (vd `rules_spek`) là khoá lạ.
 - `review` đối chiếu diff với **mọi** khoá: `review.md` thiếu kết luận cho file nào
