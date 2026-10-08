@@ -20,197 +20,108 @@ outputs:
 exit_machine:
   - aw check review
 exit_human:
-  - Người xác nhận kết luận rà soát và quyết định xử lý các finding mức Blocker
-  - Người xác nhận base có chủ ý nếu checker cảnh báo base lạ (xếp chồng)
-  - Diff đụng code nhạy cảm (sensitive_code) — một người rà bảo mật đọc Lens 4 và diff, tự ghi tên vào "Security reviewer"
+  - The human confirms the review verdict and decides how to handle Blocker findings
+  - The human confirms the base is intended if the checker warns about an unusual (stacked) base
+  - Diff touches sensitive code (sensitive_code) — a human security reviewer reads Lens 4 and the diff, and writes their own name in "Security reviewer"
 needs_clean_context: true
 requires_fresh_agent: true
 ---
 
-# Phase 05 — Rà soát
+# Phase 05 — Review
 
-## Mục tiêu
+## Goal
 
-Kiểm chứng **độc lập** rằng diff làm đúng `spec.md`, theo đúng `tdd.md` đã
-duyệt, và không vượt `plan.md`.
+Verify **independently** that the diff does what `spec.md` asks, follows the approved `tdd.md`, and stays within `plan.md`. Not a syntax review (linters do that). This is the **final gate**: every warning from earlier phases blocks here.
 
-Đây không phải bước rà lỗi cú pháp — linter làm việc đó rẻ hơn. Việc của phase
-này là trả lời: *thứ vừa viết ra có đúng là thứ được yêu cầu không?*
+## Clean context — mandatory
 
-Đây cũng là **cổng chặn cuối**. Mọi cảnh báo dồn về từ phase trước — artifact
-lỗi thời, YC chưa có test, diff ngoài phạm vi — ở đây thành **chặn**, vì phía sau
-không còn chỗ nào bắt lại được.
+Never run by the agent that just implemented.
 
-## Ràng buộc: phải chạy bằng ngữ cảnh sạch
-
-Phase này **không được chạy bởi chính agent vừa hiện thực**. Agent vừa viết
-code sẽ rà soát chính lập luận của nó — nó đã tự thuyết phục mình rằng cách làm
-đó đúng, và nó thiếu mất thứ người review có: chưa từng nhìn thấy code này.
-
-| Khả năng của agent | Cách làm |
+| Agent | How |
 |---|---|
-| Có subagent (Claude Code) | Chạy trong subagent với ngữ cảnh trắng |
-| Không có subagent | Mở phiên mới, chỉ nạp các file đầu vào + diff |
+| Has subagents | Run in a blank-context subagent |
+| Has none | Open a new session, load only the input files + diff |
 
-Adapter chịu trách nhiệm dịch ràng buộc này sang cơ chế của agent đích. Không
-dịch được thì phải ghi rõ trong hướng dẫn rằng người dùng phải tự mở phiên mới —
-chứ không im lặng bỏ qua.
+If the adapter cannot enforce this, it must tell the human to open a new session.
 
-## Bốn lăng kính
+## Four lenses — separate, never mixed
 
-Rà theo bốn lăng kính tách bạch, không trộn. Trộn lại thì lăng kính dễ nhất
-(chất lượng code) sẽ nuốt mất các lăng kính khó hơn.
+### 1. Spec conformance (`## Lens 1 — Spec conformance`)
+Go through **every** `YC-NNN`: which code satisfies it, verdict `pass` / `fail` / `partial`. Skip none. A YC with `[OPEN-QUESTION]` whose assumption is unconfirmed → `pending`, never `pass`.
 
-### 1. Đúng đặc tả (`## Lens 1 — Spec conformance`)
-Duyệt **từng mã `YC-NNN`** trong `spec.md`, chỉ ra code nào thoả nó, kết luận
-`pass` / `fail` / `partial`. Không có mã nào được bỏ trống.
+### 2. Design and scope (`## Lens 2 — Design and scope`)
+- Does the code follow the approved D-xx, contract and data model of `tdd.md`?
+- Changes belonging to no task? Tasks `[x]` with no trace in the diff?
+- "Unplanned" items handled silently instead of reported?
+- Manually verified tasks (`ket-qua-task.md`): does the evidence really prove the task is done?
 
-Nếu một `YC` gắn `[OPEN-QUESTION]` và giả định tạm chưa được xác nhận, kết luận là
-`pending` — không phải `pass`. Chỉ điểm mù `Blocking: non-blocking` còn mở được
-tới đây; `blocking` / `review-blocking` còn mở thì máy chặn.
+**Repo rules** (`aw rules review` — all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved D-xx that breaks a rule → `not applicable`, name the D.
 
-### 2. Đúng thiết kế và phạm vi (`## Lens 2 — Design and scope`)
-- Code có theo đúng các D-xx đã duyệt và contract/mô hình dữ liệu trong `tdd.md`?
-- Thay đổi nào **không** thuộc task nào? Task nào đánh dấu xong nhưng diff
-  không có dấu vết?
-- Có mục "Unplanned" nào bị xử lý lặng lẽ thay vì nêu ra?
-- Task kiểm chứng thủ công (`ket-qua-task.md`, `Kiểm chứng: thủ công`): bằng
-  chứng có thật sự chứng minh task xong không? Máy chỉ biết có người/agent đã ghi.
+### 3. Quality (`## Lens 3 — Quality`)
+Correctness bugs, reuse of what exists, needless complexity. Each finding `### [Blocker|Should fix|Nit] <title>`:
+- `Blocker`, `Should fix`: `- Location: \`file:line\`` (real line) and `- Category: <kebab-case>` (e.g. `missing-null-check`). Run `aw journal` to **reuse existing names**.
+- `Blocker`: also `- Failure scenario:` — concrete input → wrong result.
+- No findings → exactly one line `- None`.
 
-Thêm: đối chiếu diff với **từng file** quy tắc riêng của repo (`aw rules review` —
-hợp quy tắc của mọi phase). Mỗi file một dòng trong mục "Repo rules" của
-`review.md`: `pass` / `violation` (kèm `file:dòng`) / `not applicable` (kèm lý do).
-Vi phạm thì thêm finding ở Lens 3, mức do bạn phán. Quy tắc repo xếp dưới
-`tdd.md`: code theo D-xx đã duyệt mà trái quy tắc là `not applicable`, ghi rõ D nào.
+### 4. Security (`## Lens 4 — Security`)
+Scanners catch known patterns; this lens reads the diff for **intent**: missing authorisation, leaking logs, paths built from input… Table with **all seven rows**, none added or renamed:
 
-### 3. Chất lượng (`## Lens 3 — Quality`)
-Lỗi đúng/sai, chỗ có thể dùng lại thứ đã có, chỗ phức tạp quá mức cần thiết.
-Mỗi finding là một mục `### [Blocker|Should fix|Nit] <tiêu đề>`. `Blocker` và
-`Should fix` có `- Location: \`file:dòng\`` (số dòng thật); `Blocker` thêm
-`- Failure scenario:` — đầu vào cụ thể → kết quả sai, để người khác tái hiện được.
-`Blocker` và `Should fix` có `- Category: <loại-lỗi>` — kebab-case, vd
-`missing-null-check`, `sql-injection`. Chạy `aw journal` để **dùng lại tên đã có**:
-loại nào lặp lại ở nhiều việc thì máy gợi ý nâng nó thành luật máy kiểm (lệnh
-trong `LENH_KIEM_THU`, quy tắc repo) — mỗi loại lỗi đã bắt được một lần thành hàng
-rào vĩnh viễn, lần sau không phải trông vào người rà soát.
-Không có finding nào thì ghi đúng một dòng `- None` — để "không thấy lỗi" khác
-"chưa rà".
-
-### 4. Bảo mật (`## Lens 4 — Security`)
-Máy quét (`ket-qua-bao-mat.md`) bắt mẫu đã biết — secret lộ, CVE, pattern SAST.
-Nó không biết **ý đồ**: endpoint mới thiếu kiểm quyền, log in cả số tài khoản,
-đường dẫn ghép từ input người dùng nhưng đi qua hàm nội bộ mà rule không theo
-được. Lăng kính này đọc diff để tìm đúng những thứ đó.
-
-Bảng cố định, **đủ cả bảy dòng**, không thêm bớt, không đổi tên:
-
-| Hạng mục | Câu hỏi khi đọc diff |
+| Item | Question |
 |---|---|
-| `Input validation / injection` | Input từ ngoài (request, file, message, env) đi vào SQL/shell/template/query/regex có được tham số hoá / escape / kiểm dạng không? |
-| `Authn / authz` | Endpoint/hành động mới hoặc đổi có kiểm đăng nhập và quyền **đúng như YC Phân quyền** trong `spec.md`? Có chỗ lấy id từ request mà không kiểm chủ sở hữu (IDOR)? |
-| `Sensitive data / PII in logs` | Dữ liệu cá nhân, tài chính, token có bị log, trả về thừa trong response, ghi ra file tạm, gửi sang hệ thống ngoài không? |
-| `Secrets / config` | Có secret/khoá/mật khẩu cứng trong code, test, config? Mặc định có an toàn (debug tắt, CORS hẹp, TLS bật)? |
-| `Crypto` | Thuật toán/độ dài khoá/nguồn ngẫu nhiên có đúng chuẩn? Có tự chế crypto, so sánh token không hằng thời gian? |
-| `SSRF / path traversal / deserialization` | URL, đường dẫn file, dữ liệu deserialize có đến từ input không tin cậy mà không giới hạn? |
-| `New dependencies` | Dependency mới / nâng bản: có cần thiết, được bảo trì, có trong kết quả SCA, license hợp lệ? |
+| `Input validation / injection` | Does external input (request, file, message, env) reach SQL/shell/template/query/regex parameterised / escaped / validated? |
+| `Authn / authz` | Do new endpoints/actions check login and permission **as the spec's authorisation YC says**? Ids taken from the request without an ownership check (IDOR)? |
+| `Sensitive data / PII in logs` | Personal/financial data or tokens logged, over-returned, written to temp files, sent out? |
+| `Secrets / config` | Hard-coded secrets in code/test/config? Safe defaults (debug off, narrow CORS, TLS)? |
+| `Crypto` | Standard algorithm, key length, randomness? Home-made crypto, non-constant-time token compare? |
+| `SSRF / path traversal / deserialization` | URLs, paths, deserialised data from untrusted input without limits? |
+| `New dependencies` | Needed, maintained, present in SCA results, valid licence? |
 
-**Code nhạy cảm.** Repo khai `sensitive_code` (vd `src/auth/* src/payment/*`)
-mà diff đụng vào thì Lens 4 của agent chưa đủ: một **người** rà bảo mật đọc Lens 4
-và diff, rồi tự ghi `- Security reviewer: <tên>` ở đầu `review.md`. Agent **không**
-điền dòng này — để trống, nêu danh sách file nhạy cảm (`aw check review` in ra) và
-dừng chờ người.
+Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not applicable` (+ reason, after reading the diff).
 
-Verdict mỗi dòng: `pass` / `finding` (kèm `file:dòng`, **và** thêm finding ở Lens 3
-với mức do bạn phán) / `not applicable` (kèm lý do — vd "diff không có input từ
-ngoài"). `not applicable` là kết luận sau khi đã đọc diff, không phải cách bỏ qua
-dòng khó.
+**Sensitive code** (`sensitive_code`): diff touches it → a **human** security reviewer reads Lens 4 and the diff and writes `- Security reviewer: <name>` at the top of `review.md`. Leave it empty, list the sensitive files (`aw check review` prints them), stop and wait.
 
-## Mức độ finding
+## Finding levels
 
-| Mức | Nghĩa |
+| Level | Meaning |
 |---|---|
-| `Blocker` | Sai đặc tả, lệch quyết định đã duyệt, lỗi gây hỏng, **lỗ hổng bảo mật khai thác được**, **mất hoặc lộ dữ liệu**, hoặc **breaking change chưa khai** (API/payload/schema/event đổi mà `tdd.md`/MR không nêu). Không được merge. |
-| `Should fix` | Đúng nhưng có vấn đề thật về chất lượng. |
-| `Nit` | Tuỳ người viết quyết định. |
+| `Blocker` | Spec violation, deviation from an approved decision, breaking bug, exploitable vulnerability, data loss/leak, undeclared breaking change (API/payload/schema/event changed but not in `tdd.md`/MR). Must not merge |
+| `Should fix` | Correct but a real quality problem |
+| `Nit` | Author decides |
 
-## Theo loại việc
+## By work type — reviewer's judgement
 
-Máy kiểm lại mọi luật chặn của `implement`. Phần người phải phán:
-
-| Loại | Người rà soát làm gì |
+| Type | Do |
 |---|---|
-| `bugfix` | Đọc `tai-hien.md`: test đỏ **đúng vì bug**, không phải vì lỗi biên dịch/thiếu hàm. Ghi `Repro test fails because: <trích output>` — thiếu dòng này thì máy chặn |
-| `refactor`/`perf` | Với từng file ở "Modified existing tests": diff chỉ đổi import/cấu trúc, **không đổi assertion** |
-| `perf` | Đọc `do-hieu-nang.md`, kết luận YC hiệu năng `pass`/`fail` theo số đo — tính cả độ dao động |
-| `chore` | Mức `patch | minor` khai ở "Dependency upgrades" là đúng (major phải là refactor riêng) |
+| `bugfix` | Read `tai-hien.md`: the test is red **because of the bug** (not a compile error/missing function). Write `Repro test fails because: <quoted output>` (missing → block) |
+| `refactor`/`perf` | For each file in "Modified existing tests": the diff only changes imports/structure, **no assertion changes** |
+| `perf` | Read `do-hieu-nang.md`, judge the performance YC by the numbers, allowing for noise |
+| `chore` | The `patch \| minor` level in "Dependency upgrades" is right (major = separate refactor) |
 
-## Đầu ra
+## Output
 
-- `review.md` — theo `templates/review.md`. Đầu mục, tên trường và giá trị viết tiếng
-  Anh, giữ đúng như mẫu (`## Lens 1/2/3/4`, verdict `pass | partial | fail | pending`,
-  `## Repo rules` với `pass | violation | not applicable`, `## Lens 4 — Security` với
-  `pass | finding | not applicable`, `Repro test fails because:`, `- None`,
-  `- Reviewed tree:`, `- Blocker findings: <n>`, `- Category:`,
-  `[Blocker] / [Should fix] / [Nit]`) — checker đọc theo đúng chữ đó; nội dung điền
-  vào viết tiếng Việt.
+`review.md` per `templates/review.md`. `- Reviewed tree:` = the `Tree` line of `ket-qua-kiem-thu.md`; code changed after review → machine blocks, review again.
 
-Dòng `- Reviewed tree:` ở đầu `review.md`: chép dòng `Tree` của
-`ket-qua-kiem-thu.md` (máy đã kiểm nó khớp code). Code đổi sau khi rà thì kết luận
-không còn nói về code đó — máy chặn, rà lại.
+## Forbidden
 
-## Cấm
+- "Looks fine" reviews — not going through every `YC-NNN` = not run.
+- **Editing code.** Fixes go back to `04-implement` as new tasks.
+- Raising a style remark to `Blocker`.
+- `pass` for a YC on an unconfirmed assumption.
+- Filling in `Security reviewer` — not even with the name of the person chatting with you.
+- `not applicable` for the whole Lens 4 table without reading the diff; downgrading an exploitable vulnerability to `Should fix` as "unlikely".
 
-- Rà soát ở chế độ "nhìn qua thấy ổn". Không đi hết từng `YC-NNN` thì phase
-  này coi như chưa chạy.
-- **Tự sửa code.** Phase này chỉ ghi nhận. Sửa là quay lại `04-implement` với
-  task mới — nếu không, findings sẽ biến mất vào một diff không ai kiểm lại.
-- Nâng một góp ý phong cách lên mức `Chặn`.
-- Kết luận `pass` cho yêu cầu đang đứng trên giả định chưa được xác nhận.
-- Tự điền `Security reviewer` — kể cả tên người dùng đang chat với mình. Người
-  rà bảo mật tự ghi tên sau khi đọc.
-- Ghi `not applicable` cho cả bảng Lens 4 mà không đọc diff, hoặc hạ một lỗ hổng
-  khai thác được xuống `Should fix` vì "khó xảy ra".
+## Exit conditions
 
-## Điều kiện ra
+**Machine:** `aw check review` → `[x] ĐẠT`:
+- every `YC-NNN` has a valid verdict, no `[OPEN-QUESTION]` is `pass`; input passes `aw check plan`;
+- `ket-qua-kiem-thu.md` and `ket-qua-bao-mat.md` say `Kết quả: XANH` with `Tree` matching current code (code changed → rerun `aw check implement` or `aw check security`; recommitting the same code is not a change); chore touching dependencies has a green `sca` command;
+- **no implement warning left**; every task `[x]` with evidence matching `Verify`; no merge conflict markers; work-type rules;
+- `## Repo rules` has a valid verdict for **each** rule file (declared file exists, committed);
+- Lens 4 has seven valid rows; any `finding` → Lens 3 has at least one finding;
+- Lens 3 has findings **or** exactly `- None` (not both), no template placeholders; `Location`, `Category`, `Failure scenario` well-formed;
+- `## Conclusion` has `- Blocker findings: <n>` equal to the number of `[Blocker]` items; `- Reviewed tree:` matches the code;
+- diff touches `sensitive_code` → `- Security reviewer: <human name>` (not empty, not placeholder, not an agent name).
 
-**Máy:**
-- `aw check review` ra `[x] ĐẠT`:
-  - mọi `YC-NNN` có kết luận hợp lệ, không `[OPEN-QUESTION]` nào bị kết luận `pass`;
-  - đầu vào qua `aw check plan` (kéo theo design và spec);
-  - `ket-qua-kiem-thu.md` có và ghi `Kết quả: XANH`; `ket-qua-bao-mat.md` có và
-    ghi `Kết quả: XANH` (cùng lệnh quét với CI);
-  - cả hai file ghi `Tree` **khớp nội dung code hiện tại** — code đổi sau lần chạy
-    (kể cả chưa commit) thì bằng chứng hết giá trị: chạy lại `aw check implement`
-    (hoặc `aw check security`). Commit lại đúng code đó thì không tính là đổi;
-  - chore đụng file dependency: có lệnh nhóm `sca` chạy xanh;
-  - **không còn cảnh báo nào**: YC chưa có test, diff ngoài phạm vi, artifact lỗi
-    thời, loại việc lệch tiền tố branch, test cũ bị sửa chưa khai, điểm mù
-    `blocking` / `review-blocking` còn mở, test mới bị tắt / chạy riêng chưa khai
-    ở "Unplanned";
-  - mọi task `[x]` với bằng chứng xanh trong `ket-qua-task.md` khớp `Verify`;
-    không file nào còn dấu xung đột merge;
-  - luật theo loại việc (như `implement`), và bugfix có dòng `Repro test fails because:`;
-  - repo có quy tắc riêng (`rules_*`): file khai có thật, đã commit, và mục
-    "Repo rules" của `review.md` có kết luận hợp lệ cho **từng** file;
-  - `## Lens 4 — Security` có đủ bảy hạng mục, verdict `pass | finding | not applicable`,
-    `finding` / `not applicable` có vị trí / lý do, và có `finding` thì Lens 3 phải
-    có ít nhất một finding;
-  - `## Lens 3 — Quality` có ít nhất một finding **hoặc** đúng dòng `- None` (không
-    cả hai), không còn chữ giữ chỗ của mẫu; `[Blocker]` / `[Should fix]` có
-    `Location` dạng `file:dòng` và `Category` kebab-case; `[Blocker]` có
-    `Failure scenario`;
-  - `## Conclusion` có `- Blocker findings: <n>` với `n` bằng số mục `[Blocker]`;
-  - `- Reviewed tree:` khớp dấu vân tay code hiện tại;
-  - diff đụng `sensitive_code` thì có `- Security reviewer: <tên người>` (không
-    trống, không giữ chỗ, không phải tên agent).
-- Diff được so với **base ghi trong `intake.md`**, không phải `base_branch`. Base
-  không phải nhánh gốc hay nhánh phát hành (vd xếp chồng lên branch việc khác)
-  thì checker **chỉ cảnh báo** — nêu ra cho người.
+Diff is against the **base in `intake.md`**. Unusual base (e.g. stacked on another branch) → warning only, tell the human. On pass, `[Blocker]`/`[Should fix]` findings go to `aw journal` by `Category`; a category seen in other jobs → checker prints `[GỢI Ý]` to turn it into a machine rule.
 
-Đạt thì finding `[Blocker]` / `[Should fix]` được ghi vào nhật ký harness theo
-`Category` (`aw journal`); loại đã gặp ở việc khác thì checker in `[GỢI Ý]`.
-
-**Người:**
-- Xác nhận kết luận; quyết định xử lý các finding mức `Blocker`.
-- Có `[GỢI Ý]` nâng luật: quyết định có biến loại lỗi đó thành lệnh máy kiểm không.
-- Có cảnh báo base: xác nhận việc dựa trên code của branch khác là có chủ ý.
+**Human:** confirms the verdict, decides on `Blocker`s; decides on `[GỢI Ý]` rule suggestions; confirms an unusual base is intended.

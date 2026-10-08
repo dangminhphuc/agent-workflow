@@ -4,8 +4,9 @@
 # của từng agent. Không sửa trực tiếp file được sinh ra trong repo đích (chúng bị
 # exclude và được sinh lại bởi aw adapter build).
 #
-# Quy ước: định danh (khoá, id, đường dẫn) dùng tiếng Anh ASCII cho an toàn
-# tooling; mọi nội dung người và agent đọc đều bằng tiếng Việt.
+# Quy ước ngôn ngữ: định danh (khoá, id, đường dẫn) tiếng Anh ASCII. Nội dung agent
+# đọc lúc chạy (thân phase, rules, checkers, lời dặn adapter sinh) tiếng Anh cho gọn
+# ngữ cảnh; nội dung người đọc (name/summary, mẫu artifact, output của aw) tiếng Việt.
 
 version: 1
 name: Quy trình phát triển phần mềm dựa trên AI agent
@@ -53,7 +54,7 @@ phases:
   - id: ship
     file: workflow/phases/06-ship.md
     required: false
-    when: việc đã qua /aw-review và cần gửi MR/PR (tạo MR, theo dõi tới khi merge, dọn worktree)
+    when: the job passed /aw-review and needs an MR/PR (create it, follow until merged, clean up the worktree)
 
 rules:
   - workflow/rules/nguyen-tac-chung.md

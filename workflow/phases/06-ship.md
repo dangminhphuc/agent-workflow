@@ -3,7 +3,7 @@ id: ship
 name: Gửi MR và dọn việc
 summary: Bước 7 (tuỳ chọn) · Tạo MR/PR vào nhánh đích, theo dõi tới khi merge rồi dọn worktree và branch
 required: false
-when: việc đã qua /aw-review và cần gửi MR/PR
+when: the job passed /aw-review and needs an MR/PR (create it, follow until merged, clean up the worktree)
 runs_on_main_checkout: true
 inputs:
   - intake.md
@@ -18,149 +18,91 @@ inputs:
   - diff
 outputs:
   - merge-request.md
-  - ship.md (aw ship create ghi — không sửa tay)
-  - mo-ta-mr.md (aw ship create ghi khi chưa gửi được mô tả — để người dán)
+  - ship.md (written by aw ship create — never edit by hand)
+  - mo-ta-mr.md (written by aw ship create when the description could not be sent — for the human to paste)
 exit_machine:
   - aw check ship
 exit_human:
-  - Người chọn nhánh đích (develop, uat/…, main…) từ danh sách aw ship targets
-  - Người xác nhận tiêu đề, mô tả và nhánh đích trước khi tạo MR
-  - Người review và merge MR trên GitHub/GitLab — agent không merge
+  - The human picks the target branch (develop, uat/…, main…) from aw ship targets
+  - The human confirms title, description and target before the MR is created
+  - The human reviews and merges the MR on GitHub/GitLab — the agent never merges
 needs_clean_context: false
 ---
 
-# Phase 06 — Gửi MR và dọn việc  *(tuỳ chọn)*
+# Phase 06 — Send MR and clean up *(optional)*
 
-## Mục tiêu
+## Goal
 
-Đưa việc đã rà soát xong thành **một MR/PR** vào nhánh đích người chọn, theo dõi
-tới khi nó được merge, rồi **dọn** worktree và branch để checkout không đầy
-worktree chết.
+Turn the reviewed work into **one MR/PR** to the target branch the human picks, follow it until merged, then **clean up** the worktree and branch.
 
-Phase này có hai chế độ, tuỳ chỗ lệnh được gõ:
-
-| Gõ ở đâu | Làm gì |
+| Run where | Does |
 |---|---|
-| Worktree của việc | Viết mô tả MR → người chọn đích → tạo MR → báo trạng thái |
-| Checkout chính | Dọn mọi việc đã merge (mục "Ở checkout chính") |
+| The job's worktree | Write MR description → human picks target → create MR → report status |
+| Main checkout | Clean up every merged job (section below) |
 
-Tách như vậy vì không thể gỡ worktree mà chính phiên agent đang đứng trong đó.
+## On the main checkout
 
-## Ở checkout chính
+Step 0 says **ĐANG Ở CHECKOUT CHÍNH** → do only this section.
 
-Bước 0 ra **ĐANG Ở CHECKOUT CHÍNH** thì làm phần này, bỏ qua mọi phần còn lại.
+1. `aw ship sweep` (print only). It sorts each worktree with a `ship.md` into: **dọn được** (all MRs merged), **chờ merge**, **✗ người quyết** (MR closed, unknown, local branch has commits not in the MR).
+2. Print it verbatim to the human. If anything can be cleaned → ask: clean all, clean one (`<branch>`), or later. Cleaning = remove worktree (artifacts copied to archive), delete local and origin branch — irreversible, so **always ask**.
+3. Human agrees → `aw ship sweep [<branch>] --apply`, print the result.
+4. **✗** items: state the machine's reason, leave it to the human. Never `git branch -D`, `git push --delete`, `git worktree remove --force` yourself.
 
-1. Chạy `aw ship sweep` (chỉ in, không đụng gì). Nó hỏi lại trạng thái MR của
-   mọi worktree có `ship.md` và xếp từng việc vào: **dọn được** (mọi MR đã
-   merge), **chờ merge**, hoặc **✗ người quyết** (MR bị đóng, chưa rõ trạng thái,
-   branch local có commit chưa vào MR).
-2. In nguyên văn kết quả cho người. Có việc **dọn được** thì hỏi người: dọn tất
-   cả, dọn một việc (`aw ship sweep <branch> --apply`), hay để sau. Dọn gồm: gỡ
-   worktree (artifact chép vào archive), xoá branch local, xoá branch trên
-   origin — đều không lấy lại được bằng `git` thường, nên **phải hỏi**.
-3. Người đồng ý thì chạy `aw ship sweep [<branch>] --apply`, in kết quả.
-4. Mục **✗**: nói rõ lý do máy in ra và để người xử lý. Không tự `git branch -D`,
-   không tự `git push --delete`, không tự `git worktree remove --force`.
+Periodic follow-up: rerun this on a schedule (use the agent's loop/schedule feature if it has one; otherwise the human reruns).
 
-Người muốn theo dõi định kỳ thì cho chạy lại lệnh này ở checkout chính theo
-lịch (agent có cơ chế lặp/hẹn giờ thì dùng nó; không có thì người gõ lại).
+## In the job's worktree
 
-## Trong worktree của việc
+### 1. Write `merge-request.md`
 
-### Bước 1 — Viết `merge-request.md`
+Per `templates/merge-request.md` and the "Merge request" section of `conventions.md` (team convention wins over the template). The source table at the top of the template says which artifact feeds which section.
+- First line `# <MR title>` following the team's title convention.
+- Only state what is in artifacts or the diff. Unsure → `Open Questions`.
+- Not applicable → `None`, never delete a section. HTML comments are dropped by `aw ship create`.
+- Write the content in Vietnamese unless the team convention says otherwise.
 
-Theo mẫu `templates/merge-request.md` và mục "Merge request" của
-`conventions.md` (quy ước của team thắng mặc định của mẫu). Bảng nguồn ở đầu mẫu
-nói mục nào lấy từ artifact nào.
+Run `aw check ship <thư-mục-feature>` until `[x] ĐẠT`. It also blocks when `aw check review` fails or a `[Blocker]` remains → back to `/aw-implement` + `/aw-review`.
 
-- Dòng đầu là `# <tiêu đề MR>` — đúng quy ước tiêu đề của team.
-- Chỉ chép điều có trong artifact hoặc diff. Điều chưa chắc ghi vào
-  `Open Questions`, không viết như sự thật.
-- Mục không áp dụng ghi `None` — không xoá.
-- Comment HTML của mẫu là lời dặn: `aw ship create` bỏ chúng khi gửi đi.
+### 2. Human picks the target branch
 
-Chạy `aw check ship <thư-mục-feature>` tới khi `[x] ĐẠT`. Nó chặn cả khi
-`aw check review` chưa đạt hay `review.md` còn finding `[Blocker]` — khi đó
-quay lại `/aw-implement` + `/aw-review`, không sửa ở đây.
+`aw ship targets <thư-mục-feature>` → give the list to the **human** (from `mr_target_branches`; marks the base, `⚠` = would pull in commits outside this job). Never pick yourself, even with one option. Several targets: one MR each, repeat steps 2–3.
 
-### Bước 2 — Người chọn nhánh đích
+### 3. Human confirms, then create the MR
 
-Chạy `aw ship targets <thư-mục-feature>` và đưa danh sách cho **người** chọn.
-Danh sách theo khoá `mr_target_branches` của `conventions.md` (vd `develop uat/* main`;
-bỏ trống = `base_branch`), đánh dấu base của việc và nhánh nào sẽ kéo theo commit
-không thuộc việc (`⚠`). Không tự chọn, kể cả khi chỉ có một nhánh.
-
-Việc cần vào nhiều nhánh (vd `develop` rồi `uat/…`): mỗi nhánh một MR, mỗi lần
-người chọn một — chạy lại Bước 2–3.
-
-### Bước 3 — Người xác nhận, rồi tạo MR
-
-Tạo MR là việc **ra ngoài** (người khác thấy, có thể kích CI/thông báo). Trước
-khi chạy, cho người thấy: nhánh nguồn → nhánh đích, tiêu đề, và mô tả sẽ gửi.
-Người đồng ý thì:
+Creating an MR is **outward-facing**. Show the human: source → target, title, description to send. When they agree:
 
 ```sh
-aw ship create <thư-mục-feature> --target <nhánh-người-chọn> [--draft]
+aw ship create <thư-mục-feature> --target <human-chosen-branch> [--draft]
 ```
 
-Engine không giữ token. Nó tạo MR theo đường đầu tiên dùng được:
+The engine holds no token; it uses the first route that works: (1) logged-in `gh`/`glab` — sends everything; (2) GitLab without `glab` — push options, title only, description saved to `<thư-mục-feature>/mo-ta-mr.md` for the human to paste; (3) prints a prefilled MR link. Never install `gh`/`glab`, ask for tokens, or log in for the human.
 
-1. `gh` / `glab` đã cài **và đã đăng nhập** — gửi đủ tiêu đề và mô tả.
-2. GitLab mà không có `glab`: tạo MR ngay trong `git push` (push options) — chỉ
-   cần quyền git sẵn có. Chỉ gửi được tiêu đề: lệnh để mô tả ở
-   `<thư-mục-feature>/mo-ta-mr.md`, **đưa người nội dung đó** để dán vào MR.
-3. Còn lại: in link tạo MR đã điền sẵn đích, tiêu đề, mô tả.
+| Result `[x]` | Do |
+|---|---|
+| `ĐÃ TẠO MR` | Give the URL (stdout). "Mô tả CHƯA gửi" → give the content of `mo-ta-mr.md` |
+| `ĐÃ CÓ MR ĐANG MỞ` | Nothing new created; new commits pushed to the existing MR. Give its URL. The engine never overwrites the MR description |
+| `CHƯA ĐỦ ĐIỀU KIỆN` | `aw check ship` fails or uncommitted changes remain. Never commit unknown changes (that is `/aw-implement`'s job) |
+| `KÉO THEO COMMIT NGOÀI VIỆC` | Print the commit list. Human decides: other target, new branch + cherry-pick, or accept — add `--allow-extra-commits` only when the human says accept |
+| `KHÔNG TẠO ĐƯỢC MR` | Branch pushed. Give the prefilled link; once the human creates it and gives the link → `aw ship create <thư-mục-feature> --target <branch> --url <link>` |
 
-Không tự cài `gh`/`glab`, không xin token, không đăng nhập hộ.
+### 4. Follow up
 
-Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:
+`aw ship status <thư-mục-feature>` updates `ship.md`. Without `gh`/`glab`: inferred from git (detects normal and clean squash merges; closed MRs or squash with conflict fixes → human checks on the web).
 
-- **ĐÃ TẠO MR:** stdout là URL — đưa cho người. `ship.md` đã ghi MR. Lệnh báo
-  "Mô tả CHƯA gửi" thì đưa người nội dung `mo-ta-mr.md` để dán.
-- **ĐÃ CÓ MR ĐANG MỞ:** không tạo thêm; lệnh chỉ push commit mới lên branch (MR
-  tự cập nhật). Đưa URL cũ. Muốn đổi mô tả thì sửa trên nền tảng — engine không
-  ghi đè mô tả MR.
-- **CHƯA ĐỦ ĐIỀU KIỆN:** `aw check ship` chưa đạt hoặc còn thay đổi chưa commit.
-  Commit là việc của `/aw-implement` (code) — không commit hộ thay đổi lạ.
-- **KÉO THEO COMMIT NGOÀI VIỆC:** in danh sách commit cho người. Người quyết:
-  chọn đích khác, tách branch mới từ đích rồi cherry-pick, hoặc chấp nhận (base
-  có chủ ý chứa các commit đó) — chỉ khi người nói chấp nhận mới thêm
-  `--allow-extra-commits`.
-- **KHÔNG TẠO ĐƯỢC MR:** branch đã push; không đường tự động nào dùng được (lý do
-  in phía trên, vd `gh chưa đăng nhập`). Đưa người link điền sẵn mà lệnh in ra;
-  người tạo xong đưa link MR thì ghi lại:
-  `aw ship create <thư-mục-feature> --target <nhánh> --url <link>`.
+- `CÒN MR ĐANG MỞ`: waiting for review. Review asks for code changes → `/aw-implement` (new task) → `/aw-review` → `aw ship create … --target <same branch>` (pushes to the same MR).
+- `ĐÃ MERGE HẾT`: tell the human to open a session on the **main checkout** and run this command to clean up.
+- `CÓ MR BỊ ĐÓNG KHÔNG MERGE`, `CHƯA RÕ`: report, the human decides.
 
-### Bước 4 — Theo dõi
+## Forbidden
 
-`aw ship status <thư-mục-feature>` hỏi nền tảng và cập nhật `ship.md`. Không có
-`gh`/`glab` dùng được thì trạng thái suy từ git: nhận ra merge thường và squash
-merge sạch; MR bị đóng hay squash có sửa xung đột thì không thấy — người kiểm trên web.
+- **Merging**, approving MRs, enabling auto-merge.
+- Picking the target branch; adding `--allow-extra-commits` yourself.
+- Force-pushing or rebasing a branch that has an MR.
+- Editing `ship.md` by hand.
+- Cleaning up without the human's consent, or by any command other than `aw ship sweep --apply`.
 
-- **CÒN MR ĐANG MỞ:** chờ review. Góp ý review cần sửa code → `/aw-implement` (task
-  mới trong `plan.md`), rồi `/aw-review` lại, rồi chạy lại `aw ship create … --target
-  <cùng nhánh>`: nó push commit mới vào MR cũ, không tạo MR mới.
-- **ĐÃ MERGE HẾT:** báo người: mở phiên ở **checkout chính** và gõ lệnh này để dọn.
-- **CÓ MR BỊ ĐÓNG KHÔNG MERGE / CHƯA RÕ:** nêu ra, người quyết.
+## Exit conditions
 
-## Cấm
+**Machine:** `aw check ship` → `[x] ĐẠT` — `aw check review` passes; no `[Blocker]`; `merge-request.md` has a title, all template sections, content in `Problem`/`Changes`/`Testing`, no template placeholders. `aw ship create` records the MR in `ship.md`.
 
-- **Merge MR**, duyệt MR, hay bật auto-merge. Merge là quyết định của người.
-- Tự chọn nhánh đích, tự thêm `--allow-extra-commits`.
-- Force-push, rebase lại branch đã có MR để "cho sạch" — người review mất dấu.
-- Sửa tay `ship.md` để đổi trạng thái — máy dựa vào nó để quyết việc xoá branch.
-- Dọn (gỡ worktree, xoá branch) mà người chưa đồng ý, hoặc bằng lệnh khác ngoài
-  `aw ship sweep --apply`.
-
-## Điều kiện ra
-
-**Máy:**
-- `aw check ship` ra `[x] ĐẠT`: `aw check review` đạt; `review.md` không còn
-  `[Blocker]`; `merge-request.md` có tiêu đề, đủ mục của mẫu, `Problem`/`Changes`/
-  `Testing` có nội dung, không còn chữ giữ chỗ của mẫu.
-- `aw ship create` ghi MR vào `ship.md` (MR có thật trên nền tảng).
-
-**Người:**
-- Chọn nhánh đích; xác nhận tiêu đề, mô tả trước khi tạo MR.
-- Review và merge trên GitHub/GitLab.
-- Đồng ý dọn ở checkout chính.
+**Human:** picks the target; confirms title and description; reviews and merges; agrees to cleanup.

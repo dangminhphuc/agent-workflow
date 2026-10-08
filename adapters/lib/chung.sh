@@ -97,8 +97,7 @@ don_file_cu() {
 # cần thiết vì agent có thể nạp thư mục của agent khác (Cursor nạp .claude/ để
 # tương thích): lời dặn viết cho tool của agent này thì agent kia không làm được.
 canh_bao() {
-  printf '> **File này được SINH TỰ ĐỘNG** từ `%s` (engine agent-workflow %s) bởi `aw adapter build`.\n' "$1" "$(cat "$ROOT/VERSION" 2>/dev/null)"
-  printf '> Đừng sửa trực tiếp — file bị exclude khỏi git và sẽ bị sinh lại.\n'
+  printf '> **File này được SINH TỰ ĐỘNG** từ `%s` (engine agent-workflow %s) bởi `aw adapter build` — generated, do not edit.\n' "$1" "$(cat "$ROOT/VERSION" 2>/dev/null)"
   printf '> %s\n\n' "$(_hk ad_danh_cho)"
 }
 
@@ -160,15 +159,15 @@ kiem_tra_nguon() {
 }
 
 dich_lenh() {
-  printf '  - `%s %s` → khối `Kết quả` cuối output phải đánh dấu `[x] ĐẠT`\n' "$1" "$FD"
+  printf '  - `%s %s` → `[x] ĐẠT`\n' "$1" "$FD"
 }
 
 mo_ta_input() {
   case "$1" in
-    confluence) printf '  - Confluence qua MCP Atlassian — ghi lại URL page + tên heading\n' ;;
-    jira)       printf '  - Jira qua MCP Atlassian — ghi lại mã issue + URL\n' ;;
-    file)       printf '  - Tài liệu trong repo (kể cả incident note) — ghi lại đường dẫn + heading\n' ;;
-    diff)       printf '  - Diff so với nhánh gốc (`git diff`, `git status`; nhánh gốc khai trong `%s`)\n' "$CONV_DOC" ;;
+    confluence) printf '  - Confluence (MCP Atlassian) — record URL + heading\n' ;;
+    jira)       printf '  - Jira (MCP Atlassian) — record issue key + URL\n' ;;
+    file)       printf '  - Repo files (incl. incident notes) — record path + heading\n' ;;
+    diff)       printf '  - Diff against the base (`git diff`, `git status`)\n' ;;
     *.md)       printf '  - `%s/%s`\n' "$FD" "$1" ;;
     *".md ("*)  printf '  - `%s/%s` (%s\n' "$FD" "${1%% (*}" "${1#* (}" ;;
     *)          printf '  - %s\n' "$1" ;;
@@ -177,7 +176,7 @@ mo_ta_input() {
 
 mo_ta_output() {
   case "$1" in
-    diff) printf '  - Thay đổi code trong repo\n' ;;
+    diff) printf '  - Code changes in the repo\n' ;;
     *)    printf '  - `%s/%s`\n' "$FD" "$1" ;;
   esac
 }
@@ -186,45 +185,42 @@ mo_ta_output() {
 # giao dien chung giua cac adapter, nen no nam trong engine (aw feature), khong trong prompt.
 #   buoc_xac_dinh_feature <cách-viết-tham-số> [input] [true = phase có việc ở checkout chính]
 buoc_xac_dinh_feature() {
-  printf '## Bước 0 — Xác định feature (luôn làm trước)\n\n'
+  printf '## Step 0 — Identify the feature (always first)\n\n'
+  printf 'Talk to the human in Vietnamese. Every `aw …` command (agent-workflow engine, installed globally) ends with a `Kết quả` block — act on the label marked `[x]`.\n\n'
   if [ "${2:-}" = "input" ]; then
     # Tham so cua lenh la INPUT, khong phai ten feature: khong truyen vao aw feature,
     # neu khong "/aw-intake JIRA-123" se tao thu muc artifact ten JIRA-123.
-    printf 'Chạy `aw feature` — **không** truyền tham số của lệnh: tham số là input, không phải tên feature.\n\n'
-    printf 'Đọc khối `Kết quả` cuối output — làm theo nhãn được đánh `[x]`:\n\n'
-    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
-    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → làm theo mục "Tạo worktree" trong mô tả phase: chốt loại việc với người, chạy `aw worktree new` để **đề xuất**, NGƯỜI chọn base, rồi mới `--create --base <ref>`. Ghi `intake.md` vào worktree mới, rồi dừng: người mở phiên mới ở đó.\n'
-    printf -- '- **CẦN HỎI NGƯỜI:** đang trong worktree nhưng branch không khớp quy ước → dừng lại hỏi người. Không tự đặt tên.\n\n'
+    printf 'Run `aw feature` — **do not** pass the command arguments (they are input, not a feature name):\n\n'
+    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout = `%s`. Print `Đang làm với: %s` before reading/writing anything.\n' "$FD" "$FD"
+    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "Create the worktree" in the phase description: agree the work type, `aw worktree new` to **propose**, the HUMAN picks the base, only then `--create --base <ref>`. Write `intake.md` in the new worktree, then stop.\n'
+    printf -- '- **CẦN HỎI NGƯỜI:** in a worktree whose branch does not match the convention → stop, ask the human. Never invent a name.\n\n'
   else
-    printf 'Chạy `aw feature %s`.\n\n' "$1"
-    printf 'Đọc khối `Kết quả` cuối output — làm theo nhãn được đánh `[x]`:\n\n'
-    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout là thư mục feature — bên dưới gọi là `%s`. In ra `Đang làm với: %s` rồi mới đọc/ghi gì.\n' "$FD" "$FD"
+    printf 'Run `aw feature %s`:\n\n' "$1"
+    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout = `%s`. Print `Đang làm với: %s` before reading/writing anything.\n' "$FD" "$FD"
     if [ "${3:-}" = "true" ]; then
-      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → làm theo mục "Ở checkout chính" trong mô tả phase (không cần thư mục feature). Không tự chuyển thư mục.\n'
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "On the main checkout" in the phase description (no feature dir needed). Never change directory yourself.\n'
     else
-      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** đang ở checkout chính → **dừng lại**. Quy trình bắt buộc làm trong worktree: bảo người mở phiên mới trong worktree của việc (chưa có thì chạy `/aw-intake` ở checkout chính). Không tự chuyển thư mục.\n'
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** stop — tell the human to open a session in the job'"'"'s worktree (none yet → `/aw-intake` on the main checkout). Never change directory yourself.\n'
     fi
-    printf -- '- **CẦN HỎI NGƯỜI:** branch không khớp quy ước và không có tham số → **dừng lại hỏi** người dùng tên feature. Không tự đặt tên.\n'
-    printf -- '- **TÊN KHÔNG HỢP LỆ:** tên không hợp lệ → báo lại cho người dùng.\n\n'
+    printf -- '- **CẦN HỎI NGƯỜI:** stop, ask the human for the feature name. Never invent one.\n'
+    printf -- '- **TÊN KHÔNG HỢP LỆ:** tell the human.\n\n'
   fi
-  printf 'Lệnh `aw …` là lệnh của engine agent-workflow (cài global). Đường dẫn `templates/`, `rules/`, `checkers/` trong mô tả phase nằm trong `%s/`.\n' "$DOCS"
-  printf 'Mọi `aw check` chạy đúng version engine ghi ở dòng `Engine:` của `intake.md` — không tự đổi dòng đó.\n\n'
+  printf '`templates/`, `rules/`, `checkers/` in the description live in `%s/`. Every `aw check` runs the engine version on the `Engine:` line of `intake.md` — never edit that line.\n\n' "$DOCS"
 }
 
 # Buoc 0b cua /aw-intake: tham so -> dong "## Input". Nhan do engine gan, khong do
 # agent doan; nguyen van di qua heredoc co nhay de khong bi shell dien giai.
 #   buoc_phan_loai_input <cách-viết-tham-số>
 buoc_phan_loai_input() {
-  printf '## Bước 0b — Phân loại tham số thành input\n\n'
-  printf 'Tham số của lệnh: `%s`\n\n' "$1"
-  printf 'Bước này không cần thư mục feature: khi Bước 0 ra `CẦN HỎI NGƯỜI`, chạy nó trước để có input mà chốt loại việc với người.\n\n'
-  printf '**Không tự gán nhãn.** Chạy đúng như dưới, giữ nguyên văn tham số (kể cả dấu nháy, xuống dòng). Thêm `--skip %s/intake.md` khi file đó **đã có** (chạy lại = gộp thêm, xem mục "Chạy lại" trong mô tả phase):\n\n' "$FD"
+  printf '## Step 0b — Arguments to input\n\n'
+  printf 'Arguments: `%s`. Needs no feature dir (if Step 0 gives `CẦN HỎI NGƯỜI`, run this first to have input for agreeing the work type).\n\n' "$1"
+  printf '**Never label input yourself.** Run exactly as below, arguments verbatim; add `--skip %s/intake.md` when that file **already exists** (rerun = append):\n\n' "$FD"
   printf '```sh\naw input [--skip %s/intake.md] - <<'"'"'HET_INPUT'"'"'\n%s\nHET_INPUT\n```\n\n' "$FD" "$1"
-  printf 'Stdout là **đúng các dòng** ghi vào `## Input` — chép nguyên, không sửa. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:\n\n'
-  printf -- '- **NGUỒN:** các tham số đều là nguồn. Stdout rỗng = không có input mới.\n'
-  printf -- '- **LỜI NGƯỜI DÙNG:** tham số là lời người dùng → stdout là một mục `[HUMAN]` nguyên văn. Nếu stderr có "Đề xuất tách thêm": hỏi người, chỉ ghi các dòng đó khi người đồng ý.\n'
-  printf -- '- **KHÔNG CÓ THAM SỐ:** không có tham số → hỏi người dùng input, rồi chạy lại lệnh trên với **nguyên văn câu trả lời**.\n'
-  printf -- '- **ĐƯỜNG DẪN KHÔNG TỒN TẠI:** có đường dẫn không tồn tại → hỏi lại người dùng. Không tự đoán đường dẫn.\n\n'
+  printf 'Stdout = **exactly the lines** for `## Input`, copy unchanged:\n\n'
+  printf -- '- **NGUỒN:** all arguments are sources. Empty stdout = no new input.\n'
+  printf -- '- **LỜI NGƯỜI DÙNG:** stdout is one verbatim `[HUMAN]` entry. Stderr has "Đề xuất tách thêm" → ask the human; add those lines only if they agree.\n'
+  printf -- '- **KHÔNG CÓ THAM SỐ:** ask the human for input, rerun with their **verbatim** answer.\n'
+  printf -- '- **ĐƯỜNG DẪN KHÔNG TỒN TẠI:** ask the human again. Never guess.\n\n'
 }
 
 # buoc_cong_duyet <phase> — phase khai approval_gate: true. Người gõ lệnh phase
@@ -234,69 +230,46 @@ buoc_phan_loai_input() {
 # chọn thì in lựa chọn đánh số.
 buoc_cong_duyet() {
   case "$1" in
-    design) _cd_gi="spec"; _cd_lenh="/aw-design" ;;
-    plan)   _cd_gi="mọi quyết định D-xx (chore: spec)"; _cd_lenh="/aw-plan" ;;
-    *)      _cd_gi="phần trước"; _cd_lenh="/$(ten_lenh "$1")" ;;
+    design) _cd_gi="the spec"; _cd_lenh="/aw-design" ;;
+    plan)   _cd_gi="every D-xx decision (chore: the spec)"; _cd_lenh="/aw-plan" ;;
+    *)      _cd_gi="the previous phase"; _cd_lenh="/$(ten_lenh "$1")" ;;
   esac
-  printf '## Bước 1 — Cổng duyệt (làm ngay sau Bước 0, trước mọi việc khác)
-
-'
-  printf 'Vào `%s` cần %s đã được **người** duyệt. Người gõ `%s` khi chưa duyệt thì hỏi lại cho rõ — **không** tự tick, **không** coi việc gõ lệnh là đã duyệt.
-
-' "$_cd_lenh" "$_cd_gi" "$_cd_lenh"
-  printf 'Chạy `aw approval %s %s`. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:
-
-' "$1" "$FD"
-  printf -- '- **ĐÃ DUYỆT:** đi tiếp phase, không hỏi gì.
-'
-  printf -- '- **CHƯA DUYỆT:** in **nguyên văn** stdout cho người trong một khối ```` ```text ```` (máy đã viết sẵn cho người đọc — không tóm tắt, không thêm bớt), rồi hỏi bằng **hộp xác nhận** bên dưới. Dừng ở đó cho tới khi người chọn.
-'
-  printf -- '- **SAI THAM SỐ HOẶC THIẾU FILE:** thiếu file thì báo người chạy phase trước. Lệnh không có (việc ghim engine cũ) thì bỏ qua bước này — `aw check` vẫn chặn.
-
-'
-  printf '**Hộp xác nhận** — một câu hỏi, ba lựa chọn theo thứ tự:
-
-'
-  printf '1. **Tôi đã duyệt xong — kiểm lại** → chạy lại `aw approval %s %s`. ĐÃ DUYỆT thì báo một dòng ("Đã thấy bạn duyệt — vào %s") rồi đi tiếp. Vẫn CHƯA DUYỆT thì chỉ in lại phần `Trạng thái` và `Cách duyệt`/`Chưa duyệt` mới, rồi hỏi lại hộp này.
-' "$1" "$FD" "$_cd_lenh"
-  printf '2. **Giải thích từng điểm cần duyệt** → đi qua từng mục trong stdout, mỗi mục 2–3 dòng: nó nói gì, nguồn ở đâu (YC, dòng, tài liệu), duyệt sai thì hậu quả gì. Đọc từ file, không suy diễn thêm. Xong thì hỏi lại hộp này.
-'
-  printf '3. **Dừng — tôi duyệt sau** → không làm gì của phase. Nhắc: duyệt xong thì gõ lại `%s`.
-
-' "$_cd_lenh"
-  printf 'Người gõ "duyệt hộ", "tick giúp", "ok cứ làm đi"… thì **từ chối** một dòng (chỉ người được tick — ô duyệt là bằng chứng người đã đọc), chỉ lại đúng file và dòng, rồi hỏi lại hộp này. Người muốn sửa nội dung thì đó là việc của phase trước (`/aw-spec`, hoặc `/aw-design` cho D-xx) — nói vậy, không sửa ở đây.
-
-'
+  printf '## Step 1 — Approval gate (right after Step 0, before anything else)\n\n'
+  printf '`%s` needs %s approved by a **human**. Typing the command is not approval; the agent **never** ticks.\n\n' "$_cd_lenh" "$_cd_gi"
+  printf 'Run `aw approval %s %s`:\n\n' "$1" "$FD"
+  printf -- '- **ĐÃ DUYỆT:** continue, ask nothing.\n'
+  printf -- '- **CHƯA DUYỆT:** print stdout **verbatim** in a ```` ```text ```` block (no summarising), then ask the **confirmation box**. Wait for the human'"'"'s choice.\n'
+  printf -- '- **SAI THAM SỐ HOẶC THIẾU FILE:** missing file → tell the human to run the previous phase. Command missing (old engine) → skip this step (`aw check` still blocks).\n\n'
+  printf '**Confirmation box** — three options, in this order (labels shown to the human, keep verbatim):\n\n'
+  printf '1. **Tôi đã duyệt xong — kiểm lại** → rerun `aw approval %s %s`. ĐÃ DUYỆT → one line ("Đã thấy bạn duyệt — vào %s"), continue. Still CHƯA DUYỆT → reprint only `Trạng thái` and `Cách duyệt`/`Chưa duyệt`, ask again.\n' "$1" "$FD" "$_cd_lenh"
+  printf '2. **Giải thích từng điểm cần duyệt** → 2–3 lines per item in stdout: what it says, where the source is, what goes wrong if approved by mistake. Read from files only. Then ask again.\n'
+  printf '3. **Dừng — tôi duyệt sau** → do nothing of the phase; remind them to run `%s` again after approving.\n\n' "$_cd_lenh"
+  printf '"Duyệt hộ", "tick giúp", "ok cứ làm đi"… → **refuse** in one line (only the human may tick), point to the exact file and line, ask again. Wants to change content → that is `/aw-spec` (D-xx: `/aw-design`), do not edit here.\n\n'
 }
 
 # doc_truoc — mục "Đọc trước khi làm" chung
 doc_truoc() {
-  printf '### Đọc trước khi làm\n\n'
-  printf -- '- `%s/rules/nguyen-tac-chung.md`\n' "$DOCS"
-  printf -- '- `%s/rules/truy-vet-nguon.md`\n' "$DOCS"
-  printf -- '- `%s` — quy ước của repo (cấu hình của bản clone, không nằm trong git)\n\n' "$CONV_DOC"
+  printf '**Read first:** `%s/rules/nguyen-tac-chung.md`' "$DOCS"
+  if [ "${1:-}" = "true" ]; then printf ', `%s/rules/truy-vet-nguon.md`' "$DOCS"; fi
+  printf '. Repo conventions (look up when needed): `%s`.\n\n' "$CONV_DOC"
 }
 
 # buoc_quy_tac_repo <phase> — đọc quy tắc riêng của repo. Danh sách lấy LÚC CHẠY
 # bằng `aw rules`, không chép vào lúc build: conventions.md sửa là có hiệu lực ngay.
 buoc_quy_tac_repo() {
-  printf '### Quy tắc riêng của repo\n\n'
-  printf 'Chạy `aw rules %s`. Stdout là danh sách file (đường dẫn từ gốc repo) — **đọc từng file** trước khi làm. Làm theo nhãn được đánh `[x]` trong khối `Kết quả`:\n\n' "$1"
-  printf -- '- **ĐÃ LIỆT KÊ:** đọc hết các file đó và theo chúng trong phase này. Không in gì = không có quy tắc riêng.\n'
-  printf -- '- **KHAI SAI:** dừng lại, báo người sửa khoá `rules_*` trong `%s`. Không tự đoán file thay thế.\n\n' "$CONV_DOC"
-  printf 'Quy tắc repo xếp **dưới** `spec.md`, `tdd.md`, `plan.md` và luật quy trình: mâu thuẫn thì làm theo artifact và nêu ra, không vì quy tắc mà vượt phạm vi phase. File `SKILL.md` trong danh sách cũng đọc như tài liệu thường.\n\n'
+  printf '**Repo-specific rules:** run `aw rules %s` — **ĐÃ LIỆT KÊ:** read every printed file before working (nothing printed = none) · **KHAI SAI:** stop, ask the human to fix `rules_*` in `%s`; never guess a replacement. Priority: `rules/nguyen-tac-chung.md` § 7.\n\n' "$1" "$CONV_DOC"
 }
 
 # luat_tom_tat — bảy luật không được vi phạm, dùng trong file tổng của agent
 luat_tom_tat() {
-  printf '1. **Bàn giao bằng file.** Phase không được nhận đầu vào từ hội thoại phía trên.\n'
-  printf '2. **Không tự tuyên bố đạt** với điều kiện ra loại MÁY — phải chạy `aw check …` và dán kết quả thật.\n'
-  printf '3. **Agent không tự duyệt.** Không tick ô "Approved by human" (spec, D-xx), không sửa dấu duyệt `approval-hash`; sửa nội dung đã tick thì bỏ tick. Checker LLM chỉ được chặn.\n'
-  printf '4. **Không vượt phạm vi phase.** Việc thuộc phase khác thì ghi lại, không làm luôn.\n'
-  printf '5. **Không xoá artifact của phase trước.** Chạy lại là cập nhật, không viết đè trắng.\n'
-  printf '6. **Mọi yêu cầu phải truy được về nguồn.**\n'
-  printf '7. **Artifact viết cho NGƯỜI đọc.** Phân cấp rõ (heading, danh sách, bảng); câu ngắn, từ đơn giản.\n\n'
-  printf 'Bản đầy đủ: `%s/rules/nguyen-tac-chung.md` và `%s/rules/truy-vet-nguon.md`.\n\n' "$DOCS" "$DOCS"
+  printf '1. **Hand off through files** — never take input from earlier chat.\n'
+  printf '2. **Never declare a pass yourself** — run `aw check …`, paste the real result.\n'
+  printf '3. **Never approve** — never tick "Approved by human" or edit `approval-hash`; editing ticked content → untick. LLM checkers only block.\n'
+  printf '4. **Stay inside the phase** — record other phases'"'"' work, do not do it.\n'
+  printf '5. **Never delete earlier artifacts** — rerun = update.\n'
+  printf '6. **Every requirement traces to a source.**\n'
+  printf '7. **Artifacts are for humans** — Vietnamese, clear structure, short sentences.\n\n'
+  printf 'Full rules: `%s/rules/`.\n\n' "$DOCS"
 }
 
 # ======================================================================
@@ -392,60 +365,66 @@ sinh_command() {
     _hk ad_hoi_cong_duyet "$id"
   fi
 
-  printf '## Hợp đồng phase\n\n'
+  printf '## Phase contract\n\n'
   if [ "$req" = "true" ]; then
-    printf -- '- **Bắt buộc:** có\n'
+    printf -- '- **Required:** yes\n'
   else
-    printf -- '- **Bắt buộc:** không — chỉ chạy khi %s\n' "${when:-người dùng yêu cầu}"
+    printf -- '- **Required:** no — run only when %s\n' "${when:-the user asks}"
   fi
 
-  printf -- '- **Đọc vào:**\n'
+  printf -- '- **Reads:**\n'
   ins=$(fm_list "$src" inputs)
   if [ -z "$ins" ]; then
-    printf -- '  - (không có — phase này không đọc artifact nào)\n'
+    printf -- '  - (no artifacts)\n'
   else
     echo "$ins" | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
   fi
 
-  printf -- '- **Ghi ra:**\n'
-  fm_list "$src" outputs | while IFS= read -r o; do [ -n "$o" ] && mo_ta_output "$o"; done
-
+  printf -- '- **Writes:**\n'
   fm_list "$src" outputs | while IFS= read -r o; do
+    [ -n "$o" ] || continue
+    mo_ta_output "$o"
     case "$o" in
-      *.md)
-        if [ -f "$ROOT/workflow/templates/$o" ]; then
-          printf -- '- **Mẫu cho `%s`:** `%s/templates/%s` — đọc mẫu trước khi viết\n' "$o" "$DOCS" "$o"
-        fi ;;
+      *.md) if [ -f "$ROOT/workflow/templates/$o" ]; then printf '    — template `%s/templates/%s` (read before writing)\n' "$DOCS" "$o"; fi ;;
     esac
   done
 
   if [ -n "$lc" ]; then
     lco=$(fm_scalar "$ROOT/$lc" output)
-    printf -- '- **Checker LLM — chỉ được CHẶN, không được DUYỆT.** Sau khi viết xong, gọi subagent `%s` (ngữ cảnh sạch) với `%s`; nó ghi `%s/%s`. Không có file đó = KHÔNG ĐẠT, không phải "không có gì để báo".\n' \
+    printf -- '- **LLM checker (may only BLOCK, never APPROVE):** when done writing, call subagent `%s` (clean context) with `%s`; it writes `%s/%s`. File missing = KHÔNG ĐẠT.\n' \
       "$(ten_agent_checker "$lc")" "$FD" "$FD" "$lco"
   fi
 
   em=$(fm_list "$src" exit_machine)
   if [ -n "$em" ]; then
-    printf -- '- **Điều kiện ra — MÁY kiểm.** Bạn KHÔNG được tự tuyên bố đạt; phải chạy lệnh và dán kết quả thật:\n'
+    printf -- '- **Exit — MACHINE** (run it, paste the real result, never declare a pass yourself):\n'
     echo "$em" | while IFS= read -r c; do [ -n "$c" ] && dich_lenh "$c"; done
   fi
 
   eh=$(fm_list "$src" exit_human)
   if [ -n "$eh" ]; then
-    printf -- '- **Điều kiện ra — NGƯỜI xác nhận.** Nêu ra rồi dừng, không tự duyệt thay:\n'
+    printf -- '- **Exit — HUMAN** (state it, then stop; never approve for them):\n'
     echo "$eh" | while IFS= read -r c; do [ -n "$c" ] && printf '  - %s\n' "$c"; done
   fi
 
   if [ "$clean" = "true" ]; then
-    printf -- '- **Ngữ cảnh:** phase này phải chạy được từ phiên trắng. Chỉ nhận đầu vào từ file, không từ hội thoại phía trên.\n'
+    printf -- '- **Context:** must run from a blank session; input only from files.\n'
   fi
   if [ "$fresh" = "true" ]; then
-    printf -- '- **Bắt buộc:** chạy qua subagent `ra-soat-doc-lap`, truyền cho nó `%s`. KHÔNG rà soát bằng chính phiên vừa viết code.\n' "$FD"
+    printf -- '- **Mandatory:** run through subagent `ra-soat-doc-lap`, passing `%s`. NEVER review in the session that wrote the code.\n' "$FD"
   fi
 
   printf '\n'
-  doc_truoc
+  if [ "$fresh" = "true" ]; then
+    # Phiên chính chỉ bàn giao: mô tả phase đầy đủ nằm trong subagent, nạp ở đây là phí ngữ cảnh.
+    _o=$(fm_list "$src" outputs | head -1); _c=$(fm_list "$src" exit_machine | head -1)
+    printf '## What this session does\n\n'
+    printf '1. Call subagent `ra-soat-doc-lap` with `%s`. It holds the full phase description, writes `%s`, runs `%s`. This session does **not** review and does not edit `%s`.\n' "$FD" "$_o" "$_c" "$_o"
+    printf '2. When it finishes: give the human its verdict and the real `%s` result (in Vietnamese); state the HUMAN exit conditions above, then stop.\n' "$_c"
+    printf '3. Cannot call subagents: tell the human to open a new session loading only the `ra-soat-doc-lap` subagent file + the feature dir.\n'
+    return 0
+  fi
+  doc_truoc "$(fm_scalar "$src" trace_rule)"
   case " $BL_QUY_TAC " in *" $id "*) buoc_quy_tac_repo "$id" ;; esac
   printf -- '---\n'
   md_body "$src"
@@ -493,17 +472,14 @@ ad_sinh() {
   if [ -n "$REV_SRC" ]; then
     kiem_tra_ghi_de "$A/ra-soat-doc-lap.md"
     {
-      _hk ad_dau_agent ra-soat-doc-lap 'Rà soát độc lập diff theo spec.md, tdd.md và plan.md bằng ngữ cảnh sạch. Dùng cho phase review. Không dùng chính phiên vừa hiện thực để rà soát. Người gọi phải truyền thư mục feature.'
+      _hk ad_dau_agent ra-soat-doc-lap 'Independent clean-context review of the diff against spec.md, tdd.md and plan.md. Used by the review phase; never the session that implemented. The caller must pass the feature dir.'
       canh_bao "$REV_FILE"
-      printf 'Bạn là người rà soát độc lập. Bạn CHƯA từng nhìn thấy code này và không biết\n'
-      printf 'gì về lập luận đã dẫn tới nó — đó chính là giá trị của bạn. Đừng suy đoán ý\n'
-      printf 'định của người viết; chỉ đối chiếu code với đặc tả và thiết kế đã duyệt.\n\n'
-      printf 'Người gọi truyền cho bạn `%s` (vd `%s/feat_tao-todo`). Không có thì dừng lại hỏi.\n\n' "$FD" "$ART"
-      printf 'Đọc vào:\n'
+      printf 'You are an independent reviewer: you have NEVER seen this code or the reasoning behind it. Do not guess the author'"'"'s intent; only compare the code with the approved spec and design. Write `review.md` in Vietnamese.\n\n'
+      printf 'The caller passes `%s` (e.g. `%s/feat_tao-todo`); missing → stop and ask.\n\n' "$FD" "$ART"
+      printf 'Reads:\n'
       fm_list "$REV_SRC" inputs | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
-      printf '\nGhi ra `%s/review.md` theo mẫu `%s/templates/review.md`, rồi chạy\n' "$FD" "$DOCS"
-      printf '`aw check review %s` và dán kết quả thật.\n' "$FD"
-      printf 'Đường dẫn `templates/`, `rules/` bên dưới nằm trong `%s/`.\n\n' "$DOCS"
+      printf '\nWrite `%s/review.md` per template `%s/templates/review.md`, then run `aw check review %s` and paste the real result. `templates/`, `rules/` below live in `%s/`.\n\n' "$FD" "$DOCS" "$FD" "$DOCS"
+      doc_truoc
       buoc_quy_tac_repo review
       printf -- '---\n'
       md_body "$REV_SRC"
@@ -523,12 +499,12 @@ ad_sinh() {
     fi
     kiem_tra_ghi_de "$A/$ten.md"
     {
-      _hk ad_dau_agent "$ten" "$(fm_scalar "$csrc" summary) Người gọi phải truyền thư mục feature."
+      _hk ad_dau_agent "$ten" "$(fm_scalar "$csrc" summary) The caller must pass the feature dir."
       canh_bao "$lc"
-      printf 'Người gọi truyền cho bạn `%s`. Không có thì dừng lại hỏi.\n\n' "$FD"
-      printf 'Đọc vào:\n'
+      printf 'The caller passes `%s`; missing → stop and ask.\n\n' "$FD"
+      printf 'Reads:\n'
       fm_list "$csrc" inputs | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
-      printf '\nGhi ra `%s/%s` theo mẫu `%s/templates/%s`.\n\n' "$FD" "$(fm_scalar "$csrc" output)" "$DOCS" "$(fm_scalar "$csrc" output)"
+      printf '\nWrite `%s/%s` per template `%s/templates/%s`.\n\n' "$FD" "$(fm_scalar "$csrc" output)" "$DOCS" "$(fm_scalar "$csrc" output)"
       [ -n "$cqt" ] && buoc_quy_tac_repo "$cqt"
       printf -- '---\n'
       md_body "$csrc"
@@ -561,13 +537,13 @@ ad_sinh() {
       canh_bao "$cfile"
       _hk ad_mo_dau_lenh "$(ten_lenh "$cid")" "$_h" "$cargs"
       if [ "$cargs" = "mixed" ]; then
-        printf 'Tham số: `%s`\n\n' "$ts"
-        buoc_xac_dinh_feature '<tên-feature nếu người dùng truyền>'
+        printf 'Arguments: `%s`\n\n' "$ts"
+        buoc_xac_dinh_feature '<feature-name if the user gave one>'
       else
         buoc_xac_dinh_feature "$ts"
       fi
       [ "$(fm_scalar "$csrc" choice_ui)" = "true" ] && _hk ad_hoi_lua_chon
-      doc_truoc
+      doc_truoc "$(fm_scalar "$csrc" trace_rule)"
       printf -- '---\n'
       md_body "$csrc"
     } | ghi_file "$L/$(ten_lenh "$cid").md"
@@ -576,14 +552,12 @@ ad_sinh() {
   # ---------- skill tổng ----------
   kiem_tra_ghi_de "$SK"
   {
-    _hk ad_dau_skill quy-trinh-agent 'Quy trình phát triển dựa trên AI agent của repo này. Dùng khi bắt đầu một tính năng mới, khi viết đặc tả từ BRD/PRD hoặc ticket Jira/Confluence, khi thiết kế kỹ thuật, khi lập kế hoạch, khi hiện thực theo kế hoạch, khi rà soát thay đổi, khi đưa tài liệu từ tool khác vào quy trình, khi cần chốt điểm mù (open questions) hoặc phân xử phát hiện của checker LLM đang chặn phase, hoặc khi được hỏi quy trình làm việc của repo này là gì.'
-    printf '# Quy trình phát triển dựa trên AI agent\n\n'
+    _hk ad_dau_skill quy-trinh-agent 'This repo'"'"'s AI-agent development workflow. Use when starting new work, writing a spec from a BRD/PRD or Jira/Confluence ticket, technical design, planning, implementing a plan, reviewing changes, importing documents from other tools, settling open questions or LLM-checker findings that block a phase, or when asked how this repo works.'
+    printf '# AI-agent development workflow\n\n'
     canh_bao "workflow.yaml"
-    printf 'Repo này theo một quy trình có phase. Mỗi phase nhận đầu vào là **file** do\n'
-    printf 'phase trước ghi ra, không phải ngữ cảnh hội thoại. Nhờ vậy mỗi phase chạy\n'
-    printf 'được từ phiên trắng, và quy trình không phụ thuộc vào một agent cụ thể.\n\n'
-    printf '## Các phase\n\n'
-    printf '| Lệnh | Phase | Ghi ra | Bắt buộc |\n'
+    printf 'Each phase takes **files** written by the previous one as input, never chat — it runs from a blank session, with any agent. Talk to the human in Vietnamese.\n\n'
+    printf '## Phases\n\n'
+    printf '| Command | Phase | Writes | Required |\n'
     printf '|---|---|---|---|\n'
     while IFS='|' read -r id file req when; do
       [ -n "$id" ] || continue
@@ -592,27 +566,26 @@ ad_sinh() {
       [ "$(fm_scalar "$src" status)" = "chưa hiện thực" ] && continue
       nm=$(fm_scalar "$src" name)
       oo=$(fm_list "$src" outputs | tr '\n' ',' | sed 's/,$//; s/,/, /g')
-      if [ "$req" = "true" ]; then bb="có"; else bb="không"; fi
+      if [ "$req" = "true" ]; then bb="yes"; else bb="no"; fi
       printf '| `/%s` | %s | %s | %s |\n' "$(ten_lenh "$id")" "$nm" "${oo:-—}" "$bb"
     done < "$PH_LIST"
     if [ -s "$CMD_LIST" ]; then
-      printf '\n## Lệnh tiện ích (không phải phase)\n\n'
+      printf '\n## Utility commands (not phases)\n\n'
       while IFS='|' read -r cid cfile; do
         [ -n "$cid" ] || continue
         printf -- '- `/%s` — %s\n' "$(ten_lenh "$cid")" "$(fm_scalar "$ROOT/$cfile" summary)"
       done < "$CMD_LIST"
     fi
-    printf '\n## Luật không được vi phạm\n\n'
+    printf '\n## Hard rules\n\n'
     luat_tom_tat
-    printf '## Artifact và lệnh\n\n'
-    printf -- '- Artifact của từng feature: `%s/<tên-branch>/` — xác định bằng `aw feature`; nằm ngoài git (bị exclude)\n' "$ART"
-    printf -- '- Quy ước của repo (branch, nhánh gốc, file test, tag `covers:`): `%s`\n' "$CONV_DOC"
-    printf -- '- Quy tắc riêng của repo cho từng phase (coding style, skill, chuẩn kiến trúc): `aw rules <phase>` — phase: %s\n' "$BL_QUY_TAC"
-    printf -- '- Luật, mẫu, checker LLM của engine: `%s/`\n' "$DOCS"
-    printf -- '- Checker máy: `aw check <tên> %s` — tên: %s\n' "$FD" "$BL_CHECKERS"
-    printf -- '- Đầu phiên mới: `aw ready %s` — môi trường đủ chưa (test xanh trên base), bước tiếp là gì\n' "$FD"
-    printf -- '- Trạng thái task do máy giữ: `aw task next|start|done %s [T-NN]` — không tự sửa ô `Status`\n' "$FD"
-    printf -- '- Agent làm hỏng mà checker không bắt: `aw journal add <task|context|env|verify|state|model> "<mô tả>"`; tổng hợp: `aw journal`\n'
+    printf '## Artifacts and commands\n\n'
+    printf -- '- Job artifacts: `%s/<branch-name>/` (`aw feature`; outside git)\n' "$ART"
+    printf -- '- Repo conventions: `%s`; per-phase repo rules: `aw rules <phase>` (%s)\n' "$CONV_DOC" "$BL_QUY_TAC"
+    printf -- '- Engine rules, templates, LLM checkers: `%s/`\n' "$DOCS"
+    printf -- '- Machine checkers: `aw check <name> %s` — names: %s\n' "$FD" "$BL_CHECKERS"
+    printf -- '- Session start: `aw ready %s` (environment ready?, next step)\n' "$FD"
+    printf -- '- Tasks: `aw task next|start|done %s [T-NN]` — never edit `Status` yourself\n' "$FD"
+    printf -- '- Agent failure no checker caught: `aw journal add <task|context|env|verify|state|model> "<description>"`\n'
   } | ghi_file "$SK"
 
   # ---------- dọn file cũ ----------

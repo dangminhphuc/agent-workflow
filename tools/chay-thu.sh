@@ -1368,10 +1368,10 @@ done
 dung "sinh đúng bộ file" test "$du" = 1
 dung "/aw-ship: điều kiện ra máy là aw check ship" grep -q '`aw check ship <thư-mục-feature>`' "$O/.claude/commands/aw-ship.md"
 dung "/aw-ship: ở checkout chính thì làm mục \"Ở checkout chính\", không dừng" sh -c \
-  "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*mục \"Ở checkout chính\"' '$O/.claude/commands/aw-ship.md' && ! grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' '$O/.claude/commands/aw-ship.md'"
-dung "…lệnh khác vẫn dừng lại ở checkout chính" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$O/.claude/commands/aw-review.md"
+  "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*\"On the main checkout\"' '$O/.claude/commands/aw-ship.md' && ! grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' '$O/.claude/commands/aw-ship.md'"
+dung "…lệnh khác vẫn dừng lại ở checkout chính" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' "$O/.claude/commands/aw-review.md"
 dung "/aw-ship: không bắt buộc, có mẫu merge-request.md" sh -c \
-  "grep -q 'Bắt buộc:\*\* không' '$O/.claude/commands/aw-ship.md' && grep -q 'templates/merge-request.md' '$O/.claude/commands/aw-ship.md'"
+  "grep -q 'Required:\*\* no' '$O/.claude/commands/aw-ship.md' && grep -q 'templates/merge-request.md' '$O/.claude/commands/aw-ship.md'"
 dung "skill liệt kê /aw-ship" grep -q '| `/aw-ship` |' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 dung "command có bước xác định feature bằng aw feature" grep -q 'aw feature \$ARGUMENTS' "$O/.claude/commands/aw-design.md"
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O/.claude/commands/aw-design.md"
@@ -1382,20 +1382,24 @@ dung "lệnh /aw-clarify có bước xác định feature + chạy aw pending" s
 dung "lệnh /aw-clarify hỏi bằng AskUserQuestion, có Chat về câu này" sh -c \
   "grep -q 'AskUserQuestion' '$O/.claude/commands/aw-clarify.md' && grep -q 'Chat về câu này' '$O/.claude/commands/aw-clarify.md'"
 dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng đầu nhãn" sh -c \
-  "grep -q 'Nghĩ kỹ trước khi hỏi' '$O/.claude/commands/aw-clarify.md' && grep -q 'bắt đầu bằng.*(Đề xuất)' '$O/.claude/commands/aw-clarify.md'"
+  "grep -q 'Think before asking' '$O/.claude/commands/aw-clarify.md' && grep -q 'starts with.*(Đề xuất)' '$O/.claude/commands/aw-clarify.md'"
 dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/aw-clarify.md"
 dung "lệnh /aw-clarify dẫn phân xử phát hiện checker LLM" grep -q 'phat-hien-thiet-ke.md' "$O/.claude/commands/aw-clarify.md"
-dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O/.claude/commands/aw-import.md'"
+dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Asking choice questions' '$O/.claude/commands/aw-import.md'"
 dung "/aw-design có cổng duyệt: aw approval design + hộp xác nhận AskUserQuestion" sh -c \
-  "grep -q 'Bước 1 — Cổng duyệt' '$O/.claude/commands/aw-design.md' && grep -q 'aw approval design' '$O/.claude/commands/aw-design.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-design.md'"
+  "grep -q 'Step 1 — Approval gate' '$O/.claude/commands/aw-design.md' && grep -q 'aw approval design' '$O/.claude/commands/aw-design.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-design.md'"
 dung "…ba lựa chọn cố định, có preview, từ chối duyệt hộ" sh -c \
   "grep -q 'Tôi đã duyệt xong — kiểm lại' '$O/.claude/commands/aw-design.md' && grep -q 'Giải thích từng điểm cần duyệt' '$O/.claude/commands/aw-design.md' && grep -q 'Dừng — tôi duyệt sau' '$O/.claude/commands/aw-design.md' && grep -q 'preview' '$O/.claude/commands/aw-design.md' && grep -q 'duyệt hộ' '$O/.claude/commands/aw-design.md'"
 dung "/aw-plan có cổng duyệt aw approval plan" grep -q 'aw approval plan' "$O/.claude/commands/aw-plan.md"
-dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Cổng duyệt' '$O/.claude/commands/aw-implement.md' && ! grep -q 'Cổng duyệt' '$O/.claude/commands/aw-spec.md'"
+dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Approval gate' '$O/.claude/commands/aw-implement.md' && ! grep -q 'Approval gate' '$O/.claude/commands/aw-spec.md'"
 dung "lệnh /aw-import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/aw-import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/aw-clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
-dung "phase có quy tắc repo: lệnh gọi aw rules <phase>" sh -c \
-  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "phase có quy tắc repo: lệnh gọi aw rules <phase> (review: subagent đọc)" sh -c \
+  "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -c \
+  "grep -q 'What this session does' '$O/.claude/commands/aw-review.md' && ! grep -q 'Four lenses' '$O/.claude/commands/aw-review.md' && grep -q 'Four lenses' '$O/.claude/agents/ra-soat-doc-lap.md'"
+dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắt giữa chừng)" sh -c \
+  "for f in '$O'/.claude/commands/aw-*.md; do tail -1 \"\$f\" | grep -q . || exit 1; grep -q '^## Phase contract\|^## Step 0' \"\$f\" || exit 1; done; grep -q 'Exit — MACHINE' '$O/.claude/commands/aw-implement.md'"
 dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/ra-soat-doc-lap.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/soat-thiet-ke.md"
@@ -1492,10 +1496,10 @@ dung "mọi file mang dấu SINH TỰ ĐỘNG + version engine + 'Dành cho Curs
 dung "lệnh là markdown thường: dòng đầu '# /<id> — …', không frontmatter" sh -c \
   "for f in '$O3'/.cursor/commands/*.md; do id=\$(basename \"\$f\" .md); head -1 \"\$f\" | grep -q \"^# /\$id — \" || exit 1; done"
 dung "mọi lệnh có mục tham số của Cursor (<tham-số> chép nguyên văn)" sh -c \
-  "for f in '$O3'/.cursor/commands/*.md; do grep -q '## Tham số của lệnh trong Cursor' \"\$f\" && grep -q 'chép nguyên văn' \"\$f\" || exit 1; done"
+  "for f in '$O3'/.cursor/commands/*.md; do grep -q '## Command arguments in Cursor' \"\$f\" && grep -q 'copied verbatim' \"\$f\" || exit 1; done"
 dung "/aw-design xác định feature bằng aw feature <tham-số>" grep -qF 'aw feature <tham-số>' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-intake: aw feature không tham số, input đi qua heredoc với <tham-số>" sh -c \
-  "grep -q 'Chạy \`aw feature\` — \*\*không\*\* truyền' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
+  "grep -q 'Run \`aw feature\` — \*\*do not\*\* pass' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <thư-mục-feature>`' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-design gọi subagent checker LLM soat-thiet-ke" grep -q 'subagent `soat-thiet-ke`' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-review bắt buộc subagent ra-soat-doc-lap" grep -q 'subagent `ra-soat-doc-lap`' "$O3/.cursor/commands/aw-review.md"
@@ -1504,18 +1508,18 @@ dung "subagent: frontmatter name trùng tên file (Cursor nạp .cursor/agents/)
 dung "skill: frontmatter name quy-trinh-agent + description" sh -c \
   "sed -n 2p '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' | grep -qx 'name: quy-trinh-agent' && sed -n 3p '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' | grep -q '^description: '"
 dung "/aw-clarify hỏi lựa chọn kiểu Cursor: tool nếu có, không thì đánh số" sh -c \
-  "grep -q '## Cách hỏi lựa chọn trong Cursor' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'AskQuestion' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'đánh số' '$O3/.cursor/commands/aw-clarify.md'"
+  "grep -q '## Asking choice questions in Cursor' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'AskQuestion' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'numbered' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…luôn có lối tự nhập và Chat về câu này (tool không chắc tự thêm)" sh -c \
   "grep -q 'Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Chat về câu này' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…(Đề xuất) đứng đầu nhãn, phân tích trước khi hỏi" sh -c \
-  "grep -q 'bắt đầu bằng.*(Đề xuất)' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Nghĩ kỹ trước khi hỏi' '$O3/.cursor/commands/aw-clarify.md'"
-dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Cách hỏi lựa chọn' '$O3/.cursor/commands/aw-import.md' && ! grep -q 'Cách hỏi lựa chọn' '$TMP/out1/.claude/commands/aw-import.md'"
+  "grep -q 'starts with.*(Đề xuất)' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Think before asking' '$O3/.cursor/commands/aw-clarify.md'"
+dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Asking choice questions' '$O3/.cursor/commands/aw-import.md' && ! grep -q 'Asking choice questions' '$TMP/out1/.claude/commands/aw-import.md'"
 dung "/aw-design, /aw-plan có cổng duyệt aw approval + hộp xác nhận Cursor" sh -c \
-  "grep -q 'aw approval design' '$O3/.cursor/commands/aw-design.md' && grep -q 'aw approval plan' '$O3/.cursor/commands/aw-plan.md' && grep -q '### Hộp xác nhận trong Cursor' '$O3/.cursor/commands/aw-plan.md'"
+  "grep -q 'aw approval design' '$O3/.cursor/commands/aw-design.md' && grep -q 'aw approval plan' '$O3/.cursor/commands/aw-plan.md' && grep -q '### Confirmation box in Cursor' '$O3/.cursor/commands/aw-plan.md'"
 dung "…phase không khai approval_gate thì không có" sh -c \
-  "for p in intake spec implement review; do ! grep -q 'Cổng duyệt' '$O3/.cursor/commands/aw-'\$p.md || exit 1; done"
+  "for p in intake spec implement review; do ! grep -q 'Approval gate' '$O3/.cursor/commands/aw-'\$p.md || exit 1; done"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase>; intake thì không" sh -c \
-  "for p in spec design plan implement review; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/aw-intake.md'"
+  "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/aw-intake.md'"
 dung "skill liệt kê phase và lệnh tiện ích" sh -c \
   "grep -q '| \`/aw-design\` |' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md' && grep -q '/aw-clarify' '$O3/.cursor/skills/quy-trinh-agent/SKILL.md'"
 
@@ -1859,7 +1863,7 @@ dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] &&
 IN="$R9/.claude/commands/aw-intake.md"
 dung "/aw-intake: tham số là input, không truyền vào aw feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'aw feature \$ARGUMENTS' '$IN'"
 dung "/aw-intake: đang ở checkout chính thì dẫn tới aw worktree new" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*aw worktree new' "$IN"
-dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*dừng lại' "$R9/.claude/commands/aw-spec.md"
+dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' "$R9/.claude/commands/aw-spec.md"
 dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'aw feature \$ARGUMENTS' "$R9/.claude/commands/aw-spec.md"
 dung "/aw-intake: tham số đi qua aw input bằng heredoc nguyên văn" sh -c "grep -q 'aw input .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
 dung "aw init chép rules/templates/checkers của engine vào .agent-workflow/.engine/ (bị exclude)" sh -c "[ -f '$R9/.agent-workflow/.engine/templates/spec.md' ] && [ -f '$R9/.agent-workflow/.engine/rules/nguyen-tac-chung.md' ] && grep -qx '$VDEV' '$R9/.agent-workflow/.engine/VERSION'"
