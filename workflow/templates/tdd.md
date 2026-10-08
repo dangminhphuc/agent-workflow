@@ -35,6 +35,10 @@ quyết định cần duyệt." và xoá mẫu bên dưới.
 - Reopen reason: <...> -->
 <!-- Mode 2 (Author: human): agent không sửa mục này, chỉ thêm
 - Critique (agent): <...> -->
+<!-- Kiến thức bền (tuỳ chọn, NGƯỜI quyết bằng cách duyệt D này):
+- Promote: adr                  nâng D thành ADR khi hiện thực (aw adr promote); mặc định: no
+- Scope: `src/<module>/*`       phần code ADR ràng buộc — bắt buộc khi Promote: adr
+- Supersedes: ADR-NNNN         D đi ngược một ADR accepted: ghi rõ, ADR cũ thành superseded -->
 
 ## Data model
 

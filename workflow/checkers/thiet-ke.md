@@ -28,6 +28,7 @@ You review `tdd.md` **with a clean context** — you never saw the reasoning beh
 | `mâu thuẫn nội bộ` | Two sections of `tdd.md` disagree (e.g. ERD vs contract) | `Chặn` |
 | `yêu cầu mới` | Behaviour not in `spec.md` | `Chặn` |
 | `trái quy tắc repo` | Breaks a file from `aw rules design` with no D-xx stating and justifying it | `Chặn` |
+| `trái ADR` | Contradicts an `accepted` ADR from `aw knowledge design <thư-mục-feature>` without a D that says so and has `Supersedes: ADR-NNNN` | `Chặn` |
 | `mơ hồ` | Section present but `implement` would have to guess | `Cảnh báo` |
 
 - Mode 2 (`Author: human`): **do not** block the human's D because you prefer another option — that is critique, `Cảnh báo`. Block only where the agent-written part deviates from the human's D.

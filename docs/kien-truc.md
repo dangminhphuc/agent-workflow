@@ -134,7 +134,7 @@ máy thì với phiên đó coi như không có. Ranh giới:
 | Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của repo đích, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
-Hiện thực tới đâu: `conventions.md`, mẫu điểm vào và lệnh kiểm (dưới đây). ADR từ D-xx, luật
+Hiện thực tới đâu: `conventions.md`, mẫu điểm vào và lệnh kiểm, ADR từ D-xx (dưới đây). Luật
 nghiệp vụ `BR-`, kiểm chéo lỗi thời: các bước sau.
 
 ### `conventions.md` trong git, bản clone chỉ ghi đè khoá máy
@@ -174,6 +174,31 @@ nghiệp vụ `BR-`, kiểm chéo lỗi thời: các bước sau.
   chưa khai thoát mã 1 — "quên khai" không bao giờ thành xanh, đúng như `LENH_KIEM_THU` trống.
 - `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn; cách nạp theo phạm vi diff
   là bước sau.
+
+### ADR: D-xx đã duyệt thành "vì sao" của repo
+
+D-xx là quyết định có giá trị nhất mà quy trình sinh ra, nhưng `tdd.md` là trạng thái của việc —
+gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đúng sau việc vào git.
+
+- **Người quyết nâng, trong chính D**: `- Promote: adr`, `- Scope:`, `- Supersedes:` nằm dưới dấu
+  duyệt, nên duyệt D là duyệt luôn việc nâng. Không có cờ dòng lệnh `--supersedes`: tham số do
+  agent gõ, không ai duyệt. Agent đề xuất được, không tự quyết được — như mọi trường khác của D.
+- **Nâng ở implement, không sau review**: ADR là file trong diff; nâng sau review thì `Reviewed tree`
+  lệch, `aw check ship` chặn mãi. Plan buộc có task `Based on: D-NN` với `Expected files` gồm thư mục
+  ADR (không thì diff lệch phạm vi); implement chạy `aw adr promote`; review đọc ADR như mọi code.
+- **Chỉ chép**: nội dung D (trừ ô duyệt và ba trường trên) cộng nguồn. Nguồn không ghi `YC-NNN` trần
+  — số YC theo từng spec, vô nghĩa sau việc — mà là `Source:` của các YC mà task "Based on: D-NN" phủ
+  (plan → spec): truy được về Jira/Confluence. Máy dựng lại ADR từ D và so (bỏ `Date`, `Status`):
+  sửa ADR bằng tay, hay D đổi sau khi nâng, đều chặn ở implement và review — chính xác nên chặn.
+- **`Scope` bắt buộc**: không có phạm vi thì `aw knowledge` không biết ADR nào liên quan việc nào,
+  và kiểm chéo lỗi thời (bước sau) không có dữ liệu.
+- **Không xoá ADR**: thay bằng `Status: superseded by NNNN`; người đọc sau vẫn thấy vì sao từng làm
+  khác. Chỉ mục `README.md` dựng lại từ các file (giữ phần người viết phía trên bảng).
+- **`aw knowledge` tách khỏi `aw rules`**: `rules` nghĩa là "đọc hết, review chấm từng file"; kiến
+  thức bền lọc theo phạm vi (đường dẫn trong `## Existing code`) — trộn vào thì bảng `## Repo rules`
+  phình theo số module. Design gọi hai lần: trước khảo sát (chỉ mục) và sau khi ghi `Existing code`.
+- Đi ngược ADR mà không khai `Supersedes` máy không phát hiện được (cần hiểu nội dung) → checker LLM
+  thiết kế chặn (`trái ADR`).
 
 ## Hai loại điều kiện ra
 
@@ -433,7 +458,8 @@ tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã
 8. **`review` không chạy lại test hay quét** — biết kết quả cũ, không biết lệnh có đủ. Lệnh lệch
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.
-10. **Artifact không đi theo PR** — reviewer chỉ thấy code.
+10. **Artifact không đi theo PR** — reviewer chỉ thấy code. D-xx người chọn nâng thì đi theo PR dưới
+    dạng ADR; phần còn lại của `tdd.md` thì không.
 11. **Ghim sha256 là tin lần đầu (TOFU)**; repo cấu hình chung của team thu hẹp, không xoá rủi ro.
 12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `LENH_KIEM_THU`.
 13. **File máy ghi giả được** (`ket-qua-task.md`, `ket-qua-kiem-thu.md`): chặn việc *quên*, không chặn
@@ -445,3 +471,7 @@ tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã
     trước khi pull bản đã merge, người phải xoá bản chưa track (git từ chối ghi đè).
 17. **Bản hiệu lực làm mới khi script đọc quy ước**: agent mở `.engine/conventions.md` trước mọi
     lệnh `aw` của phiên thì có thể thấy bản cũ (mọi phase đều chạy `aw feature` trước).
+18. **Số ADR cấp lúc nâng, theo thư mục ở worktree**: hai việc song song cùng lấy `0004`; PR merge sau
+    có hai file trùng số (`aw adr check` chặn ở việc kế tiếp) và xung đột ở bảng chỉ mục — người
+    đổi số, chạy lại `aw adr promote`.
+19. **"Đi ngược ADR" chỉ checker LLM thấy** — máy chỉ kiểm `Supersedes` khi D tự khai.

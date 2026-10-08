@@ -14,6 +14,8 @@
 #   7. Mode 2: spec "Risk: high" mà không có D-xx nào do người viết.
 #   8. Checker LLM: chưa có phat-hien-thiet-ke.md, hoặc còn phát hiện mức Chặn chưa xử lý.
 #   9. File khai ở rules_design (conventions.md) không có hoặc chưa commit.
+#  10. D-xx: "Promote:" khác adr | no; Promote: adr thiếu Scope; Supersedes sai dạng, trỏ về
+#      ADR không có hoặc không còn accepted, hay thay ADR mà không nâng ADR mới.
 # Cảnh báo (không chặn): artifact lỗi thời.
 #
 # Checker LLM chỉ được CHẶN, không được DUYỆT: không có file phát hiện là
@@ -32,6 +34,7 @@ kq_khai kiem-tra-thiet-ke.sh \
 . "$HERE/lib/kiem-cheo.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/duyet.sh"
+. "$HERE/lib/adr.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -79,6 +82,11 @@ EOF
 kld=$(kc_loi_duyet "$TDD" tdd)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $kld
+EOF
+# Trường người quyết trong D: Promote / Scope / Supersedes (ADR — tools/lib/adr.sh).
+alt=$(adr_loi_truong "$DIR")
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$alt
 EOF
 DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
 

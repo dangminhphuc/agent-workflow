@@ -49,6 +49,7 @@ Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages ex
    - `perf`: first task **measures before** (`aw check perf <thư-mục-feature> --before`).
    - `refactor`/`perf`: old tests expected to change → `## Modified existing tests`.
    - `chore`: dependency bumps → `## Dependency upgrades` (`patch | minor` only).
+   - D with `Promote: adr` → a task `Based on: D-NN` whose `Expected files` include the ADR directory (`docs/adr/*` by default) and whose `Verify` is `aw adr check`.
 6. **Record inputs:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md` (chore: drop `tdd.md`).
 
 ## Output
@@ -64,4 +65,4 @@ Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages ex
 
 ## Exit conditions
 
-**Machine:** `aw check plan` → `[x] ĐẠT` — input passes `aw check design`, every D approved; every task has valid `Covers:`, non-empty `Expected files:`, `Verify:`, `Based on:` pointing to a real D; every YC covered by a task **or** in "Deferred" with a reason.
+**Machine:** `aw check plan` → `[x] ĐẠT` — input passes `aw check design`, every D approved; every task has valid `Covers:`, non-empty `Expected files:`, `Verify:`, `Based on:` pointing to a real D; each `Promote: adr` D has its ADR task; every YC covered by a task **or** in "Deferred" with a reason.
