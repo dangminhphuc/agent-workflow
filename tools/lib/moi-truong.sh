@@ -5,7 +5,9 @@
 #
 #   AW_REPO     gốc worktree đang làm (git rev-parse --show-toplevel)
 #   AW_CONFIG   thư mục cấu hình của bản clone: $(git rev-parse --git-common-dir)/agent-workflow
-#               — conventions.md, config.sh; dùng chung cho mọi worktree
+#               — config.sh, conventions.md của bản clone; dùng chung cho mọi worktree.
+#               Quy ước của repo nằm trong git (QU_DUONG_DAN, tools/lib/md.sh);
+#               bản clone chỉ ghi đè khoá của máy.
 #   AW_ENGINE   thư mục engine (bản cài của version đang chạy)
 #
 # Artifact của việc nằm ở $AW_REPO/.agent-workflow/<tên-branch>/ (artifact_dir
@@ -22,4 +24,7 @@ mt_dat() {
   fi
   MT_REPO="$AW_REPO"; MT_ART="$AW_REPO/$MT_ART_DIR"
   MT_CONV="$AW_CONFIG/conventions.md"; MT_CH="$AW_CONFIG/config.sh"
+  # conventions.md hiệu lực (qu_hieu_luc, tools/lib/md.sh): script đọc quy ước đã
+  # source md.sh; script không đọc (vd hook gac-duyet) không tốn bước này.
+  if command -v qu_hieu_luc >/dev/null 2>&1; then qu_hieu_luc "$AW_REPO" >/dev/null; MT_CONV=$QU_HL; fi
 }

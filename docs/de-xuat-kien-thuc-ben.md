@@ -1,10 +1,10 @@
 # Đề xuất — kiến thức bền của repo đích vào git
 
-> Ghi chú tạm, chờ người duyệt. Khi các D-xx dưới đây đã chốt, nội dung lý do chuyển vào
-> `docs/kien-truc.md` (mục mới "Trạng thái của việc và kiến thức bền") và xoá file này.
+> Ghi chú tạm. Mọi D-xx đã duyệt theo Đề xuất. Lý do của phần đã làm (PR 1: D-00, D-01,
+> D-02, D-03, D-09) đã chuyển vào `docs/kien-truc.md`, mục "Trạng thái của việc và kiến thức
+> bền"; phần còn lại chuyển khi làm PR tương ứng. Xoá file này sau PR 5.
 
-Duyệt từng D bằng cách đổi `[ ]` thành `[x]`, hoặc ghi lựa chọn khác ngay dưới mục. Mục
-**Đề xuất** chỉ là gợi ý của agent — chưa có dòng code nào được viết theo nó.
+Mục **Đề xuất** của từng D là phương án đã chốt.
 
 ## Phần A — Mâu thuẫn giữa nhiệm vụ và code/tài liệu hiện tại
 
@@ -43,7 +43,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
   pros: không đảo quyết định cũ / cons: vấn đề 2, 3 của nhiệm vụ không được giải
 - Đề xuất: **A**. Lý do cũ nhắm vào *cài/nâng cấp engine* phải qua PR; quy ước của team đi qua
   review là điều mong muốn, không phải chi phí. README và `kien-truc.md` sẽ ghi rõ ranh giới mới.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-01 — Đường dẫn `conventions.md` trong repo đích (mục 6.1)
 
@@ -52,7 +52,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 - Option B: Mặc định như A, đổi được bằng biến `DUONG_DAN_QUY_UOC` trong `$AW_CONFIG/config.sh` —
   pros: linh hoạt / cons: mỗi máy có thể trỏ một file khác, đúng thứ nhiệm vụ muốn loại bỏ
 - Đề xuất: **A**. Liên kết `.agent-workflow/.engine/conventions.md` trỏ sang file đã commit khi có.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-02 — Khoá máy được ghi đè (mục 6.2)
 
@@ -62,7 +62,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
   là thuộc tính của origin, không của máy; đoán từ URL đã đủ
 - Đề xuất: **A**. Danh sách nằm trong một biến ở engine, `aw conventions check` báo lỗi khoá
   khác ở bản máy. Thêm khoá sau là thay đổi engine, có lý do.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-03 — Đọc bản nào của file đã commit (M2)
 
@@ -74,7 +74,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 - Option C: Như B, kèm cảnh báo ở implement và chặn ở review khi diff đụng `conventions.md`
   mà không khai trong plan
 - Đề xuất: **B**; C có thể thêm sau nếu thấy cần.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-04 — Lệnh nâng D-xx, cú pháp và thời điểm (mục 6.3, M3)
 
@@ -89,7 +89,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
   việc / cons: ADR tách khỏi code nó giải thích; dễ bị quên
 - Đề xuất: **A**. Cú pháp: `aw adr promote <thư-mục-feature> D-NN [--supersedes NNNN]`,
   `aw adr check` (checker hình thức, đăng ký trong `bang-lenh.sh`).
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-05 — Thiếu verdict cho tài liệu module bị ảnh hưởng: review chặn hay cảnh báo (mục 6.4)
 
@@ -98,7 +98,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 - Option B: Chỉ cảnh báo ở cả hai — cons: cảnh báo dồn về review rồi không ai buộc xử lý
 - Đề xuất: **A**. Máy chỉ kiểm có verdict (`pass | updated | not applicable` + lý do), không kiểm
   verdict đúng — giống `## Repo rules`.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-06 — Tách hay gộp `ARCHITECTURE.md` và `RULES.md` trong module (mục 6.5)
 
@@ -107,7 +107,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
   heading, không theo tên file / cons: file dài hơn
 - Option B: Hai file — pros: tách người đọc (kỹ sư vs BA) / cons: thêm một chỗ cho cùng phạm vi
 - Đề xuất: **A**.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-07 — Nguồn của BR khi nâng từ YC (M4)
 
@@ -120,7 +120,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
   tài liệu có định danh trước — cons: nhiều luật thật chỉ có ở lời PO
 - Đề xuất: **A**. `Source` cần version: Confluence/Jira lấy từ cột "Phiên bản" của bảng nguồn
   trong spec; thiếu thì lệnh từ chối.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-08 — YC và nguồn trong ADR (M5)
 
@@ -130,7 +130,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 - Option B: Thêm trường `- Requirements:` vào mẫu D-xx để agent ghi tay — cons: thêm thứ agent tự
   khai, máy không kiểm được đúng
 - Đề xuất: **A**.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-09 — `aw init --from` dưới cơ chế mới (M6)
 
@@ -139,7 +139,9 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 - Option B: Bản từ `--from` được coi là "bản máy" — cons: lại là hai nguồn sự thật
 - Đề xuất: **A**. Repo chỉ có `$AW_CONFIG/conventions.md` (không có file đã commit) vẫn chạy
   như cũ, kèm cảnh báo — tiêu chí tương thích ngược giữ nguyên.
-- [ ] **Approved by human**
+- Khi làm: `--from` chỉ bỏ `conventions.md` khi repo đích **đã có** file; chưa có thì vẫn chép (kèm
+  cảnh báo của `aw conventions check`) — bỏ luôn thì clone mới chạy bằng mẫu, phá tương thích ngược.
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-10 — Engine tìm file kiến thức bền thế nào (mục 3.5)
 
@@ -151,7 +153,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 - Option B: Mở rộng `aw rules <phase>` — cons: `aw rules` đang có nghĩa "đọc hết", review chấm
   từng file; trộn vào làm bảng `## Repo rules` phình theo số module
 - Đề xuất: **A**.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-11 — Phạm vi của `ARCHITECTURE.md` và ADR cho kiểm chéo lỗi thời (M8)
 
@@ -159,7 +161,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
   bắt buộc (lấy từ module trong `## Existing code`, người sửa được trước khi commit)
 - Option B: Mọi file kiến thức đều khai `Scope:` tường minh — cons: thêm việc cho tài liệu module
 - Đề xuất: **A**.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ### D-12 — Kiểm tiêu chí "phiên mới trả lời được 5 câu hỏi" (M7)
 
@@ -168,7 +170,7 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
   README (người chạy một lần khi phát hành)
 - Option B: Bỏ tiêu chí này khỏi điều kiện hoàn thành
 - Đề xuất: **A**.
-- [ ] **Approved by human**
+- [x] **Approved by human** — theo Đề xuất (người duyệt trong hội thoại, 2026-10-08)
 
 ## Phần C — PR nào chờ D nào
 

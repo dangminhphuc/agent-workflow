@@ -7,7 +7,8 @@
 #
 # Hai bước, cả hai chỉ ghi vào đường dẫn đã exclude (aw init):
 #   1. <đích>/.agent-workflow/.engine/  rules, templates, checkers của engine đang
-#      chạy + VERSION; conventions.md là liên kết tới $AW_CONFIG/conventions.md.
+#      chạy + VERSION; conventions.md là liên kết tới bản hiệu lực (qu_hieu_luc,
+#      tools/lib/md.sh) — aw làm mới bản đó mỗi lần đọc quy ước.
 #      Mọi agent đọc được file — phần này không thuộc adapter nào, chép MỘT lần.
 #   2. adapters/<agent>/build.sh --out <đích> cho TỪNG adapter — lớp mỏng native
 #      của agent. Một adapter hỏng không chặn adapter khác; mã thoát là mã của
@@ -20,6 +21,7 @@
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ENG="${AW_ENGINE:-$(CDPATH= cd -- "$HERE/.." && pwd)}"
 . "$HERE/lib/adapter.sh"
+. "$HERE/lib/md.sh"
 
 AG=$(al_chuan "${1:-}"); OUT="${2:-}"; FORCE="${3:-}"
 [ -n "$AG" ] && [ -n "$OUT" ] || { echo "Dùng: sh tools/sinh-adapter.sh <agent>[,<agent>…] <thư-mục-đích> [--force]" >&2; exit 2; }
@@ -35,7 +37,8 @@ rm -rf "$D"; mkdir -p "$D" || exit 2
 cp -R "$ENG/workflow/rules" "$ENG/workflow/templates" "$ENG/workflow/checkers" "$D/" || exit 2
 cp "$ENG/VERSION" "$D/VERSION"
 if [ -n "${AW_CONFIG:-}" ]; then
-  ln -s "$AW_CONFIG/conventions.md" "$D/conventions.md" 2>/dev/null || cp "$AW_CONFIG/conventions.md" "$D/conventions.md" 2>/dev/null
+  QH=$(qu_hieu_luc "$(CDPATH= cd -- "$OUT" && pwd)")
+  ln -s "$QH" "$D/conventions.md" 2>/dev/null || cp "$QH" "$D/conventions.md" 2>/dev/null
 fi
 echo "  copy    .agent-workflow/.engine/{rules,templates,checkers} (engine $V)"
 

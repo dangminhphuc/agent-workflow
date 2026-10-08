@@ -15,9 +15,9 @@ if [ -z "${AW_CONFIG:-}" ]; then
   exit 9
 fi
 
-# kc_conventions <thư-mục-feature> -> đường dẫn conventions.md
+# kc_conventions <thư-mục-feature> -> đường dẫn conventions.md hiệu lực (qu_hieu_luc)
 kc_conventions() {
-  printf '%s/conventions.md\n' "$AW_CONFIG"
+  qu_hieu_luc "${AW_REPO:-$(kc_top "$1")}"
 }
 
 # kc_cau_hinh <thư-mục-feature> -> đường dẫn config.sh (LENH_KIEM_THU…)
@@ -209,18 +209,7 @@ kc_engine_dong() {
 
 # kc_base_dong <thư-mục-feature> -> "<ref> <sha>" từ dòng "Base:" của intake.md
 # (thiếu phần nào thì phần đó rỗng; không có dòng Base thì không in gì).
-kc_base_dong() {
-  [ -f "$1/intake.md" ] || return 0
-  awk '
-    { sub(/\r$/, "") }
-    /^[ \t]*-[ \t]*\*\*Base:\*\*/ || /^[ \t]*-?[ \t]*Base:/ {
-      s = $0; sub(/^[^:]*:/, "", s); r = ""; h = ""
-      if (match(s, /`[^`]+`/)) { r = substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) }
-      if (match(s, /`[^`]+`/)) { h = substr(s, RSTART + 1, RLENGTH - 2) }
-      print r " " h; exit
-    }
-  ' "$1/intake.md"
-}
+kc_base_dong() { intake_base_dong "$1"; }
 
 # kc_base <thư-mục-feature> -> ref để so diff: base NGƯỜI chọn lúc tạo worktree
 # (dòng "Base:" của intake.md). Ref không còn (vd branch cha đã xoá) thì dùng sha

@@ -3,8 +3,9 @@
 Quy trình phát triển phần mềm dựa trên AI agent, **không phụ thuộc vào một agent cụ thể**.
 
 Repo này là nguồn của **engine**, phát hành theo tag `YYYY.M.N` ([CHANGELOG](CHANGELOG.md)).
-Repo dự án không chứa gì của quy trình: wrapper `aw` cài global, cấu hình nằm trong `.git/`
-của bản clone, lệnh cho agent được sinh ra và bị exclude — không phải commit gì vào nhánh gốc.
+Repo dự án chỉ chứa **quy ước** của mình (`docs/agent-workflow/conventions.md`, commit qua PR
+như mọi thay đổi khác). Còn lại không vào git: wrapper `aw` cài global, engine trong cache,
+cấu hình máy nằm trong `.git/` của bản clone, lệnh cho agent được sinh ra và bị exclude.
 Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa hiện thực).
 
 | Đọc gì | Ở đâu |
@@ -112,12 +113,13 @@ Kết quả: kiem-tra-ke-hoach.sh
 
 ## Cài đặt
 
-Không cài gì vào repo đích. Ba phần:
+Engine không cài vào repo đích. Bốn phần:
 
 | Phần | Ở đâu | Ai giữ |
 |---|---|---|
 | Wrapper `aw` | `~/.local/bin/aw` (một file POSIX sh) | mỗi máy, cài một lần |
 | Engine | `~/.agent-workflow/engine/<YYYY.M.N>/` | cache theo version, tải khi cần |
+| Quy ước repo | `docs/agent-workflow/conventions.md` | trong git, cả team dùng chung, sửa qua PR |
 | Cấu hình repo | `$(git rev-parse --git-common-dir)/agent-workflow/` | từng bản clone, mọi worktree dùng chung, **không commit** |
 
 ### 1. Cài `aw`
@@ -144,19 +146,27 @@ aw init --test-cmd "npm test"
 ```
 version          ← engine cho việc MỚI
 checksums        ← sha256 đã ghim của từng version
-conventions.md   ← bạn viết; aw chỉ tạo mẫu, KHÔNG BAO GIỜ ghi đè
+conventions.md   ← (tuỳ chọn) chỉ ghi đè khoá của máy: worktree_dir
 config.sh        ← ADAPTER, LENH_KIEM_THU, LENH_KIEM_TRA_BAO_MAT, LENH_DO_HIEU_NANG, LENH_CHUAN_BI_WT
 archive/         ← artifact của worktree đã gỡ
 journal/         ← nhật ký harness (aw journal)
 ```
 
 rồi thêm `/.agent-workflow/` và thư mục của adapter vào `.git/info/exclude`, sinh adapter ở
-checkout chính. Sửa `conventions.md` (kiểm bằng `aw conventions check`; giải thích từng khoá:
-[`conventions-reference.md`](workflow/templates/conventions-reference.md)), rồi mở agent ở
-checkout chính và chạy `/aw-intake`.
+checkout chính. Repo chưa có quy ước thì `aw init` tạo `docs/agent-workflow/conventions.md` từ mẫu
+(không bao giờ ghi đè). Sửa file đó (kiểm bằng `aw conventions check`; giải thích từng khoá:
+[`conventions-reference.md`](workflow/templates/conventions-reference.md)), **commit qua PR**, rồi
+mở agent ở checkout chính và chạy `/aw-intake`. Chưa merge vẫn chạy được: aw đọc bản ở checkout
+chính.
 
-**Cấu hình chung của team:** đặt `version`, `checksums`, `conventions.md`, `config.sh` vào một
-repo riêng, mỗi người chạy `aw init --from <url>` (`--force` để lấy đè bản ở máy).
+- **Mỗi việc đọc quy ước tại điểm rẽ khỏi base** của nó: việc sửa `conventions.md` không đổi luật
+  của chính nó, thay đổi có hiệu lực cho việc sau khi merge.
+- **Repo init bằng engine cũ** (quy ước chỉ ở `.git/agent-workflow/conventions.md`): vẫn chạy như
+  cũ; `aw conventions check` cảnh báo và in cách chuyển vào repo.
+
+**Cấu hình chung của team:** đặt `version`, `checksums`, `config.sh` vào một repo riêng, mỗi
+người chạy `aw init --from <url>` (`--force` để lấy đè bản ở máy). Repo đã có quy ước trong git
+thì `--from` bỏ qua `conventions.md` của repo cấu hình (không để hai nguồn sự thật).
 
 **Lệnh test và quét bảo mật** trong `config.sh` là điều kiện ra của `implement` — bỏ trống là
 KHÔNG ĐẠT, không phải "bỏ qua". `LENH_KIEM_TRA_BAO_MAT` phải chép **đúng lệnh, config, ngưỡng
