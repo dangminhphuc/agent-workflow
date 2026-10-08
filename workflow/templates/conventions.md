@@ -60,6 +60,12 @@ jira_key_regex: [A-Z][A-Z0-9]*-[0-9]+
 # [optional] glob miền Confluence, vd wiki.cong-ty.vn *.atlassian.net/wiki
 confluence_domains:
 
+# ── Durable knowledge (kiến thức bền trong repo, agent đọc qua `aw knowledge`) ──
+# [default] thư mục ADR: aw adr promote ghi vào, phase design đọc chỉ mục README.md
+knowledge_adr_dir: docs/adr
+# [default] glob tài liệu module đã commit; phạm vi của mỗi file = thư mục chứa nó
+knowledge_files: */ARCHITECTURE.md
+
 # ── Repo rules (file đã commit, agent đọc qua `aw rules`) ─────────
 # [optional] vd rules_implement = docs/coding-style.md .claude/skills/x/SKILL.md
 rules_spec:

@@ -33,6 +33,15 @@ Quy ước của repo đích vào git — bước đầu của "kiến thức b�
   chưa có `AGENTS.md`/`CLAUDE.md`; mẫu `config.sh` khuyến nghị `LENH_KIEM_THU="make test"` và
   `secret: make security-secret`… để lệnh kiểm nằm trong git, cùng lệnh với CI.
 
+- **ADR từ D-xx** (`docs/adr/`, khoá `knowledge_adr_dir`): người quyết nâng trong chính D —
+  `- Promote: adr`, `- Scope:`, `- Supersedes: ADR-NNNN` nằm dưới dấu duyệt. Plan phải có task nâng
+  (`Expected files` gồm thư mục ADR); implement chạy `aw adr promote <thư-mục-feature> D-NN` (chép D
+  + nguồn của YC, không thêm nội dung); implement và review chặn khi ADR thiếu hoặc lệch D đã duyệt.
+  `aw adr check` kiểm hình thức thư mục ADR.
+- **`aw knowledge design <thư-mục-feature>`**: chỉ mục ADR, ADR accepted và tài liệu module
+  (`knowledge_files`, mặc định `*/ARCHITECTURE.md`) liên quan đường dẫn trong `## Existing code`;
+  phase design đọc trước khi khảo sát. Checker LLM thiết kế chặn `trái ADR`.
+
 ### Tương thích
 - Repo init bằng engine cũ (quy ước chỉ ở bản clone) chạy như cũ; `aw conventions check` cảnh báo
   và in cách chuyển. `aw init`/`aw upgrade` không tự tạo file trong repo khi bản clone đã có.

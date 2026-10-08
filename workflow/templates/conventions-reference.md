@@ -140,6 +140,19 @@ Mẫu glob `miền[/đường-dẫn]` của Confluence, vd `wiki.cong-ty.vn *.at
 URL khớp → `[CONFLUENCE]`. Trống: mọi URL không phải Jira đều là `[CONFLUENCE]` (có
 cảnh báo).
 
+## Durable knowledge
+
+### `knowledge_adr_dir`
+Thư mục ADR, tương đối với gốc repo; mặc định `docs/adr`. Phải nằm trong git (không dưới
+`.agent-workflow/`). `aw adr promote` ghi `NNNN-<việc>-d-NN.md` và dựng lại bảng chỉ mục
+`README.md`; `aw adr check` kiểm hình thức (số không trùng, `Status: accepted | superseded by
+NNNN`, có `Scope`, chỉ mục khớp). Chỉ D-xx người duyệt kèm `- Promote: adr` mới được nâng.
+
+### `knowledge_files`
+Glob tài liệu module đã commit; mặc định `*/ARCHITECTURE.md`. Phạm vi của mỗi file là thư mục
+chứa nó: `aw knowledge design` in file đó khi `## Existing code` của `tdd.md` ghi một đường dẫn
+nằm trong thư mục ấy.
+
 ## Repo rules
 
 ### `rules_<phase>`

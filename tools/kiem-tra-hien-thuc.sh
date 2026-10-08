@@ -19,6 +19,8 @@
 #        Theo loai viec (intake.md): bugfix thieu tai-hien.md do; refactor/perf
 #        xoa test cu; perf thieu so do truoc/sau; chore dung code production,
 #        nang dependency khong khai, hoac dung file dependency ma SCA chua xanh.
+#        ADR: D "Promote: adr" chua nang (aw adr promote), ADR lech D da duyet,
+#        thu muc ADR sai hinh thuc (aw adr check).
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
 #        test moi bi tat / chay rieng (.only, .skip… — skipped_test_regex),
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
@@ -39,6 +41,9 @@ kq_khai kiem-tra-hien-thuc.sh \
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
 . "$HERE/lib/task.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/duyet.sh"
+. "$HERE/lib/adr.sh"
 
 DIR="${1:-.}"
 PLAN="$DIR/plan.md"
@@ -130,6 +135,12 @@ esac
 xd=$(kc_dau_xung_dot "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $xd
+EOF
+
+# ---- 4d. ADR — D "Promote: adr" da nang dung noi dung D da duyet (chinh xac nen CHAN) ----
+adl=$(adr_loi_viec "$DIR")
+while IFS= read -r l; do [ -n "$l" ] && loi "ADR: $l"; done <<EOF
+$adl
 EOF
 
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----

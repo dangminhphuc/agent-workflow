@@ -13,6 +13,7 @@
 #       ngược — mọi mã YC được task phủ, hoặc nằm ở "Deferred" (bắt yêu cầu sót)
 #   - Task thiếu "Verify", "Expected files"; "Based on: D-xx" trỏ về D không có.
 #   - File khai ở rules_plan (conventions.md) không có hoặc chưa commit.
+#   - D-xx "Promote: adr" không có task "Based on" nó mà "Expected files" gồm thư mục ADR.
 # Cảnh báo: artifact lỗi thời; YC "Priority: must" nằm ở "Deferred".
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -28,6 +29,7 @@ kq_khai kiem-tra-ke-hoach.sh \
 . "$HERE/lib/kiem-cheo.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/duyet.sh"
+. "$HERE/lib/adr.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -84,6 +86,11 @@ DTT=""
 if [ "$TDD" != /dev/null ]; then
   dy_dong_dau "$TDD" tdd >/dev/null
   DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
+  # D người quyết nâng thành ADR phải có task nâng (tools/lib/adr.sh).
+  alk=$(adr_loi_ke_hoach "$DIR")
+  while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$alk
+EOF
 fi
 
 awk -v loi_truoc="$n_loi" -v dtt="$DTT" '

@@ -35,6 +35,7 @@
 #  10. Conclusion: "Blocker findings: <n>" thieu hoac khac so muc [Blocker].
 #  11. "Reviewed tree:" thieu hoac khac dau van tay code hien tai — code doi
 #      sau khi ra soat thi ket luan khong con noi ve code nay.
+#  13. ADR: D "Promote: adr" chua co ADR, ADR lech D da duyet, thu muc ADR sai hinh thuc.
 #  12. Diff dung code nhay cam (sensitive_code trong conventions.md) ma
 #      review.md thieu "- Security reviewer: <ten nguoi>" (trong, giu cho, hay
 #      ghi ten agent).
@@ -53,6 +54,9 @@ kq_khai kiem-tra-ra-soat.sh \
 . "$HERE/lib/bang-lenh.sh"
 . "$HERE/lib/kiem-cheo.sh"
 . "$HERE/lib/task.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/duyet.sh"
+. "$HERE/lib/adr.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -85,6 +89,11 @@ moi=$( { kc_ket_qua_cu "$DIR" "$KQ" "aw check implement $DIR"; kc_ket_qua_cu "$D
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<MOI
 $moi
 MOI
+# ADR: D "Promote: adr" đã nâng đúng nội dung D đã duyệt; thư mục ADR đúng hình thức.
+adl=$(adr_loi_viec "$DIR")
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "ADR: $l"; done <<ADR
+$adl
+ADR
 
 cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
