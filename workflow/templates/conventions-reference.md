@@ -152,5 +152,8 @@ Phase: `spec` `design` `plan` `implement` `review`. Giá trị là danh sách fi
   chưa commit thì `aw check` của phase đó chặn. Phase gõ nhầm (vd `rules_spek`) là khoá lạ.
 - `review` đối chiếu diff với **mọi** khoá: `review.md` thiếu kết luận cho file nào
   thì chặn.
+- Tài liệu module (`src/<module>/ARCHITECTURE.md`, mẫu điểm vào ở
+  `templates/repo-dich/AGENTS.md`) khai ở `rules_design`, `rules_implement` để agent đọc
+  trước khi thiết kế / viết code.
 - Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md` và luật quy trình. Quy tắc máy
   kiểm được (lint, type, kiến trúc) nên đưa vào `LENH_KIEM_THU` thay vì viết thành văn.

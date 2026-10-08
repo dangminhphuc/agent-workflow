@@ -28,6 +28,11 @@ Quy ước của repo đích vào git — bước đầu của "kiến thức b�
 - `aw doctor` nhận quy ước trong repo; `.agent-workflow/.engine/conventions.md` trỏ tới quy ước
   hiệu lực (repo + khoá máy).
 
+- **Mẫu cho repo đích** `templates/repo-dich/AGENTS.md` (điểm vào, chỉ trỏ tới, 50–100 dòng) và
+  `Makefile` (setup, test, lint, security; target chưa khai thoát mã 1). `aw init` nhắc khi repo
+  chưa có `AGENTS.md`/`CLAUDE.md`; mẫu `config.sh` khuyến nghị `LENH_KIEM_THU="make test"` và
+  `secret: make security-secret`… để lệnh kiểm nằm trong git, cùng lệnh với CI.
+
 ### Tương thích
 - Repo init bằng engine cũ (quy ước chỉ ở bản clone) chạy như cũ; `aw conventions check` cảnh báo
   và in cách chuyển. `aw init`/`aw upgrade` không tự tạo file trong repo khi bản clone đã có.

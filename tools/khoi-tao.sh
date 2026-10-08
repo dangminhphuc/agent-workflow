@@ -162,7 +162,8 @@ if [ -n "$TAO_RCONV" ]; then echo "Xong. File cần commit (qua PR như mọi th
 else echo "Xong. Không có file nào cần commit. Bước tiếp theo:"; fi
 n=1
 if ! grep -q 'LENH_KIEM_THU="[^"]' "$CH" 2>/dev/null; then
-  echo "  $n. Khai lệnh kiểm thử trong $CH (chưa khai thì /aw-implement không đạt)"; n=$((n + 1))
+  echo "  $n. Khai lệnh kiểm thử trong $CH (chưa khai thì /aw-implement không đạt) — nên là lệnh đã"
+  echo "     commit mà CI cũng chạy, vd make test (mẫu: .agent-workflow/.engine/templates/repo-dich/Makefile)"; n=$((n + 1))
 fi
 if [ -z "$( (LENH_KIEM_TRA_BAO_MAT=""; . "$CH" >/dev/null 2>&1; printf '%s' "$LENH_KIEM_TRA_BAO_MAT") | grep -v '^[[:space:]]*\(#\|$\)')" ]; then
   echo "  $n. Khai lệnh quét bảo mật (LENH_KIEM_TRA_BAO_MAT) trong $CH — đúng lệnh/ngưỡng của CI (chưa khai thì /aw-implement không đạt)"; n=$((n + 1))
@@ -174,5 +175,10 @@ if [ -n "$TAO_RCONV" ]; then
 elif [ -f "$RCONV" ]; then :
 else
   echo "  $n. Sửa $CONV: mẫu tên branch, nhánh gốc, vị trí worktree, mẫu file test…"; n=$((n + 1))
+fi
+# Điểm vào cho agent: khuyến nghị, không bắt buộc — chỉ nhắc khi repo chưa có.
+if [ ! -f "$AW_REPO/AGENTS.md" ] && [ ! -f "$AW_REPO/CLAUDE.md" ]; then
+  echo "  $n. Repo chưa có AGENTS.md — phiên agent mới chỉ có repo sẽ phải đoán hệ thống là gì, chạy và"
+  echo "     kiểm thế nào. Mẫu: .agent-workflow/.engine/templates/repo-dich/AGENTS.md (commit qua PR)"; n=$((n + 1))
 fi
 echo "  $n. Mở agent ở checkout chính, chạy /aw-intake — nó đề xuất worktree cho việc"
