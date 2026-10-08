@@ -13,7 +13,8 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
-Tên script, khoá cấu hình, artifact và subagent đổi sang tiếng Anh. Luật không đổi.
+Quy trình chỉ chạy khi người gõ lệnh. Tên script, khoá cấu hình, artifact và subagent đổi sang
+tiếng Anh; luật không đổi.
 Nội dung người đọc (output, nhãn `Kết quả`, mẫu artifact) vẫn tiếng Việt.
 
 ### Thêm
@@ -25,6 +26,11 @@ Nội dung người đọc (output, nhãn `Kết quả`, mẫu artifact) vẫn t
   `AD_LENH_KHOA`, `AD_AGENT_KHOA`, `AD_SKILL_KHOA`) trong `build.sh`.
 
 ### Đổi
+- **Agent không tự kích hoạt quy trình.** Lệnh `/aw-*` (Claude Code) và skill `agent-workflow`
+  (Claude Code, Cursor) mang `disable-model-invocation: true`: chỉ chạy khi người gõ lệnh, model
+  không tự gọi; description của skill không còn nằm trong ngữ cảnh mọi phiên. Subagent
+  (`independent-reviewer`, `<checker>-checker`) dặn chỉ được gọi khi lệnh `/aw-*` yêu cầu. Chạy
+  `aw adapter build` để sinh lại.
 - **Script của engine** (`tools/`, `tools/lib/`, `adapters/lib/`): `kiem-tra-<x>.sh` →
   `check-<phase>.sh`; `chay-thu.sh` → `run-tests.sh`; `chuan-bi-phat-hanh.sh` →
   `prepare-release.sh`; `kiem-tra-phat-hanh.sh` → `check-release.sh`; `dong-goi.sh` →

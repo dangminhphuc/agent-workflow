@@ -41,6 +41,8 @@ ad_dau_lenh() {
   printf 'description: "%s"\n' "$(printf '%s' "$3" | sed 's/[\\"]/\\&/g')"
   # Nháy kép: gợi ý hay mở bằng "[" — YAML không nháy hiểu thành danh sách.
   printf 'argument-hint: "%s"\n' "$(printf '%s' "$4" | sed 's/[\\"]/\\&/g')"
+  # Chỉ người gõ /<lệnh> mới chạy: model không tự gọi qua Skill tool.
+  printf 'disable-model-invocation: true\n'
   printf -- '---\n\n'
 }
 

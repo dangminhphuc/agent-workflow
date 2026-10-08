@@ -315,7 +315,8 @@ ad_dau_agent() {
 }
 
 ad_dau_skill() {
-  printf -- '---\nname: %s\ndescription: %s\n---\n\n' "$1" "$2"
+  # Chỉ chạy khi người gõ /<tên>: model không tự nạp, description không chiếm ngữ cảnh.
+  printf -- '---\nname: %s\ndescription: %s\ndisable-model-invocation: true\n---\n\n' "$1" "$2"
 }
 
 ten_agent_checker() { printf '%s-checker' "$(basename "$1" .md)"; }
@@ -481,7 +482,7 @@ ad_sinh() {
   if [ -n "$REV_SRC" ]; then
     kiem_tra_ghi_de "$A/independent-reviewer.md"
     {
-      _hk ad_dau_agent independent-reviewer 'Independent clean-context review of the diff against spec.md, tdd.md and plan.md. Used by the review phase; never the session that implemented. The caller must pass the feature dir.'
+      _hk ad_dau_agent independent-reviewer 'Independent clean-context review of the diff against spec.md, tdd.md and plan.md. Never the session that implemented. The caller must pass the feature dir. Only call when an /aw-* command instructs it; never delegate to it on your own.'
       canh_bao "$REV_FILE"
       printf 'You are an independent reviewer: you have NEVER seen this code or the reasoning behind it. Do not guess the author'"'"'s intent; only compare the code with the approved spec and design. Write `review.md` in Vietnamese.\n\n'
       printf 'The caller passes `%s` (e.g. `%s/feat_tao-todo`); missing → stop and ask.\n\n' "$FD" "$ART"
@@ -508,7 +509,7 @@ ad_sinh() {
     fi
     kiem_tra_ghi_de "$A/$ten.md"
     {
-      _hk ad_dau_agent "$ten" "$(fm_scalar "$csrc" summary) The caller must pass the feature dir."
+      _hk ad_dau_agent "$ten" "$(fm_scalar "$csrc" summary) The caller must pass the feature dir. Only call when an /aw-* command instructs it; never delegate to it on your own."
       canh_bao "$lc"
       printf 'The caller passes `%s`; missing → stop and ask.\n\n' "$FD"
       printf 'Reads:\n'
@@ -568,7 +569,7 @@ ad_sinh() {
   # ---------- skill tổng ----------
   kiem_tra_ghi_de "$SK"
   {
-    _hk ad_dau_skill agent-workflow 'This repo'"'"'s AI-agent development workflow. Use when starting new work, writing a spec from a BRD/PRD or Jira/Confluence ticket, technical design, planning, implementing a plan, reviewing changes, importing documents from other tools, settling open questions or LLM-checker findings that block a phase, making the repo answer a fresh agent session (AGENTS.md, Makefile, module docs, ADR), or when asked how this repo works.'
+    _hk ad_dau_skill agent-workflow 'Overview of this repo'"'"'s AI-agent development workflow (phases, utility commands, hard rules, artifacts).'
     printf '# AI-agent development workflow\n\n'
     canh_bao "workflow.yaml"
     printf 'Each phase takes **files** written by the previous one as input, never chat — it runs from a blank session, with any agent. Talk to the human in Vietnamese.\n\n'

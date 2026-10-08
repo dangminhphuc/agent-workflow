@@ -432,6 +432,13 @@ Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đ
 - `rules/source-tracing.md` chỉ nạp cho lệnh khai `trace_rule: true`; `conventions.md` để "tra khi
   cần", không bắt đọc hết.
 - Danh sách điều máy kiểm nằm trong checker và in ra khi vi phạm; file phase chỉ tóm tắt.
+- **Chỉ người kích hoạt quy trình.** Agent tự đọc `description` rồi tự chạy lệnh/skill/subagent khi
+  thấy việc "na ná" thì vừa tốn token vừa kéo phiên đi lan man. Lệnh `/aw-*` và skill tổng
+  `agent-workflow` mang `disable-model-invocation: true`: chỉ chạy khi người gõ, description của skill
+  không chiếm ngữ cảnh. Subagent không có cờ tương đương (cấm bằng permission thì chính `/aw-review`
+  cũng không gọi được), nên chỉ chặn mềm: description dặn chỉ gọi khi lệnh `/aw-*` bảo. Hook
+  `PreToolUse` chặn cứng được nhưng phải ghi `settings.json` của repo đích và dễ chặn nhầm lượt
+  sau của cùng lệnh — không làm.
 
 ## Định dạng file phase
 

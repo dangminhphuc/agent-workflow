@@ -1411,6 +1411,9 @@ sh "$T/adapter-build.sh" cursor "$EX9" >/dev/null 2>&1
 dung "aw adapter build thêm exclude còn thiếu cho bản clone init từ trước (skill đổi tên)" sh -c "grep -qx '/.cursor/skills/agent-workflow/' '$EX9/.git/info/exclude' && grep -qx '/.agent-workflow/' '$EX9/.git/info/exclude' && [ \"\$(grep -cx '/.cursor/commands/' '$EX9/.git/info/exclude')\" = 1 ]"
 dung "…file sinh ra không lọt vào git status" sh -c "[ -z \"\$(git -C '$EX9' status --porcelain)\" ]"
 dung "lệnh /aw-import giữ argument-hint riêng" grep -q 'argument-hint: "<file-nguồn>' "$O/.claude/commands/aw-import.md"
+dung "mọi lệnh /aw-* chỉ chạy khi người gõ (disable-model-invocation: true trong frontmatter)" sh -c \
+  "for f in '$O'/.claude/commands/aw-*.md; do awk 'NR > 1 && /^---\$/ { exit } /^disable-model-invocation: true\$/ { ok = 1 } END { exit !ok }' \"\$f\" || exit 1; done"
+dung "skill agent-workflow chỉ chạy khi người gõ" sh -c "sed -n 4p '$O/.claude/skills/agent-workflow/SKILL.md' | grep -qx 'disable-model-invocation: true'"
 dung "skill liệt kê lệnh tiện ích" grep -q '/aw-clarify' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "/aw-bootstrap: ở checkout chính làm mục \"On the main checkout\" (đề xuất worktree), không dừng" sh -c \
   "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*\"On the main checkout\"' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'aw worktree new chore' '$O/.claude/commands/aw-bootstrap.md'"
@@ -1533,7 +1536,9 @@ dung "/aw-review bắt buộc subagent independent-reviewer" grep -q 'subagent `
 dung "subagent: frontmatter name trùng tên file (Cursor nạp .cursor/agents/)" sh -c \
   "for f in '$O3'/.cursor/agents/*.md; do head -1 \"\$f\" | grep -qx -- '---' && sed -n 2p \"\$f\" | grep -qx \"name: \$(basename \"\$f\" .md)\" || exit 1; done"
 dung "skill: frontmatter name agent-workflow + description" sh -c \
-  "sed -n 2p '$O3/.cursor/skills/agent-workflow/SKILL.md' | grep -qx 'name: agent-workflow' && sed -n 3p '$O3/.cursor/skills/agent-workflow/SKILL.md' | grep -q '^description: '"
+  "sed -n 2p '$O3/.cursor/skills/agent-workflow/SKILL.md' | grep -qx 'name: agent-workflow' && sed -n 3p '$O3/.cursor/skills/agent-workflow/SKILL.md' | grep -q '^description: ' && sed -n 4p '$O3/.cursor/skills/agent-workflow/SKILL.md' | grep -qx 'disable-model-invocation: true'"
+dung "subagent dặn chỉ gọi khi lệnh /aw-* yêu cầu" sh -c \
+  "for f in '$O3'/.cursor/agents/*.md; do sed -n 3p \"\$f\" | grep -q 'Only call when an /aw-\* command instructs it' || exit 1; done"
 dung "/aw-clarify hỏi lựa chọn kiểu Cursor: tool nếu có, không thì đánh số" sh -c \
   "grep -q '## Asking choice questions in Cursor' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'AskQuestion' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'numbered' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…luôn có lối tự nhập và Chat về câu này (tool không chắc tự thêm)" sh -c \
