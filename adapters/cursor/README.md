@@ -26,7 +26,7 @@ repo, thân phase) **giống hệt** bản Claude Code — `tools/chay-thu.sh` k
 | Nguồn trung lập | Artifact Cursor |
 |---|---|
 | `workflow/phases/<id>.md` | `.cursor/commands/aw-<id>.md` — lệnh `/aw-intake`, `/aw-spec`, `/aw-design`, `/aw-plan`, `/aw-implement`, `/aw-review`, `/aw-ship` |
-| `commands:` trong `workflow.yaml` | `.cursor/commands/aw-<id>.md` — `/aw-import`, `/aw-clarify` |
+| `commands:` trong `workflow.yaml` | `.cursor/commands/aw-<id>.md` — `/aw-import`, `/aw-clarify`, `/aw-bootstrap` |
 | Phase có `requires_fresh_agent: true` | `.cursor/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh riêng |
 | `llm_checker:` của phase | `.cursor/agents/soat-<id>.md` — subagent checker LLM (`soat-thiet-ke`) |
 | `workflow.yaml` + tóm tắt luật | `.cursor/skills/quy-trinh-agent/SKILL.md` |

@@ -1362,7 +1362,7 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/aw-intake.md commands/aw-spec.md commands/aw-design.md commands/aw-plan.md commands/aw-implement.md commands/aw-review.md \
-         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
+         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md agents/ra-soat-doc-lap.md agents/soat-thiet-ke.md skills/quy-trinh-agent/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 dung "sinh đúng bộ file" test "$du" = 1
@@ -1394,6 +1394,11 @@ dung "/aw-plan có cổng duyệt aw approval plan" grep -q 'aw approval plan' "
 dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Approval gate' '$O/.claude/commands/aw-implement.md' && ! grep -q 'Approval gate' '$O/.claude/commands/aw-spec.md'"
 dung "lệnh /aw-import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/aw-import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/aw-clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
+dung "/aw-bootstrap: ở checkout chính làm mục \"On the main checkout\" (đề xuất worktree), không dừng" sh -c \
+  "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*\"On the main checkout\"' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'aw worktree new chore' '$O/.claude/commands/aw-bootstrap.md'"
+dung "…dùng mẫu repo-dich, không tự tạo luật BR-, có bài kiểm tra phiên mới" sh -c \
+  "grep -q 'templates/repo-dich/AGENTS.md' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'Writing \`BR-\` blocks' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'Fresh-session test' '$O/.claude/commands/aw-bootstrap.md'"
+dung "skill liệt kê /aw-bootstrap" grep -q '/aw-bootstrap' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase> (review: subagent đọc)" sh -c \
   "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
 dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -c \
@@ -1474,6 +1479,10 @@ ky_vong 4 "từ chối build khi checker LLM khai quy_tac không phải phase c�
 tao_fake
 thay "$FAKE/workflow/import.md" 'arguments: mixed' 'arguments: input'
 ky_vong 4 "từ chối build khi lệnh tiện ích khai arguments khác \"mixed\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7"
+
+tao_fake
+thay "$FAKE/workflow/bootstrap.md" 'runs_on_main_checkout: true' 'runs_on_main_checkout: co'
+ky_vong 4 "từ chối build khi lệnh tiện ích khai runs_on_main_checkout khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7b"
 
 # ---------------------------------------------------------------- adapter cursor
 echo ""

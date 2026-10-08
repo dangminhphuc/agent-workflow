@@ -11,6 +11,20 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.19]
+
+### Thêm
+- **`/aw-bootstrap`** — lệnh tiện ích, một lần cho mỗi repo đích có sẵn: đưa kiến thức đang nằm ngoài
+  repo vào git để phiên agent mới chỉ có repo trả lời được hệ thống là gì, tổ chức ra sao, chạy và
+  kiểm thế nào, vì sao code như vậy, đang ở đâu. Ở checkout chính: chạy `aw doctor` và các lệnh
+  `aw … check`, đề xuất worktree `chore` (người chọn base). Trong worktree, mỗi bước một commit:
+  `conventions.md` vào git, `Makefile` gọi đúng lệnh CI (target chưa có lệnh vẫn thoát mã 1),
+  `AGENTS.md` 50–100 dòng chỉ trỏ tới, `ARCHITECTURE.md` cho module có ràng buộc riêng, ADR cho
+  quyết định đã có (đúng định dạng `aw adr check`), ứng viên luật `BR-` (chỉ liệt kê), bài kiểm tra
+  phiên mới. Chỉ ghi điều có bằng chứng trong repo; điều chỉ người biết thành câu hỏi trong báo cáo
+  `<thư-mục-feature>/bootstrap.md`, kèm khoảng cách hiển thị (số mục còn ngoài repo / tổng số).
+- Lệnh tiện ích khai được `runs_on_main_checkout: true` như phase.
+
 ## [2026.10.18]
 
 Kiến thức bền của repo đích vào git: quy ước, mẫu điểm vào và lệnh kiểm, ADR từ D-xx, luật nghiệp

@@ -77,7 +77,8 @@ thiếu hàm vẫn tính là "tái hiện được").
 
 - Artifact ở `.agent-workflow/<tên-branch>/`, tên branch **đầy đủ** để feat và refactor cùng tên
   không đè nhau. Agent luôn in `Đang làm với: …` — ghi nhầm feature là lỗi im lặng.
-- Checkout chính chỉ chạy `/aw-intake` (và dọn ở `/aw-ship`); `aw feature` chặn mọi lệnh khác ở đó.
+- Checkout chính chỉ chạy `/aw-intake`, `/aw-bootstrap` (đề xuất worktree) và dọn ở `/aw-ship`; `aw feature`
+  chặn mọi lệnh khác ở đó.
   Chốt đặt ở script mọi phase đều gọi — "phiên trắng" thành cấu trúc, không còn là khuyến nghị.
 - Worktree **ngoài** repo (`../{repo}.wt/{ten}`): bên trong thì jest/tsc/grep quét trùng và agent
   đọc nhầm artifact worktree khác. Branch, worktree, thư mục artifact cùng một tên.
@@ -177,6 +178,28 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
   chưa khai thoát mã 1 — "quên khai" không bao giờ thành xanh, đúng như `LENH_KIEM_THU` trống.
 - `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn; cách nạp theo phạm vi diff
   là bước sau.
+
+### `/aw-bootstrap`: dựng bản đồ một lần cho repo có sẵn
+
+Các cơ chế trên chỉ đưa kiến thức vào git **theo từng việc**; repo đã chạy nhiều năm thì quyết định cũ
+vẫn nằm ngoài. `/aw-bootstrap` làm phần đó một lần, theo đúng các luật trên:
+
+- **Lệnh tiện ích, không phải loại việc mới.** Không có YC, D-xx hay gate người để kiểm — thêm loại
+  việc là thêm checker cho thứ máy không chấm được (tài liệu có trả lời đúng năm câu không). Nó chạy
+  trong worktree `chore` như mọi việc (checkout chính chỉ đề xuất, người chọn base); kết quả là PR
+  người duyệt.
+- **Chỉ từ bằng chứng.** Mọi dòng ghi vào tài liệu kèm `file:dòng` hay commit; "vì sao" không có
+  bằng chứng thành câu hỏi trong báo cáo. Bịa lý do cho một quyết định là tạo đúng loại tài liệu sai
+  mà agent sau tin là thật.
+- **ADR viết tay cho quyết định cũ**: đúng định dạng `aw adr check` nhận, `Origin` là commit/tài liệu
+  gốc. Implement và review chỉ đối chiếu ADR nâng từ D-xx của việc, nên ADR cũ không bị dựng lại để
+  so — người duyệt PR là chốt nội dung.
+- **Không viết luật `BR-`**: luật cần nguồn có phiên bản và người có quyền xác nhận — chỉ liệt kê ứng
+  viên, chúng vào qua `/aw-spec` của việc kế tiếp chạm tới.
+- **Trạng thái của việc vẫn ngoài git**: `## Status` của `AGENTS.md` trỏ tới nơi giữ tiến độ thật
+  (issue tracker), không chép artifact của việc.
+- Báo cáo (`<thư-mục-feature>/bootstrap.md`, ngoài git) đo **khoảng cách hiển thị** — số mục kiến
+  thức còn ngoài repo trên tổng số — và ghi kết quả bài kiểm tra phiên mới; làm mô tả PR.
 
 ### ADR: D-xx đã duyệt thành "vì sao" của repo
 
@@ -440,8 +463,9 @@ Thân có mục cố định: **Mục tiêu**, **Đầu vào**, **Việc phải 
 kiện ra**. Mục **Cấm** chặn thất bại đặc trưng nhất: `01-spec` chọn giải pháp kỹ thuật,
 `04-implement` sửa "tiện tay" — cả hai xoá mất điểm dừng để người xem lại.
 
-Lệnh tiện ích (`commands:` trong manifest — `import`, `clarify`): `id`, `name`, `summary`, tuỳ chọn
-`argument_hint`, `arguments: mixed`, `choice_ui: true`, `trace_rule: true`. Checker LLM
+Lệnh tiện ích (`commands:` trong manifest — `import`, `clarify`, `bootstrap`): `id`, `name`, `summary`,
+tuỳ chọn `argument_hint`, `arguments: mixed`, `choice_ui: true`, `trace_rule: true`,
+`runs_on_main_checkout: true`. Checker LLM
 (`workflow/checkers/*.md`): `id`, `summary`, `inputs`, `output`, `quy_tac`; adapter biến thành
 subagent `soat-<id>`.
 

@@ -26,11 +26,15 @@ artifact_dir: .agent-workflow
 #                   xếp lại theo mẫu, không thêm nội dung
 #   clarify         gom mọi việc chờ người quyết (điểm mù, phát hiện của checker
 #                   LLM) theo thứ tự phải chốt trước, dẫn người đi từng mục
+#   bootstrap       một lần cho mỗi repo đích: đưa kiến thức (điểm vào, lệnh kiểm,
+#                   tài liệu module, ADR có sẵn) vào git — phiên agent mới không phải đoán
 commands:
   - id: import
     file: workflow/import.md
   - id: clarify
     file: workflow/clarify.md
+  - id: bootstrap
+    file: workflow/bootstrap.md
 
 phases:
   - id: intake
