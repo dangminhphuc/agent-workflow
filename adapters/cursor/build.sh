@@ -23,6 +23,12 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 AD_ID=cursor
 AD_TEN=Cursor
 AD_GOC=.cursor
+# Chuẩn định dạng Cursor (cursor.com/docs: commands, subagents, skills) — lệnh là
+# markdown thường; adapters/lib/dinh-dang.sh kiểm mọi file sinh ra trước khi ghi.
+AD_LENH_FM=khong
+AD_LENH_KHOA=""
+AD_AGENT_KHOA="name description model readonly is_background"
+AD_SKILL_KHOA="name description license compatibility metadata allowed-tools disable-model-invocation"
 . "$ROOT/adapters/lib/chung.sh"
 
 # Cursor không thay biến trong file lệnh: phần người gõ sau tên lệnh đi kèm tin

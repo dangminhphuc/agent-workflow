@@ -32,6 +32,7 @@ kq_khai init \
   "2=SAI THAM SỐ" \
   "3=CÓ FILE VIẾT TAY — không ghi đè; dời file đó đi hoặc dùng --force" \
   "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow" \
+  "5=SAI CHUẨN AGENT — adapter sinh file không đúng định dạng agent đọc (xem LỖI [<agent>] phía trên); báo lỗi engine" \
   "9=KHÔNG HỢP LỆ — thiếu AW_REPO/AW_CONFIG, gọi qua aw"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"

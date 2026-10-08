@@ -25,11 +25,13 @@
 . "$ROOT/tools/lib/md.sh"
 . "$ROOT/tools/lib/ket-qua.sh"
 . "$ROOT/tools/lib/bang-lenh.sh"
+. "$ROOT/adapters/lib/dinh-dang.sh"
 kq_khai build.sh \
   "0=ĐÃ SINH" \
   "2=SAI THAM SỐ" \
   "3=CÓ FILE VIẾT TAY — không ghi đè; dời file đó đi hoặc dùng --force" \
-  "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow"
+  "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow" \
+  "5=SAI CHUẨN $AD_TEN — file sinh ra không đúng định dạng $AD_TEN đọc; sửa adapters/$AD_ID/build.sh hoặc workflow/"
 
 OUT=""; FORCE=0; DA_SINH=""
 
@@ -76,7 +78,10 @@ ghi_file() {
   fi
   mkdir -p "$(dirname "$1")"
   _tmp="$(dirname "$1")/.$(basename "$1").tmp"
-  if cat > "$_tmp"; then mv "$_tmp" "$1"; echo "$1" >> "$DA_SINH"; echo "  build   ${1#"$OUT"/}"; else rm -f "$_tmp"; exit 4; fi
+  cat > "$_tmp" || { rm -f "$_tmp"; exit 4; }
+  # Sai chuẩn của agent: không cho vào chỗ — agent sẽ lặng lẽ bỏ qua hay hiểu sai file.
+  if [ "${AW_DOI_CHIEU:-}" != 1 ] && ! dd_kiem "$_tmp" "$1"; then rm -f "$_tmp"; exit 5; fi
+  mv "$_tmp" "$1"; echo "$1" >> "$DA_SINH"; echo "  build   ${1#"$OUT"/}"
 }
 
 # don_file_cu <file...> — xoá file mang dấu "SINH TỰ ĐỘNG" mà lần build này không
@@ -341,6 +346,10 @@ ad_kiem_hook() {
   for _h in $AD_HOOK; do
     command -v "$_h" >/dev/null 2>&1 || { echo "LỖI: adapter $AD_ID thiếu hook $_h (xem adapters/lib/chung.sh)." >&2; exit 4; }
   done
+  # Chuẩn định dạng của agent — dd_kiem (adapters/lib/dinh-dang.sh) kiểm mọi file theo nó.
+  case "${AD_LENH_FM:-}" in co|khong) ;; *) echo "LỖI: adapter $AD_ID khai AD_LENH_FM \"${AD_LENH_FM:-}\" — chỉ nhận co|khong (xem adapters/lib/dinh-dang.sh)." >&2; exit 4 ;; esac
+  [ -n "${AD_AGENT_KHOA:-}" ] && [ -n "${AD_SKILL_KHOA:-}" ] && { [ "$AD_LENH_FM" = khong ] || [ -n "${AD_LENH_KHOA:-}" ]; } ||
+    { echo "LỖI: adapter $AD_ID thiếu AD_LENH_KHOA / AD_AGENT_KHOA / AD_SKILL_KHOA (xem adapters/lib/dinh-dang.sh)." >&2; exit 4; }
 }
 
 sinh_command() {

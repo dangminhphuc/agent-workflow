@@ -11,6 +11,20 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **Kiểm chuẩn định dạng của agent** khi sinh adapter (`adapters/lib/dinh-dang.sh`): mọi file
+  `aw init` / `aw adapter build` / `aw worktree new --create` sinh cho Claude Code và Cursor được kiểm
+  trước khi ghi — frontmatter YAML hợp lệ, khoá thuộc chuẩn của agent, `name` khớp tên file / thư mục,
+  skill theo chuẩn Agent Skills (`description` ≤ 1024 ký tự), lệnh Cursor không có frontmatter. Sai thì
+  nhãn mới `SAI CHUẨN <agent>`, file sai không vào chỗ. Mỗi adapter khai chuẩn riêng (`AD_LENH_FM`,
+  `AD_LENH_KHOA`, `AD_AGENT_KHOA`, `AD_SKILL_KHOA`) trong `build.sh`.
+
+### Sửa
+- Lệnh Claude Code: `argument-hint` đặt trong nháy kép — giá trị mở bằng `[` (vd `[tên-feature]`) YAML
+  không nháy hiểu thành danh sách.
+
 ## [2026.10.20]
 
 ### Thay đổi

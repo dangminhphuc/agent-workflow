@@ -1392,7 +1392,7 @@ dung "…ba lựa chọn cố định, có preview, từ chối duyệt hộ" sh
   "grep -q 'Tôi đã duyệt xong — kiểm lại' '$O/.claude/commands/aw-design.md' && grep -q 'Giải thích từng điểm cần duyệt' '$O/.claude/commands/aw-design.md' && grep -q 'Dừng — tôi duyệt sau' '$O/.claude/commands/aw-design.md' && grep -q 'preview' '$O/.claude/commands/aw-design.md' && grep -q 'duyệt hộ' '$O/.claude/commands/aw-design.md'"
 dung "/aw-plan có cổng duyệt aw approval plan" grep -q 'aw approval plan' "$O/.claude/commands/aw-plan.md"
 dung "…phase không khai approval_gate thì không có" sh -c "! grep -q 'Approval gate' '$O/.claude/commands/aw-implement.md' && ! grep -q 'Approval gate' '$O/.claude/commands/aw-spec.md'"
-dung "lệnh /aw-import giữ argument-hint riêng" grep -q 'argument-hint: <file-nguồn>' "$O/.claude/commands/aw-import.md"
+dung "lệnh /aw-import giữ argument-hint riêng" grep -q 'argument-hint: "<file-nguồn>' "$O/.claude/commands/aw-import.md"
 dung "skill liệt kê lệnh tiện ích" grep -q '/aw-clarify' "$O/.claude/skills/quy-trinh-agent/SKILL.md"
 dung "/aw-bootstrap: ở checkout chính làm mục \"On the main checkout\" (đề xuất worktree), không dừng" sh -c \
   "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*\"On the main checkout\"' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'aw worktree new chore' '$O/.claude/commands/aw-bootstrap.md'"
@@ -1578,6 +1578,73 @@ mkdir -p "$FAKE/adapters/thieu-hook"
 sed '/^ad_hoi_cong_duyet() {/,/^}/d' "$CB" > "$FAKE/adapters/thieu-hook/build.sh"
 ky_vong 4 "adapter thiếu hook (ad_hoi_cong_duyet) → từ chối build" sh "$FAKE/adapters/thieu-hook/build.sh" --out "$TMP/f-thieu"
 dung "…không sinh file nào" sh -c "[ -z \"\$(find '$TMP/f-thieu' -type f 2>/dev/null)\" ]"
+
+# ---------------------------------------------------------------- chuẩn định dạng của agent
+# adapters/lib/dinh-dang.sh: mọi file sinh ra phải đúng chuẩn agent đọc (frontmatter
+# YAML, khoá được phép, name = tên file/thư mục…) — sai thì SAI CHUẨN, file không vào chỗ.
+echo ""
+echo "chuẩn định dạng của agent (adapters/lib/dinh-dang.sh)"
+# ad_gia <adapter> <tên-bản-sao> <đoạn-shell> — bản sao adapter, chèn đoạn ngay trước ad_sinh
+ad_gia() {
+  mkdir -p "$FAKE/adapters/$2"
+  awk -v d="$3" '$0 == "ad_sinh \"$@\"" { print d } { print }' "$FAKE/adapters/$1/build.sh" > "$FAKE/adapters/$2/build.sh"
+}
+# dd_tho <adapter> <file> — chạy riêng dd_kiem lên một file như thể nó nằm ở <file> trong .<goc>/
+dd_tho() {
+  sh -c ". '$FAKE/adapters/lib/dinh-dang.sh'; OUT=/o; AD_TEN=x; $(grep -E '^AD_(GOC|LENH_FM|LENH_KHOA|AGENT_KHOA|SKILL_KHOA)=' "$ROOT/adapters/$1/build.sh" | tr '\n' ';') dd_kiem '$TMP/dd.md' \"/o/\$AD_GOC/$2\""
+}
+tao_fake
+for ad in claude-code cursor; do
+  goc=$(sed -n 's/^AD_GOC=//p' "$ROOT/adapters/$ad/build.sh")
+  ky_vong 0 "$ad: bản đúng qua kiểm chuẩn" sh "$ROOT/adapters/$ad/build.sh" --out "$TMP/dd-$ad-0"
+  ad_gia "$ad" "$ad-ten" "ad_dau_agent() { printf -- '---\\\\nname: Sai_Ten\\\\ndescription: x\\\\n---\\\\n\\\\n'; }"
+  ky_vong 5 "$ad: subagent name không đúng dạng → SAI CHUẨN" sh "$FAKE/adapters/$ad-ten/build.sh" --out "$TMP/dd-$ad-1"
+  dung "$ad: …file sai không vào chỗ, không để lại .tmp" sh -c "[ ! -e '$TMP/dd-$ad-1/$goc/agents/ra-soat-doc-lap.md' ] && [ -z \"\$(find '$TMP/dd-$ad-1' -name '*.tmp')\" ]"
+  ad_gia "$ad" "$ad-khac" "ad_dau_agent() { printf -- '---\\\\nname: %s-cu\\\\ndescription: %s\\\\n---\\\\n\\\\n' \"\$1\" \"\$2\"; }"
+  ky_vong 5 "$ad: subagent name khác tên file → SAI CHUẨN" sh "$FAKE/adapters/$ad-khac/build.sh" --out "$TMP/dd-$ad-2"
+  ad_gia "$ad" "$ad-khoa" "ad_dau_agent() { printf -- '---\\\\nname: %s\\\\ndescription: %s\\\\nkhoa-la: 1\\\\n---\\\\n\\\\n' \"\$1\" \"\$2\"; }"
+  ky_vong 5 "$ad: subagent có khoá ngoài chuẩn → SAI CHUẨN" sh "$FAKE/adapters/$ad-khoa/build.sh" --out "$TMP/dd-$ad-3"
+  ad_gia "$ad" "$ad-dai" "ad_dau_skill() { printf -- '---\\\\nname: %s\\\\ndescription: %s\\\\n---\\\\n\\\\n' \"\$1\" \"\$(printf '%01100d' 0)\"; }"
+  ky_vong 5 "$ad: skill description > 1024 ký tự → SAI CHUẨN" sh "$FAKE/adapters/$ad-dai/build.sh" --out "$TMP/dd-$ad-4"
+  dung "$ad: …skill không vào chỗ" test ! -e "$TMP/dd-$ad-4/$goc/skills/quy-trinh-agent/SKILL.md"
+  ad_gia "$ad" "$ad-fm" "AD_LENH_FM=gi-do"
+  ky_vong 4 "$ad: AD_LENH_FM khác co|khong → ĐỊNH NGHĨA QUY TRÌNH LỖI" sh "$FAKE/adapters/$ad-fm/build.sh" --out "$TMP/dd-$ad-5"
+  ad_gia "$ad" "$ad-thieu" "AD_AGENT_KHOA="
+  ky_vong 4 "$ad: thiếu AD_AGENT_KHOA → ĐỊNH NGHĨA QUY TRÌNH LỖI" sh "$FAKE/adapters/$ad-thieu/build.sh" --out "$TMP/dd-$ad-6"
+done
+# Claude Code: frontmatter lệnh phải là YAML hợp lệ
+ad_gia claude-code cc-hint "ad_dau_lenh() { printf -- '---\\\\ndescription: \"%s\"\\\\nargument-hint: %s\\\\n---\\\\n\\\\n' \"\$3\" \"\$4\"; }"
+ky_vong 5 "claude-code: argument-hint mở bằng [ không nháy (YAML hiểu thành danh sách) → SAI CHUẨN" sh "$FAKE/adapters/cc-hint/build.sh" --out "$TMP/dd-cc-1"
+ad_gia claude-code cc-mota "ad_dau_lenh() { printf -- '---\\\\ndescription: %s\\\\nargument-hint: \"%s\"\\\\n---\\\\n\\\\n' \"\$3\" \"\$4\"; }"
+ky_vong 5 "claude-code: description có ': ' không nháy → SAI CHUẨN" sh "$FAKE/adapters/cc-mota/build.sh" --out "$TMP/dd-cc-2"
+ad_gia claude-code cc-dong "ad_dau_lenh() { printf -- '---\\\\ndescription: \"%s\"\\\\n\\\\n' \"\$3\"; }"
+ky_vong 5 "claude-code: frontmatter không có --- đóng → SAI CHUẨN" sh "$FAKE/adapters/cc-dong/build.sh" --out "$TMP/dd-cc-3"
+ad_gia claude-code cc-khong "ad_dau_lenh() { printf '# /%s\\\\n\\\\n' \"\$1\"; }"
+ky_vong 5 "claude-code: lệnh thiếu frontmatter description → SAI CHUẨN" sh "$FAKE/adapters/cc-khong/build.sh" --out "$TMP/dd-cc-4"
+# Cursor: lệnh là markdown thường
+ad_gia cursor cu-fm "ad_dau_lenh() { printf -- '---\\\\ndescription: x\\\\n---\\\\n\\\\n'; }"
+ky_vong 5 "cursor: lệnh có frontmatter → SAI CHUẨN" sh "$FAKE/adapters/cu-fm/build.sh" --out "$TMP/dd-cu-1"
+# dd_kiem trực tiếp: các trường hợp biên của YAML
+printf -- '---\nname: a\ndescription: "mở nháy\n---\nthân\n' > "$TMP/dd.md"
+ky_vong 1 "dd_kiem: nháy kép không đóng → sai" dd_tho cursor agents/a.md
+printf -- '---\nname: a\ndescription: "có \\"nháy\\" và : bên trong"\n---\nthân\n' > "$TMP/dd.md"
+ky_vong 0 "dd_kiem: nháy kép có \\\" và ': ' bên trong → đúng" dd_tho cursor agents/a.md
+printf -- "---\nname: a\ndescription: 'it''s ok: yes'\n---\nthân\n" > "$TMP/dd.md"
+ky_vong 0 "dd_kiem: nháy đơn có '' → đúng" dd_tho cursor agents/a.md
+printf -- '---\nname: a\nname: a\ndescription: x\n---\nthân\n' > "$TMP/dd.md"
+ky_vong 1 "dd_kiem: khoá trùng → sai" dd_tho cursor agents/a.md
+printf -- '---\nname: a\ndescription:\tx\n---\nthân\n' > "$TMP/dd.md"
+ky_vong 1 "dd_kiem: tab trong frontmatter → sai" dd_tho cursor agents/a.md
+printf -- '---\nname: a\ndescription: x\n---\n\n' > "$TMP/dd.md"
+ky_vong 1 "dd_kiem: thân rỗng → sai" dd_tho cursor agents/a.md
+printf -- '---\nname: s\ndescription: dùng <thẻ>\n---\nthân\n' > "$TMP/dd.md"
+ky_vong 1 "dd_kiem: skill description có < > → sai" dd_tho claude-code skills/s/SKILL.md
+printf -- '---\nname: s\ndescription: %s\n---\nthân\n' "$(awk 'BEGIN { for (i = 0; i < 1024; i++) printf "ư" }')" > "$TMP/dd.md"
+ky_vong 0 "dd_kiem: skill description đúng 1024 ký tự (chữ có dấu tính 1) → đúng" dd_tho claude-code skills/s/SKILL.md
+printf '# /Aw_Sai\n\nthân\n' > "$TMP/dd.md"
+ky_vong 1 "dd_kiem: tên file lệnh không đúng dạng → sai" dd_tho cursor commands/Aw_Sai.md
+printf '# x\n\nthân\n' > "$TMP/dd.md"
+ky_vong 1 "dd_kiem: đường dẫn agent không đọc → sai" dd_tho cursor rules/x.md
 
 # ---------------------------------------------------------------- đối chiếu mọi adapter
 # Mọi adapter dùng chung adapters/lib/chung.sh. AW_DOI_CHIEU=1: hook in tên của nó
@@ -1871,7 +1938,7 @@ ky_vong 0 "đã merge: remove --delete-branch gỡ worktree và xoá branch" awd
 dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] && ! git -C '$R9' rev-parse --verify --quiet refs/heads/chore_in-base"
 
 IN="$R9/.claude/commands/aw-intake.md"
-dung "/aw-intake: tham số là input, không truyền vào aw feature" sh -c "grep -q 'argument-hint: \[mã-issue' '$IN' && ! grep -q 'aw feature \$ARGUMENTS' '$IN'"
+dung "/aw-intake: tham số là input, không truyền vào aw feature" sh -c "grep -q 'argument-hint: \"\\[mã-issue' '$IN' && ! grep -q 'aw feature \$ARGUMENTS' '$IN'"
 dung "/aw-intake: đang ở checkout chính thì dẫn tới aw worktree new" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*aw worktree new' "$IN"
 dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' "$R9/.claude/commands/aw-spec.md"
 dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'aw feature \$ARGUMENTS' "$R9/.claude/commands/aw-spec.md"

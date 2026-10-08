@@ -107,6 +107,7 @@ mặc định cổng chặn đặt ở cuối phase):
 | `SAI THAM SỐ` | Sai tham số |
 | `CÓ FILE VIẾT TAY` | Đích có file người viết — `--force` để ghi đè |
 | `ĐỊNH NGHĨA QUY TRÌNH LỖI` | Nguồn sai: `exit_machine` không phải `aw check <tên>` có thật, `llm_checker`/`commands:` trỏ file không có, giá trị frontmatter sai, adapter thiếu hook |
+| `SAI CHUẨN Claude Code` | File sinh ra không đúng định dạng Claude Code đọc (frontmatter YAML hỏng, khoá ngoài chuẩn, `name` khác tên file…) — file sai không được ghi; xem [../README.md](../README.md#chuẩn-định-dạng-của-agent) |
 
 `ĐỊNH NGHĨA QUY TRÌNH LỖI` giữ "điều kiện ra loại MÁY" luôn là lệnh thật — không thì một dòng chữ
 lọt vào và agent tự đánh giá là đạt.

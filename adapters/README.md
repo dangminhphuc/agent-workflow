@@ -11,7 +11,7 @@ Thư mục `adapters/<id>/` gồm:
 
 | File | Vai trò |
 |---|---|
-| `build.sh` | `sh build.sh --out <thư-mục> [--force]` — khai `AD_ID`, `AD_TEN`, `AD_GOC`, các hook, rồi gọi `ad_sinh` |
+| `build.sh` | `sh build.sh --out <thư-mục> [--force]` — khai `AD_ID`, `AD_TEN`, `AD_GOC`, chuẩn định dạng (`AD_LENH_FM`, `AD_*_KHOA`), các hook, rồi gọi `ad_sinh` |
 | `exclude` | Đường dẫn adapter sinh ra, mỗi dòng một mẫu (`/.claude/`). `aw init` thêm vào `.git/info/exclude` |
 | `README.md` | Biên dịch ra gì, cái gì không portable |
 
@@ -37,6 +37,29 @@ Chữ riêng của một agent chỉ được nằm trong hook:
 | `ad_dau_agent`, `ad_dau_skill` | Frontmatter subagent, skill (có mặc định) | `name`, `description` | `name`, `description` |
 
 Thiếu hook bắt buộc → build từ chối (`ĐỊNH NGHĨA QUY TRÌNH LỖI`), không sinh gì.
+
+### Chuẩn định dạng của agent
+
+Mọi file sinh ra được kiểm theo chuẩn của agent đọc nó (`adapters/lib/dinh-dang.sh`, chạy trong
+`ghi_file` **trước** khi file vào chỗ). Sai chuẩn thì agent lặng lẽ bỏ qua hay hiểu sai file (lệnh
+mất khỏi menu, subagent không gọi được) — nên build chặn: `SAI CHUẨN <agent>`, file sai không được ghi.
+
+Adapter khai chuẩn riêng trong `build.sh`:
+
+| Biến | Claude Code | Cursor |
+|---|---|---|
+| `AD_LENH_FM` | `co` — lệnh bắt buộc frontmatter | `khong` — lệnh là markdown thường, cấm frontmatter |
+| `AD_LENH_KHOA` | `description argument-hint allowed-tools model disable-model-invocation` | (rỗng) |
+| `AD_AGENT_KHOA` | `name description tools disallowedTools model permissionMode skills hooks color` | `name description model readonly is_background` |
+| `AD_SKILL_KHOA` | khoá skill của Claude Code | khoá chuẩn Agent Skills |
+
+Luật chung cho mọi adapter: frontmatter là YAML hợp lệ (dòng 1 `---`, có `---` đóng, `khoá: giá trị`,
+không tab, không khoá trùng, khoá thuộc danh sách trên; giá trị mở bằng `[ { * & ! | > % @` hoặc chứa
+`: ` / ` #` phải nằm trong nháy và nháy đóng đúng); lệnh có frontmatter phải có `description`;
+subagent, skill có `name` + `description`, `name` = tên file / tên thư mục, dạng `a-z0-9` nối `-`,
+≤ 64 ký tự; skill: `description` ≤ 1024 ký tự, không `< >`; tên file lệnh cùng dạng; thân không
+rỗng; chỉ ghi vào `commands/<tên>.md`, `agents/<tên>.md`, `skills/<tên>/SKILL.md`. Thiếu biến chuẩn
+→ `ĐỊNH NGHĨA QUY TRÌNH LỖI`. Test: `tools/chay-thu.sh`, mục "chuẩn định dạng của agent".
 
 **Test đối chiếu** (`tools/chay-thu.sh`, mục "đối chiếu mọi adapter"): build MỌI
 adapter trong `adapters/*/` với `AW_DOI_CHIEU=1` — hook in tên của nó thay cho nội
@@ -113,7 +136,8 @@ phẩy): `ADAPTER="claude-code cursor"`. `aw init` exclude đường dẫn của
 
 1. Tạo `adapters/<id>/build.sh`: đặt `ROOT`, `AD_ID`, `AD_TEN`, `AD_GOC` (thư mục
    gốc của agent, vd `.cursor`), source `adapters/lib/chung.sh`, định nghĩa các hook
-   (bảng trên), rồi `ad_sinh "$@"`. Xem `adapters/cursor/build.sh` — chỉ có hook.
+   (bảng trên) và chuẩn định dạng (`AD_LENH_FM`, `AD_*_KHOA` — mục "Chuẩn định dạng của agent"),
+   rồi `ad_sinh "$@"`. Xem `adapters/cursor/build.sh` — chỉ có hook và chuẩn.
 2. Tạo `adapters/<id>/exclude` liệt kê đường dẫn adapter sinh ra. Chỉ exclude thư
    mục adapter thật sự ghi vào, không cả thư mục gốc của agent nếu team hay commit
    file khác trong đó (Cursor: `.cursor/rules/`, `hooks.json`).
