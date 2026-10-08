@@ -14,6 +14,7 @@
 #   - Task thiếu "Verify", "Expected files"; "Based on: D-xx" trỏ về D không có.
 #   - File khai ở rules_plan (conventions.md) không có hoặc chưa commit.
 #   - D-xx "Promote: adr" không có task "Based on" nó mà "Expected files" gồm thư mục ADR.
+#   - YC "Promote: BR-…" không có task phủ nó mà "Expected files" gồm file luật đích.
 # Cảnh báo: artifact lỗi thời; YC "Priority: must" nằm ở "Deferred".
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -30,6 +31,7 @@ kq_khai kiem-tra-ke-hoach.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/duyet.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/luat.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -76,6 +78,11 @@ else
   fi
 fi
 
+# YC người chọn nâng thành luật phải có task ghi file luật (tools/lib/luat.sh).
+llk=$(luat_loi_ke_hoach "$DIR")
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$llk
+EOF
 qtl=$(kc_quy_tac_loi "$DIR" plan)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $qtl

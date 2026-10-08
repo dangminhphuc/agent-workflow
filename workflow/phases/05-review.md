@@ -118,6 +118,7 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 - **no implement warning left**; every task `[x]` with evidence matching `Verify`; no merge conflict markers; work-type rules;
 - `## Repo rules` has a valid verdict for **each** rule file (declared file exists, committed);
 - each `Promote: adr` D has an ADR matching the approved D; the ADR directory passes `aw adr check`;
+- each `Promote: BR-…` YC has a rule block matching the approved YC;
 - Lens 4 has seven valid rows; any `finding` → Lens 3 has at least one finding;
 - Lens 3 has findings **or** exactly `- None` (not both), no template placeholders; `Location`, `Category`, `Failure scenario` well-formed;
 - `## Conclusion` has `- Blocker findings: <n>` equal to the number of `[Blocker]` items; `- Reviewed tree:` matches the code;

@@ -21,6 +21,7 @@
 #        nang dependency khong khai, hoac dung file dependency ma SCA chua xanh.
 #        ADR: D "Promote: adr" chua nang (aw adr promote), ADR lech D da duyet,
 #        thu muc ADR sai hinh thuc (aw adr check).
+#        Luat: YC "Promote: BR-…" chua nang (aw rule promote) hoac khoi luat lech YC da duyet.
 # Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
 #        test moi bi tat / chay rieng (.only, .skip… — skipped_test_regex),
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
@@ -44,6 +45,7 @@ kq_khai kiem-tra-hien-thuc.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/duyet.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/luat.sh"
 
 DIR="${1:-.}"
 PLAN="$DIR/plan.md"
@@ -141,6 +143,10 @@ EOF
 adl=$(adr_loi_viec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi "ADR: $l"; done <<EOF
 $adl
+EOF
+lvl=$(luat_loi_viec "$DIR")
+while IFS= read -r l; do [ -n "$l" ] && loi "Luật: $l"; done <<EOF
+$lvl
 EOF
 
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----

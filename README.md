@@ -193,6 +193,9 @@ src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module 
 - **Vì sao code như vậy — ADR** (`docs/adr/`): quyết định D-xx mà người duyệt kèm `- Promote: adr`
   được `aw adr promote` chép thành ADR ngay trong PR của việc. Phase design đọc chỉ mục và ADR
   liên quan qua `aw knowledge design`; D đi ngược ADR phải ghi `- Supersedes: ADR-NNNN`.
+- **Luật nghiệp vụ bền** (`docs/product/rules/<miền>.md`): YC là bất biến nghiệp vụ, người duyệt spec
+  kèm `- Promote: BR-<MIỀN>-NNN`, được `aw rule promote` chép thành khối `### BR-…` (nguồn có phiên
+  bản). Phase spec đọc luật active qua `aw knowledge spec`; test gắn `covers: BR-…` như với YC.
 
 
 ### Lệnh
@@ -211,6 +214,7 @@ src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module 
 | `aw ship targets\|create\|status\|sweep …` | Gửi MR/PR, theo dõi, dọn việc đã merge |
 | `aw adapter build [a[,b]] [--out <dir>] [--force]` | Sinh lại adapter |
 | `aw adr promote <thư-mục-feature> D-NN` · `aw adr check` | Chép D-xx đã duyệt (`Promote: adr`) thành ADR trong repo · kiểm thư mục ADR |
+| `aw rule promote <thư-mục-feature> YC-NNN` · `aw rule check` | Chép YC đã duyệt (`Promote: BR-…`) thành luật nghiệp vụ · kiểm mọi luật `BR-` |
 | `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
 | `aw guard pre\|post` | Hook gác ô duyệt |
 

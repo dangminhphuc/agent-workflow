@@ -4,6 +4,7 @@
 #   aw check spec <thư-mục-feature>
 #
 # Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
+#            YC "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -13,6 +14,8 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/kiem-cheo.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/duyet.sh"
+. "$HERE/lib/adr.sh"
+. "$HERE/lib/luat.sh"
 . "$HERE/lib/ket-qua.sh"
 kq_khai kiem-tra-truy-vet.sh \
   "0=ĐẠT — được sang phase sau" \
@@ -48,6 +51,11 @@ EOF
 kld=$(kc_loi_duyet "$SPEC" spec)
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $kld
+EOF
+# YC người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/luat.sh.
+lsl=$(luat_loi_spec "$DIR")
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$lsl
 EOF
 TT_SPEC=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
 LOAI=$(kc_loai "$DIR")

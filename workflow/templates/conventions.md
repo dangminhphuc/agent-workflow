@@ -63,6 +63,8 @@ confluence_domains:
 # ── Durable knowledge (kiến thức bền trong repo, agent đọc qua `aw knowledge`) ──
 # [default] thư mục ADR: aw adr promote ghi vào, phase design đọc chỉ mục README.md
 knowledge_adr_dir: docs/adr
+# [default] thư mục luật nghiệp vụ BR-: aw rule promote ghi <miền>.md vào đây
+knowledge_rules_dir: docs/product/rules
 # [default] glob tài liệu module đã commit; phạm vi của mỗi file = thư mục chứa nó
 knowledge_files: */ARCHITECTURE.md
 

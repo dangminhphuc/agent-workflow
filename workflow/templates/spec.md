@@ -58,6 +58,11 @@ Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — ch
 - Acceptance criteria:
   - [ ] <...>
 
+<!-- Luật bền (tuỳ chọn, NGƯỜI quyết bằng cách duyệt spec): YC là bất biến nghiệp vụ còn đúng
+sau việc này (không phải chi tiết màn hình), nguồn bền ([JIRA] [CONFLUENCE] [FILE], hay lời người
+đã ghi trong intake.md / open-questions.md) → thêm dưới YC:
+- Promote: BR-<MIỀN>-NNN       vd BR-BILLING-003; 04-implement chép YC thành luật (aw rule promote) -->
+
 <!-- CHỈ refactor / perf: mỗi YC có thêm
 - Type: `preserve | structural | performance`   (performance: chỉ perf)
 - Protected by: `test/<file>.test.ts`         (YC preserve — file có sẵn trên nhánh gốc)

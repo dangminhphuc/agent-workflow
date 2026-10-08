@@ -2781,6 +2781,7 @@ qu_loi "worktree_dir trong repo" 'worktree_dir: ../{repo}.wt/{ten}' 'worktree_di
 qu_loi "worktree_dir thiếu {ten}" 'worktree_dir: ../{repo}.wt/{ten}' 'worktree_dir: ../{repo}.wt' 'thiếu {ten}'
 qu_loi "knowledge_adr_dir ngoài repo" 'knowledge_adr_dir: docs/adr' 'knowledge_adr_dir: ../adr' 'phải là đường dẫn tương đối'
 qu_loi "knowledge_adr_dir trong .agent-workflow" 'knowledge_adr_dir: docs/adr' 'knowledge_adr_dir: .agent-workflow/adr' 'bị exclude'
+qu_loi "knowledge_rules_dir ngoài repo" 'knowledge_rules_dir: docs/product/rules' 'knowledge_rules_dir: /tmp/rules' 'phải là đường dẫn tương đối'
 qu_loi "base_branch không có" 'base_branch: main' 'base_branch: khong-co' 'không có trong repo'
 qu_loi "khối chưa đóng" 'rules_review:
 ```' 'rules_review:' 'chưa đóng'
@@ -3100,7 +3101,94 @@ g add src/ARCHITECTURE.md lib/ARCHITECTURE.md; g commit -q -m "tai lieu module"
 dung "knowledge design: chưa có đường dẫn trong Existing code → chỉ in chỉ mục ADR" bang "$(sh "$KT" design "$F" 2>/dev/null)" "docs/adr/README.md"
 thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
 dung "…có đường dẫn → thêm ADR accepted khớp Scope, tài liệu module cha; bỏ ADR đã bị thay, module khác" bang "$(sh "$KT" design "$F" 2>/dev/null | tr '\n' ' ')" "docs/adr/README.md docs/adr/0002-feat_x-d-02.md src/ARCHITECTURE.md "
-ky_vong 2 "knowledge phase chưa hỗ trợ → SAI THAM SỐ" sh "$KT" spec "$F"
+ky_vong 2 "knowledge phase chưa hỗ trợ → SAI THAM SỐ" sh "$KT" plan "$F"
+tao_fixture
+
+# ---------------------------------------------------------------- luật nghiệp vụ (aw rule)
+echo ""
+echo "Luật nghiệp vụ BR-: YC đã duyệt nâng thành kiến thức bền"
+tao_fixture
+LU="$T/luat.sh"; SK="$T/kiem-tra-truy-vet.sh"; PK="$T/kiem-tra-ke-hoach.sh"
+LF="$R/docs/product/rules/billing.md"
+# sua_spec <tìm> <thay> — sửa spec, người duyệt lại bản mới
+sua_spec() { thay "$F/spec.md" "$1" "$2"; duyet_lai "$F/spec.md"; ghi_based_on 2>/dev/null; }
+sua_spec '- Priority: `must`' '- Priority: `must`
+- Description: luôn mở được y
+- Promote: BR-billing-1'
+ky_vong 1 "spec: Promote sai dạng ID → KHÔNG ĐẠT" sh "$SK" "$F"
+dung "…nêu dạng đúng" sh -c "sh '$SK' '$F' | grep -q 'dạng BR-<MIỀN>-NNN'"
+sua_spec '- Promote: BR-billing-1' '- Promote: BR-BILLING-001'
+ky_vong 0 "spec: Promote: BR-BILLING-001 trên YC nguồn [JIRA] → ĐẠT" sh "$SK" "$F"
+sua_spec '- Priority: `should`' '- Priority: `should`
+- Promote: BR-BILLING-002'
+ky_vong 1 "spec: Promote trên YC [OPEN-QUESTION] → KHÔNG ĐẠT" sh "$SK" "$F"
+sua_spec '- Priority: `should`
+- Promote: BR-BILLING-002' '- Priority: `should`'
+ky_vong 1 "plan: YC Promote chưa có task ghi file luật → KHÔNG ĐẠT" sh "$PK" "$F"
+dung "…nêu file đích" sh -c "sh '$PK' '$F' | grep -q 'docs/product/rules/billing.md'"
+thay "$F/plan.md" '- Expected files: `src/*` `test/*`' '- Expected files: `src/*` `test/*` `docs/product/rules/billing.md`'; ghi_based_on 2>/dev/null
+ky_vong 0 "…task phủ YC-001 có file luật → ĐẠT" sh "$PK" "$F"
+ky_vong 1 "promote: nguồn [JIRA] chưa có phiên bản trong ## Sources → TỪ CHỐI" sh "$LU" promote "$F" YC-001
+dung "…không ghi gì" test ! -e "$LF"
+sua_spec '## Requirements' '## Sources
+
+| # | Type | Identifier | Version | Read on |
+|---|---|---|---|---|
+| 1 | Jira | ABC-1 | updated 2026-10-01 | 2026-10-02 |
+
+## Requirements'
+thay "$F/spec.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
+ky_vong 1 "promote: spec chưa duyệt → TỪ CHỐI" sh "$LU" promote "$F" YC-001
+thay "$F/spec.md" '- [ ] **Approved by human**' '- [x] **Approved by human**'
+ky_vong 1 "promote: YC không khai Promote → TỪ CHỐI" sh "$LU" promote "$F" YC-002
+ky_vong 0 "promote YC-001 → ĐÃ NÂNG" sh "$LU" promote "$F" YC-001
+dung "…khối chép YC: tên, Rule, Scope (bỏ file test, file luật), Source có phiên bản, tiêu chí, Origin" sh -c "grep -qx '### BR-BILLING-001: a' '$LF' && grep -qxF -- '- Rule: luôn mở được y' '$LF' && grep -qxF -- '- Scope: \`src/*\`' '$LF' && grep -qxF -- '- Source: \`[JIRA]\` ABC-1 (version: updated 2026-10-01)' '$LF' && grep -qxF -- '  - mở y thấy a' '$LF' && grep -qxF -- '- Origin: \`feat_x\` § YC-001' '$LF' && grep -qxF -- '- Status: active' '$LF'"
+ky_vong 0 "promote lại → vẫn ĐÃ NÂNG" sh "$LU" promote "$F" YC-001
+dung "…viết lại tại chỗ, không nhân đôi" bang "$(grep -c '^### BR-BILLING-001' "$LF")" "1"
+ky_vong 0 "aw rule check → HỢP LỆ" sh "$LU" check
+dung "…cảnh báo luật active chưa có test covers" sh -c "sh '$LU' check 2>/dev/null | grep -q '! BR-BILLING-001'"
+printf '// covers: YC-001, YC-002, BR-BILLING-001\n' > "$R/test/a.test.js"
+dung "…test gắn covers: BR-BILLING-001 → hết cảnh báo" sh -c "! sh '$LU' check 2>/dev/null | grep -q '! BR-BILLING-001'"
+ky_vong 0 "implement: khối luật khớp YC đã duyệt → ĐẠT" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+thay "$LF" '- Rule: luôn mở được y' '- Rule: thỉnh thoảng mở được y'
+ky_vong 1 "implement: khối luật sửa tay lệch YC → KHÔNG ĐẠT" sh "$T/kiem-tra-hien-thuc.sh" "$F"
+dung "…nêu lệch YC-001" sh -c "sh '$T/kiem-tra-hien-thuc.sh' '$F' 2>/dev/null | grep -q 'Luật: docs/product/rules/billing.md: BR-BILLING-001 lệch YC-001'"
+rm -f "$LF"
+ky_vong 1 "review: YC Promote chưa có khối luật → KHÔNG ĐẠT" sh "$T/kiem-tra-ra-soat.sh" "$F"
+dung "…nêu lý do" sh -c "sh '$T/kiem-tra-ra-soat.sh' '$F' 2>/dev/null | grep -q 'Luật: YC-001 khai Promote: BR-BILLING-001 nhưng chưa có khối luật'"
+sh "$LU" promote "$F" YC-001 >/dev/null 2>&1
+luat_khoi_sao() { awk '/^### BR-BILLING-001/ { t = 1 } t' "$LF"; }
+printf '# khác\n\n%s\n' "$(luat_khoi_sao)" > "$R/docs/product/rules/khac.md"
+ky_vong 1 "rule check: trùng ID ở hai file → KHÔNG HỢP LỆ" sh "$LU" check
+rm -f "$R/docs/product/rules/khac.md"
+thay "$LF" ' (version: updated 2026-10-01)' ''
+ky_vong 1 "rule check: Source thiếu phiên bản → KHÔNG HỢP LỆ" sh "$LU" check
+thay "$LF" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` ABC-1 (version: updated 2026-10-01)'
+thay "$LF" '- Status: active' '- Status: superseded by BR-KHAC-009'
+ky_vong 1 "rule check: superseded by luật không có → KHÔNG HỢP LỆ" sh "$LU" check
+thay "$LF" '- Status: superseded by BR-KHAC-009' '- Status: active'
+ky_vong 0 "…sửa lại → HỢP LỆ" sh "$LU" check
+# Lời người đã ghi (câu trả lời điểm mù): nguồn [HUMAN] + Quote nguyên văn
+thay "$F/open-questions.md" '- **Status:** `open`' '- **Status:** `answered`
+- **Answer:** PO Lan, 2026-10-05: luôn hiện b'
+sua_spec '- Source: `[OPEN-QUESTION]` → open-questions.md § YC-002' '- Source: `[FILE]` open-questions.md § YC-002
+- Description: luôn hiện b
+- Promote: BR-BILLING-002'
+thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Expected files: `src/b.txt` `docs/product/rules/billing.md`'; ghi_based_on 2>/dev/null
+ky_vong 0 "promote YC-002 nguồn là câu trả lời của người → ĐÃ NÂNG" sh "$LU" promote "$F" YC-002
+dung "…Source [HUMAN] có ngày làm phiên bản, Quote nguyên văn" sh -c "grep -qxF -- '- Source: \`[HUMAN]\` open-questions.md (\`feat_x\`) (version: 2026-10-05)' '$LF' && grep -qxF -- '- Quote: \"PO Lan, 2026-10-05: luôn hiện b\"' '$LF'"
+dung "…hai luật cùng một file miền" bang "$(grep -c '^### BR-' "$LF")" "2"
+# Việc khác chọn trùng ID → spec chặn
+F2="$R/.agent-workflow/feat_y"; cp -R "$F" "$F2"
+ky_vong 1 "spec của việc khác dùng ID đã có → KHÔNG ĐẠT" sh "$SK" "$F2"
+dung "…nêu ID đã có" sh -c "sh '$SK' '$F2' | grep -q 'BR-BILLING-001 đã có trong docs/product/rules/billing.md'"
+rm -rf "$F2"
+# aw knowledge: spec in mọi file có luật active; design lọc theo Scope
+dung "knowledge spec: in file có luật active" bang "$(sh "$KT" spec "$F" 2>/dev/null)" "docs/product/rules/billing.md"
+thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
+dung "knowledge design: luật active có Scope khớp Existing code" sh -c "sh '$KT' design '$F' 2>/dev/null | grep -qx 'docs/product/rules/billing.md'"
+thay "$F/tdd.md" 'Module `src/a.txt`.' 'Module `test/a.test.js`.'
+dung "…Scope không khớp → không in" sh -c "! sh '$KT' design '$F' 2>/dev/null | grep -q 'billing.md'"
 tao_fixture
 
 # ---------------------------------------------------------------- wrapper → lệnh mới
@@ -3110,6 +3198,7 @@ ky_vong 0 "aw journal → engine" aw7 journal
 ky_vong 2 "aw task sai tham số → engine trả SAI THAM SỐ" aw7 task lam-gi
 ky_vong 2 "aw ready thiếu thư mục → engine trả SAI THAM SỐ" aw7 ready
 ky_vong 0 "aw adr check → engine (repo chưa có ADR: HỢP LỆ)" aw7 adr check
+ky_vong 0 "aw rule check → engine (repo chưa có luật: HỢP LỆ)" aw7 rule check
 ky_vong 2 "aw knowledge thiếu tham số → engine trả SAI THAM SỐ" aw7 knowledge
 
 # ---------------------------------------------------------------- tong ket
