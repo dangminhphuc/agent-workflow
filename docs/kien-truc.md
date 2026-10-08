@@ -97,7 +97,9 @@ Bộ cài cũ chép quy trình vào repo đích và bắt commit vào nhánh g�
 
 1. **Protected branch** — cài/nâng cấp phải qua PR vào nhánh được bảo vệ. Giờ engine ở
    `~/.agent-workflow/engine/<V>/`, cấu hình ở `$(git rev-parse --git-common-dir)/agent-workflow/`,
-   file sinh ra bị `.git/info/exclude` → **base tuỳ ý**.
+   file sinh ra bị `.git/info/exclude` → **base tuỳ ý**. Quy ước của repo thì ngược lại: nằm trong
+   git và qua PR (mục "Trạng thái của việc và kiến thức bền") — lý do trên nhắm vào *cài/nâng cấp
+   engine*, còn quy ước của team đi qua review là điều mong muốn.
 2. **Version theo việc** — đồng bộ bộ cài giữa chừng đổi luật mọi việc đang làm. Giờ `intake.md`
    ghi `Engine:`; mọi `aw check` chạy đúng version đó, không có thì `KHÔNG HỢP LỆ` (chạy tạm bằng
    version khác = chấm theo luật việc đó không được đặt ra). So khớp chính xác, không suy "tương thích".
@@ -119,6 +121,45 @@ Bộ cài cũ chép quy trình vào repo đích và bắt commit vào nhánh g�
   của PR chặn PR merge sau.
 - Wrapper và engine có số giao thức (`AW_PROTOCOL`): lệch thì dừng, không chạy thiếu biến.
 - **Artifact chỉ ở máy**: không vào PR; gỡ worktree thì chép vào `archive/` trước.
+
+## Trạng thái của việc và kiến thức bền
+
+Bài kiểm tra phiên mới cho **repo đích**: một phiên agent chỉ có repo phải trả lời được hệ thống là
+gì, tổ chức ra sao, chạy và kiểm thế nào, **vì sao code như vậy**, đang ở đâu. Thứ gì chỉ ở một
+máy thì với phiên đó coi như không có. Ranh giới:
+
+| | Trạng thái của việc | Kiến thức bền |
+|---|---|---|
+| Là gì | `intake/spec/tdd/plan/review`, `ket-qua-*`, ô duyệt đang chờ | Quy ước, quyết định, ràng buộc, luật nghiệp vụ còn đúng sau khi việc xong |
+| Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của repo đích, qua PR |
+| Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
+
+Hiện thực tới đâu: `conventions.md` (dưới đây). ADR từ D-xx, luật nghiệp vụ `BR-`, kiểm chéo
+lỗi thời: các bước sau.
+
+### `conventions.md` trong git, bản clone chỉ ghi đè khoá máy
+
+- **Vị trí cố định** `docs/agent-workflow/conventions.md` (`QU_DUONG_DAN`, `tools/lib/md.sh`).
+  Không cho cấu hình: chỗ đặt nó lại phải nằm trong một cấu hình khác, và mỗi máy trỏ một file là
+  đúng thứ cần bỏ. Không đặt dưới `.agent-workflow/` (bị exclude; `--from-legacy` dùng
+  `.agent-workflow/conventions.md` làm dấu hiệu bộ cài cũ).
+- **Bản clone chỉ ghi đè `worktree_dir`** (`QU_KHOA_MAY`) — khoá duy nhất chỉ ảnh hưởng máy cục
+  bộ. Khoá khác ở bản clone: `aw conventions check` báo ✗ và không có hiệu lực (nếu không, một máy
+  lặng lẽ chạy luật khác cả team). Thêm khoá máy là thay đổi engine, có lý do.
+- **Việc đọc bản ở điểm rẽ khỏi base** (`git show <merge-base>:…`), không đọc bản trong worktree.
+  Đọc worktree thì việc tự nới luật của chính nó (xoá `sensitive_code`, đổi `test_files`) rồi
+  checker chấm theo luật đã nới — trái "agent không tự duyệt". Như version engine ghim trong
+  `intake.md`: luật của việc cố định lúc bắt đầu; sửa quy ước có hiệu lực cho việc sau khi merge.
+  Checkout chính, worktree chưa có `intake.md`, và việc rẽ từ base chưa có file đọc bản ở cây làm
+  việc của checkout chính (nhánh gốc — không phải chỗ agent của việc ghi vào).
+- **Một bản hiệu lực**: `qu_hieu_luc` gộp hai nguồn thành `/quy-uoc-hieu-luc/<khoá>.md`
+  (ngoài cây làm việc, không đổi `Tree`); mọi script và `.agent-workflow/.engine/conventions.md`
+  đọc file đó — một chỗ quyết định, không có script nào đọc lệch.
+- **Tương thích ngược**: repo chỉ có bản clone (init bằng engine cũ) chạy như cũ, `aw conventions
+  check` cảnh báo kèm cách chuyển. `aw init`/`aw upgrade` không tự tạo file trong repo khi bản clone
+  đã có — nếu tạo, mẫu sẽ thay giá trị team đang dùng. `aw init --from` chỉ bỏ `conventions.md` của
+  repo cấu hình khi repo đích đã có file (nếu chưa, bỏ là clone mới chạy bằng mẫu).
+
 
 ## Hai loại điều kiện ra
 
@@ -327,6 +368,7 @@ subagent `soat-<id>`.
 |---|---|---|
 | Xác định feature | `tools/xac-dinh-feature.sh` | Gốc worktree từ `AW_REPO` |
 | Đọc `conventions.md` | `conv_get` (`tools/lib/md.sh`) | Chỉ đọc khối ` ```conventions ` |
+| Quy ước hiệu lực | `qu_hieu_luc` (`tools/lib/md.sh`); `mt_dat`, `kc_conventions` gọi | Repo (điểm rẽ khỏi base) + khoá máy của bản clone |
 | Kiểm `conventions.md` | `tools/kiem-tra-quy-uoc.sh` | Khoá biết = khoá trong mẫu + `rules_<phase>`; `aw ready` gọi |
 | Hash `based_on` | `tools/cap-nhat-based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` |
 | Kiểm chéo | `tools/lib/kiem-cheo.sh` | Một hàm; `implement` gọi là cảnh báo, `review` gọi là lỗi |
@@ -382,4 +424,9 @@ tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã
 12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `LENH_KIEM_THU`.
 13. **File máy ghi giả được** (`ket-qua-task.md`, `ket-qua-kiem-thu.md`): chặn việc *quên*, không chặn
     gian lận có chủ ý; review ngữ cảnh sạch là lớp sau.
-14. **Nhật ký harness chỉ ở từng máy**; `Category` tự do có thể đếm hụt.
+. **Việc không thấy quy ước mới của chính nó** — đúng ý đồ, nhưng việc sửa `conventions.md` để
+    hợp lệ hoá thay đổi của mình (vd thêm `production_code`) sẽ bị chấm theo luật cũ tới khi merge.
+16. **Quy ước chưa commit ở checkout chính** có hiệu lực ngay cho mọi việc rẽ từ base chưa có file;
+    trước khi pull bản đã merge, người phải xoá bản chưa track (git từ chối ghi đè).
+17. **Bản hiệu lực làm mới khi script đọc quy ước**: agent mở `.engine/conventions.md` trước mọi
+    lệnh `aw` của phiên thì có thể thấy bản cũ (mọi phase đều chạy `aw feature` trước).

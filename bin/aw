@@ -247,6 +247,12 @@ cmd_init() {
     [ -f "$_t/version" ] || { rm -rf "$_t"; loi 9 "LỖI: repo cấu hình $_from không có file version."; }
     for _f in version checksums conventions.md config.sh; do
       [ -f "$_t/$_f" ] || continue
+      # Quy ước nằm trong repo đích (QU_DUONG_DAN của engine, tools/lib/md.sh):
+      # có rồi thì bản của repo cấu hình không được thành nguồn thứ hai.
+      if [ "$_f" = conventions.md ] && [ -f "$AW_REPO/docs/agent-workflow/conventions.md" ]; then
+        echo "  skip    conventions.md — repo đã có docs/agent-workflow/conventions.md; bỏ file này khỏi repo cấu hình"
+        continue
+      fi
       if [ -f "$AW_CONFIG/$_f" ] && [ -z "$_force" ]; then echo "  keep    $_f (đã có; --force để lấy bản của team)"
       else cp "$_t/$_f" "$AW_CONFIG/$_f"; echo "  copy    $_f ← $_from"; fi
     done
@@ -338,7 +344,13 @@ cmd_doctor() {
         else khong "engine $_v trong cache lệch sha đã ghim — xoá $AW_CACHE/$_v"; fi
       else echo "  · engine $_v chưa có trong cache — tải khi dùng"; fi
     fi
-    for _f in conventions.md config.sh; do [ -f "$AW_CONFIG/$_f" ] && co "$_f" || khong "$_f không có — chạy: aw init"; done
+    # Quy ước: trong repo (docs/agent-workflow/conventions.md — QU_DUONG_DAN của engine),
+    # hoặc chỉ ở bản clone (repo init bằng engine cũ).
+    _qr="docs/agent-workflow/conventions.md"
+    if [ -f "$AW_REPO/$_qr" ] || [ -f "$(dirname "$GIT_CHUNG")/$_qr" ]; then co "conventions.md ($_qr)"
+    elif [ -f "$AW_CONFIG/conventions.md" ]; then co "conventions.md (chỉ ở bản clone — nên chuyển vào $_qr)"
+    else khong "conventions.md không có — chạy: aw init"; fi
+    [ -f "$AW_CONFIG/config.sh" ] && co "config.sh" || khong "config.sh không có — chạy: aw init"
     _ex="$GIT_CHUNG/info/exclude"
     _ds="/.agent-workflow/"
     # ADAPTER: một hoặc nhiều id, cách nhau dấu cách hoặc dấu phẩy (bỏ trống = claude-code)

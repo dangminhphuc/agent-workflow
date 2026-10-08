@@ -20,7 +20,7 @@
 #   .agent-workflow/<tên-branch>/   artifact của việc (bị exclude, không commit)
 #   .agent-workflow/.engine/        rules, templates, checkers của engine — aw adapter
 #                                   build chép vào; conventions.md là liên kết tới
-#                                   cấu hình của bản clone
+#                                   quy ước hiệu lực (repo + khoá máy của bản clone)
 
 . "$ROOT/tools/lib/md.sh"
 . "$ROOT/tools/lib/ket-qua.sh"

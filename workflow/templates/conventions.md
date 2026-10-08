@@ -1,9 +1,9 @@
 # Repository conventions
 
-> File này do **NGƯỜI** viết. Nằm ở `.git/agent-workflow/conventions.md` của bản
-> clone — không commit, dùng chung mọi worktree. `aw init` chỉ tạo nó một lần từ
-> mẫu và **không bao giờ ghi đè**, kể cả với `--force`. Chia sẻ cho team: repo
-> cấu hình riêng + `aw init --from <url>`.
+> File này do **NGƯỜI** viết. Nằm ở `docs/agent-workflow/conventions.md` của repo,
+> sửa và commit qua PR như mọi thay đổi khác — cả team dùng chung một bản. `aw init`
+> chỉ tạo nó một lần từ mẫu và **không bao giờ ghi đè**, kể cả với `--force`. Riêng
+> `worktree_dir` được ghi đè theo máy ở `.git/agent-workflow/conventions.md`.
 
 ## Machine-readable
 

@@ -1,11 +1,14 @@
 #!/usr/bin/env sh
-# Kiểm conventions.md của bản clone sau khi NGƯỜI sửa — script đọc nó đúng như
-# người nghĩ, và phần văn xuôi còn đủ khung cho agent.
+# Kiểm conventions.md sau khi NGƯỜI sửa — script đọc nó đúng như người nghĩ, và
+# phần văn xuôi còn đủ khung cho agent. Kiểm bản hiệu lực (qu_hieu_luc, md.sh):
+# file đã commit trong repo đích (QU_DUONG_DAN) + bản của bản clone chỉ ghi đè
+# khoá máy (QU_KHOA_MAY); repo chưa commit file thì bản clone là toàn bộ quy ước.
 #
 #   aw conventions check
 #
 # Lỗi (✗) — script sẽ đọc sai hoặc bỏ qua ngầm:
 #   - không có file; không có / thừa / chưa đóng khối ```conventions
+#   - bản của bản clone khai khoá ngoài QU_KHOA_MAY khi repo đã có file đã commit
 #   - dòng trong khối không phải "khoá: giá trị", "#…" hay dòng trống (vd thụt lề)
 #   - khoá lạ (gõ sai) — script bỏ qua khoá lạ, luật tương ứng tắt mà không ai biết
 #   - khoá khai hai lần — dòng sau bị bỏ qua
@@ -15,6 +18,7 @@
 #   - base_branch không có (local lẫn origin); file khai ở rules_* không dùng được
 #
 # Cảnh báo (!) — chạy được nhưng nhiều khả năng chưa đúng ý:
+#   - quy ước chưa commit vào repo đích (chỉ ở bản clone) — gợi ý cách chuyển
 #   - khoá có trong mẫu của engine mà file thiếu (init từ engine cũ) — luật đang tắt
 #   - production_code / test_files / sensitive_code không khớp file nào trong repo
 #   - file khớp cả test_files lẫn production_code
@@ -48,8 +52,10 @@ n_x=0; n_c=0
 loi()      { echo "  ✗ $1"; n_x=$((n_x + 1)); }
 canh_bao() { echo "  ! $1"; n_c=$((n_c + 1)); }
 
-echo "Kiểm $CONV"
-[ -f "$CONV" ] || { loi "không có file — chạy: aw init"; exit 1; }
+CHINH_F=$QU_CHINH
+echo "Kiểm $QU_NGUON"
+[ -z "$QU_MAY" ] || echo "  bản clone ghi đè: $QU_MAY (chỉ khoá: $QU_KHOA_MAY)"
+[ -f "$CHINH_F" ] || { loi "không có file — tạo $QU_DUONG_DAN trong repo (aw init tạo từ mẫu) rồi commit"; exit 1; }
 
 # Khoá máy biết: khoá trong mẫu của engine, cộng rules_<phase> của mọi phase.
 khoa_mau() {
@@ -86,13 +92,35 @@ CT=$(awk -v biet="$BIET" '
     if (n_khoi == 0) print "không có khối ```conventions — script không đọc được khoá nào"
     else if (inb == 1 && !dong) print "khối ```conventions chưa đóng bằng dòng ```"
   }
-' "$CONV")
+' "$CHINH_F")
 echo "Cấu trúc"
 if [ -n "$CT" ]; then
   printf '%s\n' "$CT" | while IFS= read -r l; do echo "  ✗ $l"; done
   n_x=$((n_x + $(printf '%s\n' "$CT" | grep -c .)))
 else
   echo "  ✓ khối \`\`\`conventions đọc được, không có khoá lạ hay trùng"
+fi
+
+# Bản clone khi repo đã có file đã commit: chỉ khoá máy, mọi khoá khác phải qua PR.
+if [ -n "$QU_MAY" ]; then
+  KM=$(awk -v cho=" $QU_KHOA_MAY " -v dd="$QU_DUONG_DAN" '
+    { sub(/\r$/, "") }
+    /^```conventions[ \t]*$/ { inb = 1; next }
+    inb == 1 && /^```/ { inb = 0; next }
+    inb != 1 || /^[ \t]*$/ || /^#/ { next }
+    /^[a-z][a-z0-9_]*:/ {
+      k = $0; sub(/:.*/, "", k)
+      if (index(cho, " " k " ") == 0) print "bản clone dòng " NR ": khoá \"" k "\" chỉ được khai trong " dd " (đã commit) — xoá khỏi bản clone"
+      next
+    }
+    { print "bản clone dòng " NR ": không phải \"khoá: giá trị\" — script bỏ qua" }
+  ' "$QU_MAY")
+  if [ -n "$KM" ]; then
+    printf '%s\n' "$KM" | while IFS= read -r l; do echo "  ✗ $l"; done
+    n_x=$((n_x + $(printf '%s\n' "$KM" | grep -c .)))
+  else
+    echo "  ✓ bản clone chỉ ghi đè khoá máy"
+  fi
 fi
 
 co_khoa() { # <khoá> -> 0 nếu file có dòng khai khoá này (kể cả để trống)
@@ -170,6 +198,9 @@ qt=$(kc_quy_tac_loi "$MT_REPO" review)
 
 # ---- cảnh báo ----
 echo "Cảnh báo"
+if [ "$CHINH_F" = "$AW_CONFIG/conventions.md" ]; then
+  canh_bao "quy ước chưa commit vào repo — mỗi bản clone một bản. Chuyển: mkdir -p $(dirname "$QU_DUONG_DAN") && cp $CHINH_F $QU_DUONG_DAN, commit qua PR, rồi chỉ giữ ở bản clone các khoá $QU_KHOA_MAY (hoặc xoá file)"
+fi
 for k in $(khoa_mau "$MAU"); do
   co_khoa "$k" || canh_bao "thiếu khoá $k (mẫu của engine có) — đang được coi là để trống; thêm từ $MAU"
 done
@@ -207,7 +238,7 @@ NG=$(awk '
   /^###[ \t]+Merge request[ \t]*$/ { mr = 1 }
   /^<[^!]/ || /Chưa định nghĩa/ || /<[0-9]+>/ || /<[^<>|]+\|[^<>]+>/ { print "dòng " NR ": còn placeholder — " substr($0, 1, 60) }
   END { if (!mr) print "thiếu mục \"### Merge request\" — /aw-ship dùng mục này cho tiêu đề, mô tả MR" }
-' "$CONV")
+' "$CHINH_F")
 [ -n "$NG" ] && { printf '%s\n' "$NG" | while IFS= read -r l; do echo "  ! $l"; done; n_c=$((n_c + $(printf '%s\n' "$NG" | grep -c .))); }
 [ "$n_c" = 0 ] && echo "  ✓ không có"
 

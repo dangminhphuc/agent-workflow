@@ -2,7 +2,11 @@
 # Engine của `aw init` / `aw upgrade`. Wrapper đã chọn version, tải engine và
 # ghi version/checksums; script này lo phần còn lại — KHÔNG commit gì vào repo đích:
 #
-#   $AW_CONFIG/conventions.md   quy ước của repo — NGƯỜI viết, không bao giờ ghi đè
+#   docs/agent-workflow/conventions.md   quy ước của repo (QU_DUONG_DAN, md.sh) — NGƯỜI
+#                               viết và commit qua PR. Chỉ tạo từ mẫu khi cả repo lẫn
+#                               bản clone chưa có quy ước; không bao giờ ghi đè.
+#   $AW_CONFIG/conventions.md   bản clone: repo chưa commit quy ước thì là toàn bộ quy
+#                               ước (như trước); đã commit thì chỉ ghi đè khoá máy
 #   $AW_CONFIG/config.sh        lệnh kiểm thử, adapter… — NGƯỜI sửa, không ghi đè
 #   .git/info/exclude           /.agent-workflow/ + đường dẫn adapter sinh ra
 #   <AW_REPO>/.claude/…         adapter sinh lệnh cho agent (bị exclude) — một bộ
@@ -29,6 +33,7 @@ kq_khai init \
   "3=CÓ FILE VIẾT TAY — không ghi đè; dời file đó đi hoặc dùng --force" \
   "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow" \
   "9=KHÔNG HỢP LỆ — thiếu AW_REPO/AW_CONFIG, gọi qua aw"
+. "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 . "$HERE/lib/adapter.sh"
 
@@ -54,13 +59,14 @@ esac
 
 mkdir -p "$AW_CONFIG" || exit 9
 CONV="$AW_CONFIG/conventions.md"; CH="$AW_CONFIG/config.sh"
+RCONV="$AW_REPO/$QU_DUONG_DAN"; TAO_RCONV=""
 
 # ---- bộ cài cũ: chỉ ĐỌC ----
 CU_ART="$AW_REPO/.agent-workflow"; CU_CONV="$CU_ART/conventions.md"; CU_CH="$CU_ART/.quy-trinh/cau-hinh.sh"
 if [ -n "$CU" ]; then
   [ -f "$CU_CONV" ] || [ -f "$CU_CH" ] || {
     echo "LỖI: --from-legacy nhưng không thấy bộ cài cũ (.agent-workflow/conventions.md, .agent-workflow/.quy-trinh/cau-hinh.sh)." >&2; exit 2; }
-  if [ -f "$CU_CONV" ] && [ ! -f "$CONV" ]; then
+  if [ -f "$CU_CONV" ] && [ ! -f "$CONV" ] && [ ! -f "$RCONV" ]; then
     cp "$CU_CONV" "$CONV"; echo "  copy    conventions.md ← .agent-workflow/conventions.md"
   fi
   if [ -f "$CU_CH" ] && [ ! -f "$CH" ]; then
@@ -79,8 +85,21 @@ if [ -n "$CU" ]; then
 fi
 
 # ---- conventions.md — của NGƯỜI ----
-if [ -f "$CONV" ]; then echo "  keep    conventions.md (của bạn, không bao giờ ghi đè)"
-else cp "$ENG/workflow/templates/conventions.md" "$CONV"; echo "  create  conventions.md từ mẫu — hãy sửa cho đúng repo của bạn, rồi chạy: aw conventions check"; fi
+# Repo đã có quy ước (đã commit hoặc đang chờ commit) → giữ. Chỉ bản clone có
+# (repo init bằng engine cũ) → giữ nguyên, chạy như cũ, gợi ý chuyển. Không có
+# gì → tạo trong repo từ mẫu; người commit qua PR.
+if [ -f "$RCONV" ]; then
+  echo "  keep    $QU_DUONG_DAN (quy ước của repo, không bao giờ ghi đè)"
+  [ ! -f "$CONV" ] || echo "  keep    conventions.md của bản clone — chỉ được ghi đè: $QU_KHOA_MAY (kiểm: aw conventions check)"
+elif [ -f "$CONV" ]; then
+  echo "  keep    conventions.md của bản clone (của bạn, không bao giờ ghi đè)"
+  echo "          quy ước chưa nằm trong repo — chuyển vào $QU_DUONG_DAN để cả team dùng chung (aw conventions check chỉ cách)"
+else
+  mkdir -p "$(dirname "$RCONV")" && cp "$ENG/workflow/templates/conventions.md" "$RCONV" ||
+    { echo "LỖI: không ghi được $RCONV." >&2; exit 2; }
+  TAO_RCONV=1
+  echo "  create  $QU_DUONG_DAN từ mẫu — sửa cho đúng repo, chạy aw conventions check, rồi commit qua PR"
+fi
 
 # ---- config.sh — của NGƯỜI ----
 if [ -f "$CH" ]; then
@@ -139,7 +158,8 @@ if [ -n "$CU" ]; then
 fi
 
 echo ""
-echo "Xong. Không có file nào cần commit. Bước tiếp theo:"
+if [ -n "$TAO_RCONV" ]; then echo "Xong. File cần commit (qua PR như mọi thay đổi vào nhánh gốc): $QU_DUONG_DAN. Bước tiếp theo:"
+else echo "Xong. Không có file nào cần commit. Bước tiếp theo:"; fi
 n=1
 if ! grep -q 'LENH_KIEM_THU="[^"]' "$CH" 2>/dev/null; then
   echo "  $n. Khai lệnh kiểm thử trong $CH (chưa khai thì /aw-implement không đạt)"; n=$((n + 1))
@@ -147,5 +167,12 @@ fi
 if [ -z "$( (LENH_KIEM_TRA_BAO_MAT=""; . "$CH" >/dev/null 2>&1; printf '%s' "$LENH_KIEM_TRA_BAO_MAT") | grep -v '^[[:space:]]*\(#\|$\)')" ]; then
   echo "  $n. Khai lệnh quét bảo mật (LENH_KIEM_TRA_BAO_MAT) trong $CH — đúng lệnh/ngưỡng của CI (chưa khai thì /aw-implement không đạt)"; n=$((n + 1))
 fi
-echo "  $n. Sửa $CONV: mẫu tên branch, nhánh gốc, vị trí worktree, mẫu file test…"; n=$((n + 1))
+if [ -n "$TAO_RCONV" ]; then
+  echo "  $n. Sửa $QU_DUONG_DAN: mẫu tên branch, nhánh gốc, mẫu file test… (aw conventions check), rồi"
+  echo "     commit qua PR vào nhánh gốc như mọi thay đổi khác. Tới khi merge, aw đọc bản ở checkout"
+  echo "     chính; trước khi pull bản đã merge thì xoá bản chưa track này (git từ chối ghi đè)."; n=$((n + 1))
+elif [ -f "$RCONV" ]; then :
+else
+  echo "  $n. Sửa $CONV: mẫu tên branch, nhánh gốc, vị trí worktree, mẫu file test…"; n=$((n + 1))
+fi
 echo "  $n. Mở agent ở checkout chính, chạy /aw-intake — nó đề xuất worktree cho việc"

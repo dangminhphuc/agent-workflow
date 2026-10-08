@@ -4,6 +4,23 @@
 > `conventions.md` của repo đích chỉ giữ giá trị và chú thích một dòng; giải thích
 > đầy đủ nằm ở đây. Trong worktree: `.agent-workflow/.engine/templates/conventions-reference.md`.
 
+## Location & machine overrides
+
+- **Quy ước của repo nằm trong git**: `docs/agent-workflow/conventions.md`, sửa và
+  commit qua PR như mọi thay đổi khác. `aw init` tạo file này từ mẫu khi repo chưa có
+  quy ước ở đâu cả; không bao giờ ghi đè.
+- **Bản clone** (`.git/agent-workflow/conventions.md`) chỉ được ghi đè khoá của máy:
+  `worktree_dir`. Khai khoá khác ở đó thì `aw conventions check` báo ✗ và khoá đó không
+  có hiệu lực.
+- **Việc đọc quy ước tại điểm rẽ khỏi base** (dòng `Base:` của `intake.md`), không đọc
+  bản trong worktree: việc sửa `conventions.md` không đổi luật của chính nó; thay đổi có
+  hiệu lực cho việc sau khi PR merge. Checkout chính (và việc rẽ từ base chưa có file)
+  đọc bản ở cây làm việc của checkout chính.
+- **Repo init bằng engine cũ** (quy ước chỉ ở bản clone): chạy như cũ, `aw conventions
+  check` cảnh báo và in cách chuyển — chép file vào `docs/agent-workflow/`, commit qua
+  PR, rồi chỉ giữ ở bản clone các khoá máy (hoặc xoá file).
+- Agent đọc quy ước hiệu lực (đã gộp) ở `.agent-workflow/.engine/conventions.md`.
+
 ## Syntax
 
 - Khối bắt đầu bằng dòng ` ```conventions ` và kết thúc ở dòng ` ``` ` kế tiếp.

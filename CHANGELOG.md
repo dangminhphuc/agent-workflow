@@ -11,6 +11,27 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+Quy ước của repo đích vào git — bước đầu của "kiến thức bền nằm trong repo" (xem
+`docs/kien-truc.md`, mục "Trạng thái của việc và kiến thức bền").
+
+### Đổi
+- **`conventions.md` nằm trong repo đích** ở `docs/agent-workflow/conventions.md`, commit qua PR —
+  cả team một bản. `.git/agent-workflow/conventions.md` của bản clone chỉ được ghi đè
+  `worktree_dir`; khai khoá khác ở đó thì `aw conventions check` báo ✗ và khoá không có hiệu lực.
+- **Việc đọc quy ước tại điểm rẽ khỏi base** (dòng `Base:` của `intake.md`), không đọc bản trong
+  worktree: việc sửa `conventions.md` không đổi luật của chính nó. Checkout chính đọc cây làm việc.
+- `aw init` tạo `docs/agent-workflow/conventions.md` từ mẫu khi repo chưa có quy ước ở đâu cả
+  (không commit, in hướng dẫn commit qua PR); không bao giờ ghi đè.
+- `aw init --from`: repo đích đã có quy ước trong git thì bỏ qua `conventions.md` của repo cấu hình.
+- `aw doctor` nhận quy ước trong repo; `.agent-workflow/.engine/conventions.md` trỏ tới quy ước
+  hiệu lực (repo + khoá máy).
+
+### Tương thích
+- Repo init bằng engine cũ (quy ước chỉ ở bản clone) chạy như cũ; `aw conventions check` cảnh báo
+  và in cách chuyển. `aw init`/`aw upgrade` không tự tạo file trong repo khi bản clone đã có.
+
 ## [2026.10.17]
 
 Tinh gọn mọi thứ agent đọc để tiết kiệm ngữ cảnh. Luật không đổi, checker không đổi.

@@ -1692,7 +1692,8 @@ g9() { git -C "$R9" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
 g9 commit -q --allow-empty -m goc
 g9 tag khong-co-gi    # base không có gì của quy trình
 awd "$R9" init --version "$VDEV" --test-cmd true >/dev/null 2>&1
-CV9="$R9/.git/agent-workflow/conventions.md"
+# Repo mới: aw init tạo quy ước trong repo (chưa commit) — aw đọc bản ở checkout chính.
+CV9="$R9/docs/agent-workflow/conventions.md"
 ky_vong 6 "checkout chính → ĐANG Ở CHECKOUT CHÍNH (worktree bắt buộc)" awd "$R9" feature
 ky_vong 6 "…kể cả khi có tham số" awd "$R9" feature feat_abc
 dung "…và in danh sách việc cần làm: mở worktree / chạy /aw-intake" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 | grep -q 'CHECKOUT CHÍNH'"
@@ -1739,7 +1740,7 @@ W0="$TMP/repo9.wt/chore_khong-bo-cai"
 dung "…worktree mới có adapter sinh sẵn" test -f "$W0/.claude/commands/aw-spec.md"
 dung "…file adapter bị exclude: worktree sạch" sh -c "[ -z \"\$(git -C '$W0' status --porcelain)\" ]"
 dung "…artifact viết vào cũng bị exclude" sh -c "mkdir -p '$W0/.agent-workflow/chore_khong-bo-cai' && printf x > '$W0/.agent-workflow/chore_khong-bo-cai/intake.md' && [ -z \"\$(git -C '$W0' status --porcelain)\" ]"
-dung "…không có commit nào vào base, checkout chính sạch" sh -c "[ \"\$(git -C '$R9' rev-parse main)\" = '$GOC9' ] && [ -z \"\$(git -C '$R9' status --porcelain)\" ]"
+dung "…không có commit nào vào base; checkout chính chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R9' rev-parse main)\" = '$GOC9' ] && [ \"\$(git -C '$R9' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 ky_vong 0 "--create --base <ref người chọn> thì tạo worktree" awd "$R9" worktree new bugfix phi-hoan-tien --create --base main
 W5="$TMP/repo9.wt/fix_phi-hoan-tien"
 dung "…worktree ở đúng chỗ, đúng branch" test "$(git -C "$W5" rev-parse --abbrev-ref HEAD 2>/dev/null)" = "fix_phi-hoan-tien"
@@ -1785,7 +1786,7 @@ dung "…sinh cả hai bộ ở checkout chính" sh -c "[ -f '$R10/.claude/comma
 dung "…cả hai bộ giống hệt build riêng (không ảnh hưởng nhau)" sh -c "diff -r '$R10/.claude' '$TMP/doi-chieu-that/claude-code/.claude' && diff -r '$R10/.cursor' '$TMP/doi-chieu-that/cursor/.cursor'"
 dung "…dấu build ghi cả hai, đúng version" bang "$(cat "$R10/.agent-workflow/.adapters")" "claude-code $VDEV
 cursor $VDEV"
-dung "…không commit gì, cây sạch" sh -c "[ \"\$(git -C '$R10' rev-parse HEAD)\" = '$GOC10' ] && [ -z \"\$(git -C '$R10' status --porcelain --untracked-files=all)\" ]"
+dung "…không commit gì; cây chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R10' rev-parse HEAD)\" = '$GOC10' ] && [ \"\$(git -C '$R10' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 ky_vong 0 "init lại: cùng tập adapter, khác thứ tự/cách viết → không coi là đổi" awd "$R10" init --adapter "cursor claude-code"
 dung "…không nhân đôi dòng exclude" bang "$(grep -cxF '/.cursor/agents/' "$R10/.git/info/exclude")" 1
 ky_vong 2 "init --adapter khác tập trong config.sh → SAI THAM SỐ (sửa config.sh)" awd "$R10" init --adapter cursor
@@ -2519,14 +2520,14 @@ ky_vong 9 "ngoài git repo → KHÔNG HỢP LỆ" sh -c "cd '$TMP' && AW_HOME='$
 ky_vong 9 "chưa init → KHÔNG HỢP LỆ" aw7 check spec .agent-workflow/x
 ky_vong 2 "init --version sai dạng → SAI THAM SỐ" aw7 init --version 2099.01.01
 ky_vong 0 "aw init --version 2099.1.1 (cache thiếu → tải từ mirror)" aw7 init --version 2099.1.1 --test-cmd true
-dung "…ghi version, checksums, conventions.md, config.sh vào .git/agent-workflow/" sh -c \
-  "grep -qx 2099.1.1 '$C7/version' && grep -q ' agent-workflow-2099.1.1.tar.gz' '$C7/checksums' && [ -f '$C7/conventions.md' ] && grep -q 'LENH_KIEM_THU=\"true\"' '$C7/config.sh'"
+dung "…ghi version, checksums, config.sh vào .git/agent-workflow/; quy ước tạo trong repo" sh -c \
+  "grep -qx 2099.1.1 '$C7/version' && grep -q ' agent-workflow-2099.1.1.tar.gz' '$C7/checksums' && [ -f '$R7/docs/agent-workflow/conventions.md' ] && [ ! -f '$C7/conventions.md' ] && grep -q 'LENH_KIEM_THU=\"true\"' '$C7/config.sh'"
 dung "…engine vào cache theo version, có dấu sha256" sh -c "[ -f '$AWH/engine/2099.1.1/bin/aw-engine' ] && [ -s '$AWH/engine/2099.1.1/.aw-sha256' ]"
 dung "…sha ghim khớp SHA256SUMS của bản phát hành" sh -c "grep -qF \"\$(awk '\$2 == \"agent-workflow-2099.1.1.tar.gz\" { print \$1 }' '$MIR/2099.1.1/SHA256SUMS')\" '$C7/checksums'"
 dung "…exclude /.agent-workflow/ và /.claude/" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qx '/.claude/' '$R7/.git/info/exclude'"
 dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/aw-intake.md"
 dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)" "$GOC7"
-dung "…cây làm việc sạch: file sinh ra không lọt vào git status" sh -c "[ -z \"\$(git -C '$R7' status --porcelain)\" ]"
+dung "…file sinh ra không lọt vào git status — chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R7' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 ky_vong 0 "aw guard pre → chuyển sang engine của bản clone (chưa có việc nào: không làm gì)" aw7 guard pre
 ky_vong 0 "aw guard post → như trên" aw7 guard post
 ky_vong 2 "aw approval → chuyển sang engine (thư mục không có → SAI THAM SỐ)" aw7 approval design "$TMP/khong-co"
@@ -2555,7 +2556,7 @@ dung "…không tạo cache" test ! -e "$TMP/awhome-trong/engine/2099.1.1"
 
 ky_vong 0 "aw upgrade 2099.1.2" aw7 upgrade 2099.1.2
 dung "…version mới, ghim thêm sha của 2099.1.2, giữ sha cũ" sh -c "grep -qx 2099.1.2 '$C7/version' && grep -q 'agent-workflow-2099.1.2' '$C7/checksums' && grep -q 'agent-workflow-2099.1.1' '$C7/checksums'"
-dung "…vẫn không có commit nào, cây sạch" sh -c "[ \"\$(git -C '$R7' rev-parse HEAD)\" = '$GOC7' ] && [ -z \"\$(git -C '$R7' status --porcelain)\" ]"
+dung "…vẫn không có commit nào; upgrade không đụng quy ước" sh -c "[ \"\$(git -C '$R7' rev-parse HEAD)\" = '$GOC7' ] && [ \"\$(git -C '$R7' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 
 # cấu hình dùng chung của team: một repo riêng chứa version, checksums, conventions.md
 TEAM="$TMP/team-cfg"; mkdir -p "$TEAM"; git -C "$TEAM" init -q
@@ -2565,6 +2566,10 @@ R8="$TMP/repo8"; git clone -q "$R7" "$R8" 2>/dev/null
 ky_vong 0 "aw init --from <repo cấu hình team>" sh -c "cd '$R8' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' init --from '$TEAM'"
 dung "…lấy version, checksums, conventions.md của team" sh -c "grep -qx 2099.1.2 '$R8/.git/agent-workflow/version' && grep -q 'của team' '$R8/.git/agent-workflow/conventions.md' && cmp -s '$TEAM/checksums' '$R8/.git/agent-workflow/checksums'"
 ky_vong 9 "--from repo không có file version → KHÔNG HỢP LỆ" sh -c "cd '$R8' && AW_HOME='$AWH' sh '$ROOT/bin/aw' init --from '$R7'"
+R8B="$TMP/repo8b"; git clone -q "$R7" "$R8B" 2>/dev/null
+mkdir -p "$R8B/docs/agent-workflow"; printf '# của repo\n' > "$R8B/docs/agent-workflow/conventions.md"
+ky_vong 0 "aw init --from khi repo đã có quy ước trong git" sh -c "cd '$R8B' && AW_HOME='$AWH' AW_MIRROR='file://$MIR' sh '$ROOT/bin/aw' init --from '$TEAM'"
+dung "…bỏ qua conventions.md của repo cấu hình (không thành nguồn thứ hai), vẫn lấy version" sh -c "[ ! -f '$R8B/.git/agent-workflow/conventions.md' ] && grep -qx 2099.1.2 '$R8B/.git/agent-workflow/version' && grep -q 'của repo' '$R8B/docs/agent-workflow/conventions.md'"
 # aw check chạy đúng version ghi trong intake.md của việc, không theo version của bản clone
 mkdir -p "$R7/.agent-workflow/feat_a"
 printf -- '- **Type:** `feature`\n- **Engine:** 2099.1.1\n' > "$R7/.agent-workflow/feat_a/intake.md"
@@ -2789,6 +2794,59 @@ cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'mr_platform:' 'mr_platform: bitbucket'
 ky_vong 1 "aw ready: conventions.md sai → CHƯA SẴN SÀNG" sh "$SS" "$F" --no-test
 dung "…nêu lỗi của aw conventions check" sh -c "sh '$SS' '$F' --no-test 2>/dev/null | grep -q 'conventions.md: mr_platform'"
 cp "$TMP/conv-qu.bak" "$CV"
+
+# ---------------------------------------------------------------- quy ước đã commit (qu_hieu_luc)
+echo ""
+echo "conventions.md trong repo đích + bản clone chỉ ghi đè khoá máy"
+dung "repo chỉ có quy ước ở bản clone → vẫn HỢP LỆ, cảnh báo chưa commit vào repo" sh -c "sh '$QU' 2>/dev/null | grep -q '! quy ước chưa commit vào repo'"
+RQ="$TMP/repo-qu"; CQ="$RQ/.git/agent-workflow"; DQ="docs/agent-workflow/conventions.md"
+gq() { git -C "$RQ" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
+mkdir -p "$RQ/src" "$RQ/test"; gq init -q; gq checkout -q -b main; mkdir -p "$CQ"
+printf 'goc\n' > "$RQ/src/a.txt"; printf 'x\n' > "$RQ/test/a.test.js"
+gq add -A; gq commit -q -m "chua co quy uoc"; GOCQ0=$(git -C "$RQ" rev-parse main)
+mkdir -p "$RQ/docs/agent-workflow"; cp "$ROOT/workflow/templates/conventions.md" "$RQ/$DQ"
+thay "$RQ/$DQ" 'sensitive_code:' 'sensitive_code: src/auth/*'
+gq add -A; gq commit -q -m "quy uoc"
+# hl <thư-mục> <khoá> -> giá trị trong conventions.md hiệu lực của thư mục đó
+hl() { (AW_REPO="$1"; AW_CONFIG="$CQ"; export AW_REPO AW_CONFIG; . "$T/lib/md.sh"; conv_get "$(qu_hieu_luc "$1")" "$2"); }
+quq() { (cd "$1" && AW_REPO="$1" AW_CONFIG="$CQ" sh "$QU" 2>&1); }
+dung "đọc quy ước đã commit, không cần bản clone" bang "$(hl "$RQ" sensitive_code)" "src/auth/*"
+ky_vong 0 "…aw conventions check → HỢP LỆ" quq "$RQ"
+dung "…không còn cảnh báo chưa commit" sh -c "! (cd '$RQ' && AW_REPO='$RQ' AW_CONFIG='$CQ' sh '$QU' 2>/dev/null | grep -q 'chưa commit vào repo')"
+printf '```conventions\nworktree_dir: ../wt-rieng/{ten}\n```\n' > "$CQ/conventions.md"
+dung "bản clone ghi đè worktree_dir" bang "$(hl "$RQ" worktree_dir)" "../wt-rieng/{ten}"
+dung "…khoá khác vẫn lấy từ repo" bang "$(hl "$RQ" sensitive_code)" "src/auth/*"
+ky_vong 0 "…aw conventions check → HỢP LỆ" quq "$RQ"
+printf '```conventions\nworktree_dir: ../wt-rieng/{ten}\nsensitive_code:\n```\n' > "$CQ/conventions.md"
+ky_vong 1 "bản clone khai khoá ngoài khoá máy → KHÔNG HỢP LỆ" quq "$RQ"
+dung "…nêu khoá đó chỉ được khai trong file đã commit" sh -c "(cd '$RQ' && AW_REPO='$RQ' AW_CONFIG='$CQ' sh '$QU' 2>/dev/null) | grep -qF 'khoá \"sensitive_code\" chỉ được khai trong $DQ'"
+dung "…và không có hiệu lực: sensitive_code vẫn theo repo" bang "$(hl "$RQ" sensitive_code)" "src/auth/*"
+rm -f "$CQ/conventions.md"
+# worktree: luật của việc = quy ước tại điểm rẽ khỏi base ghi trong intake.md
+WQ="$TMP/repo-qu.wt/feat_q"; gq worktree add -q -b feat_q "$WQ" main
+mkdir -p "$WQ/.agent-workflow/feat_q"
+printf -- '- **Base:** `main` `%s`\n' "$(git -C "$RQ" rev-parse main)" > "$WQ/.agent-workflow/feat_q/intake.md"
+thay "$WQ/$DQ" 'sensitive_code: src/auth/*' 'sensitive_code:'
+git -C "$WQ" -c user.name=t -c user.email=t@t commit -qam "noi luat" >/dev/null 2>&1
+dung "worktree: việc sửa quy ước (kể cả commit) không đổi luật của chính nó" bang "$(hl "$WQ" sensitive_code)" "src/auth/*"
+thay "$RQ/$DQ" 'sensitive_code: src/auth/*' 'sensitive_code: src/pay/*'
+dung "…sửa ở checkout chính cũng không đổi luật của việc đang làm" bang "$(hl "$WQ" sensitive_code)" "src/auth/*"
+dung "checkout chính đọc cây làm việc của nó" bang "$(hl "$RQ" sensitive_code)" "src/pay/*"
+WQ2="$TMP/repo-qu.wt/feat_cu"; gq worktree add -q -b feat_cu "$WQ2" "$GOCQ0"
+mkdir -p "$WQ2/.agent-workflow/feat_cu"
+printf -- '- **Base:** `main` `%s`\n' "$GOCQ0" > "$WQ2/.agent-workflow/feat_cu/intake.md"
+dung "việc rẽ từ base chưa có quy ước → đọc bản ở checkout chính" bang "$(hl "$WQ2" sensitive_code)" "src/pay/*"
+rm -f "$WQ2/.agent-workflow/feat_cu/intake.md"
+dung "worktree chưa có intake.md → đọc bản ở checkout chính" bang "$(hl "$WQ2" sensitive_code)" "src/pay/*"
+ky_vong 0 "aw adapter build trong worktree" sh -c "AW_REPO='$WQ' AW_CONFIG='$CQ' sh '$T/sinh-adapter.sh' claude-code '$WQ'"
+dung "….engine/conventions.md là quy ước hiệu lực của việc" grep -q '^sensitive_code: src/auth/\*' "$WQ/.agent-workflow/.engine/conventions.md"
+cp "$RQ/$DQ" "$TMP/qu-repo.bak"
+ky_vong 0 "aw init ở repo đã có quy ước" sh -c "AW_REPO='$RQ' AW_CONFIG='$CQ' AW_ENGINE='$ROOT' sh '$ROOT/bin/aw-engine' init --test-cmd true"
+dung "…không tạo bản clone, không đụng file của repo" sh -c "[ ! -f '$CQ/conventions.md' ] && cmp -s '$TMP/qu-repo.bak' '$RQ/$DQ'"
+RQC="$TMP/repo-qu-cu"; mkdir -p "$RQC"; git -C "$RQC" init -q; mkdir -p "$RQC/.git/agent-workflow"
+printf '# của tôi\n' > "$RQC/.git/agent-workflow/conventions.md"
+ky_vong 0 "aw init ở repo chỉ có quy ước trong bản clone (init bằng engine cũ)" sh -c "AW_REPO='$RQC' AW_CONFIG='$RQC/.git/agent-workflow' AW_ENGINE='$ROOT' sh '$ROOT/bin/aw-engine' init --test-cmd true"
+dung "…giữ nguyên bản clone, không tạo file trong repo" sh -c "grep -q 'của tôi' '$RQC/.git/agent-workflow/conventions.md' && [ ! -e '$RQC/$DQ' ]"
 # tk_plan_t2 <dòng Verify + Status> — plan gốc, thay riêng hai dòng cuối của T-02
 tk_plan_t2() { viet_plan; ghi_based_on; thay "$F/plan.md" '- Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
