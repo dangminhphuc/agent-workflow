@@ -78,6 +78,10 @@ Ghi chú thêm (không phải mâu thuẫn, nhưng ảnh hưởng thiết kế):
 
 ### D-04 — Lệnh nâng D-xx, cú pháp và thời điểm (mục 6.3, M3)
 
+> Khi làm (PR 3): không có cờ `--supersedes` — `- Supersedes: ADR-NNNN` là trường trong D, dưới dấu
+> duyệt (tham số do agent gõ thì không ai duyệt). Nguồn của ADR (D-08) lấy qua task `Based on: D-NN`
+> → `Covers:` → `Source:` trong spec, thay cho `YC mapping` (bảng đó trỏ YC → mục, không trỏ D).
+
 - Option A: Người đánh dấu ngay trong D-xx bằng trường `- Promote: adr` (được dấu duyệt phủ, nên
   người duyệt D là người quyết nâng); `03-plan` sinh task "nâng D-NN"; `04-implement` chạy
   `aw adr promote <thư-mục-feature> D-NN [--supersedes NNNN]`; ADR nằm trong diff, review

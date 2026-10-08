@@ -471,3 +471,7 @@ tự làm — bỏ qua âm thầm khiến quy trình *nhìn như* đủ mà đã
     trước khi pull bản đã merge, người phải xoá bản chưa track (git từ chối ghi đè).
 17. **Bản hiệu lực làm mới khi script đọc quy ước**: agent mở `.engine/conventions.md` trước mọi
     lệnh `aw` của phiên thì có thể thấy bản cũ (mọi phase đều chạy `aw feature` trước).
+18. **Số ADR cấp lúc nâng, theo thư mục ở worktree**: hai việc song song cùng lấy `0004`; PR merge sau
+    có hai file trùng số (`aw adr check` chặn ở việc kế tiếp) và xung đột ở bảng chỉ mục — người
+    đổi số, chạy lại `aw adr promote`.
+19. **"Đi ngược ADR" chỉ checker LLM thấy** — máy chỉ kiểm `Supersedes` khi D tự khai.

@@ -54,7 +54,7 @@ Mode 2 prevents anchoring on the agent's option. `high` with no `Author: human` 
 1. **Survey existing code before designing.** Find where similar problems are solved; record modules to touch and conventions to follow in `## Existing code`.
 2. **State D-xx.** Every choice someone could make differently — especially hard to reverse (many call sites, data migration, external interface): problem, ≥ 2 options + trade-offs, choice, `Author`, `- [ ] **Approved by human**` **unticked**. Obvious points need no D; zero D is allowed.
    - A D that goes against an `accepted` ADR: say so in the D and add `- Supersedes: ADR-NNNN` (needs `- Promote: adr`). Never silently diverge from an ADR.
-   - A D that stays true after this job (cross-module, hard to reverse): propose `- Promote: adr` + `- Scope: `<glob>``. The human decides by approving the D; `04-implement` copies it to an ADR.
+   - A D that stays true after this job (cross-module, hard to reverse): propose `- Promote: adr` + `- Scope: <glob>`. The human decides by approving the D; `04-implement` copies it to an ADR.
 3. **Write the sections** per `templates/tdd.md`: data + ERD, contract/API, flow + sequence/state (Mermaid), non-functional, test strategy, YC → section mapping. A section relying on a D says `Based on: D-xx`. Not applicable: `Not applicable: <reason>`, never empty.
 4. **Record inputs:** `aw based-on <thư-mục-feature> tdd.md spec.md open-questions.md`.
 5. **Run the LLM checker** (separate subagent/session, per `checkers/thiet-ke.md`) → `phat-hien-thiet-ke.md`. Fix what you agree with (`Xử lý: đã sửa`); the human arbitrates the rest via `clarify`.
