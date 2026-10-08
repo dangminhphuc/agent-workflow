@@ -11,7 +11,7 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.21]
 
 Quy trình chỉ chạy khi người gõ lệnh. Tên script, khoá cấu hình, artifact và subagent đổi sang
 tiếng Anh; luật không đổi.
