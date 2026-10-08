@@ -172,6 +172,26 @@ thì `--from` bỏ qua `conventions.md` của repo cấu hình (không để hai
 KHÔNG ĐẠT, không phải "bỏ qua". `LENH_KIEM_TRA_BAO_MAT` phải chép **đúng lệnh, config, ngưỡng
 của pipeline CI**.
 
+### 3. Repo đích: để một phiên agent mới không phải đoán (khuyến nghị)
+
+Engine không ép, chỉ nhắc ở `aw init`. Mục tiêu: phiên agent mới **chỉ có repo** trả lời được năm
+câu — hệ thống là gì, tổ chức ra sao, chạy và kiểm thế nào, vì sao code như vậy, đang ở đâu.
+
+```
+AGENTS.md                      điểm vào, 50–100 dòng, chỉ TRỎ TỚI (CLAUDE.md: một dòng .md)
+Makefile | package scripts     lệnh chuẩn: setup, test, lint, security — CI gọi đúng các lệnh này
+docs/agent-workflow/conventions.md   quy ước quy trình (aw init tạo)
+src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module — đặt cạnh code
+```
+
+- Mẫu: `.agent-workflow/.engine/templates/repo-dich/{AGENTS.md,Makefile}` (có sau `aw init`).
+- **Lệnh kiểm trong git**: `config.sh` khai `LENH_KIEM_THU="make test"` và `secret: make
+  security-secret`… thay vì chép lệnh — sửa Makefile là local và CI cùng đổi.
+- Muốn agent đọc `ARCHITECTURE.md` của module trong phase: khai vào `rules_design`,
+  `rules_implement` của `conventions.md` (`aw rules` in ra, review chấm từng file).
+- Mỗi luật một chỗ: phạm vi một module thì đặt cạnh module, nhiều module thì trong `docs/`.
+
+
 ### Lệnh
 
 | Lệnh | Việc |
