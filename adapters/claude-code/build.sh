@@ -7,7 +7,7 @@
 # Sinh ra trong repo dich:
 #   .claude/commands/aw-<id>.md            slash command cho tung phase
 #   .claude/commands/aw-<id>.md            lenh tien ich (commands: trong manifest) —
-#                                       import, clarify
+#                                       import, clarify, bootstrap
 #   .claude/agents/ra-soat-doc-lap.md   subagent ra soat (ngu canh sach)
 #   .claude/agents/soat-<checker>.md    subagent cho tung checker LLM
 #   .claude/skills/quy-trinh-agent/SKILL.md

@@ -198,7 +198,7 @@ buoc_xac_dinh_feature() {
     printf 'Run `aw feature %s`:\n\n' "$1"
     printf -- '- **ĐÃ XÁC ĐỊNH:** stdout = `%s`. Print `Đang làm với: %s` before reading/writing anything.\n' "$FD" "$FD"
     if [ "${3:-}" = "true" ]; then
-      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "On the main checkout" in the phase description (no feature dir needed). Never change directory yourself.\n'
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "On the main checkout" in the description below (no feature dir needed). Never change directory yourself.\n'
     else
       printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** stop — tell the human to open a session in the job'"'"'s worktree (none yet → `/aw-intake` on the main checkout). Never change directory yourself.\n'
     fi
@@ -515,6 +515,8 @@ ad_sinh() {
   # Khong phai phase: khong co hop dong vao/ra, chi co buoc xac dinh feature + than.
   # arguments: (bo trong) = tham so la ten feature; mixed = con tham so khac, ten
   # feature (neu co) nam lan trong do — agent tach ra.
+  # runs_on_main_checkout: true = co viec o checkout chinh (muc "On the main checkout"
+  # trong than), nhu phase 06-ship.
   wf_commands "$MANIFEST" > "$CMD_LIST"
   while IFS='|' read -r cid cfile; do
     [ -n "$cid" ] || continue
@@ -529,6 +531,11 @@ ad_sinh() {
       ""|mixed) ;;
       *) echo "LỖI: $cfile khai arguments \"$cargs\" — lệnh tiện ích chỉ nhận \"mixed\" (bỏ trống = tên feature)." >&2; exit 4 ;;
     esac
+    cmc=$(fm_scalar "$csrc" runs_on_main_checkout)
+    case "$cmc" in
+      ""|true) ;;
+      *) echo "LỖI: $cfile khai runs_on_main_checkout \"$cmc\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; exit 4 ;;
+    esac
     kiem_tra_ghi_de "$L/$(ten_lenh "$cid").md"
     {
       _h=$(fm_scalar "$csrc" argument_hint); _h=${_h:-[tên-feature]}
@@ -538,9 +545,9 @@ ad_sinh() {
       _hk ad_mo_dau_lenh "$(ten_lenh "$cid")" "$_h" "$cargs"
       if [ "$cargs" = "mixed" ]; then
         printf 'Arguments: `%s`\n\n' "$ts"
-        buoc_xac_dinh_feature '<feature-name if the user gave one>'
+        buoc_xac_dinh_feature '<feature-name if the user gave one>' "" "$cmc"
       else
-        buoc_xac_dinh_feature "$ts"
+        buoc_xac_dinh_feature "$ts" "" "$cmc"
       fi
       [ "$(fm_scalar "$csrc" choice_ui)" = "true" ] && _hk ad_hoi_lua_chon
       doc_truoc "$(fm_scalar "$csrc" trace_rule)"
@@ -552,7 +559,7 @@ ad_sinh() {
   # ---------- skill tổng ----------
   kiem_tra_ghi_de "$SK"
   {
-    _hk ad_dau_skill quy-trinh-agent 'This repo'"'"'s AI-agent development workflow. Use when starting new work, writing a spec from a BRD/PRD or Jira/Confluence ticket, technical design, planning, implementing a plan, reviewing changes, importing documents from other tools, settling open questions or LLM-checker findings that block a phase, or when asked how this repo works.'
+    _hk ad_dau_skill quy-trinh-agent 'This repo'"'"'s AI-agent development workflow. Use when starting new work, writing a spec from a BRD/PRD or Jira/Confluence ticket, technical design, planning, implementing a plan, reviewing changes, importing documents from other tools, settling open questions or LLM-checker findings that block a phase, making the repo answer a fresh agent session (AGENTS.md, Makefile, module docs, ADR), or when asked how this repo works.'
     printf '# AI-agent development workflow\n\n'
     canh_bao "workflow.yaml"
     printf 'Each phase takes **files** written by the previous one as input, never chat — it runs from a blank session, with any agent. Talk to the human in Vietnamese.\n\n'

@@ -74,13 +74,15 @@ flowchart TD
 | `/aw-review` | mọi artifact + diff → `review.md` | từng YC có kết luận; không còn cảnh báo; kết quả còn mới so với code | xác nhận kết luận |
 | `/aw-ship` | `review.md` → MR/PR | review đạt, không còn `Blocker` | chọn nhánh đích, merge |
 | `/aw-clarify` | — | — | trả lời điểm mù, phân xử phát hiện checker LLM (từng mục, có phương án đề xuất) |
+| `/aw-bootstrap` | repo, CI, `git log` → `AGENTS.md`, `Makefile`, `ARCHITECTURE.md`, ADR có sẵn (một lần, trong worktree `chore`) | `aw conventions check`, `aw adr check`, `aw rule check` | trả lời câu hỏi trong báo cáo, mở PR |
 
 - **Không có phase test riêng** — test là điều kiện ra của `implement`: chưa xanh là chưa xong.
 - **Loại việc đổi luật** (`feature | bugfix | refactor | perf | chore`): bugfix cần test tái hiện
   đỏ trước khi sửa, refactor cấm hành vi mới, perf cần số đo trước/sau, chore bỏ design và không
   đụng code production. Chi tiết: [`00-intake.md`](workflow/phases/00-intake.md).
-- **Worktree bắt buộc.** Checkout chính chỉ chạy `/aw-intake` (đề xuất worktree, **bạn chọn base**)
-  và `/aw-ship` (dọn việc đã merge). Mọi phase khác chạy trong worktree, mỗi việc một phiên.
+- **Worktree bắt buộc.** Checkout chính chỉ chạy `/aw-intake`, `/aw-bootstrap` (đề xuất worktree,
+  **bạn chọn base**) và `/aw-ship` (dọn việc đã merge). Mọi phase khác chạy trong worktree, mỗi việc
+  một phiên.
 
 ### Ô duyệt
 
@@ -174,7 +176,10 @@ của pipeline CI**.
 
 ### 3. Repo đích: để một phiên agent mới không phải đoán (khuyến nghị)
 
-Engine không ép, chỉ nhắc ở `aw init`. Mục tiêu: phiên agent mới **chỉ có repo** trả lời được năm
+Engine không ép, chỉ nhắc ở `aw init`. Repo có sẵn thì làm một lần bằng `/aw-bootstrap` ở checkout
+chính: agent đề xuất worktree `chore`, trong đó dựng các file dưới **chỉ từ bằng chứng trong repo**
+(điều chỉ người biết thành câu hỏi trong báo cáo), tạo ADR cho quyết định đã có, liệt kê ứng viên luật
+`BR-` và chạy bài kiểm tra phiên mới. Mục tiêu: phiên agent mới **chỉ có repo** trả lời được năm
 câu — hệ thống là gì, tổ chức ra sao, chạy và kiểm thế nào, vì sao code như vậy, đang ở đâu.
 
 ```

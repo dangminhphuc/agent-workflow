@@ -20,7 +20,7 @@ dùng bản `.cursor/`.
 | Nguồn | Artifact |
 |---|---|
 | `workflow/phases/<id>.md` | `.claude/commands/aw-<id>.md` (`/aw-intake` … `/aw-ship`) |
-| `commands:` trong `workflow.yaml` | `.claude/commands/aw-<id>.md` (`/aw-import`, `/aw-clarify`) |
+| `commands:` trong `workflow.yaml` | `.claude/commands/aw-<id>.md` (`/aw-import`, `/aw-clarify`, `/aw-bootstrap`) |
 | Phase `requires_fresh_agent: true` (`05-review`) | `.claude/agents/ra-soat-doc-lap.md` — subagent ngữ cảnh sạch, mang mô tả phase đầy đủ |
 | `llm_checker:` (`workflow/checkers/<id>.md`) | `.claude/agents/soat-<id>.md` |
 | `approval_gate: true` (`02-design`, `03-plan`) | Bước "Approval gate": `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
