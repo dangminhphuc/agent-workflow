@@ -11,7 +11,7 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.24]
 
 ### Thêm
 - **`docs/huong-dan.md` — hướng dẫn dùng cho người:** cách quy trình hoạt động (vai agent/máy/người,
@@ -23,7 +23,8 @@ ngầm giữa các bản.
   lượt hỏi (Claude Code: `AskUserQuestion`; Cursor: tool hỏi lựa chọn hoặc lựa chọn đánh số), mỗi câu
   có ô tự nhập cho yêu cầu khác. Base ★ của máy đứng đầu. Câu `Input` trích nguyên văn lời người ngay
   trong lựa chọn `Đúng nguyên văn`; muốn sửa thì gõ bản đúng vào ô tự nhập — không có lựa chọn "cần
-  sửa" rỗng. Câu chỉ có một lựa chọn thật thì thêm `Dừng — chưa tạo gì`. Phase nào cũng khai được `choice_ui: true` (trước chỉ lệnh tiện ích).
+  sửa" rỗng. Câu chỉ có một lựa chọn thật thì thêm `Dừng — chưa tạo gì`. Phase nào cũng khai được
+  `choice_ui: true` (trước chỉ lệnh tiện ích).
 
 ## [2026.10.23]
 
