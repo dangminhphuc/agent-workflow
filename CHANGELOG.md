@@ -11,6 +11,15 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **`docs/huong-dan.md` — hướng dẫn dùng cho người:** cách quy trình hoạt động (vai agent/máy/người,
+  bàn giao bằng file, ô duyệt, nhãn `Kết quả`, worktree), cài và cấu hình repo đích từng bước
+  (`config.sh`, `conventions.md`, bootstrap, hook `aw guard`, skill/subagent), từng phase sinh artifact
+  nào và artifact đó quyết định gì, khác biệt theo loại việc, kiến thức bền (ADR, `BR-`), xử lý khi bị
+  chặn, tham chiếu lệnh. README trỏ tới.
+
 ## [2026.10.23]
 
 Lệnh và luật agent đọc gọn lại (ngữ cảnh mỗi phase nhỏ hơn khoảng 20–32%) mà không bỏ chỉ thị nào;
