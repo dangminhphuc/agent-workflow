@@ -11,6 +11,24 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.25]
+
+### Thêm
+- **Đổi một YC đã có nguồn — `/aw-clarify YC-NNN`.** Trước đây chỉ điểm mù và phát hiện của checker
+  LLM có đường chốt; YC agent đã gắn nguồn mà người không đồng ý thì phải sửa tay `spec.md`, và nhãn
+  nguồn cũ vẫn nói đó là lời của Confluence/Jira. Giờ việc đổi được ghi thành điểm mù đã trả lời
+  (`Assumption` = cách hiểu cũ, `Answer` = lời người nguyên văn, câu trả lời trước chuyển thành
+  `Superseded answer:`), YC đổi nhãn sang `[FILE] open-questions.md § YC-NNN`, spec bỏ tick. Thêm/bỏ
+  YC vẫn là đổi phạm vi: `[HUMAN]` trong `intake.md` rồi `/aw-spec`.
+- **`aw task reopen <thư-mục-feature> <YC-NNN|D-NN>`** — đưa đúng các task `Covers`/`On assumption` YC
+  đó (hay `Based on` D đó) về `[ ]`, task khác giữ nguyên. Dùng khi điểm mù được trả lời khác giả
+  định, khi người đổi YC, và khi mở lại D-xx (thay cho việc agent tự grep `plan.md`).
+
+### Thay đổi
+- **`aw check spec` chặn nhãn `[FILE] open-questions.md § YC-NNN` trỏ vào mục không có** (hay mục của
+  YC khác chưa `answered`): nhãn nói lời người là nguồn thì lời đó phải được ghi.
+- `/aw-clarify` nhận tham số `[YC-NNN] [tên-feature]`.
+
 ## [2026.10.24]
 
 ### Thêm

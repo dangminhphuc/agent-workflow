@@ -16,6 +16,7 @@
 #   aw-engine conventions check                   kiểm conventions.md sau khi người sửa
 #   aw-engine ready <feature-dir> [--no-test]       worktree sẵn sàng chưa, bước tiếp là gì
 #   aw-engine task start|done|next <feature-dir> [T-NN] [--manual "<bằng chứng>"]
+#   aw-engine task reopen <feature-dir> <YC-NNN|D-NN>
 #   aw-engine journal [report] | journal add <layer> <mô tả> [--feature <dir>]
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine rename <new-branch>

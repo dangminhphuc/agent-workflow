@@ -2,7 +2,9 @@
 id: clarify
 choice_ui: true
 name: Chốt việc chờ người
-summary: Dẫn bạn chốt từng điểm mù và phát hiện của checker đang chặn phase, việc gấp nhất trước
+summary: Dẫn bạn chốt từng điểm mù và phát hiện của checker đang chặn phase, việc gấp nhất trước; hoặc đổi một YC bạn không đồng ý
+arguments: mixed
+argument_hint: [YC-NNN] [tên-feature]
 trace_rule: true
 ---
 
@@ -18,6 +20,8 @@ trace_rule: true
 | LLM checker finding | `<checker>-findings.md` (currently `design-findings.md`) | **Arbitrates**: agree (fix) or reject + reason | `block`: that phase's checker (`design-findings.md` → `/aw-plan`); `warn`: nothing |
 
 Blocking levels and `Severity` are proposed by the agent, changed **only by the human**.
+
+The human may also **change a YC** they disagree with (`/aw-clarify YC-NNN`, or says so mid-queue). Not in `aw pending` — do it first: section 5.
 
 ## 1. List — for you to read, NOT to paste
 
@@ -117,7 +121,7 @@ Order (max 4): `(Đề xuất) <fix>` (what, which section) → 0–1 genuinely 
 **Human answered:**
 1. `open-questions.md`: `Answer:` = the human's **verbatim** words + who + date (e.g. `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status: answered`. Human **picked** an option → verbatim = its label (without `(Đề xuất)`) plus `(chọn từ phương án agent đề xuất)`. Several questions → record each answer.
 2. `spec.md`: change the YC's source label to `[FILE]` open-questions.md § YC-NNN (or the source the human named). Remove that YC's `Assumption` line.
-3. **Answer differs from the assumption:** edit the description / criteria of **that YC only**. First show the lines that will change (before → after) and ask "ghi như vậy được không?" (agreement in chat is enough). Append `(đã xác nhận sửa YC-NNN)` to `Answer:`. Same as the assumption → only change the label.
+3. **Answer differs from the assumption:** edit the description / criteria of **that YC only**. First show the lines that will change (before → after) and ask "ghi như vậy được không?" (agreement in chat is enough). Append `(đã xác nhận sửa YC-NNN)` to `Answer:`. Then `aw task reopen <dir> YC-NNN` (tasks covering it go back to `[ ]`; no `plan.md` → nothing to do). Same as the assumption → only change the label.
 4. Spec was ticked and steps 2–3 changed it → **untick** (you may untick, never tick). Remind the human to re-tick in the summary.
 5. `aw check spec <dir>`, paste the real result. Not `[x] ĐẠT` → make the files agree before the next item.
 
@@ -144,7 +148,29 @@ Rerun `aw pending` (read, do not paste), then say briefly:
 - what still blocks which phase; which questions wait on whom (drafted messages);
 - findings closed but not arbitrated by the human this round (group `[ĐÃ XỬ LÝ]`, usually self-fixed in `/aw-design`): id + one line;
 - new/edited D-xx awaiting approval; spec just unticked → human re-ticks;
-- artifacts now stale because inputs changed (`tdd.md`, `plan.md`): answer **matches** the assumption → rerun that phase to refresh the input hash; **differs** → that phase redoes what "If wrong, redo" lists, and tasks on that assumption go back to `[ ]` when `/aw-plan` reruns. `tdd.md` just edited for a finding and `plan.md` exists → rerun `/aw-plan`.
+- artifacts now stale because inputs changed (`tdd.md`, `plan.md`): answer **matches** the assumption → rerun that phase to refresh the input hash; **differs** (or a YC was changed, section 5) → `/aw-design` redoes what "If wrong, redo" lists, then `/aw-plan`. `tdd.md` just edited for a finding and `plan.md` exists → rerun `/aw-plan`.
+
+## 5. Changing a YC (human-initiated)
+
+The human disagrees with how the spec reads a source — description, criteria or `Priority` of an existing YC. The change is recorded as an **answered open question**, so the human's words become the YC's source and `aw check spec` cross-checks the two files.
+
+| Request | Route |
+|---|---|
+| YC still `[OPEN-QUESTION]` | Ordinary open question: 2a, 3a |
+| Change an existing YC | This section |
+| Add a YC, drop one, move something in/out of `## Out of scope` | Scope change: the human adds it to `intake.md` as `[HUMAN]` input, then `/aw-spec`. Never add/delete a YC here |
+| `Blocking` | 3a "Human changes the level" |
+| `Risk`, `## Constraints & dependencies` | Show before → after, write exactly what the human said, untick the spec, `aw check spec`. `tdd.md` exists → rerun `/aw-design` (`Risk` now `high` → Mode 2) |
+
+1. **Read** the YC, its `Source:` passage, what depends on it: `tdd.md` (`YC mapping`, `Based on: D-xx` of those sections), `plan.md` (`Covers: YC-NNN`).
+2. **Ask** as in 2a. Context: what the source says, what the YC says now, what must be redone (step 1). Options: the human's change as they stated it, keep the current reading, at most one other reading the source supports.
+3. **Record in `open-questions.md`** — the YC's entry; create `## YC-NNN — <same title as spec>` if missing (replacing a "No open questions." line):
+   - `Source says` verbatim; `Question`: the reading in dispute; `Ask`: the human; `Assumption`: the previous reading; `If wrong, redo`: what step 1 found;
+   - `Status: answered`; `Answer:` verbatim + who + date + `(đã xác nhận sửa YC-NNN)`.
+   - Entry already answered → move the old answer to `- **Superseded answer:** …`, then write the new `Answer:`.
+4. **Edit `spec.md`**: show before → after of that YC's lines, ask "ghi như vậy được không?". Then edit **that YC only**; source label → `[FILE]` open-questions.md § YC-NNN. **Untick** the spec.
+5. `aw task reopen <dir> YC-NNN`, then `aw check spec <dir>` — paste both real results.
+6. Summary (section 4): spec unticked → the human re-ticks. `tdd.md` exists → `/aw-design` updates the sections mapped to YC-NNN (a D-xx no longer fits → "Reopening a D-xx"), then `/aw-plan`.
 
 ## Forbidden
 
@@ -152,6 +178,6 @@ Rerun `aw pending` (read, do not paste), then say briefly:
 - Paraphrasing answers or rejection reasons instead of verbatim.
 - Treating your recommendation as the decision before the human chose.
 - Lowering/changing `Blocking` without the human; changing a finding's `Severity`.
-- Ticking approval boxes, editing/deleting `<!-- approval-hash: … -->` (you may only **untick** the spec in 3a step 4).
+- Ticking approval boxes, editing/deleting `<!-- approval-hash: … -->` (you may only **untick** the spec: 3a step 4, section 5).
 - Editing a YC / `tdd.md` before the human confirmed the changed lines, or outside the current item.
-- Editing `plan.md` or code, or rerunning the LLM checker to "clean" findings — just say which phase to rerun.
+- Editing `plan.md` (only `aw task reopen` resets tasks) or code, or rerunning the LLM checker to "clean" findings — just say which phase to rerun.

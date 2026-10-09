@@ -533,6 +533,23 @@ thay "$F/open-questions.md" '- **Answer:** qua email' '- **Answer:** <người t
 ky_vong 1 "chặn đã trả lời mà Trả lời còn trống/chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[JIRA]` ABC-2'
 ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
+# Người đổi YC đã có nguồn (/aw-clarify YC-NNN): ghi thành điểm mù đã trả lời
+viet_spec; sh "$CHK" "$F" >/dev/null 2>&1   # máy ghi dấu duyệt cho bản người đã tick
+printf '\n## YC-001 — a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)\n' >> "$F/open-questions.md"
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-001'
+ky_vong 1 "đổi YC sau khi spec đã duyệt → phải duyệt lại" sh "$CHK" "$F"
+duyet_lai "$F/spec.md"
+ky_vong 0 "đổi YC: mục answered (kể cả Superseded answer) + nhãn [FILE] + duyệt lại → cho qua" sh "$CHK" "$F"
+thay "$F/open-questions.md" '- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)' ''
+ky_vong 1 "…Superseded answer không thay được Answer" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-001'
+ky_vong 1 "chặn nhãn [FILE] trỏ vào open-questions.md § YC-001 mà mục đó không có" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'YC-001: nguồn trỏ tới open-questions.md § YC-001 nhưng không có mục'"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-002'
+ky_vong 1 "chặn nhãn trỏ vào điểm mù của YC khác còn open" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/a.md § Tổng quan'
+duyet_lai "$F/spec.md"
+ky_vong 0 "nhãn [FILE] trỏ file khác → không bị luật này chặn" sh "$CHK" "$F"
 viet_spec
 
 # Tiêu chí chấp nhận, Ưu tiên
@@ -1491,7 +1508,7 @@ dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <dir
 dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
 dung "command design gọi checker LLM" grep -q 'design-checker' "$O/.claude/commands/aw-design.md"
 dung "lệnh /aw-clarify có bước xác định feature + chạy aw pending" sh -c \
-  "grep -q 'aw feature \$ARGUMENTS' '$O/.claude/commands/aw-clarify.md' && grep -q 'aw pending' '$O/.claude/commands/aw-clarify.md'"
+  "grep -q 'aw feature <feature-name if the user gave one>' '$O/.claude/commands/aw-clarify.md' && grep -q 'aw pending' '$O/.claude/commands/aw-clarify.md'"
 dung "lệnh /aw-clarify hỏi bằng AskUserQuestion, có Chat about this" sh -c \
   "grep -q 'AskUserQuestion' '$O/.claude/commands/aw-clarify.md' && grep -q 'Chat about this' '$O/.claude/commands/aw-clarify.md'"
 dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng đầu nhãn" sh -c \
@@ -3186,6 +3203,36 @@ thay "$F/plan.md" '- Expected files: `src/*` `test/*`
 - Status: `[~]`'
 ky_vong 2 "task không có trong plan.md: sai mã → SAI THAM SỐ" sh "$TK" start "$F" X-1
 ky_vong 1 "task không có trong plan.md → TỪ CHỐI" sh "$TK" start "$F" T-09
+
+# reopen: người đổi YC / mở lại D → chỉ đúng task bị ảnh hưởng về [ ]
+tk_st() { sh -c ". '$T/lib/task.sh'; tk_dong '$F/plan.md' $1" | cut -d'|' -f2; }
+viet_plan; ghi_based_on
+ky_vong 0 "reopen YC-002 → XONG" sh "$TK" reopen "$F" YC-002
+dung "…T-02 (Covers YC-002) về [ ]" bang "$(tk_st T-02)" " "
+dung "…T-01 giữ [x]" bang "$(tk_st T-01)" "x"
+viet_plan
+ky_vong 0 "reopen D-01 → XONG" sh "$TK" reopen "$F" D-01
+dung "…T-01 (Based on D-01) về [ ], T-02 giữ [x]" sh -c "[ '$(tk_st T-01)' = ' ' ] && [ '$(tk_st T-02)' = x ]"
+viet_plan
+thay "$F/plan.md" '- Covers: `YC-001`' '- Covers: `YC-001`
+- On assumption: **yes** — `open-questions.md` § YC-002'
+thay "$F/plan.md" '- Covers: `YC-002`
+- Expected files: `src/b.txt`
+- Verify: `test -f src/a.txt` → có file
+- Status: `[x]`' '- Covers: `YC-002`
+- Expected files: `src/b.txt`
+- Verify: `test -f src/a.txt` → có file
+- Status: `[~]`'
+ky_vong 0 "reopen YC theo cả On assumption, và task đang [~]" sh "$TK" reopen "$F" YC-002
+dung "…T-01, T-02 đều về [ ]" sh -c "[ '$(tk_st T-01)' = ' ' ] && [ '$(tk_st T-02)' = ' ' ]"
+viet_plan
+ky_vong 0 "reopen mã không task nào phủ (khớp nguyên mã, YC-00 ≠ YC-001) → không đổi gì" sh "$TK" reopen "$F" YC-00
+dung "…plan.md giữ nguyên [x]" sh -c "[ '$(tk_st T-01)' = x ] && [ '$(tk_st T-02)' = x ]"
+ky_vong 2 "reopen mã không phải YC/D → SAI THAM SỐ" sh "$TK" reopen "$F" T-01
+ky_vong 2 "reopen thiếu mã → SAI THAM SỐ" sh "$TK" reopen "$F"
+mv "$F/plan.md" "$TMP/plan.bak"
+ky_vong 0 "reopen khi chưa có plan.md → không có gì để làm lại" sh "$TK" reopen "$F" YC-001
+mv "$TMP/plan.bak" "$F/plan.md"
 viet_plan; ghi_based_on; ghi_bang_chung_task
 
 # ---------------------------------------------------------------- trạng thái sạch

@@ -63,6 +63,7 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 11. **Propose `Risk`:** `high` when touching money/accounting, new integrations, core schema, or hard-to-reverse changes; else `normal`. One-line reason. `high` → design runs Mode 2.
     - A YC that stays true after this job (a business invariant, not a screen detail) with a durable source → propose `- Promote: BR-<DOMAIN>-NNN` under it. `[INFERRED]` / `[OPEN-QUESTION]` YCs cannot be promoted.
 12. **Leave `- [ ] **Approved by human**` unticked**; any content edit unticks it. Spec edited after the human ticked → the human re-approves: reads the change and deletes `<!-- approval-hash: … -->` (keeps the tick), or re-ticks.
+    - The human disagrees with an existing YC → `/aw-clarify YC-NNN` records the change as an answered open question; do not silently rewrite the YC.
 13. **Record inputs:** `aw based-on <dir> spec.md intake.md`.
 
 ## By work type

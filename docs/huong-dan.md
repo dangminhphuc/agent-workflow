@@ -443,6 +443,22 @@ Agent ghi câu trả lời **nguyên văn** của bạn (ai, ngày) vào `Answer
 câu trả lời khác giả định thì cho bạn xem dòng sẽ sửa trước khi ghi. Spec đã tick mà bị sửa → agent
 bỏ tick, bạn tick lại. Chưa trả lời được → agent soạn tin nhắn tự đủ nghĩa để bạn gửi PO/BA.
 
+**Không đồng ý một YC đã có nguồn** (agent hiểu nguồn khác bạn, tiêu chí sai, `Priority` sai) →
+`/aw-clarify YC-NNN`. Đừng sửa lặng lẽ: agent ghi việc đổi thành một **điểm mù đã trả lời** trong
+`open-questions.md` (cách hiểu cũ ở `Assumption`, lời bạn nguyên văn ở `Answer`), cho bạn xem dòng sẽ
+sửa, đổi nhãn nguồn YC thành `[FILE] open-questions.md § YC-NNN`, bỏ tick spec. Nhờ vậy lời bạn thành
+nguồn của YC, và `aw check spec` đối chiếu được hai file. Sau đó:
+
+| Đã có | Ảnh hưởng | Việc tiếp |
+|---|---|---|
+| chưa có `tdd.md` | — | tick lại spec |
+| `tdd.md` | lỗi thời (`based_on`): implement cảnh báo, review chặn | tick lại spec, chạy lại `/aw-design` (cập nhật mục map tới YC đó; D-xx không còn hợp → mở lại D đó) |
+| `plan.md` | task `Covers`/`On assumption` YC đó về `[ ]` (`aw task reopen`); task khác giữ nguyên | chạy lại `/aw-plan`, rồi `/aw-implement` làm lại đúng các task ấy |
+
+Thêm/bỏ YC, đổi `Out of scope` là **đổi phạm vi**: thêm vào `intake.md` dạng input `[HUMAN]`, chạy lại
+`/aw-spec`. Không sửa ở spec thì sai lệch đi thẳng vào thiết kế: design không được thêm hay sửa yêu
+cầu, review chấm code theo spec — code đúng một spec sai vẫn qua.
+
 ### Phase 02 — `/aw-design`: thiết kế kỹ thuật
 
 - **Chạy ở:** worktree. **Chore bỏ qua phase này.**
@@ -534,6 +550,7 @@ aw ready <dir>              đầu phiên: test xanh trên base chưa? bước t
 aw task next <dir>          task kế
 aw task start <dir> T-NN    [ ] → [~]   (chỉ một task [~] một lúc)
 aw task done <dir> T-NN     chạy Verify; chỉ XANH mới [ ] → [x]
+aw task reopen <dir> YC-NNN|D-NN   YC vừa đổi / D mở lại: task phủ nó về [ ]
 aw check implement <dir>    chạy toàn bộ test + quét bảo mật, ghi *-results.md
 ```
 
@@ -675,7 +692,8 @@ Quên `aw check repro` / `aw check perf --before` mà đã sửa code → máy t
 
 ### 6.1. `/aw-clarify`
 
-Xem [Phase 01](#lệnh-tiện-ích--aw-clarify-chốt-việc-chờ-người). Gọi bất kỳ lúc nào có việc chờ bạn;
+Xem [Phase 01](#lệnh-tiện-ích--aw-clarify-chốt-việc-chờ-người). Gọi bất kỳ lúc nào có việc chờ bạn, hoặc
+`/aw-clarify YC-NNN` khi muốn đổi một YC;
 `aw pending <dir>` cho bạn tự xem hàng đợi.
 
 ### 6.2. `/aw-import <file-nguồn> <spec.md|tdd.md|plan.md>`
@@ -834,7 +852,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw check <tên> <dir>` | checker: `intake spec design plan implement security review repro perf ship` |
 | `aw pending <dir>` | việc đang chờ bạn |
 | `aw approval design\|plan <dir>` | tóm tắt cần duyệt trước khi vào design / plan |
-| `aw task next\|start\|done <dir> [T-NN]` | trạng thái task |
+| `aw task next\|start\|done <dir> [T-NN]` · `aw task reopen <dir> <YC-NNN\|D-NN>` | trạng thái task; đưa task bị ảnh hưởng về `[ ]` |
 | `aw worktree new\|status\|remove …` | đề xuất / tạo / xem / dọn worktree |
 | `aw rename <tên-branch-mới>` | đổi tên việc (branch, worktree, artifact) — chạy trong worktree |
 | `aw ship targets\|create\|status\|sweep …` | MR/PR |

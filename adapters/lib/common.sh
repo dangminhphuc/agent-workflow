@@ -620,7 +620,7 @@ ad_sinh() {
     printf -- '- Engine rules, templates, LLM checkers: `%s/`\n' "$DOCS"
     printf -- '- Machine checkers: `aw check <name> %s` — names: %s\n' "$FD" "$BL_CHECKERS"
     printf -- '- Session start: `aw ready %s` (environment ready?, next step)\n' "$FD"
-    printf -- '- Tasks: `aw task next|start|done %s [T-NN]` — never edit `Status` yourself\n' "$FD"
+    printf -- '- Tasks: `aw task next|start|done %s [T-NN]`; a YC changed or a D-xx reopened → `aw task reopen %s <YC-NNN|D-NN>` — never edit `Status` yourself\n' "$FD" "$FD"
     printf -- '- Agent failure no checker caught: `aw journal add <task|context|env|verify|state|model> "<description>"`\n'
   } | ghi_file "$SK"
 
