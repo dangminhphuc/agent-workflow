@@ -68,7 +68,7 @@ ad_danh_cho() {
 ad_hoi_lua_chon() {
   printf '## Asking choice questions in Claude Code\n\n'
   printf 'Each question turn = **one `AskUserQuestion` call**, `multiSelect: false`; several decisions of one item = several `questions` entries in the **same** call (max 4). Never print options as text. Question and option text are in Vietnamese.\n\n'
-  printf -- '- `question`: one sentence ending with `?`. `header` (≤ 12 chars): id and position, e.g. `YC-001 1/8`.\n'
+  printf -- '- `question`: one sentence ending with `?`. `header` (≤ 12 chars): the one named below, else id and position, e.g. `YC-001 1/8`.\n'
   printf -- '- `options` (≤ 4) in the order described below; the recommended option'"'"'s `label` **starts with** `(Đề xuất)`; `description` = one-line consequence.\n'
   printf -- '- **Do not** add "Other" or "Chat about this": Claude Code already provides "Type something" and "Chat about this". If the human picks "Chat about this" → answer in plain text; once clear, call `AskUserQuestion` again for the same question.\n\n'
 }

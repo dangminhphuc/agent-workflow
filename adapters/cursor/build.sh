@@ -69,7 +69,7 @@ ad_danh_cho() {
 ad_hoi_lua_chon() {
   printf '## Asking choice questions in Cursor\n\n'
   printf 'Each question turn = **one choice question**, then **stop and wait**. Several decisions of one item: ask each, in the same turn. Question and option text are in Vietnamese.\n\n'
-  printf -- '- Question: one sentence ending with `?`, starting with id and position, e.g. `YC-001 1/8`.\n'
+  printf -- '- Question: one sentence ending with `?`, starting with the header named below, else id and position, e.g. `YC-001 1/8`.\n'
   printf -- '- ≤ 4 options in the order described below; the recommended label **starts with** `(Đề xuất)`; each option has a one-line consequence.\n'
   printf -- '- If a Cursor choice tool exists (e.g. `AskQuestion`), use it. None or it fails: print numbered options `1.` `2.` … — the human answers by number or text.\n'
   printf -- '- **Always** keep the free-text and "Chat about this" exits. If the tool does not add them, end with the line: `Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này.`\n\n'

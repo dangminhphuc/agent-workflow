@@ -17,6 +17,7 @@ exit_human:
   - The human confirms the input list, and that their own words were copied verbatim
 needs_clean_context: true
 arguments: input
+choice_ui: true
 ---
 
 # Phase 00 — Intake
@@ -62,10 +63,10 @@ Does it change code that runs in production?
 
 The main checkout stays on `base_branch` and only runs `/aw-intake`. The agent **never decides** location or base:
 
-1. Read the input, **agree the work type with the human** (tree above).
+1. Read the input and classify the work type (tree above) — a proposal; the human confirms it in step 4.
 2. Pick a short description: lowercase ASCII, digits, `-` (e.g. `phi-hoan-tien`).
 3. `aw worktree new <type> <description>` — **only prints a proposal**: name (branch = worktree dir = artifact dir), path, candidate **bases** with facts. ★ is the machine's suggestion, not yours.
-4. Show the proposal **verbatim**; the human **chooses the base** and confirms the name (other name → change `<description>`, rerun step 3).
+4. Show the proposal **verbatim**, then ask the **confirmation turn** below. Changed type or name → rerun step 3 with it, ask again.
 5. `aw worktree new <type> <description> --create --base <ref>` with **exactly the human's ref**. Copy the printed `Base:` and `Engine:` lines into `intake.md`.
 6. Write `<worktree>/.agent-workflow/<name>/intake.md`, run `aw check intake` on that dir, then **stop**: the human runs the printed prepare command (`WORKTREE_SETUP_CMD`) and opens a **new** session in the worktree for `/aw-spec`.
 
@@ -73,10 +74,26 @@ The main checkout stays on `base_branch` and only runs `/aw-intake`. The agent *
 
 `Base:` is what checkers diff against (stacking on another job's branch is allowed; review warns). `Engine:` is the exact engine version every checker of this job runs.
 
+## Confirmation turn
+
+All human decisions in **one choice question turn**, one question each, in this order (skip one already settled):
+
+| header | Question | Options |
+|---|---|---|
+| `Loại việc` | the work type | your classification (recommended), then the other plausible types — two types at once → option `Tách hai việc` (one worktree each) |
+| `Tên` | the name | the proposed name (recommended), then at most one shorter alternative |
+| `Base` | the base | each candidate base, ★ first (recommended, no ★ = none recommended); description = its commit, age, subject from the proposal |
+| `Input` | whether `[HUMAN]` is verbatim | `Đúng nguyên văn` — its description **quotes the `[HUMAN]` words exactly** as they will go in `## Input` |
+
+- Only one real option → add `Dừng — chưa tạo gì` as the last option.
+- `Input` has no "needs fixing" option: the free-text answer **is** the fix — replace the `>` line with exactly the typed text, character for character.
+- Free text on another question = the human's own value (type, name, ref); use it exactly. Unclear → ask again.
+- No answer, question dismissed or `Dừng — chưa tạo gì` → create nothing, stop.
+
 ## Inside the worktree
 
-- Suggest the type from the branch prefix (`type_by_prefix`), check it against the input, ask the human to confirm. Confirmed type ≠ prefix → fix the type, or `aw rename` (the human then opens a new session at the new path).
-- **Rerun with an existing `intake.md` = append input:** keep `Type` and `Goal`; run `aw input --skip <dir>/intake.md -` (skips inputs already present) and **append** stdout to `## Input`. New input suggests another type → tell the human. Run the checker, stop for the human to confirm the **new inputs**.
+- Suggest the type from the branch prefix (`type_by_prefix`), check it against the input, ask the human to confirm (confirmation turn: `Loại việc`, `Input`). Confirmed type ≠ prefix → fix the type, or `aw rename` (the human then opens a new session at the new path).
+- **Rerun with an existing `intake.md` = append input:** keep `Type` and `Goal`; run `aw input --skip <dir>/intake.md -` (skips inputs already present) and **append** stdout to `## Input`. New input suggests another type → tell the human. Run the checker, confirm the **new inputs** (confirmation turn: `Input`, one question per new `[HUMAN]` entry), then stop.
 - No command removes input — the human edits by hand. A changed `intake.md` makes `spec.md` stale: rerun `/aw-spec`.
 
 ## Forbidden
