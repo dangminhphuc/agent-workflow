@@ -494,6 +494,7 @@ requires_fresh_agent: true  # chạy qua subagent ngữ cảnh sạch; lệnh ch
 llm_checker: workflow/checkers/design.md
 arguments: input            # tham số là input, không phải tên feature (00-intake)
 approval_gate: true         # mở đầu bằng cổng duyệt (02-design, 03-plan)
+choice_ui: true             # hỏi người bằng câu hỏi lựa chọn (00-intake: lượt xác nhận)
 runs_on_main_checkout: true # có việc ở checkout chính (06-ship)
 trace_rule: true            # lệnh bảo đọc rules/source-tracing.md
 ---

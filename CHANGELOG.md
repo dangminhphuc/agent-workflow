@@ -11,14 +11,9 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [2026.10.24]
+## [Chưa phát hành]
 
 ### Thêm
-- **`docs/huong-dan.md` — hướng dẫn dùng cho người:** cách quy trình hoạt động (vai agent/máy/người,
-  bàn giao bằng file, ô duyệt, nhãn `Kết quả`, worktree), cài và cấu hình repo đích từng bước
-  (`config.sh`, `conventions.md`, bootstrap, hook `aw guard`, skill/subagent), từng phase sinh artifact
-  nào và artifact đó quyết định gì, khác biệt theo loại việc, kiến thức bền (ADR, `BR-`), xử lý khi bị
-  chặn, tham chiếu lệnh. README trỏ tới.
 - **Đổi một YC đã có nguồn — `/aw-clarify YC-NNN`.** Trước đây chỉ điểm mù và phát hiện của checker
   LLM có đường chốt; YC agent đã gắn nguồn mà người không đồng ý thì phải sửa tay `spec.md`, và nhãn
   nguồn cũ vẫn nói đó là lời của Confluence/Jira. Giờ việc đổi được ghi thành điểm mù đã trả lời
@@ -33,6 +28,21 @@ ngầm giữa các bản.
 - **`aw check spec` chặn nhãn `[FILE] open-questions.md § YC-NNN` trỏ vào mục không có** (hay mục của
   YC khác chưa `answered`): nhãn nói lời người là nguồn thì lời đó phải được ghi.
 - `/aw-clarify` nhận tham số `[YC-NNN] [tên-feature]`.
+
+## [2026.10.24]
+
+### Thêm
+- **`docs/huong-dan.md` — hướng dẫn dùng cho người:** cách quy trình hoạt động (vai agent/máy/người,
+  bàn giao bằng file, ô duyệt, nhãn `Kết quả`, worktree), cài và cấu hình repo đích từng bước
+  (`config.sh`, `conventions.md`, bootstrap, hook `aw guard`, skill/subagent), từng phase sinh artifact
+  nào và artifact đó quyết định gì, khác biệt theo loại việc, kiến thức bền (ADR, `BR-`), xử lý khi bị
+  chặn, tham chiếu lệnh. README trỏ tới.
+- **`/aw-intake` hỏi bằng câu hỏi lựa chọn:** loại việc, tên, base, nguyên văn `[HUMAN]` gom vào một
+  lượt hỏi (Claude Code: `AskUserQuestion`; Cursor: tool hỏi lựa chọn hoặc lựa chọn đánh số), mỗi câu
+  có ô tự nhập cho yêu cầu khác. Base ★ của máy đứng đầu. Câu `Input` trích nguyên văn lời người ngay
+  trong lựa chọn `Đúng nguyên văn`; muốn sửa thì gõ bản đúng vào ô tự nhập — không có lựa chọn "cần
+  sửa" rỗng. Câu chỉ có một lựa chọn thật thì thêm `Dừng — chưa tạo gì`. Phase nào cũng khai được
+  `choice_ui: true` (trước chỉ lệnh tiện ích).
 
 ## [2026.10.23]
 
