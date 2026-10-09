@@ -56,7 +56,7 @@ Mode 2 prevents anchoring on the agent's option. `high` with no `Author: human` 
 ## Reopening a D-xx
 
 - Reopen **exactly one** D, edit in place (git keeps history). Untick it, add `Reopen reason:` (unticked + reason = `reopened`).
-- Grep `Based on: D-xx` in `plan.md` → only those tasks go back to `[ ]`.
+- `aw task reopen <dir> D-xx` → only tasks `Based on` it go back to `[ ]`.
 - The human re-approves only the reopened D. `/aw-plan` blocks until then.
 
 ## Forbidden

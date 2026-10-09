@@ -143,3 +143,27 @@ tk_chua_xong() {
 tk_dang_do() {
   tk_ds "$1/plan.md" | awk -F'|' '$2 == "~" { print $1 " còn ở trạng thái đang làm dở `[~]`" }'
 }
+
+# tk_phu <plan.md> <YC-NNN|D-NN> -> task chịu ảnh hưởng khi mã đó đổi, mỗi dòng "T-NN|<s>".
+# YC: dòng "Covers" hoặc "On assumption" nhắc mã; D: dòng "Based on". So nguyên mã
+# (YC-01 không khớp YC-010).
+tk_phu() {
+  [ -f "$1" ] || return 0
+  awk -v ma="$2" '
+    function co_ma(s,   m) {
+      while (match(s, /(YC|D)-[0-9]+/)) { m = substr(s, RSTART, RLENGTH); if (m == ma) return 1; s = substr(s, RSTART + RLENGTH) }
+      return 0
+    }
+    function xuat() { if (id != "" && trung) print id "|" st }
+    BEGIN { truong = (ma ~ /^YC-/) ? "(Covers|On assumption)" : "Based on" }
+    { sub(/\r$/, "") }
+    /^##[ \t]/ && !/^###/ { xuat(); id = ""; next }
+    /^###[ \t]+T-[0-9]+/ { xuat(); match($0, /T-[0-9]+/); id = substr($0, RSTART, RLENGTH); st = "?"; trung = 0; next }
+    id != "" && $0 ~ ("^[ \t]*-[ \t]*[*]*" truong "[*]*:") { s = $0; sub(/^[^:]*:/, "", s); if (co_ma(s)) trung = 1; next }
+    id != "" && /^[ \t]*-[ \t]*\**Status\**:/ {
+      if ($0 ~ /\[x\]/) st = "x"; else if ($0 ~ /\[~\]/) st = "~"; else if ($0 ~ /\[ \]/) st = " "
+      next
+    }
+    END { xuat() }
+  ' "$1"
+}

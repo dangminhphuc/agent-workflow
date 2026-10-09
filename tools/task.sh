@@ -6,6 +6,10 @@
 #   aw task done  <thư-mục-feature> <T-NN>       chạy lệnh Verify; XANH thì [~] -> [x]
 #   aw task done  <thư-mục-feature> <T-NN> --manual "<bằng chứng>"
 #                                                task mà Verify không có lệnh (thủ công)
+#   aw task reopen <thư-mục-feature> <YC-NNN|D-NN>
+#                                                người vừa đổi YC / mở lại D: task phủ YC đó
+#                                                (Covers, On assumption) hay dựa trên D đó
+#                                                (Based on) về [ ] — chỉ đúng các task ấy
 #
 # `done` chạy lệnh trong cặp backtick đầu tiên của dòng "Verify" ở gốc repo, ghi
 # output thật vào task-results.md (mục "## T-NN", lần chạy sau thay lần trước).
@@ -22,7 +26,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai task.sh \
-  "0=XONG — start: đã đánh [~] · done: Verify XANH, đã đánh [x] · next: stdout là task tiếp" \
+  "0=XONG — start: đã đánh [~] · done: Verify XANH, đã đánh [x] · next: stdout là task tiếp · reopen: task bị ảnh hưởng đã về [ ]" \
   "1=TỪ CHỐI / ĐỎ — lý do phía trên; sửa trong task này rồi chạy lại" \
   "2=SAI THAM SỐ" \
   "4=HẾT TASK — mọi task đã [x]: chạy aw check implement" \
@@ -32,12 +36,31 @@ kq_khai task.sh \
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/task.sh"
 
-dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [T-NN] [--manual \"<bằng chứng>\"]" >&2; exit 2; }
+dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [T-NN] [--manual \"<bằng chứng>\"] · aw task reopen <thư-mục-feature> <YC-NNN|D-NN>" >&2; exit 2; }
 
 LENH="${1:-}"; DIR="${2:-}"; TASK="${3:-}"
-case "$LENH" in next|start|done) ;; *) dung ;; esac
+case "$LENH" in next|start|done|reopen) ;; *) dung ;; esac
 [ -n "$DIR" ] || dung
 PLAN="$DIR/plan.md"; KQ="$DIR/task-results.md"
+
+# ---------------------------------------------------------------- reopen
+# Trước kiểm plan.md: đổi YC khi chưa có plan là chuyện thường — không có task nào phải làm lại.
+if [ "$LENH" = reopen ]; then
+  [ $# -eq 3 ] || dung
+  case "$TASK" in YC-[0-9]*|D-[0-9]*) ;; *) dung ;; esac
+  if [ ! -f "$PLAN" ]; then echo "Chưa có plan.md — không task nào phải làm lại vì $TASK."; exit 0; fi
+  ds=$(tk_phu "$PLAN" "$TASK")
+  if [ -z "$ds" ]; then echo "Không task nào trong plan.md phủ $TASK — không có gì để làm lại."; exit 0; fi
+  printf '%s\n' "$ds" | while IFS='|' read -r t s; do
+    case "$s" in
+      " ") echo "$t: đã ở [ ]" ;;
+      *) tk_dat "$PLAN" "$t" " " || { echo "LỖI: không ghi được ô Status của $t." >&2; exit 1; }
+         echo "$t: [$s] → [ ]" ;;
+    esac
+  done || exit 1
+  exit 0
+fi
+
 [ -f "$PLAN" ] || { echo "LỖI: không tìm thấy $PLAN" >&2; exit 2; }
 
 MAX_RED_RUNS=3

@@ -74,7 +74,7 @@ flowchart TD
 | `/aw-implement` | `plan.md` → diff | test và quét bảo mật **xanh** (máy tự chạy), mọi task có bằng chứng | — |
 | `/aw-review` | mọi artifact + diff → `review.md` | từng YC có kết luận; không còn cảnh báo; kết quả còn mới so với code | xác nhận kết luận |
 | `/aw-ship` | `review.md` → MR/PR | review đạt, không còn `Blocker` | chọn nhánh đích, merge |
-| `/aw-clarify` | — | — | trả lời điểm mù, phân xử phát hiện checker LLM (từng mục, có phương án đề xuất) |
+| `/aw-clarify [YC-NNN]` | — | — | trả lời điểm mù, phân xử phát hiện checker LLM (từng mục, có phương án đề xuất); có `YC-NNN`: đổi một YC bạn không đồng ý (ghi thành điểm mù đã trả lời) |
 | `/aw-bootstrap` | repo, CI, `git log` → `AGENTS.md`, `Makefile`, `ARCHITECTURE.md`, ADR có sẵn (một lần, trong worktree `chore`) | `aw conventions check`, `aw adr check`, `aw rule check` | trả lời câu hỏi trong báo cáo, mở PR |
 
 - **Không có phase test riêng** — test là điều kiện ra của `implement`: chưa xanh là chưa xong.
@@ -297,6 +297,7 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 | `aw conventions check` | Kiểm `conventions.md` |
 | `aw check <tên> <thư-mục-feature>` | Checker máy: `intake spec design plan implement review repro perf security ship` |
 | `aw task next\|start\|done <thư-mục-feature> [T-NN]` | Trạng thái task do máy giữ |
+| `aw task reopen <thư-mục-feature> <YC-NNN\|D-NN>` | YC vừa đổi / D-xx mở lại: chỉ task phủ nó về `[ ]` |
 | `aw journal` · `aw journal add <lớp> "<mô tả>"` | Nhật ký harness: checker trượt ở đâu, loại lỗi lặp lại |
 | `aw worktree new\|status\|remove …` | Đề xuất / tạo / dọn worktree |
 | `aw ship targets\|create\|status\|sweep …` | Gửi MR/PR, theo dõi, dọn việc đã merge |

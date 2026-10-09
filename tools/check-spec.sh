@@ -5,6 +5,7 @@
 #
 # Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
 #            YC "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
+#            Nhãn `[FILE]` open-questions.md § YC-NNN mà mục đó không có (hay chưa answered).
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -169,6 +170,8 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
     so_nguon[cur]++
     dong = $0
     sub(/^[^:]*:[ \t]*/, "", dong)
+    # Nhãn trỏ vào câu trả lời trong open-questions.md (/aw-clarify) thì mục đó phải có thật.
+    if (match(dong, /open-questions\.md[^Y]*YC-[0-9]+/)) { p = substr(dong, RSTART, RLENGTH); match(p, /YC-[0-9]+/); tro_oq[cur] = substr(p, RSTART, RLENGTH) }
     if (match(dong, /\[[^]]+\]/)) {
       nhan[cur] = substr(dong, RSTART + 1, RLENGTH - 2)
     } else {
@@ -240,6 +243,14 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
               "(blocking | review-blocking | non-blocking).")
         else if (!(muc_ch[c] in mc_hop_le))
           loi(c ": \"Blocking: " muc_ch[c] "\" không hợp lệ. Chỉ chấp nhận: blocking | review-blocking | non-blocking")
+      }
+      if (t == "FILE" && (c in tro_oq)) {
+        q = tro_oq[c]
+        if (!(q in co_muc))
+          loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng không có mục \"## " q "\". " \
+              "Câu trả lời của người phải được ghi ở đó (/aw-clarify).")
+        else if (tt_oq[q] != "answered" && q != c)
+          loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng mục đó chưa \"answered\".")
       }
       dem_nhan[t]++
     }

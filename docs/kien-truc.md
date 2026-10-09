@@ -336,8 +336,8 @@ phép rỗng. `tdd.md` là output duy nhất (tách file quyết định thì ha
 
 - **Mode 2 chống neo**: agent đưa phương án trước thì người neo vào nó. `Risk: high` → người phác
   D-xx trước, agent chỉ phản biện; chưa có bản phác → chặn.
-- **Mở lại**: đúng một D, sửa tại chỗ (git giữ lịch sử), bỏ tick + `Reopen reason:`; grep
-  `Based on: D-xx` ra task bị ảnh hưởng, chỉ chúng về `[ ]`.
+- **Mở lại**: đúng một D, sửa tại chỗ (git giữ lịch sử), bỏ tick + `Reopen reason:`;
+  `aw task reopen <dir> D-xx` đưa task `Based on` D đó về `[ ]`, chỉ chúng.
 - **`plan` tách khỏi `tdd.md`**: plan là ranh giới do **phiên khác** đặt cho `implement`, và tick
   task không được sửa vào thiết kế đã duyệt.
 
@@ -353,6 +353,15 @@ task đứng trên giả định hơn), hỏi từng mục với phương án ag
 thoại **là** gate người của điểm mù; dấu vết ở `Answer:` (ai, ngày, nguyên văn). Spec đã tick mà bị
 sửa theo câu trả lời thì bỏ tick, người tick lại — máy không phân biệt "sửa người vừa xác nhận" với
 "sửa người chưa thấy".
+
+**Người đổi YC đã có nguồn** đi cùng đường điểm mù (`/aw-clarify YC-NNN`): ghi thành mục `answered`
+trong `open-questions.md` (cách hiểu cũ ở `Assumption`, lời người ở `Answer`), YC đổi nhãn sang
+`[FILE] open-questions.md § YC-NNN`. Không thêm nhãn nguồn thứ sáu; checker spec chặn nhãn
+trỏ vào `open-questions.md § YC-NNN` mà mục đó không có — chính xác nên chặn. Sửa thẳng `spec.md` thì nhãn cũ
+(`[CONFLUENCE]`…) nói dối về nguồn và không máy nào bắt. Thêm/bỏ YC là đổi phạm vi → `[HUMAN]` trong
+`intake.md`, chạy lại spec. Lan xuống dưới: `based_on` chỉ biết *file* đã đổi, nên `aw task reopen`
+đưa đúng task `Covers`/`On assumption` YC đó (hay `Based on` D đó) về `[ ]` — máy làm, khỏi để agent
+grep tay và sót.
 
 **Gộp ở chỗ người nhìn, không gộp chỗ lưu**: điểm mù và phát hiện LLM ở file riêng (mỗi file một
 bên ghi, checker LLM ghi đè cả file, `based_on` băm cả file — chung file thì checker ghi phát hiện
