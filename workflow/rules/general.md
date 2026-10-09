@@ -43,10 +43,10 @@ Never delete a previous phase's artifact. Re-running a phase = **update** (the h
 - Short sentences, plain words. No hedging, no repetition, no explaining the obvious.
 - Syntax required by templates/checkers stays as is.
 
-## 7. Repo-specific rules
+## 7. Repo-specific rules, skills and subagents
 
-Declared under `rules_<phase>` in `conventions.md` (files committed in the repo).
+Declared in `conventions.md`: `rules_<phase>` = files to **read**; `uses_<phase>` = skills / subagents to **invoke** (`skill:<name>`, `agent:<name>`). All committed in the repo.
 
-- **At phase start:** run `aw rules <phase>`, read **every file** it prints (including `SKILL.md` — read it as a normal document). Prints nothing = none. `KHAI SAI` → stop, ask the human to fix `conventions.md`; do not guess a replacement.
-- **Priority:** repo rules rank **below** `spec.md`, `tdd.md`, `plan.md` and the workflow rules. On conflict follow the artifact and report the conflict (`04-implement`: "Unplanned"). Never leave the phase scope because of a repo rule.
-- **`05-review`** checks the diff against every rule file, one verdict per file in `review.md`.
+- **At phase start:** run `aw rules <phase>`, read **every file** it prints (a `SKILL.md` listed there is read as a normal document). Then run `aw uses <phase>` and invoke each entry as your command describes. Prints nothing = none. `KHAI SAI` → stop, ask the human to fix `conventions.md`; do not guess a replacement.
+- **Priority:** repo rules, skills and subagents rank **below** `spec.md`, `tdd.md`, `plan.md` and the workflow rules. On conflict follow the artifact and report the conflict (`04-implement`: "Unplanned"). Never leave the phase scope because of them.
+- **`05-review`** checks the diff against every rule file and every declared skill / subagent file (`aw rules review` prints them all), one verdict per file in `review.md`.

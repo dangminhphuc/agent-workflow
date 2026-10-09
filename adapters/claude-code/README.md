@@ -24,6 +24,7 @@ dùng bản `.cursor/`.
 | Phase `requires_fresh_agent: true` (`05-review`) | `.claude/agents/independent-reviewer.md` — subagent ngữ cảnh sạch, mang mô tả phase đầy đủ |
 | `llm_checker:` (`workflow/checkers/<id>.md`) | `.claude/agents/<id>-checker.md` |
 | `approval_gate: true` (`02-design`, `03-plan`) | Bước "Approval gate": `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
+| Khoá `uses_<phase>` của `conventions.md` (lúc chạy, không lúc build) | Bước "Repo skills & subagents": `aw uses <phase>`, gọi skill qua Skill tool, subagent qua `subagent_type` |
 | `workflow.yaml` + tóm tắt luật | `.claude/skills/agent-workflow/SKILL.md` |
 
 Mỗi lệnh phase gồm:
@@ -52,6 +53,7 @@ không sinh nhánh nào theo loại.
 | Checker LLM | Subagent `design-checker`; thiếu file phát hiện thì `aw check design` fail | Người tự chạy; không có file ≠ đạt |
 | Câu hỏi lựa chọn (`choice_ui`) | `AskUserQuestion`; "Type something" / "Chat about this" có sẵn nên không thêm vào `options` | In lựa chọn đánh số + lối tự nhập / trao đổi |
 | Hộp xác nhận cổng duyệt | `AskUserQuestion` + `preview` (file/dòng phải tick) | In ba lựa chọn đánh số |
+| Skill của team (`uses_<phase>`) | Skill tool: tham số, dòng chèn lệnh shell, `allowed-tools`, `hooks` có hiệu lực; cần quyền `Skill(<tên>)` | Đọc `SKILL.md` như tài liệu — frontmatter không có hiệu lực |
 
 Luôn portable: artifact trong `.agent-workflow/<tên-branch>/`, `conventions.md`, mẫu (chép vào
 `.agent-workflow/.engine/`), lệnh `aw check`.

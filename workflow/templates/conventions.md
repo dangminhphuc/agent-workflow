@@ -69,12 +69,20 @@ knowledge_rules_dir: docs/product/rules
 knowledge_files: */ARCHITECTURE.md
 
 # ── Repo rules (file đã commit, agent đọc qua `aw rules`) ─────────
-# [optional] vd rules_implement = docs/coding-style.md .claude/skills/x/SKILL.md
+# [optional] vd rules_implement = docs/coding-style.md src/api/ARCHITECTURE.md
 rules_spec:
 rules_design:
 rules_plan:
 rules_implement:
 rules_review:
+
+# ── Repo skills & subagents (đã commit, agent GỌI qua `aw uses`) ──
+# [optional] vd uses_implement = skill:go-senior agent:db-migrator
+uses_spec:
+uses_design:
+uses_plan:
+uses_implement:
+uses_review:
 ```
 
 ## Team conventions

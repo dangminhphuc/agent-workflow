@@ -494,15 +494,29 @@ kc_diem_mu_mo() {
 # ------------------------------------------------------------------ quy tắc riêng của repo
 # Khoá rules_<phase> trong conventions.md: danh sách file (tương đối với gốc
 # repo, cách nhau bằng dấu cách) mà phase đó phải đọc và tuân theo — hướng dẫn
-# viết code, skill của agent, chuẩn kiến trúc… Phase có khoá: BL_QUY_TAC
+# viết code, chuẩn kiến trúc… Phase có khoá: BL_QUY_TAC
 # (tools/lib/commands.sh — người gọi source trước).
+#
+# Khoá uses_<phase>: skill / subagent đã commit trong repo mà phase phải GỌI
+# (`skill:<tên>`, `agent:<tên>`) — khác rules_*: gọi qua cơ chế của agent thì
+# frontmatter của skill (allowed-tools, hook…) mới có hiệu lực. Xem kc_uses.
 #
 # Nội dung quy tắc do agent đọc; máy chỉ kiểm phần chính xác: file khai có thật,
 # đã commit (worktree mới chỉ có file đã commit), và review có kết luận cho từng file.
 
 # kc_quy_tac <thư-mục-feature> <phase> -> mỗi dòng một file, bỏ trùng, giữ thứ tự.
-# review = hợp MỌI khoá rules_*: cổng cuối đối chiếu diff với mọi quy tắc.
+# review = hợp MỌI khoá rules_*, cộng file định nghĩa của MỌI mục uses_*: cổng
+# cuối đối chiếu diff với mọi quy tắc và mọi skill / subagent đã dùng.
 kc_quy_tac() {
+  if [ "$2" = review ]; then
+    { kc_quy_tac_rules "$1" review; kc_uses "$1" '*' | cut -d' ' -f2; } | awk 'NF && !da[$0]++'
+  else
+    kc_quy_tac_rules "$1" "$2"
+  fi
+}
+
+# kc_quy_tac_rules <thư-mục-feature> <phase> -> chỉ file của khoá rules_*.
+kc_quy_tac_rules() {
   awk -v ph="$2" '
     { sub(/\r$/, "") }
     /^```conventions[ \t]*$/ { inb = 1; next }
@@ -517,41 +531,132 @@ kc_quy_tac() {
   ' "$(kc_conventions "$1")" 2>/dev/null
 }
 
-# kc_quy_tac_khoa_la <thư-mục-feature> -> khoá rules_<x> mà <x> không phải phase
-# có quy tắc (gõ nhầm thì phase không bao giờ đọc file đó).
+# kc_quy_tac_khoa_la <thư-mục-feature> -> khoá rules_<x> / uses_<x> mà <x> không
+# phải phase có quy tắc (gõ nhầm thì phase không bao giờ đọc / gọi mục đó).
 kc_quy_tac_khoa_la() {
   awk '
     { sub(/\r$/, "") }
     /^```conventions[ \t]*$/ { inb = 1; next }
     inb == 1 && /^```/ { exit }
-    inb == 1 && /^rules_[^:]*:/ { k = $0; sub(/:.*/, "", k); print k }
+    inb == 1 && /^(rules|uses)_[^:]*:/ { k = $0; sub(/:.*/, "", k); print k }
   ' "$(kc_conventions "$1")" 2>/dev/null | while IFS= read -r _k; do
+    _kt=${_k%%_*}
     case " $BL_QUY_TAC " in
-      *" ${_k#rules_} "*) ;;
-      *) echo "conventions.md: khoá \"$_k\" không ứng với phase nào (có: $(printf 'rules_%s ' $BL_QUY_TAC | sed 's/ $//'))" ;;
+      *" ${_k#*_} "*) ;;
+      *) echo "conventions.md: khoá \"$_k\" không ứng với phase nào (có: $(printf "${_kt}_%s " $BL_QUY_TAC | sed 's/ $//'))" ;;
     esac
   done
 }
 
-# kc_quy_tac_loi <thư-mục-feature> <phase> -> file quy tắc khai mà không dùng được.
+# kc_tep_repo_loi <gốc-repo> <file> <tên-hiện> <khoá> -> lý do file khai không
+# dùng được (rỗng = dùng được): ngoài repo, không có, git bỏ qua, chưa commit.
+kc_tep_repo_loi() {
+  case "$2" in
+    /*|..|../*|*/..|*/../*)
+      echo "$3: phải là đường dẫn tương đối, nằm trong repo — sửa khoá $4 trong conventions.md"
+      return 0 ;;
+  esac
+  if [ ! -f "$1/$2" ]; then
+    echo "$3: không có file này trong repo — sửa khoá $4 trong conventions.md"
+  elif git -C "$1" ls-files --error-unmatch -- "$2" >/dev/null 2>&1; then
+    :
+  elif git -C "$1" check-ignore -q -- "$2" 2>/dev/null; then
+    # vd /.claude/ — aw init exclude cả thư mục file adapter sinh ra
+    echo "$3: git đang bỏ qua file này ($(git -C "$1" check-ignore -v -- "$2" 2>/dev/null | cut -f1)) — commit bằng git add -f vào base, hoặc đặt nó ở thư mục khác"
+  else
+    echo "$3: chưa commit — worktree khác và người rà soát không có file này; commit nó vào base"
+  fi
+}
+
+# kc_quy_tac_loi <thư-mục-feature> <phase> -> file quy tắc khai mà không dùng
+# được, cộng lỗi của uses_<phase> (review: mọi uses_*).
 kc_quy_tac_loi() {
   _top=$(kc_top "$1")
-  kc_quy_tac "$1" "$2" | while IFS= read -r _f; do
-    case "$_f" in
-      /*|..|../*|*/..|*/../*)
-        echo "quy tắc repo \"$_f\": phải là đường dẫn tương đối, nằm trong repo — sửa khoá rules_* trong conventions.md"
-        continue ;;
-    esac
-    if [ ! -f "$_top/$_f" ]; then
-      echo "quy tắc repo \"$_f\": không có file này trong repo — sửa khoá rules_* trong conventions.md"
-    elif git -C "$_top" ls-files --error-unmatch -- "$_f" >/dev/null 2>&1; then
-      :
-    elif git -C "$_top" check-ignore -q -- "$_f" 2>/dev/null; then
-      # vd /.claude/ — aw init exclude cả thư mục file adapter sinh ra
-      echo "quy tắc repo \"$_f\": git đang bỏ qua file này ($(git -C "$_top" check-ignore -v -- "$_f" 2>/dev/null | cut -f1)) — commit bằng git add -f vào base, hoặc đặt nó ở thư mục khác"
-    else
-      echo "quy tắc repo \"$_f\": chưa commit — worktree khác và người rà soát không có file này; commit nó vào base"
+  kc_quy_tac_rules "$1" "$2" | while IFS= read -r _f; do
+    kc_tep_repo_loi "$_top" "$_f" "quy tắc repo \"$_f\"" 'rules_*'
+  done
+  kc_uses_loi "$1" "$2"
+}
+
+# ------------------------------------------------------------------ skill / subagent của repo
+# Mục của uses_<phase>: `skill:<tên>` hoặc `agent:<tên>`; tên theo chuẩn Agent
+# Skills (a-z 0-9 nối bằng "-"). File định nghĩa tìm trong repo theo thứ tự
+# .claude/ rồi .cursor/ (Cursor nạp cả .claude/, nên một bản dùng chung được).
+# Skill / subagent cài theo máy hay qua plugin không kiểm được — không nhận.
+
+# kc_uses_muc <thư-mục-feature> <phase|*> -> mỗi dòng một mục đã khai, bỏ trùng.
+kc_uses_muc() {
+  awk -v ph="$2" '
+    { sub(/\r$/, "") }
+    /^```conventions[ \t]*$/ { inb = 1; next }
+    inb == 1 && /^```/ { exit }
+    inb == 1 && /^uses_[a-z]+:/ {
+      k = $0; sub(/:.*/, "", k); sub(/^uses_/, "", k)
+      if (ph != "*" && k != ph) next
+      v = $0; sub(/^[^:]*:/, "", v)
+      n = split(v, ds, /[ \t]+/)
+      for (i = 1; i <= n; i++) if (ds[i] != "" && !(ds[i] in da)) { da[ds[i]] = 1; print ds[i] }
+    }
+  ' "$(kc_conventions "$1")" 2>/dev/null
+}
+
+# kc_uses_tep <gốc-repo> <mục> -> file định nghĩa đầu tiên có trong repo (rỗng: không có).
+kc_uses_tep() {
+  _ut_ten=${2#*:}
+  case "$2" in
+    skill:*) _ut_ds=".claude/skills/$_ut_ten/SKILL.md .cursor/skills/$_ut_ten/SKILL.md" ;;
+    agent:*) _ut_ds=".claude/agents/$_ut_ten.md .cursor/agents/$_ut_ten.md" ;;
+    *) return 0 ;;
+  esac
+  for _ut_f in $_ut_ds; do
+    if [ -f "$1/$_ut_f" ]; then echo "$_ut_f"; return 0; fi
+  done
+}
+
+# kc_uses <thư-mục-feature> <phase|*> -> "<mục> <file>" cho mỗi mục tìm được file.
+kc_uses() {
+  _u_top=$(kc_top "$1")
+  kc_uses_muc "$1" "$2" | while IFS= read -r _u_m; do
+    _u_f=$(kc_uses_tep "$_u_top" "$_u_m")
+    if [ -n "$_u_f" ]; then echo "$_u_m $_u_f"; fi
+  done
+}
+
+# kc_uses_loi <thư-mục-feature> <phase> -> mục uses_* không dùng được
+# (review: mọi uses_*, vì review đối chiếu diff với tất cả).
+kc_uses_loi() {
+  _ul_top=$(kc_top "$1"); _ul_ph=$2
+  [ "$_ul_ph" = review ] && _ul_ph='*'
+  kc_uses_muc "$1" "$_ul_ph" | while IFS= read -r _ul_m; do
+    if ! printf '%s\n' "$_ul_m" | grep -Eq '^(skill|agent):[a-z0-9]+(-[a-z0-9]+)*$'; then
+      case "$_ul_m" in
+        skill:*:*|agent:*:*)
+          echo "uses \"$_ul_m\": tên có dấu \":\" (skill / subagent của plugin) — máy không kiểm được thứ cài theo máy; chép nó vào .claude/skills/ hoặc .claude/agents/ của repo, commit, rồi khai tên đó" ;;
+        *)
+          echo "uses \"$_ul_m\": sai dạng — chỉ nhận skill:<tên> hoặc agent:<tên>, tên gồm a-z 0-9 nối bằng \"-\"; sửa khoá uses_* trong conventions.md" ;;
+      esac
+      continue
     fi
+    _ul_f=$(kc_uses_tep "$_ul_top" "$_ul_m")
+    if [ -z "$_ul_f" ]; then
+      case "$_ul_m" in
+        skill:*) echo "uses \"$_ul_m\": không có .claude/skills/${_ul_m#*:}/SKILL.md (hay .cursor/skills/…) trong repo — thêm skill vào repo và commit, hoặc sửa khoá uses_* trong conventions.md" ;;
+        *) echo "uses \"$_ul_m\": không có .claude/agents/${_ul_m#*:}.md (hay .cursor/agents/…) trong repo — thêm subagent vào repo và commit, hoặc sửa khoá uses_* trong conventions.md" ;;
+      esac
+      continue
+    fi
+    kc_tep_repo_loi "$_ul_top" "$_ul_f" "uses \"$_ul_m\" ($_ul_f)" 'uses_*'
+    case "$_ul_m" in
+      skill:*)
+        # Skill khoá model (chỉ người gõ /<tên>): agent không gọi được, phase sẽ kẹt.
+        if awk '{ sub(/\r$/, "") }
+                NR == 1 && !/^---[ \t]*$/ { exit }
+                NR > 1 && /^---[ \t]*$/ { exit }
+                /^disable-model-invocation:[ \t]*true[ \t]*$/ { co = 1; exit }
+                END { exit !co }' "$_ul_top/$_ul_f" 2>/dev/null; then
+          echo "uses \"$_ul_m\" ($_ul_f): skill khai disable-model-invocation: true — agent không gọi được; bỏ dòng đó, hoặc chuyển file sang rules_* để agent chỉ đọc"
+        fi ;;
+    esac
   done
 }
 

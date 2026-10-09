@@ -16,7 +16,7 @@
 #   - giá trị sai dạng: mr_platform, type_by_prefix (cặp, loại, khớp branch_patterns),
 #     regex không biên dịch được hoặc dùng {n}, worktree_dir thiếu {ten} / nằm trong repo
 #   - knowledge_adr_dir, knowledge_rules_dir tuyệt đối, có "..", hay nằm trong .agent-workflow/
-#   - base_branch không có (local lẫn origin); file khai ở rules_* không dùng được
+#   - base_branch không có (local lẫn origin); file khai ở rules_* hay mục uses_* không dùng được
 #
 # Cảnh báo (!) — chạy được nhưng nhiều khả năng chưa đúng ý:
 #   - quy ước chưa commit vào repo đích (chỉ ở bản clone) — gợi ý cách chuyển
@@ -58,7 +58,7 @@ echo "Kiểm $QU_NGUON"
 [ -z "$QU_MAY" ] || echo "  bản clone ghi đè: $QU_MAY (chỉ khoá: $QU_KHOA_MAY)"
 [ -f "$CHINH_F" ] || { loi "không có file — tạo $QU_DUONG_DAN trong repo (aw init tạo từ mẫu) rồi commit"; exit 1; }
 
-# Khoá máy biết: khoá trong mẫu của engine, cộng rules_<phase> của mọi phase.
+# Khoá máy biết: khoá trong mẫu của engine, cộng rules_<phase>, uses_<phase> của mọi phase.
 khoa_mau() {
   awk '
     { sub(/\r$/, "") }
@@ -67,7 +67,7 @@ khoa_mau() {
     inb == 1 && /^[a-z][a-z0-9_]*:/ { k = $0; sub(/:.*/, "", k); print k }
   ' "$1"
 }
-BIET=" $(khoa_mau "$MAU" | tr '\n' ' ')$(printf 'rules_%s ' $BL_QUY_TAC)"
+BIET=" $(khoa_mau "$MAU" | tr '\n' ' ')$(printf 'rules_%s ' $BL_QUY_TAC)$(printf 'uses_%s ' $BL_QUY_TAC)"
 
 # ---- cấu trúc: khối, từng dòng, khoá lạ, khoá trùng ----
 CT=$(awk -v biet="$BIET" '

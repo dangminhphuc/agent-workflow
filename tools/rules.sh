@@ -5,7 +5,8 @@
 #
 # Nguồn: khoá rules_<phase> trong conventions.md của bản clone. Đọc lúc chạy,
 # không chép vào lệnh của agent lúc `aw adapter build` — sửa conventions.md là có
-# hiệu lực ngay, không phải build lại. review = hợp mọi khoá rules_*.
+# hiệu lực ngay, không phải build lại. review = hợp mọi khoá rules_*, cộng file
+# định nghĩa của mọi skill / subagent khai ở uses_* (tools/uses.sh).
 #
 # Stdout là DỮ LIỆU: mỗi dòng một đường dẫn (tương đối với gốc repo). Không in
 # gì = phase này không có quy tắc riêng. Lỗi khai báo in ra stderr.
@@ -16,7 +17,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai rules.sh \
   "0=ĐÃ LIỆT KÊ — đọc từng file in ra (không in gì = không có quy tắc riêng)" \
-  "1=KHAI SAI — sửa khoá rules_* trong conventions.md, lý do phía trên" \
+  "1=KHAI SAI — sửa khoá rules_* / uses_* trong conventions.md, lý do phía trên" \
   "2=SAI THAM SỐ"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"

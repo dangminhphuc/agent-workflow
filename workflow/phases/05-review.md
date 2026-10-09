@@ -55,7 +55,7 @@ Go through **every** `YC-NNN`: which code satisfies it, verdict `pass` / `fail` 
 - "Unplanned" items handled silently instead of reported?
 - Manually verified tasks (`task-results.md`): does the evidence really prove the task is done?
 
-**Repo rules** (`aw rules review` — all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved D-xx that breaks a rule → `not applicable`, name the D.
+**Repo rules** (`aw rules review` — every `rules_*` file plus every `uses_*` skill / subagent file, all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved D-xx that breaks a rule → `not applicable`, name the D.
 
 **Durable knowledge**: for each module doc / ADR / rule file whose scope the diff touches (`aw check review` lists them), one row in `## Durable knowledge`: `pass` (read it, still true) / `updated` (changed in this diff) / `not applicable` (+ reason). A doc the change makes wrong and nobody updated → `Should fix` in Lens 3.
 

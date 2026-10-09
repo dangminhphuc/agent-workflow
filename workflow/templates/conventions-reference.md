@@ -177,3 +177,24 @@ Phase: `spec` `design` `plan` `implement` `review`. Giá trị là danh sách fi
   trước khi thiết kế / viết code.
 - Quy tắc repo xếp dưới `spec.md`, `tdd.md`, `plan.md` và luật quy trình. Quy tắc máy
   kiểm được (lint, type, kiến trúc) nên đưa vào `TEST_CMD` thay vì viết thành văn.
+- Khai `SKILL.md` ở đây thì agent chỉ **đọc** nó. Muốn agent **gọi** skill (để tham số,
+  `allowed-tools`, hook của skill có hiệu lực): dùng `uses_<phase>`.
+
+### `uses_<phase>`
+Phase: như `rules_<phase>`. Giá trị là danh sách mục `skill:<tên>` hoặc `agent:<tên>`, vd
+`uses_implement: skill:go-senior agent:db-migrator`. Hướng dẫn từng bước: README, mục "Skill,
+subagent của team cho từng phase".
+- Agent lấy danh sách bằng `aw uses <phase>` (mỗi dòng `<mục> <file>`) và **gọi** từng mục
+  trước việc đầu tiên: Claude Code qua Skill tool / `subagent_type`; Cursor không có tool gọi
+  skill thì đọc file. Đọc lúc chạy, không cần build lại adapter — như `rules_*`.
+- `<tên>`: `a-z 0-9` nối bằng `-`, trùng `name` của skill / subagent. File tìm trong repo theo
+  thứ tự `.claude/` rồi `.cursor/`: skill `<gốc>/skills/<tên>/SKILL.md`, subagent
+  `<gốc>/agents/<tên>.md`.
+- Máy chặn (`aw uses`, `aw check` của phase, `aw conventions check`): mục sai dạng; tên có `:`
+  (skill / subagent của plugin — chép vào repo); file không có, chưa commit hay bị git bỏ qua
+  (`/.claude/` bị exclude: `git add -f`); skill khai `disable-model-invocation: true`; phase
+  gõ nhầm (vd `uses_spek`).
+- `review`: `aw uses review` chỉ in `uses_review` (skill gọi lúc rà soát). `aw rules review`
+  in thêm file định nghĩa của **mọi** mục `uses_*` — `review.md` phải có kết luận cho từng file.
+- Máy không kiểm được agent đã gọi thật hay chưa; review là lưới cuối. Skill / subagent xếp
+  dưới `spec.md`, `tdd.md`, `plan.md` như quy tắc repo.

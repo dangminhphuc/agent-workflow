@@ -26,6 +26,7 @@
 #   aw adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]   bỏ trống agent = ADAPTER trong config.sh
 #   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw rename <branch>
 #   aw rules <phase>                       phase: spec design plan implement review
+#   aw uses <phase>                        skill / subagent của repo mà phase phải gọi (khoá uses_<phase>)
 #   aw knowledge spec|design <feature-dir> kiến thức bền phase phải đọc: luật BR-, chỉ mục ADR, ADR, tài liệu module
 #   aw adr promote <feature-dir> D-NN      chép D-NN đã duyệt (Promote: adr) thành ADR trong worktree
 #   aw adr check                           kiểm hình thức thư mục ADR và chỉ mục
@@ -45,7 +46,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.21"
+AW_WRAPPER_VERSION="2026.10.22"
 AW_PROTOCOL=1
 AW_MIRROR_DEFAULT="https://github.com/dangminhphuc/agent-workflow/releases/download"
 
@@ -424,7 +425,7 @@ case "$LENH" in
     can_repo
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" ship "$@" ;;
-  feature|input|rename|worktree|adapter|rules|conventions|guard|journal)
+  feature|input|rename|worktree|adapter|rules|uses|conventions|guard|journal)
     can_repo
     _v=$(version_viec) || exit $?
     chuyen "$_v" "$LENH" "$@" ;;
