@@ -1,13 +1,17 @@
 # Review — <TÊN TÍNH NĂNG>
 
-> Sinh bởi phase `05-review`, chạy bằng ngữ cảnh sạch.
-
 <!-- Tree của code đã rà: chép dòng "- Tree:" trong test-results.md (máy đã kiểm
      nó khớp code hiện tại). Code đổi sau khi rà thì máy chặn — rà lại. -->
 - Reviewed tree: `<sha>`
 <!-- Chỉ khi diff đụng sensitive_code: NGƯỜI rà bảo mật tự ghi tên sau khi đọc
      Lens 4 và diff. Agent không điền. Không đụng: xoá dòng này. -->
 - Security reviewer: <tên người>
+
+## Conclusion
+
+- Mergeable: <no / yes after fixing Blockers>
+- Blocker findings: <n>   <!-- phải bằng số mục [Blocker] ở Lens 3 -->
+- Summary: <1–3 câu: kết luận chính, việc người cần làm>
 
 ## Lens 1 — Spec conformance
 
@@ -97,14 +101,3 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 | SSRF / path traversal / deserialization | <...> | <...> |
 | New dependencies | <...> | <...> |
 
-## Carried-over warnings
-
-Lỗi "Cảnh báo chưa xử lý" từ `aw check review` (YC chưa có test, diff ngoài
-phạm vi, artifact lỗi thời). Còn mục nào thì review không đạt.
-
-- <...>
-
-## Conclusion
-
-- Blocker findings: <n>   <!-- phải bằng số mục [Blocker] ở Lens 3 -->
-- Mergeable: <no / yes after fixing Blockers>

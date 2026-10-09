@@ -20,7 +20,7 @@
 # Trong nhóm điểm mù: YC "must" trước "should", rồi nhiều task trong plan.md
 # đứng trên giả định tạm hơn thì trước, rồi thứ tự trong file. Trong nhóm phát
 # hiện: thứ tự trong file.
-# Mục đã xong (điểm mù `answered`, phát hiện `đã sửa` / `bác bỏ: <lý do>`) chỉ
+# Mục đã xong (điểm mù `answered`, phát hiện `fixed` / `rejected: <lý do>`) chỉ
 # được đếm; phát hiện đã xong được liệt kê một dòng để người thấy agent đã tự
 # xử lý gì.
 #
@@ -38,6 +38,7 @@ kq_khai pending.sh \
   "2=THIẾU ĐẦU VÀO — chưa có file cần đọc"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
+. "$HERE/lib/findings.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -65,7 +66,7 @@ PL="$PLAN"; [ -f "$PL" ] || PL=/dev/null
 set -- "$OQ" "$SPEC" "$PL"
 for _ph in "$DIR"/*-findings.md; do [ -f "$_ph" ] && set -- "$@" "$_ph"; done
 
-awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
+awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
   function co_nd(v) { return (v != "" && v !~ /^<.*>$/) }
   function ten_file(p) { sub(/^.*\//, "", p); return p }
@@ -114,11 +115,12 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
   }
   idx==4 && /^##?#?[ \t]/ { cur = ""; next }
   idx==4 && cur != "" && /^[ \t]*-/ {
-    if ($0 ~ /Mức[^:]*:/)          ph_muc[cur] = gia_tri($0)
-    else if ($0 ~ /Loại[^:]*:/)    ph_loai[cur] = gia_tri($0)
-    else if ($0 ~ /Vị trí[^:]*:/)  ph_vt[cur] = gia_tri($0)
-    else if ($0 ~ /Vấn đề[^:]*:/)  ph_vd[cur] = gia_tri($0)
-    else if ($0 ~ /Xử lý[^:]*:/)   ph_xl[cur] = gia_tri($0)
+    t = ph_truong($0)
+    if (t == "muc")       ph_muc[cur] = ph_chuan_muc(gia_tri($0))
+    else if (t == "loai") ph_loai[cur] = gia_tri($0)
+    else if (t == "vt")   ph_vt[cur] = gia_tri($0)
+    else if (t == "vd")   ph_vd[cur] = gia_tri($0)
+    else if (t == "xl")   ph_xl[cur] = ph_chuan_xl(gia_tri($0))
     next
   }
 
@@ -127,7 +129,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
     nhom[3] = "REVIEW-BLOCKING"; nhom[4] = "PHÁT HIỆN — CẢNH BÁO"; nhom[5] = "NON-BLOCKING"
     mo_ta[0] = "điểm mù thiếu hoặc sai \"Blocking\" — checker của spec chặn; NGƯỜI gán: blocking | review-blocking | non-blocking"
     mo_ta[1] = "điểm mù: sai giả định thì cả thiết kế đổi hướng — chặn /" csp
-    mo_ta[2] = "phát hiện của checker LLM, NGƯỜI phân xử: đồng ý (sửa → đã sửa) hoặc bác bỏ kèm lý do"
+    mo_ta[2] = "phát hiện của checker LLM, NGƯỜI phân xử: đồng ý (sửa → fixed) hoặc bác bỏ (rejected: <lý do>)"
     mo_ta[3] = "điểm mù: flow đi tiếp trên giả định tạm; /aw-review chặn tới khi có câu trả lời"
     mo_ta[4] = "phát hiện của checker LLM, không chặn — vẫn nên phân xử trước khi phase sau dựa vào"
     mo_ta[5] = "điểm mù: giao được trên giả định tạm; review ghi YC đó \"pending\""
@@ -153,9 +155,8 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
 
     for (i = 1; i <= n_ph; i++) {
       p = ds_ph[i]; x = ph_xl[p]
-      r = x; sub(/^bác bỏ[ \t]*[—:-]?[ \t]*/, "", r)
-      if (x == "đã sửa" || (x ~ /^bác bỏ/ && co_nd(r))) { ph_xong[++n_ph_xong] = p; continue }
-      g = (ph_muc[p] == "Chặn") ? 2 : 4
+      if (ph_xong(x)) { ph_dong[++n_ph_xong] = p; continue }
+      g = (ph_muc[p] == "block") ? 2 : 4
       k = sprintf("%d 0 0000 %04d", g, i)
       khoa[++n_mo] = k; ma_k[k] = p; nh[p] = g; n_phmo++
       dem[g]++
@@ -189,10 +190,10 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
       dc = (q in dang_chan) ? (dang_chan[q] == "?" ? "   ← ĐANG CHẶN" : "   ← ĐANG CHẶN /aw-" dang_chan[q]) : ""
       if (g == 2 || g == 4) {
         printf "  %d. %s%s%s\n", i, ph_ma[q], (ph_ten[q] != "" ? " — " ph_ten[q] : ""), dc
-        printf "     Nguồn: %s · Loại: %s · Vị trí: %s\n", ph_nguon[q], \
+        printf "     Nguồn: %s · Category: %s · Location: %s\n", ph_nguon[q], \
           (co_nd(ph_loai[q]) ? ph_loai[q] : "?"), (co_nd(ph_vt[q]) ? ph_vt[q] : "?")
-        printf "     Vấn đề: %s\n", (co_nd(ph_vd[q]) ? ph_vd[q] : "<chưa ghi>")
-        printf "     Xử lý hiện tại: %s\n", (ph_xl[q] == "" ? "<trống>" : ph_xl[q])
+        printf "     Problem: %s\n", (co_nd(ph_vd[q]) ? ph_vd[q] : "<chưa ghi>")
+        printf "     Resolution: %s\n", (ph_xl[q] == "" ? "<trống>" : ph_xl[q])
         continue
       }
       printf "  %d. %s%s%s\n", i, q, (ten[q] != "" ? " — " ten[q] : ""), dc
@@ -206,7 +207,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" '
     if (n_ph_xong) {
       print ""
       print "[ĐÃ XỬ LÝ] phát hiện đã đóng — người chưa chắc đã xem; nêu trong tổng kết"
-      for (i = 1; i <= n_ph_xong; i++) { p = ph_xong[i]; printf "  - %s (%s) — %s: %s\n", ph_ma[p], ph_nguon[p], ph_ten[p], ph_xl[p] }
+      for (i = 1; i <= n_ph_xong; i++) { p = ph_dong[i]; printf "  - %s (%s) — %s: %s\n", ph_ma[p], ph_nguon[p], ph_ten[p], ph_xl[p] }
     }
 
     print ""

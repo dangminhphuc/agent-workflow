@@ -12,7 +12,7 @@
 #   5. "Based on: D-xx" trỏ về D không tồn tại.
 #   6. Mục "YC mapping" bỏ sót YC của spec, hoặc trỏ về YC không có.
 #   7. Mode 2: spec "Risk: high" mà không có D-xx nào do người viết.
-#   8. Checker LLM: chưa có design-findings.md, hoặc còn phát hiện mức Chặn chưa xử lý.
+#   8. Checker LLM: chưa có design-findings.md, hoặc còn phát hiện `block` chưa xử lý (tools/lib/findings.sh).
 #   9. File khai ở rules_design (conventions.md) không có hoặc chưa commit.
 #  10. D-xx: "Promote:" khác adr | no; Promote: adr thiếu Scope; Supersedes sai dạng, trỏ về
 #      ADR không có hoặc không còn accepted, hay thay ADR mà không nâng ADR mới.
@@ -35,6 +35,7 @@ kq_khai check-design.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/findings.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -93,7 +94,7 @@ DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 
 PHF="$PH"; PH_THIEU=0
 [ -f "$PH" ] || { PH_THIEU=1; PHF=/dev/null; }
 
-awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
+awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function gia_tri(s) {
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
@@ -170,8 +171,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
   # ---- File 3: design-findings.md (có thể là /dev/null) ----
   idx==3 {
     if ($0 ~ /^###[ \t]+PH-[0-9]+/) { match($0, /PH-[0-9]+/); ph = substr($0, RSTART, RLENGTH); ds_ph[++n_ph] = ph; ph_muc[ph] = ""; ph_xl[ph] = "" }
-    if (ph != "" && $0 ~ /Mức[^:]*:/) ph_muc[ph] = gia_tri($0)
-    if (ph != "" && $0 ~ /Xử lý[^:]*:/) ph_xl[ph] = gia_tri($0)
+    if (ph != "" && ph_truong($0) == "muc") ph_muc[ph] = ph_chuan_muc(gia_tri($0))
+    if (ph != "" && ph_truong($0) == "xl") ph_xl[ph] = ph_chuan_xl(gia_tri($0))
     next
   }
 
@@ -211,12 +212,11 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
     } else {
       for (i = 1; i <= n_ph; i++) {
         p = ds_ph[i]
-        if (ph_muc[p] != "Chặn") continue
+        if (ph_muc[p] != "block") continue
         x = ph_xl[p]
-        if (x == "đã sửa") continue
-        if (x ~ /^bác bỏ/) { r = x; sub(/^bác bỏ[ \t]*[—:-]?[ \t]*/, "", r); if (r != "" && r !~ /^<.*>$/) continue
-          loi(p ": bác bỏ phát hiện mức Chặn mà không có lý do"); continue }
-        loi(p ": phát hiện mức Chặn chưa xử lý (Xử lý: " (x == "" ? "trống" : x) ")")
+        if (ph_xong(x)) continue
+        if (ph_bac_khong_ly_do(x)) { loi(p ": Severity block bị rejected mà không có lý do"); continue }
+        loi(p ": phát hiện Severity block chưa xử lý (Resolution: " (x == "" ? "trống" : x) ")")
       }
     }
 
@@ -225,7 +225,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" '
     for (i = 1; i <= n_d; i++) printf "  %-6s %s (Author: %s)\n", ds_d[i], d_tt[ds_d[i]], d_tg[ds_d[i]]
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
-    print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện Chặn."
+    print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện block chưa xử lý."
     print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Approved by human\"). /aw-plan sẽ chặn nếu còn D chưa duyệt."
   }
 ' "$SPEC" "$TDD" "$PHF"

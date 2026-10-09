@@ -31,18 +31,9 @@ requires_fresh_agent: true
 
 ## Goal
 
-Verify **independently** that the diff does what `spec.md` asks, follows the approved `tdd.md`, and stays within `plan.md`. Not a syntax review (linters do that). This is the **final gate**: every warning from earlier phases blocks here.
+Verify **independently** that the diff does what `spec.md` asks, follows the approved `tdd.md`, and stays within `plan.md`. Not a syntax review (linters do that). This is the **final gate**: every warning from earlier phases blocks here. The diff is against the **base in `intake.md`**.
 
-## Clean context — mandatory
-
-Never run by the agent that just implemented.
-
-| Agent | How |
-|---|---|
-| Has subagents | Run in a blank-context subagent |
-| Has none | Open a new session, load only the input files + diff |
-
-If the adapter cannot enforce this, it must tell the human to open a new session.
+**Clean context — mandatory:** never run by the agent that implemented. No subagents → a new session loading only the input files + diff.
 
 ## Four lenses — separate, never mixed
 
@@ -94,39 +85,24 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 
 | Type | Do |
 |---|---|
-| `bugfix` | Read `repro.md`: the test is red **because of the bug** (not a compile error/missing function). Write `Repro test fails because: <quoted output>` (missing → block) |
+| `bugfix` | Read `repro.md`: the test is red **because of the bug** (not a compile error/missing function). Write `Repro test fails because: <quoted output>` |
 | `refactor`/`perf` | For each file in "Modified existing tests": the diff only changes imports/structure, **no assertion changes** |
 | `perf` | Read `perf.md`, judge the performance YC by the numbers, allowing for noise |
 | `chore` | The `patch \| minor` level in "Dependency upgrades" is right (major = separate refactor) |
-
-## Output
-
-`review.md` per `templates/review.md`. `- Reviewed tree:` = the `Tree` line of `test-results.md`; code changed after review → machine blocks, review again.
 
 ## Forbidden
 
 - "Looks fine" reviews — not going through every `YC-NNN` = not run.
 - **Editing code.** Fixes go back to `04-implement` as new tasks.
-- Raising a style remark to `Blocker`.
+- Raising a style remark to `Blocker`; downgrading an exploitable vulnerability to `Should fix` as "unlikely".
 - `pass` for a YC on an unconfirmed assumption.
 - Filling in `Security reviewer` — not even with the name of the person chatting with you.
-- `not applicable` for the whole Lens 4 table without reading the diff; downgrading an exploitable vulnerability to `Should fix` as "unlikely".
+- `not applicable` for the whole Lens 4 table without reading the diff.
 
-## Exit conditions
+## Common failures
 
-**Machine:** `aw check review` → `[x] ĐẠT`:
-- every `YC-NNN` has a valid verdict, no `[OPEN-QUESTION]` is `pass`; input passes `aw check plan`;
-- `test-results.md` and `security-results.md` say `Kết quả: XANH` with `Tree` matching current code (code changed → rerun `aw check implement` or `aw check security`; recommitting the same code is not a change); chore touching dependencies has a green `sca` command;
-- **no implement warning left**; every task `[x]` with evidence matching `Verify`; no merge conflict markers; work-type rules;
-- `## Repo rules` has a valid verdict for **each** rule file (declared file exists, committed);
-- each `Promote: adr` D has an ADR matching the approved D; the ADR directory passes `aw adr check`;
-- each `Promote: BR-…` YC has a rule block matching the approved YC;
-- `## Durable knowledge` has a valid verdict for each doc whose scope the diff touches;
-- Lens 4 has seven valid rows; any `finding` → Lens 3 has at least one finding;
-- Lens 3 has findings **or** exactly `- None` (not both), no template placeholders; `Location`, `Category`, `Failure scenario` well-formed;
-- `## Conclusion` has `- Blocker findings: <n>` equal to the number of `[Blocker]` items; `- Reviewed tree:` matches the code;
-- diff touches `sensitive_code` → `- Security reviewer: <human name>` (not empty, not placeholder, not an agent name).
-
-Diff is against the **base in `intake.md`**. Unusual base (e.g. stacked on another branch) → warning only, tell the human. On pass, `[Blocker]`/`[Should fix]` findings go to `aw journal` by `Category`; a category seen in other jobs → checker prints `[GỢI Ý]` to turn it into a machine rule.
-
-**Human:** confirms the verdict, decides on `Blocker`s; decides on `[GỢI Ý]` rule suggestions; confirms an unusual base is intended.
+- `- Reviewed tree:` must be the `Tree` line of `test-results.md`, and that must match the current code. Code changed after implement → `aw check implement` (or `aw check security`) again; changed after review → review again.
+- `- Blocker findings: <n>` in `## Conclusion` must equal the number of `[Blocker]` items.
+- Lens 3 has findings **or** exactly `- None` — never both, never template placeholders.
+- Unusual base (e.g. stacked on another branch) → warning only; tell the human.
+- On pass, the checker may print `[GỢI Ý]` (a finding category seen in other jobs → candidate machine rule): pass it to the human.

@@ -21,15 +21,9 @@ needs_clean_context: true
 
 ## Goal
 
-Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages execution — **no new technical choices** (this phase has no human gate).
+Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages execution — **no new technical choices** (this phase has no human gate). `open-questions.md` tells which tasks stand on a temporary assumption.
 
-## Input
-
-- `spec.md`, `tdd.md` — pass `aw check design`, **every D-xx approved by the human** (ticked, hash matches).
-- `open-questions.md` — to know which tasks stand on a temporary assumption.
-- `aw rules plan` — read every file it prints.
-
-`chore` (no `tdd.md`): input is `spec.md` — passes `aw check spec`, "Approved by human" ticked, no open `blocking` question. Tasks have no `Based on: D-xx`.
+`chore` (no `tdd.md`): input is the approved `spec.md`; tasks have no `Based on: D-xx`.
 
 ## Steps
 
@@ -42,28 +36,20 @@ Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages ex
    - `Depends on:` if any;
    - small enough to finish in one go without breaking the build on its own.
 2. **Tasks on a temporary assumption:** `On assumption: **yes** — open-questions.md § YC-NNN`, else `no`.
-3. **Defer with a reason:** a YC no task covers → `## Deferred` + reason. Prefer deferring `should`; deferring `must` warns — tell the human.
+3. **Every YC is covered by a task or listed in `## Deferred` with a reason.** Prefer deferring `should`; deferring `must` warns — tell the human.
 4. **`## Manual verification`:** YCs that cannot be tested automatically + reason (missing → implement warns, review blocks).
 5. **By work type:**
    - `bugfix`: first task **writes the repro test**, separate from the fix task (`aw check repro` runs between them).
-   - `perf`: first task **measures before** (`aw check perf <thư-mục-feature> --before`).
+   - `perf`: first task **measures before** (`aw check perf <dir> --before`).
    - `refactor`/`perf`: old tests expected to change → `## Modified existing tests`.
    - `chore`: dependency bumps → `## Dependency upgrades` (`patch | minor` only).
    - D with `Promote: adr` → a task `Based on: D-NN` whose `Expected files` include the ADR directory (`docs/adr/*` by default) and whose `Verify` is `aw adr check`.
-   - YC with `Promote: BR-<MIỀN>-NNN` → a task covering it whose `Expected files` include the rule file (`docs/product/rules/<miền>.md` by default) and whose `Verify` is `aw rule check`.
-6. **Record inputs:** `aw based-on <thư-mục-feature> plan.md spec.md tdd.md` (chore: drop `tdd.md`).
-
-## Output
-
-`plan.md` per `templates/plan.md`.
+   - YC with `Promote: BR-<DOMAIN>-NNN` → a task covering it whose `Expected files` include the rule file (`docs/product/rules/<domain>.md` by default) and whose `Verify` is `aw rule check`.
+6. **Record inputs:** `aw based-on <dir> plan.md spec.md tdd.md` (chore: drop `tdd.md`).
 
 ## Forbidden
 
 - **Writing code.**
 - Technical choices not in `tdd.md` — go back to `02-design` (reopen/add a D).
-- Tasks that map to no `YC-NNN`; tasks like "refactor all of module X", "clean up old code" (no done criterion).
 - Requirements not in `spec.md` — go back to `01-spec`.
-
-## Exit conditions
-
-**Machine:** `aw check plan` → `[x] ĐẠT` — input passes `aw check design`, every D approved; every task has valid `Covers:`, non-empty `Expected files:`, `Verify:`, `Based on:` pointing to a real D; each `Promote: adr` D has its ADR task; each `Promote: BR-…` YC has its rule task; every YC covered by a task **or** in "Deferred" with a reason.
+- Tasks that map to no `YC-NNN`; tasks like "refactor all of module X", "clean up old code" (no done criterion).

@@ -40,7 +40,7 @@ man_scalar() { awk -v k="$1" '{ sub(/\r$/, "") } $0 ~ "^" k ":" { sub("^" k ":[ 
 ART=$(man_scalar artifact_dir)
 DOCS="$ART/.engine"
 CONV_DOC="$DOCS/conventions.md"
-FD='<thư-mục-feature>'
+FD='<dir>'
 
 # Tên lệnh trong repo đích: /aw-<id> (file commands/aw-<id>.md). Tiền tố gom mọi
 # lệnh của quy trình lại khi gõ "/aw-" và không đụng lệnh của team. Dấu "-" chứ
@@ -102,8 +102,7 @@ don_file_cu() {
 # cần thiết vì agent có thể nạp thư mục của agent khác (Cursor nạp .claude/ để
 # tương thích): lời dặn viết cho tool của agent này thì agent kia không làm được.
 canh_bao() {
-  printf '> **File này được SINH TỰ ĐỘNG** từ `%s` (engine agent-workflow %s) bởi `aw adapter build` — generated, do not edit.\n' "$1" "$(cat "$ROOT/VERSION" 2>/dev/null)"
-  printf '> %s\n\n' "$(_hk ad_danh_cho)"
+  printf '> SINH TỰ ĐỘNG từ `%s` (engine agent-workflow %s) — generated, do not edit. %s\n\n' "$1" "$(cat "$ROOT/VERSION" 2>/dev/null)" "$(_hk ad_danh_cho)"
 }
 
 # Kiem tra exit_machine, arguments va llm_checker TRUOC khi sinh file, va o SHELL CHINH.
@@ -163,54 +162,57 @@ kiem_tra_nguon() {
   [ "$_bad" = "0" ]
 }
 
-dich_lenh() {
-  printf '  - `%s %s` → `[x] ĐẠT`\n' "$1" "$FD"
+# ds_doc <inputs|outputs> <file nguồn> — một dòng: artifact trong <dir>/ trước, nguồn khác sau.
+#   inputs: intake.md, plan.md, diff  ->  `<dir>/`: `intake.md`, `plan.md`; diff against the base (…)
+ds_doc() {
+  fm_list "$2" "$1" | awk -v fd="$FD" -v loai="$1" '
+    function them(s) { r = r (r == "" ? "" : "; ") s }
+    { sub(/\r$/, "") }
+    $0 == ""           { next }
+    $0 == "confluence" { them("Confluence via MCP Atlassian (record URL + heading)"); next }
+    $0 == "jira"       { them("Jira via MCP Atlassian (record issue key + URL)"); next }
+    $0 == "file"       { them("repo files, incl. incident notes (record path + heading)"); next }
+    $0 == "diff"       { them(loai == "outputs" ? "code changes" : "diff against the base (`git diff`, `git status`)"); next }
+    /\.md( \(.*\))?$/  { t = $0; g = ""; if ((i = index(t, " ("))) { g = substr(t, i); t = substr(t, 1, i - 1) }
+                         md = md (md == "" ? "" : ", ") "`" t "`" g; next }
+                       { them($0) }
+    END {
+      if (md != "") r = "`" fd "/`: " md (r == "" ? "" : "; " r)
+      print (r == "" ? "(no artifacts)" : r)
+    }'
 }
 
-mo_ta_input() {
-  case "$1" in
-    confluence) printf '  - Confluence (MCP Atlassian) — record URL + heading\n' ;;
-    jira)       printf '  - Jira (MCP Atlassian) — record issue key + URL\n' ;;
-    file)       printf '  - Repo files (incl. incident notes) — record path + heading\n' ;;
-    diff)       printf '  - Diff against the base (`git diff`, `git status`)\n' ;;
-    *.md)       printf '  - `%s/%s`\n' "$FD" "$1" ;;
-    *".md ("*)  printf '  - `%s/%s` (%s\n' "$FD" "${1%% (*}" "${1#* (}" ;;
-    *)          printf '  - %s\n' "$1" ;;
-  esac
-}
-
-mo_ta_output() {
-  case "$1" in
-    diff) printf '  - Code changes in the repo\n' ;;
-    *)    printf '  - `%s/%s`\n' "$FD" "$1" ;;
-  esac
+# ds_mau <file nguồn> — mẫu của các output (không ghi chú) có mẫu trong workflow/templates/, một dòng.
+ds_mau() {
+  fm_list "$1" outputs | while IFS= read -r _o; do
+    case "$_o" in *" ("*) continue ;; esac   # ghi chú = cập nhật hay máy ghi, không theo mẫu
+    case "$_o" in *.md) if [ -f "$ROOT/workflow/templates/$_o" ]; then printf '`templates/%s` ' "$_o"; fi ;; esac
+  done | sed 's/ $//; s/` `/`, `/g'
 }
 
 # Buoc 0 cua moi lenh: xac dinh feature. Thu tu branch -> tham so -> hoi la
 # giao dien chung giua cac adapter, nen no nam trong engine (aw feature), khong trong prompt.
 #   buoc_xac_dinh_feature <cách-viết-tham-số> [input] [true = phase có việc ở checkout chính]
 buoc_xac_dinh_feature() {
-  printf '## Step 0 — Identify the feature (always first)\n\n'
-  printf 'Talk to the human in Vietnamese. Every `aw …` command (agent-workflow engine, installed globally) ends with a `Kết quả` block — act on the label marked `[x]`.\n\n'
+  printf '## Step 0 — Feature dir (always first)\n\n'
+  printf 'Talk to the human in Vietnamese. Every `aw` command ends with a `Kết quả` block — act on the `[x]` label.\n\n'
   if [ "${2:-}" = "input" ]; then
     # Tham so cua lenh la INPUT, khong phai ten feature: khong truyen vao aw feature,
     # neu khong "/aw-intake JIRA-123" se tao thu muc artifact ten JIRA-123.
-    printf 'Run `aw feature` — **do not** pass the command arguments (they are input, not a feature name):\n\n'
-    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout = `%s`. Print `Đang làm với: %s` before reading/writing anything.\n' "$FD" "$FD"
-    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "Create the worktree" in the phase description: agree the work type, `aw worktree new` to **propose**, the HUMAN picks the base, only then `--create --base <ref>`. Write `intake.md` in the new worktree, then stop.\n'
-    printf -- '- **CẦN HỎI NGƯỜI:** in a worktree whose branch does not match the convention → stop, ask the human. Never invent a name.\n\n'
+    printf 'Run `aw feature` — **without** the command arguments (they are input, not a feature name):\n\n'
+    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout is the feature dir, written `%s` below. Print `Đang làm với: %s` first.\n' "$FD" "$FD"
+    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "Create the worktree" below: agree the work type, `aw worktree new` only **proposes**, the HUMAN picks the base, then `--create --base <ref>`. Write `intake.md` in the new worktree, then stop.\n'
+    printf -- '- **CẦN HỎI NGƯỜI:** branch does not match the convention → stop, ask the human. Never invent a name.\n\n'
   else
     printf 'Run `aw feature %s`:\n\n' "$1"
-    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout = `%s`. Print `Đang làm với: %s` before reading/writing anything.\n' "$FD" "$FD"
+    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout is the feature dir, written `%s` below. Print `Đang làm với: %s` first.\n' "$FD" "$FD"
     if [ "${3:-}" = "true" ]; then
-      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "On the main checkout" in the description below (no feature dir needed). Never change directory yourself.\n'
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "On the main checkout" below (no feature dir needed). Never change directory yourself.\n'
     else
-      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** stop — tell the human to open a session in the job'"'"'s worktree (none yet → `/aw-intake` on the main checkout). Never change directory yourself.\n'
+      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** stop — tell the human to open a session in the job'"'"'s worktree (none yet → `/aw-intake` here). Never change directory yourself.\n'
     fi
-    printf -- '- **CẦN HỎI NGƯỜI:** stop, ask the human for the feature name. Never invent one.\n'
-    printf -- '- **TÊN KHÔNG HỢP LỆ:** tell the human.\n\n'
+    printf -- '- **CẦN HỎI NGƯỜI** / **TÊN KHÔNG HỢP LỆ:** stop, ask the human for the feature name. Never invent one.\n\n'
   fi
-  printf '`templates/`, `rules/`, `checkers/` in the description live in `%s/`. Every `aw check` runs the engine version on the `Engine:` line of `intake.md` — never edit that line.\n\n' "$DOCS"
 }
 
 # Buoc 0b cua /aw-intake: tham so -> dong "## Input". Nhan do engine gan, khong do
@@ -252,26 +254,41 @@ buoc_cong_duyet() {
   printf '"Duyệt hộ", "tick giúp", "ok cứ làm đi"… → **refuse** in one line (only the human may tick), point to the exact file and line, ask again. Wants to change content → that is `/aw-spec` (D-xx: `/aw-design`), do not edit here.\n\n'
 }
 
-# doc_truoc — mục "Đọc trước khi làm" chung
-doc_truoc() {
-  printf '**Read first:** `%s/rules/general.md`' "$DOCS"
-  if [ "${1:-}" = "true" ]; then printf ', `%s/rules/source-tracing.md`' "$DOCS"; fi
-  printf '. Repo conventions (look up when needed): `%s`.\n\n' "$CONV_DOC"
+# buoc_ket_thuc <phase> — tin nhắn cuối phase, cùng một dạng ở mọi phase: người
+# thấy ngay kết quả, việc của mình, lệnh tiếp theo. Lệnh tiếp = phase kế trong manifest.
+buoc_ket_thuc() {
+  _tiep=$(awk -F'|' -v id="$1" 'thay { print $1 "|" $3; exit } $1 == id { thay = 1 }' "$PH_LIST")
+  _tiep_ghi=""
+  case "$_tiep" in *"|true") ;; ?*) _tiep_ghi=" (optional)" ;; esac
+  _tiep=${_tiep%%|*}
+  if [ "$1" = spec ]; then _tiep_ghi=" (chore: \`/$(ten_lenh plan)\`)"; fi
+  printf -- '- **Finish** — end with these lines to the human (Vietnamese, one line each):\n'
+  printf '  `Kết quả: <the [x] label of the exit check>` · `Cần bạn: <each HUMAN exit still open, or "không">`'
+  if [ -n "$_tiep" ]; then printf ' · `Tiếp theo: /%s`%s' "$(ten_lenh "$_tiep")" "$_tiep_ghi"; fi
+  printf '\n'
 }
 
-# buoc_quy_tac_repo <phase> — đọc quy tắc riêng của repo. Danh sách lấy LÚC CHẠY
+# doc_truoc — mục "Đọc trước khi làm" chung
+#   doc_truoc <trace_rule: true|""> [<phase có quy tắc repo>]
+doc_truoc() {
+  printf '**Before working:** read `%s/rules/general.md`' "$DOCS"
+  if [ "${1:-}" = "true" ]; then printf ', `%s/rules/source-tracing.md`' "$DOCS"; fi
+  if [ -n "${2:-}" ]; then printf '; %s' "$(quy_tac_repo "$2")"; fi
+  printf '. `templates/`, `rules/`, `checkers/` = `%s/…`; repo conventions: `%s`.\n\n' "$DOCS" "$CONV_DOC"
+}
+
+# quy_tac_repo <phase> — đọc quy tắc riêng của repo. Danh sách lấy LÚC CHẠY
 # bằng `aw rules`, không chép vào lúc build: conventions.md sửa là có hiệu lực ngay.
-buoc_quy_tac_repo() {
-  printf '**Repo-specific rules:** run `aw rules %s` — **ĐÃ LIỆT KÊ:** read every printed file before working (nothing printed = none) · **KHAI SAI:** stop, ask the human to fix `rules_*` in `%s`; never guess a replacement. Priority: `rules/general.md` § 7.\n\n' "$1" "$CONV_DOC"
+quy_tac_repo() {
+  printf 'run `aw rules %s` and read every file it prints (`KHAI SAI` → stop, ask the human to fix `rules_*` in conventions; never guess)' "$1"
 }
 
 # buoc_cong_cu_repo <phase> — skill / subagent của repo mà phase phải GỌI (khoá
 # uses_<phase>). Lấy LÚC CHẠY bằng `aw uses`, như quy tắc. Cách gọi là chữ riêng
 # của từng agent: hook ad_goi_uses.
 buoc_cong_cu_repo() {
-  printf '**Repo skills & subagents:** run `aw uses %s` — **ĐÃ LIỆT KÊ:** each line is `skill:<name> <file>` or `agent:<name> <file>` (nothing printed = none) · **KHAI SAI:** stop, ask the human to fix `uses_*` in `%s`; never guess a replacement · unknown command (old `aw` wrapper): tell the human to reinstall `aw`, then continue without this step.\n\n' "$1" "$CONV_DOC"
+  printf '**Repo skills & subagents:** run `aw uses %s` — each line is `skill:<name> <file>` or `agent:<name> <file>` (nothing printed = none; `KHAI SAI` → stop, ask the human to fix `uses_*` in conventions; unknown command = old `aw` wrapper → tell the human to reinstall it, continue without this step):\n\n' "$1"
   _hk ad_goi_uses
-  printf 'They rank like repo rules (`rules/general.md` § 7): below `spec.md`, `tdd.md`, `plan.md` and the workflow rules; never leave the phase scope because of them.\n\n'
 }
 
 # luat_tom_tat — bảy luật không được vi phạm, dùng trong file tổng của agent
@@ -386,50 +403,36 @@ sinh_command() {
   fi
 
   printf '## Phase contract\n\n'
-  if [ "$req" = "true" ]; then
-    printf -- '- **Required:** yes\n'
-  else
+  if [ "$req" != "true" ]; then
     printf -- '- **Required:** no — run only when %s\n' "${when:-the user asks}"
   fi
-
-  printf -- '- **Reads:**\n'
-  ins=$(fm_list "$src" inputs)
-  if [ -z "$ins" ]; then
-    printf -- '  - (no artifacts)\n'
-  else
-    echo "$ins" | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
-  fi
-
-  printf -- '- **Writes:**\n'
-  fm_list "$src" outputs | while IFS= read -r o; do
-    [ -n "$o" ] || continue
-    mo_ta_output "$o"
-    case "$o" in
-      *.md) if [ -f "$ROOT/workflow/templates/$o" ]; then printf '    — template `%s/templates/%s` (read before writing)\n' "$DOCS" "$o"; fi ;;
-    esac
-  done
+  printf -- '- **Reads:** %s\n' "$(ds_doc inputs "$src")"
+  printf -- '- **Writes:** %s\n' "$(ds_doc outputs "$src")"
+  _m=$(ds_mau "$src")
+  if [ -n "$_m" ]; then printf -- '- **Templates** (read before writing): %s\n' "$_m"; fi
 
   if [ -n "$lc" ]; then
     lco=$(fm_scalar "$ROOT/$lc" output)
-    printf -- '- **LLM checker (may only BLOCK, never APPROVE):** when done writing, call subagent `%s` (clean context) with `%s`; it writes `%s/%s`. File missing = KHÔNG ĐẠT.\n' \
+    printf -- '- **LLM checker** (may only block, never approve): when done writing, call subagent `%s` (clean context) with `%s`; it writes `%s/%s`. Missing file = KHÔNG ĐẠT.\n' \
       "$(ten_agent_checker "$lc")" "$FD" "$FD" "$lco"
   fi
 
   em=$(fm_list "$src" exit_machine)
   if [ -n "$em" ]; then
-    printf -- '- **Exit — MACHINE** (run it, paste the real result, never declare a pass yourself):\n'
-    echo "$em" | while IFS= read -r c; do [ -n "$c" ] && dich_lenh "$c"; done
+    printf -- '- **Exit — MACHINE:** %s → `[x] ĐẠT`. Run it, paste the real result; never declare a pass yourself.\n' \
+      "$(echo "$em" | while IFS= read -r c; do if [ -n "$c" ]; then printf '`%s %s` ' "$c" "$FD"; fi; done | sed 's/ $//; s/` `/`, `/g')"
   fi
 
   eh=$(fm_list "$src" exit_human)
   if [ -n "$eh" ]; then
-    printf -- '- **Exit — HUMAN** (state it, then stop; never approve for them):\n'
-    echo "$eh" | while IFS= read -r c; do [ -n "$c" ] && printf '  - %s\n' "$c"; done
+    printf -- '- **Exit — HUMAN** (state these, then stop; never approve for them):\n'
+    echo "$eh" | while IFS= read -r c; do if [ -n "$c" ]; then printf '  - %s\n' "$c"; fi; done
   fi
 
   if [ "$clean" = "true" ]; then
-    printf -- '- **Context:** must run from a blank session; input only from files.\n'
+    printf -- '- **Context:** blank session; input only from files.\n'
   fi
+  buoc_ket_thuc "$id"
   if [ "$fresh" = "true" ]; then
     printf -- '- **Mandatory:** run through subagent `independent-reviewer`, passing `%s`. NEVER review in the session that wrote the code.\n' "$FD"
   fi
@@ -444,8 +447,9 @@ sinh_command() {
     printf '3. Cannot call subagents: tell the human to open a new session loading only the `independent-reviewer` subagent file + the feature dir.\n'
     return 0
   fi
-  doc_truoc "$(fm_scalar "$src" trace_rule)"
-  case " $BL_QUY_TAC " in *" $id "*) buoc_quy_tac_repo "$id"; buoc_cong_cu_repo "$id" ;; esac
+  _qt=""; case " $BL_QUY_TAC " in *" $id "*) _qt="$id" ;; esac
+  doc_truoc "$(fm_scalar "$src" trace_rule)" "$_qt"
+  if [ -n "$_qt" ]; then buoc_cong_cu_repo "$_qt"; fi
   printf -- '---\n'
   md_body "$src"
 }
@@ -495,12 +499,10 @@ ad_sinh() {
       _hk ad_dau_agent independent-reviewer 'Independent clean-context review of the diff against spec.md, tdd.md and plan.md. Never the session that implemented. The caller must pass the feature dir. Only call when an /aw-* command instructs it; never delegate to it on your own.'
       canh_bao "$REV_FILE"
       printf 'You are an independent reviewer: you have NEVER seen this code or the reasoning behind it. Do not guess the author'"'"'s intent; only compare the code with the approved spec and design. Write `review.md` in Vietnamese.\n\n'
-      printf 'The caller passes `%s` (e.g. `%s/feat_tao-todo`); missing → stop and ask.\n\n' "$FD" "$ART"
-      printf 'Reads:\n'
-      fm_list "$REV_SRC" inputs | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
-      printf '\nWrite `%s/review.md` per template `%s/templates/review.md`, then run `aw check review %s` and paste the real result. `templates/`, `rules/` below live in `%s/`.\n\n' "$FD" "$DOCS" "$FD" "$DOCS"
-      doc_truoc
-      buoc_quy_tac_repo review
+      printf 'The caller passes the feature dir, written `%s` below (e.g. `%s/feat_tao-todo`); missing → stop and ask.\n\n' "$FD" "$ART"
+      printf -- '- **Reads:** %s\n' "$(ds_doc inputs "$REV_SRC")"
+      printf -- '- **Writes:** `%s/review.md` per `templates/review.md`, then run `aw check review %s` and paste the real result.\n\n' "$FD" "$FD"
+      doc_truoc "" review
       buoc_cong_cu_repo review
       printf -- '---\n'
       md_body "$REV_SRC"
@@ -522,11 +524,11 @@ ad_sinh() {
     {
       _hk ad_dau_agent "$ten" "$(fm_scalar "$csrc" summary) The caller must pass the feature dir. Only call when an /aw-* command instructs it; never delegate to it on your own."
       canh_bao "$lc"
-      printf 'The caller passes `%s`; missing → stop and ask.\n\n' "$FD"
-      printf 'Reads:\n'
-      fm_list "$csrc" inputs | while IFS= read -r i; do [ -n "$i" ] && mo_ta_input "$i"; done
-      printf '\nWrite `%s/%s` per template `%s/templates/%s`.\n\n' "$FD" "$(fm_scalar "$csrc" output)" "$DOCS" "$(fm_scalar "$csrc" output)"
-      [ -n "$cqt" ] && buoc_quy_tac_repo "$cqt"
+      printf 'The caller passes the feature dir, written `%s` below; missing → stop and ask.\n\n' "$FD"
+      printf -- '- **Reads:** %s\n' "$(ds_doc inputs "$csrc")"
+      printf -- '- **Writes:** `%s/%s` per `%s/templates/%s`.\n' "$FD" "$(fm_scalar "$csrc" output)" "$DOCS" "$(fm_scalar "$csrc" output)"
+      if [ -n "$cqt" ]; then printf -- '- **Repo rules:** %s.\n' "$(quy_tac_repo "$cqt")"; fi
+      printf '\n'
       printf -- '---\n'
       md_body "$csrc"
     } | ghi_file "$A/$ten.md"
@@ -607,7 +609,7 @@ ad_sinh() {
     printf '\n## Hard rules\n\n'
     luat_tom_tat
     printf '## Artifacts and commands\n\n'
-    printf -- '- Job artifacts: `%s/<branch-name>/` (`aw feature`; outside git)\n' "$ART"
+    printf -- '- Job artifacts: `%s/<branch-name>/` — the feature dir `<dir>` printed by `aw feature` (outside git)\n' "$ART"
     printf -- '- Repo conventions: `%s`; per-phase repo rules: `aw rules <phase>`, repo skills and subagents to invoke: `aw uses <phase>` (%s)\n' "$CONV_DOC" "$BL_QUY_TAC"
     printf -- '- Engine rules, templates, LLM checkers: `%s/`\n' "$DOCS"
     printf -- '- Machine checkers: `aw check <name> %s` — names: %s\n' "$FD" "$BL_CHECKERS"
