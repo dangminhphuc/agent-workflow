@@ -472,7 +472,9 @@ cầu, review chấm code theo spec — code đúng một spec sai vẫn qua.
 |---|---|
 | `## Existing code` | module sẽ đụng, quy ước code phải theo |
 | `## Decisions (D-xx)` | **mỗi lựa chọn mà người khác có thể chọn khác**: vấn đề, ≥ 2 phương án + đánh đổi, lựa chọn, vì sao khó đảo ngược, ô duyệt riêng |
+| `## Target structure` | cấu trúc module/thành phần trước → sau (sơ đồ Mermaid); không đổi cấu trúc thì `Not applicable` |
 | Data model, Contract/API, Flow, Non-functional, Test strategy | chi tiết; mục dựa vào một D ghi `Based on: D-xx` |
+| `## Rollout & rollback` | thứ tự triển khai, flag, di trú, chạy song song, cách quay lui — và bước nào không quay lui được |
 | `## YC mapping` | mọi YC → mục thiết kế nào |
 | `- Promote: adr` + `- Scope:` dưới D | D này trở thành ADR trong repo |
 | `- Supersedes: ADR-NNNN` | D đi ngược một ADR đang hiệu lực (phải khai rõ) |

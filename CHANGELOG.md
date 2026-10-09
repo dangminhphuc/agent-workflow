@@ -13,6 +13,15 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+### Thêm
+- **`tdd.md` có thêm hai mục bắt buộc: `## Target structure` và `## Rollout & rollback`.** Target
+  structure ghi cấu trúc module/thành phần trước → sau (kèm sơ đồ Mermaid) — chỗ mà refactor/perf
+  cần nhất nhưng mẫu cũ không có. Rollout & rollback ghi thứ tự triển khai, flag, di trú, chạy song
+  song, cách quay lui và bước nào không quay lui được. Không áp dụng thì ghi
+  `Not applicable: <lý do>`; `aw check design` chặn khi thiếu mục hoặc để trống. Checker LLM coi
+  bước triển khai không quay lui được mà không có D-xx là quyết định ngầm. Việc đang chạy dở không
+  ảnh hưởng (chạy hết bằng version ghi trong `intake.md`).
+
 ### Thay đổi
 - **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
   có D `Author: human` thì agent chỉ dừng và đưa mẫu, người phải tự nghĩ ra các điểm cần quyết từ

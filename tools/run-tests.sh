@@ -171,6 +171,9 @@ based_on: []
 ## Existing code
 Module src/a.
 
+## Target structure
+Not applicable: không đổi cấu trúc module.
+
 ## Decisions (D-xx)
 
 ### D-01 — lưu ở đâu
@@ -190,6 +193,9 @@ Not applicable: không có API công khai.
 
 ## Non-functional
 Not applicable: thay đổi nội bộ nhỏ.
+
+## Rollout & rollback
+Triển khai một lần, quay lui bằng revert commit.
 
 ## Test strategy
 Unit test.
@@ -656,6 +662,15 @@ viet_spec
 
 viet_tdd; thay "$F/tdd.md" '## Test strategy' '## Kiểm thử'
 ky_vong 1 "chặn tdd thiếu mục bắt buộc" sh "$CHK" "$F"
+
+viet_tdd; thay "$F/tdd.md" "## Target structure" "## Cấu trúc"
+ky_vong 1 "chặn tdd thiếu mục Target structure" sh "$CHK" "$F"
+
+viet_tdd; thay "$F/tdd.md" "Triển khai một lần, quay lui bằng revert commit." ""
+ky_vong 1 "chặn mục Rollout & rollback bỏ trống" sh "$CHK" "$F"
+
+viet_tdd; thay "$F/tdd.md" "Triển khai một lần, quay lui bằng revert commit." "Not applicable: chỉ đổi code nội bộ."
+ky_vong 0 "Rollout & rollback ghi Not applicable có lý do thì cho qua" sh "$CHK" "$F"
 
 viet_tdd; thay "$F/tdd.md" 'Unit test.' ''
 ky_vong 1 "chặn mục bỏ trống không ghi Không áp dụng" sh "$CHK" "$F"

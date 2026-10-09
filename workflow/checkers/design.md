@@ -23,7 +23,7 @@ You review `tdd.md` **with a clean context** — you never saw the reasoning beh
 | `Category` | Meaning | `Severity` |
 |---|---|---|
 | `deviates-from-decision` | A section says `Based on: D-xx` but contradicts it, or follows an option the D rejected | `block` |
-| `hidden-decision` | A choice someone could make differently (especially hard to reverse: schema, external contract, library, data migration) buried in prose, not a D-xx | `block` |
+| `hidden-decision` | A choice someone could make differently (especially hard to reverse: schema, external contract, library, data migration, a rollout step that cannot be rolled back) buried in prose, not a D-xx | `block` |
 | `undesigned-requirement` | YC is in the mapping but the section it points to does not say how it is met | `block` |
 | `internal-contradiction` | Two sections of `tdd.md` disagree (e.g. ERD vs contract) | `block` |
 | `new-requirement` | Behaviour not in `spec.md` | `block` |

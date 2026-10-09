@@ -63,7 +63,7 @@ Mode 2 prevents anchoring on the agent's option. Never edit the human's D; write
 2. **State D-xx.** Every choice someone could make differently — especially hard to reverse (many call sites, data migration, external interface): problem, ≥ 2 options + trade-offs, choice, `Author`, `- [ ] **Approved by human**` **unticked**. Obvious points need no D; zero D is allowed.
    - A D going against an `accepted` ADR: say so and add `- Supersedes: ADR-NNNN` (needs `- Promote: adr`). Never silently diverge from an ADR.
    - A D that stays true after this job (cross-module, hard to reverse): propose `- Promote: adr` + `- Scope: <glob>`. `04-implement` copies it to an ADR once approved.
-3. **Write the sections** per the template: data + ERD, contract/API, flow + sequence/state (Mermaid), non-functional, test strategy, YC → section mapping (every YC). A section relying on a D says `Based on: D-xx`. Not applicable: `Not applicable: <reason>`, never empty.
+3. **Write the sections** per the template: target structure (before → after), data + ERD, contract/API, flow + sequence/state (Mermaid), rollout & rollback (what cannot be undone), non-functional, test strategy, YC → section mapping (every YC). A section relying on a D says `Based on: D-xx`. Not applicable: `Not applicable: <reason>`, never empty.
 4. **Record inputs:** `aw based-on <dir> tdd.md spec.md open-questions.md`.
 5. **Run the LLM checker** → `design-findings.md`. Fix what you agree with (`Resolution: fixed`); the human arbitrates the rest via `/aw-clarify`.
 6. **Run `aw check design <dir>`**, then stop for the human to approve each D.
