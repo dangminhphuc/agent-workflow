@@ -19,6 +19,11 @@ ngầm giữa các bản.
   (`config.sh`, `conventions.md`, bootstrap, hook `aw guard`, skill/subagent), từng phase sinh artifact
   nào và artifact đó quyết định gì, khác biệt theo loại việc, kiến thức bền (ADR, `BR-`), xử lý khi bị
   chặn, tham chiếu lệnh. README trỏ tới.
+- **`/aw-intake` hỏi bằng câu hỏi lựa chọn:** loại việc, tên, base, nguyên văn `[HUMAN]` gom vào một
+  lượt hỏi (Claude Code: `AskUserQuestion`; Cursor: tool hỏi lựa chọn hoặc lựa chọn đánh số), mỗi câu
+  có ô tự nhập cho yêu cầu khác. Base ★ của máy đứng đầu. Câu `Input` trích nguyên văn lời người ngay
+  trong lựa chọn `Đúng nguyên văn`; muốn sửa thì gõ bản đúng vào ô tự nhập — không có lựa chọn "cần
+  sửa" rỗng. Câu chỉ có một lựa chọn thật thì thêm `Dừng — chưa tạo gì`. Phase nào cũng khai được `choice_ui: true` (trước chỉ lệnh tiện ích).
 
 ## [2026.10.23]
 

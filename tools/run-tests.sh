@@ -1499,6 +1499,9 @@ dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng 
 dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/aw-clarify.md"
 dung "lệnh /aw-clarify dẫn phân xử phát hiện checker LLM" grep -q 'design-findings.md' "$O/.claude/commands/aw-clarify.md"
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Asking choice questions' '$O/.claude/commands/aw-import.md'"
+dung "/aw-intake hỏi lựa chọn bằng AskUserQuestion: loại việc, tên, base, nguyên văn [HUMAN]" sh -c \
+  "grep -q '## Asking choice questions in Claude Code' '$O/.claude/commands/aw-intake.md' && grep -q '## Confirmation turn' '$O/.claude/commands/aw-intake.md' && grep -q 'each candidate base' '$O/.claude/commands/aw-intake.md' && grep -q 'Đúng nguyên văn' '$O/.claude/commands/aw-intake.md'"
+dung "…Input không có lựa chọn \"cần sửa\": chữ tự nhập là bản sửa" grep -qF 'free-text answer **is** the fix' "$O/.claude/commands/aw-intake.md"
 dung "/aw-design có cổng duyệt: aw approval design + hộp xác nhận AskUserQuestion" sh -c \
   "grep -q 'Step 1 — Approval gate' '$O/.claude/commands/aw-design.md' && grep -q 'aw approval design' '$O/.claude/commands/aw-design.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-design.md'"
 dung "…ba lựa chọn cố định, có preview, từ chối duyệt hộ" sh -c \
@@ -1665,6 +1668,8 @@ dung "/aw-design, /aw-plan có cổng duyệt aw approval + hộp xác nhận Cu
   "grep -q 'aw approval design' '$O3/.cursor/commands/aw-design.md' && grep -q 'aw approval plan' '$O3/.cursor/commands/aw-plan.md' && grep -q '### Confirmation box in Cursor' '$O3/.cursor/commands/aw-plan.md'"
 dung "…phase không khai approval_gate thì không có" sh -c \
   "for p in intake spec implement review; do ! grep -q 'Approval gate' '$O3/.cursor/commands/aw-'\$p.md || exit 1; done"
+dung "/aw-intake hỏi lựa chọn kiểu Cursor, phase khác thì không" sh -c \
+  "grep -q '## Asking choice questions in Cursor' '$O3/.cursor/commands/aw-intake.md' && for p in spec design plan implement; do ! grep -q 'Asking choice questions' '$O3/.cursor/commands/aw-'\$p.md || exit 1; done"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase>; intake thì không" sh -c \
   "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O3/.cursor/commands/aw-'\$p.md || exit 1; done; ! grep -q 'aw rules' '$O3/.cursor/commands/aw-intake.md'"
 dung "phase có quy tắc repo: lệnh gọi aw uses <phase>; Cursor đọc file khi không có tool gọi skill" sh -c \
@@ -1708,6 +1713,8 @@ for ad in claude-code cursor; do
   ky_vong 4 "$ad: từ chối build khi approval_gate khác \"true\"" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-4"
   tao_fake; thay "$FAKE/workflow/clarify.md" 'choice_ui: true' 'choice_ui: co'
   ky_vong 4 "$ad: từ chối build khi choice_ui khác \"true\"" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-5"
+  tao_fake; thay "$FAKE/workflow/phases/00-intake.md" 'choice_ui: true' 'choice_ui: co'
+  ky_vong 4 "$ad: từ chối build khi phase khai choice_ui khác \"true\"" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-5b"
   tao_fake; thay "$FAKE/workflow/phases/00-intake.md" 'arguments: input' 'arguments: gi-cung-duoc'
   ky_vong 4 "$ad: từ chối build khi arguments không phải \"input\"" sh "$FAKE/adapters/$ad/build.sh" --out "$TMP/f-$ad-6"
 done

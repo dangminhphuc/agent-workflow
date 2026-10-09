@@ -146,6 +146,11 @@ kiem_tra_nguon() {
     ""|true) ;;
     *) echo "LỖI: $_file khai approval_gate \"$_ag\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
   esac
+  _cu=$(fm_scalar "$_src" choice_ui)
+  case "$_cu" in
+    ""|true) ;;
+    *) echo "LỖI: $_file khai choice_ui \"$_cu\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
+  esac
   _mc=$(fm_scalar "$_src" runs_on_main_checkout)
   case "$_mc" in
     ""|true) ;;
@@ -314,7 +319,7 @@ luat_tom_tat() {
 #                                  trong menu là <summary> — <name> lặp lại tên phase
 #   ad_mo_dau_lenh <lệnh> <gợi-ý-tham-số> <arguments>
 #                                  khối ngay sau cảnh báo của mọi lệnh (rỗng được)
-#   ad_hoi_lua_chon                lệnh khai choice_ui: true — cách hỏi lựa chọn
+#   ad_hoi_lua_chon                lệnh/phase khai choice_ui: true — cách hỏi lựa chọn
 #   ad_hoi_cong_duyet <phase>      phase khai approval_gate: true — hộp xác nhận
 #   ad_goi_uses                    cách gọi từng dòng `aw uses` in ra (skill:, agent:)
 #   ad_danh_cho                    một dòng: file dành cho agent nào; agent khác
@@ -401,6 +406,7 @@ sinh_command() {
     buoc_cong_duyet "$id"
     _hk ad_hoi_cong_duyet "$id"
   fi
+  if [ "$(fm_scalar "$src" choice_ui)" = "true" ]; then _hk ad_hoi_lua_chon; fi
 
   printf '## Phase contract\n\n'
   if [ "$req" != "true" ]; then
