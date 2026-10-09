@@ -40,7 +40,22 @@ Write everything `04-implement` needs to be technically right, **within the repo
 | `normal` | **1** | Agent writes all of `tdd.md`, the human approves each D |
 | `high` | **2** | **The human drafts D-xx first** (`Author: human`); the agent writes the rest and only **critiques** the human's D |
 
-Mode 2 prevents anchoring on the agent's option. `high` with no `Author: human` D → **stop, ask the human to draft**. Never edit the human's D; write critique right under it: `- Critique (agent): …`.
+Mode 2 prevents anchoring on the agent's option. Never edit the human's D; write critique right under it: `- Critique (agent): …`.
+
+### Mode 2 — guide the human to draft
+
+`high` with no `Author: human` D → do not just stop; **interview the human** so they write the D-xx. Facts and questions only — never an option, a leaning or a recommendation.
+
+1. Do step 1 below (survey existing code) first.
+2. Show the **decision points**, one line each, as questions: what must be decided, which YC/constraint forces it, facts found (call sites, data volume, external consumers, existing ADR), why it may be hard to reverse. Ask the human to add, drop or merge points.
+3. Go through the points **one at a time**, with open questions:
+   - "What ways do you see to do this?" — ≥ 2 options; if they give one: "What else could someone choose?"
+   - Per option: "What does it buy? What does it cost?" You may point out a **fact** they missed ("`X` is called from 14 places"), never an option or a verdict.
+   - "Which one, and why?" then "What would make this hard to undo?"
+4. The human asks you for options or "what would you do" → decline in one line (Mode 2 is anti-anchoring); offer only neutral dimensions to think through (reversibility, migration, compatibility, call sites, operations, testing). If they insist, they may lower `Risk` via `/aw-clarify` (their call).
+5. Write each D into `tdd.md` in the human's own words (fix format only), `Author: human`, box unticked. Show the D-xx back; the human confirms or corrects.
+6. The human prefers to write `tdd.md` alone → stop, tell them the D format and to rerun `/aw-design`.
+7. Drafts confirmed → continue with **Steps**: critique each human D, write the rest.
 
 ## Steps
 
@@ -65,5 +80,6 @@ Mode 2 prevents anchoring on the agent's option. `high` with no `Author: human` 
 - Requirements not in `spec.md` — go back to `01-spec`.
 - **Ticking a D-xx box**, editing/deleting its approval hash. Editing a ticked D → untick it (adding `- Critique (agent):` does not count).
 - Mode 2: editing/replacing the human's D instead of critiquing.
+- Mode 2: proposing, ranking or hinting at an option before the human has written their D; putting words in the human's D they did not say.
 - Hiding a real choice in prose instead of a D.
 - Treating "LLM checker reported nothing" as a pass when it has not run.

@@ -11,6 +11,17 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thay đổi
+- **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
+  có D `Author: human` thì agent chỉ dừng và đưa mẫu, người phải tự nghĩ ra các điểm cần quyết từ
+  trang trắng. Giờ agent khảo sát code, liệt kê các điểm cần quyết dưới dạng câu hỏi kèm dữ kiện
+  (số chỗ gọi, dữ liệu phải di trú, giao diện ngoài, ADR liên quan), rồi hỏi từng điểm bằng câu mở:
+  có những cách nào, được/mất gì, chọn gì và vì sao, chỗ nào khó đảo ngược. D-xx ghi đúng lời người
+  (`Author: human`). Agent vẫn **không** nêu, xếp hạng hay nghiêng về phương án nào; bị hỏi "nên
+  chọn gì" thì chỉ gợi khía cạnh cần cân nhắc. Người muốn tự viết `tdd.md` thì agent dừng như cũ.
+
 ## [2026.10.25]
 
 ### Thêm

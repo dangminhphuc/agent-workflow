@@ -335,7 +335,10 @@ Người lướt văn xuôi dài vì không thấy đâu là lựa chọn thật
 phép rỗng. `tdd.md` là output duy nhất (tách file quyết định thì hai file lệch nhau).
 
 - **Mode 2 chống neo**: agent đưa phương án trước thì người neo vào nó. `Risk: high` → người phác
-  D-xx trước, agent chỉ phản biện; chưa có bản phác → chặn.
+  D-xx trước, agent chỉ phản biện; chưa có bản phác → chặn. Agent được **hỏi dẫn** người phác (nêu
+  điểm cần quyết + dữ kiện từ code, hỏi câu mở) nhưng không nêu phương án: dừng trơn thì người
+  phải tự nghĩ ra các điểm cần quyết từ trang giấy trắng, hay bỏ sót; hỏi dẫn giữ được chống neo vì
+  câu hỏi và dữ kiện không chứa lựa chọn.
 - **Mở lại**: đúng một D, sửa tại chỗ (git giữ lịch sử), bỏ tick + `Reopen reason:`;
   `aw task reopen <dir> D-xx` đưa task `Based on` D đó về `[ ]`, chỉ chúng.
 - **`plan` tách khỏi `tdd.md`**: plan là ranh giới do **phiên khác** đặt cho `implement`, và tick
