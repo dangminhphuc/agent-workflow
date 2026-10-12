@@ -29,7 +29,7 @@ trace_rule: true
 
 Write everything `04-implement` needs to be technically right, **within the repo's existing architecture**, and pull real choices out as **D-xx** items so the human *decides* instead of proofreading prose.
 
-- `chore` **has no design phase** — go straight to `/aw-plan`.
+- `chore` and bugfix `Lane: light` **have no design phase** — go straight to `/aw-plan`.
 - `refactor`/`perf`: design is the main work — target structure and D-xx on how to get there.
 - A `blocking` open question not `answered` → stop, ask the human to run `/aw-clarify`. `review-blocking`/`non-blocking` → design on the temporary assumption.
 

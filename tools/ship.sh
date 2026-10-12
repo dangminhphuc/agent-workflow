@@ -18,6 +18,7 @@
 # Cách tạo MR (xem tools/lib/mr.sh): gh/glab đã đăng nhập → GitLab: git push
 # options (không cần token, chỉ gửi tiêu đề; mô tả để ở mr-description.md cho người dán)
 # → link tạo tay điền sẵn; người tạo xong thì ghi lại bằng --url.
+# mr_include_artifacts (conventions.md): nối spec.md / tdd.md vào cuối mô tả MR.
 # Engine không merge, không duyệt MR.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -198,15 +199,10 @@ create)
   # gửi được mô tả thì để file này lại cho người dán.
   MO="$DIR/mr-description.md"
   awk '{ sub(/\r$/, "") } !dau && /^# / { dau = 1; next } { print }' "$DIR/merge-request.md" |
-    awk '{
-      s = $0; o = ""
-      while (s != "") {
-        if (trong) { i = index(s, "-->"); if (!i) { s = ""; break } s = substr(s, i + 3); trong = 0 }
-        else { i = index(s, "<!--"); if (!i) { o = o s; s = ""; break } o = o substr(s, 1, i - 1); s = substr(s, i + 4); trong = 1 }
-      }
-      if (o ~ /^[ \t]*$/ && $0 !~ /^[ \t]*$/) next
-      print o
-    }' | cat -s | sed '/./,$!d' > "$MO"
+    mr_bo_comment | sed '/./,$!d' > "$MO"
+  DK=$(conv_get "$CONV" mr_include_artifacts)
+  # shellcheck disable=SC2086
+  [ -z "$DK" ] || mr_dinh_artifact "$DIR" "$MO" $DK
 
   # 1. CLI đã đăng nhập: gửi đủ tiêu đề + mô tả.
   if mr_cli "$NT" "$R" >/dev/null; then

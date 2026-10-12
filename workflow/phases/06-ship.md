@@ -68,7 +68,7 @@ Run `aw check ship <dir>` until `[x] ĐẠT`. It also blocks when `aw check revi
 
 ### 3. Human confirms, then create the MR
 
-Creating an MR is **outward-facing**. Show the human: source → target, title, description to send. When they agree:
+Creating an MR is **outward-facing**. Show the human: source → target, title, description to send (with `mr_include_artifacts` set, `aw ship create` also appends those artifacts — say which). When they agree:
 
 ```sh
 aw ship create <dir> --target <human-chosen-branch> [--draft]

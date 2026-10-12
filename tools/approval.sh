@@ -4,7 +4,7 @@
 #
 #   aw approval design <thư-mục-feature>   vào /aw-design: spec đã được duyệt chưa
 #   aw approval plan   <thư-mục-feature>   vào /aw-plan: mọi D-xx đã được duyệt chưa
-#                                          (chore không có design: hỏi spec)
+#                                          (chore, bugfix làn light không có design: hỏi spec)
 #
 # Lệnh này KHÔNG duyệt gì. Agent in nguyên văn stdout cho người rồi hỏi bằng hộp
 # xác nhận (xem bước "Cổng duyệt" trong lệnh phase); người tự tick trong file.
@@ -29,14 +29,14 @@ case "$PHASE" in design|plan) ;; *) echo "Dùng: aw approval design|plan <thư-m
 [ -n "$DIR" ] && [ -d "$DIR" ] || { echo "LỖI: không có thư mục feature \"$DIR\"" >&2; exit 2; }
 DIR=$(CDPATH= cd -- "$DIR" && pwd)
 VIEC=$(basename "$DIR")
-LOAI=$(kc_loai "$DIR")
 REPO=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)
 tuong_doi() { if [ -n "$REPO" ]; then printf '%s' "${1#"$REPO"/}"; else printf '%s' "$1"; fi; }
 
-if [ "$PHASE" = design ] && [ "$LOAI" = chore ]; then
-  echo "LỖI: loại việc chore không có phase design — đi thẳng /aw-plan." >&2; exit 2
+BO_DESIGN=""; kc_bo_design "$DIR" && BO_DESIGN=1
+if [ "$PHASE" = design ] && [ -n "$BO_DESIGN" ]; then
+  echo "LỖI: việc này không có phase design (chore, hoặc bugfix \"Lane: light\") — đi thẳng /aw-plan." >&2; exit 2
 fi
-if [ "$PHASE" = plan ] && [ "$LOAI" != chore ]; then CONG=tdd; else CONG=spec; fi
+if [ "$PHASE" = plan ] && [ -z "$BO_DESIGN" ]; then CONG=tdd; else CONG=spec; fi
 
 # ------------------------------------------------------------------ spec
 if [ "$CONG" = spec ]; then
@@ -71,7 +71,7 @@ if [ "$CONG" = spec ]; then
       echo "Cách duyệt:  sửa ô duyệt theo mẫu templates/spec.md (agent được sửa dạng, không được tick)" ;;
   esac
   echo ""
-  awk -v phase="$PHASE" '
+  awk -v phase="$PHASE" -v lan="$(kc_lan "$DIR")" '
     function ra(s) { sub(/^[ \t]*[-*][ \t]*/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     { sub(/\r$/, "") }
     FNR == 1 { idx = (FILENAME == ARGV[1]) ? 1 : 2; sec = ""; cur = ""; cmt = 0 }
@@ -104,6 +104,9 @@ if [ "$CONG" = spec ]; then
         if (rui_ro == "high") hq = "/aw-design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại"
         else if (rui_ro == "normal") hq = "/aw-design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
         else hq = "chưa có nhãn hợp lệ — aw check spec sẽ chặn"
+      } else if (lan == "light") {
+        if (rui_ro == "high") hq = "làn light không nhận Risk: high — aw check plan sẽ chặn; bỏ dòng Lane ở intake.md để qua design (Mode 2)"
+        else hq = "bugfix làn light không có design"
       } else hq = "chore không có design"
       printf "  %d. Risk: %s — %s\n", ++k, (rui_ro == "" ? "?" : rui_ro), hq
       mo = 0; mo_chan = ""

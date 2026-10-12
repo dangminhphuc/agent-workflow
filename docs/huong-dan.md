@@ -68,7 +68,7 @@ flowchart TD
     SHIP["/aw-ship (tuỳ chọn)<br/>→ MR/PR<br/><i>BẠN: chọn nhánh đích, merge</i>"]
 
     INTAKE --> SPEC --> DESIGN --> PLAN --> IMPL --> REVIEW --> SHIP
-    SPEC -. "chore: bỏ design" .-> PLAN
+    SPEC -. "chore, bugfix light: bỏ design" .-> PLAN
     CLARIFY -.-> DESIGN
     CLARIFY -.-> PLAN
     CLARIFY -.-> REVIEW
@@ -246,6 +246,8 @@ Các khoá **phải xem lại** cho repo của bạn:
 | `dependency_files` | chore đụng vào phải khai "Dependency upgrades" | nâng thư viện lọt không khai |
 | `sensitive_code` | diff đụng vào → **người** rà bảo mật phải ký tên | code auth/payment qua review không người rà |
 | `mr_target_branches` | danh sách nhánh đích khi `/aw-ship` | `aw ship create` từ chối đích |
+| `mr_include_artifacts` | `spec tdd`: nối `spec.md`, `tdd.md` vào cuối mô tả MR (khối thu gọn) | PO, reviewer không thấy yêu cầu và quyết định trên MR |
+| `light_lane_max_files` | bugfix `Lane: light` được đổi tối đa bao nhiêu file ngoài test (trống = 3) | việc lớn đi làn light, bỏ qua design |
 | `jira_key_regex`, `confluence_domains` | nhận dạng input của `/aw-intake` | input bị coi là lời người `[HUMAN]` |
 
 Các khoá khác (branch, worktree, kiến thức bền, `rules_*`, `uses_*`): xem
@@ -365,6 +367,7 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 | Trường | Quyết định | Ảnh hưởng |
 |---|---|---|
 | `Type` | loại việc: `feature \| bugfix \| refactor \| perf \| chore` | **luật của mọi phase sau** (xem §5). Sai loại = sai luật |
+| `Lane` | chỉ bugfix: `full` (mặc định) hay `light` — bỏ design, spec → plan | bugfix nhỏ không phải viết `tdd.md` (xem §5) |
 | `Base` | nhánh/commit việc rẽ ra | mọi checker so diff với base này |
 | `Engine` | version engine | mọi `aw check` của việc chạy đúng version này |
 | `Goal` | một câu mục tiêu | — |
@@ -374,7 +377,8 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 
 1. Xác nhận **loại việc**. Cây quyết định: đổi code production? Không → `chore`. Có → hành vi bên
    ngoài đổi? Không → nhanh hơn/ít tài nguyên hơn? `perf` : `refactor`. Có → hành vi hiện tại sai so
-   với tài liệu/ý định? `bugfix` : `feature`. Việc hai loại → tách hai việc.
+   với tài liệu/ý định? `bugfix` : `feature`. Việc hai loại → tách hai việc. Bugfix: chọn **làn**
+   (`light` khi sửa cục bộ, rõ ràng — xem §5).
 2. **Chọn base** từ đề xuất `aw worktree new` in ra (★ là gợi ý của máy, không phải lựa chọn).
 3. Xác nhận danh sách input, và lời bạn được chép **nguyên văn**.
 4. Chạy lệnh chuẩn bị máy in ra (`WORKTREE_SETUP_CMD`), rồi **mở phiên mới trong worktree**.
@@ -403,7 +407,7 @@ Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — ch�
 | `## Reproduction` (bugfix) | bước tái hiện, hành vi thật/mong đợi | test tái hiện |
 | `Type`/`Protected by`/`Target` (refactor/perf) | YC giữ nguyên hành vi, test bảo vệ, chỉ số | implement, review |
 | `- Promote: BR-…` | YC trở thành luật nghiệp vụ bền | implement (`aw rule promote`) |
-| `Approved by human` | **cổng**: design (chore: plan) bị chặn tới khi tick | design/plan |
+| `Approved by human` | **cổng**: design (chore, bugfix làn light: plan) bị chặn tới khi tick | design/plan |
 
 Nhãn nguồn của YC: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định **kỹ
 thuật** hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói, đang dùng giả định tạm). Phép thử: BA/PO có
@@ -414,7 +418,7 @@ nguồn nói gì, câu hỏi, hỏi ai, giả định tạm, *If wrong, redo*, v
 
 | `Blocking` | Khi nào | Chặn |
 |---|---|---|
-| `blocking` | sai → cả thiết kế đổi hướng | design (chore: plan) và mọi phase sau, tới khi trả lời |
+| `blocking` | sai → cả thiết kế đổi hướng | design (chore, bugfix làn light: plan) và mọi phase sau, tới khi trả lời |
 | `review-blocking` | sai → làm lại một phần code | flow chạy tiếp trên giả định; implement cảnh báo, **review chặn** |
 | `non-blocking` | sai → sửa nhỏ, giao trước được | không gì; review ghi YC đó `pending` |
 
@@ -507,7 +511,7 @@ quay về `[ ]` khi chạy lại plan. Bạn duyệt lại riêng D đó.
 
 - **Chạy ở:** worktree. **Không có cổng người** — phase này chỉ chia việc đã duyệt, không có lựa chọn
   kỹ thuật mới.
-- **Cần:** mọi D-xx đã duyệt (chore: spec đã duyệt).
+- **Cần:** mọi D-xx đã duyệt (chore, bugfix làn light: spec đã duyệt).
 - **Đọc → ghi:** `spec.md`, `tdd.md`, `open-questions.md` → `plan.md`.
 
 **`plan.md` quyết định *phạm vi được phép của implement*:**
@@ -615,7 +619,8 @@ loại việc lệch tiền tố branch; còn điểm mù `review-blocking` chư
 2. `aw ship targets` liệt kê nhánh đích → **bạn chọn** (`⚠` = sẽ kéo theo commit ngoài việc).
 3. Agent cho bạn xem nguồn → đích, tiêu đề, mô tả; **bạn đồng ý** thì agent chạy `aw ship create`.
    Engine không giữ token: dùng `gh`/`glab` đã đăng nhập; không có thì đẩy branch và đưa bạn link MR
-   điền sẵn (mô tả lưu ở `mr-description.md` để bạn dán).
+   điền sẵn (mô tả lưu ở `mr-description.md` để bạn dán). Khai `mr_include_artifacts: spec tdd` thì
+   mô tả kèm `spec.md`, `tdd.md` trong khối thu gọn — người không chạy agent đọc được ngay trên MR.
 4. `aw ship status` theo dõi; ghi `ship.md` (máy ghi, không sửa tay).
 5. **Bạn review và merge trên GitHub/GitLab.** Agent không bao giờ merge, approve, bật auto-merge.
 
@@ -674,10 +679,21 @@ chạy lại phase sinh ra file lỗi thời (agent sẽ cập nhật, không gh
 |---|---|---|---|---|---|
 | Khi nào | thêm hành vi | hành vi hiện tại **sai** | đổi cấu trúc, hành vi giữ nguyên | nhanh hơn, hành vi giữ nguyên | không đụng code production |
 | Spec thêm | — | `## Reproduction` | YC chỉ `preserve`/`structural`; YC preserve có `Protected by:` test **có sẵn trên base** | như refactor + YC `performance` có `Target` bằng số | — |
-| Design | có | có | là phần việc chính | là phần việc chính | **bỏ** |
+| Design | có | có (làn `light`: **bỏ**) | là phần việc chính | là phần việc chính | **bỏ** |
 | Plan thêm | — | task đầu = viết test tái hiện | `Modified existing tests` | task đầu = đo trước; `Modified existing tests` | `Dependency upgrades` (`patch \| minor`) |
 | Implement — máy chặn khi | — | chưa có `repro.md`, test tái hiện xanh, hoặc bước tái hiện đụng file ngoài test | xoá test cũ | `perf.md` thiếu số đo | đụng `production_code`; đụng `dependency_files` không khai, nâng major, hoặc thiếu `sca` xanh |
 | Review xét thêm | — | test đỏ **vì bug**, không vì lỗi biên dịch | test cũ chỉ đổi import/cấu trúc, không đổi assertion | kết luận YC performance theo số | mức nâng thư viện đúng |
+
+**Bugfix làn light** (`- **Lane:** light` trong `intake.md`, bạn chọn ở `/aw-intake`): cho bản sửa
+nhỏ, cục bộ, không đổi hợp đồng, dữ liệu hay luồng. Bỏ design như chore: duyệt spec xong là
+`/aw-plan`. Mọi luật bugfix khác giữ nguyên (`## Reproduction`, test tái hiện đỏ). Máy giữ làn này
+nhỏ thật:
+
+- spec `Risk: high` → `aw check plan` chặn (rủi ro cao cần design Mode 2);
+- diff đổi quá `light_lane_max_files` file ngoài test (mặc định 3) → implement cảnh báo, review chặn.
+
+Hết nhỏ giữa chừng: bỏ dòng `Lane` ở `intake.md` (đổi `intake.md` làm spec lỗi thời), chạy lại
+`/aw-spec` rồi `/aw-design`.
 
 Không phải loại riêng: `hotfix` = bugfix gấp (base có thể là nhánh `release_branches`); `security` =
 bugfix/feature + `Risk: high`; `utils` = feature (thêm) hoặc refactor (gom). `spike` nằm ngoài quy
@@ -888,7 +904,8 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 - **Review không chạy lại test.** Lệnh local lệch pipeline thì local xanh mà CI vẫn chặn — giữ
   `SECURITY_CMDS`, `TEST_CMD` trùng CI.
 - **Artifact không đi theo PR**: reviewer trên GitHub/GitLab chỉ thấy code (và ADR/BR đã nâng). Mô tả
-  MR (`merge-request.md`) là cầu nối.
+  MR (`merge-request.md`) là cầu nối; `mr_include_artifacts` đính thêm `spec.md`, `tdd.md` — chỉ lúc
+  gửi MR, sau khi đã duyệt, nên PO vẫn phải đọc spec trên máy người chạy agent nếu muốn duyệt trước.
 - **Glob `*` khớp cả `/`**: `src/*` rộng hơn bạn tưởng.
 - `06-ship` chỉ lo MR, không lo deploy/tag/release note.
 

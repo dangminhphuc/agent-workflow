@@ -23,7 +23,7 @@ needs_clean_context: true
 
 Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages execution — **no new technical choices** (this phase has no human gate). `open-questions.md` tells which tasks stand on a temporary assumption.
 
-`chore` (no `tdd.md`): input is the approved `spec.md`; tasks have no `Based on: D-xx`.
+`chore` and bugfix `Lane: light` (no `tdd.md`): input is the approved `spec.md`; tasks have no `Based on: D-xx`.
 
 ## Steps
 
@@ -45,7 +45,7 @@ Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages ex
    - `chore`: dependency bumps → `## Dependency upgrades` (`patch | minor` only).
    - D with `Promote: adr` → a task `Based on: D-NN` whose `Expected files` include the ADR directory (`docs/adr/*` by default) and whose `Verify` is `aw adr check`.
    - YC with `Promote: BR-<DOMAIN>-NNN` → a task covering it whose `Expected files` include the rule file (`docs/product/rules/<domain>.md` by default) and whose `Verify` is `aw rule check`.
-6. **Record inputs:** `aw based-on <dir> plan.md spec.md tdd.md` (chore: drop `tdd.md`).
+6. **Record inputs:** `aw based-on <dir> plan.md spec.md tdd.md` (no design: drop `tdd.md`).
 
 ## Forbidden
 

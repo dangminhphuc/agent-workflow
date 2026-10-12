@@ -161,6 +161,61 @@ kc_loai() {
   ' "$1/intake.md"
 }
 
+# kc_lan <thư-mục-feature> -> giá trị dòng "- **Lane:**" của intake.md; thiếu = full.
+# Chỉ bugfix được chọn light (aw check intake chặn chỗ khác).
+kc_lan() {
+  _l=""
+  [ -f "$1/intake.md" ] && _l=$(awk '
+    { sub(/\r$/, "") }
+    /^[ \t]*-[ \t]+\*\*Lane:\*\*/ {
+      s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
+      gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
+    }
+  ' "$1/intake.md")
+  printf '%s\n' "${_l:-full}"
+}
+
+# kc_bo_design <thư-mục-feature> -> mã 0 nếu việc không có phase design: chore, hoặc
+# bugfix làn light. Khi đó cổng duyệt spec và điểm mù "blocking" nằm ở plan.
+kc_bo_design() {
+  case "$(kc_loai "$1")" in
+    chore)  return 0 ;;
+    bugfix) [ "$(kc_lan "$1")" = light ] ;;
+    *)      return 1 ;;
+  esac
+}
+
+# kc_lan_light_rui_ro <thư-mục-feature> -> lý do nếu việc làn light có spec "Risk: high"
+# (Mode 2 cần design — làn light không có). Chính xác nên chặn ở plan.
+kc_lan_light_rui_ro() {
+  [ "$(kc_loai "$1")" = bugfix ] && [ "$(kc_lan "$1")" = light ] || return 0
+  [ -f "$1/spec.md" ] || return 0
+  _r=$(awk '
+    { sub(/\r$/, "") }
+    /^[ \t]*-[ \t]*\**Risk\**:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }
+  ' "$1/spec.md")
+  [ "$_r" = high ] || return 0
+  echo "spec.md \"Risk: high\" mà intake.md chọn \"Lane: light\" — việc rủi ro cao phải qua design (Mode 2). NGƯỜI bỏ dòng Lane ở intake.md, chạy lại /aw-spec rồi /aw-design"
+}
+
+# kc_lan_light_co <thư-mục-feature> — bugfix làn light: số file đổi (trừ test_files,
+# ignored_files) vượt light_lane_max_files (trống = 3). Kiểm chéo phạm vi, hay báo
+# nhầm → cảnh báo ở implement, review chặn.
+kc_lan_light_co() {
+  [ "$(kc_loai "$1")" = bugfix ] && [ "$(kc_lan "$1")" = light ] || return 0
+  _max=$(conv_get "$(kc_conventions "$1")" light_lane_max_files)
+  _max=${_max:-3}
+  _ds=$(kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
+    _f=${_q:-$_p}
+    kc_khop_khoa "$1" test_files "$_f" && continue
+    kc_khop_khoa "$1" ignored_files "$_f" && continue
+    printf '%s\n' "$_f"
+  done | sort -u)
+  _n=$(printf '%s' "$_ds" | grep -c .)
+  [ "$_n" -gt "$_max" ] || return 0
+  echo "Lane: light nhưng diff đổi $_n file ngoài test (light_lane_max_files: $_max): $(printf '%s' "$_ds" | tr '\n' ' ')— việc không còn nhỏ: NGƯỜI bỏ dòng Lane ở intake.md và chạy lại từ /aw-spec, hoặc thu hẹp diff"
+}
+
 # kc_spec_chua_duyet <thư-mục-feature> -> in lý do nếu spec.md chưa được NGƯỜI duyệt
 # (ô "Approved by human" chưa tick, hoặc nội dung đổi sau khi tick). Dùng làm cổng
 # vào phase ngay sau spec. Ghi dấu duyệt nếu người vừa tick.
@@ -447,13 +502,14 @@ kc_chan_theo_loai() {
 kc_canh_bao_theo_loai() {
   kc_loai_branch "$1"
   case "$(kc_loai "$1")" in
+    bugfix)        kc_lan_light_co "$1" ;;
     refactor|perf) kc_test_cu_sua "$1" ;;
   esac
 }
 
 # ------------------------------------------------------------------ điểm mù
 # Ba mức chặn của một điểm mù ([OPEN-QUESTION]) — người duyệt nhãn ở gate spec:
-#   blocking         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore: plan)
+#   blocking         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore, bugfix làn light: plan)
 #   review-blocking  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
 #   non-blocking     sai thì sửa nhỏ                 → giao được; review ghi YC đó "pending"
 
@@ -475,7 +531,7 @@ kc_diem_mu() {
 }
 
 # kc_diem_mu_mo <thư-mục-feature> <mức...> -> điểm mù CÒN MỞ thuộc các mức đã cho.
-# Gọi với "blocking" làm cổng vào design (chore: plan); với "blocking" + "review-blocking"
+# Gọi với "blocking" làm cổng vào design (chore, làn light: plan); với "blocking" + "review-blocking"
 # ở implement (cảnh báo) và review (chặn).
 kc_diem_mu_mo() {
   _dm_d="$1"; shift

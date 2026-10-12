@@ -11,6 +11,24 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **Bugfix làn light — `- **Lane:** light` trong `intake.md`.** Bản sửa nhỏ, cục bộ bỏ design như
+  chore: duyệt spec xong là `/aw-plan`, không phải viết và duyệt `tdd.md`. Người chọn ở `/aw-intake`
+  (câu hỏi `Làn`, chỉ hiện với bugfix); mọi luật bugfix khác giữ nguyên. Máy giữ làn nhỏ thật:
+  `aw check plan` chặn khi spec `Risk: high`; diff đổi quá `light_lane_max_files` file ngoài test
+  (khoá mới trong `conventions.md`, trống = 3) thì implement cảnh báo, review chặn. `aw check intake`
+  chặn `Lane` sai giá trị hay `light` cho loại khác bugfix. `aw approval`, `aw pending`, `aw ready`
+  biết việc làn light không có design.
+- **`mr_include_artifacts` trong `conventions.md`** (`spec`, `tdd`): `aw ship create` nối `spec.md`,
+  `tdd.md` vào cuối mô tả MR, mỗi file một khối `<details>` thu gọn, bỏ frontmatter và comment — PO,
+  reviewer đọc yêu cầu và quyết định đã duyệt ngay trên MR, artifact vẫn không vào git. Mô tả quá
+  60 000 byte thì không đính và báo lý do. Trống = không đính (như cũ).
+
+### Thay đổi
+- `aw conventions check` kiểm giá trị `mr_include_artifacts`, `light_lane_max_files`.
+
 ## [2026.10.25]
 
 ### Thêm

@@ -31,7 +31,7 @@ The agent proposes `Blocking`, the human approves. Choose by "if the assumption 
 
 | Level | When | What it blocks |
 |---|---|---|
-| `blocking` | Wrong → the whole design changes direction | `02-design` (chore: `03-plan`) and every later phase, until `answered` |
+| `blocking` | Wrong → the whole design changes direction | `02-design` (chore, bugfix `Lane: light`: `03-plan`) and every later phase, until `answered` |
 | `review-blocking` | Wrong → part of the code is redone | Flow continues on the assumption; `04-implement` warns, `05-review` blocks |
 | `non-blocking` | Wrong → small fix, may ship first | Nothing; review marks that YC `pending` |
 

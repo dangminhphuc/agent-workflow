@@ -5,7 +5,8 @@
 #
 # Chặn:
 #   - Đầu vào: tdd.md không qua check-design.sh (entry check = checker phase trước).
-#   - Đầu vào (chore): spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
+#   - Đầu vào (chore, bugfix "Lane: light" — không có design): spec chưa duyệt, còn điểm mù
+#     "Blocking: blocking" chưa trả lời; làn light mà spec "Risk: high".
 #   - Đầu vào: còn D-xx chưa được người tick duyệt (hoặc đổi sau khi tick). plan và implement không có người —
 #     chúng chỉ được thực thi những gì người đã duyệt.
 #   - Kiểm HAI CHIỀU phủ YC:
@@ -41,9 +42,9 @@ PLAN="$DIR/plan.md"
 LOAI=$(kc_loai "$DIR")
 n_loi=0
 
-# chore không có design: entry check lùi về checker của spec, và không có tdd.md
-# (task nào ghi "Based on: D-xx" sẽ bị chặn vì không có D nào).
-if [ "$LOAI" = "chore" ]; then
+# chore và bugfix làn light không có design: entry check lùi về checker của spec, và
+# không có tdd.md (task nào ghi "Based on: D-xx" sẽ bị chặn vì không có D nào).
+if kc_bo_design "$DIR"; then
   for f in "$SPEC" "$PLAN"; do
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
   done
@@ -52,13 +53,19 @@ if [ "$LOAI" = "chore" ]; then
     n_loi=1
     echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
   fi
-  # Với feature/bugfix/... cổng duyệt spec nằm ở design; chore bỏ design nên nằm ở đây.
+  # Với feature/bugfix/... cổng duyệt spec nằm ở design; việc bỏ design thì nằm ở đây.
   cd_duyet=$(kc_spec_chua_duyet "$DIR")
   if [ -n "$cd_duyet" ]; then
     n_loi=$((n_loi + 1))
     echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
   fi
-  # Điểm mù mức "blocking" chặn phase ngay sau spec — với chore là phase này.
+  # Làn light mất Mode 2 của design — spec "Risk: high" phải quay về làn đủ.
+  lr=$(kc_lan_light_rui_ro "$DIR")
+  if [ -n "$lr" ]; then
+    n_loi=$((n_loi + 1))
+    echo "  [LỖI] Đầu vào chưa đạt: $lr"
+  fi
+  # Điểm mù mức "blocking" chặn phase ngay sau spec — với việc bỏ design là phase này.
   dm=$(kc_diem_mu_mo "$DIR" "blocking")
   if [ -n "$dm" ]; then
     while IFS= read -r l; do

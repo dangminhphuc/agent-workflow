@@ -88,6 +88,55 @@ mr_link_tay() {
   esac
 }
 
+# mr_bo_comment — stdin → stdout: bỏ comment HTML (lời dặn của mẫu, dấu duyệt) kể cả
+# nhiều dòng; dòng chỉ còn trống vì comment thì bỏ; gộp dòng trống liên tiếp.
+mr_bo_comment() {
+  awk '{
+    s = $0; o = ""
+    while (s != "") {
+      if (trong) { i = index(s, "-->"); if (!i) { s = ""; break } s = substr(s, i + 3); trong = 0 }
+      else { i = index(s, "<!--"); if (!i) { o = o s; s = ""; break } o = o substr(s, 1, i - 1); s = substr(s, i + 4); trong = 1 }
+    }
+    if (o ~ /^[ \t]*$/ && $0 !~ /^[ \t]*$/) next
+    print o
+  }' | cat -s
+}
+
+# mr_dinh_artifact <thư-mục-feature> <file-mô-tả> <spec|tdd>… — nối artifact vào cuối
+# mô tả MR (khoá mr_include_artifacts), mỗi file một khối <details> thu gọn: người
+# không chạy agent (PO, reviewer) đọc yêu cầu và quyết định thiết kế ngay trên MR mà
+# artifact vẫn không vào git. Bỏ comment HTML như phần mô tả. Artifact không có
+# (việc bỏ design: tdd) thì bỏ qua.
+# Mô tả sẽ vượt MR_MO_TA_TOI_DA byte (GitHub nhận tối đa 65 536 ký tự) thì không đính
+# gì, in lý do ra stderr — đính một phần thì người đọc tưởng đó là toàn bộ.
+MR_MO_TA_TOI_DA=60000
+mr_dinh_artifact() {
+  _md=$1; _mf=$2; shift 2
+  _mt="$_mf.artifact"; : > "$_mt"
+  for _ma in "$@"; do
+    case "$_ma" in
+      spec) _mp="$_md/spec.md"; _mn="spec.md — yêu cầu (YC) đã duyệt" ;;
+      tdd)  _mp="$_md/tdd.md";  _mn="tdd.md — quyết định thiết kế (D-xx) đã duyệt" ;;
+      *) continue ;;
+    esac
+    [ -s "$_mp" ] || { echo "  (mr_include_artifacts: không có $(basename "$_mp") — bỏ qua)" >&2; continue; }
+    { printf '\n<details>\n<summary>%s</summary>\n\n' "$_mn"
+      # bỏ frontmatter (based_on — của máy, người đọc không cần)
+      awk '{ sub(/\r$/, "") } NR == 1 && /^---[ \t]*$/ { fm = 1; next } fm && /^---[ \t]*$/ { fm = 0; next } !fm' "$_mp" |
+        mr_bo_comment
+      printf '\n</details>\n'; } >> "$_mt"
+  done
+  if [ -s "$_mt" ]; then
+    _mc=$(( $(wc -c < "$_mf") + $(wc -c < "$_mt") + 8 ))
+    if [ "$_mc" -gt "$MR_MO_TA_TOI_DA" ]; then
+      echo "  (mr_include_artifacts: mô tả sẽ dài $_mc byte > $MR_MO_TA_TOI_DA — không đính artifact)" >&2
+    else
+      { printf '\n---\n'; cat "$_mt"; } >> "$_mf"
+    fi
+  fi
+  rm -f "$_mt"
+}
+
 # _mr_url <chuỗi> -> URL MR/PR đầu tiên trong chuỗi
 _mr_url() { grep -oE 'https?://[^ "]+/(pull/[0-9]+|merge_requests/[0-9]+)' | head -1; }
 

@@ -43,8 +43,12 @@ OQ="$DIR/open-questions.md"
 TDD="$DIR/tdd.md"
 PH="$DIR/design-findings.md"
 
-if [ "$(kc_loai "$DIR")" = "chore" ]; then
-  echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+if kc_bo_design "$DIR"; then
+  if [ "$(kc_loai "$DIR")" = "chore" ]; then
+    echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+  else
+    echo "  [LỖI] intake.md chọn \"Lane: light\" — làn light KHÔNG có phase design. Đi thẳng /aw-plan (cần design thì NGƯỜI bỏ dòng Lane)."
+  fi
   echo ""
   echo "KHÔNG ĐẠT."
   exit 1

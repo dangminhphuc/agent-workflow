@@ -6,6 +6,7 @@
 # Chặn:
 #   - intake.md thiếu, hoặc "Type" (loại việc) không thuộc feature|bugfix|refactor|perf|chore.
 #   - "Goal" (mục tiêu) trống hoặc còn chỗ giữ chỗ.
+#   - "Lane" khác full | light, hoặc light mà loại việc không phải bugfix.
 #   - Mục "Input" không có nguồn nào, nhãn không hợp lệ, hay có [INFERRED].
 #     Input chỉ nhận tài liệu có định danh hoặc lời người dùng CHÉP NGUYÊN VĂN —
 #     suy đoán của agent mà vào đây thì mọi phase sau sẽ truy về nó như có nguồn.
@@ -81,6 +82,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
 
   !co_loai && /^[ \t]*-[ \t]+\*\*Type:\*\*/ { co_loai = 1; loai = gia_tri($0) }
   !co_mt   && /^[ \t]*-[ \t]+\*\*Goal:\*\*/ { co_mt = 1; mt = gia_tri($0) }
+  !co_lan  && /^[ \t]*-[ \t]+\*\*Lane:\*\*/ { co_lan = 1; lan = gia_tri($0) }
 
   /^##[ \t]/ { if (vao) dong_cho(); vao = ($0 ~ /^##[ \t]+Input/); next }
   !vao { next }
@@ -113,10 +115,12 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     if (!co_loai)            loi("Thiếu dòng \"- **Type:**\" (feature | bugfix | refactor | perf | chore)")
     else if (!(loai in hl))  loi("\"Type: " loai "\" không hợp lệ. Chỉ chấp nhận: feature | bugfix | refactor | perf | chore")
     if (!co_mt || mt == "" || mt ~ /^<.*>$/) loi("Thiếu \"- **Goal:**\" (mục tiêu một câu)")
+    if (co_lan && lan != "full" && lan != "light") loi("\"Lane: " lan "\" không hợp lệ. Chỉ chấp nhận: full | light (không có dòng = full)")
+    else if (co_lan && lan == "light" && co_loai && loai != "bugfix") loi("\"Lane: light\" chỉ dành cho bugfix (loại việc đang là " loai ") — xoá dòng Lane")
     if (n_in == 0) loi("Mục \"## Input\" không có nguồn nào. Không có input thì không có gì để các phase sau truy về.")
 
     print ""
-    printf "Loại việc: %s — %d input\n", (co_loai ? loai : "?"), n_in
+    printf "Loại việc: %s%s — %d input\n", (co_loai ? loai : "?"), (lan == "light" ? " (làn light: bỏ design)" : ""), n_in
     for (t in dem) printf "  [%s] %d\n", t, dem[t]
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }

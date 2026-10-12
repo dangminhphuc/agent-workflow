@@ -33,6 +33,8 @@ release_branches:
 mr_target_branches:
 # [optional] github | gitlab (trống = đoán từ URL origin)
 mr_platform:
+# [optional] artifact đính vào cuối mô tả MR cho người không chạy agent: spec tdd (trống = không đính)
+mr_include_artifacts:
 
 # ── File classes (đường dẫn tính từ gốc repo; * khớp cả /) ────────
 # [edit] code chạy production — test đặt cạnh code cũng bị tính là production
@@ -43,6 +45,10 @@ test_files: *.test.* *.spec.* *_test.* test/* tests/*
 dependency_files: package.json package-lock.json yarn.lock pnpm-lock.yaml
 # [default] file đổi không cần nằm trong "Expected files" (lockfile, file sinh)
 ignored_files: package-lock.json yarn.lock pnpm-lock.yaml
+
+# ── Work types ────────────────────────────────────────────────────
+# [optional] bugfix "Lane: light": tối đa bao nhiêu file ngoài test được đổi (trống = 3)
+light_lane_max_files:
 
 # ── Test ──────────────────────────────────────────────────────────
 # [default] chuỗi trước mã YC trong test, vd // covers: YC-001

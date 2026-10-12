@@ -83,6 +83,21 @@ từ chối đích khác. Trống = chỉ `base_branch`.
 nhập sẵn). Trống: đoán từ URL của origin (`github.com` → github, có chữ `gitlab` →
 gitlab). GitLab tự host tên miền khác thì phải khai.
 
+### `mr_include_artifacts`
+Artifact `aw ship create` nối vào cuối mô tả MR, mỗi file trong một khối `<details>`
+thu gọn — để PO, reviewer không chạy agent vẫn đọc được yêu cầu và quyết định thiết kế
+ngay trên MR. Nhận `spec` (`spec.md`), `tdd` (`tdd.md`; việc không có design thì bỏ
+qua), theo thứ tự khai. Artifact vẫn không vào git. Mô tả quá 60 000 ký tự (giới hạn
+của GitHub là 65 536) thì không đính, `aw ship create` báo lý do. Trống = không đính.
+
+## Work types
+
+### `light_lane_max_files`
+Số file **ngoài** `test_files` và `ignored_files` mà một bugfix `Lane: light` được đổi
+(so với điểm rẽ khỏi base). Vượt → implement cảnh báo, review chặn: việc không còn
+nhỏ, người bỏ dòng `Lane` ở `intake.md` và chạy lại từ `/aw-spec`. Số nguyên dương;
+trống = 3.
+
 ## File classes
 
 ### `production_code`

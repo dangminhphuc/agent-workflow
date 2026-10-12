@@ -13,7 +13,7 @@ nhất — quá yếu để dùng.
 ```
 tài liệu / lời người ─▶ 00-intake ─▶ intake.md
                                        ▼
-                        01-spec ─▶ spec.md ─▶ 02-design ─▶ tdd.md    (chore: bỏ design)
+                        01-spec ─▶ spec.md ─▶ 02-design ─▶ tdd.md    (chore, bugfix light: bỏ design)
                                    ▼                       ▼
                                 03-plan ◀──────────────────┘
                                    ▼
@@ -266,6 +266,31 @@ liệu sai không, nhưng biết diff có đụng **phạm vi** của tài liệ
 - Luật active trong phạm vi diff chưa có test `covers:` chỉ cảnh báo ở implement, không thành điều
   kiện review: thiếu test cho luật cũ không phải lỗi của việc này.
 - Hình thức thư mục ADR chỉ chặn việc có nâng ADR: thư mục hỏng sẵn trên base không được chặn mọi việc.
+
+### Bugfix làn light: bỏ design cho bản sửa nhỏ
+
+Đủ bảy phase cho một bản sửa hai dòng thì người duyệt `tdd.md` không có quyết định thật — đúng thứ
+"duyệt văn xuôi" quy trình muốn tránh, và người học cách tick không đọc. Nên bugfix có làn `light`:
+đi như chore (spec → plan, cổng duyệt spec và điểm mù `blocking` dời sang plan).
+
+- **Thuộc tính của việc, không phải loại mới.** Thêm loại thì luật bugfix (tái hiện đỏ) phải chép
+  sang; `Lane` chỉ đổi một điều — có design hay không. Nằm trong `intake.md`, **người chọn**, như
+  loại việc: máy đọc được, đổi được về sau.
+- **Chỉ bugfix.** Feature thêm hành vi nên luôn có quyết định để duyệt; refactor/perf thì thiết kế
+  là phần việc chính; chore đã không có design.
+- **Máy giữ làn nhỏ thật.** `Risk: high` cần Mode 2 (người phác D-xx) — chính xác nên chặn ở plan.
+  Số file đổi là kiểm chéo thô (file sinh, đổi tên hàng loạt) nên chỉ cảnh báo ở implement, chặn ở
+  review; file test và `ignored_files` không tính vì test tái hiện không làm việc lớn lên.
+- **Ra khỏi làn** = bỏ dòng `Lane`: `intake.md` đổi nên spec lỗi thời, chạy lại `/aw-spec` rồi
+  `/aw-design` — không có đường tắt giữ spec cũ, vì `Risk` và điểm mù được người duyệt cho làn cũ.
+
+### Artifact trên MR: chép lúc gửi, không vào git
+
+Artifact ngoài git (PR chỉ có code) giữ nguyên. Người không chạy agent (PO, reviewer) cần đọc yêu cầu
+và quyết định đã duyệt, nên `aw ship create` nối `spec.md`, `tdd.md` vào cuối mô tả MR khi team khai
+`mr_include_artifacts`. Khối `<details>` thu gọn để mô tả viết tay vẫn là phần đọc đầu; bỏ frontmatter
+và comment (dấu duyệt, lời dặn mẫu) như phần mô tả. Quá dài thì không đính gì — đính một phần thì
+người đọc tưởng là toàn bộ. Tắt mặc định: mô tả MR là thứ công khai trong tổ chức, team quyết.
 
 ## Hai loại điều kiện ra
 
@@ -574,7 +599,9 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.
 10. **Artifact không đi theo PR** — reviewer chỉ thấy code. D-xx người chọn nâng thì đi theo PR dưới
-    dạng ADR; phần còn lại của `tdd.md` thì không.
+    dạng ADR. `mr_include_artifacts` chép `spec.md`, `tdd.md` vào mô tả MR — bản chụp lúc tạo MR,
+    không cập nhật khi push thêm, và chỉ có sau khi đã duyệt: PO muốn duyệt spec trước vẫn phải đọc
+    trên máy người chạy agent.
 11. **Ghim sha256 là tin lần đầu (TOFU)**; repo cấu hình chung của team thu hẹp, không xoá rủi ro.
 12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `TEST_CMD`.
 13. **File máy ghi giả được** (`task-results.md`, `test-results.md`): chặn việc *quên*, không chặn
@@ -596,3 +623,6 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 21. **Phạm vi thô**: glob `case` (`*` khớp cả `/`), tài liệu module phủ cả thư mục — sửa một file test
     trong `src/` cũng đòi verdict cho `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen
     tay ghi `pass` không đọc.
+22. **Làn light dựa vào người chọn đúng.** Máy chỉ chặn `Risk: high` và đếm số file; bản sửa ít file
+    mà đổi hợp đồng (một dòng đổi kiểu trả về API) vẫn đi làn light. Review ngữ cảnh sạch là lưới
+    sau: lệch hợp đồng là `Blocker` dù không có `tdd.md`.

@@ -13,7 +13,8 @@
 #   - khoá lạ (gõ sai) — script bỏ qua khoá lạ, luật tương ứng tắt mà không ai biết
 #   - khoá khai hai lần — dòng sau bị bỏ qua
 #   - khoá bắt buộc trống: base_branch branch_patterns type_by_prefix test_files
-#   - giá trị sai dạng: mr_platform, type_by_prefix (cặp, loại, khớp branch_patterns),
+#   - giá trị sai dạng: mr_platform, mr_include_artifacts, light_lane_max_files, type_by_prefix
+#     (cặp, loại, khớp branch_patterns),
 #     regex không biên dịch được hoặc dùng {n}, worktree_dir thiếu {ten} / nằm trong repo
 #   - knowledge_adr_dir, knowledge_rules_dir tuyệt đối, có "..", hay nằm trong .agent-workflow/
 #   - base_branch không có (local lẫn origin); file khai ở rules_* hay mục uses_* không dùng được
@@ -145,6 +146,17 @@ done
 case "$(gt mr_platform)" in
   ""|github|gitlab) ;;
   *) loi "mr_platform \"$(gt mr_platform)\" — chỉ nhận github hoặc gitlab (trống = đoán từ origin)" ;;
+esac
+
+for a in $(gt mr_include_artifacts); do
+  case "$a" in
+    spec|tdd) ;;
+    *) loi "mr_include_artifacts: \"$a\" không hợp lệ — chỉ nhận spec, tdd" ;;
+  esac
+done
+case "$(gt light_lane_max_files)" in
+  "") ;;
+  *[!0-9]*|0) loi "light_lane_max_files \"$(gt light_lane_max_files)\" — phải là số nguyên dương (trống = 3)" ;;
 esac
 
 BP=$(gt branch_patterns)

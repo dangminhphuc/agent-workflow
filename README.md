@@ -53,7 +53,7 @@ flowchart TD
 
     INTAKE --> SPEC --> DESIGN --> PLAN --> IMPL --> REVIEW --> SHIP
     PHAC -.-> DESIGN
-    SPEC -. "chore: bỏ design" .-> PLAN
+    SPEC -. "chore, bugfix light: bỏ design" .-> PLAN
     IMPL -. "cảnh báo dồn về" .-> REVIEW
     IMPORT -.-> SPEC
     IMPORT -.-> DESIGN
@@ -81,6 +81,9 @@ flowchart TD
 - **Loại việc đổi luật** (`feature | bugfix | refactor | perf | chore`): bugfix cần test tái hiện
   đỏ trước khi sửa, refactor cấm hành vi mới, perf cần số đo trước/sau, chore bỏ design và không
   đụng code production. Chi tiết: [`00-intake.md`](workflow/phases/00-intake.md).
+- **Bugfix nhỏ đi làn light** (`Lane: light` trong `intake.md`, người chọn): bỏ design như chore.
+  Máy chặn làn này khi spec `Risk: high`, và ở review khi diff đổi quá `light_lane_max_files` file
+  ngoài test.
 - **Worktree bắt buộc.** Checkout chính chỉ chạy `/aw-intake`, `/aw-bootstrap` (đề xuất worktree,
   **bạn chọn base**) và `/aw-ship` (dọn việc đã merge). Mọi phase khác chạy trong worktree, mỗi việc
   một phiên.

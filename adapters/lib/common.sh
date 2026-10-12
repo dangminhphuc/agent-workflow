@@ -243,7 +243,7 @@ buoc_phan_loai_input() {
 buoc_cong_duyet() {
   case "$1" in
     design) _cd_gi="the spec"; _cd_lenh="/aw-design" ;;
-    plan)   _cd_gi="every D-xx decision (chore: the spec)"; _cd_lenh="/aw-plan" ;;
+    plan)   _cd_gi="every D-xx decision (chore, bugfix \`Lane: light\`: the spec)"; _cd_lenh="/aw-plan" ;;
     *)      _cd_gi="the previous phase"; _cd_lenh="/$(ten_lenh "$1")" ;;
   esac
   printf '## Step 1 — Approval gate (right after Step 0, before anything else)\n\n'
@@ -266,7 +266,7 @@ buoc_ket_thuc() {
   _tiep_ghi=""
   case "$_tiep" in *"|true") ;; ?*) _tiep_ghi=" (optional)" ;; esac
   _tiep=${_tiep%%|*}
-  if [ "$1" = spec ]; then _tiep_ghi=" (chore: \`/$(ten_lenh plan)\`)"; fi
+  if [ "$1" = spec ]; then _tiep_ghi=" (chore, bugfix \`Lane: light\`: \`/$(ten_lenh plan)\`)"; fi
   printf -- '- **Finish** — end with these lines to the human (Vietnamese, one line each):\n'
   printf '  `Kết quả: <the [x] label of the exit check>` · `Cần bạn: <each HUMAN exit still open, or "không">`'
   if [ -n "$_tiep" ]; then printf ' · `Tiếp theo: /%s`%s' "$(ten_lenh "$_tiep")" "$_tiep_ghi"; fi

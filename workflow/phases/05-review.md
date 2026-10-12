@@ -41,7 +41,7 @@ Verify **independently** that the diff does what `spec.md` asks, follows the app
 Go through **every** `YC-NNN`: which code satisfies it, verdict `pass` / `fail` / `partial`. Skip none. A YC with `[OPEN-QUESTION]` whose assumption is unconfirmed → `pending`, never `pass`.
 
 ### 2. Design and scope (`## Lens 2 — Design and scope`)
-- Does the code follow the approved D-xx, contract and data model of `tdd.md`?
+- Does the code follow the approved D-xx, contract and data model of `tdd.md`? (No `tdd.md` — chore, bugfix `Lane: light`: check the diff changes no contract, payload or schema the spec does not ask for.)
 - Changes belonging to no task? Tasks `[x]` with no trace in the diff?
 - "Unplanned" items handled silently instead of reported?
 - Manually verified tasks (`task-results.md`): does the evidence really prove the task is done?

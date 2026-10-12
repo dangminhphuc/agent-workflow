@@ -78,6 +78,10 @@ sca: echo sca-sach
 "'
 
 F="$R/.agent-workflow/feat_x"
+LAN=""
+
+# bo_design — việc của fixture không có phase design (chore, bugfix "Lane: light")
+bo_design() { [ "$LOAI" = "chore" ] || [ "$LAN" = "light" ]; }
 
 viet_intake() {
   cat > "$F/intake.md" <<EOF
@@ -87,7 +91,8 @@ viet_intake() {
 - **Base:** \`main\` @ \`$(git -C "$R" rev-parse --short main 2>/dev/null)\`
 - **Engine:** $(cat "$ROOT/VERSION")
 - **Goal:** làm x
-
+${LAN:+- **Lane:** \`$LAN\`
+}
 ## Input
 
 - \`[JIRA]\` ABC-1
@@ -160,7 +165,7 @@ EOF
 }
 
 viet_tdd() {
-  [ "$LOAI" = "chore" ] && { rm -f "$F/tdd.md" "$F/design-findings.md"; return 0; }
+  bo_design && { rm -f "$F/tdd.md" "$F/design-findings.md"; return 0; }
   cat > "$F/tdd.md" <<'EOF'
 ---
 based_on: []
@@ -252,9 +257,11 @@ viet_plan() {
 | Task | What came up | Extra files | Resolution |
 |---|---|---|---|
 EOF
-  if [ "$LOAI" = "chore" ]; then
+  if bo_design; then
     thay "$F/plan.md" '- Based on: `D-01`
 ' ''
+  fi
+  if [ "$LOAI" = "chore" ]; then
     thay "$F/plan.md" '`src/*` `test/*`' '`docs/*`'
   fi
 }
@@ -299,7 +306,7 @@ EOF
 
 ghi_based_on() {
   sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null
-  if [ "$LOAI" = "chore" ]; then
+  if bo_design; then
     sh "$T/based-on.sh" "$F" plan.md spec.md >/dev/null
   else
     sh "$T/based-on.sh" "$F" tdd.md spec.md open-questions.md >/dev/null
@@ -312,9 +319,9 @@ ghi_bang_chung_task() {
   for _t in T-01 T-02; do sh "$T/task.sh" done "$F" "$_t" >/dev/null 2>&1; done
 }
 
-# tao_fixture [loai] [branch]
+# tao_fixture [loai] [branch] [lane]
 tao_fixture() {
-  LOAI="${1:-feature}"; _br="${2:-feat_x}"
+  LOAI="${1:-feature}"; _br="${2:-feat_x}"; LAN="${3:-}"
   R="$TMP/repo-$LOAI"; F="$R/.agent-workflow/$_br"
   rm -rf "$R"
   mkdir -p "$F" "$R/src" "$R/test" "$R/docs"
@@ -1555,7 +1562,7 @@ dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw
 dung "mọi lệnh phase kết thúc bằng Kết quả · Cần bạn" sh -c \
   "for p in intake spec design plan implement review ship; do grep -q 'Cần bạn:' '$O/.claude/commands/aw-'\$p.md || exit 1; done"
 dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec có nhánh chore)" sh -c \
-  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore: .*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
+  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore, bugfix .*Lane: light.*: .*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
 dung "…phase cuối không có lệnh tiếp theo" sh -c "! grep -q 'Tiếp theo:' '$O/.claude/commands/aw-ship.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/independent-reviewer.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/design-checker.md"
@@ -2567,6 +2574,64 @@ thay "$F/plan.md" '- Expected files: `docs/*`' '- Based on: `D-01`
 ky_vong 1 "chore: task Dựa trên D-xx bị chặn (không có tdd.md)" sh "$T/check-plan.sh" "$F"
 viet_plan; ghi_based_on
 
+# ---------------------------------------------------------------- bugfix làn light
+echo ""
+echo "bugfix làn light (Lane: light — bỏ design)"
+tao_fixture bugfix fix_l light
+for c in intake spec plan implement review; do
+  ky_vong 0 "bugfix làn light đầy đủ (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
+done
+ky_vong 1 "làn light chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
+dung "…đúng lý do: làn light không có design" sh -c "sh '$T/check-design.sh' '$F' | grep -q 'Lane: light'"
+ky_vong 2 "làn light: aw approval design → SAI THAM SỐ" sh "$T/approval.sh" design "$F"
+LP="$TMP/lan-pending"; rm -rf "$LP"; mkdir -p "$LP"; cp "$F/intake.md" "$F/spec.md" "$F/open-questions.md" "$LP/"
+thay "$LP/open-questions.md" '`non-blocking`' '`blocking`'
+dung "aw pending: điểm mù blocking của làn light chặn /aw-plan (không có design)" sh -c "sh '$T/pending.sh' '$LP' 2>/dev/null | grep -q 'ĐANG CHẶN /aw-plan'"
+
+thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
+ky_vong 1 "làn light: aw approval plan hỏi duyệt SPEC" sh "$T/approval.sh" plan "$F"
+dung "…nói rõ làn light không có design" sh -c "sh '$T/approval.sh' plan '$F' 2>/dev/null | grep -q 'bugfix làn light không có design'"
+ky_vong 1 "làn light: plan chặn khi người chưa duyệt spec" sh "$T/check-plan.sh" "$F"
+viet_spec; ghi_based_on
+
+thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `high`'
+ky_vong 1 "làn light mà spec Risk: high → plan chặn (Mode 2 cần design)" sh "$T/check-plan.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-plan.sh' '$F' | grep -q 'Risk: high.*Lane: light'"
+viet_spec; ghi_based_on
+
+thay "$F/open-questions.md" '`non-blocking`' '`blocking`'
+ky_vong 1 "làn light: điểm mù blocking còn mở thì plan chặn" sh "$T/check-plan.sh" "$F"
+viet_spec; ghi_based_on
+
+thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Based on: `D-01`
+- Expected files: `src/b.txt`'
+ky_vong 1 "làn light: task Based on D-xx bị chặn (không có tdd.md)" sh "$T/check-plan.sh" "$F"
+viet_plan; ghi_based_on
+
+# Diff vượt light_lane_max_files (file test không tính): implement cảnh báo, review chặn.
+printf 'c\n' > "$R/src/c.txt"; printf 'd\n' > "$R/src/d.txt"
+sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
+ky_vong 0 "làn light: 3 file ngoài test, ngưỡng mặc định 3 → review cho qua" sh "$T/check-review.sh" "$F"
+cp "$CFG/conventions.md" "$TMP/conv-lan.bak"
+thay "$CFG/conventions.md" 'light_lane_max_files:' 'light_lane_max_files: 2'
+ky_vong 0 "làn light: vượt light_lane_max_files → implement vẫn ĐẠT" sh "$T/check-implement.sh" "$F"
+dung "…nhưng cảnh báo, kể tên file" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'CẢNH BÁO.*Lane: light nhưng diff đổi 3 file.*src/c.txt'"
+ky_vong 1 "…review chặn" sh "$T/check-review.sh" "$F"
+cp "$TMP/conv-lan.bak" "$CFG/conventions.md"
+rm -f "$R/src/c.txt" "$R/src/d.txt"; sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
+
+thay "$F/intake.md" '- **Lane:** `light`' '- **Lane:** `nhe`'
+ky_vong 1 "intake: Lane sai giá trị → chặn" sh "$T/check-intake.sh" "$F"
+thay "$F/intake.md" '- **Lane:** `nhe`' '- **Lane:** `full`'
+ky_vong 0 "intake: Lane full → cho qua" sh "$T/check-intake.sh" "$F"
+dung "…Lane full thì có design trở lại" sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; ! kc_bo_design '$F'"
+thay "$F/intake.md" '- **Lane:** `full`' '- **Lane:** `light`'
+thay "$F/intake.md" '- **Type:** `bugfix`' '- **Type:** `feature`'
+ky_vong 1 "intake: Lane light cho loại khác bugfix → chặn" sh "$T/check-intake.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-intake.sh' '$F' | grep -q 'chỉ dành cho bugfix'"
+dung "…và không bỏ design (feature luôn có design)" sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; ! kc_bo_design '$F'"
+viet_intake
+
 # ---------------------------------------------------------------- doi ten feature
 echo ""
 echo "aw rename (rename-feature.sh)"
@@ -2881,11 +2946,14 @@ dung "…không push, không tạo MR" sh -c "[ ! -f '$FG/args' ] && [ -z \"\$(g
 thay "$CFG/conventions.md" 'mr_platform: github' 'mr_platform: gitlab'
 # Không có glab (PATH chỉ có gh giả): server không hỗ trợ push options → push thường + link điền sẵn
 sl() { PATH="$FB:/usr/bin:/bin" FG="$FG" sh "$T/ship.sh" "$@"; }
+thay "$CFG/conventions.md" 'mr_include_artifacts:' 'mr_include_artifacts: spec tdd'
 SLO=$(sl create "$FS" --target develop 2>&1)
 ky_vong 8 "GitLab, không có glab, server không nhận push options → KHÔNG TẠO ĐƯỢC MR" sl create "$FS" --target develop
 dung "…vẫn push được branch (push thường)" test "$(git -C "$RMS" rev-parse feat_x 2>/dev/null)" = "$(git -C "$WS" rev-parse HEAD)"
 dung "…chỉ cách ghi lại bằng --url" sh -c "printf '%s\n' \"\$1\" | grep -q 'aw ship create .* --target develop --url'" _ "$SLO"
 dung "…mô tả để sẵn ở mr-description.md cho người dán (đã bỏ comment)" sh -c "grep -q '^## Problem' '$FS/mr-description.md' && ! grep -q '<!--' '$FS/mr-description.md'"
+dung "…mr_include_artifacts: spec tdd → mô tả kèm spec.md và tdd.md (khối <details>)" sh -c "grep -q '<summary>spec.md' '$FS/mr-description.md' && grep -q '<summary>tdd.md' '$FS/mr-description.md' && grep -q '^### YC-001' '$FS/mr-description.md'"
+thay "$CFG/conventions.md" 'mr_include_artifacts: spec tdd' 'mr_include_artifacts:'
 # link điền sẵn: gọi thẳng hàm (origin https giả — không cần mạng)
 LK="$TMP/link-repo"; git init -q "$LK"; git -C "$LK" remote add origin "git@gitlab.example:g/r.git"
 printf '## Problem\n\nmột dòng\n' > "$TMP/mo-ta.md"
@@ -2894,6 +2962,21 @@ dung "link tạo tay GitLab điền sẵn nguồn, đích, tiêu đề, mô tả
   "https://gitlab.example/g/r/-/merge_requests/new?merge_request%5Bsource_branch%5D=feat_x&merge_request%5Btarget_branch%5D=develop&merge_request%5Btitle%5D=ABC-1%3A%20hi%E1%BB%87n%20a&merge_request%5Bdescription%5D=%23%23%20Problem%0A%0Am%E1%BB%99t%20d%C3%B2ng%0A"
 LKO=$(sh -c ". '$T/lib/md.sh'; . '$T/lib/mr.sh'; mr_link_tay '$LK' github feat_x develop 'T' '$TMP/mo-ta.md'")
 dung "link tạo tay GitHub: compare + title + body" bang "$LKO" "https://gitlab.example/g/r/compare/develop...feat_x?expand=1&title=T&body=%23%23%20Problem%0A%0Am%E1%BB%99t%20d%C3%B2ng%0A"
+
+# mr_include_artifacts: nối spec/tdd vào cuối mô tả MR (gọi thẳng hàm)
+DA="$TMP/dinh-artifact"; mkdir -p "$DA"
+printf -- '---\nbased_on:\n  - intake.md@abc\n---\n\n# Spec — x\n\n- [x] **Approved by human** <!-- approval-hash: 0123456789abcdef -->\n\n### YC-001 — a\n' > "$DA/spec.md"; printf '# Technical Design — x\n\n### D-01 — b\n' > "$DA/tdd.md"
+dinh() { printf '## Problem\n\nmột dòng\n' > "$DA/mo.md"; sh -c ". '$T/lib/md.sh'; . '$T/lib/mr.sh'; mr_dinh_artifact '$DA' '$DA/mo.md' $*"; }
+dinh spec tdd 2>/dev/null
+dung "…bỏ frontmatter và comment HTML (dấu duyệt) của artifact" sh -c "! grep -q 'based_on' '$DA/mo.md' && ! grep -q '<!--' '$DA/mo.md' && grep -q 'Approved by human' '$DA/mo.md'"
+dung "mr_include_artifacts: mô tả gốc giữ ở đầu, spec rồi tdd trong khối <details>" sh -c \
+  "head -1 '$DA/mo.md' | grep -qx '## Problem' && grep -q '<summary>spec.md' '$DA/mo.md' && grep -q '<summary>tdd.md' '$DA/mo.md' && [ \"\$(grep -c '^</details>\$' '$DA/mo.md')\" = 2 ] && grep -qx '### D-01 — b' '$DA/mo.md' && [ \"\$(grep -n 'summary>spec' '$DA/mo.md' | cut -d: -f1)\" -lt \"\$(grep -n 'summary>tdd' '$DA/mo.md' | cut -d: -f1)\" ]"
+rm -f "$DA/tdd.md"
+DAO=$(dinh spec tdd 2>&1)
+dung "…việc không có tdd.md (bỏ design): chỉ đính spec, nói đã bỏ qua tdd" sh -c "printf '%s' \"\$1\" | grep -q 'không có tdd.md' && grep -q '<summary>spec.md' '$DA/mo.md' && ! grep -q '<summary>tdd.md' '$DA/mo.md'" _ "$DAO"
+awk 'BEGIN { for (i = 0; i < 1300; i++) print "- dòng yêu cầu dài để vượt giới hạn mô tả MR của GitHub" }' > "$DA/spec.md"
+DAO=$(dinh spec 2>&1)
+dung "…mô tả sẽ quá dài → không đính gì, nói lý do" sh -c "printf '%s' \"\$1\" | grep -q 'không đính artifact' && ! grep -q '<details>' '$DA/mo.md' && [ ! -e '$DA/mo.md.artifact' ]" _ "$DAO"
 
 FB2="$TMP/fakebin-chua-dang-nhap"; mkdir -p "$FB2"; printf '#!/bin/sh\nexit 1\n' > "$FB2/gh"; chmod +x "$FB2/gh"
 dung "gh đã cài mà chưa đăng nhập → không dùng, nói cách đăng nhập" sh -c \
@@ -2935,6 +3018,7 @@ URLS=$(sg create "$FS" --target develop 2>/dev/null)
 dung "create develop → ĐÃ TẠO MR, stdout là URL" bang "$URLS" "https://github.com/o/r/pull/7"
 dung "…gh nhận đúng nguồn/đích và tiêu đề" sh -c "grep -q -- '--head feat_x --base develop --title ABC-1: hiện a và b trên màn hình y' '$FG/args'"
 dung "…mô tả gửi đi bỏ dòng tiêu đề và comment của mẫu" sh -c "grep -q '^## Problem' '$FG/body' && ! grep -q '<!--' '$FG/body' && ! grep -q '^# ABC-1' '$FG/body'"
+dung "…mr_include_artifacts trống: không đính artifact" sh -c "! grep -q '<details>' '$FG/body'"
 dung "…branch đã lên origin" test "$(git -C "$RMS" rev-parse feat_x 2>/dev/null)" = "$(git -C "$WS" rev-parse HEAD)"
 dung "…ship.md ghi MR: đích, open, sha đầu branch, URL" grep -qxF "| develop | open | $(git -C "$WS" rev-parse HEAD) | https://github.com/o/r/pull/7 |" "$FS/ship.md"
 ky_vong 5 "create lại cùng đích → ĐÃ CÓ MR ĐANG MỞ, không tạo thêm" sg create "$FS" --target develop
@@ -3015,6 +3099,9 @@ qu_loi "uses_ phase lạ" 'uses_spec:' 'uses_spek:' 'khoá lạ "uses_spek"'
 qu_loi "uses_ khai skill không có" 'uses_implement:' 'uses_implement: skill:khong-co' 'uses "skill:khong-co"'
 qu_loi "khoá bắt buộc trống" 'branch_patterns: feat_* fix_* refactor_* perf_* chore_*' 'branch_patterns:' 'branch_patterns trống'
 qu_loi "mr_platform sai" 'mr_platform:' 'mr_platform: bitbucket' 'chỉ nhận github hoặc gitlab'
+qu_loi "mr_include_artifacts sai" 'mr_include_artifacts:' 'mr_include_artifacts: spec plan' '"plan" không hợp lệ'
+qu_loi "light_lane_max_files không phải số" 'light_lane_max_files:' 'light_lane_max_files: ba' 'phải là số nguyên dương'
+qu_loi "light_lane_max_files bằng 0" 'light_lane_max_files:' 'light_lane_max_files: 0' 'phải là số nguyên dương'
 qu_loi "type_by_prefix loại sai" 'perf_=perf' 'perf_=toc-do' 'loại "toc-do" không hợp lệ'
 qu_loi "type_by_prefix lệch branch_patterns" 'perf_=perf' 'hieu-nang/=perf' 'không khớp branch_patterns'
 qu_loi "regex dùng {n}" 'jira_key_regex: [A-Z][A-Z0-9]*-[0-9]+' 'jira_key_regex: [A-Z]{2}-[0-9]+' 'không dùng {n}'

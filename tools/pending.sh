@@ -12,7 +12,7 @@
 #
 # Thứ tự nhóm (nhóm chặn phase sớm hơn đứng trước):
 #   1. Điểm mù thiếu/sai "Blocking" (checker spec đang chặn)
-#   2. Điểm mù `blocking`             — chặn /aw-design (chore: /aw-plan)
+#   2. Điểm mù `blocking`             — chặn /aw-design (chore, bugfix làn light: /aw-plan)
 #   3. Phát hiện mức `Chặn`         — chặn checker của phase ghi ra nó (thiết kế: /aw-plan)
 #   4. Điểm mù `review-blocking`      — chặn /aw-review
 #   5. Phát hiện mức `Cảnh báo`     — không chặn
@@ -48,17 +48,17 @@ PLAN="$DIR/plan.md"
 [ -f "$SPEC" ] || { echo "LỖI: không tìm thấy $SPEC — chạy /aw-spec trước" >&2; exit 2; }
 [ -f "$OQ" ]   || { echo "LỖI: không tìm thấy $OQ — /aw-spec chưa rà điểm mù" >&2; exit 2; }
 
-LOAI=$(kc_loai "$DIR")
+BO_DESIGN=""; kc_bo_design "$DIR" && BO_DESIGN=1
 
 # Phase kế tiếp, suy từ artifact đã có. Điểm mù mức "blocking" chặn phase ngay sau
 # spec, và vì mỗi checker chạy lại checker phase trước, nó chặn mọi phase sau đó.
 if [ -f "$DIR/review.md" ] || [ -f "$DIR/test-results.md" ]; then KE=review
 elif [ -f "$PLAN" ]; then KE=implement
-elif [ "$LOAI" = "chore" ]; then KE=plan
+elif [ -n "$BO_DESIGN" ]; then KE=plan
 elif [ -f "$DIR/tdd.md" ]; then KE=plan
 else KE=design
 fi
-if [ "$LOAI" = "chore" ]; then CHAN_SAU_SPEC=plan; else CHAN_SAU_SPEC=design; fi
+if [ -n "$BO_DESIGN" ]; then CHAN_SAU_SPEC=plan; else CHAN_SAU_SPEC=design; fi
 
 PL="$PLAN"; [ -f "$PL" ] || PL=/dev/null
 

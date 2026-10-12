@@ -17,7 +17,7 @@ exit_human:
   - Repo owner reviews the requirement list and "Out of scope"
   - Repo owner approves the "Blocking" level of every [OPEN-QUESTION] (blocking | review-blocking | non-blocking)
   - Repo owner approves "Risk" (high → design runs Mode 2, the human drafts D-xx first)
-  - Then the repo owner ticks "Approved by human" — design (chore: plan) blocks until then
+  - Then the repo owner ticks "Approved by human" — design (chore, bugfix `Lane: light`: plan) blocks until then
 needs_clean_context: true
 trace_rule: true
 ---

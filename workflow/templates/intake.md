@@ -1,6 +1,7 @@
 # Intake — <TÊN VIỆC>
 
 - **Type:** `<feature | bugfix | refactor | perf | chore>`   <!-- người xác nhận -->
+- **Lane:** `full`   <!-- người chọn; chỉ bugfix nhỏ được `light` (bỏ design, spec → plan) -->
 - **Base:** `<ref>` @ `<sha>`   <!-- chép đúng dòng aw worktree new in ra; người chọn base -->
 - **Engine:** <YYYY.M.N>   <!-- chép đúng dòng aw worktree new in ra; mọi aw check của việc chạy đúng version này -->
 - **Goal:** <một câu>

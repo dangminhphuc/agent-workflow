@@ -117,7 +117,7 @@ for f in intake.md spec.md open-questions.md tdd.md plan.md task-results.md test
 done
 if ! co_f intake.md; then buoc="/aw-intake — chưa có intake.md"
 elif ! co_f spec.md; then buoc="/aw-spec"
-elif [ "$loai" != chore ] && ! co_f tdd.md; then buoc="/aw-design"
+elif ! kc_bo_design "$DIR" && ! co_f tdd.md; then buoc="/aw-design"
 elif ! co_f plan.md; then buoc="/aw-plan"
 else
   ds=$(tk_ds "$DIR/plan.md")
