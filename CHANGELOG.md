@@ -11,6 +11,16 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thay đổi
+- **Mỗi điểm mù phải nêu User story và AC.** Mục trong `open-questions.md` thêm hai dòng bắt buộc:
+  `User story:` (YC-NNN là story gì — vai trò nào cần gì, để làm gì) và `Acceptance criteria:` (AC
+  của YC đó mà câu hỏi ảnh hưởng, chép nguyên văn; viết cùng dòng hoặc thành gạch con bên dưới).
+  `aw check spec` chặn khi thiếu hoặc còn chỗ giữ chỗ `<…>`. `/aw-spec` và `/aw-clarify` khi nhắc
+  tới một điểm mù luôn nêu story + AC; `aw pending` in cả hai dòng cho từng điểm mù.
+  **Việc đang dở:** bổ sung hai dòng này cho các mục đã có trong `open-questions.md`.
+
 ## [2026.10.25]
 
 ### Thêm

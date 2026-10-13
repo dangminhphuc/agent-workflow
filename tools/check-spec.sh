@@ -81,6 +81,19 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
       match($0, /YC-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
       co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
     }
+    # User story / Acceptance criteria: giá trị cùng dòng, hoặc gạch con thụt lề ngay bên dưới.
+    if (cho_oq != "" && $0 ~ /^[ \t]+[-*][ \t]+/) {
+      v = $0; sub(/^[ \t]+[-*][ \t]+(\[[ xX]\][ \t]*)?/, "", v); gsub(/<!--.*-->/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v)
+      if (v != "" && v !~ /^<.*>$/) co_truong[cur_oq, cho_oq] = 1
+      next
+    }
+    cho_oq = ""
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**User stor(y|ies)\**:/) {
+      v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) co_truong[cur_oq, "us"] = 1; else cho_oq = "us"
+    }
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**(Acceptance criteria|AC)\**:/) {
+      v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) co_truong[cur_oq, "ac"] = 1; else cho_oq = "ac"
+    }
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Assumption\**:/) co_gia_dinh[cur_oq] = 1
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/) muc_ch[cur_oq] = gia_tri($0)
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*(Mức chặn|Mức ảnh hưởng)[^:]*:/) muc_cu[cur_oq] = gia_tri($0)
@@ -262,6 +275,10 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
         loi("open-questions.md có mục \"## " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
         continue
       }
+      if (!((q, "us") in co_truong))
+        loi(q ": mục trong open-questions.md thiếu \"User story:\" — nêu " q " là story gì (vai trò nào cần gì, để làm gì).")
+      if (!((q, "ac") in co_truong))
+        loi(q ": mục trong open-questions.md thiếu \"Acceptance criteria:\" — chép các AC của " q " mà câu hỏi ảnh hưởng.")
       if (s != "open" && s != "answered") {
         loi(q ": \"Status: " s "\" trong open-questions.md không hợp lệ. Chỉ chấp nhận: open | answered")
         continue

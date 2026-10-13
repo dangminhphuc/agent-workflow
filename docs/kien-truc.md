@@ -363,6 +363,11 @@ trỏ vào `open-questions.md § YC-NNN` mà mục đó không có — chính x�
 đưa đúng task `Covers`/`On assumption` YC đó (hay `Based on` D đó) về `[ ]` — máy làm, khỏi để agent
 grep tay và sót.
 
+**Điểm mù luôn nêu User story + AC.** YC là user story, các `- [ ] …` của nó là AC; mục trong
+`open-questions.md` phải có `User story:` và `Acceptance criteria:` để người trả lời (thường là PO/BA,
+không mở repo) thấy câu hỏi đổi story nào, AC nào. Checker chỉ kiểm có/không — chính xác nên chặn;
+không đối chiếu chữ AC với `spec.md` (dễ báo nhầm khi diễn đạt lại).
+
 **Gộp ở chỗ người nhìn, không gộp chỗ lưu**: điểm mù và phát hiện LLM ở file riêng (mỗi file một
 bên ghi, checker LLM ghi đè cả file, `based_on` băm cả file — chung file thì checker ghi phát hiện
 làm `tdd.md` lỗi thời). Checker LLM mới chỉ cần ghi `<id>-findings.md` đúng mẫu là `aw pending` gom.

@@ -42,4 +42,5 @@ Answering an open question: write `Answer:`, set `Status: answered`, **and** cha
 - A YC's region ends at the next `##`/`###` heading: a `Source:` or criterion under `### Ghi chú` does not count for the YC above (split a YC with `####`).
 - An acceptance criterion still `<...>` or inside an HTML comment does not count.
 - `open-questions.md` and the spec disagree: `open` ↔ YC still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and the YC label was changed.
+- An `open-questions.md` entry without `User story:` (the YC as a story) or `Acceptance criteria:` (the AC it affects) — every open question names both.
 - `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` left empty — write "Không có…" / "Không phát hiện mâu thuẫn." instead.

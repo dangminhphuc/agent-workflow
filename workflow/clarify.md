@@ -54,7 +54,7 @@ Choices are **solution options**, not procedure. Before each item:
 
 Each choice: a short **label** naming the option; a one-line **description** of consequence/trade-off (differs from the temporary assumption → say what must be redone; taken from the source → cite it, e.g. `theo Input 2 § 4`; equals the temporary assumption → say "đang dùng làm giả định tạm").
 
-Context right before the question, max 4 lines: id · group · what it blocks · position in queue; what the source says; why you recommend.
+Context right before the question, max 6 lines: id · group · what it blocks · position in queue; the **user story** (the YC) and the **AC** at stake; what the source says; why you recommend. Open question or YC → **always** show `User story:` and `AC:` — the human must see which story and which criteria the decision changes.
 
 The human **always** has two exits, **last** in the list: type their own answer, and "Chat about this" (discuss before deciding):
 
@@ -71,6 +71,8 @@ Example (human-facing text stays Vietnamese):
 
 ```
 YC-006 · CHẶN REVIEW · 5/9 · 2 quyết định
+User story: YC-006 — đối tác chỉ gọi được API khi nằm trong allowlist
+AC: "client ngoài allowlist bị từ chối"; "route mới mặc định bị chặn" — mã lỗi + hành vi route chưa khai chờ câu trả lời
 Nguồn: Input 1 chỉ nói "chỉ client trong allowlist được gọi"; không nói mã lỗi, không nói route chưa khai.
 Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu quyền chứ không sai key;
   từ chối mặc định để route mới không lọt ra ngoài khi quên khai.
@@ -125,7 +127,7 @@ Order (max 4): `(Đề xuất) <fix>` (what, which section) → 0–1 genuinely 
 4. Spec was ticked and steps 2–3 changed it → **untick** (you may untick, never tick). Remind the human to re-tick in the summary.
 5. `aw check spec <dir>`, paste the real result. Not `[x] ĐẠT` → make the files agree before the next item.
 
-**Cannot answer yet:** draft a message to `Ask`, self-contained (readable without the repo): the question, what the documents say, the assumption in use, impact if wrong, which phase is waiting. Keep `open`, next item.
+**Cannot answer yet:** draft a message to `Ask`, self-contained (readable without the repo): the user story (YC-NNN + one line) and the AC at stake, the question, what the documents say, the assumption in use, impact if wrong, which phase is waiting. Keep `open`, next item.
 
 **Human changes the level:** write exactly the level they said into `Blocking:`. You may only **propose raising** it, never lower it.
 
@@ -165,6 +167,7 @@ The human disagrees with how the spec reads a source — description, criteria o
 1. **Read** the YC, its `Source:` passage, what depends on it: `tdd.md` (`YC mapping`, `Based on: D-xx` of those sections), `plan.md` (`Covers: YC-NNN`).
 2. **Ask** as in 2a. Context: what the source says, what the YC says now, what must be redone (step 1). Options: the human's change as they stated it, keep the current reading, at most one other reading the source supports.
 3. **Record in `open-questions.md`** — the YC's entry; create `## YC-NNN — <same title as spec>` if missing (replacing a "No open questions." line):
+   - `User story`: the YC as a story; `Acceptance criteria`: the AC lines that change (verbatim from `spec.md`);
    - `Source says` verbatim; `Question`: the reading in dispute; `Ask`: the human; `Assumption`: the previous reading; `If wrong, redo`: what step 1 found;
    - `Status: answered`; `Answer:` verbatim + who + date + `(đã xác nhận sửa YC-NNN)`.
    - Entry already answered → move the old answer to `- **Superseded answer:** …`, then write the new `Answer:`.

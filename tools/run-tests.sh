@@ -153,6 +153,8 @@ EOF
 # Điểm mù
 
 ## YC-002 — b
+- **User story:** YC-002 — người dùng mở y thấy b
+- **Acceptance criteria:** mở y thấy b
 - **Assumption:** y
 - **Blocking:** `non-blocking`   <!-- blocking | review-blocking | non-blocking -->
 - **Status:** `open`   <!-- open | answered -->
@@ -422,6 +424,21 @@ ky_vong 1 "chặn mục điểm mù thiếu giả định tạm" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '- **Blocking:** `non-blocking`' ''
 ky_vong 1 "chặn mục điểm mù thiếu mức chặn" sh "$CHK" "$F"
 
+# Điểm mù phải nêu user story (YC) và AC bị ảnh hưởng
+viet_spec; thay "$F/open-questions.md" '- **User story:** YC-002 — người dùng mở y thấy b' ''
+ky_vong 1 "chặn mục điểm mù thiếu User story" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: mục trong open-questions.md thiếu \"User story:\"'"
+viet_spec; thay "$F/open-questions.md" '- **Acceptance criteria:** mở y thấy b' '- **Acceptance criteria:** <AC của YC-002>'
+ky_vong 1 "chặn mục điểm mù có Acceptance criteria còn chỗ giữ chỗ" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: mục trong open-questions.md thiếu \"Acceptance criteria:\"'"
+viet_spec; thay "$F/open-questions.md" '- **Acceptance criteria:** mở y thấy b' '- **Acceptance criteria:**
+  - [ ] mở y thấy b'
+ky_vong 0 "Acceptance criteria viết thành gạch con bên dưới thì cho qua" sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" '- **Acceptance criteria:** mở y thấy b' '- **Acceptance criteria:**
+- **Note:** x'
+ky_vong 1 "Acceptance criteria trống, dòng sau không thụt lề → chặn" sh "$CHK" "$F"
+viet_spec
+
 viet_spec; thay "$F/open-questions.md" '`non-blocking`' '`hơi hơi`'
 ky_vong 1 "chặn mức chặn tự chế" sh "$CHK" "$F"
 
@@ -535,7 +552,7 @@ viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002'
 ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
 # Người đổi YC đã có nguồn (/aw-clarify YC-NNN): ghi thành điểm mù đã trả lời
 viet_spec; sh "$CHK" "$F" >/dev/null 2>&1   # máy ghi dấu duyệt cho bản người đã tick
-printf '\n## YC-001 — a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)\n' >> "$F/open-questions.md"
+printf '\n## YC-001 — a\n- **User story:** YC-001 — người dùng mở y thấy a\n- **Acceptance criteria:** mở y thấy a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-001'
 ky_vong 1 "đổi YC sau khi spec đã duyệt → phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
@@ -1359,6 +1376,10 @@ cat > "$LQ/open-questions.md" <<'EOF'
 
 ## YC-005 — chặn, bắt buộc
 - **Ask:** PO
+- **User story:** YC-005 — người dùng thấy e
+- **Acceptance criteria:**
+  - [ ] mở x thấy e
+  - [ ] e đúng định dạng
 - **Blocking:** `blocking`
 - **Status:** `open`
 
@@ -1373,6 +1394,7 @@ dung "xếp: chặn → chặn review → không chặn; bắt buộc trước n
 printf '### T-01\n- On assumption: **yes** — `open-questions.md` § YC-003\n### T-02\n- On assumption: **yes** — § YC-003\n' > "$LQ/plan.md"
 dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định hơn thì trước" bang "$(thu_tu)" "YC-005 YC-004 YC-003 YC-002 YC-001 "
 dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task on assumption: 2 (T-01 T-02)'"
+dung "…in User story và AC (gộp gạch con) của điểm mù" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'User story: YC-005 — người dùng thấy e' && sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Acceptance criteria: mở x thấy e; e đúng định dạng'"
 dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
 dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-005.*ĐANG CHẶN /aw-implement'"
 dung "khối Kết quả: [x] CÓ VIỆC ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ VIỆC ĐANG CHẶN'"

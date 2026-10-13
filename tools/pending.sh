@@ -82,8 +82,17 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
     next
   }
   idx==1 && /^##?[ \t]/ { cur = ""; next }
+  # AC viết thành gạch con thụt lề dưới "Acceptance criteria:" — gộp lại một dòng.
+  idx==1 && cur != "" && cho_ac && /^[ \t]+[-*][ \t]+/ {
+    v = $0; sub(/^[ \t]+[-*][ \t]+(\[[ xX]\][ \t]*)?/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v)
+    if (co_nd(v)) ac[cur] = (ac[cur] == "" ? v : ac[cur] "; " v)
+    next
+  }
+  { cho_ac = 0 }
   idx==1 && cur != "" && /^[ \t]*-/ {
-    if ($0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/)            muc[cur] = gia_tri($0)
+    if ($0 ~ /^[ \t]*-[ \t]*\**User stor(y|ies)\**:/)    us[cur]  = gia_tri($0)
+    else if ($0 ~ /^[ \t]*-[ \t]*\**(Acceptance criteria|AC)\**:/) { ac[cur] = gia_tri($0); if (!co_nd(ac[cur])) { ac[cur] = ""; cho_ac = 1 } }
+    else if ($0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/)       muc[cur] = gia_tri($0)
     else if ($0 ~ /^[ \t]*-[ \t]*\**Status\**:/)         tt[cur]  = gia_tri($0)
     else if ($0 ~ /^[ \t]*-[ \t]*\**Question\**:/)       hoi[cur] = gia_tri($0)
     else if ($0 ~ /^[ \t]*-[ \t]*\**Ask\**:/)            ai[cur]  = gia_tri($0)
@@ -199,6 +208,8 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
       printf "  %d. %s%s%s\n", i, q, (ten[q] != "" ? " — " ten[q] : ""), dc
       printf "     Ask: %s · Priority: %s · Task on assumption: %d%s\n", \
         (co_nd(ai[q]) ? ai[q] : "?"), (co_nd(ut[q]) ? ut[q] : "?"), so_task[q], (so_task[q] ? " (" substr(task[q], 2) ")" : "")
+      printf "     User story: %s\n", (co_nd(us[q]) ? us[q] : "<chưa ghi>")
+      printf "     Acceptance criteria: %s\n", (co_nd(ac[q]) ? ac[q] : "<chưa ghi>")
       printf "     Question: %s\n", (co_nd(hoi[q]) ? hoi[q] : "<chưa ghi>")
       printf "     Assumption: %s\n", (co_nd(gd[q]) ? gd[q] : "<chưa ghi>")
       printf "     If wrong, redo: %s\n", (co_nd(sai[q]) ? sai[q] : "<chưa ghi>")

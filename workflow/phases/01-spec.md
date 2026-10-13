@@ -56,7 +56,8 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 
    Source says → YC. Touched but source silent → `[OPEN-QUESTION]` (usually `review-blocking`). Not touched → skip. Never invent numbers.
 6. **`## Context`:** user roles per the source. Ambiguous domain terms ("kỳ", "hạch toán") → `## Glossary` (optional), each with its source.
-7. **Open questions:** unclear in the source → `[OPEN-QUESTION]` + an entry in `open-questions.md` with the temporary assumption, "if wrong, redo what" and a proposed `Blocking`. `open-questions.md` **always exists**; none → "No open questions" (missing file = not reviewed).
+7. **Open questions:** unclear in the source → `[OPEN-QUESTION]` + an entry in `open-questions.md` with `User story` (the YC it belongs to, as a story: who needs what, why), `Acceptance criteria` (that YC's AC the question affects, verbatim), the temporary assumption, "if wrong, redo what" and a proposed `Blocking`. `open-questions.md` **always exists**; none → "No open questions" (missing file = not reviewed).
+   - **Every mention of an open question** — in `spec.md` (YC, `## Source conflicts`), `open-questions.md`, or chat — names the user story (YC-NNN + title) and the AC at stake.
 8. **`## Source conflicts`:** "Resolution" may **only** point to an open question (`open-questions.md § YC-NNN`) or a settled source (PO's `[JIRA]` comment, newer `[CONFLUENCE]` page…). None → "Không phát hiện mâu thuẫn."
 9. **`## Out of scope`:** what is *not* done — stops later phases overreaching. None → "Không có."
 10. **`## Constraints & dependencies`:** external systems, legal/accounting rules, deadlines, other teams' work — with sources. None → "Không có ràng buộc hay phụ thuộc ngoài."
