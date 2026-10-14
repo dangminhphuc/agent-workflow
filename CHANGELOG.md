@@ -21,6 +21,9 @@ ngầm giữa các bản.
   `Not applicable: <lý do>`; `aw check design` chặn khi thiếu mục hoặc để trống. Checker LLM coi
   bước triển khai không quay lui được mà không có D-xx là quyết định ngầm. Việc đang chạy dở không
   ảnh hưởng (chạy hết bằng version ghi trong `intake.md`).
+- **`TASK_FULL_TEST` trong `config.sh`.** `1` = `aw task done` chạy thêm `TEST_CMD` sau khi Verify xanh;
+  đỏ tính như Verify đỏ (giữ `[~]`, tăng đỏ liên tiếp), `task-results.md` ghi thêm dòng `Toàn bộ test`.
+  Task sau làm hỏng task trước lộ ra ngay ở task gây ra, không đợi tới `aw check implement`. Mặc định tắt.
 
 ### Thay đổi
 - **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
@@ -30,6 +33,15 @@ ngầm giữa các bản.
   có những cách nào, được/mất gì, chọn gì và vì sao, chỗ nào khó đảo ngược. D-xx ghi đúng lời người
   (`Author: human`). Agent vẫn **không** nêu, xếp hạng hay nghiêng về phương án nào; bị hỏi "nên
   chọn gì" thì chỉ gợi khía cạnh cần cân nhắc. Người muốn tự viết `tdd.md` thì agent dừng như cũ.
+- **`/aw-implement` gọn lại.** Bước 1–7 và vòng lặp tự chạy gộp thành một mục `Loop` nói theo nhãn của
+  `aw`. Bỏ mục `Common failures` và cột "Machine blocks when" (checker đã in đúng điều đó khi chặn), bỏ
+  các luật lặp với `general.md`.
+- **Mục `Unplanned` của phase nói rõ khi nào ghi rồi làm tiếp, khi nào ghi rồi dừng** (file ngoài
+  phạm vi không tránh được, luật repo xung đột → làm tiếp; `DỪNG`/`KẸT`, việc ngoài plan, phải đổi
+  `tdd.md`/`spec.md`/D-xx, test cũ sai, scan báo nhầm → dừng, báo người).
+- **Quy ước commit theo task:** task lên `[x]` thì commit file của task đó theo đường dẫn (không
+  `git add -A`), message `T-NN: <tiêu đề>` trừ khi luật repo quy định khác.
+- **Nói rõ thời điểm nâng ADR / luật:** trong task hiện thực D `Promote: adr` / YC `Promote: BR-…`.
 
 ## [2026.10.25]
 

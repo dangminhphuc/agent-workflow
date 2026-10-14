@@ -20,6 +20,9 @@
 # (config.sh, mặc định 3) thì `done` và `next` báo DỪNG: lặp tiếp là đoán mò —
 # ghi "Unplanned" và báo người. Đây là điều kiện dừng của vòng lặp implement.
 #
+# TASK_FULL_TEST=1 (config.sh): Verify xanh thì chạy thêm TEST_CMD; đỏ tính như
+# Verify đỏ (giữ [~], tăng đỏ liên tiếp). Mặc định tắt — test lâu thì chỉ chạy ở cuối.
+#
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -63,7 +66,7 @@ fi
 
 [ -f "$PLAN" ] || { echo "LỖI: không tìm thấy $PLAN" >&2; exit 2; }
 
-MAX_RED_RUNS=3
+MAX_RED_RUNS=3; TEST_CMD=""; TASK_FULL_TEST=""
 CH=$(kc_cau_hinh "$DIR")
 # shellcheck disable=SC1090
 ch_nap "$CH"
@@ -153,7 +156,7 @@ fi
 
 GOC="${AW_REPO:-$(git -C "$DIR" rev-parse --show-toplevel)}"
 TMP="${TMPDIR:-/tmp}/aw-task.$$"
-kq_don 'rm -f "$TMP" "$TMP.kq"'
+kq_don 'rm -f "$TMP" "$TMP.kq" "$TMP.tb"'
 if [ -n "$CO_MANUAL" ]; then
   printf '%s\n' "$MANUAL" > "$TMP"; ma=0
 else
@@ -163,6 +166,20 @@ else
   ma=$?
   tail -n 40 "$TMP"
   echo "────────────────────────────────────────────────────"
+fi
+# TASK_FULL_TEST=1: Verify xanh thì chạy cả TEST_CMD — task sau làm hỏng task trước
+# lộ ra ngay ở task gây ra, không đợi tới aw check implement.
+NHAN_TB=""
+if [ "$ma" -eq 0 ] && [ "$TASK_FULL_TEST" = 1 ] && [ -n "$TEST_CMD" ]; then
+  echo "Chạy toàn bộ test (TASK_FULL_TEST=1): $TEST_CMD"
+  echo "────────────────────────────────────────────────────"
+  { echo ""; echo "--- TEST_CMD: $TEST_CMD"; } >> "$TMP"
+  (cd "$GOC" && sh -c "$TEST_CMD") > "$TMP.tb" 2>&1
+  ma=$?
+  tail -n 40 "$TMP.tb"
+  cat "$TMP.tb" >> "$TMP"; rm -f "$TMP.tb"
+  echo "────────────────────────────────────────────────────"
+  if [ "$ma" -eq 0 ]; then NHAN_TB="XANH"; else NHAN_TB="ĐỎ"; fi
 fi
 truoc=$(do_lien_tiep "$TASK")
 if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
@@ -194,6 +211,7 @@ if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
     echo "- Lệnh: \`$VF\`"
   fi
   echo "- Mã thoát: \`$ma\`"
+  [ -z "$NHAN_TB" ] || echo "- Toàn bộ test: \`$TEST_CMD\` → $NHAN_TB"
   echo "- Đỏ liên tiếp: $do_moi"
   kc_dong_moi "$DIR"
   echo ""
@@ -204,7 +222,11 @@ if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
 
 if [ "$ma" -ne 0 ]; then
   [ "$st" = x ] && tk_dat "$PLAN" "$TASK" "~"
-  echo "$TASK: Verify ĐỎ (mã $ma) — ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
+  if [ "$NHAN_TB" = "ĐỎ" ]; then
+    echo "$TASK: Verify xanh nhưng toàn bộ test ĐỎ (mã $ma) — task này làm hỏng chỗ khác; ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
+  else
+    echo "$TASK: Verify ĐỎ (mã $ma) — ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
+  fi
   if [ "$do_moi" -ge "$MAX_RED_RUNS" ]; then
     echo "DỪNG: đỏ $do_moi lần liên tiếp. Ghi vào \"Unplanned\" (đã thử gì, lỗi gì) và báo người — đừng thử tiếp."
     exit 6
