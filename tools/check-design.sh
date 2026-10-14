@@ -36,6 +36,7 @@ kq_khai check-design.sh \
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/findings.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -77,6 +78,12 @@ fi
 qtl=$(kc_quy_tac_loi "$DIR" design)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $qtl
+EOF
+
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" tdd.md design-findings.md)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$tl
 EOF
 
 # Ô duyệt từng D-xx — trạng thái lấy từ thư viện chung, không tự đọc lại.

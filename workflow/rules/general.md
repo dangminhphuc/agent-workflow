@@ -35,6 +35,8 @@ Work that belongs to another phase: record it in that phase's artifact, do not d
 - Headings by level, no skipped levels. One idea per item; parallel ideas → list or table.
 - Short sentences, plain words. No hedging, no repetition, no explaining the obvious.
 - Writing from a template: delete its guidance comments (`<!-- … -->`) and the optional blocks you do not use. Never touch `<!-- approval-hash: … -->`.
+- **Table of contents — MANDATORY:** an artifact with `##`/`###` headings has `## Contents` before the first of them, linking every `##`/`###` heading in order. Never write it by hand: after every edit run `aw toc <dir>` (before `aw based-on`) and fix what it prints.
+- **References to another artifact are links to the section — MANDATORY:** `[spec.md § YC-001](spec.md#yc-001)`, never plain `spec.md § YC-001` nor a link to the file alone. A short anchor (`#yc-001`, `#d-01`, `#t-02`) is enough — `aw toc` expands it to the heading's full anchor.
 
 ## 7. Repo-specific rules, skills and subagents
 

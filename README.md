@@ -304,7 +304,7 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 | `aw adapter build [a[,b]] [--out <dir>] [--force]` | Sinh lại adapter |
 | `aw adr promote <thư-mục-feature> D-NN` · `aw adr check` | Chép D-xx đã duyệt (`Promote: adr`) thành ADR trong repo · kiểm thư mục ADR |
 | `aw rule promote <thư-mục-feature> YC-NNN` · `aw rule check` | Chép YC đã duyệt (`Promote: BR-…`) thành luật nghiệp vụ · kiểm mọi luật `BR-` |
-| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules` · `aw uses` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
+| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw toc` · `aw rename` · `aw rules` · `aw uses` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
 | `aw guard pre\|post` | Hook gác ô duyệt |
 
 ### Nhiều agent trong một team

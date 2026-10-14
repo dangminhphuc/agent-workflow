@@ -11,6 +11,26 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **Artifact phải có mục lục, tham chiếu phải là link tới mục — luật cứng.** Mọi artifact agent viết
+  (`intake.md`, `spec.md`, `open-questions.md`, `tdd.md`, `design-findings.md`, `plan.md`,
+  `review.md`, `merge-request.md`) có heading `##`/`###` thì phải có `## Contents` đứng trước heading
+  đầu tiên, liệt kê đúng mọi heading `##`/`###` theo thứ tự. Tham chiếu sang artifact khác viết thành
+  link tới mục (`[spec.md § YC-001](spec.md#yc-001--đăng-nhập)`), không còn chữ trơn
+  `spec.md § YC-001` hay link chỉ tới file. Checker của phase chặn trên artifact đầu ra của nó;
+  `aw check review` chặn trên mọi artifact (link sang file khác gãy khi file đó đổi heading).
+- **`aw toc <thư-mục-feature> [artifact…]`** — máy sinh lại `## Contents` theo heading, mở rộng anchor
+  rút gọn (`#yc-001`, `#d-01`, `#t-02`) thành anchor đầy đủ của heading, rồi in link còn sai. Anchor
+  tính như GitHub / VS Code. Chỉ ghi file khi nội dung đổi — chạy lại không làm artifact phía sau lỗi
+  thời. Mẫu artifact có sẵn mục `## Contents`.
+
+### Thay đổi
+- Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
+  `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
+  task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.
+
 ## [2026.10.25]
 
 ### Thêm

@@ -57,7 +57,7 @@ Does it change code that runs in production?
 
 ## Arguments = input
 
-`/aw-intake JIRA-123 https://confluence/…` — arguments are the input list, not the feature name (that comes from the branch). **The machine assigns labels** (`aw input`, Step 0b): copy stdout **exactly** into `## Input`. One unrecognised token makes the **whole string** one verbatim `[HUMAN]` entry; a source inside the sentence (e.g. `ABC-123` in "sửa phí hoàn tiền ABC-123") is only a **split suggestion** — ask the human, add a separate line only if they agree. `[HUMAN]` words go **verbatim** on the `>` line; `01-spec` cites them as `[FILE] intake.md § Input`.
+`/aw-intake JIRA-123 https://confluence/…` — arguments are the input list, not the feature name (that comes from the branch). **The machine assigns labels** (`aw input`, Step 0b): copy stdout **exactly** into `## Input`. One unrecognised token makes the **whole string** one verbatim `[HUMAN]` entry; a source inside the sentence (e.g. `ABC-123` in "sửa phí hoàn tiền ABC-123") is only a **split suggestion** — ask the human, add a separate line only if they agree. `[HUMAN]` words go **verbatim** on the `>` line; `01-spec` cites them as `[FILE] [intake.md § Input](intake.md#input)`.
 
 ## Create the worktree (on the main checkout)
 

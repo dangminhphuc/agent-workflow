@@ -652,6 +652,12 @@ Tất cả nằm ở `<worktree>/.agent-workflow/<tên-branch>/`.
 | `merge-request.md` | ship | agent | tiêu đề + mô tả MR | `aw ship create` | xác nhận trước khi gửi |
 | `ship.md` | ship | **máy** | MR nào, trạng thái | `aw ship sweep` | — |
 
+**Mục lục và link.** Artifact agent viết có `## Contents` ngay trước heading `##`/`###` đầu
+tiên, và mọi tham chiếu sang artifact khác là link tới mục, vd
+`[open-questions.md § YC-002](open-questions.md#yc-002--kênh-thông-báo)`. Agent không gõ tay:
+`aw toc <thư-mục-feature>` sinh mục lục và tính anchor. Sửa heading bằng tay thì chạy lại
+`aw toc`; checker chặn khi mục lục lệch heading hay link trỏ vào mục không có.
+
 **Chuỗi phụ thuộc và lỗi thời.** Mỗi artifact ghi `based_on` (hash cả file đầu vào, do
 `aw based-on` ghi):
 
