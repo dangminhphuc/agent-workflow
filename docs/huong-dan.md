@@ -472,7 +472,9 @@ cầu, review chấm code theo spec — code đúng một spec sai vẫn qua.
 |---|---|
 | `## Existing code` | module sẽ đụng, quy ước code phải theo |
 | `## Decisions (D-xx)` | **mỗi lựa chọn mà người khác có thể chọn khác**: vấn đề, ≥ 2 phương án + đánh đổi, lựa chọn, vì sao khó đảo ngược, ô duyệt riêng |
+| `## Target structure` | cấu trúc module/thành phần trước → sau (sơ đồ Mermaid); không đổi cấu trúc thì `Not applicable` |
 | Data model, Contract/API, Flow, Non-functional, Test strategy | chi tiết; mục dựa vào một D ghi `Based on: D-xx` |
+| `## Rollout & rollback` | thứ tự triển khai, flag, di trú, chạy song song, cách quay lui — và bước nào không quay lui được |
 | `## YC mapping` | mọi YC → mục thiết kế nào |
 | `- Promote: adr` + `- Scope:` dưới D | D này trở thành ADR trong repo |
 | `- Supersedes: ADR-NNNN` | D đi ngược một ADR đang hiệu lực (phải khai rõ) |
@@ -487,7 +489,11 @@ Bạn **duyệt quyết định, không duyệt văn xuôi**: đọc từng D-xx
 | `high` | 2 | **bạn phác D-xx trước** (`Author: human`); agent viết phần còn lại và chỉ phản biện (`- Critique (agent):`) |
 
 Mode 2 tồn tại vì thấy phương án của agent trước thì người hay neo vào nó. `high` mà chưa có D nào
-`Author: human` → agent dừng chờ bạn.
+`Author: human` → agent **hỏi dẫn** bạn phác: khảo sát code, liệt kê các điểm cần quyết (dạng câu hỏi, kèm
+dữ kiện như số chỗ gọi, dữ liệu phải di trú), rồi hỏi từng điểm: có những cách nào, mỗi cách được/mất
+gì, chọn cách nào và vì sao, chỗ nào khó đảo ngược. Agent ghi D-xx đúng lời bạn (`Author: human`),
+không bao giờ đưa phương án hay nghiêng về cách nào; bạn hỏi "nên chọn gì" thì agent chỉ gợi các
+khía cạnh cần cân nhắc. Muốn tự viết `tdd.md` thì nói vậy, agent dừng chờ bạn.
 
 **`design-findings.md` quyết định *thiết kế còn lỗ ở đâu*.** Checker LLM (subagent ngữ cảnh sạch) đọc
 `tdd.md` và ghi phát hiện `PH-NN`: lệch D-xx, quyết định ngầm, YC chưa thiết kế, yêu cầu mới, vi phạm
@@ -801,7 +807,7 @@ và chỉ in lệnh `git rm` để bạn dọn bằng một PR.
 | `/aw-design` dừng ngay | spec chưa tick, hoặc còn điểm mù `blocking` | tick spec; `/aw-clarify` |
 | Đã tick mà vẫn bị chặn "nội dung đổi sau khi duyệt" | spec/D sửa sau khi tick | đọc chỗ đổi, xoá `<!-- approval-hash: … -->`, giữ tick |
 | Tick bị bỏ mất | hook `aw guard` thấy tick xảy ra lúc agent đang chạy | tick lại khi agent rảnh |
-| `/aw-design` dừng, đòi bạn phác D | `Risk: high` (Mode 2) | viết D-xx `Author: human` trong `tdd.md`, hoặc hạ `Risk` nếu thật sự sai (bạn quyết) |
+| `/aw-design` hỏi bạn từng điểm cần quyết thay vì tự viết D | `Risk: high` (Mode 2) | trả lời để agent ghi D-xx `Author: human`, hoặc tự viết vào `tdd.md`, hoặc hạ `Risk` nếu thật sự sai (bạn quyết) |
 | implement `KHÔNG ĐẠT` "chưa khai lệnh test/quét" | `TEST_CMD`/`SECURITY_CMDS` trống | khai trong `config.sh` |
 | `aw ready` đỏ trên code chưa sửa | thiếu dependency hoặc base hỏng | chạy `WORKTREE_SETUP_CMD`; base hỏng thì sửa ở việc khác hoặc chọn base khác |
 | review chặn "kết quả không còn mới" | code đổi sau `aw check implement` | chạy lại `aw check implement` (hoặc `aw check security`), rồi review lại |

@@ -113,7 +113,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     n_kv = split(dtt, kv, ";"); for (i = 1; i <= n_kv; i++) if (kv[i] != "") { split(kv[i], kv2, "="); d_tt[kv2[1]] = kv2[2] }
     muc[1] = "Existing code"; muc[2] = "Decisions"; muc[3] = "Data model"
     muc[4] = "Contract"; muc[5] = "Flow"; muc[6] = "Non-functional"
-    muc[7] = "Test strategy"; muc[8] = "YC mapping"; n_muc = 8
+    muc[7] = "Test strategy"; muc[8] = "YC mapping"; muc[9] = "Target structure"
+    muc[10] = "Rollout"; n_muc = 10
   }
 
   { sub(/\r$/, "") }
