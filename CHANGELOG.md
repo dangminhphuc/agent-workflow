@@ -14,11 +14,25 @@ ngầm giữa các bản.
 ## [Chưa phát hành]
 
 ### Thêm
+- **`tdd.md` có thêm hai mục bắt buộc: `## Target structure` và `## Rollout & rollback`.** Target
+  structure ghi cấu trúc module/thành phần trước → sau (kèm sơ đồ Mermaid) — chỗ mà refactor/perf
+  cần nhất nhưng mẫu cũ không có. Rollout & rollback ghi thứ tự triển khai, flag, di trú, chạy song
+  song, cách quay lui và bước nào không quay lui được. Không áp dụng thì ghi
+  `Not applicable: <lý do>`; `aw check design` chặn khi thiếu mục hoặc để trống. Checker LLM coi
+  bước triển khai không quay lui được mà không có D-xx là quyết định ngầm. Việc đang chạy dở không
+  ảnh hưởng (chạy hết bằng version ghi trong `intake.md`).
 - **`TASK_FULL_TEST` trong `config.sh`.** `1` = `aw task done` chạy thêm `TEST_CMD` sau khi Verify xanh;
   đỏ tính như Verify đỏ (giữ `[~]`, tăng đỏ liên tiếp), `task-results.md` ghi thêm dòng `Toàn bộ test`.
   Task sau làm hỏng task trước lộ ra ngay ở task gây ra, không đợi tới `aw check implement`. Mặc định tắt.
 
 ### Thay đổi
+- **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
+  có D `Author: human` thì agent chỉ dừng và đưa mẫu, người phải tự nghĩ ra các điểm cần quyết từ
+  trang trắng. Giờ agent khảo sát code, liệt kê các điểm cần quyết dưới dạng câu hỏi kèm dữ kiện
+  (số chỗ gọi, dữ liệu phải di trú, giao diện ngoài, ADR liên quan), rồi hỏi từng điểm bằng câu mở:
+  có những cách nào, được/mất gì, chọn gì và vì sao, chỗ nào khó đảo ngược. D-xx ghi đúng lời người
+  (`Author: human`). Agent vẫn **không** nêu, xếp hạng hay nghiêng về phương án nào; bị hỏi "nên
+  chọn gì" thì chỉ gợi khía cạnh cần cân nhắc. Người muốn tự viết `tdd.md` thì agent dừng như cũ.
 - **`/aw-implement` gọn lại.** Bước 1–7 và vòng lặp tự chạy gộp thành một mục `Loop` nói theo nhãn của
   `aw`. Bỏ mục `Common failures` và cột "Machine blocks when" (checker đã in đúng điều đó khi chặn), bỏ
   các luật lặp với `general.md`.

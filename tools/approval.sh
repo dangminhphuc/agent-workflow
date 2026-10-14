@@ -101,7 +101,7 @@ if [ "$CONG" = spec ]; then
       for (i = 1; i <= n_npv && i <= 6; i++) print "       - " npv[i]
       if (n_npv > 6) print "       … và " (n_npv - 6) " mục nữa"
       if (phase == "design") {
-        if (rui_ro == "high") hq = "/aw-design chạy Mode 2: BẠN phác các quyết định D-xx trước, agent viết phần còn lại"
+        if (rui_ro == "high") hq = "/aw-design chạy Mode 2: agent hỏi dẫn để BẠN phác các quyết định D-xx (không gợi ý phương án), rồi viết phần còn lại"
         else if (rui_ro == "normal") hq = "/aw-design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
         else hq = "chưa có nhãn hợp lệ — aw check spec sẽ chặn"
       } else hq = "chore không có design"
