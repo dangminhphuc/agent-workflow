@@ -11,6 +11,24 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **`TASK_FULL_TEST` trong `config.sh`.** `1` = `aw task done` chạy thêm `TEST_CMD` sau khi Verify xanh;
+  đỏ tính như Verify đỏ (giữ `[~]`, tăng đỏ liên tiếp), `task-results.md` ghi thêm dòng `Toàn bộ test`.
+  Task sau làm hỏng task trước lộ ra ngay ở task gây ra, không đợi tới `aw check implement`. Mặc định tắt.
+
+### Thay đổi
+- **`/aw-implement` gọn lại.** Bước 1–7 và vòng lặp tự chạy gộp thành một mục `Loop` nói theo nhãn của
+  `aw`. Bỏ mục `Common failures` và cột "Machine blocks when" (checker đã in đúng điều đó khi chặn), bỏ
+  các luật lặp với `general.md`.
+- **Mục `Unplanned` của phase nói rõ khi nào ghi rồi làm tiếp, khi nào ghi rồi dừng** (file ngoài
+  phạm vi không tránh được, luật repo xung đột → làm tiếp; `DỪNG`/`KẸT`, việc ngoài plan, phải đổi
+  `tdd.md`/`spec.md`/D-xx, test cũ sai, scan báo nhầm → dừng, báo người).
+- **Quy ước commit theo task:** task lên `[x]` thì commit file của task đó theo đường dẫn (không
+  `git add -A`), message `T-NN: <tiêu đề>` trừ khi luật repo quy định khác.
+- **Nói rõ thời điểm nâng ADR / luật:** trong task hiện thực D `Promote: adr` / YC `Promote: BR-…`.
+
 ## [2026.10.25]
 
 ### Thêm

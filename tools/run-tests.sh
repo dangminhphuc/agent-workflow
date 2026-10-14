@@ -3176,6 +3176,19 @@ tk_plan_t2 '- Verify: `test -f src/a.txt` → xanh
 - Status: `[~]`'
 ky_vong 0 "sửa xong, Verify xanh → [x]" sh "$TK" done "$F" T-02
 dung "…xanh thì đỏ liên tiếp về 0" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' T-02 'Đỏ liên tiếp'")" "0"
+dung "TASK_FULL_TEST tắt: done không chạy TEST_CMD" sh -c "! grep -q 'Toàn bộ test' '$F/task-results.md'"
+
+# TASK_FULL_TEST=1: Verify xanh thì chạy thêm TEST_CMD
+printf 'TASK_FULL_TEST=1\nTEST_CMD="echo TOAN-BO-DO; false"\n' >> "$CFG/config.sh"
+ky_vong 1 "TASK_FULL_TEST=1: Verify xanh, toàn bộ test đỏ → ĐỎ" sh "$TK" done "$F" T-02
+dung "…về [~]" grep -q '^- Status: `\[~\]`' "$F/plan.md"
+dung "…ghi output toàn bộ test" grep -q 'TOAN-BO-DO' "$F/task-results.md"
+dung "…ghi dòng Toàn bộ test ĐỎ, tính đỏ liên tiếp" sh -c "grep -q 'Toàn bộ test:.*ĐỎ' '$F/task-results.md' && sh -c \". '$T/lib/task.sh'; tk_bc '$F/task-results.md' T-02 'Đỏ liên tiếp'\" | grep -qx 1"
+cp "$TMP/ch-ss.bak" "$CFG/config.sh"
+printf 'TASK_FULL_TEST=1\nTEST_CMD="true"\n' >> "$CFG/config.sh"
+ky_vong 0 "TASK_FULL_TEST=1: Verify và toàn bộ test xanh → [x]" sh "$TK" done "$F" T-02
+dung "…ghi dòng Toàn bộ test XANH" grep -q 'Toàn bộ test:.*XANH' "$F/task-results.md"
+cp "$TMP/ch-ss.bak" "$CFG/config.sh"
 
 # Kiểm chứng thủ công
 tk_plan_t2 '- Verify: mở màn hình y thấy b

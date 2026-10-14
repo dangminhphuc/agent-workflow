@@ -213,6 +213,7 @@ Sửa `.git/agent-workflow/config.sh` (đường dẫn thật: `$(git rev-parse 
 | `SECURITY_CMDS` | **có** | Mỗi dòng `<nhóm>: <lệnh>`, nhóm `secret \| sast \| sca \| other`. **Chép đúng lệnh, config, ngưỡng của CI** | xem dưới |
 | `WORKTREE_SETUP_CMD` | nên có | Lệnh chuẩn bị worktree mới — `aw` in ra cho bạn chạy, không tự chạy | `"npm ci"` |
 | `MAX_RED_RUNS` | không | Số lần một task đỏ liên tiếp trước khi máy báo DỪNG (mặc định 3) | `"3"` |
+| `TASK_FULL_TEST` | không | `1` = `aw task done` chạy thêm `TEST_CMD` sau khi Verify xanh — task làm hỏng task trước lộ ra ngay (mặc định tắt) | `"1"` |
 | `PERF_CMD` | chỉ khi có việc `perf` | Lệnh đo, phải in `RESULT: <số> <đơn vị>` | `"sh bench.sh"` |
 
 ```sh
@@ -550,6 +551,7 @@ aw ready <dir>              đầu phiên: test xanh trên base chưa? bước t
 aw task next <dir>          task kế
 aw task start <dir> T-NN    [ ] → [~]   (chỉ một task [~] một lúc)
 aw task done <dir> T-NN     chạy Verify; chỉ XANH mới [ ] → [x]
+                            (TASK_FULL_TEST=1: chạy thêm toàn bộ test)
 aw task reopen <dir> YC-NNN|D-NN   YC vừa đổi / D mở lại: task phủ nó về [ ]
 aw check implement <dir>    chạy toàn bộ test + quét bảo mật, ghi *-results.md
 ```
