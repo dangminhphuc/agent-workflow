@@ -11,9 +11,19 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
-## [Chưa phát hành]
+## [2026.10.26]
 
 ### Thêm
+- **Lệnh tiện ích `/aw-approvals [--global]`: duyệt tập trung, không phải mở từng artifact để
+  tick.** `aw approvals` liệt kê mọi ô "Approved by human" chưa đạt (spec, từng D-xx: chưa tick, đổi
+  sau khi duyệt, mở lại, thiếu ô) của worktree hiện tại — `--global`: mọi worktree, chạy được cả ở
+  checkout chính — mỗi mục kèm `đường-dẫn-tuyệt-đối:dòng` mở thẳng tới ô duyệt. Agent đi từng mục, in
+  phần cần duyệt do máy dựng, hỏi Duyệt / Chưa duyệt / Bỏ qua / Dừng; chọn Duyệt thì agent chạy
+  `aw approvals tick <dir> <spec|D-NN> <hash>` — máy chỉ tick khi nội dung còn đúng bản người vừa
+  thấy, ghi `journal/approvals.tsv`. **Nới luật "agent không tự duyệt"**: đây là lối duy nhất agent
+  được tick, chỉ sau khi người chọn Duyệt đúng mục đó; tick bằng sửa file vẫn bị `aw guard` bỏ. Nên
+  thêm luật hỏi quyền `Bash(aw approvals tick:*)` (adapters/claude-code/README.md). Cần wrapper `aw`
+  mới (lệnh `approvals`). Lệnh tiện ích khai được `feature_dir: none` (không chạy `aw feature`).
 - **Lệnh tiện ích `/aw-refactor [yêu-cầu]`: review, phản biện rồi ghi nhận yêu cầu refactor, chưa
   làm.** Mỗi lần gọi một yêu cầu. Agent đọc code để kiểm (rõ chưa, có thật là refactor, tiền đề khớp
   code, test bảo vệ trên base, phạm vi/rủi ro, nên tách, trùng/mâu thuẫn RF trước, đụng file việc hiện

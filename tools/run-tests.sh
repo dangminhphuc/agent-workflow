@@ -1507,7 +1507,7 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/aw-intake.md commands/aw-spec.md commands/aw-design.md commands/aw-plan.md commands/aw-implement.md commands/aw-review.md \
-         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md commands/aw-refactor.md agents/independent-reviewer.md agents/design-checker.md skills/agent-workflow/SKILL.md; do
+         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md commands/aw-refactor.md commands/aw-approvals.md agents/independent-reviewer.md agents/design-checker.md skills/agent-workflow/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 dung "sinh đúng bộ file" test "$du" = 1
@@ -1563,6 +1563,9 @@ dung "skill liệt kê /aw-bootstrap" grep -q '/aw-bootstrap' "$O/.claude/skills
 dung "/aw-refactor: review + phản biện rồi chỉ ghi refactor-requests.md; chỉ lệnh intake tiếp theo" sh -c \
   "grep -q 'refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'Việc refactor riêng' '$O/.claude/commands/aw-refactor.md' && grep -q 'Debate once' '$O/.claude/commands/aw-refactor.md' && grep -q 'Chọn đường đi cho N RF đang chờ' '$O/.claude/commands/aw-refactor.md' && ! grep -q 'moved:' '$O/.claude/commands/aw-refactor.md' && grep -q 'aw-intake <dir>/refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-refactor.md' && grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' '$O/.claude/commands/aw-refactor.md'"
 dung "skill liệt kê /aw-refactor" grep -q '/aw-refactor' "$O/.claude/skills/agent-workflow/SKILL.md"
+dung "/aw-approvals: không chạy aw feature, liệt kê rồi chỉ tick mục người chọn Duyệt" sh -c \
+  "! grep -q 'Run .aw feature' '$O/.claude/commands/aw-approvals.md' && grep -q 'Needs no feature dir' '$O/.claude/commands/aw-approvals.md' && grep -q 'aw approvals --global' '$O/.claude/commands/aw-approvals.md' && grep -q 'aw approvals tick <dir> <key> <hash>' '$O/.claude/commands/aw-approvals.md' && grep -q 'never .approve all' '$O/.claude/commands/aw-approvals.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-approvals.md'"
+dung "luật chung: ngoại lệ duy nhất là aw approvals tick trong /aw-approvals" grep -q 'Only `/aw-approvals` runs `aw approvals tick`' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase> (review: subagent đọc)" sh -c \
   "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
 dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -c \
@@ -1657,6 +1660,10 @@ ky_vong 4 "từ chối build khi lệnh tiện ích khai arguments khác \"mixed
 tao_fake
 thay "$FAKE/workflow/bootstrap.md" 'runs_on_main_checkout: true' 'runs_on_main_checkout: co'
 ky_vong 4 "từ chối build khi lệnh tiện ích khai runs_on_main_checkout khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7b"
+
+tao_fake
+thay "$FAKE/workflow/approvals.md" 'feature_dir: none' 'feature_dir: co'
+ky_vong 4 "từ chối build khi lệnh tiện ích khai feature_dir khác \"none\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7c"
 
 # ---------------------------------------------------------------- adapter cursor
 echo ""
@@ -2529,6 +2536,63 @@ ky_vong 1 "/aw-plan: còn D chưa tick → CHƯA DUYỆT" sh "$CD" plan "$F"
 OUT_CD=$(sh "$CD" plan "$F" 2>/dev/null)
 dung "…đếm D chưa duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'CÒN 1/1 QUYẾT ĐỊNH CHƯA DUYỆT'" _ "$OUT_CD"
 dung "…tên D, dòng, tác giả, lựa chọn, có phản biện" sh -c "printf '%s' \"\$1\" | grep -q 'D-01 — lưu ở đâu' && printf '%s' \"\$1\" | grep -q 'dòng [0-9]* · chưa tick' && printf '%s' \"\$1\" | grep -q 'tác giả: agent · Choice: file · có 1 phản biện'" _ "$OUT_CD"
+viet_spec; viet_tdd; ghi_based_on
+
+
+# ---------------------------------------------------------------- duyệt tập trung
+echo ""
+echo "approvals.sh (aw approvals, /aw-approvals)"
+AP="$T/approvals.sh"
+viet_spec; viet_tdd
+ky_vong 0 "mọi ô đã tick → KHÔNG CÒN Ô CHỜ DUYỆT" sh "$AP"
+ky_vong 2 "tham số lạ → SAI THAM SỐ" sh "$AP" --tat-ca
+ky_vong 2 "tick thiếu tham số → SAI THAM SỐ" sh "$AP" tick "$F" spec
+ky_vong 2 "tick khoá lạ → SAI THAM SỐ" sh "$AP" tick "$F" YC-001 0000000000000000
+ky_vong 0 "aw-engine approvals → approvals.sh" sh "$AWE" approvals
+thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
+ky_vong 1 "spec chưa tick → CÓ Ô CHỜ DUYỆT" sh "$AP"
+OUT_AP=$(sh "$AP" 2>/dev/null)
+dung "…link tuyệt đối tới đúng dòng ô duyệt" sh -c "printf '%s' \"\$1\" | grep -q \"^ *$F/spec.md:\$(grep -n 'Approved by human' '$F/spec.md' | cut -d: -f1)\$\"" _ "$OUT_AP"
+dung "…in đúng lệnh tick kèm hash" sh -c "printf '%s' \"\$1\" | grep -q 'duyệt: aw approvals tick $F spec [0-9a-f]\{16\}'" _ "$OUT_AP"
+dung "…liệt kê không tự tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
+H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F spec ||p")
+ky_vong 1 "tick với hash khác bản hiện tại → KHÔNG TICK" sh "$AP" tick "$F" spec 0000000000000000
+dung "…file giữ nguyên chưa tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
+rm -f "$CFG/journal/approvals.tsv"
+ky_vong 0 "tick với hash người vừa thấy → ĐÃ DUYỆT" sh "$AP" tick "$F" spec "$H_AP"
+dung "…ô được tick, dấu duyệt = hash đó" grep -q "^- \[x\] \*\*Approved by human.*approval-hash: $H_AP -->" "$F/spec.md"
+ky_vong 0 "…cổng duyệt spec thấy ĐÃ DUYỆT" sh "$CD" design "$F"
+dung "…ghi nhật ký approvals.tsv" grep -q "spec	$H_AP	aw approvals tick" "$CFG/journal/approvals.tsv"
+ky_vong 0 "tick lại mục đã duyệt → không làm gì" sh "$AP" tick "$F" spec "$H_AP"
+thay "$F/spec.md" '### YC-002 — b' '### YC-002 — bb'
+OUT_AP=$(sh "$AP" 2>/dev/null)
+dung "spec đổi sau duyệt → liệt kê ĐÃ ĐỔI sau khi duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'ĐÃ ĐỔI sau khi duyệt'" _ "$OUT_AP"
+ky_vong 1 "…tick bằng hash cũ → KHÔNG TICK" sh "$AP" tick "$F" spec "$H_AP"
+H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F spec ||p")
+ky_vong 0 "…tick bằng hash bản mới → ĐÃ DUYỆT lại" sh "$AP" tick "$F" spec "$H_AP"
+ky_vong 0 "…cổng duyệt spec thấy ĐÃ DUYỆT" sh "$CD" design "$F"
+viet_spec; viet_tdd
+thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
+OUT_AP=$(sh "$AP" 2>/dev/null)
+dung "D-xx chưa tick → liệt kê kèm tên D" sh -c "printf '%s' \"\$1\" | grep -q 'D-01 — lưu ở đâu' && printf '%s' \"\$1\" | grep -q '$F/tdd.md:[0-9]'" _ "$OUT_AP"
+H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F D-01 ||p")
+sh "$GAC" pre >/dev/null 2>&1
+sh "$AP" tick "$F" D-01 "$H_AP" >/dev/null 2>&1
+ky_vong 0 "tick qua aw approvals tick → aw guard post không bỏ" sh "$GAC" post
+ky_vong 0 "…cổng duyệt plan thấy ĐÃ DUYỆT" sh "$CD" plan "$F"
+thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
+sh "$GAC" pre >/dev/null 2>&1
+thay "$F/tdd.md" '- [ ] **Approved by human**' '- [x] **Approved by human**'
+ky_vong 2 "tick bằng sửa file → aw guard post vẫn bỏ" sh "$GAC" post
+viet_spec; viet_tdd
+# --global: việc ở worktree khác
+g worktree add -q "$TMP/wt-ap" -b feat/ap-khac
+mkdir -p "$TMP/wt-ap/.agent-workflow/feat_ap-khac"
+sed 's/- \[x\] \*\*Approved by human\*\* — đã đọc/- [ ] **Approved by human** — đã đọc/; s/ *<!-- approval-hash: [0-9a-f]* -->//' "$F/spec.md" > "$TMP/wt-ap/.agent-workflow/feat_ap-khac/spec.md"
+ky_vong 0 "worktree khác có ô chờ — mặc định chỉ xét worktree hiện tại" sh "$AP"
+ky_vong 1 "--global → thấy ô chờ ở worktree khác" sh "$AP" --global
+dung "…kèm tên việc, branch và link vào worktree đó" sh -c "sh '$AP' --global 2>/dev/null | grep -q 'feat_ap-khac · branch feat/ap-khac' && sh '$AP' --global 2>/dev/null | grep -q '$TMP/wt-ap/.agent-workflow/feat_ap-khac/spec.md:[0-9]'"
+g worktree remove --force "$TMP/wt-ap"; g branch -D feat/ap-khac
 viet_spec; viet_tdd; ghi_based_on
 
 # ---------------------------------------------------------------- chore

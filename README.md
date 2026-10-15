@@ -76,6 +76,7 @@ flowchart TD
 | `/aw-ship` | `review.md` → MR/PR | review đạt, không còn `Blocker` | chọn nhánh đích, merge |
 | `/aw-clarify [YC-NNN]` | — | — | trả lời điểm mù, phân xử phát hiện checker LLM (từng mục, có phương án đề xuất); có `YC-NNN`: đổi một YC bạn không đồng ý (ghi thành điểm mù đã trả lời) |
 | `/aw-refactor [yêu-cầu]` | lời bạn → agent review, phản biện → `refactor-requests.md` (nguyên văn + tóm tắt, chưa làm) | — | trả lời phản biện, duyệt bản tóm tắt; chọn: việc refactor riêng hay gộp vào việc `refactor` hiện tại |
+| `/aw-approvals [--global]` | ô "Approved by human" chưa đạt → danh sách kèm link tới artifact | — | duyệt từng mục (spec, D-xx); chọn Duyệt thì máy tick hộ |
 | `/aw-bootstrap` | repo, CI, `git log` → `AGENTS.md`, `Makefile`, `ARCHITECTURE.md`, ADR có sẵn (một lần, trong worktree `chore`) | `aw conventions check`, `aw adr check`, `aw rule check` | trả lời câu hỏi trong báo cáo, mở PR |
 
 - **Không có phase test riêng** — test là điều kiện ra của `implement`: chưa xanh là chưa xong.
@@ -96,9 +97,14 @@ Spec và mỗi D-xx có một ô; bạn duyệt bằng cách đổi `[ ]` thành
 
 - Máy ghi **dấu duyệt** (hash nội dung) lần đầu thấy tick. Nội dung đổi sau đó → `aw check` chặn.
   Duyệt lại bản mới: đọc chỗ đổi, xoá `<!-- approval-hash: … -->`, giữ tick.
-- **Agent không bao giờ tick**; sửa nội dung đã tick thì bỏ tick. Muốn máy chặn cứng: cài hook
+- **Agent không bao giờ tự tick** (trừ `aw approvals tick` khi bạn vừa chọn Duyệt, dưới đây); sửa nội dung đã tick thì bỏ tick. Muốn máy chặn cứng: cài hook
   `aw guard` ([Claude Code](adapters/claude-code/README.md#hook-gác-ô-duyệt) ·
   [Cursor](adapters/cursor/README.md#hook-gác-ô-duyệt)).
+- **Duyệt tập trung `/aw-approvals [--global]`**: liệt kê mọi ô chờ duyệt (worktree này; `--global`:
+  mọi worktree), mỗi mục kèm `đường-dẫn:dòng` mở thẳng tới artifact; agent dẫn bạn đi từng mục, bạn
+  chọn **Duyệt** thì máy tick hộ (`aw approvals tick`, kèm hash bản bạn vừa thấy). Đây là lối duy
+  nhất agent được chạy lệnh tick — nên thêm luật hỏi quyền cho nó
+  ([Claude Code](adapters/claude-code/README.md#hỏi-quyền-cho-aw-approvals-tick)).
 - Gõ `/aw-design` hay `/aw-plan` khi chưa duyệt: agent in bản tóm tắt máy dựng (`aw approval`) —
   file, dòng phải tick, điểm nên đọc kỹ — rồi hỏi: **Tôi đã duyệt xong — kiểm lại** /
   **Giải thích từng điểm cần duyệt** / **Dừng — tôi duyệt sau**.
@@ -130,7 +136,7 @@ Engine không cài vào repo đích. Bốn phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.25/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.26/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -306,6 +312,7 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 | `aw adr promote <thư-mục-feature> D-NN` · `aw adr check` | Chép D-xx đã duyệt (`Promote: adr`) thành ADR trong repo · kiểm thư mục ADR |
 | `aw rule promote <thư-mục-feature> YC-NNN` · `aw rule check` | Chép YC đã duyệt (`Promote: BR-…`) thành luật nghiệp vụ · kiểm mọi luật `BR-` |
 | `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules` · `aw uses` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
+| `aw approvals [--global]` · `aw approvals tick <thư-mục-feature> <spec\|D-NN> <hash>` | Mọi ô chờ duyệt kèm link · tick sau khi bạn chọn duyệt (`/aw-approvals`) |
 | `aw guard pre\|post` | Hook gác ô duyệt |
 
 ### Nhiều agent trong một team

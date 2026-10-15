@@ -125,12 +125,12 @@ Spec và mỗi D-xx có **đúng một** ô. Bạn duyệt bằng cách đổi `
 - Lần đầu thấy tick, máy ghi **dấu duyệt** (hash nội dung). Nội dung đổi sau đó → `aw check`
   chặn tới khi bạn duyệt lại.
 - **Duyệt lại** bản mới: đọc chỗ đổi, xoá `<!-- approval-hash: … -->`, giữ tick.
-- **Agent không bao giờ tick.** Agent sửa nội dung đã tick thì phải bỏ tick. Muốn máy chặn cứng
+- **Agent không bao giờ tự tick** — ngoại lệ duy nhất: `/aw-approvals` (§6.5), sau khi bạn chọn Duyệt. Agent sửa nội dung đã tick thì phải bỏ tick. Muốn máy chặn cứng
   agent tự tick: cài hook `aw guard` (§2.7).
 - Gõ `/aw-design` hay `/aw-plan` khi chưa duyệt: agent in tóm tắt **do máy dựng** (`aw approval`):
   file, dòng phải tick, điểm nên đọc kỹ — rồi hỏi bạn: *Tôi đã duyệt xong — kiểm lại* /
   *Giải thích từng điểm cần duyệt* / *Dừng — tôi duyệt sau*. Bấm nút **không** tick hộ — bạn vẫn
-  phải tick trong file.
+  phải tick trong file (hoặc dùng `/aw-approvals`, §6.5).
 
 ### 1.8. Worktree: mỗi việc một chỗ
 
@@ -759,6 +759,23 @@ phiên mới. **Việc của bạn:** trả lời câu hỏi trong báo cáo, s�
 
 ---
 
+### 6.5. `/aw-approvals [--global]`
+
+Duyệt tập trung thay cho việc mở từng artifact để tick. Agent chạy `aw approvals` (worktree hiện tại;
+`--global`: mọi worktree của bản clone, chạy được cả ở checkout chính) và in danh sách: mỗi việc, mỗi
+ô chưa đạt (spec, từng D-xx) kèm trạng thái và `đường-dẫn-tuyệt-đối:dòng` — bấm để mở đúng ô duyệt.
+
+Rồi đi từng mục: agent in phần đang duyệt **do máy dựng** (spec: tóm tắt `aw approval`; D-xx: nguyên
+văn mục `### D-NN`), nhắc link, hỏi *Duyệt* / *Chưa duyệt — cần sửa* / *Bỏ qua* / *Dừng*. Chọn
+**Duyệt** thì agent chạy đúng dòng `aw approvals tick <dir> <khoá> <hash>` đã in: máy chỉ tick khi
+nội dung **còn đúng** bản bạn vừa thấy (hash khớp), và ghi một dòng vào
+`journal/approvals.tsv` để phân biệt với tick tay. Chưa duyệt thì agent ghi lại lý do và chỉ worktree
+cần mở để sửa; không sửa artifact ở đây.
+
+Nên thêm luật hỏi quyền để Claude Code bắt bạn bấm cho phép mỗi lần tick
+([`adapters/claude-code/README.md`](../adapters/claude-code/README.md#hỏi-quyền-cho-aw-approvals-tick)):
+agent không tự cho phép được. Tick tay trong file vẫn dùng như cũ.
+
 ## 7. Kiến thức bền: ADR và luật nghiệp vụ
 
 Artifact của việc không vào git. Hai thứ **bạn chọn** được đưa vào git, đi theo PR của việc:
@@ -885,6 +902,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `/aw-import <nguồn> <đích>` | worktree | đưa artifact ngoài vào |
 | `/aw-refactor [yêu-cầu]` | worktree | review, phản biện rồi ghi nhận yêu cầu refactor, chưa làm |
 | `/aw-bootstrap` | checkout chính rồi worktree | đưa kiến thức repo vào git (một lần) |
+| `/aw-approvals [--global]` | worktree / checkout chính (`--global`) | mọi ô chờ duyệt kèm link, duyệt từng mục |
 
 ### Lệnh `aw` bạn hay dùng trực tiếp
 
@@ -897,6 +915,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw check <tên> <dir>` | checker: `intake spec design plan implement security review repro perf ship` |
 | `aw pending <dir>` | việc đang chờ bạn |
 | `aw approval design\|plan <dir>` | tóm tắt cần duyệt trước khi vào design / plan |
+| `aw approvals [--global]` | mọi ô chờ duyệt kèm `đường-dẫn:dòng` (worktree này / mọi worktree) |
 | `aw task next\|start\|done <dir> [T-NN]` · `aw task reopen <dir> <YC-NNN\|D-NN>` | trạng thái task; đưa task bị ảnh hưởng về `[ ]` |
 | `aw worktree new\|status\|remove …` | đề xuất / tạo / xem / dọn worktree |
 | `aw rename <tên-branch-mới>` | đổi tên việc (branch, worktree, artifact) — chạy trong worktree |
@@ -917,7 +936,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | Cài đặt | `TEST_CMD`, `SECURITY_CMDS` đúng CI; `conventions.md` đúng repo, merge qua PR |
 | Intake | chọn **loại việc**, chọn **base**, xác nhận input; chạy lệnh chuẩn bị, mở phiên trong worktree |
 | Spec | đọc YC + `Out of scope`; duyệt `Risk`, mức `Blocking`; **tick spec** |
-| Bất kỳ lúc nào | trả lời điểm mù (`/aw-clarify`), hỏi PO/BA khi cần |
+| Bất kỳ lúc nào | trả lời điểm mù (`/aw-clarify`), hỏi PO/BA khi cần; duyệt dồn qua `/aw-approvals` |
 | Design | `Risk: high` → phác D-xx trước; **tick từng D-xx**; phân xử phát hiện checker LLM |
 | Implement | xử lý khi agent báo DỪNG/KẸT, base đỏ, báo nhầm của máy quét |
 | Review | xác nhận kết luận; quyết Blocker; **ký Security reviewer** khi đụng code nhạy cảm |

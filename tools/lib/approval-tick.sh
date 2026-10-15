@@ -152,7 +152,7 @@ dy_trang_thai() {
   done
 }
 
-# _dy_sua <file> <danh-sách "số_dòng=hành_động"> — hành động: dau:<hex> | bo-dau | bo-tick
+# _dy_sua <file> <danh-sách "số_dòng=hành_động"> — hành động: dau:<hex> | bo-dau | bo-tick | tick:<hex>
 # Chỉ đụng đúng các dòng đó; dòng khác giữ nguyên byte (kể cả \r).
 _dy_sua() {
   awk -v ds="$2" '
@@ -163,6 +163,7 @@ _dy_sua() {
       sub(/ *<!-- approval-hash: [0-9a-f]+ -->/, "", s)
       h = hd[FNR]
       if (h == "bo-tick") s = substr(s, 1, 3) " " substr(s, 5)
+      else if (h ~ /^tick:/) s = substr(s, 1, 3) "x" substr(s, 5) " <!-- approval-hash: " substr(h, 6) " -->"
       else if (h ~ /^dau:/) s = s " <!-- approval-hash: " substr(h, 5) " -->"
       printf "%s%s\n", s, (cr ? "\r" : "")
     }
@@ -191,4 +192,13 @@ dy_bo_tick() {
   _dy_f=$1; shift; _dy_ds=""
   for _dy_l in "$@"; do _dy_ds="$_dy_ds $_dy_l=bo-tick"; done
   [ -n "$_dy_ds" ] && _dy_sua "$_dy_f" "$_dy_ds"
+}
+
+# dy_tick <file> <spec|tdd> <khoá> <hash> -> tick ô của khoá, ghi dấu duyệt <hash>
+# (thay dấu cũ nếu có). Chỉ `aw approvals tick` gọi — sau khi NGƯỜI chọn duyệt
+# đúng mục đó; người gọi tự so <hash> với dy_hash trước.
+dy_tick() {
+  _dy_nr=$(dy_quet "$1" "$2" | awk -F'|' -v k="$3" '$1 == "O" && $2 == k { print $5; exit }')
+  [ -n "$_dy_nr" ] || return 1
+  _dy_sua "$1" "$_dy_nr=tick:$4"
 }
