@@ -269,7 +269,7 @@ Rồi **commit qua PR**. Chưa merge vẫn dùng được: `aw` đọc bản ở
 Mục tiêu: một phiên agent mới **chỉ có repo** trả lời được năm câu: hệ thống là gì, tổ chức ra sao,
 chạy và kiểm thế nào, vì sao code như vậy, đang ở đâu. Câu nào agent phải đoán là chỗ thiếu.
 
-Cách nhanh: mở agent ở checkout chính, chạy `/aw-bootstrap` (xem §6.3). Nó dựng:
+Cách nhanh: mở agent ở checkout chính, chạy `/aw-bootstrap` (xem §6.4). Nó dựng:
 
 ```
 AGENTS.md                         điểm vào 50–100 dòng, chỉ TRỎ TỚI (CLAUDE.md: một dòng @AGENTS.md)
@@ -712,7 +712,43 @@ lại theo mẫu, không thêm nội dung**: chỗ mẫu đòi mà nguồn thi�
 ô **chưa tick** — duyệt ở tool khác không phải duyệt ở đây. Sau đó vẫn qua checker và cổng người của
 phase lẽ ra sinh ra nó.
 
-### 6.3. `/aw-bootstrap`
+### 6.3. `/aw-refactor [yêu-cầu]`
+
+Đang làm một việc mà thấy chỗ muốn refactor: mỗi lần gọi nói một yêu cầu. Agent **chưa ghi ngay**:
+
+1. **Review**: đọc `intake.md`, các RF đã có và đúng phần code bạn nhắc tới để kiểm — yêu cầu đã rõ
+   chưa, có thật là refactor (không đổi hành vi nhìn thấy từ ngoài), tiền đề có khớp code không, vùng
+   đó có test bảo vệ trên base chưa, phạm vi/rủi ro, có nên tách, có trùng/mâu thuẫn RF trước hay đụng
+   file việc hiện tại đang sửa. Không có vấn đề thật thì nói một dòng, không bịa phản biện.
+2. **Phản biện một vòng**: mỗi điểm kèm bằng chứng `file:dòng` và đề xuất, cùng bản **tóm tắt** agent
+   viết lại. Bạn chọn ghi, tách hay bỏ; trả lời bằng chữ thì câu đó được ghi lại. **Bạn quyết cuối**:
+   giữ ý dù bị phản biện thì vẫn ghi, kèm phản biện và câu trả lời của bạn.
+3. **Ghi** vào `refactor-requests.md` của việc: mỗi yêu cầu một mục `RF-NNN` gồm `Summary` (bản tóm
+   tắt bạn đã duyệt), `Request` (lời bạn nguyên văn — nguồn để spec truy về), `Location`, `Review`
+   (phản biện + trả lời), `Status`. Không sửa code, intake, spec hay plan.
+
+Nói xong, agent hỏi đưa chúng đi đâu và **chỉ in lệnh cho bạn chạy**:
+
+- **Gộp vào việc này** (chỉ khi việc hiện tại là `refactor` và yêu cầu khớp `Goal`): chạy
+  `/aw-intake <dir>/refactor-requests.md` ngay trong worktree — file thành input `[FILE]`; rồi
+  `/aw-spec` (duyệt lại spec), `/aw-design`, `/aw-plan`.
+- **Việc refactor riêng** (mọi trường hợp khác): làm xong việc này tới `/aw-ship`; ở checkout chính
+  chạy `/aw-intake` với khối `Request` agent in sẵn → việc `refactor` mới. Base: base của việc này
+  sau khi nó merge; yêu cầu đụng code việc này mới thêm mà không chờ được thì xếp chồng lên branch này
+  (review cảnh báo). Trong worktree mới, chép `refactor-requests.md` sang thư mục artifact của việc
+  mới (agent in sẵn lệnh `cp`) rồi `/aw-intake .agent-workflow/<branch-mới>/refactor-requests.md` —
+  spec trích được `§ RF-NNN` và cả phần `Review`.
+- **Để đó, quyết sau**: các RF giữ `open`. Chạy lại `/aw-refactor` không kèm yêu cầu thì agent hỏi
+  thêm yêu cầu hay chọn đường cho các RF đang chờ. Ghi thêm thì nối vào file, không ghi đè.
+
+Chọn đường xong, các RF đó thành `routed: this-job` / `routed: separate-job` để lần sau không hỏi lại.
+Ở việc refactor riêng, chép file sang việc mới **trước** khi `/aw-ship` dọn worktree này (sau đó file
+chỉ còn trong archive).
+
+Không có lựa chọn gộp refactor vào việc `feature`/`bugfix`/`perf`/`chore`: một việc một loại, refactor
+đi kèm tính năng thì thiếu YC `preserve` và test bảo vệ, lại làm MR khó review.
+
+### 6.4. `/aw-bootstrap`
 
 Một lần cho mỗi repo (hoặc sau thay đổi bố trí lớn). Ở checkout chính: agent đề xuất worktree `chore`
 (`agent-knowledge`), **bạn chọn base**. Trong worktree: khảo sát repo, dựng `Makefile`, `AGENTS.md`,
@@ -847,6 +883,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `/aw-review` | worktree, ngữ cảnh sạch | `review.md` |
 | `/aw-ship` | worktree / checkout chính | gửi MR / dọn việc đã merge |
 | `/aw-import <nguồn> <đích>` | worktree | đưa artifact ngoài vào |
+| `/aw-refactor [yêu-cầu]` | worktree | review, phản biện rồi ghi nhận yêu cầu refactor, chưa làm |
 | `/aw-bootstrap` | checkout chính rồi worktree | đưa kiến thức repo vào git (một lần) |
 
 ### Lệnh `aw` bạn hay dùng trực tiếp

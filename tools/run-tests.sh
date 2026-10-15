@@ -1507,7 +1507,7 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/aw-intake.md commands/aw-spec.md commands/aw-design.md commands/aw-plan.md commands/aw-implement.md commands/aw-review.md \
-         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md agents/independent-reviewer.md agents/design-checker.md skills/agent-workflow/SKILL.md; do
+         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md commands/aw-refactor.md agents/independent-reviewer.md agents/design-checker.md skills/agent-workflow/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 dung "sinh đúng bộ file" test "$du" = 1
@@ -1560,6 +1560,9 @@ dung "/aw-bootstrap: ở checkout chính làm mục \"On the main checkout\" (đ
 dung "…dùng mẫu target-repo, không tự tạo luật BR-, có bài kiểm tra phiên mới" sh -c \
   "grep -q 'templates/target-repo/AGENTS.md' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'Writing \`BR-\` blocks' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'Fresh-session test' '$O/.claude/commands/aw-bootstrap.md'"
 dung "skill liệt kê /aw-bootstrap" grep -q '/aw-bootstrap' "$O/.claude/skills/agent-workflow/SKILL.md"
+dung "/aw-refactor: review + phản biện rồi chỉ ghi refactor-requests.md; chỉ lệnh intake tiếp theo" sh -c \
+  "grep -q 'refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'Việc refactor riêng' '$O/.claude/commands/aw-refactor.md' && grep -q 'Debate once' '$O/.claude/commands/aw-refactor.md' && grep -q 'Chọn đường đi cho N RF đang chờ' '$O/.claude/commands/aw-refactor.md' && ! grep -q 'moved:' '$O/.claude/commands/aw-refactor.md' && grep -q 'aw-intake <dir>/refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-refactor.md' && grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' '$O/.claude/commands/aw-refactor.md'"
+dung "skill liệt kê /aw-refactor" grep -q '/aw-refactor' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase> (review: subagent đọc)" sh -c \
   "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
 dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -c \
