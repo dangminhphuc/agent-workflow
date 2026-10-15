@@ -823,6 +823,7 @@ chạy tại một lúc.
 
 ```sh
 aw upgrade 2026.11.1
+aw self-update        # nâng luôn wrapper lên cùng version (wrapper không tự nâng theo engine)
 ```
 
 Tải, ghim sha256, sinh lại adapter. **Việc đang làm không đổi luật** (chạy theo `Engine:` trong
@@ -915,7 +916,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | Lệnh | Việc |
 |---|---|
 | `aw init [--adapter a,b] [--test-cmd "…"] [--from <url>] [--from-legacy]` | cài cho bản clone |
-| `aw upgrade <V>` · `aw version` · `aw doctor` | nâng engine · version · kiểm cài đặt |
+| `aw upgrade <V>` · `aw self-update [<V>]` · `aw version` · `aw doctor` | nâng engine · nâng wrapper · version · kiểm cài đặt |
 | `aw conventions check` | kiểm quy ước |
 | `aw ready <dir> [--no-test]` | worktree sẵn sàng chưa, bước tiếp là gì |
 | `aw check <tên> <dir>` | checker: `intake spec design plan implement security review repro perf ship` |

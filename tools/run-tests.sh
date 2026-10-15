@@ -2974,6 +2974,20 @@ ky_vong 0 "aw upgrade 2099.1.2" aw7 upgrade 2099.1.2
 dung "…version mới, ghim thêm sha của 2099.1.2, giữ sha cũ" sh -c "grep -qx 2099.1.2 '$C7/version' && grep -q 'agent-workflow-2099.1.2' '$C7/checksums' && grep -q 'agent-workflow-2099.1.1' '$C7/checksums'"
 dung "…vẫn không có commit nào; upgrade không đụng quy ước" sh -c "[ \"\$(git -C '$R7' rev-parse HEAD)\" = '$GOC7' ] && [ \"\$(git -C '$R7' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 
+# aw self-update: wrapper tự thay bằng bản `aw` của bản phát hành
+WB="$TMP/wbin"; mkdir -p "$WB"; cp "$TMP/nguon-2099.1.1/bin/aw" "$WB/aw"
+awb() { (cd "$R7" && AW_HOME="$AWH" AW_MIRROR="file://$MIR" sh "$WB/aw" "$@"); }
+dung "wrapper cũ hơn engine → aw version nhắc self-update" sh -c "cd '$R7' && AW_HOME='$AWH' sh '$WB/aw' version 2>&1 | grep -q 'wrapper 2099.1.1 cũ hơn engine 2099.1.2.*aw self-update'"
+ky_vong 2 "self-update version sai dạng → SAI THAM SỐ" awb self-update 2099.01.2
+ky_vong 2 "self-update ngoài repo, không ghi version → SAI THAM SỐ" sh -c "cd '$TMP' && AW_HOME='$AWH' sh '$WB/aw' self-update"
+ky_vong 9 "SHA256SUMS không có dòng aw → KHÔNG HỢP LỆ" awb self-update 2099.1.4
+cp -R "$MIR/2099.1.2" "$MIR/2099.1.6"; printf '# tráo\n' >> "$MIR/2099.1.6/aw"
+ky_vong 9 "aw tải về sai checksum → KHÔNG HỢP LỆ" awb self-update 2099.1.6
+dung "…wrapper giữ nguyên, không để lại file tạm" sh -c "grep -q '^AW_WRAPPER_VERSION=\"2099.1.1\"' '$WB/aw' && [ \"\$(ls -A '$WB')\" = aw ]"
+ky_vong 0 "aw self-update (không tham số) → lên version engine của repo" awb self-update
+dung "…file wrapper giống hệt aw của bản phát hành, vẫn chạy được" sh -c "cmp -s '$WB/aw' '$MIR/2099.1.2/aw' && [ -x '$WB/aw' ] && sh '$WB/aw' version 2>/dev/null | grep -q 'aw (wrapper) 2099.1.2'"
+ky_vong 0 "self-update lại cùng version → không làm gì" awb self-update
+
 # cấu hình dùng chung của team: một repo riêng chứa version, checksums, conventions.md
 TEAM="$TMP/team-cfg"; mkdir -p "$TEAM"; git -C "$TEAM" init -q
 cp "$C7/version" "$C7/checksums" "$TEAM/"; printf '# của team\n' > "$TEAM/conventions.md"
