@@ -28,8 +28,8 @@ artifact_dir: .agent-workflow
 #                   LLM) theo thứ tự phải chốt trước, dẫn người đi từng mục
 #   bootstrap       một lần cho mỗi repo đích: đưa kiến thức (điểm vào, lệnh kiểm,
 #                   tài liệu module, ADR có sẵn) vào git — phiên agent mới không phải đoán
-#   refactor        ghi nhận yêu cầu refactor của người (nguyên văn, chưa làm) vào
-#                   refactor-requests.md; xong thì người chọn: việc refactor riêng hay gộp
+#   refactor        review + phản biện từng yêu cầu refactor của người, rồi ghi vào
+#                   refactor-requests.md (nguyên văn + tóm tắt, chưa làm); xong thì chỉ lệnh intake
 commands:
   - id: import
     file: workflow/import.md

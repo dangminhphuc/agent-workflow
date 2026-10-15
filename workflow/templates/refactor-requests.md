@@ -1,12 +1,16 @@
 # Refactor requests — <tên-branch>
 
 <!-- Ghi bởi /aw-refactor: yêu cầu refactor của NGƯỜI, chỉ ghi nhận, CHƯA làm.
-     Lời người chép nguyên văn ở dòng `>`. Agent không thêm giải pháp. -->
+     Request = lời người nguyên văn (nguồn); Summary = agent viết lại, người đã duyệt. -->
 
 ## RF-001 — <tiêu đề ngắn>
 
-- **Requested by:** <ai>, <YYYY-MM-DD>
+- **Summary:** <một–hai câu: đổi gì, ở đâu, hành vi giữ nguyên>
 - **Request:**
   > <chép nguyên văn lời người>
-- **Location:** `<đường-dẫn>[:dòng]`   <!-- chỗ người chỉ tới, agent đã thấy có thật; không có thì `None` -->
+- **Requested by:** <ai>, <YYYY-MM-DD>
+- **Location:** `<đường-dẫn>[:dòng]`   <!-- chỗ agent đã thấy có thật; không có thì `None` -->
+- **Review:**
+  - <điểm agent phản biện, kèm `file:dòng`> — người: "<trả lời nguyên văn>"
+  <!-- không có điểm nào thì: `None` -->
 - **Status:** `open`   <!-- open | moved: <branch> | dropped: <lý do của người> -->

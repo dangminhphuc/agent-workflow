@@ -714,19 +714,30 @@ phase lẽ ra sinh ra nó.
 
 ### 6.3. `/aw-refactor [yêu-cầu]`
 
-Đang làm một việc mà thấy chỗ muốn refactor: nói ra, agent **chỉ ghi lại** vào
-`refactor-requests.md` của việc (mỗi yêu cầu một mục `RF-NNN`, lời bạn chép nguyên văn, kèm chỗ
-trong code bạn chỉ tới) — không sửa code, spec hay plan. Mỗi lượt agent hỏi còn yêu cầu nào nữa không.
+Đang làm một việc mà thấy chỗ muốn refactor: mỗi lần gọi nói một yêu cầu. Agent **chưa ghi ngay**:
 
-Nói xong, agent đề xuất đưa chúng đi đâu, **bạn chọn**:
+1. **Review**: đọc `intake.md`, các RF đã có và đúng phần code bạn nhắc tới để kiểm — yêu cầu đã rõ
+   chưa, có thật là refactor (không đổi hành vi nhìn thấy từ ngoài), tiền đề có khớp code không, vùng
+   đó có test bảo vệ trên base chưa, phạm vi/rủi ro, có nên tách, có trùng/mâu thuẫn RF trước hay đụng
+   file việc hiện tại đang sửa. Không có vấn đề thật thì nói một dòng, không bịa phản biện.
+2. **Phản biện một vòng**: mỗi điểm kèm bằng chứng `file:dòng` và đề xuất, cùng bản **tóm tắt** agent
+   viết lại. Bạn chọn ghi, tách hay bỏ; trả lời bằng chữ thì câu đó được ghi lại. **Bạn quyết cuối**:
+   giữ ý dù bị phản biện thì vẫn ghi, kèm phản biện và câu trả lời của bạn.
+3. **Ghi** vào `refactor-requests.md` của việc: mỗi yêu cầu một mục `RF-NNN` gồm `Summary` (bản tóm
+   tắt bạn đã duyệt), `Request` (lời bạn nguyên văn — nguồn để spec truy về), `Location`, `Review`
+   (phản biện + trả lời), `Status`. Không sửa code, intake, spec hay plan.
 
-- **Việc refactor riêng** (đề xuất khi việc hiện tại không phải `refactor`): làm xong việc này tới
-  `/aw-ship` như kế hoạch; rồi ở checkout chính chạy `/aw-intake` với khối yêu cầu agent in sẵn →
-  việc `refactor` mới, có YC `preserve` được test trên base bảo vệ và MR riêng. Base: base của việc
-  này sau khi nó merge; yêu cầu đụng code việc này mới thêm mà không chờ được thì xếp chồng lên branch
-  này (review cảnh báo).
-- **Gộp vào việc này** (chỉ khi việc hiện tại là `refactor` và yêu cầu khớp `Goal`): file thành một
-  input `[FILE]` trong `intake.md`, rồi chạy lại `/aw-spec` (duyệt lại spec), `/aw-design`, `/aw-plan`.
+Nói xong, agent hỏi đưa chúng đi đâu và **chỉ in lệnh cho bạn chạy**:
+
+- **Gộp vào việc này** (chỉ khi việc hiện tại là `refactor` và yêu cầu khớp `Goal`): chạy
+  `/aw-intake <dir>/refactor-requests.md` ngay trong worktree — file thành input `[FILE]`; rồi
+  `/aw-spec` (duyệt lại spec), `/aw-design`, `/aw-plan`.
+- **Việc refactor riêng** (mọi trường hợp khác): làm xong việc này tới `/aw-ship`; ở checkout chính
+  chạy `/aw-intake` với khối `Request` agent in sẵn → việc `refactor` mới. Base: base của việc này
+  sau khi nó merge; yêu cầu đụng code việc này mới thêm mà không chờ được thì xếp chồng lên branch này
+  (review cảnh báo). Trong worktree mới, chép `refactor-requests.md` sang thư mục artifact của việc
+  mới (agent in sẵn lệnh `cp`) rồi `/aw-intake .agent-workflow/<branch-mới>/refactor-requests.md` —
+  spec trích được `§ RF-NNN` và cả phần `Review`.
 - **Để đó, quyết sau**: chạy lại `/aw-refactor` lúc nào cũng được — lần sau ghi thêm, không ghi đè.
 
 Không có lựa chọn gộp refactor vào việc `feature`/`bugfix`/`perf`/`chore`: một việc một loại, refactor
@@ -867,7 +878,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `/aw-review` | worktree, ngữ cảnh sạch | `review.md` |
 | `/aw-ship` | worktree / checkout chính | gửi MR / dọn việc đã merge |
 | `/aw-import <nguồn> <đích>` | worktree | đưa artifact ngoài vào |
-| `/aw-refactor [yêu-cầu]` | worktree | ghi nhận yêu cầu refactor, chưa làm |
+| `/aw-refactor [yêu-cầu]` | worktree | review, phản biện rồi ghi nhận yêu cầu refactor, chưa làm |
 | `/aw-bootstrap` | checkout chính rồi worktree | đưa kiến thức repo vào git (một lần) |
 
 ### Lệnh `aw` bạn hay dùng trực tiếp

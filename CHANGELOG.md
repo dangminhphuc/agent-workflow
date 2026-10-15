@@ -14,13 +14,15 @@ ngầm giữa các bản.
 ## [Chưa phát hành]
 
 ### Thêm
-- **Lệnh tiện ích `/aw-refactor [yêu-cầu]`: ghi nhận yêu cầu refactor, chưa làm.** Trong worktree của
-  một việc, người nói các chỗ muốn refactor; agent ghi từng yêu cầu vào `refactor-requests.md`
-  (`RF-NNN`, lời người nguyên văn, `Location` đã thấy có thật, `Status`) — không sửa code, spec hay
-  plan. Nói xong, người chọn: **việc refactor riêng** (đề xuất khi việc hiện tại không phải
-  `refactor` — làm xong việc này rồi `/aw-intake` ở checkout chính với khối yêu cầu agent in sẵn),
-  **gộp vào việc này** (chỉ khi `Type: refactor` — file thành input `[FILE]`, chạy lại `/aw-spec`), hay
-  để sau. Mẫu: `templates/refactor-requests.md`.
+- **Lệnh tiện ích `/aw-refactor [yêu-cầu]`: review, phản biện rồi ghi nhận yêu cầu refactor, chưa
+  làm.** Mỗi lần gọi một yêu cầu. Agent đọc code để kiểm (rõ chưa, có thật là refactor, tiền đề khớp
+  code, test bảo vệ trên base, phạm vi/rủi ro, nên tách, trùng/mâu thuẫn RF trước, đụng file việc hiện
+  tại), phản biện một vòng kèm `file:dòng` và bản tóm tắt; người quyết cuối. Ghi vào
+  `refactor-requests.md` của việc: `RF-NNN` có `Summary` (người duyệt), `Request` (nguyên văn),
+  `Location`, `Review` (phản biện + trả lời), `Status`. Không sửa code, intake, spec hay plan. Xong,
+  agent chỉ in lệnh: việc `refactor` đang làm → `/aw-intake <dir>/refactor-requests.md` rồi
+  `/aw-spec`; loại khác → việc refactor riêng (`/aw-intake` ở checkout chính, chép file sang việc mới
+  rồi intake thêm để spec trích `§ RF-NNN`). Mẫu: `templates/refactor-requests.md`.
 - **`tdd.md` có thêm hai mục bắt buộc: `## Target structure` và `## Rollout & rollback`.** Target
   structure ghi cấu trúc module/thành phần trước → sau (kèm sơ đồ Mermaid) — chỗ mà refactor/perf
   cần nhất nhưng mẫu cũ không có. Rollout & rollback ghi thứ tự triển khai, flag, di trú, chạy song

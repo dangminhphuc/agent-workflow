@@ -75,7 +75,7 @@ flowchart TD
 | `/aw-review` | mọi artifact + diff → `review.md` | từng YC có kết luận; không còn cảnh báo; kết quả còn mới so với code | xác nhận kết luận |
 | `/aw-ship` | `review.md` → MR/PR | review đạt, không còn `Blocker` | chọn nhánh đích, merge |
 | `/aw-clarify [YC-NNN]` | — | — | trả lời điểm mù, phân xử phát hiện checker LLM (từng mục, có phương án đề xuất); có `YC-NNN`: đổi một YC bạn không đồng ý (ghi thành điểm mù đã trả lời) |
-| `/aw-refactor [yêu-cầu]` | lời bạn → `refactor-requests.md` (nguyên văn, chưa làm) | — | nói hết yêu cầu; chọn: việc refactor riêng hay gộp vào việc `refactor` hiện tại |
+| `/aw-refactor [yêu-cầu]` | lời bạn → agent review, phản biện → `refactor-requests.md` (nguyên văn + tóm tắt, chưa làm) | — | trả lời phản biện, duyệt bản tóm tắt; chọn: việc refactor riêng hay gộp vào việc `refactor` hiện tại |
 | `/aw-bootstrap` | repo, CI, `git log` → `AGENTS.md`, `Makefile`, `ARCHITECTURE.md`, ADR có sẵn (một lần, trong worktree `chore`) | `aw conventions check`, `aw adr check`, `aw rule check` | trả lời câu hỏi trong báo cáo, mở PR |
 
 - **Không có phase test riêng** — test là điều kiện ra của `implement`: chưa xanh là chưa xong.
