@@ -44,6 +44,10 @@ ngầm giữa các bản.
   một lần, ghi tất cả, chạy `aw task reopen` / `aw check spec` / `aw check design` một lần. Muốn ghi
   giữa chừng: nói `ghi luôn`. Nhiều mục cùng sửa một đoạn → một before → after chung; D-xx mới
   đánh số liền nhau trong đợt.
+- **`/aw-design` Mode 2 cũng gom: phác hết D-xx rồi mới xác nhận, một lần.** Agent hỏi lần lượt từng
+  điểm cần quyết, chưa ghi gì; xong hết thì hiện mọi D-xx sắp ghi trong một bản xem trước, hỏi một
+  lần, ghi tất cả vào `tdd.md`. Nói `dừng` giữa chừng → ghi các D đã chốt rồi dừng, chạy lại
+  `/aw-design` để làm tiếp. Việc tick ô duyệt D-xx không đổi (bạn tự tick trong file).
 - **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
   có D `Author: human` thì agent chỉ dừng và đưa mẫu, người phải tự nghĩ ra các điểm cần quyết từ
   trang trắng. Giờ agent khảo sát code, liệt kê các điểm cần quyết dưới dạng câu hỏi kèm dữ kiện
