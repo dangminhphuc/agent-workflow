@@ -14,6 +14,13 @@ ngầm giữa các bản.
 ## [Chưa phát hành]
 
 ### Thêm
+- **Lệnh tiện ích `/aw-refactor [yêu-cầu]`: ghi nhận yêu cầu refactor, chưa làm.** Trong worktree của
+  một việc, người nói các chỗ muốn refactor; agent ghi từng yêu cầu vào `refactor-requests.md`
+  (`RF-NNN`, lời người nguyên văn, `Location` đã thấy có thật, `Status`) — không sửa code, spec hay
+  plan. Nói xong, người chọn: **việc refactor riêng** (đề xuất khi việc hiện tại không phải
+  `refactor` — làm xong việc này rồi `/aw-intake` ở checkout chính với khối yêu cầu agent in sẵn),
+  **gộp vào việc này** (chỉ khi `Type: refactor` — file thành input `[FILE]`, chạy lại `/aw-spec`), hay
+  để sau. Mẫu: `templates/refactor-requests.md`.
 - **`tdd.md` có thêm hai mục bắt buộc: `## Target structure` và `## Rollout & rollback`.** Target
   structure ghi cấu trúc module/thành phần trước → sau (kèm sơ đồ Mermaid) — chỗ mà refactor/perf
   cần nhất nhưng mẫu cũ không có. Rollout & rollback ghi thứ tự triển khai, flag, di trú, chạy song

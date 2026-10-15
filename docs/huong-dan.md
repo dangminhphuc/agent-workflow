@@ -269,7 +269,7 @@ Rồi **commit qua PR**. Chưa merge vẫn dùng được: `aw` đọc bản ở
 Mục tiêu: một phiên agent mới **chỉ có repo** trả lời được năm câu: hệ thống là gì, tổ chức ra sao,
 chạy và kiểm thế nào, vì sao code như vậy, đang ở đâu. Câu nào agent phải đoán là chỗ thiếu.
 
-Cách nhanh: mở agent ở checkout chính, chạy `/aw-bootstrap` (xem §6.3). Nó dựng:
+Cách nhanh: mở agent ở checkout chính, chạy `/aw-bootstrap` (xem §6.4). Nó dựng:
 
 ```
 AGENTS.md                         điểm vào 50–100 dòng, chỉ TRỎ TỚI (CLAUDE.md: một dòng @AGENTS.md)
@@ -712,7 +712,27 @@ lại theo mẫu, không thêm nội dung**: chỗ mẫu đòi mà nguồn thi�
 ô **chưa tick** — duyệt ở tool khác không phải duyệt ở đây. Sau đó vẫn qua checker và cổng người của
 phase lẽ ra sinh ra nó.
 
-### 6.3. `/aw-bootstrap`
+### 6.3. `/aw-refactor [yêu-cầu]`
+
+Đang làm một việc mà thấy chỗ muốn refactor: nói ra, agent **chỉ ghi lại** vào
+`refactor-requests.md` của việc (mỗi yêu cầu một mục `RF-NNN`, lời bạn chép nguyên văn, kèm chỗ
+trong code bạn chỉ tới) — không sửa code, spec hay plan. Mỗi lượt agent hỏi còn yêu cầu nào nữa không.
+
+Nói xong, agent đề xuất đưa chúng đi đâu, **bạn chọn**:
+
+- **Việc refactor riêng** (đề xuất khi việc hiện tại không phải `refactor`): làm xong việc này tới
+  `/aw-ship` như kế hoạch; rồi ở checkout chính chạy `/aw-intake` với khối yêu cầu agent in sẵn →
+  việc `refactor` mới, có YC `preserve` được test trên base bảo vệ và MR riêng. Base: base của việc
+  này sau khi nó merge; yêu cầu đụng code việc này mới thêm mà không chờ được thì xếp chồng lên branch
+  này (review cảnh báo).
+- **Gộp vào việc này** (chỉ khi việc hiện tại là `refactor` và yêu cầu khớp `Goal`): file thành một
+  input `[FILE]` trong `intake.md`, rồi chạy lại `/aw-spec` (duyệt lại spec), `/aw-design`, `/aw-plan`.
+- **Để đó, quyết sau**: chạy lại `/aw-refactor` lúc nào cũng được — lần sau ghi thêm, không ghi đè.
+
+Không có lựa chọn gộp refactor vào việc `feature`/`bugfix`/`perf`/`chore`: một việc một loại, refactor
+đi kèm tính năng thì thiếu YC `preserve` và test bảo vệ, lại làm MR khó review.
+
+### 6.4. `/aw-bootstrap`
 
 Một lần cho mỗi repo (hoặc sau thay đổi bố trí lớn). Ở checkout chính: agent đề xuất worktree `chore`
 (`agent-knowledge`), **bạn chọn base**. Trong worktree: khảo sát repo, dựng `Makefile`, `AGENTS.md`,
@@ -847,6 +867,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `/aw-review` | worktree, ngữ cảnh sạch | `review.md` |
 | `/aw-ship` | worktree / checkout chính | gửi MR / dọn việc đã merge |
 | `/aw-import <nguồn> <đích>` | worktree | đưa artifact ngoài vào |
+| `/aw-refactor [yêu-cầu]` | worktree | ghi nhận yêu cầu refactor, chưa làm |
 | `/aw-bootstrap` | checkout chính rồi worktree | đưa kiến thức repo vào git (một lần) |
 
 ### Lệnh `aw` bạn hay dùng trực tiếp
