@@ -35,7 +35,7 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 | `[CONFLUENCE]` | MCP Atlassian | `[CONFLUENCE]` URL + heading |
 | `[JIRA]` | MCP Atlassian | `[JIRA]` key + URL |
 | `[FILE]` (incl. incident notes) | Read directly | `[FILE]` path + heading |
-| `[HUMAN]` | Verbatim text in `intake.md` | `[FILE] intake.md § Input` |
+| `[HUMAN]` | Verbatim text in `intake.md` | `[FILE] [intake.md § Input](intake.md#input)` |
 
 ## Steps
 
@@ -57,7 +57,7 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
    Source says → YC. Touched but source silent → `[OPEN-QUESTION]` (usually `review-blocking`). Not touched → skip. Never invent numbers.
 6. **`## Context`:** user roles per the source. Ambiguous domain terms ("kỳ", "hạch toán") → `## Glossary` (optional), each with its source.
 7. **Open questions:** unclear in the source → `[OPEN-QUESTION]` + an entry in `open-questions.md` with the temporary assumption, "if wrong, redo what" and a proposed `Blocking`. `open-questions.md` **always exists**; none → "No open questions" (missing file = not reviewed).
-8. **`## Source conflicts`:** "Resolution" may **only** point to an open question (`open-questions.md § YC-NNN`) or a settled source (PO's `[JIRA]` comment, newer `[CONFLUENCE]` page…). None → "Không phát hiện mâu thuẫn."
+8. **`## Source conflicts`:** "Resolution" may **only** point to an open question (`[open-questions.md § YC-NNN](open-questions.md#yc-nnn)`) or a settled source (PO's `[JIRA]` comment, newer `[CONFLUENCE]` page…). None → "Không phát hiện mâu thuẫn."
 9. **`## Out of scope`:** what is *not* done — stops later phases overreaching. None → "Không có."
 10. **`## Constraints & dependencies`:** external systems, legal/accounting rules, deadlines, other teams' work — with sources. None → "Không có ràng buộc hay phụ thuộc ngoài."
 11. **Propose `Risk`:** `high` when touching money/accounting, new integrations, core schema, or hard-to-reverse changes; else `normal`. One-line reason. `high` → design runs Mode 2.

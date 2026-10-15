@@ -8,6 +8,10 @@
 Mỗi input là một dòng `-` bắt đầu bằng nhãn: tài liệu thì ghi định danh (URL, mã
 issue, đường dẫn); lời người dùng thì chép **nguyên văn** ở dòng `>` bên dưới.
 
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
+
 ## Input
 
 - `[JIRA]` <mã issue + URL, vd [ABC-123](https://…)>   <!-- hoặc [CONFLUENCE] / [FILE]; không dùng thì xoá dòng -->

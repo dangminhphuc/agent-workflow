@@ -8,6 +8,10 @@ based_on: []
 - **Reason:** <high khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
 - [ ] **Approved by human** — đã đọc và đồng ý toàn bộ spec   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick, sửa nội dung thì agent bỏ tick. Máy ghi dấu duyệt (hash nội dung) cạnh tick; nội dung đổi sau đó thì bị chặn tới khi người duyệt lại -->
 
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
+
 ## Sources
 
 <!-- Phiên bản: Confluence = số version của page; Jira = thời điểm `updated` của issue;
@@ -48,7 +52,7 @@ Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — ch
 
 ### YC-002 — <tiêu đề ngắn>
 
-- Source: `[OPEN-QUESTION]` → `open-questions.md` § YC-002
+- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002)
 - Priority: `must`
 - Description: <...>
 - Assumption: <đang hiểu thế nào để đi tiếp>
@@ -92,7 +96,7 @@ Không có gì thì ghi "Không có." — checker chặn mục rỗng. -->
 
 ## Source conflicts
 
-<!-- Cột "Resolution" CHỈ được: trỏ tới điểm mù `open-questions.md § YC-NNN`, hoặc trỏ tới
+<!-- Cột "Resolution" CHỈ được: trỏ tới điểm mù `[open-questions.md § YC-NNN](open-questions.md#yc-nnn)`, hoặc trỏ tới
 nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
 Agent không tự phân xử mâu thuẫn nghiệp vụ — checker chặn. -->
 

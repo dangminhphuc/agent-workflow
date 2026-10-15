@@ -4,12 +4,16 @@ based_on: []
 
 # Plan — <TÊN TÍNH NĂNG>
 
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
+
 ## Tasks
 
 ### T-01 — <tiêu đề>
 - Covers: `YC-001`
 - Based on: `D-01`
-- Design: `tdd.md` § Contract / API
+- Design: [tdd.md § Contract / API](tdd.md#contract--api)
 - Depends on: none
 - Expected files: `src/<...>` `test/<...>`
 - Verify: `<lệnh cụ thể>` → `<kết quả mong đợi>`
@@ -18,11 +22,11 @@ based_on: []
 
 ### T-02 — <tiêu đề>
 - Covers: `YC-002`
-- Design: `tdd.md` § Data model
+- Design: [tdd.md § Data model](tdd.md#data-model)
 - Depends on: T-01
 - Expected files: `<...>`
 - Verify: `<...>`
-- On assumption: **yes** — `open-questions.md` § YC-002
+- On assumption: **yes** — [open-questions.md § YC-002](open-questions.md#yc-002)
 - Status: `[ ]`
 
 > **Status:** `[ ]` chưa làm · `[~]` đang làm · `[x]` xong.

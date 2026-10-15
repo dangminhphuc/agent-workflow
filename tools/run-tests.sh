@@ -79,6 +79,9 @@ sca: echo sca-sach
 
 F="$R/.agent-workflow/feat_x"
 
+# toc_f <artifact>... — máy sinh mục lục "## Contents" + mở rộng anchor (aw toc), như agent làm
+toc_f() { sh "$T/toc.sh" "$F" "$@" >/dev/null 2>&1; return 0; }
+
 viet_intake() {
   cat > "$F/intake.md" <<EOF
 # Intake — x
@@ -94,6 +97,7 @@ viet_intake() {
 - \`[HUMAN]\`
   > cần làm x cho màn hình y
 EOF
+  toc_f intake.md
 }
 
 viet_spec() {
@@ -112,7 +116,7 @@ viet_spec() {
   - [ ] mở y thấy a
 
 ### YC-002 — b
-- Source: `[OPEN-QUESTION]` → open-questions.md § YC-002
+- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
 - Assumption: y
 - Priority: `should`
 - Acceptance criteria:
@@ -157,6 +161,7 @@ EOF
 - **Blocking:** `non-blocking`   <!-- blocking | review-blocking | non-blocking -->
 - **Status:** `open`   <!-- open | answered -->
 EOF
+  toc_f spec.md open-questions.md
 }
 
 viet_tdd() {
@@ -212,6 +217,7 @@ EOF
 
 No blocking findings.
 EOF
+  toc_f tdd.md
 }
 
 viet_plan() {
@@ -263,6 +269,7 @@ EOF
 ' ''
     thay "$F/plan.md" '`src/*` `test/*`' '`docs/*`'
   fi
+  toc_f plan.md
 }
 
 viet_review() {
@@ -270,6 +277,7 @@ viet_review() {
   [ "$LOAI" = "bugfix" ] && printf '\n- Repro test fails because: grep không thấy "moi" trong src/a.txt\n' >> "$F/review.md"
   viet_lens4
   printf '\n## Lens 3 — Quality\n\n- None\n\n## Conclusion\n\n- Blocker findings: 0\n- Mergeable: yes\n' >> "$F/review.md"
+  toc_f review.md
   ghi_tree_review
   return 0
 }
@@ -408,6 +416,80 @@ done
 cp "$TMP/intake.bak" "$F/intake.md"
 ky_vong 0 "Engine khớp → ĐẠT" sh "$T/check-intake.sh" "$F"
 
+
+# ---------------------------------------------------------------- mục lục, link tới mục
+echo ""
+echo "aw toc / tools/lib/toc.sh"
+TOC="$T/toc.sh"; CHK="$T/check-spec.sh"
+viet_spec
+dung "fixture: spec có ## Contents, YC lồng dưới Requirements" sh -c "grep -qxF -- '- [Requirements](#requirements)' '$F/spec.md' && grep -qxF -- '  - [YC-001 — a](#yc-001--a)' '$F/spec.md'"
+dung "aw toc mở rộng anchor rút gọn trong link — chỉ khi khớp đúng một mục" grep -qF '(open-questions.md#yc-002--b)' "$F/spec.md"
+ky_vong 0 "spec có mục lục, link đúng → ĐẠT" sh "$CHK" "$F"
+cksum "$F/spec.md" "$F/open-questions.md" > "$TMP/toc.ck"
+ky_vong 0 "aw toc chạy lại trên artifact đã khớp → ĐÃ KHỚP" sh "$TOC" "$F"
+dung "…không ghi lại file (artifact phía sau không lỗi thời)" sh -c "cksum '$F/spec.md' '$F/open-questions.md' | cmp -s - '$TMP/toc.ck'"
+awk '/^## Contents$/ { bo = 1; next } bo && /^## / { bo = 0 } !bo' "$F/spec.md" > "$TMP/s.md" && mv "$TMP/s.md" "$F/spec.md"
+ky_vong 1 "chặn artifact có heading mà thiếu ## Contents" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: thiếu mục \"## Contents\"'"
+toc_f spec.md
+ky_vong 0 "aw toc thêm lại mục lục → ĐẠT" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'
+ky_vong 1 "chặn mục lục lệch heading (đổi tên heading)" sh "$CHK" "$F"
+dung "…đúng lý do: thiếu mục mới, thừa link cũ" sh -c "sh '$CHK' '$F' | grep -q 'Contents\" thiếu mục \"Out of scope now\"' && sh '$CHK' '$F' | grep -q 'link \"#out-of-scope\" không ứng'"
+viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'; toc_f spec.md
+ky_vong 0 "…aw toc sinh lại mục lục → ĐẠT" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Out of scope
+
+- trùng tên
+
+## Constraints & dependencies'
+toc_f spec.md
+dung "heading trùng tên → anchor thứ hai có hậu tố -1 (như GitHub)" grep -qxF -- '- [Out of scope](#out-of-scope-1)' "$F/spec.md"
+viet_spec; thay "$F/spec.md" '(open-questions.md#yc-002--b)' '(open-questions.md#yc-009)'
+ky_vong 1 "chặn link tới mục không có của artifact khác" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'link \"open-questions.md#yc-009\" không trỏ tới mục nào'"
+ky_vong 1 "aw toc báo CÒN LINK SAI khi link không mở rộng được" sh "$TOC" "$F" spec.md
+viet_spec; thay "$F/spec.md" '(open-questions.md#yc-002--b)' '(open-questions.md)'
+ky_vong 1 "chặn link tới artifact mà không trỏ tới mục" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '[open-questions.md § YC-002](open-questions.md#yc-002--b)' '`open-questions.md` § YC-002'
+ky_vong 1 "chặn tham chiếu \"open-questions.md § YC-002\" chữ trơn" sh "$CHK" "$F"
+dung "…gợi ý đúng link đầy đủ" sh -c "sh '$CHK' '$F' | grep -qF 'viết thành [open-questions.md § YC-002](open-questions.md#yc-002--b)'"
+viet_spec; thay "$F/spec.md" '[open-questions.md § YC-002](open-questions.md#yc-002--b)' '[open-questions.md § YC-002](open-questions.md#YC-002)'; toc_f spec.md
+dung "aw toc mở rộng anchor viết hoa / rút gọn" grep -qF '(open-questions.md#yc-002--b)' "$F/spec.md"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/plan.md § Tổng quan'
+thay "$F/spec.md" '- Priority: `must`' '- Priority: `must`
+- Note: [y](#khong-co)'
+ky_vong 1 "chặn link #anchor không có trong chính file" sh "$CHK" "$F"
+dung "…nhưng không bắt file repo trùng tên artifact (docs/plan.md § …)" sh -c "! sh '$CHK' '$F' | grep -q 'plan.md § …'"
+viet_spec; thay "$F/spec.md" '### YC-001 — a' '### YC-001 — Đăng Nhập (OTP) & “mã”'; toc_f spec.md
+dung "anchor tính như GitHub: chữ Việt thường hoá, bỏ dấu câu" grep -qF '(#yc-001--đăng-nhập-otp--mã)' "$F/spec.md"
+ky_vong 0 "…và checker chấp nhận" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Out of scope' '<!--
+## Không tính
+-->
+```
+## cũng không tính
+```
+
+## Out of scope'
+toc_f spec.md
+dung "heading trong HTML comment / khối code không vào mục lục" sh -c "! grep -qF '[Không tính]' '$F/spec.md' && ! grep -qF '[cũng không tính]' '$F/spec.md'"
+ky_vong 0 "…và checker không đòi chúng" sh "$CHK" "$F"
+printf '# Open questions\n\nNo open questions.\n' > "$TMP/oq.md"
+viet_spec; thay "$F/spec.md" '- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Assumption: y' '- Source: `[JIRA]` ABC-1'; cp "$TMP/oq.md" "$F/open-questions.md"
+ky_vong 0 "artifact không có heading ## / ### thì không cần mục lục" sh "$CHK" "$F"
+ky_vong 2 "aw toc: artifact lạ → SAI THAM SỐ" sh "$TOC" "$F" task-results.md
+viet_spec
+# review chặn link gãy ở artifact phase trước (heading đích đổi sau khi link được viết)
+thay "$F/plan.md" '- Covers: `YC-001`' '- Covers: `YC-001`
+- Design: [tdd.md § Data model](tdd.md#data-model)'
+ky_vong 0 "plan có link Design tới mục có thật → ĐẠT" sh "$T/check-plan.sh" "$F"
+thay "$F/tdd.md" '## Data model' '## Data'
+ky_vong 1 "review chặn link sang mục không còn (heading đích đổi tên)" sh "$T/check-review.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'plan.md: link \"tdd.md#data-model\" không trỏ tới mục nào'"
+tao_fixture
+
 # ---------------------------------------------------------------- truy vet
 echo ""
 echo "check-spec.sh"
@@ -474,10 +556,11 @@ viet_spec; thay "$F/spec.md" '### YC-002' '### Ghi chú
 - Source: `[JIRA]` ABC-9
 
 ### YC-002'
+toc_f spec.md
 ky_vong 0 "Nguồn dưới \"### phụ\" không bị cộng vào YC phía trên" sh "$CHK" "$F"
 
 # open-questions.md 0 byte = đã rà, không có điểm mù (không được làm lệch thứ tự file)
-viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002
+viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
 - Assumption: y' '`[JIRA]` ABC-1'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte thì cho qua" sh "$CHK" "$F"
@@ -531,27 +614,28 @@ ky_vong 1 "chặn Trạng thái điểm mù tự chế" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [OPEN-QUESTION]" sh "$CHK" "$F"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 ky_vong 1 "spec đã duyệt mà bị sửa (vd /aw-clarify đổi nhãn) thì phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời + spec đổi nhãn nguồn + người duyệt lại thì cho qua" sh "$CHK" "$F"
 thay "$F/open-questions.md" '- **Answer:** qua email' '- **Answer:** <người trả lời ghi vào đây>'
 ky_vong 1 "chặn đã trả lời mà Trả lời còn trống/chỗ giữ chỗ" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[JIRA]` ABC-2'
+viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[JIRA]` ABC-2'
 ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
 # Người đổi YC đã có nguồn (/aw-clarify YC-NNN): ghi thành điểm mù đã trả lời
 viet_spec; sh "$CHK" "$F" >/dev/null 2>&1   # máy ghi dấu duyệt cho bản người đã tick
 printf '\n## YC-001 — a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-001'
+toc_f open-questions.md
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § YC-001](open-questions.md#yc-001--a)'
 ky_vong 1 "đổi YC sau khi spec đã duyệt → phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đổi YC: mục answered (kể cả Superseded answer) + nhãn [FILE] + duyệt lại → cho qua" sh "$CHK" "$F"
 thay "$F/open-questions.md" '- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)' ''
 ky_vong 1 "…Superseded answer không thay được Answer" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-001'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § YC-001](open-questions.md#yc-001--a)'
 ky_vong 1 "chặn nhãn [FILE] trỏ vào open-questions.md § YC-001 mà mục đó không có" sh "$CHK" "$F"
 dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'YC-001: nguồn trỏ tới open-questions.md § YC-001 nhưng không có mục'"
-viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-002'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 ky_vong 1 "chặn nhãn trỏ vào điểm mù của YC khác còn open" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/a.md § Tổng quan'
 duyet_lai "$F/spec.md"
@@ -591,9 +675,9 @@ ky_vong 1 "chặn bảng mâu thuẫn rỗng, chỉ có chỗ giữ chỗ" sh "$
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | chọn 30 ngày cho an toàn |'
 ky_vong 1 "chặn mâu thuẫn do agent tự phân xử" sh "$CHK" "$F"
 dung "…đúng lý do: cột Xử lý" sh -c "sh '$CHK' '$F' | grep -q 'Agent không tự phân xử'"
-viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | open-questions.md § YC-002 |'
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § YC-002](open-questions.md#yc-002--b) |'
 ky_vong 0 "mâu thuẫn trỏ tới điểm mù có thật thì cho qua" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | open-questions.md § YC-099 |'
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § YC-099](open-questions.md#yc-099) |'
 ky_vong 1 "chặn mâu thuẫn trỏ tới điểm mù không có" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | `[JIRA]` ABC-1 comment PO chốt 60 |'
 ky_vong 0 "mâu thuẫn trỏ tới nguồn đã chốt thì cho qua" sh "$CHK" "$F"
@@ -623,14 +707,17 @@ printf '### PH-01 — x\n- Severity: `block`\n- Resolution: `rejected:`\n' > "$F
 ky_vong 1 "chặn bác bỏ phát hiện mà không có lý do" sh "$CHK" "$F"
 
 printf '### PH-01 — x\n- Severity: `block`\n- Resolution: rejected: D-01 đã nói rõ\n### PH-02 — y\n- Severity: `warn`\n- Resolution: open\n' > "$F/design-findings.md"
+toc_f design-findings.md
 ky_vong 0 "bác bỏ có lý do + cảnh báo chưa xử lý thì cho qua" sh "$CHK" "$F"
 
 # Việc tạo trước khi đổi sang tiếng Anh: trường cũ (Mức / Xử lý) vẫn đọc được
 printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: `chưa`   <!-- chưa | đã sửa -->\n' > "$F/design-findings.md"
 ky_vong 1 "trường cũ: phát hiện Chặn chưa xử lý vẫn bị chặn" sh "$CHK" "$F"
 printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: bác bỏ: D-01 đã nói rõ\n### PH-02 — y\n- Mức: `Cảnh báo`\n- Xử lý: chưa\n' > "$F/design-findings.md"
+toc_f design-findings.md
 ky_vong 0 "trường cũ: bác bỏ có lý do + cảnh báo thì cho qua" sh "$CHK" "$F"
 printf '### PH-01 — x\n- Severity: `block`\n- Resolution: fixed\n- Problem: Location và Resolution: chưa rõ\n' > "$F/design-findings.md"
+toc_f design-findings.md
 ky_vong 0 "tên trường chỉ khớp ở đầu dòng, không khớp trong nội dung" sh "$CHK" "$F"
 
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
@@ -640,7 +727,7 @@ ky_vong 1 "chặn điểm mù \"chặn\" còn mở" sh "$CHK" "$F"
 dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec
@@ -650,7 +737,7 @@ ky_vong 1 "chặn vào design khi người chưa duyệt spec" sh "$CHK" "$F"
 dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'chưa được người duyệt'"
 viet_spec
 
-viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002
+viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
 - Assumption: y' '`[JIRA]` ABC-1'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte không làm design đọc lệch file" sh "$CHK" "$F"
@@ -722,6 +809,7 @@ viet_tdd; thay "$F/tdd.md" '## Decisions (D-xx)' '## Decisions (D-xx)
 Không có quyết định cần duyệt.
 ## Bỏ'
 thay "$F/tdd.md" 'Based on: D-01' ''
+toc_f tdd.md
 ky_vong 0 "mục Quyết định được phép rỗng" sh "$CHK" "$F"
 viet_tdd
 
@@ -867,7 +955,7 @@ ky_vong 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" sh "$C
 dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"review-blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 duyet_lai "$F/spec.md"; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec; ghi_based_on
@@ -907,6 +995,7 @@ thay "$F/review.md" '- None' '### [Should fix] token cứng
 - Category: hardcoded-secret
 - Location: `src/a.txt:1`
 - Problem: token trong code'
+toc_f review.md
 ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
 viet_review; cp "$ROOT/workflow/templates/review.md" "$TMP/review-mau.md"
 awk '/^## Lens 4/ { p = 1 } /^## Conclusion/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
@@ -924,6 +1013,7 @@ L3_SF='### [Should fix] trùng hàm
 - Location: `src/a.txt:1`
 - Problem: có sẵn hàm tương tự'
 viet_review; thay "$F/review.md" '- None' "$L3_SF"
+toc_f review.md
 ky_vong 0 "Lens 3 có finding đủ Location file:dòng thì cho qua" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "- None
 $L3_SF"
@@ -940,6 +1030,7 @@ viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
 - Location: `src/a.txt:1`'
 ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
+toc_f review.md
 ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
 - Location: `src/a.txt:1`'
@@ -949,6 +1040,7 @@ viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/dup
 ky_vong 1 "chặn Category không phải kebab-case" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên
 - Category: Tên Tuỳ Ý'
+toc_f review.md
 ky_vong 0 "[Nit] không bắt Category" sh "$CHK" "$F"
 L3_B='### [Blocker] mất dữ liệu
 - Category: data-loss
@@ -962,6 +1054,7 @@ viet_review; thay "$F/review.md" '- None' "$L3_B
 ky_vong 1 "chặn Failure scenario giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "$L3_B
 - Failure scenario: lưu hai lần → bản ghi đầu mất"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+toc_f review.md
 ky_vong 0 "[Blocker] đủ trường, Conclusion khớp số → review đạt (ship mới chặn)" sh "$CHK" "$F"
 thay "$F/review.md" '- Blocker findings: 1' '- Blocker findings: 0'
 ky_vong 1 "chặn Conclusion ghi số Blocker lệch số mục" sh "$CHK" "$F"
@@ -1124,6 +1217,7 @@ None
 
 Refs: ABC-1
 EOF
+  toc_f merge-request.md
 }
 ky_vong 2 "chưa có merge-request.md → THIẾU ĐẦU VÀO" sh "$SHC" "$F"
 viet_mr
@@ -1162,7 +1256,7 @@ CONV="$CFG/conventions.md"
 cp "$CONV" "$TMP/conv-qt.bak"
 # khai_qt <phase> <giá trị> — khai lại từ đầu một khoá rules_<phase>
 khai_qt() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "rules_$1:" "rules_$1: $2"; }
-them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; }
+them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; }
 
 ky_vong 0 "không khai gì → aw rules ĐÃ LIỆT KÊ" sh "$QT" implement
 dung "…stdout rỗng" bang "$(sh "$QT" implement 2>/dev/null)" ""
@@ -3324,7 +3418,7 @@ ky_vong 0 "reopen D-01 → XONG" sh "$TK" reopen "$F" D-01
 dung "…T-01 (Based on D-01) về [ ], T-02 giữ [x]" sh -c "[ '$(tk_st T-01)' = ' ' ] && [ '$(tk_st T-02)' = x ]"
 viet_plan
 thay "$F/plan.md" '- Covers: `YC-001`' '- Covers: `YC-001`
-- On assumption: **yes** — `open-questions.md` § YC-002'
+- On assumption: **yes** — [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 thay "$F/plan.md" '- Covers: `YC-002`
 - Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt` → có file
@@ -3395,7 +3489,7 @@ ky_vong 2 "journal add lớp lạ → SAI THAM SỐ" sh "$NK" add mood "buồn"
 ky_vong 2 "journal add thiếu mô tả → SAI THAM SỐ" sh "$NK" add env ""
 ky_vong 0 "journal report" sh "$NK"
 dung "…có ba phần" sh -c "sh '$NK' 2>/dev/null | grep -q 'Thất bại theo lớp' && sh '$NK' 2>/dev/null | grep -q 'Checker (aw check)' && sh '$NK' 2>/dev/null | grep -q 'Finding của review'"
-viet_review; thay "$F/review.md" '- None' "$L3_SF"; ghi_tree_review
+viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md; ghi_tree_review
 ky_vong 0 "review ĐẠT ghi finding theo Category" sh "$T/check-review.sh" "$F"
 dung "…findings.tsv có duplicate-code" sh -c "awk -F'\t' '\$4 == \"duplicate-code\"' '$JD/findings.tsv' | grep -q ."
 sh "$T/check-review.sh" "$F" >/dev/null 2>&1
@@ -3475,6 +3569,7 @@ thay "$F/tdd.md" '## Data model' '### D-02 — đổi chỗ lưu
 ky_vong 0 "promote D-02 (Supersedes: ADR-0001) → ĐÃ NÂNG" sh "$AD" promote "$F" D-02
 dung "…ADR cũ thành superseded by 0002, chỉ mục cập nhật" sh -c "grep -qx -- '- Status: superseded by 0002' '$A1' && grep -qF '| superseded by 0002 |' '$R/docs/adr/README.md' && grep -qF -- '- Supersedes: ADR-0001' '$R/docs/adr/0002-feat_x-d-02.md'"
 ky_vong 0 "…aw adr check HỢP LỆ" sh "$AD" check
+toc_f tdd.md
 ky_vong 0 "design vẫn ĐẠT khi ADR cũ đã bị chính việc này thay" sh "$TK" "$F"
 # aw knowledge design: chỉ mục, ADR accepted đúng phạm vi, tài liệu module cha
 mkdir -p "$R/lib"; printf '# src\n' > "$R/src/ARCHITECTURE.md"; printf '# lib\n' > "$R/lib/ARCHITECTURE.md"
@@ -3492,7 +3587,7 @@ tao_fixture
 LU="$T/rule.sh"; SK="$T/check-spec.sh"; PK="$T/check-plan.sh"
 LF="$R/docs/product/rules/billing.md"
 # sua_spec <tìm> <thay> — sửa spec, người duyệt lại bản mới
-sua_spec() { thay "$F/spec.md" "$1" "$2"; duyet_lai "$F/spec.md"; ghi_based_on 2>/dev/null; }
+sua_spec() { thay "$F/spec.md" "$1" "$2"; toc_f spec.md; duyet_lai "$F/spec.md"; ghi_based_on 2>/dev/null; }
 sua_spec '- Priority: `must`' '- Priority: `must`
 - Description: luôn mở được y
 - Promote: BR-billing-1'
@@ -3552,7 +3647,7 @@ ky_vong 0 "…sửa lại → HỢP LỆ" sh "$LU" check
 # Lời người đã ghi (câu trả lời điểm mù): nguồn [HUMAN] + Quote nguyên văn
 thay "$F/open-questions.md" '- **Status:** `open`' '- **Status:** `answered`
 - **Answer:** PO Lan, 2026-10-05: luôn hiện b'
-sua_spec '- Source: `[OPEN-QUESTION]` → open-questions.md § YC-002' '- Source: `[FILE]` open-questions.md § YC-002
+sua_spec '- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '- Source: `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
 - Description: luôn hiện b
 - Promote: BR-BILLING-002'
 thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Expected files: `src/b.txt` `docs/product/rules/billing.md`'; ghi_based_on 2>/dev/null
@@ -3597,7 +3692,7 @@ viet_review
 ky_vong 1 "review: thiếu mục Durable knowledge → KHÔNG ĐẠT" sh "$RS" "$F"
 dung "…nêu thiếu mục" sh -c "sh '$RS' '$F' 2>/dev/null | grep -q 'thiếu mục \"## Durable knowledge\"'"
 # dk_review <bảng> — thêm mục Durable knowledge vào review.md
-dk_review() { viet_review; printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; ghi_tree_review; }
+dk_review() { viet_review; printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; ghi_tree_review; }
 DK_DU='| `src/ARCHITECTURE.md` | pass | |
 | `docs/adr/0001-cu.md` | pass | |
 | `docs/product/rules/kho.md` | not applicable | đổi chữ, không đổi luật kho |'

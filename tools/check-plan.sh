@@ -32,6 +32,7 @@ kq_khai check-plan.sh \
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/rule.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -82,6 +83,11 @@ fi
 llk=$(luat_loi_ke_hoach "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $llk
+EOF
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" plan.md)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$tl
 EOF
 qtl=$(kc_quy_tac_loi "$DIR" plan)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF

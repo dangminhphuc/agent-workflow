@@ -338,6 +338,27 @@ sai sót chỉ tốn thời gian người.
 Chặn nhầm làm tắc flow và người học cách lách. Mọi cảnh báo dồn về `review` (cổng cuối). Tiêu chí
 xếp checker mới: độ chính xác, chi phí nếu lọt, nơi sửa rẻ nhất.
 
+### Mục lục và link tới mục
+
+Artifact viết cho người đọc, và người đọc nhảy giữa chúng: plan trỏ tới D-xx, spec trỏ tới điểm
+mù, review trỏ tới YC. Chữ trơn `open-questions.md § YC-002` bắt người tự tìm; link chỉ tới file
+cũng vậy. Nên luật là: artifact có heading `##`/`###` thì có `## Contents`, và tham chiếu sang
+artifact khác là link có anchor tới đúng mục.
+
+- **Máy sinh, không để agent gõ.** Anchor tính như GitHub / VS Code (chữ thường gồm cả chữ Việt,
+  bỏ dấu câu, dấu cách thành `-`, trùng thì `-1`): `### YC-001 — Đăng nhập` → `#yc-001--đăng-nhập`.
+  Agent gõ tay thì sai một dấu là link chết. `aw toc` sinh mục lục và mở rộng anchor rút gọn
+  (`#yc-001` → anchor đầy đủ) khi chỉ khớp một heading; agent chỉ cần viết mã.
+- **Chặn, không cảnh báo.** Kiểm chính xác: mục lục khớp heading hay không, anchor có trong file đích
+  hay không — không có báo nhầm. Checker phase chặn trên artifact đầu ra của chính nó; link sang
+  artifact phase trước có thể gãy khi file đó đổi heading sau này, nên `review` chặn lại trên mọi
+  artifact.
+- **Chạy trước `aw based-on`.** `based_on` là hash cả file: mục lục của `spec.md` đổi sau khi `tdd.md`
+  đã ghi `based_on` thì `tdd.md` thành lỗi thời. `aw toc` chỉ ghi file khi nội dung đổi, nên chạy lại
+  khi heading không đổi là vô hại.
+- **Chỉ artifact agent viết.** File máy ghi (`*-results.md`, `repro.md`, `perf.md`, `ship.md`) không có
+  mục lục và không phải đích bắt buộc có anchor.
+
 ### Artifact lỗi thời
 
 `based_on` là hash **cả file** đầu vào, dạng phẳng `- spec.md@<hash>` (đọc được bằng tập con
