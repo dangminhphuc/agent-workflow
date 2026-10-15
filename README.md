@@ -136,7 +136,7 @@ Engine không cài vào repo đích. Bốn phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.26/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.27/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -299,6 +299,7 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 |---|---|
 | `aw init [--version V] [--adapter a[,b]] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
 | `aw upgrade <V>` | Đổi engine cho việc mới (việc đang làm giữ version cũ) |
+| `aw self-update [<V>]` | Nâng chính wrapper `aw` (mặc định lên version engine của repo), kiểm sha256 |
 | `aw version` · `aw doctor` | Version đang dùng · kiểm cài đặt |
 | `aw ready <thư-mục-feature> [--no-test]` | Worktree sẵn sàng chưa (test xanh trên base) và bước tiếp |
 | `aw conventions check` | Kiểm `conventions.md` |
@@ -329,6 +330,8 @@ aw init --adapter claude-code,cursor     # hoặc ADAPTER="claude-code cursor" t
 
 ### Nâng cấp, chạy không mạng, chuyển từ bộ cài cũ
 
+- `aw self-update [<V>]`: nâng chính wrapper (wrapper không tự nâng theo `aw upgrade`); `aw version`
+  nhắc khi wrapper cũ hơn engine.
 - `aw upgrade <V>`: tải, ghim sha256, sinh lại adapter. **Việc đang làm không đổi luật** — mọi
   `aw check` chạy đúng version ở dòng `Engine:` của `intake.md`; không có thì `KHÔNG HỢP LỆ`.
 - Không mạng: `AW_ENGINE_DIR` (engine có sẵn, `VERSION` phải khớp), `AW_MIRROR`
