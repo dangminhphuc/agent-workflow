@@ -38,6 +38,8 @@
 #   aw journal [report] | aw journal add <layer> "<mô tả>"   nhật ký thất bại của harness
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
+#   aw approvals [--global]               mọi ô duyệt chờ người, kèm link tới artifact (lệnh /aw-approvals gọi)
+#   aw approvals tick <feature-dir> <spec|D-NN> <hash>   tick sau khi NGƯỜI chọn duyệt trong /aw-approvals
 #
 # Biến môi trường:
 #   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);
@@ -406,6 +408,12 @@ case "$LENH" in
     can_repo
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" approval "$@" ;;
+  # approvals tick <feature-dir> …: engine của việc; liệt kê: nhiều việc → version của bản clone.
+  approvals)
+    can_repo
+    if [ "${1:-}" = tick ]; then _v=$(version_theo_viec "${2:-}") || exit $?
+    else _v=$(version_viec) || exit $?; fi
+    chuyen "$_v" approvals "$@" ;;
   ready)
     can_repo
     _v=$(version_theo_viec "${1:-}") || exit $?

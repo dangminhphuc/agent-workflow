@@ -63,6 +63,23 @@ Luôn portable: artifact trong `.agent-workflow/<tên-branch>/`, `conventions.md
 Sau khi sinh, xoá file trong `.claude/commands/`, `.claude/agents/` **mang dấu "SINH TỰ ĐỘNG"**
 mà lần này không sinh ra (lệnh đổi tên/bỏ). File không có dấu đó là người viết — không đụng.
 
+## Hỏi quyền cho `aw approvals tick`
+
+`/aw-approvals` là lối duy nhất agent được tick ô duyệt: bạn chọn **Duyệt** cho một mục, agent chạy
+`aw approvals tick <dir> <khoá> <hash>`. Để agent không tự chạy lệnh này khi bạn chưa chọn, thêm luật
+`ask` vào `.claude/settings.json` (hoặc `settings.local.json`) — Claude Code hỏi bạn mỗi lần, agent
+không tự cho phép được:
+
+```json
+{ "permissions": { "ask": ["Bash(aw approvals tick:*)"] } }
+```
+
+- Hộp hỏi quyền hiện đúng việc, khoá (`spec`, `D-NN`) và hash — đối chiếu với mục bạn vừa chọn.
+- Không có tác dụng ở chế độ bỏ qua quyền (`bypassPermissions`): đừng chạy `/aw-approvals` ở chế độ đó.
+- Agent gọi thẳng script của engine (không qua `aw`) thì luật không bắt; hook `aw guard` cũng không
+  bắt vì dấu duyệt hợp lệ. Còn lại: `journal/approvals.tsv` ghi mọi lần tick qua lệnh.
+- Adapter không tự ghi file này (cùng lý do với hook bên dưới).
+
 ## Hook gác ô duyệt
 
 Thêm vào `.claude/settings.json` (hoặc `settings.local.json`) của repo đích — adapter không tự
