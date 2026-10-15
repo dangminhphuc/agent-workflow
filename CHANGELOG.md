@@ -11,6 +11,15 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thêm
+- **`aw self-update [<YYYY.M.N>]`: wrapper tự nâng.** Tải `aw` của bản phát hành (mặc định: version
+  engine của repo đang đứng), kiểm sha256 theo `SHA256SUMS`, kiểm đúng `AW_WRAPPER_VERSION`, rồi thay
+  chính file wrapper (ghi tạm cạnh nó rồi `mv`). Checksum sai hay thiếu dòng `aw` → không cài.
+  `aw upgrade` và `aw version` nhắc chạy lệnh này khi wrapper cũ hơn engine (vd wrapper 2026.10.25
+  chưa biết `aw approvals`). Wrapper từ 2026.10.26 trở về trước chưa có lệnh này: tải tay một lần.
+
 ## [2026.10.26]
 
 ### Thêm
