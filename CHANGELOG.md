@@ -37,6 +37,13 @@ ngầm giữa các bản.
   Task sau làm hỏng task trước lộ ra ngay ở task gây ra, không đợi tới `aw check implement`. Mặc định tắt.
 
 ### Thay đổi
+- **`/aw-clarify` chốt hết rồi mới ghi, một lần.** Trước đây mỗi mục chốt xong là agent hiện dòng
+  trước → sau, hỏi "ghi như vậy được không?", ghi file, chạy checker, rồi mới sang mục sau — mỗi mục
+  tốn hai lượt. Giờ agent hỏi lần lượt hết hàng đợi, chưa ghi gì; xong (hoặc khi bạn nói `dừng`)
+  thì hiện **một** bản xem trước gom theo file, mỗi thay đổi gắn id mục (`PH-38`, `YC-115`…), hỏi
+  một lần, ghi tất cả, chạy `aw task reopen` / `aw check spec` / `aw check design` một lần. Muốn ghi
+  giữa chừng: nói `ghi luôn`. Nhiều mục cùng sửa một đoạn → một before → after chung; D-xx mới
+  đánh số liền nhau trong đợt.
 - **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
   có D `Author: human` thì agent chỉ dừng và đưa mẫu, người phải tự nghĩ ra các điểm cần quyết từ
   trang trắng. Giờ agent khảo sát code, liệt kê các điểm cần quyết dưới dạng câu hỏi kèm dữ kiện
