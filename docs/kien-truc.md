@@ -296,8 +296,24 @@ checklist, ô duyệt có thêm hai lớp (`tools/lib/approval-tick.sh`):
 **Cổng duyệt** (`approval_gate: true`): gõ lệnh phase sau khi chưa duyệt thì `aw approval` in tóm
 tắt **do máy dựng** (file/dòng phải tick, YC `[INFERRED]`, Out of scope, Risk, điểm mù; hay D nào
 chưa duyệt) rồi agent hỏi hộp xác nhận. Máy dựng để thông tin ổn định, không bị chọn lọc. Hộp
-**không** tick hộ: bấm nút không chứng minh người đã đọc, và máy không phân biệt "agent tick vì
-người bấm" với "agent tự tick".
+cổng **không** tick hộ: nó hỏi "đã duyệt xong chưa", không hỏi duyệt mục nào.
+
+**Duyệt tập trung** (`/aw-approvals`, `tools/approvals.sh`): nhiều việc song song thì mở từng
+artifact để tick là việc tay lặp lại, dễ sót. Luật được nới **về hình thức, không về thực chất**:
+điều phải giữ là *quyết định* đến từ người, không phải *phím `x`*. Người chọn **Duyệt** cho đúng
+một mục → agent chạy `aw approvals tick <dir> <khoá> <hash>`. Chặn agent tự duyệt bằng nhiều lớp:
+
+- **Hash bản người thấy**: danh sách in hash nội dung hiện tại; `tick` chỉ ghi khi hash vẫn khớp —
+  nội dung đổi giữa lúc hỏi và lúc tick thì không tick. Ngoại lệ chỉ cho `tick`, không cho sửa file:
+  `aw guard` vẫn bỏ tick ghi bằng Edit/Write/`sed`.
+- **Luật hỏi quyền của agent** (Claude Code `permissions.ask`, Cursor: ngoài allowlist): mỗi lần
+  tick, harness hỏi người — lớp duy nhất agent không tự vượt được. Người tự cài, như hook.
+- **Nhật ký** `journal/approvals.tsv`: tick qua lệnh để lại dòng, tick tay thì không.
+
+Không dùng "một nút duyệt tất cả": một câu trả lời duyệt đúng một mục, để mỗi lần bấm gắn với một
+nội dung cụ thể. Liệt kê mặc định chỉ worktree hiện tại (mỗi việc một phiên); `--global` gom mọi
+worktree của bản clone, chạy được cả ở checkout chính — lệnh khai `feature_dir: none` để không chạy
+`aw feature`.
 
 Parser chỉ nhận ô đúng chỗ (spec: trước `##` đầu tiên; D-xx: trong `### D-NN`), đúng một ô; ô
 trong chú thích hay khối code không tính; sai dạng là lỗi, không đoán.
@@ -356,7 +372,10 @@ Người lướt văn xuôi dài vì không thấy đâu là lựa chọn thật
 phép rỗng. `tdd.md` là output duy nhất (tách file quyết định thì hai file lệch nhau).
 
 - **Mode 2 chống neo**: agent đưa phương án trước thì người neo vào nó. `Risk: high` → người phác
-  D-xx trước, agent chỉ phản biện; chưa có bản phác → chặn.
+  D-xx trước, agent chỉ phản biện; chưa có bản phác → chặn. Agent được **hỏi dẫn** người phác (nêu
+  điểm cần quyết + dữ kiện từ code, hỏi câu mở) nhưng không nêu phương án: dừng trơn thì người
+  phải tự nghĩ ra các điểm cần quyết từ trang giấy trắng, hay bỏ sót; hỏi dẫn giữ được chống neo vì
+  câu hỏi và dữ kiện không chứa lựa chọn.
 - **Mở lại**: đúng một D, sửa tại chỗ (git giữ lịch sử), bỏ tick + `Reopen reason:`;
   `aw task reopen <dir> D-xx` đưa task `Based on` D đó về `[ ]`, chỉ chúng.
 - **`plan` tách khỏi `tdd.md`**: plan là ranh giới do **phiên khác** đặt cho `implement`, và tick
@@ -590,7 +609,9 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 7. **Máy không biết ai tick.** Hook chỉ có khi repo cài và agent có hook; không có hook thì agent tự
    tick vẫn lọt (artifact ngoài git, không có `git blame`). Hook không bắt dấu giả agent tự tính, và
    bỏ nhầm tick nếu người tick đúng lúc lệnh agent đang chạy. Nội dung đổi **trước** lần ghi dấu
-   đầu tiên cũng lọt.
+   đầu tiên cũng lọt. `aw approvals tick` ghi dấu hợp lệ nên hook không phân biệt được với người
+   duyệt: chặn nó là việc của luật hỏi quyền — không cài, chạy ở chế độ bỏ qua quyền, hay agent gọi
+   thẳng script engine thì chỉ còn nhật ký.
 8. **`review` không chạy lại test hay quét** — biết kết quả cũ, không biết lệnh có đủ. Lệnh lệch
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.

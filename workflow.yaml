@@ -24,10 +24,14 @@ artifact_dir: .agent-workflow
 # mỗi mục thành một lệnh (Claude Code: /<id>).
 #   import          đưa artifact làm bằng tool khác vào giữa quy trình — chỉ sắp
 #                   xếp lại theo mẫu, không thêm nội dung
+#   approvals       liệt kê mọi ô "Approved by human" chờ người (worktree này, hoặc
+#                   --global), dẫn người duyệt từng mục; người chọn Duyệt thì máy tick
 #   clarify         gom mọi việc chờ người quyết (điểm mù, phát hiện của checker
 #                   LLM) theo thứ tự phải chốt trước, dẫn người đi từng mục
 #   bootstrap       một lần cho mỗi repo đích: đưa kiến thức (điểm vào, lệnh kiểm,
 #                   tài liệu module, ADR có sẵn) vào git — phiên agent mới không phải đoán
+#   refactor        review + phản biện từng yêu cầu refactor của người, rồi ghi vào
+#                   refactor-requests.md (nguyên văn + tóm tắt, chưa làm); xong thì chỉ lệnh intake
 commands:
   - id: import
     file: workflow/import.md
@@ -35,6 +39,10 @@ commands:
     file: workflow/clarify.md
   - id: bootstrap
     file: workflow/bootstrap.md
+  - id: refactor
+    file: workflow/refactor.md
+  - id: approvals
+    file: workflow/approvals.md
 
 phases:
   - id: intake

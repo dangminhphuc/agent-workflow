@@ -54,6 +54,11 @@ SECURITY_CMDS=""
 # tiếp là đoán mò; agent ghi "Unplanned" và báo người. Bỏ trống = 3.
 MAX_RED_RUNS=""
 
+# 1 = aw task done chạy thêm TEST_CMD sau khi Verify xanh: task làm hỏng task trước
+# lộ ra ngay ở task gây ra, không đợi tới aw check implement. Đỏ tính như Verify
+# đỏ. Bỏ trống = tắt (test chạy lâu thì để tắt).
+TASK_FULL_TEST=""
+
 # Lệnh đo hiệu năng — chỉ dùng cho loại việc perf. Phải in một dòng
 # "RESULT: <số> <đơn vị>", vd: RESULT: 138 ms
 PERF_CMD=""

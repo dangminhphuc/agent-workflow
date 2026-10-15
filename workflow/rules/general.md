@@ -10,7 +10,8 @@ A phase takes input only from files in the feature dir, never from earlier chat 
 
 - **Machine** (`Exit — MACHINE`): run the command, read the `[x]` label of its `Kết quả` block. Never declare a pass yourself.
 - **Human** (`Exit — HUMAN`): state it, then stop.
-- **The agent never approves:** never tick "Approved by human" (spec, D-xx), never edit/delete `<!-- approval-hash: … -->`, never set an open question to `answered` yourself. Editing ticked content → **untick** it.
+- **The agent never approves:** never decide an approval, never tick "Approved by human" (spec, D-xx) by editing a file, never edit/delete `<!-- approval-hash: … -->`, never set an open question to `answered` yourself. Editing ticked content → **untick** it.
+- **Only exception:** in `/aw-approvals`, right after the human picks `Duyệt` for one item, run `aw approvals tick` for that item — nowhere else, never for an item they did not pick.
 - An LLM checker may only **block**, never pass. No findings file = it has not run.
 - Checks on a phase's own output block. Cross-phase checks (stale artifact, test ↔ YC, diff scope) only warn — but `/aw-review` blocks on any warning left, so fix them when you see them.
 

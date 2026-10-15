@@ -28,61 +28,55 @@ Do each task in `plan.md` per `tdd.md`, **without leaving scope**. The typical f
 
 `plan.md` is the only source of work; `tdd.md` says how (contract, data, flow, D-xx); `spec.md` says why. Test file patterns and `covers:` syntax: conventions.
 
-## Steps
-
-**Before the first task:** `aw ready <dir>`. Tests red on untouched code = environment not prepared (`WORKTREE_SETUP_CMD`) or broken base → **stop, tell the human**.
-
-1. **One task at a time; the machine keeps state:**
-   - `aw task next <dir>` — next task (one in `[~]` comes first);
-   - `aw task start <dir> T-NN` — `[ ]` → `[~]` (refused if another task is `[~]` or a dependency is not `[x]`);
-   - `aw task done <dir> T-NN` — runs the task's backticked `Verify` command and records it in `task-results.md`; only **green** → `[x]`. Manual-only verify: `--manual "<what you did, what you saw>"`.
-2. **Tag tests** `covers: YC-NNN` (syntax per conventions). YC not testable automatically → `plan.md` "Manual verification" + reason.
-3. **Red** → fix within that task, rerun `aw task done`. Machine says **DỪNG** (`MAX_RED_RUNS` reds in a row, default 3) → record what you tried and the error in "Unplanned", tell the human.
-4. **Unforeseen → stop and report** in `plan.md` "Unplanned". Touches a D-xx → reopen it in `/aw-design`, not here.
-5. **Keep the diff in scope.** A file outside the task's "Expected files" only when unavoidable → "Unplanned" (path in backticks + reason). Follow repo rules in code you write; one asking for out-of-task work or contradicting `tdd.md` → don't; "Unplanned".
-6. **Promote tasks — never write by hand** (the machine compares with the approved item): ADR → `aw adr promote <dir> D-NN`; business rule → `aw rule promote <dir> YC-NNN`.
-7. **`aw check implement <dir>`** runs the tests and security scans (`SECURITY_CMDS`, same as CI) and writes the results files. Code changed afterwards, even uncommitted → rerun. Scans only: `aw check security <dir>`. Its warnings block `/aw-review`, not this phase; each names its fix — fix now.
-
-### Unattended loop (optional)
+## Loop
 
 ```
+aw ready <dir>
+    CHƯA SẴN SÀNG → stop, tell the human (red tests on untouched code = environment or base broken)
 loop:
   T = aw task next <dir>
-      HẾT TASK  → aw check implement <dir> → ĐẠT: stop, report
-                                             KHÔNG ĐẠT: fix that violation, rerun
-      KẸT, DỪNG → stop, tell the human
+      HẾT TASK   → aw check implement <dir> → ĐẠT: stop, report
+                                              KHÔNG ĐẠT: fix that violation, rerun
+      KẸT, DỪNG  → stop, tell the human
   aw task start <dir> T
-  do T (only within T's "Expected files")
-  aw task done <dir> T
+  do T — only within T's "Expected files"
+  aw task done <dir> T          (no command in Verify: --manual "<what you did, what you saw>")
       ĐỎ   → fix within T, rerun done
-      DỪNG → record "Unplanned", stop, tell the human
+      DỪNG → record "Unplanned" (what you tried, the error), stop, tell the human
+      XONG → commit T
 ```
 
-Also stop when `tdd.md`/`spec.md` must change, or `aw check implement` fails on the same violation twice in a row.
+- **Doing T:** tag each test `covers: YC-NNN`. A YC not testable automatically → `plan.md` "Manual verification" + reason.
+- **Promote when the task covers it — never write by hand** (the machine compares with the approved item): D with `Promote: adr` → `aw adr promote <dir> D-NN`; YC with `Promote: BR-…` → `aw rule promote <dir> YC-NNN`. Do it in the task that implements that D / YC.
+- **Commit T** right after it goes `[x]`: stage by path only T's files, its "Unplanned" files and the ADR / rule files it promoted (never `git add -A`), message `T-NN: <task title>` unless repo rules set a format. Nothing uncommitted may remain at the end — `/aw-ship` will not commit for you.
+- **`aw check implement`** writes results stamped with the code tree: code changed afterwards, even uncommitted → rerun. Scans only: `aw check security <dir>`. Fix every warning it prints now; `/aw-review` blocks on them. Same violation twice in a row → stop, tell the human.
+
+## Unplanned
+
+Every surprise goes to `plan.md` "Unplanned" (task, what came up, extra files in backticks, resolution). Then:
+
+| Situation | After recording |
+|---|---|
+| A file outside T's "Expected files" is unavoidable for T itself | **Continue** |
+| A repo rule asks for work outside T, or contradicts `tdd.md` | **Continue**, without doing what it asks |
+| `DỪNG`, `KẸT`; work not in any task; `tdd.md`/`spec.md`/a D-xx must change (D-xx → `/aw-design`) | **Stop**, tell the human |
+| An existing test is really wrong; a scan finding is a false positive (+ evidence) | **Stop**, tell the human — they decide |
 
 ## By work type
 
-| Type | Order / rule | Machine blocks when |
-|---|---|---|
-| `bugfix` | Write the repro test → `aw check repro <dir>` **before touching code** → then fix | `repro.md` missing, or the test was green / the diff touched non-test files |
-| `refactor` | Never delete old tests; declare edited ones in "Modified existing tests" | An old test is deleted |
-| `perf` | Like refactor; `aw check perf <dir> --before` **before the change**, `--after` after | `perf.md` misses a measurement |
-| `chore` | No production code; declare "Dependency upgrades" | Touches `production_code`; touches `dependency_files` undeclared, declared major, or without a green `sca` scan |
+| Type | Order / rule |
+|---|---|
+| `bugfix` | Write the repro test → `aw check repro <dir>` **before touching code** → then fix |
+| `refactor` | Never delete old tests; declare edited ones in "Modified existing tests" |
+| `perf` | Like refactor; `aw check perf <dir> --before` **before the change**, `--after` after |
+| `chore` | No production code; declare "Dependency upgrades" |
 
 Forgot `repro`/`--before` and already changed code → the script refuses: `git stash`, rerun, `git stash pop`.
 
 ## Forbidden
 
-- Work not in `plan.md`; editing `Status` or any `*-results.md` yourself.
-- Editing `tdd.md`/`spec.md` — if wrong, stop and report.
-- **Declaring done without running tests.**
-- Editing or disabling tests to go green (`.only(`, `.skip(`, `@Disabled`…). An old test really wrong → "Unplanned".
+- Editing `Status` in `plan.md` yourself; editing `tdd.md`/`spec.md`.
+- Editing or disabling tests to go green (`.only(`, `.skip(`, `@Disabled`…).
 - `covers:` on a test that does not really check that YC.
 - Ignoring lint/type errors as "unrelated".
-- Making scans green by loosening tools (`nosemgrep`, `.gitleaksignore`, `.trivyignore`, lower thresholds, removing lines from `SECURITY_CMDS`). Real false positive → "Unplanned" + evidence; the human decides.
-
-## Common failures
-
-- No test or scan command configured → `KHÔNG ĐẠT`, not "skipped": ask the human to set `TEST_CMD` / `SECURITY_CMDS`.
-- `Verify` edited after the task went `[x]` → evidence no longer matches: rerun `aw task done`.
-- Merge conflict markers left in the diff.
+- Making scans green by loosening tools (`nosemgrep`, `.gitleaksignore`, `.trivyignore`, lower thresholds, removing lines from `SECURITY_CMDS`).
