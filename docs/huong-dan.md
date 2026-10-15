@@ -738,7 +738,12 @@ Nói xong, agent hỏi đưa chúng đi đâu và **chỉ in lệnh cho bạn ch
   (review cảnh báo). Trong worktree mới, chép `refactor-requests.md` sang thư mục artifact của việc
   mới (agent in sẵn lệnh `cp`) rồi `/aw-intake .agent-workflow/<branch-mới>/refactor-requests.md` —
   spec trích được `§ RF-NNN` và cả phần `Review`.
-- **Để đó, quyết sau**: chạy lại `/aw-refactor` lúc nào cũng được — lần sau ghi thêm, không ghi đè.
+- **Để đó, quyết sau**: các RF giữ `open`. Chạy lại `/aw-refactor` không kèm yêu cầu thì agent hỏi
+  thêm yêu cầu hay chọn đường cho các RF đang chờ. Ghi thêm thì nối vào file, không ghi đè.
+
+Chọn đường xong, các RF đó thành `routed: this-job` / `routed: separate-job` để lần sau không hỏi lại.
+Ở việc refactor riêng, chép file sang việc mới **trước** khi `/aw-ship` dọn worktree này (sau đó file
+chỉ còn trong archive).
 
 Không có lựa chọn gộp refactor vào việc `feature`/`bugfix`/`perf`/`chore`: một việc một loại, refactor
 đi kèm tính năng thì thiếu YC `preserve` và test bảo vệ, lại làm MR khó review.

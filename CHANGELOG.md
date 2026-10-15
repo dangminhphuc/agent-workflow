@@ -22,7 +22,9 @@ ngầm giữa các bản.
   `Location`, `Review` (phản biện + trả lời), `Status`. Không sửa code, intake, spec hay plan. Xong,
   agent chỉ in lệnh: việc `refactor` đang làm → `/aw-intake <dir>/refactor-requests.md` rồi
   `/aw-spec`; loại khác → việc refactor riêng (`/aw-intake` ở checkout chính, chép file sang việc mới
-  rồi intake thêm để spec trích `§ RF-NNN`). Mẫu: `templates/refactor-requests.md`.
+  rồi intake thêm để spec trích `§ RF-NNN`). Chọn "để sau" thì gọi lại `/aw-refactor` không kèm
+  yêu cầu để quay về bước chọn đường; RF đã chọn đường thành `routed: …`. Mẫu:
+  `templates/refactor-requests.md`.
 - **`tdd.md` có thêm hai mục bắt buộc: `## Target structure` và `## Rollout & rollback`.** Target
   structure ghi cấu trúc module/thành phần trước → sau (kèm sơ đồ Mermaid) — chỗ mà refactor/perf
   cần nhất nhưng mẫu cũ không có. Rollout & rollback ghi thứ tự triển khai, flag, di trú, chạy song

@@ -13,4 +13,4 @@
 - **Review:**
   - <điểm agent phản biện, kèm `file:dòng`> — người: "<trả lời nguyên văn>"
   <!-- không có điểm nào thì: `None` -->
-- **Status:** `open`   <!-- open | moved: <branch> | dropped: <lý do của người> -->
+- **Status:** `open`   <!-- open (chưa chọn đường) | routed: this-job | routed: separate-job | dropped: <lý do của người> -->

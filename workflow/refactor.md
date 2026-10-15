@@ -11,7 +11,12 @@ argument_hint: [yêu-cầu] [tên-feature]
 
 **Not a phase**, runs any time in a job's worktree. The human states refactorings they want; you **review and challenge** each one, then **only record** it in `<dir>/refactor-requests.md` (template `templates/refactor-requests.md`). Nothing gets implemented here. Talk to the human in Vietnamese.
 
-The arguments (minus a feature name) are the first request; none → ask "Bạn muốn refactor gì?". Rerun with an existing file = append; never rewrite or renumber.
+Start:
+- Arguments (minus a feature name) → they are the first request: step 1.
+- No arguments, `refactor-requests.md` has `open` RFs → one choice question: `Thêm yêu cầu` (→ ask "Bạn muốn refactor gì?", step 1) / `Chọn đường đi cho N RF đang chờ` (→ step 4).
+- Otherwise → ask "Bạn muốn refactor gì?".
+
+Rerun with an existing file = append; never rewrite or renumber.
 
 ## 1. Review the request (write nothing yet)
 
@@ -61,11 +66,11 @@ List the `open` RFs (id + Summary, one line each), then one choice question "Đ�
 |---|---|---|
 | `Gộp vào việc này` | `Type: refactor` and the RFs fit its `Goal` | "This job" |
 | `Việc refactor riêng` | Any other case | "Separate job" |
-| `Để đó, quyết sau` | Never | Nothing; the RFs stay `open` |
+| `Để đó, quyết sau` | Never | Rerun `/aw-refactor` without arguments to come back here; the RFs stay `open` |
 
 `Gộp vào việc này` is not offered when `Type` ≠ `refactor`: one job = one type; a refactor riding a feature has no preserve YC, no protecting test, no separate MR.
 
-Print commands for the human to run; run none of them yourself.
+After the human picks a route, set those RFs to `routed: this-job` or `routed: separate-job` (only status the route; `open` = not routed yet). Then print commands for the human to run; run none of them yourself.
 
 ### This job
 
@@ -80,8 +85,7 @@ Print commands for the human to run; run none of them yourself.
    ```sh
    cp <dir>/refactor-requests.md <new-worktree>/.agent-workflow/<new-branch>/
    ```
-   then `/aw-intake .agent-workflow/<new-branch>/refactor-requests.md` there.
-4. When the human says the new job exists, set those RFs to `moved: <new-branch>` here.
+   then `/aw-intake .agent-workflow/<new-branch>/refactor-requests.md` there. Do this before `/aw-ship` cleans up this worktree (afterwards the file is only in the archive).
 
 ## Forbidden
 
