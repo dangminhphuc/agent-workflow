@@ -53,6 +53,19 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 - `conventions.md` key: `workflow/templates/conventions.md` + `conventions-reference.md`.
 - User-visible change: README / `docs/huong-dan.md` + `## [Chưa phát hành]` in `CHANGELOG.md` (Vietnamese).
 
+## Making a change
+
+- Restate the request in your own words; ask before editing if scope, strictness
+  (block/warn), or user-visible behavior is unclear. Check `docs/kien-truc.md` for
+  prior decisions first.
+- Behavior or rule changes: propose the approach (files touched, block vs warn,
+  what the test proves) and wait for the human's OK before coding.
+- Work in a git worktree on a new branch based on fresh `origin/main`; never edit
+  `main` directly. Tests first, then code (§ Verify).
+- Stay in scope. Related ideas → propose; if accepted, add to `docs/viec-can-lam.md`,
+  don't implement.
+- Finish with a PR: what changed, why, which tests cover it. The human merges.
+
 ## Verify
 
 - `sh tools/run-tests.sh` must end with label `MỌI CA ĐẠT`.
