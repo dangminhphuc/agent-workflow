@@ -350,7 +350,8 @@ sweep --apply`) chép artifact vào `.git/agent-workflow/archive/<tên>/` trư�
 ## Chạy test và phát hành
 
 ```sh
-sh tools/run-tests.sh
+sh tools/run-tests.sh                     # chỉ in ca hỏng + tổng
+AW_TEST_VERBOSE=1 sh tools/run-tests.sh   # in từng ca
 ```
 
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng

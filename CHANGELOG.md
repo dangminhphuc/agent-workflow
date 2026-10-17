@@ -44,6 +44,10 @@ ngầm giữa các bản.
 - Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
   `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
   task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.
+- `tools/run-tests.sh` mặc định in gọn: chỉ ca hỏng (kèm tên nhóm), dòng tổng và khối `Kết quả` —
+  output khi đạt hết từ ~2.200 dòng (~97 KB) còn vài dòng, đỡ tốn ngữ cảnh của agent.
+  `AW_TEST_VERBOSE=1` in từng ca như trước. Bịt output lọt ra (khối `Kết quả` của `based-on.sh`,
+  `git commit` rỗng).
 
 ### Sửa
 - `tools/prepare-release.sh` cập nhật cả link tải wrapper trong `docs/huong-dan.md` (trước đây chỉ
