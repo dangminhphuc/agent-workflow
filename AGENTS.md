@@ -1,72 +1,65 @@
-# AGENTS.md — phát triển repo agent-workflow
+# AGENTS.md — agent-workflow engine
 
-Repo này là **engine** (wrapper `aw` + checker + định nghĩa phase + adapter). Đây không phải repo
-dự án chạy quy trình. Hướng dẫn dùng: `README.md`. Lý do thiết kế: `docs/kien-truc.md`.
+This repo is the **engine** (wrapper `aw`, checkers, phase definitions, adapters), not a project
+that runs the workflow — artifacts (`.agent-workflow/`) exist only in target repos.
+Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. Terms: `docs/thuat-ngu.md`.
 
-## Bản đồ
+## Map
 
-```
-workflow.yaml            manifest — nguồn sự thật (phases:, commands:, rules:, adapters:)
-workflow/phases/*.md     định nghĩa phase: frontmatter (hợp đồng) + thân (chỉ thị cho agent)
-workflow/{clarify,import}.md   lệnh tiện ích (không phải phase)
-workflow/checkers/*.md   checker LLM (chỉ được chặn)
-workflow/rules/*.md      luật chung — agent đọc lúc chạy
-workflow/templates/      mẫu artifact (người đọc), conventions.md, config.sh, conventions-reference.md
-bin/aw                   wrapper cài global: chọn version, tải + kiểm sha256
-bin/aw-engine            điểm vào engine: init, check, worktree, adapter, feature…
-adapters/lib/common.sh   bộ sinh dùng chung (ad_sinh); adapters/<id>/build.sh chỉ khai hook
-tools/check-*.sh         checker máy (`aw check <tên>`); tên đăng ký ở tools/lib/commands.sh
-tools/*.sh               lệnh khác của aw (worktree, task, ship, journal, approval, guard…)
-tools/lib/               md.sh (YAML con, conventions), cross-check.sh, approval-tick.sh, task.sh, result.sh…
-tools/run-tests.sh       toàn bộ test hồi quy (~1000 ca, ~4 phút)
-```
+- `workflow.yaml` — source of truth: phases, utility commands, rules, adapters (with status).
+- `workflow/phases/*.md` — frontmatter = contract (adapters build I/O from it), body = agent
+  instructions. Field list: `docs/kien-truc.md` § Định dạng file phase.
+- `workflow/checkers/` LLM checkers (block only) · `workflow/rules/` runtime rules ·
+  `workflow/templates/` artifact templates (`target-repo/` is for target repos, not this one).
+- `bin/aw` global wrapper (picks version, downloads, checks sha256); `bin/aw-engine` dispatches to `tools/*.sh`.
+- `tools/check-*.sh` machine checkers, registered in `tools/lib/commands.sh`.
+- `adapters/lib/common.sh` (`ad_sinh`) generates everything; `adapters/<id>/build.sh` only declares
+  hooks + format spec (`adapters/README.md`).
 
-## Ngôn ngữ
+## Language
 
-- Nội dung **agent đọc lúc chạy** (`workflow/phases`, `clarify.md`, `import.md`, `rules/`,
-  `checkers/`, chữ do adapter sinh): tiếng Anh, ngắn, chỉ chỉ thị.
-- Nội dung **người đọc** (README, docs, CHANGELOG, mẫu artifact, output của `aw`, nhãn `Kết quả`):
-  tiếng Việt. Artifact agent viết ra: tiếng Việt.
-- Heading/tên trường/giá trị cố định trong mẫu (`## Out of scope`, `Blocking`, `must`…): tiếng
-  Anh, checker đọc đúng chữ — đổi là phải đổi checker + test.
-- **Bắt buộc:** mọi mẫu (`workflow/templates/`) và artifact do agent tạo/sửa — kể cả heading, tên
-  trường, từ khoá, giá trị enum mà mẫu chưa có — phải là **tiếng Anh**. Tiếng Việt chỉ ở nội dung
-  dưới heading và placeholder (`<tiêu đề>`). Không dịch heading/từ khoá tiếng Anh sẵn có. Luật cho
-  agent lúc chạy: `workflow/rules/general.md` §5.
-- Tên file, khoá `config.sh`, biến môi trường, artifact, subagent: tiếng Anh (`check-spec.sh`,
-  `TEST_CMD`, `test-results.md`, `independent-reviewer`). Đổi tên thứ người dùng đã khai/thấy thì
-  giữ đọc được tên cũ (xem `tools/lib/config.sh`).
-- Tên hàm/biến nội bộ trong shell: tiếng Việt không dấu (`kq_khai`, `ghi_file`), giữ theo code xung quanh.
+- Read by agents at runtime (phases, `workflow/*.md`, rules, checkers, adapter-generated text):
+  English, terse, directives only.
+- Read by humans (README, docs, CHANGELOG, frontmatter `name`/`summary`, `aw` output, `Kết quả`
+  labels): Vietnamese.
+- Templates and artifacts: headings, field names, keywords, enum values are English — new ones
+  too. Vietnamese only for body text and placeholders. Checkers match exact strings: renaming one
+  means changing checker + tests in the same commit. Runtime rule: `workflow/rules/general.md` §5.
+- Identifiers (files, `config.sh` keys, env vars, artifacts, subagents): English; renaming a
+  user-facing one keeps the old name readable (`tools/lib/config.sh`). Shell functions/vars:
+  unaccented Vietnamese (`kq_khai`, `ghi_file`), like surrounding code.
 
-## Quy ước code
+## Code
 
-- **POSIX sh + awk + sed + git.** Không bash-ism, không Node/Python, không jq. Regex ERE, không
-  `{n}` (mawk). awk đọc nhiều file: `FILENAME == ARGV[i]`, không `FNR==1`.
-- Mọi script khai nhãn kết quả bằng `kq_khai` (`tools/lib/result.sh`), in khối `Kết quả` ra stderr.
-  Prompt/tài liệu nói theo **nhãn**, không theo mã thoát.
-- Tool đọc đường dẫn repo/cấu hình **chỉ** từ `AW_REPO`, `AW_CONFIG` (`tools/lib/env.sh`).
-- Adapter build chạy `set -e`: `[ … ] && printf` ở cuối khối/vòng lặp sẽ giết pipeline — dùng `if`.
-- Chữ riêng của một agent chỉ nằm trong hook adapter; test đối chiếu (`AW_COMPARE=1`) đòi output
-  mọi adapter giống hệt nhau.
-- Luật mới: checker chính xác thì chặn; kiểm chéo/hay báo nhầm thì cảnh báo ở implement, chặn ở
-  review. Lý do ghi vào `docs/kien-truc.md`, không vào file phase.
-- Mỗi luật ở một chỗ. File phase không lặp lại hợp đồng vào/ra (adapter dựng từ frontmatter) hay
-  danh sách điều checker kiểm.
+- POSIX sh + awk + sed + git only: no bashisms, Node, Python, jq. ERE without `{n}` (mawk).
+  Multi-file awk: `FILENAME == ARGV[i]`, never `FNR==1`.
+- YAML: only the subset `tools/lib/md.sh` parses (`k: v`, `k:` + `  - item`, `k: []`).
+- Every script declares result labels via `kq_khai` (`tools/lib/result.sh`); prompts/docs refer to
+  labels, not exit codes.
+- Repo/config paths come only from `AW_REPO`, `AW_CONFIG` (`tools/lib/env.sh`).
+- Adapter builds run `set -e`: a trailing `[ … ] && printf` in a block/loop kills it — use `if`.
+- Agent-specific text lives only in adapter hooks; the compare test (`AW_COMPARE=1`) requires
+  byte-identical output across adapters.
+- One rule, one place. Phase files never restate the I/O contract or what the checker checks.
+  Rationale goes in `docs/kien-truc.md`.
+- New rule: precise → block; cross-phase or false-positive-prone → warn in implement, block in review.
 
-## Kiểm
+## Change together
 
-```sh
-sh tools/run-tests.sh                     # phải ra [x] MỌI CA ĐẠT
-sh adapters/claude-code/build.sh --out <thư-mục-git-tạm>   # xem lệnh sinh ra
-```
+- Phase: `workflow/phases/NN-<id>.md` + `phases:` in `workflow.yaml`; `exit_machine` →
+  `tools/check-<id>.sh` + `tools/lib/commands.sh`; new artifact → template; tests.
+- Utility command: `workflow/<id>.md` + `commands:` in `workflow.yaml`.
+- Adapter: follow `adapters/README.md`; declare hooks only, never reimplement generation.
+- `conventions.md` key: `workflow/templates/conventions.md` + `conventions-reference.md`.
+- User-visible change: README / `docs/huong-dan.md` + `## [Chưa phát hành]` in `CHANGELOG.md` (Vietnamese).
 
-Test viết bằng `ky_vong <mã> "<tên>" <lệnh>` và `dung "<tên>" <phép-thử>`; mỗi checker kiểm cả hai
-chiều (chặn đúng lúc, cho qua đúng lúc). Đổi chữ mà test grep → sửa test cùng commit.
+## Verify
 
-## Phát hành
+- `sh tools/run-tests.sh` must end with label `MỌI CA ĐẠT`.
+- Tests: `ky_vong <code> "<name>" <cmd>`, `dung "<name>" <test>`. Test every checker both ways
+  (blocks when it should, passes when it should). Changed text a test greps → fix the test in the same commit.
+- Inspect generated commands: `sh adapters/claude-code/build.sh --out <tmp-git-dir>`.
 
-1. Ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md` (tiếng Việt).
-2. `sh tools/prepare-release.sh` — đặt `YYYY.M.N` vào VERSION, `bin/aw`, CHANGELOG, link tải
-   trong README và `docs/huong-dan.md`.
-3. PR vào `main`; CI `kiem-tra` chạy test + kiểm version. Merge → workflow `release` tự tạo tag +
-   Release. **Không tự tạo tag tay** trước khi merge.
+## Release
+
+Follow README § Chạy test và phát hành. Never tag by hand — merging to `main` creates the tag + Release.
