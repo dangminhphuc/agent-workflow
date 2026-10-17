@@ -11,6 +11,7 @@ Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa 
 | Đọc gì | Ở đâu |
 |---|---|
 | **Hướng dẫn dùng cho người**: cài, cấu hình, từng phase sinh artifact gì và quyết định gì | [`docs/huong-dan.md`](docs/huong-dan.md) |
+| Thuật ngữ: YC, D-xx, điểm mù, base, worktree… | [`docs/thuat-ngu.md`](docs/thuat-ngu.md) |
 | Luật từng phase (nguồn sự thật) | [`workflow/phases/`](workflow/phases), [`workflow/rules/`](workflow/rules) |
 | Vì sao thiết kế như vậy, điểm yếu | [`docs/kien-truc.md`](docs/kien-truc.md) |
 | Adapter | [`adapters/README.md`](adapters/README.md) |
@@ -42,7 +43,7 @@ Lựa chọn kỹ thuật được tách thành mục **D-xx** để người *q
 ```mermaid
 flowchart TD
     INTAKE["00-intake<br/>→ intake.md (loại việc + input)<br/><i>NGƯỜI: chọn base, xác nhận loại việc</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>NGƯỜI: duyệt YC, Blocking, Risk</i>"]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>NGƯỜI: duyệt YC, Blocking, Risk, Design</i>"]
     PHAC[/"Người phác D-xx trước<br/>(Risk: high)"/]
     DESIGN["02-design<br/>→ tdd.md (D-xx) + checker LLM<br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan → plan.md"]
@@ -53,7 +54,7 @@ flowchart TD
 
     INTAKE --> SPEC --> DESIGN --> PLAN --> IMPL --> REVIEW --> SHIP
     PHAC -.-> DESIGN
-    SPEC -. "chore: bỏ design" .-> PLAN
+    SPEC -. "chore / Design: skip: bỏ design" .-> PLAN
     IMPL -. "cảnh báo dồn về" .-> REVIEW
     IMPORT -.-> SPEC
     IMPORT -.-> DESIGN
@@ -68,9 +69,9 @@ flowchart TD
 | Lệnh | Đọc → ghi | Máy chặn (`aw check …`) | Người |
 |---|---|---|---|
 | `/aw-intake` | ticket, URL, file, lời người → `intake.md` | loại việc, input, `Base`, `Engine` | chọn base, xác nhận loại việc và input |
-| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md` | mọi YC truy được về nguồn; điểm mù khớp hai file | duyệt YC, `Blocking`, `Risk`; tick "Approved by human" |
+| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md` | mọi YC truy được về nguồn; điểm mù khớp hai file | duyệt YC, `Blocking`, `Risk`, `Design`; tick "Approved by human" |
 | `/aw-design` | spec đã duyệt → `tdd.md` | đủ mục, D-xx hợp lệ, YC được ánh xạ, checker LLM không còn `Chặn` | duyệt từng D-xx |
-| `/aw-plan` | D-xx đã duyệt → `plan.md` | mọi YC có task phủ hoặc hoãn có lý do | — |
+| `/aw-plan` | D-xx đã duyệt (không có design: spec đã duyệt) → `plan.md` | mọi YC có task phủ hoặc hoãn có lý do | — |
 | `/aw-implement` | `plan.md` → diff | test và quét bảo mật **xanh** (máy tự chạy), mọi task có bằng chứng | — |
 | `/aw-review` | mọi artifact + diff → `review.md` | từng YC có kết luận; không còn cảnh báo; kết quả còn mới so với code | xác nhận kết luận |
 | `/aw-ship` | `review.md` → MR/PR | review đạt, không còn `Blocker` | chọn nhánh đích, merge |
@@ -82,7 +83,9 @@ flowchart TD
 - **Không có phase test riêng** — test là điều kiện ra của `implement`: chưa xanh là chưa xong.
 - **Loại việc đổi luật** (`feature | bugfix | refactor | perf | chore`): bugfix cần test tái hiện
   đỏ trước khi sửa, refactor cấm hành vi mới, perf cần số đo trước/sau, chore bỏ design và không
-  đụng code production. Chi tiết: [`00-intake.md`](workflow/phases/00-intake.md).
+  đụng code production. Bugfix/refactor nhỏ (`Risk: normal`, không có lựa chọn kỹ thuật) cũng bỏ
+  được design: spec khai `Design: skip`, bạn duyệt cùng spec. Chi tiết:
+  [`00-intake.md`](workflow/phases/00-intake.md).
 - **Worktree bắt buộc.** Checkout chính chỉ chạy `/aw-intake`, `/aw-bootstrap` (đề xuất worktree,
   **bạn chọn base**) và `/aw-ship` (dọn việc đã merge). Mọi phase khác chạy trong worktree, mỗi việc
   một phiên.
@@ -355,7 +358,7 @@ Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (khô
 
 1. Ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md`.
 2. Trong PR muốn phát hành: `sh tools/prepare-release.sh [YYYY.M.N]` — ghi version vào
-   `VERSION`, `bin/aw`, CHANGELOG, link tải trong README. Commit vào PR.
+   `VERSION`, `bin/aw`, CHANGELOG, link tải trong README và `docs/huong-dan.md`. Commit vào PR.
 3. Workflow `kiem-tra` chạy test + `tools/check-release.sh` (version nhất quán, tag chưa có).
 4. Merge vào `main` → workflow `release` tự tạo tag + Release (tarball, `aw`, `SHA256SUMS`).
 

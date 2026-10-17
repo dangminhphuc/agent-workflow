@@ -160,7 +160,7 @@ The human disagrees with how the spec reads a source — description, criteria o
 | Change an existing YC | This section |
 | Add a YC, drop one, move something in/out of `## Out of scope` | Scope change: the human adds it to `intake.md` as `[HUMAN]` input, then `/aw-spec`. Never add/delete a YC here |
 | `Blocking` | 3a "Human changes the level" |
-| `Risk`, `## Constraints & dependencies` | Show before → after, write exactly what the human said, untick the spec, `aw check spec`. `tdd.md` exists → rerun `/aw-design` (`Risk` now `high` → Mode 2) |
+| `Risk`, `Design`, `## Constraints & dependencies` | Show before → after, write exactly what the human said, untick the spec, `aw check spec`. `tdd.md` exists → rerun `/aw-design` (`Risk` now `high` → Mode 2). `Design` now `required` with no `tdd.md` → `/aw-design`, then `/aw-plan` |
 
 1. **Read** the YC, its `Source:` passage, what depends on it: `tdd.md` (`YC mapping`, `Based on: D-xx` of those sections), `plan.md` (`Covers: YC-NNN`).
 2. **Ask** as in 2a. Context: what the source says, what the YC says now, what must be redone (step 1). Options: the human's change as they stated it, keep the current reading, at most one other reading the source supports.

@@ -27,7 +27,7 @@ Items under "Ô duyệt sai dạng/chỗ" cannot be approved here: list them at 
 ## 2. One item per turn, in the listed order
 
 Before asking, show what is being approved — built from files, never your own paraphrase:
-- `spec`: stdout of `aw approval design <dir>` (chore — no `tdd.md` expected — `aw approval plan <dir>`).
+- `spec`: stdout of `aw approval design <dir>` (no design phase — chore or `Design: skip`, no `tdd.md` expected — `aw approval plan <dir>`).
 - `D-NN`: the whole `### D-NN` section of `<dir>/tdd.md`, verbatim.
 - State "ĐÃ ĐỔI sau khi duyệt": say the human approved an earlier version and must re-read the whole item.
 

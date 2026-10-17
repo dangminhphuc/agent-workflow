@@ -14,6 +14,20 @@ ngầm giữa các bản.
 ## [Chưa phát hành]
 
 ### Thêm
+- **Bugfix/refactor nhỏ bỏ được phase design — `Design: skip` trong `spec.md`.** Trước đây chỉ chore
+  bỏ design; bugfix sửa một dòng vẫn phải viết `tdd.md` đủ 8 mục (gần như toàn "Not applicable"), mở
+  phiên mới và chạy checker LLM. Giờ `/aw-spec` đề xuất `- **Design:** \`required | skip\``, người
+  duyệt cùng spec; `skip` thì đi như chore: `/aw-plan` làm thẳng từ spec đã duyệt, chặn điểm mù
+  `blocking` ở plan, task không có `Based on: D-xx`. Test tái hiện của bugfix vẫn bắt buộc.
+- `aw check spec` chặn `Design` khác `required | skip`, `skip` ở feature/perf hoặc khi `Risk: high`,
+  và chore ghi `required`. Spec cũ không có dòng `Design` = `required`, chạy như trước.
+- `aw approval plan` với `Design: skip` hỏi duyệt spec và nêu `Design: skip` là điểm cần đọc kỹ;
+  `aw check design`, `aw approval design` báo "đi thẳng /aw-plan"; `aw pending`, `aw ready` tính phase
+  kế tiếp theo.
+- **Tài liệu:** `docs/thuat-ngu.md` — bảng thuật ngữ (YC, D-xx, PH, T, BR, ADR, điểm mù, mức chặn,
+  Mode 1/2, base, worktree…); `docs/huong-dan.md` §1.1 thêm bảng phân phần việc của "Người" theo vai
+  trong team (người cài, dev, người duyệt spec, PO/BA, người duyệt thiết kế, người rà bảo mật,
+  reviewer MR).
 - **Artifact phải có mục lục, tham chiếu phải là link tới mục — luật cứng.** Mọi artifact agent viết
   (`intake.md`, `spec.md`, `open-questions.md`, `tdd.md`, `design-findings.md`, `plan.md`,
   `review.md`, `merge-request.md`) có heading `##`/`###` thì phải có `## Contents` đứng trước heading
@@ -30,6 +44,12 @@ ngầm giữa các bản.
 - Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
   `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
   task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.
+
+### Sửa
+- `tools/prepare-release.sh` cập nhật cả link tải wrapper trong `docs/huong-dan.md` (trước đây chỉ
+  README, link trong hướng dẫn bị bỏ lại ở `2026.10.23`).
+- `docs/kien-truc.md`: `ket-qua-*` → `*-results.md`. `docs/viec-can-lam.md` bỏ lịch sử đã làm và
+  tên trường, lệnh cũ (`Mức chặn`, `/open-questions`); chỉ giữ việc còn lại.
 
 ## [2026.10.27]
 
