@@ -13,7 +13,7 @@ nhất — quá yếu để dùng.
 ```
 tài liệu / lời người ─▶ 00-intake ─▶ intake.md
                                        ▼
-                        01-spec ─▶ spec.md ─▶ 02-design ─▶ tdd.md    (chore: bỏ design)
+                        01-spec ─▶ spec.md ─▶ 02-design ─▶ tdd.md    (chore, Design: skip: bỏ design)
                                    ▼                       ▼
                                 03-plan ◀──────────────────┘
                                    ▼
@@ -131,7 +131,7 @@ máy thì với phiên đó coi như không có. Ranh giới:
 
 | | Trạng thái của việc | Kiến thức bền |
 |---|---|---|
-| Là gì | `intake/spec/tdd/plan/review`, `ket-qua-*`, ô duyệt đang chờ | Quy ước, quyết định, ràng buộc, luật nghiệp vụ còn đúng sau khi việc xong |
+| Là gì | `intake/spec/tdd/plan/review`, `*-results.md`, ô duyệt đang chờ | Quy ước, quyết định, ràng buộc, luật nghiệp vụ còn đúng sau khi việc xong |
 | Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của repo đích, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
@@ -340,6 +340,14 @@ phép rỗng. `tdd.md` là output duy nhất (tách file quyết định thì ha
   `aw task reopen <dir> D-xx` đưa task `Based on` D đó về `[ ]`, chỉ chúng.
 - **`plan` tách khỏi `tdd.md`**: plan là ranh giới do **phiên khác** đặt cho `implement`, và tick
   task không được sửa vào thiết kế đã duyệt.
+- **Bỏ design cho việc nhỏ (`Design: skip`)**: bugfix/refactor sửa vài dòng không có lựa chọn
+  kỹ thuật nào — `tdd.md` thành 8 mục "Not applicable" cộng một phiên và một lượt checker LLM, không
+  đổi lại được gì. Phần bảo đảm của bugfix nằm ở test tái hiện đỏ (`aw check repro`) và review, không
+  ở design. **Người** quyết, không phải máy: lúc viết spec chưa có diff để đo "nhỏ", nên agent đề xuất
+  `skip` trong `spec.md` và người duyệt cùng spec (đổi sau khi duyệt → duyệt lại). Máy chỉ chặn chỗ
+  chắc chắn sai: `skip` ngoài bugfix/refactor (feature thêm hành vi, perf cần thiết kế đo), hoặc khi
+  `Risk: high` (Mode 2 là để người phác D-xx trước — bỏ design là bỏ luôn nó). Việc bỏ design đi
+  đúng đường của chore (`kc_bo_design`): plan nhận cổng duyệt spec và cổng điểm mù `blocking`.
 
 ## Giả định chưa xác nhận
 
@@ -520,7 +528,7 @@ subagent `<id>-checker`.
 | Kiểm `conventions.md` | `tools/check-conventions.sh` | Khoá biết = khoá trong mẫu + `rules_<phase>`; `aw ready` gọi |
 | Hash `based_on` | `tools/based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` |
 | Kiểm chéo | `tools/lib/cross-check.sh` | Một hàm; `implement` gọi là cảnh báo, `review` gọi là lỗi |
-| Mức chặn điểm mù | `kc_diem_mu_mo` | design (chore: plan) chặn `blocking`; implement cảnh báo, review chặn cả `review-blocking` |
+| Mức chặn điểm mù | `kc_diem_mu_mo` | design (không có design: plan) chặn `blocking`; implement cảnh báo, review chặn cả `review-blocking` |
 | Hàng đợi việc chờ người | `tools/pending.sh` | Chỉ đọc |
 | Entry check | Đầu mỗi `check-*.sh` | `review → plan → design → spec` |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | |

@@ -18,7 +18,8 @@ Tài liệu cho **người** dùng quy trình: dev, tech lead, người duyệt 
 | Bị chặn, không biết làm gì | [§9 Đọc kết quả và xử lý khi bị chặn](#9-đọc-kết-quả-và-xử-lý-khi-bị-chặn) |
 | Tra lệnh | [§10 Tham chiếu lệnh](#10-tham-chiếu-lệnh) |
 
-Tài liệu khác: [`README.md`](../README.md) (tổng quan, cài đặt rút gọn) ·
+Tài liệu khác: [`thuat-ngu.md`](thuat-ngu.md) (từ ngữ: YC, D-xx, điểm mù…) ·
+[`README.md`](../README.md) (tổng quan, cài đặt rút gọn) ·
 [`docs/kien-truc.md`](kien-truc.md) (lý do thiết kế, điểm yếu) ·
 [`conventions-reference.md`](../workflow/templates/conventions-reference.md) (giải thích từng khoá
 quy ước) · [`adapters/`](../adapters/README.md) (Claude Code, Cursor).
@@ -37,6 +38,21 @@ quy ước) · [`adapters/`](../adapters/README.md) (Claude Code, Cursor).
 
 Nguyên tắc: **máy kiểm được thì máy kiểm; còn lại người quyết**. Agent không bao giờ nói "đạt" thay
 máy, và không bao giờ duyệt thay người.
+
+**Phần "Người" chia cho ai trong team.** Engine không biết ai là ai — nó chỉ chờ ô được tick, câu
+được trả lời. Phân công thường gặp (một người có thể giữ nhiều vai; team nhỏ thì dev làm gần hết):
+
+| Vai trong team | Việc trong quy trình | Lúc nào |
+|---|---|---|
+| **Người cài** (tech lead, DevOps) | `aw init`; `TEST_CMD`, `SECURITY_CMDS` đúng CI; `conventions.md` đúng repo, merge qua PR; cài hook `aw guard`; chạy `/aw-bootstrap` | một lần mỗi repo, mỗi bản clone |
+| **Dev chạy việc** | gõ các lệnh `/aw-*`; chọn loại việc, base; chạy `WORKTREE_SETUP_CMD`; xử lý khi agent báo `DỪNG`/`KẸT`; chọn nhánh đích khi ship | mọi phase |
+| **Người duyệt spec** (dev, PO/BA, tech lead) | đọc YC + `Out of scope`; duyệt `Risk`, mức `Blocking`; tick spec | sau `/aw-spec` |
+| **PO / BA** | trả lời điểm mù (dev gửi tin nhắn agent soạn sẵn, rồi ghi câu trả lời qua `/aw-clarify`) | sau `/aw-spec`, bất kỳ lúc nào |
+| **Người duyệt thiết kế** (tech lead, kiến trúc sư) | `Risk: high` → phác D-xx trước; tick **từng** D-xx; phân xử phát hiện `block` của checker LLM; quyết D nào nâng thành ADR | `/aw-design` |
+| **Người rà bảo mật** | khi diff đụng `sensitive_code`: đọc Lens 4 + diff, tự ghi `- Security reviewer: <tên>`; quyết báo nhầm của máy quét | `/aw-review`, `/aw-implement` |
+| **Reviewer MR** | review và merge trên GitHub/GitLab (chỉ thấy code + mô tả MR, không thấy artifact) | sau `/aw-ship` |
+
+Từ ngữ (YC, D-xx, điểm mù, base…): [`thuat-ngu.md`](thuat-ngu.md).
 
 ### 1.2. Bàn giao bằng file
 
@@ -68,7 +84,7 @@ flowchart TD
     SHIP["/aw-ship (tuỳ chọn)<br/>→ MR/PR<br/><i>BẠN: chọn nhánh đích, merge</i>"]
 
     INTAKE --> SPEC --> DESIGN --> PLAN --> IMPL --> REVIEW --> SHIP
-    SPEC -. "chore: bỏ design" .-> PLAN
+    SPEC -. "chore / Design: skip: bỏ design" .-> PLAN
     CLARIFY -.-> DESIGN
     CLARIFY -.-> PLAN
     CLARIFY -.-> REVIEW
@@ -173,7 +189,7 @@ Spec và mỗi D-xx có **đúng một** ô. Bạn duyệt bằng cách đổi `
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.23/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.25/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 aw doctor          # kiểm sh, git, tar, gzip, curl/wget, sha256sum/shasum
@@ -403,7 +419,8 @@ Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — ch�
 | `## Reproduction` (bugfix) | bước tái hiện, hành vi thật/mong đợi | test tái hiện |
 | `Type`/`Protected by`/`Target` (refactor/perf) | YC giữ nguyên hành vi, test bảo vệ, chỉ số | implement, review |
 | `- Promote: BR-…` | YC trở thành luật nghiệp vụ bền | implement (`aw rule promote`) |
-| `Approved by human` | **cổng**: design (chore: plan) bị chặn tới khi tick | design/plan |
+| `Design: required \| skip` | `skip` → **bỏ design**: chỉ bugfix/refactor nhỏ, `Risk: normal`, không có lựa chọn kỹ thuật; plan đi thẳng từ spec | design, plan |
+| `Approved by human` | **cổng**: design (không có design: plan) bị chặn tới khi tick | design/plan |
 
 Nhãn nguồn của YC: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định **kỹ
 thuật** hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói, đang dùng giả định tạm). Phép thử: BA/PO có
@@ -414,7 +431,7 @@ nguồn nói gì, câu hỏi, hỏi ai, giả định tạm, *If wrong, redo*, v
 
 | `Blocking` | Khi nào | Chặn |
 |---|---|---|
-| `blocking` | sai → cả thiết kế đổi hướng | design (chore: plan) và mọi phase sau, tới khi trả lời |
+| `blocking` | sai → cả thiết kế đổi hướng | design (không có design: plan) và mọi phase sau, tới khi trả lời |
 | `review-blocking` | sai → làm lại một phần code | flow chạy tiếp trên giả định; implement cảnh báo, **review chặn** |
 | `non-blocking` | sai → sửa nhỏ, giao trước được | không gì; review ghi YC đó `pending` |
 
@@ -507,7 +524,7 @@ quay về `[ ]` khi chạy lại plan. Bạn duyệt lại riêng D đó.
 
 - **Chạy ở:** worktree. **Không có cổng người** — phase này chỉ chia việc đã duyệt, không có lựa chọn
   kỹ thuật mới.
-- **Cần:** mọi D-xx đã duyệt (chore: spec đã duyệt).
+- **Cần:** mọi D-xx đã duyệt (không có design — chore, `Design: skip`: spec đã duyệt).
 - **Đọc → ghi:** `spec.md`, `tdd.md`, `open-questions.md` → `plan.md`.
 
 **`plan.md` quyết định *phạm vi được phép của implement*:**
@@ -674,7 +691,7 @@ chạy lại phase sinh ra file lỗi thời (agent sẽ cập nhật, không gh
 |---|---|---|---|---|---|
 | Khi nào | thêm hành vi | hành vi hiện tại **sai** | đổi cấu trúc, hành vi giữ nguyên | nhanh hơn, hành vi giữ nguyên | không đụng code production |
 | Spec thêm | — | `## Reproduction` | YC chỉ `preserve`/`structural`; YC preserve có `Protected by:` test **có sẵn trên base** | như refactor + YC `performance` có `Target` bằng số | — |
-| Design | có | có | là phần việc chính | là phần việc chính | **bỏ** |
+| Design | có | có; việc nhỏ bỏ được (`Design: skip`) | là phần việc chính; việc nhỏ bỏ được (`Design: skip`) | là phần việc chính | **bỏ** |
 | Plan thêm | — | task đầu = viết test tái hiện | `Modified existing tests` | task đầu = đo trước; `Modified existing tests` | `Dependency upgrades` (`patch \| minor`) |
 | Implement — máy chặn khi | — | chưa có `repro.md`, test tái hiện xanh, hoặc bước tái hiện đụng file ngoài test | xoá test cũ | `perf.md` thiếu số đo | đụng `production_code`; đụng `dependency_files` không khai, nâng major, hoặc thiếu `sca` xanh |
 | Review xét thêm | — | test đỏ **vì bug**, không vì lỗi biên dịch | test cũ chỉ đổi import/cấu trúc, không đổi assertion | kết luận YC performance theo số | mức nâng thư viện đúng |

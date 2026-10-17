@@ -43,8 +43,13 @@ OQ="$DIR/open-questions.md"
 TDD="$DIR/tdd.md"
 PH="$DIR/design-findings.md"
 
-if [ "$(kc_loai "$DIR")" = "chore" ]; then
-  echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+if kc_bo_design "$DIR"; then
+  if [ "$(kc_loai "$DIR")" = "chore" ]; then
+    echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+  else
+    echo "  [LỖI] spec.md khai \"Design: skip\" — việc này KHÔNG có phase design. Đi thẳng /aw-plan."
+    echo "        Cần design thì đổi thành \"Design: required\" trong spec (người duyệt lại spec)."
+  fi
   echo ""
   echo "KHÔNG ĐẠT."
   exit 1

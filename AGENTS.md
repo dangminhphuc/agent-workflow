@@ -66,6 +66,7 @@ chiều (chặn đúng lúc, cho qua đúng lúc). Đổi chữ mà test grep �
 ## Phát hành
 
 1. Ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md` (tiếng Việt).
-2. `sh tools/prepare-release.sh` — đặt `YYYY.M.N` vào VERSION, `bin/aw`, CHANGELOG, README.
+2. `sh tools/prepare-release.sh` — đặt `YYYY.M.N` vào VERSION, `bin/aw`, CHANGELOG, link tải
+   trong README và `docs/huong-dan.md`.
 3. PR vào `main`; CI `kiem-tra` chạy test + kiểm version. Merge → workflow `release` tự tạo tag +
    Release. **Không tự tạo tag tay** trước khi merge.

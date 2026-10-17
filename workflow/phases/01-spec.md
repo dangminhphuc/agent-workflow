@@ -17,7 +17,8 @@ exit_human:
   - Repo owner reviews the requirement list and "Out of scope"
   - Repo owner approves the "Blocking" level of every [OPEN-QUESTION] (blocking | review-blocking | non-blocking)
   - Repo owner approves "Risk" (high → design runs Mode 2, the human drafts D-xx first)
-  - Then the repo owner ticks "Approved by human" — design (chore: plan) blocks until then
+  - Repo owner approves "Design" (skip → no design phase, plan works from the spec)
+  - Then the repo owner ticks "Approved by human" — design (no design phase: plan) blocks until then
 needs_clean_context: true
 trace_rule: true
 ---
@@ -61,6 +62,7 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 9. **`## Out of scope`:** what is *not* done — stops later phases overreaching. None → "Không có."
 10. **`## Constraints & dependencies`:** external systems, legal/accounting rules, deadlines, other teams' work — with sources. None → "Không có ràng buộc hay phụ thuộc ngoài."
 11. **Propose `Risk`:** `high` when touching money/accounting, new integrations, core schema, or hard-to-reverse changes; else `normal`. One-line reason. `high` → design runs Mode 2.
+    - **Propose `Design`:** `skip` only for a small `bugfix`/`refactor` with `Risk: normal` and no technical choice (no new API/schema/module boundary, one obvious way to do it); else `required`. `chore`: omit the line.
     - A YC that stays true after this job (a business invariant, not a screen detail) with a durable source → propose `- Promote: BR-<DOMAIN>-NNN` under it. `[INFERRED]` / `[OPEN-QUESTION]` YCs cannot be promoted.
 12. **Leave `- [ ] **Approved by human**` unticked**; any content edit unticks it. Spec edited after the human ticked → the human re-approves: reads the change and deletes `<!-- approval-hash: … -->` (keeps the tick), or re-ticks.
     - The human disagrees with an existing YC → `/aw-clarify YC-NNN` records the change as an answered open question; do not silently rewrite the YC.

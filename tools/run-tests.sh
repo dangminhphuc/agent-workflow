@@ -1554,8 +1554,8 @@ dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắ
 dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
 dung "mọi lệnh phase kết thúc bằng Kết quả · Cần bạn" sh -c \
   "for p in intake spec design plan implement review ship; do grep -q 'Cần bạn:' '$O/.claude/commands/aw-'\$p.md || exit 1; done"
-dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec có nhánh chore)" sh -c \
-  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore: .*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
+dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec có nhánh không design)" sh -c \
+  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore or .*Design: skip.*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
 dung "…phase cuối không có lệnh tiếp theo" sh -c "! grep -q 'Tiếp theo:' '$O/.claude/commands/aw-ship.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/independent-reviewer.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/design-checker.md"
@@ -2329,6 +2329,76 @@ printf 'TEST_CMD="true"\n%s\n' "$BM_XANH" > "$CFG/config.sh"
 ky_vong 1 "check-repro chặn khi test XANH trên code chưa sửa" sh "$T/check-repro.sh" "$F"
 dung "…đúng lý do: test xanh, không phải vì đã sửa code" sh -c "sh '$T/check-repro.sh' '$F' | grep -q 'XANH'"
 
+# ---------------------------------------------------------------- bỏ design (Design: skip)
+echo ""
+echo "bỏ design: bugfix/refactor nhỏ khai \"Design: skip\""
+# bo_design — spec khai skip (người duyệt lại), không có tdd.md, plan không có D-xx
+bo_design() {
+  thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `normal`
+- **Design:** `skip`'
+  duyet_lai "$F/spec.md"
+  rm -f "$F/tdd.md" "$F/design-findings.md"
+  thay "$F/plan.md" '- Based on: `D-01`
+' ''
+  sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null
+  sh "$T/based-on.sh" "$F" plan.md spec.md >/dev/null
+}
+tao_fixture bugfix fix_nho
+bo_design
+for c in spec plan implement review; do
+  ky_vong 0 "bugfix Design: skip (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
+done
+ky_vong 1 "bugfix Design: skip chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
+dung "…đúng lý do: spec khai Design: skip" sh -c "sh '$T/check-design.sh' '$F' | grep -q 'Design: skip'"
+ky_vong 2 "Design: skip: aw approval design → SAI THAM SỐ" sh "$T/approval.sh" design "$F"
+ky_vong 0 "Design: skip: aw approval plan hỏi duyệt SPEC, spec đã duyệt → ĐÃ DUYỆT" sh "$T/approval.sh" plan "$F"
+thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
+ky_vong 1 "Design: skip: plan chặn khi người chưa duyệt spec" sh "$T/check-plan.sh" "$F"
+dung "…aw approval plan nêu Design: skip là điểm cần đọc kỹ" sh -c "sh '$T/approval.sh' plan '$F' 2>/dev/null | grep -q 'Design: skip — bỏ phase design'"
+thay "$F/spec.md" '- [ ] **Approved by human** — đã đọc' '- [x] **Approved by human** — đã đọc'
+thay "$F/open-questions.md" '`non-blocking`' '`blocking`'
+ky_vong 1 "Design: skip: điểm mù \"blocking\" còn mở thì plan chặn" sh "$T/check-plan.sh" "$F"
+dung "…aw pending tính cổng chặn là plan, không phải design" sh -c "sh '$T/pending.sh' '$F' 2>/dev/null | grep -q 'đổi hướng — chặn /plan'"
+thay "$F/open-questions.md" '`blocking`' '`non-blocking`'
+thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `high`'; duyet_lai "$F/spec.md"
+ky_vong 1 "Design: skip với Risk: high → spec chặn" sh "$T/check-spec.sh" "$F"
+ky_vong 1 "…và plan chặn theo (entry check chạy lại spec)" sh "$T/check-plan.sh" "$F"
+thay "$F/spec.md" '- **Risk:** `high`' '- **Risk:** `normal`'; duyet_lai "$F/spec.md"
+thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Based on: `D-01`
+- Expected files: `src/b.txt`'
+ky_vong 1 "Design: skip: task Dựa trên D-xx bị chặn (không có tdd.md)" sh "$T/check-plan.sh" "$F"
+thay "$F/plan.md" '- Based on: `D-01`
+' ''
+thay "$F/spec.md" '- **Design:** `skip`' '- **Design:** `bỏ`'; duyet_lai "$F/spec.md"
+ky_vong 1 "spec chặn Design khác required | skip" sh "$T/check-spec.sh" "$F"
+thay "$F/spec.md" '- **Design:** `bỏ`' '- **Design:** `required`'; duyet_lai "$F/spec.md"
+ky_vong 0 "bugfix Design: required → spec qua" sh "$T/check-spec.sh" "$F"
+ky_vong 2 "…nhưng plan đòi tdd.md (phải qua design) → THIẾU ĐẦU VÀO" sh "$T/check-plan.sh" "$F"
+
+tao_fixture refactor refactor_nho
+bo_design
+for c in spec plan; do
+  ky_vong 0 "refactor Design: skip (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
+done
+ky_vong 1 "refactor Design: skip chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
+
+tao_fixture perf perf_nho
+bo_design
+ky_vong 1 "perf không được Design: skip" sh "$T/check-spec.sh" "$F"
+ky_vong 2 "…check-plan vẫn đòi tdd.md → THIẾU ĐẦU VÀO" sh "$T/check-plan.sh" "$F"
+
+tao_fixture feature feat_nho
+bo_design
+ky_vong 1 "feature không được Design: skip" sh "$T/check-spec.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-spec.sh' '$F' | grep -q 'chỉ dành cho bugfix/refactor'"
+
+tao_fixture chore chore_nho
+thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `normal`
+- **Design:** `required`'; duyet_lai "$F/spec.md"
+ky_vong 1 "chore ghi Design: required → spec chặn" sh "$T/check-spec.sh" "$F"
+thay "$F/spec.md" '- **Design:** `required`' '- **Design:** `skip`'; duyet_lai "$F/spec.md"
+ky_vong 0 "chore ghi Design: skip → spec qua" sh "$T/check-spec.sh" "$F"
+
 # ---------------------------------------------------------------- refactor
 echo ""
 echo "loại việc: refactor"
@@ -2709,7 +2779,7 @@ ky_vong 4 "chuẩn bị: version truyền tay trùng tag đã có → VERSION L�
 ky_vong 4 "chuẩn bị: version sai dạng (số 0 đứng đầu) → VERSION LỖI" sh "$PH/tools/prepare-release.sh" 2099.09.2
 ky_vong 0 "chuẩn bị: version truyền tay" sh "$PH/tools/prepare-release.sh" 2099.9.2
 dung "…ghi VERSION, bin/aw, CHANGELOG cùng một version" sh -c "grep -qx 2099.9.2 '$PH/VERSION' && grep -q '^AW_WRAPPER_VERSION=\"2099.9.2\"' '$PH/bin/aw' && grep -qx '## \[2099.9.2\]' '$PH/CHANGELOG.md' && ! grep -q 'Chưa phát hành' '$PH/CHANGELOG.md'"
-dung "…link tải wrapper trong README trỏ version mới" grep -q 'releases/download/2099.9.2/aw' "$PH/README.md"
+dung "…link tải wrapper trong README và huong-dan trỏ version mới" sh -c "grep -q releases/download/2099.9.2/aw '$PH/README.md' && grep -q releases/download/2099.9.2/aw '$PH/docs/huong-dan.md'"
 git -C "$PH" checkout -q -b pr; git_t "$PH" commit -qam "phát hành 2099.9.2"
 ky_vong 0 "kiểm phát hành: PR đổi VERSION, tag chưa có → đạt" sh "$PH/tools/check-release.sh" main
 git -C "$PH" tag 2099.9.2 main; git -C "$PH" push -q origin 2099.9.2 2>/dev/null

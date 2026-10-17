@@ -6,6 +6,8 @@
 # Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
 #            YC "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
 #            Nhãn `[FILE]` open-questions.md § YC-NNN mà mục đó không có (hay chưa answered).
+#            "Design:" khác required | skip; skip ngoài bugfix/refactor hoặc khi Risk khác normal;
+#            chore ghi required.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -97,6 +99,9 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
   $0 ~ /^[ \t]*<!--.*-->[ \t]*$/ { next }
 
   rui_ro == "" && $0 ~ /^[ \t]*-[ \t]*\**Risk\**:/ { rui_ro = gia_tri($0); co_rui_ro = 1 }
+  # "Design:" chỉ tính ở phần đầu (trước "## " đầu tiên) — cùng chỗ kc_design đọc.
+  $0 ~ /^##[ \t]/ { qua_dau = 1 }
+  !qua_dau && !co_tk && $0 ~ /^[ \t]*-[ \t]*\**Design\**:/ { thiet_ke = gia_tri($0); co_tk = 1 }
 
   $0 ~ /^###[ \t]+YC-[0-9]+/ {
     match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
@@ -188,6 +193,18 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
       loi("spec.md thiếu dòng \"Risk:\" (high | normal). `design` cần nó để biết có phải chạy Mode 2.")
     else if (rui_ro != "high" && rui_ro != "normal")
       loi("\"Risk: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: high | normal")
+
+    # Bỏ design: chỉ việc nhỏ có thể không có lựa chọn kỹ thuật — người duyệt cùng spec.
+    if (co_tk) {
+      if (thiet_ke != "required" && thiet_ke != "skip")
+        loi("\"Design: " thiet_ke "\" không hợp lệ. Chỉ chấp nhận: required | skip")
+      else if (thiet_ke == "required" && loai == "chore")
+        loi("chore không có phase design — bỏ dòng \"Design:\" hoặc ghi skip")
+      else if (thiet_ke == "skip" && loai != "chore" && loai != "bugfix" && loai != "refactor")
+        loi("\"Design: skip\" chỉ dành cho bugfix/refactor nhỏ — " (loai == "" ? "loại việc chưa rõ" : loai) " phải qua design")
+      else if (thiet_ke == "skip" && loai != "chore" && rui_ro != "normal")
+        loi("\"Design: skip\" cần \"Risk: normal\" — việc rủi ro cao phải qua design (Mode 2: người phác D-xx trước)")
+    }
 
     if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### YC-NNN\")")
 
@@ -301,7 +318,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
 
     print ""
     print "Tổng: " n " yêu cầu — Loại việc: " (loai == "" ? "?" : loai) " — Risk: " (co_rui_ro ? rui_ro : "?") \
-          " — Duyệt: " tt_spec
+          (thiet_ke == "skip" ? " — Design: skip (không có phase design)" : "") " — Duyệt: " tt_spec
     for (t in dem_nhan) printf "  [%s] %d\n", t, dem_nhan[t]
     if (n_loi > 0) exit 1
   }

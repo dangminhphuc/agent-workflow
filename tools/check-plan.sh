@@ -5,7 +5,8 @@
 #
 # Chặn:
 #   - Đầu vào: tdd.md không qua check-design.sh (entry check = checker phase trước).
-#   - Đầu vào (chore): spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
+#   - Đầu vào (không có design: chore, hoặc spec "Design: skip"): spec không qua check-spec.sh,
+#     spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
 #   - Đầu vào: còn D-xx chưa được người tick duyệt (hoặc đổi sau khi tick). plan và implement không có người —
 #     chúng chỉ được thực thi những gì người đã duyệt.
 #   - Kiểm HAI CHIỀU phủ YC:
@@ -38,12 +39,12 @@ SPEC="$DIR/spec.md"
 TDD="$DIR/tdd.md"
 PLAN="$DIR/plan.md"
 
-LOAI=$(kc_loai "$DIR")
 n_loi=0
 
-# chore không có design: entry check lùi về checker của spec, và không có tdd.md
+# Không có design (chore, hoặc bugfix/refactor "Design: skip" — kc_bo_design): entry check
+# lùi về checker của spec, và không có tdd.md
 # (task nào ghi "Based on: D-xx" sẽ bị chặn vì không có D nào).
-if [ "$LOAI" = "chore" ]; then
+if kc_bo_design "$DIR"; then
   for f in "$SPEC" "$PLAN"; do
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
   done
@@ -52,13 +53,13 @@ if [ "$LOAI" = "chore" ]; then
     n_loi=1
     echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
   fi
-  # Với feature/bugfix/... cổng duyệt spec nằm ở design; chore bỏ design nên nằm ở đây.
+  # Việc có design thì cổng duyệt spec nằm ở design; bỏ design thì nằm ở đây.
   cd_duyet=$(kc_spec_chua_duyet "$DIR")
   if [ -n "$cd_duyet" ]; then
     n_loi=$((n_loi + 1))
     echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
   fi
-  # Điểm mù mức "blocking" chặn phase ngay sau spec — với chore là phase này.
+  # Điểm mù mức "blocking" chặn phase ngay sau spec — khi bỏ design là phase này.
   dm=$(kc_diem_mu_mo "$DIR" "blocking")
   if [ -n "$dm" ]; then
     while IFS= read -r l; do
