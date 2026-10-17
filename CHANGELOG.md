@@ -28,12 +28,90 @@ ngầm giữa các bản.
   Mode 1/2, base, worktree…); `docs/huong-dan.md` §1.1 thêm bảng phân phần việc của "Người" theo vai
   trong team (người cài, dev, người duyệt spec, PO/BA, người duyệt thiết kế, người rà bảo mật,
   reviewer MR).
+- **Artifact phải có mục lục, tham chiếu phải là link tới mục — luật cứng.** Mọi artifact agent viết
+  (`intake.md`, `spec.md`, `open-questions.md`, `tdd.md`, `design-findings.md`, `plan.md`,
+  `review.md`, `merge-request.md`) có heading `##`/`###` thì phải có `## Contents` đứng trước heading
+  đầu tiên, liệt kê đúng mọi heading `##`/`###` theo thứ tự. Tham chiếu sang artifact khác viết thành
+  link tới mục (`[spec.md § YC-001](spec.md#yc-001--đăng-nhập)`), không còn chữ trơn
+  `spec.md § YC-001` hay link chỉ tới file. Checker của phase chặn trên artifact đầu ra của nó;
+  `aw check review` chặn trên mọi artifact (link sang file khác gãy khi file đó đổi heading).
+- **`aw toc <thư-mục-feature> [artifact…]`** — máy sinh lại `## Contents` theo heading, mở rộng anchor
+  rút gọn (`#yc-001`, `#d-01`, `#t-02`) thành anchor đầy đủ của heading, rồi in link còn sai. Anchor
+  tính như GitHub / VS Code. Chỉ ghi file khi nội dung đổi — chạy lại không làm artifact phía sau lỗi
+  thời. Mẫu artifact có sẵn mục `## Contents`.
+
+### Thay đổi
+- Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
+  `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
+  task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.
 
 ### Sửa
 - `tools/prepare-release.sh` cập nhật cả link tải wrapper trong `docs/huong-dan.md` (trước đây chỉ
   README, link trong hướng dẫn bị bỏ lại ở `2026.10.23`).
 - `docs/kien-truc.md`: `ket-qua-*` → `*-results.md`. `docs/viec-can-lam.md` bỏ lịch sử đã làm và
   tên trường, lệnh cũ (`Mức chặn`, `/open-questions`); chỉ giữ việc còn lại.
+
+## [2026.10.27]
+
+### Thêm
+- **`aw self-update [<YYYY.M.N>]`: wrapper tự nâng.** Tải `aw` của bản phát hành (mặc định: version
+  engine của repo đang đứng), kiểm sha256 theo `SHA256SUMS`, kiểm đúng `AW_WRAPPER_VERSION`, rồi thay
+  chính file wrapper (ghi tạm cạnh nó rồi `mv`). Checksum sai hay thiếu dòng `aw` → không cài.
+  `aw upgrade` và `aw version` nhắc chạy lệnh này khi wrapper cũ hơn engine (vd wrapper 2026.10.25
+  chưa biết `aw approvals`). Wrapper từ 2026.10.26 trở về trước chưa có lệnh này: tải tay một lần.
+
+## [2026.10.26]
+
+### Thêm
+- **Lệnh tiện ích `/aw-approvals [--global]`: duyệt tập trung, không phải mở từng artifact để
+  tick.** `aw approvals` liệt kê mọi ô "Approved by human" chưa đạt (spec, từng D-xx: chưa tick, đổi
+  sau khi duyệt, mở lại, thiếu ô) của worktree hiện tại — `--global`: mọi worktree, chạy được cả ở
+  checkout chính — mỗi mục kèm `đường-dẫn-tuyệt-đối:dòng` mở thẳng tới ô duyệt. Agent đi từng mục, in
+  phần cần duyệt do máy dựng, hỏi Duyệt / Chưa duyệt / Bỏ qua / Dừng; chọn Duyệt thì agent chạy
+  `aw approvals tick <dir> <spec|D-NN> <hash>` — máy chỉ tick khi nội dung còn đúng bản người vừa
+  thấy, ghi `journal/approvals.tsv`. **Nới luật "agent không tự duyệt"**: đây là lối duy nhất agent
+  được tick, chỉ sau khi người chọn Duyệt đúng mục đó; tick bằng sửa file vẫn bị `aw guard` bỏ. Nên
+  thêm luật hỏi quyền `Bash(aw approvals tick:*)` (adapters/claude-code/README.md). Cần wrapper `aw`
+  mới (lệnh `approvals`). Lệnh tiện ích khai được `feature_dir: none` (không chạy `aw feature`).
+- **Lệnh tiện ích `/aw-refactor [yêu-cầu]`: review, phản biện rồi ghi nhận yêu cầu refactor, chưa
+  làm.** Mỗi lần gọi một yêu cầu. Agent đọc code để kiểm (rõ chưa, có thật là refactor, tiền đề khớp
+  code, test bảo vệ trên base, phạm vi/rủi ro, nên tách, trùng/mâu thuẫn RF trước, đụng file việc hiện
+  tại), phản biện một vòng kèm `file:dòng` và bản tóm tắt; người quyết cuối. Ghi vào
+  `refactor-requests.md` của việc: `RF-NNN` có `Summary` (người duyệt), `Request` (nguyên văn),
+  `Location`, `Review` (phản biện + trả lời), `Status`. Không sửa code, intake, spec hay plan. Xong,
+  agent chỉ in lệnh: việc `refactor` đang làm → `/aw-intake <dir>/refactor-requests.md` rồi
+  `/aw-spec`; loại khác → việc refactor riêng (`/aw-intake` ở checkout chính, chép file sang việc mới
+  rồi intake thêm để spec trích `§ RF-NNN`). Chọn "để sau" thì gọi lại `/aw-refactor` không kèm
+  yêu cầu để quay về bước chọn đường; RF đã chọn đường thành `routed: …`. Mẫu:
+  `templates/refactor-requests.md`.
+- **`tdd.md` có thêm hai mục bắt buộc: `## Target structure` và `## Rollout & rollback`.** Target
+  structure ghi cấu trúc module/thành phần trước → sau (kèm sơ đồ Mermaid) — chỗ mà refactor/perf
+  cần nhất nhưng mẫu cũ không có. Rollout & rollback ghi thứ tự triển khai, flag, di trú, chạy song
+  song, cách quay lui và bước nào không quay lui được. Không áp dụng thì ghi
+  `Not applicable: <lý do>`; `aw check design` chặn khi thiếu mục hoặc để trống. Checker LLM coi
+  bước triển khai không quay lui được mà không có D-xx là quyết định ngầm. Việc đang chạy dở không
+  ảnh hưởng (chạy hết bằng version ghi trong `intake.md`).
+- **`TASK_FULL_TEST` trong `config.sh`.** `1` = `aw task done` chạy thêm `TEST_CMD` sau khi Verify xanh;
+  đỏ tính như Verify đỏ (giữ `[~]`, tăng đỏ liên tiếp), `task-results.md` ghi thêm dòng `Toàn bộ test`.
+  Task sau làm hỏng task trước lộ ra ngay ở task gây ra, không đợi tới `aw check implement`. Mặc định tắt.
+
+### Thay đổi
+- **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
+  có D `Author: human` thì agent chỉ dừng và đưa mẫu, người phải tự nghĩ ra các điểm cần quyết từ
+  trang trắng. Giờ agent khảo sát code, liệt kê các điểm cần quyết dưới dạng câu hỏi kèm dữ kiện
+  (số chỗ gọi, dữ liệu phải di trú, giao diện ngoài, ADR liên quan), rồi hỏi từng điểm bằng câu mở:
+  có những cách nào, được/mất gì, chọn gì và vì sao, chỗ nào khó đảo ngược. D-xx ghi đúng lời người
+  (`Author: human`). Agent vẫn **không** nêu, xếp hạng hay nghiêng về phương án nào; bị hỏi "nên
+  chọn gì" thì chỉ gợi khía cạnh cần cân nhắc. Người muốn tự viết `tdd.md` thì agent dừng như cũ.
+- **`/aw-implement` gọn lại.** Bước 1–7 và vòng lặp tự chạy gộp thành một mục `Loop` nói theo nhãn của
+  `aw`. Bỏ mục `Common failures` và cột "Machine blocks when" (checker đã in đúng điều đó khi chặn), bỏ
+  các luật lặp với `general.md`.
+- **Mục `Unplanned` của phase nói rõ khi nào ghi rồi làm tiếp, khi nào ghi rồi dừng** (file ngoài
+  phạm vi không tránh được, luật repo xung đột → làm tiếp; `DỪNG`/`KẸT`, việc ngoài plan, phải đổi
+  `tdd.md`/`spec.md`/D-xx, test cũ sai, scan báo nhầm → dừng, báo người).
+- **Quy ước commit theo task:** task lên `[x]` thì commit file của task đó theo đường dẫn (không
+  `git add -A`), message `T-NN: <tiêu đề>` trừ khi luật repo quy định khác.
+- **Nói rõ thời điểm nâng ADR / luật:** trong task hiện thực D `Promote: adr` / YC `Promote: BR-…`.
 
 ## [2026.10.25]
 

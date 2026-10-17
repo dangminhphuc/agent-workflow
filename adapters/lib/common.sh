@@ -300,7 +300,7 @@ buoc_cong_cu_repo() {
 luat_tom_tat() {
   printf '1. **Hand off through files** — never take input from earlier chat.\n'
   printf '2. **Never declare a pass yourself** — run `aw check …`, paste the real result.\n'
-  printf '3. **Never approve** — never tick "Approved by human" or edit `approval-hash`; editing ticked content → untick. LLM checkers only block.\n'
+  printf '3. **Never approve** — never tick "Approved by human" yourself or edit `approval-hash`; editing ticked content → untick. Only `/aw-approvals` runs `aw approvals tick`, for the one item the human just approved. LLM checkers only block.\n'
   printf '4. **Stay inside the phase** — record other phases'"'"' work, do not do it.\n'
   printf '5. **Never delete earlier artifacts** — rerun = update.\n'
   printf '6. **Every requirement traces to a source.**\n'
@@ -546,6 +546,7 @@ ad_sinh() {
   # feature (neu co) nam lan trong do — agent tach ra.
   # runs_on_main_checkout: true = co viec o checkout chinh (muc "On the main checkout"
   # trong than), nhu phase 06-ship.
+  # feature_dir: none = lenh xet nhieu viec, khong can buoc xac dinh feature.
   wf_commands "$MANIFEST" > "$CMD_LIST"
   while IFS='|' read -r cid cfile; do
     [ -n "$cid" ] || continue
@@ -565,6 +566,11 @@ ad_sinh() {
       ""|true) ;;
       *) echo "LỖI: $cfile khai runs_on_main_checkout \"$cmc\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; exit 4 ;;
     esac
+    cfd=$(fm_scalar "$csrc" feature_dir)
+    case "$cfd" in
+      ""|none) ;;
+      *) echo "LỖI: $cfile khai feature_dir \"$cfd\" — chỉ nhận \"none\" (bỏ trống = cần thư mục feature)." >&2; exit 4 ;;
+    esac
     kiem_tra_ghi_de "$L/$(ten_lenh "$cid").md"
     {
       _h=$(fm_scalar "$csrc" argument_hint); _h=${_h:-[tên-feature]}
@@ -572,7 +578,12 @@ ad_sinh() {
       _hk ad_dau_lenh "$(ten_lenh "$cid")" "$(fm_scalar "$csrc" name)" "$(fm_scalar "$csrc" summary)" "$_h"
       canh_bao "$cfile"
       _hk ad_mo_dau_lenh "$(ten_lenh "$cid")" "$_h" "$cargs"
-      if [ "$cargs" = "mixed" ]; then
+      if [ "$cfd" = "none" ]; then
+        # Lệnh xét nhiều việc (vd /aw-approvals): không chạy aw feature, chạy được ở mọi checkout.
+        printf 'Arguments: `%s`\n\n' "$ts"
+        printf '## Step 0 — No feature dir\n\n'
+        printf 'Talk to the human in Vietnamese. Every `aw` command ends with a `Kết quả` block — act on the `[x]` label. Needs no feature dir: do not run `aw feature`, never change directory yourself.\n\n'
+      elif [ "$cargs" = "mixed" ]; then
         printf 'Arguments: `%s`\n\n' "$ts"
         buoc_xac_dinh_feature '<feature-name if the user gave one>' "" "$cmc"
       else

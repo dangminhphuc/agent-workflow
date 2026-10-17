@@ -123,7 +123,10 @@ luat_nguon() {
       if [ -z "$_lpb" ]; then echo "L|$2: nguồn [$_lnh] không có phiên bản trong bảng \"## Sources\" của spec.md (dòng có \"$_lkey\")"; return; fi
       echo "S|\`[$_lnh]\` $_lcon (version: $_lpb)" ;;
     FILE)
-      _lp=$(printf '%s' "$_lcon" | tr -d '`' | awk '{ print $1 }')
+      # Đường dẫn: chữ đầu, hoặc đích của link "[x.md § Mục](x.md#anchor)" (bỏ anchor).
+      _lp=$(printf '%s' "$_lcon" | tr -d '`' | awk '
+        /^\[[^]]*\]\(/ { s = $0; sub(/^\[[^]]*\]\(/, "", s); sub(/[#)].*$/, "", s); print s; exit }
+        { print $1 }')
       case "$_lp" in
         intake.md|open-questions.md)
           _lh=$(dy_quet "$_lS" spec | awk -F'|' '$1 == "O" { print $4; exit }')

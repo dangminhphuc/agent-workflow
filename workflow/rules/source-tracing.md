@@ -35,7 +35,7 @@ The agent proposes `Blocking`, the human approves. Choose by "if the assumption 
 | `review-blocking` | Wrong → part of the code is redone | Flow continues on the assumption; `04-implement` warns, `05-review` blocks |
 | `non-blocking` | Wrong → small fix, may ship first | Nothing; review marks that YC `pending` |
 
-Answering an open question: write `Answer:`, set `Status: answered`, **and** change the YC's source label in the spec (e.g. `[FILE]` open-questions.md § YC-002). The checker blocks if the two files disagree.
+Answering an open question: write `Answer:`, set `Status: answered`, **and** change the YC's source label in the spec (e.g. `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002)). The checker blocks if the two files disagree.
 
 ## Common failures
 

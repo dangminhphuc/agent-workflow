@@ -5,7 +5,7 @@
 #
 # Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
 #            YC "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
-#            Nhãn `[FILE]` open-questions.md § YC-NNN mà mục đó không có (hay chưa answered).
+#            Nhãn `[FILE]` [open-questions.md § YC-NNN](open-questions.md#…) mà mục đó không có (hay chưa answered).
 #            "Design:" khác required | skip; skip ngoài bugfix/refactor hoặc khi Risk khác normal;
 #            chore ghi required.
 #
@@ -19,6 +19,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/rule.sh"
+. "$HERE/lib/toc.sh"
 . "$HERE/lib/result.sh"
 kq_khai check-spec.sh \
   "0=ĐẠT — được sang phase sau" \
@@ -54,6 +55,11 @@ EOF
 kld=$(kc_loi_duyet "$SPEC" spec)
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $kld
+EOF
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" spec.md open-questions.md)
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$tl
 EOF
 # YC người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/rule.sh.
 lsl=$(luat_loi_spec "$DIR")
@@ -146,7 +152,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
       q = substr(x, RSTART, RLENGTH)
       if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"## " q "\"")
     } else if (x !~ /\[(CONFLUENCE|JIRA|FILE)\]/) {
-      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới điểm mù (open-questions.md § YC-NNN) hoặc nguồn đã chốt " \
+      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới điểm mù ([open-questions.md § YC-NNN](open-questions.md#yc-nnn)) hoặc nguồn đã chốt " \
           "([CONFLUENCE] [JIRA] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
     }
     next
@@ -287,7 +293,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
         loi(q ": điểm mù ghi \"answered\" nhưng dòng \"Answer:\" còn trống.")
       else if (s == "answered" && nhan[q] == "OPEN-QUESTION")
         loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [OPEN-QUESTION]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
-            "(vd `[FILE]` open-questions.md § " q ").")
+            "(vd `[FILE]` [open-questions.md § " q "](open-questions.md#" tolower(q) ") rồi chạy aw toc).")
       else if (s == "open" && so_nguon[q] == 1 && nhan[q] != "OPEN-QUESTION")
         loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng điểm mù trong open-questions.md vẫn \"open\". " \
             "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")

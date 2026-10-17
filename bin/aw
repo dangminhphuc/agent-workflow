@@ -14,6 +14,7 @@
 # Lệnh:
 #   aw init [--version YYYY.M.N] [--adapter <id>[,<id>…]] [--test-cmd "<lệnh>"] [--from <url>] [--from-legacy] [--force]
 #   aw upgrade <YYYY.M.N>
+#   aw self-update [<YYYY.M.N>]           thay chính wrapper này bằng bản của version đó (mặc định: engine của repo), kiểm sha256
 #   aw version
 #   aw doctor
 #   aw check <name> <feature-dir>          name: intake spec design plan implement security review repro perf ship
@@ -24,7 +25,7 @@
 #   aw ship create <feature-dir> --target <branch> [--draft] [--allow-extra-commits] [--url <link>]
 #   aw ship sweep [<branch>] [--apply]     dọn worktree + branch của việc đã merge (từ checkout chính)
 #   aw adapter build [<agent>[,<agent>…]] [--out <dir>] [--force]   bỏ trống agent = ADAPTER trong config.sh
-#   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw rename <branch>
+#   aw feature [name] | aw input … | aw pending <dir> | aw based-on <dir> … | aw toc <dir> | aw rename <branch>
 #   aw rules <phase>                       phase: spec design plan implement review
 #   aw uses <phase>                        skill / subagent của repo mà phase phải gọi (khoá uses_<phase>)
 #   aw knowledge spec|design <feature-dir> kiến thức bền phase phải đọc: luật BR-, chỉ mục ADR, ADR, tài liệu module
@@ -38,6 +39,8 @@
 #   aw journal [report] | aw journal add <layer> "<mô tả>"   nhật ký thất bại của harness
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
+#   aw approvals [--global]               mọi ô duyệt chờ người, kèm link tới artifact (lệnh /aw-approvals gọi)
+#   aw approvals tick <feature-dir> <spec|D-NN> <hash>   tick sau khi NGƯỜI chọn duyệt trong /aw-approvals
 #
 # Biến môi trường:
 #   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);
@@ -46,7 +49,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.25"
+AW_WRAPPER_VERSION="2026.10.27"
 AW_PROTOCOL=1
 AW_MIRROR_DEFAULT="https://github.com/dangminhphuc/agent-workflow/releases/download"
 
@@ -294,10 +297,66 @@ cmd_upgrade() {
   else echo "  keep    version ($1)"; fi
   echo "  Việc đã bắt đầu vẫn chạy bằng version ghi trong intake.md của nó; việc mới dùng $1."
   echo "  Dùng chung cho team: commit version + checksums vào repo cấu hình của team (aw init --from)."
+  nhac_wrapper "$1"
   echo ""
   AW_ENGINE=$ENGINE
   export AW_REPO AW_CONFIG AW_ENGINE AW_PROTOCOL
   exec sh "$ENGINE/bin/aw-engine" init
+}
+
+# version_cu_hon <a> <b> -> 0 nếu YYYY.M.N a đứng trước b
+version_cu_hon() {
+  printf '%s\n%s\n' "$1" "$2" | awk -F. '
+    NR == 1 { a1 = $1 + 0; a2 = $2 + 0; a3 = $3 + 0 }
+    NR == 2 { b1 = $1 + 0; b2 = $2 + 0; b3 = $3 + 0 }
+    END { exit !(a1 < b1 || (a1 == b1 && (a2 < b2 || (a2 == b2 && a3 < b3)))) }'
+}
+
+# nhac_wrapper <version engine> — wrapper cũ hơn engine thì nhắc self-update
+nhac_wrapper() {
+  if version_cu_hon "$AW_WRAPPER_VERSION" "$1"; then
+    echo "  ! wrapper $AW_WRAPPER_VERSION cũ hơn engine $1 — lệnh mới có thể chưa chạy được: aw self-update" >&2
+  fi
+}
+
+# aw self-update [<YYYY.M.N>] — thay chính file wrapper bằng bản `aw` của bản phát
+# hành đó (mặc định: version engine của repo đang đứng). Kiểm sha256 theo
+# SHA256SUMS của bản phát hành; ghi file tạm cạnh wrapper rồi mv (nguyên tử —
+# shell đang chạy file cũ không bị đọc lẫn).
+cmd_self_update() {
+  [ $# -le 1 ] || loi 2 "Dùng: aw self-update [<YYYY.M.N>]"
+  _v=${1:-}
+  if [ -z "$_v" ]; then
+    tim_repo && _v=$(version_cau_hinh)
+    [ -n "$_v" ] || loi 2 "LỖI: không đứng trong repo đã init — ghi rõ version: aw self-update <YYYY.M.N>"
+  fi
+  version_hop_le "$_v" || loi 2 "LỖI: \"$_v\" không phải YYYY.M.N."
+  if [ "$_v" = "$AW_WRAPPER_VERSION" ]; then echo "Wrapper đã là $_v — không làm gì."; ket_thuc 0; fi
+
+  case "$0" in */*) _dich=$0 ;; *) _dich=$(command -v -- "$0" 2>/dev/null) ;; esac
+  [ -n "$_dich" ] && [ -f "$_dich" ] || loi 9 "LỖI: không tìm được file wrapper đang chạy (\$0 = $0)."
+  _thu=$(dirname -- "$_dich")
+  [ -w "$_thu" ] || loi 9 "LỖI: không ghi được vào $_thu — chạy với quyền ghi thư mục đó, hoặc tải tay (README, mục Cài đặt)."
+  [ -L "$_dich" ] && echo "  ! $_dich là symlink — sẽ được thay bằng file thường" >&2
+
+  _url="${AW_MIRROR%/}/$_v"; _tam="$_thu/.aw-moi.$$"
+  echo "Tải wrapper $_v: $_url/aw"
+  tai "$_url/aw" "$_tam" || { rm -f "$_tam"; loi 9 "LỖI: không tải được $_url/aw."; }
+  tai "$_url/SHA256SUMS" "$_tam.sums" || { rm -f "$_tam" "$_tam.sums"; loi 9 "LỖI: không tải được $_url/SHA256SUMS."; }
+  _mong=$(awk '$2 == "aw" || $2 == "*aw" { print $1; exit }' "$_tam.sums"); rm -f "$_tam.sums"
+  [ -n "$_mong" ] || { rm -f "$_tam"; loi 9 "LỖI: SHA256SUMS của $_v không có dòng cho aw."; }
+  _that=$(sha256_file "$_tam") || { rm -f "$_tam"; loi 9 "LỖI: không có sha256sum/shasum/openssl để kiểm checksum."; }
+  if [ "$_that" != "$_mong" ]; then
+    rm -f "$_tam"
+    loi 9 "LỖI: checksum sai cho aw — tải về $_that, mong đợi $_mong (theo SHA256SUMS)." "      Không cài. File có thể hỏng hoặc bị tráo."
+  fi
+  _wv=$(awk -F'"' '/^AW_WRAPPER_VERSION=/ { print $2; exit }' "$_tam")
+  if [ "$_wv" != "$_v" ] || ! sh -n "$_tam" 2>/dev/null; then
+    rm -f "$_tam"; loi 9 "LỖI: file tải về không phải wrapper aw $_v (AW_WRAPPER_VERSION=\"${_wv:-?}\")."
+  fi
+  chmod +x "$_tam" && mv -f "$_tam" "$_dich" || { rm -f "$_tam"; loi 9 "LỖI: không thay được $_dich."; }
+  echo "  write   $_dich ($AW_WRAPPER_VERSION → $_v)"
+  ket_thuc 0
 }
 
 cmd_version() {
@@ -308,6 +367,7 @@ cmd_version() {
     echo "cấu hình     $AW_CONFIG"
     if [ -n "$_v" ]; then
       echo "engine       $_v"
+      nhac_wrapper "$_v" 2>&1
       if [ -n "${AW_ENGINE_DIR:-}" ]; then echo "             AW_ENGINE_DIR=$AW_ENGINE_DIR"
       elif [ -f "$AW_CACHE/$_v/bin/aw-engine" ]; then echo "             $AW_CACHE/$_v"
       else echo "             chưa có trong cache — tải khi dùng (từ $AW_MIRROR)"; fi
@@ -391,6 +451,7 @@ LENH="${1:-}"; [ $# -gt 0 ] && shift
 case "$LENH" in
   init)    cmd_init "$@" ;;
   upgrade) cmd_upgrade "$@" ;;
+  self-update) cmd_self_update "$@" ;;
   version|--version) cmd_version ;;
   doctor)  cmd_doctor ;;
   check)
@@ -398,7 +459,7 @@ case "$LENH" in
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" check "$@" ;;
   # questions: tên cũ của pending — engine 2026.10.6 (việc đã ghim version đó) chỉ biết tên này.
-  pending|questions|based-on)
+  pending|questions|based-on|toc)
     can_repo
     _v=$(version_theo_viec "${1:-}") || exit $?
     chuyen "$_v" "$LENH" "$@" ;;
@@ -406,6 +467,12 @@ case "$LENH" in
     can_repo
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" approval "$@" ;;
+  # approvals tick <feature-dir> …: engine của việc; liệt kê: nhiều việc → version của bản clone.
+  approvals)
+    can_repo
+    if [ "${1:-}" = tick ]; then _v=$(version_theo_viec "${2:-}") || exit $?
+    else _v=$(version_viec) || exit $?; fi
+    chuyen "$_v" approvals "$@" ;;
   ready)
     can_repo
     _v=$(version_theo_viec "${1:-}") || exit $?

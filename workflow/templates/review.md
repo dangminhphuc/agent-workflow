@@ -7,6 +7,10 @@
      Lens 4 và diff. Agent không điền. Không đụng: xoá dòng này. -->
 - Security reviewer: <tên người>
 
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
+
 ## Conclusion
 
 - Mergeable: <no / yes after fixing Blockers>

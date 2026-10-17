@@ -19,6 +19,10 @@ Chỉ chép điều có trong artifact hoặc diff. Điều chưa chắc: ghi v�
 Questions", không viết như sự thật.
 -->
 
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
+
 ## Problem
 
 <!-- Hành vi SAI hiện tại, quan sát được: ở đâu, với đầu vào nào, thấy gì, lẽ ra

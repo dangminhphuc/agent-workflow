@@ -28,6 +28,7 @@ kq_khai check-intake.sh \
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/version.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 MD="$DIR/intake.md"
@@ -65,6 +66,12 @@ elif [ -n "$e_dang" ] && [ "$e_ver" != "$e_dang" ]; then
   echo "  [LỖI] Engine: việc ghim $e_ver nhưng checker đang chạy là $e_dang — chạy qua aw check, không gọi engine khác"
   n_base=$((n_base + 1))
 fi
+
+# ---- Mục lục và link tới mục (tools/lib/toc.sh) ----
+tl=$(toc_loi "$DIR" intake.md)
+while IFS= read -r l; do [ -n "$l" ] && { n_base=$((n_base + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$tl
+EOF
 
 awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }

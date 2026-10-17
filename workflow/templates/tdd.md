@@ -4,6 +4,10 @@ based_on: []
 
 # Technical Design — <TÊN TÍNH NĂNG>
 
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
+
 ## Existing code
 
 | Module / file | Current role | Planned change |
@@ -12,6 +16,17 @@ based_on: []
 
 Conventions to follow:
 - <...>
+
+## Target structure
+
+Based on: <D-xx, nếu có>
+
+<Cấu trúc module/thành phần trước → sau: thêm, tách, gộp, bỏ gì; ranh giới và phụ thuộc giữa
+chúng. Tính năng không đổi cấu trúc thì ghi "Not applicable: <lý do>". Sơ đồ bằng Mermaid:>
+
+```mermaid
+flowchart LR
+```
 
 ## Decisions (D-xx)
 
@@ -63,6 +78,13 @@ sequenceDiagram
 ## Non-functional
 
 <Hiệu năng, bảo mật, khả năng quan sát, tương thích ngược — kèm số liệu.>
+
+## Rollout & rollback
+
+Based on: <D-xx, nếu có>
+
+<Thứ tự triển khai, feature flag, các bước di trú dữ liệu, giai đoạn chạy song song cũ/mới,
+cách quay lui từng bước — và bước nào KHÔNG quay lui được.>
 
 ## Test strategy
 

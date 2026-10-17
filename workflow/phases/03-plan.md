@@ -30,12 +30,12 @@ No design phase (`chore`, or `Design: skip` in `spec.md`) → no `tdd.md`: input
 1. **Split into tasks.** Each task:
    - `Covers:` ≥ 1 `YC-NNN` from `spec.md`;
    - `Based on: D-xx` if it implements a decision;
-   - `Design: tdd.md § …`;
+   - `Design: [tdd.md § …](tdd.md#…)`;
    - `Expected files:` — paths in backticks, globs allowed (`src/todo/*`) — used to check diff scope;
    - `Verify:` — command in backticks + what to observe;
    - `Depends on:` if any;
    - small enough to finish in one go without breaking the build on its own.
-2. **Tasks on a temporary assumption:** `On assumption: **yes** — open-questions.md § YC-NNN`, else `no`.
+2. **Tasks on a temporary assumption:** `On assumption: **yes** — [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`, else `no`.
 3. **Every YC is covered by a task or listed in `## Deferred` with a reason.** Prefer deferring `should`; deferring `must` warns — tell the human.
 4. **`## Manual verification`:** YCs that cannot be tested automatically + reason (missing → implement warns, review blocks).
 5. **By work type:**
