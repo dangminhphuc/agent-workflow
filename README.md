@@ -356,7 +356,8 @@ sh tools/run-tests.sh
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng
 đúng chuỗi đó, không có `v`.
 
-1. Ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md`.
+1. Mỗi PR ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md` và cập nhật tài liệu liên quan
+   (`AGENTS.md` § Human docs).
 2. Trong PR muốn phát hành: `sh tools/prepare-release.sh [YYYY.M.N]` — ghi version vào
    `VERSION`, `bin/aw`, CHANGELOG, link tải trong README và `docs/huong-dan.md`. Commit vào PR.
 3. Workflow `kiem-tra` chạy test + `tools/check-release.sh` (version nhất quán, tag chưa có).
