@@ -2,7 +2,7 @@
 id: clarify
 choice_ui: true
 name: Chốt việc chờ người
-summary: Dẫn bạn chốt từng điểm mù và phát hiện của checker đang chặn phase, việc gấp nhất trước; hoặc đổi một YC bạn không đồng ý
+summary: Dẫn bạn chốt từng `open question` và `finding` của checker đang chặn phase, việc gấp nhất trước; hoặc đổi một YC bạn không đồng ý
 arguments: mixed
 argument_hint: [YC-NNN] [tên-feature]
 trace_rule: true

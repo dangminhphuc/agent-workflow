@@ -11,7 +11,7 @@ Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa 
 | Đọc gì | Ở đâu |
 |---|---|
 | **Hướng dẫn dùng cho người**: cài, cấu hình, từng phase sinh artifact gì và quyết định gì | [`docs/huong-dan.md`](docs/huong-dan.md) |
-| Thuật ngữ: YC, D-xx, điểm mù, base, worktree… | [`docs/thuat-ngu.md`](docs/thuat-ngu.md) |
+| Thuật ngữ agent dùng khi nói với bạn: YC, D-xx, `open question`, `stale`, worktree… | [`docs/thuat-ngu.md`](docs/thuat-ngu.md) |
 | Luật từng phase (nguồn sự thật) | [`workflow/phases/`](workflow/phases), [`workflow/rules/`](workflow/rules) |
 | Vì sao thiết kế như vậy, điểm yếu | [`docs/kien-truc.md`](docs/kien-truc.md) |
 | Adapter | [`adapters/README.md`](adapters/README.md) |

@@ -16,7 +16,7 @@ based_on: []
 ## Sources
 
 <!-- Phiên bản: Confluence = số version của page; Jira = thời điểm `updated` của issue;
-[FILE] = sha commit đã đọc. Nguồn đổi sau đó thì so phiên bản để biết spec có lỗi thời. -->
+[FILE] = sha commit đã đọc. Nguồn đổi sau đó thì so phiên bản để biết spec có bị `stale` không. -->
 
 | # | Type | Identifier | Version | Read on |
 |---|---|---|---|---|
@@ -97,7 +97,7 @@ Không có gì thì ghi "Không có." — checker chặn mục rỗng. -->
 
 ## Source conflicts
 
-<!-- Cột "Resolution" CHỈ được: trỏ tới điểm mù `[open-questions.md § YC-NNN](open-questions.md#yc-nnn)`, hoặc trỏ tới
+<!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § YC-NNN](open-questions.md#yc-nnn)`, hoặc trỏ tới
 nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
 Agent không tự phân xử mâu thuẫn nghiệp vụ — checker chặn. -->
 

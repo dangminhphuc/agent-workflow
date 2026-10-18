@@ -1,7 +1,7 @@
 ---
 id: spec
 name: Viết đặc tả
-summary: Bước 2/6 · Biến BRD/PRD/ticket thành spec.md kiểm chứng được và liệt kê điểm mù cần người chốt
+summary: Bước 2/6 · Biến BRD/PRD/ticket thành spec.md kiểm chứng được và liệt kê `open question` cần người chốt
 required: true
 inputs:
   - intake.md

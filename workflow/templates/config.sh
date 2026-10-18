@@ -26,7 +26,7 @@ TEST_CMD=""
 # Mỗi dòng "<nhóm>: <lệnh>", nhóm ∈ secret | sast | sca | other. Lệnh chạy ở gốc
 # repo; mã thoát khác 0 = ĐỎ, nên lệnh phải tự thoát khác 0 khi vượt ngưỡng.
 # Báo cáo (json, sarif…) ghi ra ngoài repo hoặc vào chỗ .gitignore — file lạ trong
-# repo làm kết quả bị coi là lỗi thời. Dòng trống và dòng bắt đầu bằng # bỏ qua.
+# repo làm kết quả bị coi là `stale`. Dòng trống và dòng bắt đầu bằng # bỏ qua.
 # Nên khai qua target đã commit mà CI cũng gọi (mẫu Makefile ở trên):
 #
 # SECURITY_CMDS="

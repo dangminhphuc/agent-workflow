@@ -71,6 +71,7 @@ phases:
 rules:
   - workflow/rules/general.md
   - workflow/rules/source-tracing.md
+  - workflow/rules/terms.md
 
 adapters:
   - id: claude-code
