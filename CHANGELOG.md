@@ -55,6 +55,12 @@ ngầm giữa các bản.
 - `docs/kien-truc.md`: `ket-qua-*` → `*-results.md`. `docs/viec-can-lam.md` bỏ lịch sử đã làm và
   tên trường, lệnh cũ (`Mức chặn`, `/open-questions`); chỉ giữ việc còn lại.
 
+### Nội bộ
+- **Mọi thay đổi trong repo engine phải kèm tài liệu cho người đọc** (`AGENTS.md` § Human docs): một
+  mục tóm tắt trong `CHANGELOG.md` (làm gì, vì sao, ảnh hưởng ai) và cập nhật tài liệu sống (README,
+  `docs/huong-dan.md`, `docs/kien-truc.md`, `docs/thuat-ngu.md`) — kể cả thay đổi nội bộ, refactor,
+  test. Thay đổi người dùng `aw` không thấy ghi ở mục `Nội bộ`.
+
 ## [2026.10.27]
 
 ### Thêm

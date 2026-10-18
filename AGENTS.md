@@ -51,7 +51,19 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 - Utility command: `workflow/<id>.md` + `commands:` in `workflow.yaml`.
 - Adapter: follow `adapters/README.md`; declare hooks only, never reimplement generation.
 - `conventions.md` key: `workflow/templates/conventions.md` + `conventions-reference.md`.
-- User-visible change: README / `docs/huong-dan.md` + `## [Chưa phát hành]` in `CHANGELOG.md` (Vietnamese).
+- Every change, see § Human docs.
+
+## Human docs
+
+Every change ships human-readable docs in the same PR — no exceptions for internal, refactor, test
+or tooling changes. Vietnamese, for a reader who does not read the diff.
+
+- **Summary**: an entry under `## [Chưa phát hành]` in `CHANGELOG.md` — what changed, why, who is
+  affected / what to do. Sections: `Thêm`, `Thay đổi`, `Sửa`, `Bỏ`; changes invisible to users of
+  `aw` go under `Nội bộ`.
+- **Living docs**: update every doc the change makes wrong or incomplete — usage: README /
+  `docs/huong-dan.md`; rationale: `docs/kien-truc.md`; new term: `docs/thuat-ngu.md`; open work:
+  `docs/viec-can-lam.md`. Nothing to update → say so in the PR description.
 
 ## Making a change
 
