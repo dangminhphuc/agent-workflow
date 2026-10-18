@@ -3754,6 +3754,24 @@ ky_vong 0 "aw adr check → engine (repo chưa có ADR: HỢP LỆ)" aw7 adr che
 ky_vong 0 "aw rule check → engine (repo chưa có luật: HỢP LỆ)" aw7 rule check
 ky_vong 2 "aw knowledge thiếu tham số → engine trả SAI THAM SỐ" aw7 knowledge
 
+# ---------------------------------------------------------------- thuật ngữ
+nhom "thuật ngữ: workflow/rules/terms.md ↔ docs/thuat-ngu.md"
+# thieu_thuat_ngu <terms.md> <thuat-ngu.md> — in mỗi thuật ngữ (cột 1 của bảng
+# terms.md) mà tài liệu cho người không có; trả 1 nếu thiếu
+thieu_thuat_ngu() {
+  awk -F'|' 'FILENAME == ARGV[1] && /^\| `/ { t = $2; gsub(/^ *`|` *$/, "", t); can[t] = 1; next }
+    FILENAME == ARGV[2] { for (t in can) if (index($0, "`" t "`")) delete can[t] }
+    END { n = 0; for (t in can) { print t; n++ }; exit n > 0 }' "$1" "$2"
+}
+TN="$ROOT/workflow/rules/terms.md"; TD="$ROOT/docs/thuat-ngu.md"
+dung "terms.md có bảng thuật ngữ" grep -q '^| `' "$TN"
+dung "mọi thuật ngữ của terms.md đều có trong thuat-ngu.md" thieu_thuat_ngu "$TN" "$TD"
+grep -v '`harness journal`' "$TD" > "$TMP/thuat-ngu-thieu.md"
+ky_vong 1 "…thuat-ngu.md thiếu một thuật ngữ → báo" thieu_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md"
+dung "…đúng thuật ngữ thiếu" bang "$(thieu_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md")" "harness journal"
+dung "general.md §5 trỏ tới rules/terms.md" grep -q 'rules/terms.md' "$ROOT/workflow/rules/general.md"
+dung "workflow.yaml đăng ký terms.md" grep -q '^  - workflow/rules/terms.md$' "$ROOT/workflow.yaml"
+
 # ---------------------------------------------------------------- tong ket
 echo ""
 echo "─────────────────────────────────────────"

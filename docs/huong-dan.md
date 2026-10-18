@@ -18,7 +18,7 @@ Tài liệu cho **người** dùng quy trình: dev, tech lead, người duyệt 
 | Bị chặn, không biết làm gì | [§9 Đọc kết quả và xử lý khi bị chặn](#9-đọc-kết-quả-và-xử-lý-khi-bị-chặn) |
 | Tra lệnh | [§10 Tham chiếu lệnh](#10-tham-chiếu-lệnh) |
 
-Tài liệu khác: [`thuat-ngu.md`](thuat-ngu.md) (từ ngữ: YC, D-xx, điểm mù…) ·
+Tài liệu khác: [`thuat-ngu.md`](thuat-ngu.md) (thuật ngữ agent dùng: YC, D-xx, `open question`…) ·
 [`README.md`](../README.md) (tổng quan, cài đặt rút gọn) ·
 [`docs/kien-truc.md`](kien-truc.md) (lý do thiết kế, điểm yếu) ·
 [`conventions-reference.md`](../workflow/templates/conventions-reference.md) (giải thích từng khoá
@@ -52,7 +52,7 @@ máy, và không bao giờ duyệt thay người.
 | **Người rà bảo mật** | khi diff đụng `sensitive_code`: đọc Lens 4 + diff, tự ghi `- Security reviewer: <tên>`; quyết báo nhầm của máy quét | `/aw-review`, `/aw-implement` |
 | **Reviewer MR** | review và merge trên GitHub/GitLab (chỉ thấy code + mô tả MR, không thấy artifact) | sau `/aw-ship` |
 
-Từ ngữ (YC, D-xx, điểm mù, base…): [`thuat-ngu.md`](thuat-ngu.md).
+Thuật ngữ agent dùng khi nói với bạn (YC, D-xx, `open question`, base…): [`thuat-ngu.md`](thuat-ngu.md).
 
 ### 1.2. Bàn giao bằng file
 

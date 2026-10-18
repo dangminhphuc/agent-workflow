@@ -8,7 +8,7 @@
      Người không đồng ý một YC đã có nguồn: `/aw-clarify YC-NNN` ghi việc đổi thành một mục ở đây
      (Status answered); câu trả lời cũ, nếu có, chuyển thành `Superseded answer:`. -->
 
-<Nếu không có điểm mù nào, ghi đúng dòng dưới đây rồi xoá phần còn lại:>
+<Nếu không có `open question` nào, ghi đúng dòng dưới đây rồi xoá phần còn lại:>
 <No open questions.>
 
 ## Contents

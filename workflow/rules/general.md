@@ -27,6 +27,7 @@ Work that belongs to another phase: record it in that phase's artifact, do not d
 ## 5. Language
 
 - Artifact content and everything you say to the human: **Vietnamese**. Identifiers (YC ids, file names, config keys): ASCII English.
+- **Terms:** name workflow concepts with the exact terms in `rules/terms.md`, never a Vietnamese translation (`open question`, not "điểm mù"; `stale`, not "lỗi thời").
 - **Structure is English — MANDATORY:** headings, field names, fixed labels and enum values — including new ones the template lacks (`## Rollback plan`, not `## Kế hoạch rollback`). Keep the template's exactly (`Type`, `## Out of scope`, `Blocking`, `must`, `[INFERRED]`…): checkers match them literally. Vietnamese only in body text, list items and table cells.
 - Labels printed by `aw` (`ĐẠT`, `CẦN HỎI NGƯỜI`…) are Vietnamese; match them literally.
 

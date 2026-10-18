@@ -41,6 +41,13 @@ ngầm giữa các bản.
   thời. Mẫu artifact có sẵn mục `## Contents`.
 
 ### Thay đổi
+- **Agent nói với bạn bằng thuật ngữ tiếng Anh gốc, không tự dịch.** Trước đây agent (và
+  `docs/thuat-ngu.md`) dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo" — khó đối chiếu
+  với tên field, file và output `aw`. Giờ có danh sách chuẩn `workflow/rules/terms.md` (`open question`,
+  `human gate`, `stale`, `cross-check`, `job`, `target repo`…); `general.md` §5 bắt agent dùng đúng các
+  từ đó, câu quanh vẫn tiếng Việt. `docs/thuat-ngu.md` viết lại theo thuật ngữ gốc, ghi tên cũ trong
+  ngoặc để tra. Luật này không có checker (lời nói không kiểm được). Có hiệu lực với job mới hoặc khi
+  nâng engine; không cần làm gì.
 - Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
   `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
   task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.
