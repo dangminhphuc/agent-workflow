@@ -413,7 +413,7 @@ Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — ch�
 | Phần | Quyết định | Ai dùng sau |
 |---|---|---|
 | `Risk: high \| normal` | **chế độ design**: `high` → bạn phác D-xx trước (Mode 2) | design |
-| `### YC-NNN` | từng yêu cầu, có đúng một nhãn nguồn, tiêu chí chấp nhận quan sát được, `Priority: must \| should` | design (ánh xạ), plan (task phủ), implement (`covers:`), review (Lens 1) |
+| `### YC-NNN` | từng yêu cầu, có đúng một nhãn nguồn, câu trích nguyên văn `Quote`, tiêu chí chấp nhận quan sát được, `Priority: must \| should` | design (ánh xạ), plan (task phủ), implement (`covers:`), review (Lens 1) |
 | `## Out of scope` | những gì **không** làm | chặn phase sau làm quá tay |
 | `## Constraints & dependencies` | điều kiện ngoài phải chịu | `Risk`, D-xx |
 | `## Source conflicts` | nguồn mâu thuẫn và chỗ đã chốt | — |
@@ -426,6 +426,22 @@ Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — ch�
 Nhãn nguồn của YC: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định **kỹ
 thuật** hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói, đang dùng giả định tạm). Phép thử: BA/PO có
 thể nói "không, ý tôi khác" không? Có → phải là `[OPEN-QUESTION]`, không được `[INFERRED]`.
+
+YC có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` phải có **câu trích nguyên văn** ngay dưới `Source:` —
+"nguồn nói gì" (`Quote`) tách khỏi "agent hiểu thế nào" (`Description`), bạn so hai thứ ngay trong spec:
+
+```markdown
+- Source: `[FILE]` [docs/brd.md](docs/brd.md) § Hoàn tiền
+- Quote:
+  > Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán.
+- Description: …
+```
+
+Với `[FILE]` (kể cả lời bạn ghi trong `intake.md` hay câu trả lời trong `open-questions.md`) máy kiểm
+từng câu trích **có thật trong file** — khoảng trắng, xuống dòng không tính, còn lại phải đúng từng
+chữ. Confluence/Jira máy không đọc được: câu trích chỉ giúp bạn đọc. File nguồn đổi sau khi viết spec
+thì `/aw-design` (không có design: `/aw-plan`) chỉ **cảnh báo** — xem lại YC, sửa qua `/aw-clarify`
+nếu cần.
 
 **`open-questions.md` quyết định *agent đang đoán gì* và đoán sai thì tốn bao nhiêu.** Mỗi điểm mù:
 nguồn nói gì, câu hỏi, hỏi ai, giả định tạm, *If wrong, redo*, và **mức chặn**:
@@ -440,13 +456,14 @@ File này **luôn tồn tại**; không có điểm mù thì ghi "No open questi
 
 **Việc của bạn:**
 
-1. Đọc danh sách YC và `Out of scope` — đây là chỗ rẻ nhất để bắt hiểu sai.
+1. Đọc danh sách YC (so `Description` với `Quote`) và `Out of scope` — đây là chỗ rẻ nhất để bắt hiểu sai.
 2. Duyệt mức `Blocking` của từng điểm mù (agent chỉ được đề xuất; chỉ bạn hạ mức).
 3. Duyệt `Risk`. Cho qua `normal` sai thì mất lớp chống neo của Mode 2.
 4. Trả lời điểm mù (`/aw-clarify`) — ít nhất các mục `blocking` trước khi design.
 5. Tick **Approved by human**.
 
-**Máy chặn khi:** YC không có nguồn, thiếu tiêu chí chấp nhận/`Priority`; mục bắt buộc để rỗng;
+**Máy chặn khi:** YC không có nguồn, thiếu tiêu chí chấp nhận/`Priority`; YC có nguồn mà thiếu
+`Quote`, hay câu trích `[FILE]` không có trong file nguồn; mục bắt buộc để rỗng;
 mâu thuẫn tự phân xử; `open-questions.md` lệch với spec (mục mồ côi, trạng thái lệch); bugfix thiếu
 `Reproduction`; refactor có YC hành vi mới, hoặc YC preserve không có test bảo vệ **có sẵn trên base**.
 

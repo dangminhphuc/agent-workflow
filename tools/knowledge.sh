@@ -25,6 +25,7 @@ kq_khai knowledge.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
 . "$HERE/lib/env.sh"
 mt_dat

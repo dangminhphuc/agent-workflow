@@ -20,6 +20,7 @@ Use these exact terms when talking to the human — never a Vietnamese translati
 | `artifact` | File written into the job dir (`spec.md`, `tdd.md`…) |
 | `input` | The sources spec reads: `## Input` of `intake.md` |
 | `source label` | `[CONFLUENCE]`, `[JIRA]`, `[FILE]`, `[INFERRED]`, `[OPEN-QUESTION]`, `[HUMAN]` |
+| `Quote` | Source sentences copied verbatim under a YC's `Source:`, one `> …` line each |
 | `open question` | Something the source does not say; agent assumes, human answers: `open-questions.md` |
 | `Blocking` | Level of an open question: `blocking`, `review-blocking`, `non-blocking` |
 | `Risk` | `high \| normal` in `spec.md`; `high` → design Mode 2 |

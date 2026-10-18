@@ -5,19 +5,7 @@
 
 ## Còn lại
 
-### 1. Lưu câu trích nguyên văn cho mỗi YC — cần chốt định dạng trước
-
-Phase 01 bảo agent trích nguyên văn nguồn, nhưng mẫu `spec.md` không có chỗ ghi câu trích nên bước
-này không để lại dấu vết. Đề xuất thêm `- Quote: > "…"` dưới mỗi YC.
-
-- Người duyệt so YC với câu gốc ngay trong spec.
-- Nguồn `[FILE]` (kể cả lời người `[HUMAN]` nằm trong `intake.md`): máy kiểm được câu trích có thật
-  trong file nguồn bằng `grep -F` → thu hẹp điểm yếu 3 trong `docs/kien-truc.md`. Confluence/Jira:
-  chỉ giúp người đọc.
-- Cần quyết: bắt buộc hay tuỳ chọn; một hay nhiều câu trích; chuẩn hoá khoảng trắng/xuống dòng khi
-  so khớp thế nào.
-
-### 2. Gợi ý nhãn `Risk` bằng từ khoá
+### 1. Gợi ý nhãn `Risk` bằng từ khoá
 
 Khoá mới `high_risk_keywords` trong `conventions.md`; spec ghi `Risk: normal` mà chứa từ khoá thì
 **cảnh báo** (không chặn — từ khoá hay báo nhầm).
