@@ -8,7 +8,7 @@ Viết cho người review CHƯA đọc ticket và CHƯA mở diff. Mỗi mục 
 hỏi họ sẽ hỏi; mục nào không áp dụng thì ghi "None" — đừng xoá, vì mục bị xoá
 trông giống mục bị quên.
 
-Nguồn khi chạy theo quy trình (thư mục .agent-workflow/<branch>/):
+Nguồn khi chạy theo quy trình (thư mục docs/sdlc/<branch>/):
   Problem          ← intake.md (mục tiêu, input), spec.md (Context)
   Changes          ← tdd.md (DEC-xxx đã duyệt), diff
   External Impact  ← review.md Lens 2

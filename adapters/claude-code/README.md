@@ -55,7 +55,7 @@ không sinh nhánh nào theo loại.
 | Hộp xác nhận cổng duyệt | `AskUserQuestion` + `preview` (file/dòng phải tick) | In ba lựa chọn đánh số |
 | Skill của team (`uses_<phase>`) | Skill tool: tham số, dòng chèn lệnh shell, `allowed-tools`, `hooks` có hiệu lực; cần quyền `Skill(<tên>)` | Đọc `SKILL.md` như tài liệu — frontmatter không có hiệu lực |
 
-Luôn portable: artifact trong `.agent-workflow/<tên-branch>/`, `conventions.md`, mẫu (chép vào
+Luôn portable: artifact trong `docs/sdlc/<tên-branch>/`, `conventions.md`, mẫu (chép vào
 `.agent-workflow/.engine/`), lệnh `aw check`.
 
 ## Dọn file cũ khi sinh lại
@@ -115,7 +115,7 @@ mặc định cổng chặn đặt ở cuối phase):
 
 ```json
 { "hooks": { "PostToolUse": [ { "matcher": "Write|Edit", "hooks": [ { "type": "command",
-  "command": "sh -c 'for f in $CLAUDE_FILE_PATHS; do case \"$f\" in *.agent-workflow/*/spec.md) aw check spec \"$(dirname \"$f\")\" >&2 ;; esac; done' || true" } ] } ] } }
+  "command": "sh -c 'for f in $CLAUDE_FILE_PATHS; do case \"$f\" in */docs/sdlc/*/spec.md|*.agent-workflow/*/spec.md) aw check spec \"$(dirname \"$f\")\" >&2 ;; esac; done' || true" } ] } ] } }
 ```
 
 ## Kết quả

@@ -8,7 +8,7 @@
 #   $AW_CONFIG/conventions.md   bản clone: repo chưa commit quy ước thì là toàn bộ quy
 #                               ước (như trước); đã commit thì chỉ ghi đè khoá máy
 #   $AW_CONFIG/config.sh        lệnh kiểm thử, adapter… — NGƯỜI sửa, không ghi đè
-#   .git/info/exclude           /.agent-workflow/ + đường dẫn adapter sinh ra
+#   .git/info/exclude           /.agent-workflow/, /docs/sdlc/ + đường dẫn adapter sinh ra
 #   <AW_REPO>/.claude/…         adapter sinh lệnh cho agent (bị exclude) — một bộ
 #                               cho mỗi adapter khai trong ADAPTER (vd .claude/ + .cursor/)
 #

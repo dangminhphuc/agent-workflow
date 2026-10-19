@@ -345,10 +345,11 @@ ghi_bang_chung_task() {
   for _t in TSK-001 TSK-002; do sh "$T/task.sh" done "$F" "$_t" >/dev/null 2>&1; done
 }
 
-# tao_fixture [loai] [branch]
+# tao_fixture [loai] [branch] — thư mục việc ở $FX_TM (mặc định .agent-workflow: việc kiểu cũ,
+# chỉ ở máy; docs/sdlc: kiểu mới, commit vào branch — nhóm "artifact trong git")
 tao_fixture() {
   LOAI="${1:-feature}"; _br="${2:-feat_x}"
-  R="$TMP/repo-$LOAI"; F="$R/.agent-workflow/$_br"
+  R="${FX_R:-$TMP/repo-$LOAI}"; F="$R/${FX_TM:-.agent-workflow}/$_br"
   rm -rf "$R"
   mkdir -p "$F" "$R/src" "$R/test" "$R/docs"
   g init -q

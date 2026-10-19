@@ -27,16 +27,21 @@ dung "…và in danh sách việc cần làm: mở worktree / chạy /aw-intake"
 W4="$TMP/repo9.wt/khong-khop"
 g9 worktree add -q -b khong-khop "$W4" main
 ky_vong 3 "trong worktree, branch không khớp, không tham số → CẦN HỎI NGƯỜI" awd "$W4" feature
-dung "branch không khớp → lấy tham số" test "$(awd "$W4" feature feat_abc 2>/dev/null)" = ".agent-workflow/feat_abc"
+dung "branch không khớp → lấy tham số" test "$(awd "$W4" feature feat_abc 2>/dev/null)" = "docs/sdlc/feat_abc"
 ky_vong 2 "từ chối tên feature có ../" awd "$W4" feature "../x"
 ky_vong 2 "chữ giữ chỗ <tham-số> của lệnh Cursor chưa thay → TÊN KHÔNG HỢP LỆ" awd "$W4" feature "<tham-số>"
 ky_vong 2 "chữ giữ chỗ \$ARGUMENTS chưa thay → TÊN KHÔNG HỢP LỆ" awd "$W4" feature '$ARGUMENTS'
 dung "…không tạo thư mục việc nào" test ! -e "$W4/.agent-workflow/<tham-số>"
 dung "…stderr bảo agent chép nguyên văn phần người gõ" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature '<tham-số>' 2>&1 | grep -q 'chữ giữ chỗ'"
 git -C "$W4" checkout -q -b feat_them-todo
-dung "branch khớp quy ước → tên branch đầy đủ" test "$(awd "$W4" feature 2>/dev/null)" = ".agent-workflow/feat_them-todo"
-dung "branch khớp thì thắng tham số" test "$(awd "$W4" feature khac 2>/dev/null)" = ".agent-workflow/feat_them-todo"
-dung "in 'Đang làm với:'" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 >/dev/null | grep -q 'Đang làm với: .agent-workflow/feat_them-todo'"
+dung "branch khớp quy ước → tên branch đầy đủ" test "$(awd "$W4" feature 2>/dev/null)" = "docs/sdlc/feat_them-todo"
+dung "branch khớp thì thắng tham số" test "$(awd "$W4" feature khac 2>/dev/null)" = "docs/sdlc/feat_them-todo"
+dung "in 'Đang làm với:'" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 >/dev/null | grep -q 'Đang làm với: docs/sdlc/feat_them-todo'"
+mkdir -p "$W4/.agent-workflow/feat_them-todo"
+dung "việc tạo bằng engine cũ (chỉ có .agent-workflow/<tên>/) → in đường dẫn cũ" test "$(awd "$W4" feature 2>/dev/null)" = ".agent-workflow/feat_them-todo"
+dung "…và nói artifact chỉ ở máy" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 >/dev/null | grep -q 'engine cũ — artifact chỉ ở máy'"
+mkdir -p "$W4/docs/sdlc/feat_them-todo"
+dung "…có cả hai thì dùng chỗ mới" test "$(awd "$W4" feature 2>/dev/null)" = "docs/sdlc/feat_them-todo"
 g9 worktree remove --force "$W4"
 
 # ---------------------------------------------------------------- tao worktree (/aw-intake)
@@ -65,6 +70,7 @@ W0="$TMP/repo9.wt/chore_khong-bo-cai"
 dung "…worktree mới có adapter sinh sẵn" test -f "$W0/.claude/commands/aw-spec.md"
 dung "…file adapter bị exclude: worktree sạch" sh -c "[ -z \"\$(git -C '$W0' status --porcelain)\" ]"
 dung "…artifact viết vào cũng bị exclude" sh -c "mkdir -p '$W0/.agent-workflow/chore_khong-bo-cai' && printf x > '$W0/.agent-workflow/chore_khong-bo-cai/intake.md' && [ -z \"\$(git -C '$W0' status --porcelain)\" ]"
+dung "…docs/sdlc/ (artifact kiểu mới) cũng bị exclude: chỉ vào git khi aw check commit" sh -c "mkdir -p '$W0/docs/sdlc/chore_khong-bo-cai' && printf x > '$W0/docs/sdlc/chore_khong-bo-cai/intake.md' && [ -z \"\$(git -C '$W0' status --porcelain)\" ] && grep -qx '/docs/sdlc/' '$R9/.git/info/exclude'"
 dung "…không có commit nào vào base; checkout chính chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R9' rev-parse main)\" = '$GOC9' ] && [ \"\$(git -C '$R9' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 ky_vong 0 "--create --base <ref người chọn> thì tạo worktree" awd "$R9" worktree new bugfix phi-hoan-tien --create --base main
 W5="$TMP/repo9.wt/fix_phi-hoan-tien"
@@ -74,7 +80,7 @@ dung "…checkout chính vẫn đứng ở main" test "$(git -C "$R9" rev-parse 
 dung "…in dòng Base và Engine để chép vào intake.md" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore in-base --create --base main 2>&1 >/dev/null | grep -q '\*\*Base:\*\* \`main\` @ \`' && git -C '$R9' worktree list | grep -q chore_in-base"
 dung "…dòng Engine đúng version engine" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore in-engine --create --base main 2>&1 >/dev/null | grep -qx '  - \*\*Engine:\*\* $VDEV'"
 dung "…stdout chỉ là đường dẫn worktree" bang "$(awd "$R9" worktree new chore in-stdout --create --base main 2>/dev/null)" "$TMP/repo9.wt/chore_in-stdout"
-dung "…và aw feature trong worktree suy được feature" test "$(awd "$W5" feature 2>/dev/null)" = ".agent-workflow/fix_phi-hoan-tien"
+dung "…và aw feature trong worktree suy được feature" test "$(awd "$W5" feature 2>/dev/null)" = "docs/sdlc/fix_phi-hoan-tien"
 ky_vong 5 "chạy lại cho việc đã có worktree → ĐÃ CÓ WORKTREE, không tạo gì" awd "$R9" worktree new bugfix phi-hoan-tien
 dung "…stdout là đường dẫn worktree đã có" test "$(awd "$R9" worktree new bugfix phi-hoan-tien 2>/dev/null)" = "$W5"
 
@@ -123,7 +129,7 @@ dung "worktree mới có cả .claude/ và .cursor/" sh -c "[ -n '$W10' ] && [ -
 dung "…giống hệt build riêng" sh -c "diff -r '$W10/.claude' '$TMP/doi-chieu-that/claude-code/.claude' && diff -r '$W10/.cursor' '$TMP/doi-chieu-that/cursor/.cursor'"
 dung "…worktree sạch (mọi file sinh ra bị exclude)" sh -c "[ -z \"\$(git -C '$W10' status --porcelain --untracked-files=all)\" ]"
 dung "…dấu build của worktree có cả hai" sh -c "grep -q '^claude-code ' '$W10/.agent-workflow/.adapters' && grep -q '^cursor ' '$W10/.agent-workflow/.adapters'"
-dung "…aw feature trong worktree suy được feature (cả hai agent dùng chung)" test "$(awd "$W10" feature 2>/dev/null)" = ".agent-workflow/feat_hai-agent"
+dung "…aw feature trong worktree suy được feature (cả hai agent dùng chung)" test "$(awd "$W10" feature 2>/dev/null)" = "docs/sdlc/feat_hai-agent"
 
 # doctor thấy worktree thiếu bộ lệnh của một agent
 awk '$1 != "cursor"' "$W10/.agent-workflow/.adapters" > "$TMP/dau.tmp" && mv "$TMP/dau.tmp" "$W10/.agent-workflow/.adapters"
@@ -175,11 +181,13 @@ ky_vong 7 "đứng trong chính worktree cần dọn → chặn" awd "$W5" workt
 ky_vong 2 "--delete-branch với status → sai tham số" awd "$R9" worktree status fix_phi-hoan-tien --delete-branch
 ky_vong 2 "branch không có worktree → sai tham số" awd "$R9" worktree status release/1.2
 mkdir -p "$W5/.agent-workflow/fix_phi-hoan-tien"; printf 'artifact\n' > "$W5/.agent-workflow/fix_phi-hoan-tien/spec.md"
+mkdir -p "$W5/docs/sdlc/fix_phi-hoan-tien"; printf 'da ship\n' > "$W5/docs/sdlc/fix_phi-hoan-tien/ship.md"
 dung "status báo sẽ chép artifact vào archive" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree status fix_phi-hoan-tien 2>/dev/null | grep -q 'archive/fix_phi-hoan-tien'"
 git -C "$W5" -c user.name=t -c user.email=t@t commit -q --allow-empty -m "sua phi"
 ky_vong 7 "chưa merge: gỡ worktree nhưng git từ chối xoá branch" awd "$R9" worktree remove fix_phi-hoan-tien --delete-branch
 dung "…worktree đã gỡ, branch còn nguyên (không mất commit)" sh -c "[ ! -e '$W5' ] && git -C '$R9' rev-parse --verify --quiet refs/heads/fix_phi-hoan-tien"
 dung "…artifact (bị exclude) được chép vào .git/agent-workflow/archive/ trước khi gỡ" grep -qx artifact "$R9/.git/agent-workflow/archive/fix_phi-hoan-tien/fix_phi-hoan-tien/spec.md"
+dung "…cả artifact kiểu mới (docs/sdlc/, đã gỡ khỏi branch) cùng chỗ" grep -qx 'da ship' "$R9/.git/agent-workflow/archive/fix_phi-hoan-tien/fix_phi-hoan-tien/ship.md"
 W6="$TMP/repo9.wt/chore_in-base"
 ky_vong 0 "đã merge: remove --delete-branch gỡ worktree và xoá branch" awd "$R9" worktree remove chore_in-base --delete-branch
 dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] && ! git -C '$R9' rev-parse --verify --quiet refs/heads/chore_in-base"

@@ -139,7 +139,7 @@ Engine không cài vào target repo. Bốn phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.29/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.30/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -165,7 +165,7 @@ archive/         ← artifact của worktree đã gỡ
 journal/         ← harness journal (aw journal)
 ```
 
-rồi thêm `/.agent-workflow/` và thư mục của adapter vào `.git/info/exclude`, sinh adapter ở
+rồi thêm `/.agent-workflow/`, `/docs/sdlc/` và thư mục của adapter vào `.git/info/exclude`, sinh adapter ở
 main checkout. Repo chưa có quy ước thì `aw init` tạo `docs/agent-workflow/conventions.md` từ mẫu
 (không bao giờ ghi đè). Sửa file đó (kiểm bằng `aw conventions check`; giải thích từng khoá:
 [`conventions-reference.md`](workflow/templates/conventions-reference.md)), **commit qua PR**, rồi
@@ -342,10 +342,14 @@ aw init --adapter claude-code,cursor     # hoặc ADAPTER="claude-code cursor" t
 - Repo còn `.agent-workflow/.quy-trinh/` của bộ cài cũ: `aw init --from-legacy` — chép cấu hình
   sang `.git/agent-workflow/`, chỉ in lệnh `git rm` để bạn dọn bằng một PR.
 
-### Artifact chỉ ở máy
+### Artifact trong branch của việc, không vào nhánh đích
 
-`.agent-workflow/<tên-branch>/` bị exclude: PR chỉ có code. `aw worktree remove` (và `aw ship
-sweep --apply`) chép artifact vào `.git/agent-workflow/archive/<tên>/` trước khi gỡ worktree.
+`docs/sdlc/<tên-branch>/` được commit vào branch của việc mỗi khi `aw check` ĐẠT.
+`aw ship create` gỡ nó khỏi branch trước khi tạo MR, nên PR chỉ có code. Nếu MR vẫn còn mang file
+trong `docs/sdlc/` (ví dụ thư mục của việc khác khi branch xếp chồng), lệnh chặn. `aw worktree
+remove` (và `aw ship sweep --apply`) chép artifact vào `.git/agent-workflow/archive/<tên>/` trước
+khi gỡ worktree. Việc bắt đầu bằng engine cũ (`.agent-workflow/<tên-branch>/`) vẫn chỉ ở máy.
+Chi tiết: `docs/huong-dan.md` § 1.2.
 
 ## Chạy test và phát hành
 

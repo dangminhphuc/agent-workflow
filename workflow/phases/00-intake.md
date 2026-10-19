@@ -68,7 +68,7 @@ The main checkout stays on `base_branch` and only runs `/aw-intake`. The agent *
 3. `aw worktree new <type> <description>` — **only prints a proposal**: name (branch = worktree dir = artifact dir), path, candidate **bases** with facts. ★ is the machine's suggestion, not yours.
 4. Show the proposal **verbatim**, then ask the **confirmation turn** below. Changed type or name → rerun step 3 with it, ask again.
 5. `aw worktree new <type> <description> --create --base <ref>` with **exactly the human's ref**. Copy the printed `Base:` and `Engine:` lines into `intake.md`.
-6. Write `<worktree>/.agent-workflow/<name>/intake.md`, run `aw check intake` on that dir, then **stop**: the human runs the printed prepare command (`WORKTREE_SETUP_CMD`) and opens a **new** session in the worktree for `/aw-spec`.
+6. Write `<worktree>/docs/sdlc/<name>/intake.md`, run `aw check intake` on that dir, then **stop**: the human runs the printed prepare command (`WORKTREE_SETUP_CMD`) and opens a **new** session in the worktree for `/aw-spec`.
 
 `ĐÃ CÓ WORKTREE`: create nothing — tell the human to open a session at the printed path and rerun `/aw-intake` there to add input.
 

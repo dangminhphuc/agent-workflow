@@ -5,7 +5,8 @@
 #   aw worktree remove <tên-branch>                   # gỡ worktree, giữ branch
 #   aw worktree remove <tên-branch> --delete-branch   # + xoá branch LOCAL
 #
-# Artifact của việc (.agent-workflow/) bị exclude, không nằm trong commit nào —
+# Artifact của việc (docs/sdlc/, việc cũ .agent-workflow/) bị exclude — chưa ship thì có
+# trong commit của branch, đã ship (aw ship create gỡ khỏi branch) thì không —
 # git worktree remove sẽ xoá luôn mà không hỏi. Vì vậy trước khi gỡ, script
 # CHÉP nó vào $AW_CONFIG/archive/<tên>/ (đã có thì thêm hậu tố thời gian).
 #
@@ -63,10 +64,10 @@ echo "Branch    $TEN — $tt_push"
 echo "Merge     $tt_merge"
 echo "Sạch      $([ "$bn" = 0 ] && echo có || echo KHÔNG)"
 LUU=""
-if [ -n "${AW_CONFIG:-}" ] && [ -d "$WT/$MT_ART_DIR" ] && [ -n "$(ls -A "$WT/$MT_ART_DIR" 2>/dev/null | grep -vx '.engine')" ]; then
+if [ -n "${AW_CONFIG:-}" ] && { [ -n "$(ls -A "$WT/$TM_VIEC" 2>/dev/null)" ] || [ -n "$(ls -A "$WT/$TM_CU" 2>/dev/null | grep -vx '.engine')" ]; }; then
   LUU="$AW_CONFIG/archive/$(printf '%s' "$TEN" | tr '/' '_')"
   [ -e "$LUU" ] && LUU="$LUU-$(date +%Y%m%d-%H%M%S)"
-  echo "Artifact  $MT_ART_DIR/ → chép vào $LUU trước khi gỡ (không nằm trong commit nào)"
+  echo "Artifact  $TM_VIEC/, $TM_CU/ → chép vào $LUU trước khi gỡ"
 fi
 
 chan=0
@@ -82,7 +83,7 @@ echo ""
 
 if [ -z "$XOA" ]; then
   echo "Sẽ làm khi chạy: aw worktree remove $TEN"
-  [ -n "$LUU" ] && echo "  chép $MT_ART_DIR/ vào $LUU"
+  [ -n "$LUU" ] && echo "  chép $TM_VIEC/, $TM_CU/ vào $LUU"
   echo "  git worktree remove $WT   (branch giữ nguyên, không mất commit)"
   echo "  + --delete-branch: git branch -d $TEN   (git tự từ chối nếu chưa merge)"
   [ "$chan" = 0 ] || { echo ""; echo "Hiện đang BỊ CHẶN — xử lý các mục ✗ trước."; }
@@ -91,9 +92,11 @@ fi
 
 [ "$chan" = 0 ] || { echo "BỊ CHẶN — không gỡ gì."; exit 7; }
 if [ -n "$LUU" ]; then
-  mkdir -p "$(dirname "$LUU")" && cp -R "$WT/$MT_ART_DIR" "$LUU" || { echo "BỊ CHẶN — không chép được artifact vào $LUU, không gỡ gì."; exit 7; }
+  { mkdir -p "$LUU" &&
+    { [ ! -d "$WT/$TM_CU" ] || cp -R "$WT/$TM_CU/." "$LUU/"; } &&
+    { [ ! -d "$WT/$TM_VIEC" ] || cp -R "$WT/$TM_VIEC/." "$LUU/"; }; } || { echo "BỊ CHẶN — không chép được artifact vào $LUU, không gỡ gì."; exit 7; }
   rm -rf "$LUU/.engine"   # bản chép của engine, không phải artifact
-  echo "  copy    $MT_ART_DIR/ → $LUU"
+  echo "  copy    $TM_VIEC/, $TM_CU/ → $LUU"
 fi
 git -C "$CHINH" worktree remove "$WT" || { echo "BỊ CHẶN — git từ chối gỡ worktree."; exit 7; }
 git -C "$CHINH" worktree prune

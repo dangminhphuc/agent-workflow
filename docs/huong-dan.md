@@ -66,9 +66,25 @@ Mỗi phase là một hộp **file vào → file ra**. Phase sau không dựa v�
   không ghi đè.
 - **Mang tài liệu làm bằng tool khác vào giữa quy trình** qua `/aw-import`.
 
-Artifact nằm ở `.agent-workflow/<tên-branch>/` trong worktree của việc. Thư mục này bị
-`.git/info/exclude`: **không vào commit, không đi theo PR** — PR chỉ có code (và ADR/luật nghiệp vụ
-nếu bạn chọn nâng, xem §7).
+Artifact nằm ở `docs/sdlc/<tên-branch>/` trong worktree của việc, và **được commit vào branch
+của việc** trong lúc làm: mỗi lần `aw check <phase>` ĐẠT (và mỗi lần `/aw-approvals` tick), máy
+commit riêng thư mục đó (`chore(sdlc): <tên-branch> <phase>`). Bạn có lịch sử từng phase, máy khác
+hay phiên mới checkout branch là có đủ artifact.
+
+Artifact **không bao giờ vào nhánh đích** (develop/uat/main…): `aw ship create` gỡ thư mục việc
+khỏi branch bằng một commit trước khi push, nên PR chỉ có code (và ADR/luật nghiệp vụ nếu bạn chọn
+nâng, xem §7). File vẫn ở máy; từ đó máy không commit lại. Lịch sử artifact còn trong các commit của
+branch. Nếu team squash-merge hoặc xoá branch sau khi merge thì lịch sử đó mất, nhưng
+`aw worktree remove` vẫn chép artifact vào `archive/`.
+
+- `docs/sdlc/` bị `.git/info/exclude`: `git add -A` không kéo artifact mới vào commit code. Đừng
+  `git add` artifact bằng tay, để `aw check` làm.
+- Commit artifact không làm đổi `Tree` của kết quả máy ghi, nên không làm mất approval hay làm
+  `test-results.md` thành `stale`.
+- Commit chạy với `--no-verify`, vì hook của repo (lint-staged, commit-msg) viết cho code và có
+  thể định dạng lại artifact, làm mất approval hash.
+- Việc bắt đầu bằng engine cũ (thư mục `.agent-workflow/<tên-branch>/`) chạy tiếp như cũ: artifact
+  chỉ ở máy, không commit.
 
 ### 1.3. Luồng phase
 
@@ -189,7 +205,7 @@ Spec và mỗi DEC-xxx có **đúng một** ô. Bạn duyệt bằng cách đổ
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.29/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.30/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 aw doctor          # kiểm sh, git, tar, gzip, curl/wget, sha256sum/shasum
@@ -208,7 +224,7 @@ aw init --test-cmd "make test"     # thêm --adapter claude-code,cursor nếu te
 
 1. tải engine, kiểm và **ghim** sha256;
 2. tạo `.git/agent-workflow/` (`version`, `checksums`, `config.sh`, `archive/`, `journal/`);
-3. thêm `/.agent-workflow/` và thư mục adapter (`/.claude/`, `/.cursor/`) vào `.git/info/exclude`;
+3. thêm `/.agent-workflow/`, `/docs/sdlc/` và thư mục adapter (`/.claude/`, `/.cursor/`) vào `.git/info/exclude`;
 4. sinh lệnh `/aw-*` cho agent ở main checkout;
 5. repo chưa có quy ước → tạo `docs/agent-workflow/conventions.md` từ mẫu (**không bao giờ ghi
    đè** file đã có).
@@ -675,7 +691,7 @@ Việc không đi qua `/aw-ship`: dọn bằng `aw worktree remove`.
 
 ## 4. Bản đồ artifact
 
-Tất cả nằm ở `<worktree>/.agent-workflow/<tên-branch>/`.
+Tất cả nằm ở `<worktree>/docs/sdlc/<tên-branch>/` (việc tạo bằng engine cũ: `.agent-workflow/<tên-branch>/`).
 
 | Artifact | Phase sinh | Ai viết | Quyết định gì | Ai đọc sau | Người làm gì với nó |
 |---|---|---|---|---|---|
@@ -776,7 +792,7 @@ Nói xong, agent hỏi đưa chúng đi đâu và **chỉ in lệnh cho bạn ch
   chạy `/aw-intake` với khối `Request` agent in sẵn → việc `refactor` mới. Base: base của việc này
   sau khi nó merge; yêu cầu đụng code việc này mới thêm mà không chờ được thì xếp chồng lên branch này
   (review cảnh báo). Trong worktree mới, chép `refactor-requests.md` sang thư mục artifact của việc
-  mới (agent in sẵn lệnh `cp`) rồi `/aw-intake .agent-workflow/<branch-mới>/refactor-requests.md` —
+  mới (agent in sẵn lệnh `cp`) rồi `/aw-intake docs/sdlc/<branch-mới>/refactor-requests.md` —
   spec trích được `§ RFR-NNN` và cả phần `Review`.
 - **Để đó, quyết sau**: các RFR giữ `open`. Chạy lại `/aw-refactor` không kèm yêu cầu thì agent hỏi
   thêm yêu cầu hay chọn đường cho các RFR đang chờ. Ghi thêm thì nối vào file, không ghi đè.
@@ -966,7 +982,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw adapter build [a,b] [--force]` | sinh lại lệnh cho agent |
 | `aw journal` · `aw journal add <lớp> "…"` | harness journal |
 
-`<dir>` là thư mục artifact của việc: `.agent-workflow/<tên-branch>`.
+`<dir>` là thư mục artifact của việc: `docs/sdlc/<tên-branch>`.
 
 ---
 

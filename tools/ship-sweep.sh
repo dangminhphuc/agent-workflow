@@ -56,7 +56,7 @@ chan=0; n_xet=0; n_don=0
 TAB=$(printf '\t')
 while IFS="$TAB" read -r wt b; do
   [ -z "$CHI" ] || [ "$b" = "$CHI" ] || continue
-  sf="$wt/$MT_ART_DIR/$(printf '%s' "$b" | tr '/' '_')/ship.md"
+  sf="$wt/$(tm_viec "$wt" "$(printf '%s' "$b" | tr '/' '_')")/ship.md"
   [ -f "$sf" ] || continue
   n_xet=$((n_xet + 1))
   sm_cap_nhat "$wt" "$sf"

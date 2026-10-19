@@ -22,10 +22,11 @@ kq_khai rename-feature.sh \
   "0=ĐÃ ĐỔI TÊN" \
   "2=KHÔNG ĐỔI ĐƯỢC — tham số hoặc trạng thái không cho phép"
 . "$HERE/lib/worktree.sh"
+. "$HERE/lib/md.sh"
 . "$HERE/lib/env.sh"
+. "$HERE/lib/adapter.sh"
+. "$HERE/lib/artifact.sh"
 mt_dat "$HERE"
-ART=$MT_ART_DIR
-ART_ABS=$MT_ART
 
 MOI="${1:-}"
 [ -n "$MOI" ] || { echo "Dùng: aw rename <tên-branch-mới>" >&2; exit 2; }
@@ -41,8 +42,10 @@ if git -C "$MT_REPO" rev-parse --verify --quiet "refs/heads/$MOI" >/dev/null; th
 fi
 
 TM_MOI=$(printf '%s' "$MOI" | tr '/' '_')
-D_CU="$ART_ABS/$(printf '%s' "$CU" | tr '/' '_')"
-D_MOI="$ART_ABS/$TM_MOI"
+TEN_CU=$(printf '%s' "$CU" | tr '/' '_')
+ART=$(dirname "$(tm_viec "$MT_REPO" "$TEN_CU")")   # việc cũ ở TM_CU thì dời trong TM_CU
+D_CU="$MT_REPO/$ART/$TEN_CU"
+D_MOI="$MT_REPO/$ART/$TM_MOI"
 [ ! -e "$D_MOI" ] || { echo "LỖI: $D_MOI đã tồn tại — không ghi đè." >&2; exit 2; }
 
 WT=$(git -C "$MT_REPO" rev-parse --show-toplevel)
@@ -61,6 +64,12 @@ if ! git -C "$WT" worktree move "$WT" "$WT_MOI"; then
   git -C "$MT_REPO" branch -m "$MOI" "$CU"
   echo "LỖI: git không dời được worktree — đã hoàn tác branch và thư mục artifact." >&2
   exit 2
+fi
+# Thư mục việc đang trong git: commit việc dời (cả xoá chỗ cũ) — lỗi chỉ báo.
+if [ -d "$WT_MOI/$ART/$TM_MOI" ]; then
+  set --; [ -z "$(git -C "$WT_MOI" ls-files -- "$ART/$TEN_CU")" ] || set -- "$ART/$TEN_CU"
+  ar_commit "$WT_MOI/$ART/$TM_MOI" "chore(sdlc): rename $TEN_CU -> $TM_MOI" "$@" ||
+    echo "CẢNH BÁO: không commit được việc dời artifact — xem thông báo của git phía trên." >&2
 fi
 echo "Đổi  branch $CU → $MOI"
 echo "Dời  worktree $WT → $WT_MOI"

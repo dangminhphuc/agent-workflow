@@ -41,7 +41,7 @@ luat_dich() {
 luat_tep() {
   _ltd=$(luat_thu_muc "$2"); _lkf=$(conv_get "$2" knowledge_files); _lkf=${_lkf:-*/ARCHITECTURE.md}
   git -C "$1" ls-files --cached --others --exclude-standard 2>/dev/null | while IFS= read -r _lf; do
-    case "$_lf" in .agent-workflow/*) continue ;; esac
+    tm_bo "$_lf" && continue
     _lok=""
     case "$_lf" in "$_ltd"/*.md) _lok=1 ;; esac
     if [ -z "$_lok" ]; then
@@ -253,6 +253,7 @@ luat_duoc_phu() {
   _ltf=$(conv_get "$2" test_files); _ltag=$(conv_get "$2" covers_tag); _ltag=${_ltag:-covers:}
   [ -n "$_ltf" ] || return 0
   git -C "$1" ls-files --cached --others --exclude-standard 2>/dev/null | while IFS= read -r _lf; do
+    tm_bo "$_lf" && continue
     set -f
     # shellcheck disable=SC2086
     khop_glob "$_lf" $_ltf && [ -f "$1/$_lf" ] && grep -F "$_ltag" "$1/$_lf" 2>/dev/null

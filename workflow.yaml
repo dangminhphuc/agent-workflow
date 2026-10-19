@@ -16,9 +16,14 @@ language: vi
 # Đây là cơ chế duy nhất làm nên tính không-phụ-thuộc-agent: phase N đọc file
 # do phase N-1 ghi ra, và agent nào cũng đọc/ghi được file.
 # Artifact của từng feature nằm ở <artifact_dir>/<tên-branch>/ (xem
-# conventions.md của target repo). Cả thư mục bị .git/info/exclude (aw init):
-# artifact chỉ ở máy, không vào commit.
-artifact_dir: .agent-workflow
+# conventions.md của target repo): aw check ĐẠT thì commit vào branch của việc,
+# aw ship create gỡ khỏi branch trước khi tạo MR — không vào nhánh đích.
+# Phải khớp TM_VIEC (tools/lib/md.sh).
+artifact_dir: docs/sdlc
+
+# Thư mục cục bộ của engine trong repo đích (bị .git/info/exclude): .engine/
+# (rules, templates, checkers chép từ engine), dấu build adapter. Khớp TM_CU.
+local_dir: .agent-workflow
 
 # Utility command — không phải phase, không có điều kiện ra riêng. Adapter sinh
 # mỗi mục thành một lệnh (Claude Code: /<id>).

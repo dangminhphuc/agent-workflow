@@ -41,6 +41,7 @@ qu_loi "worktree_dir trong repo" 'worktree_dir: ../{repo}.wt/{ten}' 'worktree_di
 qu_loi "worktree_dir thiếu {ten}" 'worktree_dir: ../{repo}.wt/{ten}' 'worktree_dir: ../{repo}.wt' 'thiếu {ten}'
 qu_loi "knowledge_adr_dir ngoài repo" 'knowledge_adr_dir: docs/adr' 'knowledge_adr_dir: ../adr' 'phải là đường dẫn tương đối'
 qu_loi "knowledge_adr_dir trong .agent-workflow" 'knowledge_adr_dir: docs/adr' 'knowledge_adr_dir: .agent-workflow/adr' 'bị exclude'
+qu_loi "knowledge_adr_dir trong docs/sdlc" 'knowledge_adr_dir: docs/adr' 'knowledge_adr_dir: docs/sdlc/adr' 'gỡ khỏi branch trước MR'
 qu_loi "knowledge_rules_dir ngoài repo" 'knowledge_rules_dir: docs/product/rules' 'knowledge_rules_dir: /tmp/rules' 'phải là đường dẫn tương đối'
 qu_loi "base_branch không có" 'base_branch: main' 'base_branch: khong-co' 'không có trong repo'
 qu_loi "khối chưa đóng" 'uses_review:

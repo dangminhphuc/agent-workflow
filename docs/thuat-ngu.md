@@ -97,7 +97,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `main checkout` *(trước: checkout chính)* | Bản clone gốc, luôn đứng ở `base_branch`. Chỉ chạy `/aw-intake`, `/aw-bootstrap`, và dọn ở `/aw-ship` |
 | `worktree` | Thư mục `git worktree` riêng của một `job`, nằm **ngoài** repo (`../<repo>.wt/<tên>`). Mọi phase khác chạy ở đây |
 | `base` | Nhánh/commit `job` rẽ ra, **người chọn**, ghi trong `intake.md`. Mọi checker so diff với điểm rẽ khỏi base |
-| `job dir` *(trước: thư mục việc, <dir>)* | `.agent-workflow/<tên-branch>/` trong `worktree` — chứa artifact của `job`. Bị exclude: không vào commit |
+| `job dir` *(trước: thư mục việc, <dir>)* | `docs/sdlc/<tên-branch>/` trong `worktree` — chứa artifact của `job`. `aw check` ĐẠT thì commit vào branch của việc; `aw ship create` gỡ khỏi branch trước MR, không vào nhánh đích. Việc tạo bằng engine cũ: `.agent-workflow/<tên-branch>/`, chỉ ở máy |
 | `artifact` | File agent/máy viết ra trong `job dir` (`intake.md`, `spec.md`, `tdd.md`…). Danh sách: [`huong-dan.md` §4](huong-dan.md#4-bản-đồ-artifact) |
 | `conventions.md` | Quy ước của `target repo` (`docs/agent-workflow/conventions.md`), trong git, sửa qua PR. Mỗi `job` đọc bản **tại điểm rẽ khỏi base** |
 | `config.sh` | Cấu hình của từng bản clone (`.git/agent-workflow/config.sh`), không commit: `TEST_CMD`, `SECURITY_CMDS`, `ADAPTER`… |

@@ -28,7 +28,7 @@ Step 0 says **ĐANG Ở CHECKOUT CHÍNH** → only this section; write nothing i
 
 ## In the worktree
 
-Report file: `<dir>/bootstrap.md` (outside git). One commit per step below, on this branch; before each commit run that step's checks — red → do not commit.
+Report file: `<dir>/bootstrap.md` (job dir: never in the MR). One commit per step below, on this branch; before each commit run that step's checks — red → do not commit.
 
 ### 1. Survey (write nothing in the repo)
 
@@ -46,7 +46,7 @@ Check: `make setup`, `make test`, `make lint` on this worktree; record the real 
 
 ### 4. `AGENTS.md` (+ `CLAUDE.md`)
 
-None → copy `templates/target-repo/AGENTS.md`, fill every `<…>`, delete the leading comment block; a section that does not apply says `None`. **50–100 lines; points to, never copies rules.** `## Map`: one line per top-level directory. `## Commands`: only `make …`. `## Rules`: hard repo-wide constraints, one checkable line each, each with evidence. `## Decisions`: ADR directory index and module `ARCHITECTURE.md` files. `## Status`: where real progress lives (issue tracker, milestones, plans directory) — agent-workflow job state is outside git, never copied here. Repo uses Claude Code and has no `CLAUDE.md` → one line `@AGENTS.md`.
+None → copy `templates/target-repo/AGENTS.md`, fill every `<…>`, delete the leading comment block; a section that does not apply says `None`. **50–100 lines; points to, never copies rules.** `## Map`: one line per top-level directory. `## Commands`: only `make …`. `## Rules`: hard repo-wide constraints, one checkable line each, each with evidence. `## Decisions`: ADR directory index and module `ARCHITECTURE.md` files. `## Status`: where real progress lives (issue tracker, milestones, plans directory) — agent-workflow job state never reaches the base branch, never copied here. Repo uses Claude Code and has no `CLAUDE.md` → one line `@AGENTS.md`.
 
 ### 5. Module `ARCHITECTURE.md`
 
