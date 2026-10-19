@@ -10,7 +10,7 @@ trace_rule: true
 
 # Settle what waits on the human (clarify)
 
-**Not a phase** — runs any time after `/aw-spec`. Collects everything the human must decide into one queue and walks them through it item by item. The agent **guides** (analyses, asks, records); the **human decides**. Talk to the human in Vietnamese.
+**Not a phase** — runs any time after `/aw-spec`. Collects everything the human must decide into one queue and walks them through it item by item, then writes every decision **in one go** (one preview, one confirmation — section 3). The agent **guides** (analyses, asks, records); the **human decides**. Talk to the human in Vietnamese.
 
 ## Two sources
 
@@ -111,32 +111,48 @@ Order (max 4): `(Đề xuất) <fix>` (what, which section) → 0–1 genuinely 
 
 ### Always
 
-- After asking, **stop and wait**. Never ask the next item before this one is done.
-- **"Chat about this":** answer, explain consequences, quote more source — **write no files**. Once clear, ask the same question again as choices (options updated by the discussion). A decision stated in chat → confirm it via choices before writing.
+- After asking, **stop and wait**. Never ask the next item before this one is decided.
+- Decided → **write nothing yet**: keep the decision (verbatim words, who, date, the changes it implies) and go to the next item. Close it in one line (`PH-38: sửa theo phương án A — ghi cùng đợt.`), no preview.
+- A later item touching what an earlier decision changes → build on the pending version, not on the file.
+- **"Chat about this":** answer, explain consequences, quote more source — **write no files**. Once clear, ask the same question again as choices (options updated by the discussion). A decision stated in chat → confirm it via choices before recording.
 
-## 3. Record
+## 3. Record — one preview, one write
 
-### 3a. Open question
+Write when the queue is done, or earlier when the human says so: stops (`dừng`, `để sau phần còn lại`) → write what is decided, the rest stays `open`; `ghi luôn` → write what is decided, then continue the queue. Nothing decided → write nothing.
+
+### 3.1 Preview, confirm once
+
+Build every change from all decided items (3a, 3b, section 5), then show **one** preview, grouped by file (`open-questions.md`, `spec.md`, `tdd.md`, findings file), each change tagged with its item id:
+- edited text in `spec.md` / `tdd.md` → before → after (`-` / `+` lines), only the lines that change;
+- new blocks (a D-xx) → `+` lines;
+- bookkeeping (`Answer`, `Status`, `Resolution`, `Blocking`, source label, removed `Assumption`, untick) → one line per item, no diff;
+- same section changed by several items → one combined before → after naming all of them; new D-xx numbered consecutively across the batch.
+
+Then ask once: "ghi như vậy được không?" (agreement in chat is enough). Human corrects some lines → fix only those, show only the corrected parts, ask again. Human withdraws a decision → drop its changes; the item stays `open` for the next run.
+
+### 3.2 Write
+
+Write everything, then: `aw task reopen <dir> YC-NNN` once per YC whose description/criteria changed (no `plan.md` → nothing to do); `aw check spec <dir>` if `spec.md` / `open-questions.md` changed; `aw check design <dir>` if `tdd.md` / findings changed. Paste the real results. Not `[x] ĐẠT` → make the files agree; a fix that changes lines the human confirmed → show that part and ask again.
+
+### 3a. Open question — what to write
 
 **Human answered:**
 1. `open-questions.md`: `Answer:` = the human's **verbatim** words + who + date (e.g. `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status: answered`. Human **picked** an option → verbatim = its label (without `(Đề xuất)`) plus `(chọn từ phương án agent đề xuất)`. Several questions → record each answer.
 2. `spec.md`: change the YC's source label to `[FILE]` [open-questions.md § YC-NNN](open-questions.md#yc-nnn) (or the source the human named), and its `Quote:` to the `Answer:` words (or that source's sentence), verbatim. Remove that YC's `Assumption` line.
-3. **Answer differs from the assumption:** edit the description / criteria of **that YC only**. First show the lines that will change (before → after) and ask "ghi như vậy được không?" (agreement in chat is enough). Append `(đã xác nhận sửa YC-NNN)` to `Answer:`. Then `aw task reopen <dir> YC-NNN` (tasks covering it go back to `[ ]`; no `plan.md` → nothing to do). Same as the assumption → only change the label.
-4. Spec was ticked and steps 2–3 changed it → **untick** (you may untick, never tick). Remind the human to re-tick in the summary.
-5. `aw check spec <dir>`, paste the real result. Not `[x] ĐẠT` → make the files agree before the next item.
+3. **Answer differs from the assumption:** edit the description / criteria of **that YC only** (before → after in the preview). Append `(đã xác nhận sửa YC-NNN)` to `Answer:`; reopen its tasks (3.2). Same as the assumption → only change the label.
+4. Spec was ticked and steps 2–3 change it → **untick** (you may untick, never tick). Remind the human to re-tick in the summary.
 
-**Cannot answer yet:** draft a message to `Ask`, self-contained (readable without the repo): the question, what the documents say, the assumption in use, impact if wrong, which phase is waiting. Keep `open`, next item.
+**Cannot answer yet:** draft a message to `Ask`, self-contained (readable without the repo): the question, what the documents say, the assumption in use, impact if wrong, which phase is waiting. Show it right away (the human sends it); keep `open`, next item.
 
 **Human changes the level:** write exactly the level they said into `Blocking:`. You may only **propose raising** it, never lower it.
 
-### 3b. LLM checker finding
+### 3b. LLM checker finding — what to write
 
 **Agree:**
-1. Show the lines that will change in `tdd.md` (before → after), ask "ghi như vậy được không?". Edit only where the finding points.
+1. `tdd.md`: edit only where the finding points (before → after in the preview).
 2. Needs a decision (`hidden-decision`, or `deviates-from-decision` where the human wants to change the D) → add/edit a D-xx with an **unticked** box (editing an approved D: follow "Reopening a D-xx" in `/aw-design`).
 3. `new-requirement` → **remove that behaviour from `tdd.md`**. Human wants to keep it → it is a new requirement: back to `/aw-spec`, never add a YC yourself.
 4. Findings file: `Resolution: fixed`.
-5. `aw check design <dir>`, paste the real result.
 
 **Reject:** `Resolution: rejected: <verbatim reason> — <who>, <date>`. Do not edit `tdd.md`.
 
@@ -144,7 +160,7 @@ Order (max 4): `(Đề xuất) <fix>` (what, which section) → 0–1 genuinely 
 
 ## 4. Summary
 
-Rerun `aw pending` (read, do not paste), then say briefly:
+After the write (3.2), rerun `aw pending` (read, do not paste), then say briefly:
 - what still blocks which phase; which questions wait on whom (drafted messages);
 - findings closed but not arbitrated by the human this round (group `[ĐÃ XỬ LÝ]`, usually self-fixed in `/aw-design`): id + one line;
 - new/edited D-xx awaiting approval; spec just unticked → human re-ticks;
@@ -160,16 +176,16 @@ The human disagrees with how the spec reads a source — description, criteria o
 | Change an existing YC | This section |
 | Add a YC, drop one, move something in/out of `## Out of scope` | Scope change: the human adds it to `intake.md` as `[HUMAN]` input, then `/aw-spec`. Never add/delete a YC here |
 | `Blocking` | 3a "Human changes the level" |
-| `Risk`, `Design`, `## Constraints & dependencies` | Show before → after, write exactly what the human said, untick the spec, `aw check spec`. `tdd.md` exists → rerun `/aw-design` (`Risk` now `high` → Mode 2). `Design` now `required` with no `tdd.md` → `/aw-design`, then `/aw-plan` |
+| `Risk`, `Design`, `## Constraints & dependencies` | Before → after in the batch preview (section 3), write exactly what the human said, untick the spec. `tdd.md` exists → rerun `/aw-design` (`Risk` now `high` → Mode 2). `Design` now `required` with no `tdd.md` → `/aw-design`, then `/aw-plan` |
 
 1. **Read** the YC, its `Source:` passage, what depends on it: `tdd.md` (`YC mapping`, `Based on: D-xx` of those sections), `plan.md` (`Covers: YC-NNN`).
 2. **Ask** as in 2a. Context: what the source says, what the YC says now, what must be redone (step 1). Options: the human's change as they stated it, keep the current reading, at most one other reading the source supports.
-3. **Record in `open-questions.md`** — the YC's entry; create `## YC-NNN — <same title as spec>` if missing (replacing a "No open questions." line):
+3. **`open-questions.md`** (written in 3.2, like everything else) — the YC's entry; create `## YC-NNN — <same title as spec>` if missing (replacing a "No open questions." line):
    - `Source says` verbatim; `Question`: the reading in dispute; `Ask`: the human; `Assumption`: the previous reading; `If wrong, redo`: what step 1 found;
    - `Status: answered`; `Answer:` verbatim + who + date + `(đã xác nhận sửa YC-NNN)`.
    - Entry already answered → move the old answer to `- **Superseded answer:** …`, then write the new `Answer:`.
-4. **Edit `spec.md`**: show before → after of that YC's lines, ask "ghi như vậy được không?". Then edit **that YC only**; source label → `[FILE]` [open-questions.md § YC-NNN](open-questions.md#yc-nnn), `Quote:` → the new `Answer:` words verbatim. **Untick** the spec.
-5. `aw task reopen <dir> YC-NNN`, then `aw check spec <dir>` — paste both real results.
+4. **`spec.md`**: before → after of that YC's lines in the batch preview; edit **that YC only**; source label → `[FILE]` [open-questions.md § YC-NNN](open-questions.md#yc-nnn), `Quote:` → the new `Answer:` words verbatim. **Untick** the spec.
+5. After the write: `aw task reopen <dir> YC-NNN` and `aw check spec <dir>` (3.2) — paste both real results.
 6. Summary (section 4): spec unticked → the human re-ticks. `tdd.md` exists → `/aw-design` updates the sections mapped to YC-NNN (a D-xx no longer fits → "Reopening a D-xx"), then `/aw-plan`.
 
 ## Forbidden
@@ -179,5 +195,6 @@ The human disagrees with how the spec reads a source — description, criteria o
 - Treating your recommendation as the decision before the human chose.
 - Lowering/changing `Blocking` without the human; changing a finding's `Severity`.
 - Ticking approval boxes, editing/deleting `<!-- approval-hash: … -->` (you may only **untick** the spec: 3a step 4, section 5).
-- Editing a YC / `tdd.md` before the human confirmed the changed lines, or outside the current item.
+- Writing any file before the human confirmed the batch preview, or changing lines that were not in it.
+- Writing per item (preview → confirm → write, then the next item) instead of one batch — unless the human asked `ghi luôn`.
 - Editing `plan.md` (only `aw task reopen` resets tasks) or code, or rerunning the LLM checker to "clean" findings — just say which phase to rerun.

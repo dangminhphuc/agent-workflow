@@ -13,6 +13,25 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+### Thay đổi
+- **Agent dùng thuật ngữ tiếng Anh gốc, không tự dịch — trong chat và trong artifact.** Trước đây
+  agent, tài liệu và output `aw` dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo".
+  Những từ này không có trong tên field, file hay output, nên người phải tự dịch ngược. Giờ:
+  - Danh sách chuẩn ở `workflow/rules/terms.md` (`open question`, `human gate`, `stale`,
+    `cross-check`, `job`, `target repo`…). `general.md` §5 bắt agent dùng đúng các từ đó; câu quanh
+    vẫn là tiếng Việt.
+  - `docs/thuat-ngu.md` viết lại theo thuật ngữ gốc, tên cũ ghi trong ngoặc để tra.
+  - Output `aw`, README, `docs/huong-dan.md`, `docs/kien-truc.md`, template và mô tả lệnh `/aw-*`
+    dùng thuật ngữ mới. Nhãn `Kết quả` (`ĐẠT`, `DỪNG`, `KẸT`…) và `ĐANG Ở CHECKOUT CHÍNH` giữ nguyên.
+  - Neo link đổi theo heading mới, vd `huong-dan.md#2-cài-đặt-và-cấu-hình-target-repo`,
+    `adapters/*/README.md#approval-guard`. Ai lưu link cũ thì cập nhật.
+- **Artifact còn từ dịch cũ: `aw check implement` cảnh báo, `aw check review` chặn.** Danh sách từ
+  là cột `Not` của `terms.md`. Không kiểm `intake.md`, `refactor-requests.md`, `*-results.md` và
+  dòng trích `>`, vì đó là nguyên văn lời người hoặc do máy ghi. Job đã ghim engine cũ không bị ảnh
+  hưởng. Job mới gặp chặn thì sửa chữ theo gợi ý trong dòng báo.
+
+## [2026.10.28]
+
 ### Thêm
 - **Bugfix/refactor nhỏ bỏ được phase design — `Design: skip` trong `spec.md`.** Trước đây chỉ chore
   bỏ design; bugfix sửa một dòng vẫn phải viết `tdd.md` đủ 8 mục (gần như toàn "Not applicable"), mở
@@ -41,21 +60,24 @@ ngầm giữa các bản.
   thời. Mẫu artifact có sẵn mục `## Contents`.
 
 ### Thay đổi
-- **Agent dùng thuật ngữ tiếng Anh gốc, không tự dịch — trong chat và trong artifact.** Trước đây
-  agent, tài liệu và output `aw` dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo".
-  Những từ này không có trong tên field, file hay output, nên người phải tự dịch ngược. Giờ:
-  - Danh sách chuẩn ở `workflow/rules/terms.md` (`open question`, `human gate`, `stale`,
-    `cross-check`, `job`, `target repo`…). `general.md` §5 bắt agent dùng đúng các từ đó; câu quanh
-    vẫn là tiếng Việt.
-  - `docs/thuat-ngu.md` viết lại theo thuật ngữ gốc, tên cũ ghi trong ngoặc để tra.
-  - Output `aw`, README, `docs/huong-dan.md`, `docs/kien-truc.md`, template và mô tả lệnh `/aw-*`
-    dùng thuật ngữ mới. Nhãn `Kết quả` (`ĐẠT`, `DỪNG`, `KẸT`…) và `ĐANG Ở CHECKOUT CHÍNH` giữ nguyên.
-  - Neo link đổi theo heading mới, vd `huong-dan.md#2-cài-đặt-và-cấu-hình-target-repo`,
-    `adapters/*/README.md#approval-guard`. Ai lưu link cũ thì cập nhật.
-- **Artifact còn từ dịch cũ: `aw check implement` cảnh báo, `aw check review` chặn.** Danh sách từ
-  là cột `Not` của `terms.md`. Không kiểm `intake.md`, `refactor-requests.md`, `*-results.md` và
-  dòng trích `>`, vì đó là nguyên văn lời người hoặc do máy ghi. Job đã ghim engine cũ không bị ảnh
-  hưởng. Job mới gặp chặn thì sửa chữ theo gợi ý trong dòng báo.
+- **`/aw-clarify` chốt hết rồi mới ghi, một lần.** Trước đây mỗi mục chốt xong là agent hiện dòng
+  trước → sau, hỏi "ghi như vậy được không?", ghi file, chạy checker, rồi mới sang mục sau — mỗi mục
+  tốn hai lượt. Giờ agent hỏi lần lượt hết hàng đợi, chưa ghi gì; xong (hoặc khi bạn nói `dừng`)
+  thì hiện **một** bản xem trước gom theo file, mỗi thay đổi gắn id mục (`PH-38`, `YC-115`…), hỏi
+  một lần, ghi tất cả, chạy `aw task reopen` / `aw check spec` / `aw check design` một lần. Muốn ghi
+  giữa chừng: nói `ghi luôn`. Nhiều mục cùng sửa một đoạn → một before → after chung; D-xx mới
+  đánh số liền nhau trong đợt.
+- **`/aw-design` Mode 2 cũng gom: phác hết D-xx rồi mới xác nhận, một lần.** Agent hỏi lần lượt từng
+  điểm cần quyết, chưa ghi gì; xong hết thì hiện mọi D-xx sắp ghi trong một bản xem trước, hỏi một
+  lần, ghi tất cả vào `tdd.md`. Nói `dừng` giữa chừng → ghi các D đã chốt rồi dừng, chạy lại
+  `/aw-design` để làm tiếp. Việc tick ô duyệt D-xx không đổi (bạn tự tick trong file).
+- **Agent nói với bạn bằng thuật ngữ tiếng Anh gốc, không tự dịch.** Trước đây agent (và
+  `docs/thuat-ngu.md`) dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo" — khó đối chiếu
+  với tên field, file và output `aw`. Giờ có danh sách chuẩn `workflow/rules/terms.md` (`open question`,
+  `human gate`, `stale`, `cross-check`, `job`, `target repo`…); `general.md` §5 bắt agent dùng đúng các
+  từ đó, câu quanh vẫn tiếng Việt. `docs/thuat-ngu.md` viết lại theo thuật ngữ gốc, ghi tên cũ trong
+  ngoặc để tra. Luật này không có checker (lời nói không kiểm được). Có hiệu lực với job mới hoặc khi
+  nâng engine; không cần làm gì.
 - **YC có nguồn phải có câu trích nguyên văn — `- Quote:` + các dòng `> …` ngay dưới `Source:`.** Trước
   đây phase spec bảo agent trích câu nguồn nhưng mẫu không có chỗ ghi, nên người duyệt phải tự mở
   nguồn để so YC với câu gốc. Giờ `aw check spec` chặn YC `[CONFLUENCE]` `[JIRA]` `[FILE]` thiếu
