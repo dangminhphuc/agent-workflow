@@ -643,7 +643,7 @@ Không phase nào khác phải sửa — không phase nào biết về phase sau
 
 **Test chia phần chạy song song.** Bộ test hồi quy gọi checker thật hàng nghìn lần nên tốn CPU; chạy
 tuần tự một file thì ~8,5 phút trên 4 lõi chỉ dùng một. Ca kiểm chia thành các phần trong `tools/tests/`,
-mỗi phần tự dựng fixture và thư mục tạm, nên `tools/run-tests.sh` chạy song song (~2,5–3 phút).
+mỗi phần tự dựng fixture và thư mục tạm, nên `tools/run-tests.sh` chạy song song (nhanh ~3 lần trên 4 lõi).
 Ranh giới phần đặt ở chỗ trạng thái fixture trùng với fixture dựng mới (hoặc trạng thái như sau nhóm
 check-security: `fixture_sau_bao_mat`), để không ca nào đổi điều kiện đầu vào. Phần dừng giữa
 chừng (không in `Tổng:`) tính là hỏng — không ca nào bị bỏ qua câm. Không bớt ca để nhanh hơn:

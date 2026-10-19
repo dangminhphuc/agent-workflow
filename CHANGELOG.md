@@ -37,7 +37,7 @@ ngầm giữa các bản.
   đối chiếu); tag `covers: BR-…` giữ nguyên.
 
 ### Nội bộ
-- **Test hồi quy chạy song song: ~8,5 phút → ~2,5–3 phút (4 CPU), đủ 1398 ca như cũ.** `tools/run-tests.sh`
+- **Test hồi quy chạy song song: nhanh khoảng 3 lần trên máy 4 CPU (8,5 → 2,8 phút; máy chậm 13 → 4,5 phút), đủ 1398 ca như cũ.** `tools/run-tests.sh`
   giờ chia việc cho các phần trong `tools/tests/NN-<tên>.sh` (helper + fixture ở `tools/tests/lib.sh`), chạy
   cùng lúc theo số CPU (`AW_TEST_JOBS` để đổi), rồi cộng tổng. Danh sách ca và kết quả trùng khớp bản cũ;
   phần dừng giữa chừng tính là hỏng. Chạy một phần: `sh tools/run-tests.sh review` hoặc
