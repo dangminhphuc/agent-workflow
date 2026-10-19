@@ -160,6 +160,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     if (sect == "Decisions" && $0 ~ /^###[ \t]+DEC-[0-9]+/) {
       match($0, /DEC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
       if (cur in co_d) loi("Mã quyết định " cur " bị trùng")
+      if (cur !~ /^DEC-[0-9][0-9][0-9]$/) loi("Mã " cur " sai dạng trong tdd.md: phải đúng 3 chữ số (DEC-001)")
       co_d[cur] = 1; ds_d[++n_d] = cur
       co_nd[sect] = 1
       next
@@ -187,7 +188,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
 
   # ---- File 3: design-findings.md (có thể là /dev/null) ----
   idx==3 {
-    if ($0 ~ /^###[ \t]+FND-[0-9]+/) { match($0, /FND-[0-9]+/); ph = substr($0, RSTART, RLENGTH); ds_ph[++n_ph] = ph; ph_muc[ph] = ""; ph_xl[ph] = "" }
+    if ($0 ~ /^###[ \t]+FND-[0-9]+/) { match($0, /FND-[0-9]+/); ph = substr($0, RSTART, RLENGTH); ds_ph[++n_ph] = ph; ph_muc[ph] = ""; ph_xl[ph] = ""
+      if (ph !~ /^FND-[0-9][0-9][0-9]$/) loi("Mã " ph " sai dạng trong design-findings.md: phải đúng 3 chữ số (FND-001)") }
     if (ph != "" && ph_truong($0) == "muc") ph_muc[ph] = ph_chuan_muc(gia_tri($0))
     if (ph != "" && ph_truong($0) == "xl") ph_xl[ph] = ph_chuan_xl(gia_tri($0))
     next

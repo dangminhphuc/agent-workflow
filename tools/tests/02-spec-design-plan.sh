@@ -54,6 +54,13 @@ ky_vong 1 "chặn Mức rủi ro còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '### REQ-002' '### REQ-001'
 ky_vong 1 "chặn mã REQ trùng nhau" sh "$CHK" "$F"
 
+viet_spec; thay "$F/spec.md" "### REQ-002" "### REQ-2"
+ky_vong 1 "chặn mã REQ sai dạng (không đủ 3 chữ số)" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-2 sai dạng'"
+viet_spec; thay "$F/open-questions.md" "## REQ-002" "## REQ-0002"
+ky_vong 1 "chặn mã REQ sai dạng trong open-questions.md" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-0002 sai dạng'"
+
 viet_spec; rm -f "$F/open-questions.md"
 ky_vong 2 "chặn khi thiếu hẳn open-questions.md" sh "$CHK" "$F"
 
@@ -290,6 +297,12 @@ ky_vong 0 "trường cũ: bác bỏ có lý do + cảnh báo thì cho qua" sh "$
 printf '### FND-001 — x\n- Severity: `block`\n- Resolution: fixed\n- Problem: Location và Resolution: chưa rõ\n' > "$F/design-findings.md"
 toc_f design-findings.md
 ky_vong 0 "tên trường chỉ khớp ở đầu dòng, không khớp trong nội dung" sh "$CHK" "$F"
+printf '### FND-01 — x\n- Severity: `warn`\n- Resolution: open\n' > "$F/design-findings.md"
+ky_vong 1 "chặn mã FND sai dạng" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'FND-01 sai dạng'"
+viet_tdd; thay "$F/tdd.md" "### DEC-001" "### DEC-1"; duyet_lai "$F/tdd.md"
+ky_vong 1 "chặn mã DEC sai dạng" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'DEC-1 sai dạng'"
 
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
 ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
@@ -412,6 +425,10 @@ viet_tdd; ghi_based_on
 rm -f "$F/design-findings.md"
 ky_vong 1 "chặn khi tdd.md không qua checker của design" sh "$CHK" "$F"
 viet_tdd; ghi_based_on
+
+viet_plan; thay "$F/plan.md" '### TSK-001' '### TSK-0001'
+ky_vong 1 "chặn mã TSK sai dạng" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-0001 sai dạng'"
 
 viet_plan; thay "$F/plan.md" '- Covers: `REQ-002`' '- Covers: `REQ-001`'
 ky_vong 1 "chặn YÊU CẦU BỊ BỎ SÓT (chiều ngược)" sh "$CHK" "$F"
