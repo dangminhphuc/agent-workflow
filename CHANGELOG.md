@@ -11,6 +11,15 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Nội bộ
+- `docs/viec-can-lam.md`: thêm bốn việc cần làm từ một lượt đánh giá các phase, mỗi việc ghi vấn đề
+  (kèm file, hàm liên quan), đề xuất cần duyệt, chặn hay cảnh báo, test và tài liệu phải đổi:
+  vòng review → implement chưa có cơ chế thêm task; `Expected files` không chặn được glob rộng và
+  không kiểm theo từng task; checker LLM cho spec; đường tắt cho việc rất nhỏ (cần quyết định).
+  Chưa đổi hành vi của `aw`; người dùng không cần làm gì.
+
 ## [2026.10.30]
 
 ### Thay đổi
