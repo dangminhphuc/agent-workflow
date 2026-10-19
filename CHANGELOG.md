@@ -70,6 +70,16 @@ ngầm giữa các bản.
   phần dừng giữa chừng tính là hỏng. Chạy một phần: `sh tools/run-tests.sh review` hoặc
   `sh tools/tests/05-review-quality.sh`. CI (`kiem-tra`, `release`) không đổi lệnh. Người phát triển engine:
   thêm ca vào phần cùng chủ đề, không thêm vào `tools/run-tests.sh`.
+- **`tools/run-tests.sh` in thời gian từng phần và cảnh báo phần quá chậm**, để bộ test song song không
+  chậm dần khi ca mới dồn vào một phần. Cuối output có dòng `Thời gian từng phần` (chậm nhất trước); phần
+  ≥ 30 giây và gấp hơn 2 lần trung bình các phần còn lại có dòng `CẢNH BÁO … nên tách`. Chỉ cảnh báo,
+  kết quả không đổi. Người phát triển engine: thấy cảnh báo do thay đổi của mình thì tách phần đó trong
+  cùng PR (`AGENTS.md` § Verify). Thêm biến `AW_TEST_SLOW_MIN` (ngưỡng giây) và `AW_TEST_DIR` (thư mục
+  phần, dùng cho test của chính runner); thư mục không có phần nào giờ trả `SAI THAM SỐ`.
+  Cảnh báo bắt ngay hai phần đang lệch trên `main`, nên tách luôn trong thay đổi này:
+  `02-spec-design-plan.sh` → `02-spec.sh` + `02-design-plan.sh`; `07-ship-rules-uses.sh` →
+  `07-ship-rules.sh` + `07-uses-pending-based-on.sh`. Danh sách ca của từng phần cũ trùng khớp từng dòng
+  với hai phần mới ghép lại.
 
 ## [2026.10.29]
 

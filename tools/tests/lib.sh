@@ -449,6 +449,9 @@ EOF
   toc_f merge-request.md
 }
 
+# them_muc_qt <dòng bảng> — thêm mục "## Repo rules" vào review.md (rules_*, uses_*)
+them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; }
+
 # L3_SF — một finding [Should fix] hợp lệ của Lens 3
 L3_SF='### [Should fix] trùng hàm
 - Category: duplicate-code
