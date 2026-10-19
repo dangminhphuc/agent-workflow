@@ -151,7 +151,7 @@ tk_phu() {
   [ -f "$1" ] || return 0
   awk -v ma="$2" '
     function co_ma(s,   m) {
-      while (match(s, /(REQ|D)-[0-9]+/)) { m = substr(s, RSTART, RLENGTH); if (m == ma) return 1; s = substr(s, RSTART + RLENGTH) }
+      while (match(s, /(REQ|DEC)-[0-9]+/)) { m = substr(s, RSTART, RLENGTH); if (m == ma) return 1; s = substr(s, RSTART + RLENGTH) }
       return 0
     }
     function xuat() { if (id != "" && trung) print id "|" st }
