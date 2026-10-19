@@ -54,7 +54,7 @@ Only for a module with **its own constraints backed by evidence**: dependency bo
 
 ### 6. Existing decisions → ADR
 
-New decisions go through D-xx + `- Promote: adr` + `aw adr promote`. Here: only decisions that **already exist**, are still in force, and have evidence. One file per decision, `<knowledge_adr_dir>/NNNN-<name>.md`, numbered after the highest existing:
+New decisions go through DEC-xxx + `- Promote: adr` + `aw adr promote`. Here: only decisions that **already exist**, are still in force, and have evidence. One file per decision, `<knowledge_adr_dir>/NNNN-<name>.md`, numbered after the highest existing:
 
 ```markdown
 # ADR-NNNN: <title>

@@ -10,7 +10,7 @@ argument_hint: [--global]
 
 # Review pending approvals (approvals)
 
-**Not a phase** — runs any time, in a job's worktree or on the main checkout. Collects every "Approved by human" box still waiting (spec, each D-xx) and walks the human through them one by one. The **human decides**; you show, ask, and run the tick command only for what they approved.
+**Not a phase** — runs any time, in a job's worktree or on the main checkout. Collects every "Approved by human" box still waiting (spec, each DEC-xxx) and walks the human through them one by one. The **human decides**; you show, ask, and run the tick command only for what they approved.
 
 ## 1. List
 
@@ -28,12 +28,12 @@ Items under "Approval checkbox sai dạng/chỗ" cannot be approved here: list t
 
 Before asking, show what is being approved — built from files, never your own paraphrase:
 - `spec`: stdout of `aw approval design <dir>` (no design phase — chore or `Design: skip`, no `tdd.md` expected — `aw approval plan <dir>`).
-- `D-NN`: the whole `### D-NN` section of `<dir>/tdd.md`, verbatim.
+- `DEC-NNN`: the whole `### DEC-NNN` section of `<dir>/tdd.md`, verbatim.
 - State "ĐÃ ĐỔI sau khi duyệt": say the human approved an earlier version and must re-read the whole item.
 
 `<dir>` = the path in the item's `duyệt:` line. Always repeat the item's `path:line` link right above the question.
 
-Ask one choice question (header: item key and position, e.g. `D-02 2/4`), options in this order:
+Ask one choice question (header: item key and position, e.g. `DEC-002 2/4`), options in this order:
 1. `Duyệt` — "Tôi đã đọc <file>:<line> và đồng ý"
 2. `Chưa duyệt — cần sửa` — ask what must change
 3. `Bỏ qua` — next item, box stays empty
@@ -54,4 +54,4 @@ Hard limits:
 
 ## 3. Summary
 
-Max 6 lines: approved (keys), not approved with the human's reason and the worktree to open (`<branch>` → run the phase there, e.g. `/aw-spec`, `/aw-design`), skipped, malformed boxes. Then the next command for each job whose gate is now open (`/aw-design` after spec, `/aw-plan` after every D-xx).
+Max 6 lines: approved (keys), not approved with the human's reason and the worktree to open (`<branch>` → run the phase there, e.g. `/aw-spec`, `/aw-design`), skipped, malformed boxes. Then the next command for each job whose gate is now open (`/aw-design` after spec, `/aw-plan` after every DEC-xxx).

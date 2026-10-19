@@ -11,12 +11,12 @@
 #   aw-engine rules <phase>
 #   aw-engine uses <phase>                        skill / subagent của repo mà phase phải gọi
 #   aw-engine knowledge spec|design <feature-dir> kiến thức bền phase phải đọc (luật BR-, ADR, tài liệu module)
-#   aw-engine adr promote <feature-dir> D-NN | adr check   nâng D-xx đã duyệt thành ADR; kiểm thư mục ADR
-#   aw-engine rule promote <feature-dir> YC-NNN | rule check   nâng YC đã duyệt thành luật BR-; kiểm luật
+#   aw-engine adr promote <feature-dir> DEC-NNN | adr check   nâng DEC-xxx đã duyệt thành ADR; kiểm thư mục ADR
+#   aw-engine rule promote <feature-dir> REQ-NNN | rule check   nâng REQ đã duyệt thành luật BR-; kiểm luật
 #   aw-engine conventions check                   kiểm conventions.md sau khi người sửa
 #   aw-engine ready <feature-dir> [--no-test]       worktree sẵn sàng chưa, bước tiếp là gì
-#   aw-engine task start|done|next <feature-dir> [T-NN] [--manual "<bằng chứng>"]
-#   aw-engine task reopen <feature-dir> <YC-NNN|D-NN>
+#   aw-engine task start|done|next <feature-dir> [TSK-NNN] [--manual "<bằng chứng>"]
+#   aw-engine task reopen <feature-dir> <REQ-NNN|DEC-NNN>
 #   aw-engine journal [report] | journal add <layer> <mô tả> [--feature <dir>]
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine toc <feature-dir> [artifact...]      mục lục ## Contents + anchor link của artifact
@@ -24,7 +24,7 @@
 #   aw-engine guard pre|post                      hook gác ô duyệt (Claude Code)
 #   aw-engine approval design|plan <feature-dir>  cổng duyệt khi vào phase: còn gì chờ người duyệt
 #   aw-engine approvals [--global]              mọi ô duyệt chờ người (worktree này / mọi worktree)
-#   aw-engine approvals tick <dir> <spec|D-NN> <hash>   tick sau khi NGƯỜI chọn duyệt (/aw-approvals)
+#   aw-engine approvals tick <dir> <spec|DEC-NNN> <hash>   tick sau khi NGƯỜI chọn duyệt (/aw-approvals)
 #   aw-engine worktree new <type> <desc> [--create --base <ref>]
 #   aw-engine worktree status <branch>
 #   aw-engine worktree remove <branch> [--delete-branch]

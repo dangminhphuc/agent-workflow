@@ -38,15 +38,15 @@ Verify **independently** that the diff does what `spec.md` asks, follows the app
 ## Four lenses — separate, never mixed
 
 ### 1. Spec conformance (`## Lens 1 — Spec conformance`)
-Go through **every** `YC-NNN`: which code satisfies it, verdict `pass` / `fail` / `partial`. Skip none. A YC with `[OPEN-QUESTION]` whose assumption is unconfirmed → `pending`, never `pass`.
+Go through **every** `REQ-NNN`: which code satisfies it, verdict `pass` / `fail` / `partial`. Skip none. A REQ with `[OPEN-QUESTION]` whose assumption is unconfirmed → `pending`, never `pass`.
 
 ### 2. Design and scope (`## Lens 2 — Design and scope`)
-- Does the code follow the approved D-xx, contract and data model of `tdd.md`?
+- Does the code follow the approved DEC-xxx, contract and data model of `tdd.md`?
 - Changes belonging to no task? Tasks `[x]` with no trace in the diff?
 - "Unplanned" items handled silently instead of reported?
 - Manually verified tasks (`task-results.md`): does the evidence really prove the task is done?
 
-**Repo rules** (`aw rules review` — every `rules_*` file plus every `uses_*` skill / subagent file, all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved D-xx that breaks a rule → `not applicable`, name the D.
+**Repo rules** (`aw rules review` — every `rules_*` file plus every `uses_*` skill / subagent file, all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved DEC-xxx that breaks a rule → `not applicable`, name the DEC.
 
 **Durable knowledge**: for each module doc / ADR / rule file whose scope the diff touches (`aw check review` lists them), one row in `## Durable knowledge`: `pass` (read it, still true) / `updated` (changed in this diff) / `not applicable` (+ reason). A doc the change makes wrong and nobody updated → `Should fix` in Lens 3.
 
@@ -62,7 +62,7 @@ Scanners catch known patterns; this lens reads the diff for **intent**: missing 
 | Item | Question |
 |---|---|
 | `Input validation / injection` | Does external input (request, file, message, env) reach SQL/shell/template/query/regex parameterised / escaped / validated? |
-| `Authn / authz` | Do new endpoints/actions check login and permission **as the spec's authorisation YC says**? Ids taken from the request without an ownership check (IDOR)? |
+| `Authn / authz` | Do new endpoints/actions check login and permission **as the spec's authorisation REQ says**? Ids taken from the request without an ownership check (IDOR)? |
 | `Sensitive data / PII in logs` | Personal/financial data or tokens logged, over-returned, written to temp files, sent out? |
 | `Secrets / config` | Hard-coded secrets in code/test/config? Safe defaults (debug off, narrow CORS, TLS)? |
 | `Crypto` | Standard algorithm, key length, randomness? Home-made crypto, non-constant-time token compare? |
@@ -87,15 +87,15 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 |---|---|
 | `bugfix` | Read `repro.md`: the test is red **because of the bug** (not a compile error/missing function). Write `Repro test fails because: <quoted output>` |
 | `refactor`/`perf` | For each file in "Modified existing tests": the diff only changes imports/structure, **no assertion changes** |
-| `perf` | Read `perf.md`, judge the performance YC by the numbers, allowing for noise |
+| `perf` | Read `perf.md`, judge the performance REQ by the numbers, allowing for noise |
 | `chore` | The `patch \| minor` level in "Dependency upgrades" is right (major = separate refactor) |
 
 ## Forbidden
 
-- "Looks fine" reviews — not going through every `YC-NNN` = not run.
+- "Looks fine" reviews — not going through every `REQ-NNN` = not run.
 - **Editing code.** Fixes go back to `04-implement` as new tasks.
 - Raising a style remark to `Blocker`; downgrading an exploitable vulnerability to `Should fix` as "unlikely".
-- `pass` for a YC on an unconfirmed assumption.
+- `pass` for a REQ on an unconfirmed assumption.
 - Filling in `Security reviewer` — not even with the name of the person chatting with you.
 - `not applicable` for the whole Lens 4 table without reading the diff.
 

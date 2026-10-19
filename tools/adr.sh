@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 # ADR của repo đích (tools/lib/adr.sh).
 #
-#   aw adr promote <thư-mục-feature> D-NN   chép D-NN đã duyệt thành ADR trong worktree
+#   aw adr promote <thư-mục-feature> DEC-NNN   chép DEC-NNN đã duyệt thành ADR trong worktree
 #   aw adr check                            kiểm hình thức thư mục ADR (knowledge_adr_dir)
 #
-# promote chỉ chạy khi NGƯỜI đã quyết trong chính D đó — "Promote: adr" nằm dưới dấu
-# duyệt — và D đang ở trạng thái đã duyệt (dấu duyệt khớp). Agent không tự chọn D
+# promote chỉ chạy khi NGƯỜI đã quyết trong chính DEC đó — "Promote: adr" nằm dưới dấu
+# duyệt — và DEC đang ở trạng thái đã duyệt (dấu duyệt khớp). Agent không tự chọn DEC
 # nào được nâng, không truyền "supersedes" bằng tham số: "Supersedes: ADR-NNNN" cũng
-# nằm trong D. Chạy lại an toàn: ADR của cùng việc + D giữ số cũ, viết lại nội dung.
+# nằm trong DEC. Chạy lại an toàn: ADR của cùng việc + DEC giữ số cũ, viết lại nội dung.
 # Không commit gì.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -17,7 +17,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 case "${1:-}" in
   promote) kq_khai adr.sh \
     "0=ĐÃ NÂNG — ADR và chỉ mục đã ghi trong worktree, commit cùng việc" \
-    "1=TỪ CHỐI — D chưa đủ điều kiện, lý do phía trên; không sửa ADR bằng tay" \
+    "1=TỪ CHỐI — DEC chưa đủ điều kiện, lý do phía trên; không sửa ADR bằng tay" \
     "2=SAI THAM SỐ" ;;
   *) kq_khai adr.sh \
     "0=HỢP LỆ" \
@@ -31,7 +31,7 @@ esac
 . "$HERE/lib/env.sh"
 mt_dat
 
-DUNG="Dùng: aw adr promote <thư-mục-feature> D-NN | aw adr check"
+DUNG="Dùng: aw adr promote <thư-mục-feature> DEC-NNN | aw adr check"
 LENH="${1:-}"; [ $# -gt 0 ] && shift
 TM=$(adr_thu_muc "$MT_CONV"); D_ADR="$MT_REPO/$TM"
 
@@ -52,7 +52,7 @@ esac
 
 [ $# -eq 2 ] || { echo "$DUNG" >&2; exit 2; }
 DIR=${1%/}; D=$2
-case "$D" in D-[0-9]*) ;; *) echo "LỖI: \"$D\" không phải mã D-NN." >&2; exit 2 ;; esac
+case "$D" in DEC-[0-9]*) ;; *) echo "LỖI: \"$D\" không phải mã DEC-NNN." >&2; exit 2 ;; esac
 TDD="$DIR/tdd.md"
 for f in "$TDD" "$DIR/plan.md" "$DIR/spec.md"; do
   [ -f "$f" ] || { echo "LỖI: không có $f" >&2; exit 2; }
@@ -63,9 +63,9 @@ n_tc=0
 dy_dong_dau "$TDD" tdd >/dev/null
 tt=$(dy_trang_thai "$TDD" tdd | awk -F'|' -v d="$D" '$1 == "S" && $2 == d { print $3; exit }')
 [ -n "$tt" ] || { echo "LỖI: tdd.md không có $D." >&2; exit 2; }
-[ "$tt" = approved ] || tu_choi "$D chưa được người duyệt ($tt) — chỉ nâng D đã duyệt"
+[ "$tt" = approved ] || tu_choi "$D chưa được người duyệt ($tt) — chỉ nâng DEC đã duyệt"
 [ "$(d_truong "$TDD" "$D" Promote)" = adr ] ||
-  tu_choi "$D không khai \"- Promote: adr\" — người quyết nâng D nào, trong chính D đó (dưới approval checkbox)"
+  tu_choi "$D không khai \"- Promote: adr\" — người quyết nâng DEC nào, trong chính DEC đó (dưới approval checkbox)"
 SC=$(d_truong "$TDD" "$D" Scope)
 case "$SC" in ""|"<"*) tu_choi "$D thiếu \"- Scope: \`<glob>\`\" — phần code ADR ràng buộc" ;; esac
 SS=$(d_truong "$TDD" "$D" Supersedes); SO_CU=""

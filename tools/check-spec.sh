@@ -5,11 +5,11 @@
 #   check-spec.sh <thư-mục-feature> --entry   # phase sau chạy lại spec (entry check)
 #
 # Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
-#            YC "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
-#            Nhãn `[FILE]` [open-questions.md § YC-NNN](open-questions.md#…) mà mục đó không có (hay chưa answered).
+#            REQ "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
+#            Nhãn `[FILE]` [open-questions.md § REQ-NNN](open-questions.md#…) mà mục đó không có (hay chưa answered).
 #            "Design:" khác required | skip; skip ngoài bugfix/refactor hoặc khi Risk khác normal;
 #            chore ghi required.
-#            YC nguồn [CONFLUENCE] [JIRA] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
+#            REQ nguồn [CONFLUENCE] [JIRA] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
 #            [FILE]: câu trích không có trong file nguồn (tools/lib/quote.sh) — với --entry chỉ
 #            cảnh báo: nguồn đổi sau khi viết spec không phải lỗi của phase sau.
 #
@@ -67,7 +67,7 @@ tl=$(toc_loi "$DIR" spec.md open-questions.md)
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $tl
 EOF
-# YC người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/rule.sh.
+# REQ người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/rule.sh.
 lsl=$(luat_loi_spec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $lsl
@@ -85,7 +85,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   function gia_tri(s) {          # phần sau dấu ":" đầu tiên, bỏ * ` và khoảng trắng
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
   }
-  function them_cau(c, s) {      # một câu trích của YC c (dòng "> …"), bỏ chỗ giữ chỗ
+  function them_cau(c, s) {      # một câu trích của REQ c (dòng "> …"), bỏ chỗ giữ chỗ
     gsub(/\t/, " ", s); sub(/[ \t]+$/, "", s)
     if (s == "" || s ~ /^<.*>$/) return
     cau[c, ++so_cau[c]] = s
@@ -98,8 +98,8 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
 
   # ---- File 1: open-questions.md ----
   idx==1 {
-    if ($0 ~ /^##[ \t]+YC-[0-9]+/) {
-      match($0, /YC-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
+    if ($0 ~ /^##[ \t]+REQ-[0-9]+/) {
+      match($0, /REQ-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
       co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
     }
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Assumption\**:/) co_gia_dinh[cur_oq] = 1
@@ -131,16 +131,16 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   $0 ~ /^##[ \t]/ { qua_dau = 1 }
   !qua_dau && !co_tk && $0 ~ /^[ \t]*-[ \t]*\**Design\**:/ { thiet_ke = gia_tri($0); co_tk = 1 }
 
-  $0 ~ /^###[ \t]+YC-[0-9]+/ {
-    match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+  $0 ~ /^###[ \t]+REQ-[0-9]+/ {
+    match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
     if (cur in da_gap) loi("Mã " cur " xuất hiện nhiều lần trong spec.md")
     da_gap[cur] = 1
     thu_tu[++n] = cur
     so_nguon[cur] = 0
     next
   }
-  # Heading "###" khác (vd "### Ghi chú") cũng đóng vùng YC — nếu không, dòng Source
-  # nằm dưới nó bị tính cho YC phía trên. "####" trở xuống vẫn thuộc YC.
+  # Heading "###" khác (vd "### Ghi chú") cũng đóng vùng REQ — nếu không, dòng Source
+  # nằm dưới nó bị tính cho REQ phía trên. "####" trở xuống vẫn thuộc REQ.
   $0 ~ /^###[ \t]/ { cur = ""; next }
   # Heading cấp 2 kết thúc vùng yêu cầu (ví dụ "## Out of scope")
   $0 ~ /^##[ \t]/ {
@@ -170,11 +170,11 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     if (a == "" && b == "" && x == "") next                 # dòng mẫu trống
     n_mt++
     ten = (a == "" ? "dòng " n_mt : "\"" a "\"")
-    if (match(x, /YC-[0-9]+/)) {
+    if (match(x, /REQ-[0-9]+/)) {
       q = substr(x, RSTART, RLENGTH)
       if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"## " q "\"")
     } else if (x !~ /\[(CONFLUENCE|JIRA|FILE)\]/) {
-      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § YC-NNN](open-questions.md#yc-nnn)) hoặc nguồn đã chốt " \
+      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § REQ-NNN](open-questions.md#req-nnn)) hoặc nguồn đã chốt " \
           "([CONFLUENCE] [JIRA] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
     }
     next
@@ -185,7 +185,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   sec == "th" && /^[ \t]*-[ \t]*\**Actual behavior\**:/   { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) th["sai"] = 1 }
   sec == "th" && /^[ \t]*-[ \t]*\**Expected behavior\**:/ { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) th["dung"] = 1 }
 
-  # refactor/perf: loại YC, test bảo vệ, mục tiêu hiệu năng
+  # refactor/perf: loại REQ, test bảo vệ, mục tiêu hiệu năng
   cur != "" && /^[ \t]*-[ \t]*\**Type\**:/ { loai_yc[cur] = gia_tri($0) }
   cur != "" && /^[ \t]*-[ \t]*\**Protected by\**:/ {
     s = $0; sub(/^[^:]*:/, "", s)
@@ -205,7 +205,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     sub(/^[^:]*:[ \t]*/, "", dong)
     nguon[cur] = dong
     # Nhãn trỏ vào câu trả lời trong open-questions.md (/aw-clarify) thì mục đó phải có thật.
-    if (match(dong, /open-questions\.md[^Y]*YC-[0-9]+/)) { p = substr(dong, RSTART, RLENGTH); match(p, /YC-[0-9]+/); tro_oq[cur] = substr(p, RSTART, RLENGTH) }
+    if (match(dong, /open-questions\.md[^Y]*REQ-[0-9]+/)) { p = substr(dong, RSTART, RLENGTH); match(p, /REQ-[0-9]+/); tro_oq[cur] = substr(p, RSTART, RLENGTH) }
     if (match(dong, /\[[^]]+\]/)) {
       nhan[cur] = substr(dong, RSTART + 1, RLENGTH - 2)
     } else {
@@ -232,12 +232,12 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       else if (thiet_ke == "skip" && loai != "chore" && loai != "bugfix" && loai != "refactor")
         loi("\"Design: skip\" chỉ dành cho bugfix/refactor nhỏ — " (loai == "" ? "job type chưa rõ" : loai) " phải qua design")
       else if (thiet_ke == "skip" && loai != "chore" && rui_ro != "normal")
-        loi("\"Design: skip\" cần \"Risk: normal\" — việc rủi ro cao phải qua design (Mode 2: người phác D-xx trước)")
+        loi("\"Design: skip\" cần \"Risk: normal\" — việc rủi ro cao phải qua design (Mode 2: người phác DEC-xxx trước)")
     }
 
-    if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### YC-NNN\")")
+    if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### REQ-NNN\")")
 
-    # Các mục bắt buộc ngoài YC — thiếu mục thì không phân biệt được "không có" với "chưa rà".
+    # Các mục bắt buộc ngoài REQ — thiếu mục thì không phân biệt được "không có" với "chưa rà".
     if (!co_npv)         loi("spec.md thiếu mục \"## Out of scope\"")
     else if (!("npv" in noi_dung))
       loi("\"## Out of scope\" rỗng hoặc còn chỗ giữ chỗ. Không có gì thì ghi \"Không có.\"")
@@ -277,7 +277,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       if (t == "CONFLUENCE" || t == "JIRA" || t == "FILE") {
         if (!(c in so_cau))
           loi(c ": nguồn [" t "] thiếu câu trích — thêm \"- Quote:\" và chép nguyên văn câu nguồn vào các dòng \"> …\" ngay dưới. " \
-              "Người duyệt so YC với câu gốc ngay trong spec.")
+              "Người duyệt so REQ với câu gốc ngay trong spec.")
         else if (t == "FILE") {
           x = nguon[c]; sub(/^`*\[[A-Z-]*\]`*[ \t]*/, "", x)
           for (k = 1; k <= so_cau[c]; k++) print c "\t" x "\t" cau[c, k] > ds_qt
@@ -345,13 +345,13 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       if (loai == "perf") { hl_yc["performance"] = 1; ds = ds " | performance" }
       for (i = 1; i <= n; i++) {
         c = thu_tu[i]; lt = loai_yc[c]
-        if (lt == "")              { loi(c ": " loai " — thiếu \"Type:\" (" ds "). Không được có YC hành vi mới."); continue }
+        if (lt == "")              { loi(c ": " loai " — thiếu \"Type:\" (" ds "). Không được có REQ hành vi mới."); continue }
         if (!(lt in hl_yc))        { loi(c ": \"Type: " lt "\" không hợp lệ cho " loai " (" ds ")"); continue }
-        if (lt == "preserve" && !(c in bv)) loi(c ": YC preserve phải có \"Protected by: `<file test>`\" — test có sẵn trên base của việc")
-        if (lt == "performance" && !(c in co_mt)) loi(c ": YC performance phải có \"Target:\" kèm số liệu")
+        if (lt == "preserve" && !(c in bv)) loi(c ": REQ preserve phải có \"Protected by: `<file test>`\" — test có sẵn trên base của việc")
+        if (lt == "performance" && !(c in co_mt)) loi(c ": REQ performance phải có \"Target:\" kèm số liệu")
         if (lt == "performance") n_hn++
       }
-      if (loai == "perf" && n_hn == 0) loi("perf: cần ít nhất một YC \"Type: performance\"")
+      if (loai == "perf" && n_hn == 0) loi("perf: cần ít nhất một REQ \"Type: performance\"")
     }
 
     print ""
@@ -363,7 +363,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
 ' "$OQ" "$SPEC"
 ma=$?
 
-# Test bảo vệ YC preserve phải CÓ SẴN trên base của việc (điểm rẽ nhánh): test thêm trong chính việc
+# Test bảo vệ REQ preserve phải CÓ SẴN trên base của việc (điểm rẽ nhánh): test thêm trong chính việc
 # refactor không chứng minh được hành vi cũ.
 n_bv=0
 if [ -s "$BV" ]; then
@@ -400,7 +400,7 @@ if [ -s "$QT" ]; then
       continue
     fi
     if [ "$CHE_DO" = entry ]; then
-      echo "  [CẢNH BÁO] $msg. Nguồn đổi sau khi viết spec? Xem lại YC, sửa spec qua /aw-clarify nếu cần"
+      echo "  [CẢNH BÁO] $msg. Nguồn đổi sau khi viết spec? Xem lại REQ, sửa spec qua /aw-clarify nếu cần"
     else
       echo "  [LỖI] $msg"; n_qt=$((n_qt + 1))
     fi

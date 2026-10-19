@@ -3,7 +3,7 @@
 <!-- Ghi bởi /aw-refactor: yêu cầu refactor của NGƯỜI, chỉ ghi nhận, CHƯA làm.
      Request = lời người nguyên văn (nguồn); Summary = agent viết lại, người đã duyệt. -->
 
-## RF-001 — <tiêu đề ngắn>
+## RFR-001 — <tiêu đề ngắn>
 
 - **Summary:** <một–hai câu: đổi gì, ở đâu, hành vi giữ nguyên>
 - **Request:**

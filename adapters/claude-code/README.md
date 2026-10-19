@@ -74,7 +74,7 @@ không tự cho phép được:
 { "permissions": { "ask": ["Bash(aw approvals tick:*)"] } }
 ```
 
-- Hộp hỏi quyền hiện đúng việc, khoá (`spec`, `D-NN`) và hash — đối chiếu với mục bạn vừa chọn.
+- Hộp hỏi quyền hiện đúng việc, khoá (`spec`, `DEC-NNN`) và hash — đối chiếu với mục bạn vừa chọn.
 - Không có tác dụng ở chế độ bỏ qua quyền (`bypassPermissions`): đừng chạy `/aw-approvals` ở chế độ đó.
 - Agent gọi thẳng script của engine (không qua `aw`) thì luật không bắt; hook `aw guard` cũng không
   bắt vì approval hash hợp lệ. Còn lại: `journal/approvals.tsv` ghi mọi lần tick qua lệnh.

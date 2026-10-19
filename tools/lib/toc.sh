@@ -11,7 +11,7 @@
 #
 # Anchor tính như GitHub / VS Code (github-slugger): bỏ thẻ HTML và phần "(url)"
 # của link, chữ thường (ASCII + chữ Việt), bỏ dấu câu (trừ "-" "_"), mỗi dấu cách
-# thành "-", trùng thì thêm "-1", "-2"… Vd "### YC-001 — Đăng nhập" → yc-001--đăng-nhập.
+# thành "-", trùng thì thêm "-1", "-2"… Vd "### REQ-001 — Đăng nhập" → req-001--đăng-nhập.
 # Heading trong khối code, HTML comment, frontmatter không tính.
 #
 # Yêu cầu: không. Không đọc AW_REPO/AW_CONFIG — chỉ làm việc trên thư mục feature.
@@ -127,7 +127,7 @@ toc_loi() {
       }
       FNR == 1 { toc_moi_file() }
       function loi(m) { print ten ": " m }
-      function tim_ma(f, ma,   n, k, a, d) {          # anchor duy nhất bắt đầu bằng mã (vd yc-002)
+      function tim_ma(f, ma,   n, k, a, d) {          # anchor duy nhất bắt đầu bằng mã (vd req-002)
         n = split(ds_slug[f], a, " "); d = ""
         for (k = 1; k <= n; k++) if (a[k] == ma || index(a[k], ma "-") == 1) { if (d != "") return ""; d = a[k] }
         return d
@@ -161,7 +161,7 @@ toc_loi() {
           sub(/^\.\//, "", f)
           if (!(f in la_art)) continue
           if (!(f in co_file)) { loi("link tới " f " nhưng thư mục feature chưa có file này"); continue }
-          if (a == "") { loi("link tới " f " phải trỏ tới mục, dạng " f "#<anchor> (vd [" f " § YC-001](" f "#yc-001) rồi chạy aw toc)"); continue }
+          if (a == "") { loi("link tới " f " phải trỏ tới mục, dạng " f "#<anchor> (vd [" f " § REQ-001](" f "#req-001) rồi chạy aw toc)"); continue }
           if (!((f, a) in co)) loi("link \"" f "#" a "\" không trỏ tới mục nào của " f " — chạy aw toc, hoặc sửa theo heading")
         }
         # Tham chiếu chữ trơn "<artifact>.md § <mục>" (ngoài link)
@@ -207,7 +207,7 @@ toc_loi() {
 }
 
 # toc_ghi <thư-mục-feature> <artifact> -> viết lại mục "## Contents" theo heading và mở
-# rộng anchor rút gọn (spec.md#yc-001 → spec.md#yc-001--đăng-nhập) khi chỉ khớp một mục.
+# rộng anchor rút gọn (spec.md#req-001 → spec.md#req-001--đăng-nhập) khi chỉ khớp một mục.
 # Chỉ ghi khi nội dung đổi; in tên file nếu đã ghi.
 toc_ghi() {
   __tg_d="$1"; __tg_a="$2"; __tg_f="$1/$2"

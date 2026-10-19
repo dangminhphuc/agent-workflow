@@ -17,7 +17,7 @@
 #   4. Điểm mù `review-blocking`      — chặn /aw-review
 #   5. Phát hiện mức `Cảnh báo`     — không chặn
 #   6. Điểm mù `non-blocking`       — không chặn
-# Trong nhóm điểm mù: YC "must" trước "should", rồi nhiều task trong plan.md
+# Trong nhóm điểm mù: REQ "must" trước "should", rồi nhiều task trong plan.md
 # đứng trên giả định tạm hơn thì trước, rồi thứ tự trong file. Trong nhóm phát
 # hiện: thứ tự trong file.
 # Mục đã xong (điểm mù `answered`, phát hiện `fixed` / `rejected: <lý do>`) chỉ
@@ -73,10 +73,10 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : (FILENAME == ARGV[3]) ? 3 : 4; cur = ""; nguon = ten_file(FILENAME) }
 
   # ---- File 1: open-questions.md ----
-  idx==1 && /^##[ \t]+YC-[0-9]+/ {
-    match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+  idx==1 && /^##[ \t]+REQ-[0-9]+/ {
+    match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
     ds[++n] = cur; tt[cur] = "open"; muc[cur] = ""
-    t = $0; sub(/^##[ \t]+YC-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t
+    t = $0; sub(/^##[ \t]+REQ-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t
     next
   }
   idx==1 && /^##?[ \t]/ { cur = ""; next }
@@ -91,24 +91,24 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   }
   idx==1 { next }
 
-  # ---- File 2: spec.md — Priority của YC ----
-  idx==2 && /^###[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
+  # ---- File 2: spec.md — Priority của REQ ----
+  idx==2 && /^###[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
   idx==2 && /^###?[ \t]/ { cur = ""; next }
   idx==2 && cur != "" && /^[ \t]*-[ \t]*\**Priority\**:/ { ut[cur] = gia_tri($0); next }
   idx==2 { next }
 
   # ---- File 3: plan.md — task đứng trên giả định tạm ----
-  idx==3 && /^###[ \t]+T-[0-9]+/ { match($0, /T-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
+  idx==3 && /^###[ \t]+TSK-[0-9]+/ { match($0, /TSK-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
   idx==3 && cur != "" && /^[ \t]*-[ \t]*\**On assumption\**:/ {
-    s = $0; while (match(s, /YC-[0-9]+/)) { q = substr(s, RSTART, RLENGTH); so_task[q]++; task[q] = task[q] " " cur; s = substr(s, RSTART + RLENGTH) }
+    s = $0; while (match(s, /REQ-[0-9]+/)) { q = substr(s, RSTART, RLENGTH); so_task[q]++; task[q] = task[q] " " cur; s = substr(s, RSTART + RLENGTH) }
   }
   idx==3 { next }
 
-  # ---- File 4+: *-findings.md — khoá theo "file:PH-NN" (hai checker có thể trùng số) ----
-  idx==4 && /^###[ \t]+PH-[0-9]+/ {
-    match($0, /PH-[0-9]+/); cur = nguon ":" substr($0, RSTART, RLENGTH)
+  # ---- File 4+: *-findings.md — khoá theo "file:FND-NNN" (hai checker có thể trùng số) ----
+  idx==4 && /^###[ \t]+FND-[0-9]+/ {
+    match($0, /FND-[0-9]+/); cur = nguon ":" substr($0, RSTART, RLENGTH)
     ds_ph[++n_ph] = cur; ph_ma[cur] = substr($0, RSTART, RLENGTH); ph_nguon[cur] = nguon
-    t = $0; sub(/^###[ \t]+PH-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ph_ten[cur] = t
+    t = $0; sub(/^###[ \t]+FND-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ph_ten[cur] = t
     next
   }
   idx==4 && /^##?#?[ \t]/ { cur = ""; next }
@@ -130,7 +130,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
     mo_ta[2] = "finding của LLM checker, NGƯỜI phân xử: đồng ý (sửa → fixed) hoặc bác bỏ (rejected: <lý do>)"
     mo_ta[3] = "open question: flow đi tiếp trên giả định tạm; /aw-review chặn tới khi có câu trả lời"
     mo_ta[4] = "finding của LLM checker, không chặn — vẫn nên phân xử trước khi phase sau dựa vào"
-    mo_ta[5] = "open question: giao được trên giả định tạm; review ghi YC đó \"pending\""
+    mo_ta[5] = "open question: giao được trên giả định tạm; review ghi REQ đó \"pending\""
     # Phase nào chặn "ngay": phase kế tiếp, hoặc mọi phase sau khi đã qua phase bị chặn
     # (checker mỗi phase chạy lại checker phase trước).
     thu["spec"] = 1; thu["design"] = 2; thu["plan"] = 3; thu["implement"] = 4; thu["review"] = 5
@@ -142,7 +142,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
       if (tt[q] == "answered") { n_xong++; continue }
       m = muc[q]
       g = (m == "blocking") ? 1 : (m == "review-blocking") ? 3 : (m == "non-blocking") ? 5 : 0
-      # Khoá sắp xếp: nhóm, ưu tiên YC (must trước), số task (nhiều trước), thứ tự trong file.
+      # Khoá sắp xếp: nhóm, ưu tiên REQ (must trước), số task (nhiều trước), thứ tự trong file.
       k = sprintf("%d %d %04d %04d", g, (ut[q] == "should") ? 1 : 0, 9999 - so_task[q], i)
       khoa[++n_mo] = k; ma_k[k] = q; nh[q] = g; n_dm++
       dem[g]++

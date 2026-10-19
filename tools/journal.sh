@@ -129,7 +129,7 @@ if [ -s "$JD/checks.tsv" ]; then
     END { for (c in n) printf "  %-10s %4d lần chạy, %4d lần không đạt\n", c, n[c], f[c] + 0 }
   ' "$JD/checks.tsv" | sort
   top=$(awk -F'\t' '$4 != 0 && $5 != "" {
-      s = $5; gsub(/YC-[0-9]+/, "YC-*", s); gsub(/T-[0-9]+/, "T-*", s); print $3 "\t" s }' "$JD/checks.tsv" |
+      s = $5; gsub(/REQ-[0-9]+/, "REQ-*", s); gsub(/TSK-[0-9]+/, "TSK-*", s); print $3 "\t" s }' "$JD/checks.tsv" |
     sort | uniq -c | sort -rn | head -5)
   if [ -n "$top" ]; then
     echo "  Vi phạm gặp nhiều nhất (vi phạm đầu tiên của mỗi lần không đạt):"

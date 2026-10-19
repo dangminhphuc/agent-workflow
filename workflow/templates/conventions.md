@@ -45,7 +45,7 @@ dependency_files: package.json package-lock.json yarn.lock pnpm-lock.yaml
 ignored_files: package-lock.json yarn.lock pnpm-lock.yaml
 
 # ── Test ──────────────────────────────────────────────────────────
-# [default] chuỗi trước mã YC trong test, vd // covers: YC-001
+# [default] chuỗi trước mã REQ trong test, vd // covers: REQ-001
 covers_tag: covers:
 # [optional] regex ERE test bị tắt/chạy riêng (trống = .only( .skip( @Disabled …)
 skipped_test_regex:

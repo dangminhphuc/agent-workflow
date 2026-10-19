@@ -10,10 +10,10 @@ A phase takes input only from files in the feature dir, never from earlier chat 
 
 - **Machine** (`Exit — MACHINE`): run the command, read the `[x]` label of its `Kết quả` block. Never declare a pass yourself.
 - **Human** (`Exit — HUMAN`): state it, then stop.
-- **The agent never approves:** never decide an approval, never tick "Approved by human" (spec, D-xx) by editing a file, never edit/delete `<!-- approval-hash: … -->`, never set an open question to `answered` yourself. Editing ticked content → **untick** it.
+- **The agent never approves:** never decide an approval, never tick "Approved by human" (spec, DEC-xxx) by editing a file, never edit/delete `<!-- approval-hash: … -->`, never set an open question to `answered` yourself. Editing ticked content → **untick** it.
 - **Only exception:** in `/aw-approvals`, right after the human picks `Duyệt` for one item, run `aw approvals tick` for that item — nowhere else, never for an item they did not pick.
 - An LLM checker may only **block**, never pass. No findings file = it has not run.
-- Checks on a phase's own output block. Cross-phase checks (stale artifact, test ↔ YC, diff scope) only warn — but `/aw-review` blocks on any warning left, so fix them when you see them.
+- Checks on a phase's own output block. Cross-phase checks (stale artifact, test ↔ REQ, diff scope) only warn — but `/aw-review` blocks on any warning left, so fix them when you see them.
 
 ## 3. Stay inside the phase
 
@@ -26,7 +26,7 @@ Work that belongs to another phase: record it in that phase's artifact, do not d
 
 ## 5. Language
 
-- Artifact content and everything you say to the human: **Vietnamese**. Identifiers (YC ids, file names, config keys): ASCII English.
+- Artifact content and everything you say to the human: **Vietnamese**. Identifiers (REQ ids, file names, config keys): ASCII English.
 - **Terms — MANDATORY:** in chat and in artifact body text, name workflow concepts with the exact terms in `rules/terms.md`, never a Vietnamese translation (`open question`, not "điểm mù"; `stale`, not "lỗi thời").
 - **Structure is English — MANDATORY:** headings, field names, fixed labels and enum values — including new ones the template lacks (`## Rollback plan`, not `## Kế hoạch rollback`). Keep the template's exactly (`Type`, `## Out of scope`, `Blocking`, `must`, `[INFERRED]`…): checkers match them literally. Vietnamese only in body text, list items and table cells.
 - Labels printed by `aw` (`ĐẠT`, `CẦN HỎI NGƯỜI`…) are Vietnamese; match them literally.
@@ -38,7 +38,8 @@ Work that belongs to another phase: record it in that phase's artifact, do not d
 - Short sentences, plain words. No hedging, no repetition, no explaining the obvious.
 - Writing from a template: delete its guidance comments (`<!-- … -->`) and the optional blocks you do not use. Never touch `<!-- approval-hash: … -->`.
 - **Table of contents — MANDATORY:** an artifact with `##`/`###` headings has `## Contents` before the first of them, linking every `##`/`###` heading in order. Never write it by hand: after every edit run `aw toc <dir>` (before `aw based-on`) and fix what it prints.
-- **References to another artifact are links to the section — MANDATORY:** `[spec.md § YC-001](spec.md#yc-001)`, never plain `spec.md § YC-001` nor a link to the file alone. A short anchor (`#yc-001`, `#d-01`, `#t-02`) is enough — `aw toc` expands it to the heading's full anchor.
+- **IDs:** `<PREFIX>-NNN` — `REQ`, `DEC`, `FND`, `TSK`, `RFR`, exactly 3 digits, numbered consecutively per artifact (`REQ-001`, `REQ-002`). Durable knowledge keeps `BR-<DOMAIN>-NNN` and `ADR-NNNN`.
+- **References to another artifact are links to the section — MANDATORY:** `[spec.md § REQ-001](spec.md#req-001)`, never plain `spec.md § REQ-001` nor a link to the file alone. A short anchor (`#req-001`, `#dec-001`, `#tsk-002`) is enough — `aw toc` expands it to the heading's full anchor.
 
 ## 7. Repo-specific rules, skills and subagents
 
