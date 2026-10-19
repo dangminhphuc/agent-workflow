@@ -2,17 +2,17 @@
 # Trạng thái task trong plan.md do MÁY giữ, không do agent tự đánh.
 #
 #   aw task next  <thư-mục-feature>              in task phải làm tiếp (stdout)
-#   aw task start <thư-mục-feature> <T-NN>       [ ] -> [~]  (WIP=1: chỉ một task [~])
-#   aw task done  <thư-mục-feature> <T-NN>       chạy lệnh Verify; XANH thì [~] -> [x]
-#   aw task done  <thư-mục-feature> <T-NN> --manual "<bằng chứng>"
+#   aw task start <thư-mục-feature> <TSK-NNN>       [ ] -> [~]  (WIP=1: chỉ một task [~])
+#   aw task done  <thư-mục-feature> <TSK-NNN>       chạy lệnh Verify; XANH thì [~] -> [x]
+#   aw task done  <thư-mục-feature> <TSK-NNN> --manual "<bằng chứng>"
 #                                                task mà Verify không có lệnh (thủ công)
-#   aw task reopen <thư-mục-feature> <YC-NNN|D-NN>
-#                                                người vừa đổi YC / mở lại D: task phủ YC đó
-#                                                (Covers, On assumption) hay dựa trên D đó
+#   aw task reopen <thư-mục-feature> <REQ-NNN|DEC-NNN>
+#                                                người vừa đổi REQ / mở lại DEC: task phủ REQ đó
+#                                                (Covers, On assumption) hay dựa trên DEC đó
 #                                                (Based on) về [ ] — chỉ đúng các task ấy
 #
 # `done` chạy lệnh trong cặp backtick đầu tiên của dòng "Verify" ở gốc repo, ghi
-# output thật vào task-results.md (mục "## T-NN", lần chạy sau thay lần trước).
+# output thật vào task-results.md (mục "## TSK-NNN", lần chạy sau thay lần trước).
 # aw check implement chặn task [x] không có bằng chứng xanh khớp lệnh Verify
 # hiện tại — tự sửa ô Status thành [x] không qua được.
 #
@@ -39,7 +39,7 @@ kq_khai task.sh \
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/task.sh"
 
-dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [T-NN] [--manual \"<bằng chứng>\"] · aw task reopen <thư-mục-feature> <YC-NNN|D-NN>" >&2; exit 2; }
+dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [TSK-NNN] [--manual \"<bằng chứng>\"] · aw task reopen <thư-mục-feature> <REQ-NNN|DEC-NNN>" >&2; exit 2; }
 
 LENH="${1:-}"; DIR="${2:-}"; TASK="${3:-}"
 case "$LENH" in next|start|done|reopen) ;; *) dung ;; esac
@@ -47,10 +47,10 @@ case "$LENH" in next|start|done|reopen) ;; *) dung ;; esac
 PLAN="$DIR/plan.md"; KQ="$DIR/task-results.md"
 
 # ---------------------------------------------------------------- reopen
-# Trước kiểm plan.md: đổi YC khi chưa có plan là chuyện thường — không có task nào phải làm lại.
+# Trước kiểm plan.md: đổi REQ khi chưa có plan là chuyện thường — không có task nào phải làm lại.
 if [ "$LENH" = reopen ]; then
   [ $# -eq 3 ] || dung
-  case "$TASK" in YC-[0-9]*|D-[0-9]*) ;; *) dung ;; esac
+  case "$TASK" in REQ-[0-9]*|DEC-[0-9]*) ;; *) dung ;; esac
   if [ ! -f "$PLAN" ]; then echo "Chưa có plan.md — không task nào phải làm lại vì $TASK."; exit 0; fi
   ds=$(tk_phu "$PLAN" "$TASK")
   if [ -z "$ds" ]; then echo "Không task nào trong plan.md phủ $TASK — không có gì để làm lại."; exit 0; fi
@@ -100,7 +100,7 @@ if [ "$LENH" = next ]; then
 fi
 
 # ---------------------------------------------------------------- start / done
-case "$TASK" in T-[0-9]*) ;; *) dung ;; esac
+case "$TASK" in TSK-[0-9]*) ;; *) dung ;; esac
 dong=$(tk_dong "$PLAN" "$TASK") || { echo "LỖI: plan.md không có task $TASK." >&2; exit 1; }
 st=$(printf '%s' "$dong" | cut -d'|' -f2)
 dep=$(printf '%s' "$dong" | cut -d'|' -f3)

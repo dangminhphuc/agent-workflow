@@ -4,13 +4,13 @@
 #   aw check review <thu-muc-feature>
 #
 # Chan:
-#   1. Moi ma YC trong spec.md deu co ket luan hop le trong review.md.
+#   1. Moi ma REQ trong spec.md deu co ket luan hop le trong review.md.
 #   2. Yeu cau gan [OPEN-QUESTION] khong duoc ket luan "pass".
 #   3. Dau vao khong qua check-plan.sh (keo theo design va spec).
 #   4. test-results.md thieu hoac ma thoat khac 0; security-results.md thieu
 #      hoac khong XANH; mot trong hai file khong ghi Tree hoac Tree khac noi dung
 #      code hien tai (code doi sau lan chay — bang chung het gia tri).
-#   5. Moi CANH BAO don tu cac phase truoc con ton tai: YC chua co test,
+#   5. Moi CANH BAO don tu cac phase truoc con ton tai: REQ chua co test,
 #      diff ngoai pham vi, artifact loi thoi, loai viec lech branch, test cu
 #      bi sua chua khai, diem mu muc "review-blocking" chua tra loi. Giua flow
 #      chung chi canh bao de flow khong tac; o day
@@ -35,8 +35,8 @@
 #  10. Conclusion: "Blocker findings: <n>" thieu hoac khac so muc [Blocker].
 #  11. "Reviewed tree:" thieu hoac khac dau van tay code hien tai — code doi
 #      sau khi ra soat thi ket luan khong con noi ve code nay.
-#  13. ADR: D "Promote: adr" chua co ADR, ADR lech D da duyet, thu muc ADR sai hinh thuc.
-#  14. Luat: YC "Promote: BR-…" chua co khoi luat, hoac khoi lech YC da duyet.
+#  13. ADR: DEC "Promote: adr" chua co ADR, ADR lech DEC da duyet, thu muc ADR sai hinh thuc.
+#  14. Luat: REQ "Promote: BR-…" chua co khoi luat, hoac khoi lech REQ da duyet.
 #  15. Diff dung pham vi tai lieu module / ADR / luat: review.md thieu "## Durable knowledge"
 #      hoac thieu verdict hop le (pass | updated | not applicable + ly do) cho tai lieu do.
 #  12. Diff dung code nhay cam (sensitive_code trong conventions.md) ma
@@ -96,7 +96,7 @@ moi=$( { kc_ket_qua_cu "$DIR" "$KQ" "aw check implement $DIR"; kc_ket_qua_cu "$D
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<MOI
 $moi
 MOI
-# ADR: D "Promote: adr" đã nâng đúng nội dung D đã duyệt; thư mục ADR đúng hình thức.
+# ADR: DEC "Promote: adr" đã nâng đúng nội dung DEC đã duyệt; thư mục ADR đúng hình thức.
 adl=$(adr_loi_viec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "ADR: $l"; done <<ADR
 $adl
@@ -318,22 +318,22 @@ awk -v loi_truoc="$n_truoc" '
 
   # ---- File 1: spec.md ----
   idx==1 {
-    if ($0 ~ /^###[ \t]+YC-[0-9]+/) {
-      match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+    if ($0 ~ /^###[ \t]+REQ-[0-9]+/) {
+      match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
       co_yc[cur] = 1; dsach[++n_yc] = cur
       next
     }
-    if ($0 ~ /^##[#]?[ \t]/) { cur = ""; next }   # cùng ranh giới vùng YC với check-spec.sh
+    if ($0 ~ /^##[#]?[ \t]/) { cur = ""; next }   # cùng ranh giới vùng REQ với check-spec.sh
     if (cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Source\**:/ && $0 ~ /OPEN-QUESTION/) can_hoi[cur] = 1
     next
   }
 
   # ---- File 2: review.md — bang cua Lang kinh 1 ----
-  # Chi dong co O DAU la ma YC: bang khac (Lens 4, Repo rules) hay nhac YC trong
+  # Chi dong co O DAU la ma REQ: bang khac (Lens 4, Repo rules) hay nhac REQ trong
   # cot ly do, khong duoc ghi de ket luan cua Lens 1.
   $0 ~ /^[ \t]*\|/ {
     split($0, f, "|"); c = trim(f[2]); gsub(/[`*]/, "", c)
-    if (c !~ /^YC-[0-9]+$/) next
+    if (c !~ /^REQ-[0-9]+$/) next
     kl = trim(f[3])
     if (kl != "") ket_luan[c] = kl
   }
@@ -344,7 +344,7 @@ awk -v loi_truoc="$n_truoc" '
     hop_le["fail"] = 1
     hop_le["pending"] = 1
 
-    if (n_yc == 0) loi("spec.md không có mã YC nào")
+    if (n_yc == 0) loi("spec.md không có mã REQ nào")
 
     for (i = 1; i <= n_yc; i++) {
       c = dsach[i]

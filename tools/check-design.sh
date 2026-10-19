@@ -7,14 +7,14 @@
 #   1. Đầu vào: spec chưa qua checker của spec (entry check = checker phase trước).
 #   2. Đầu vào: còn điểm mù "Blocking: blocking" chưa được trả lời.
 #   3. tdd.md thiếu mục bắt buộc, hoặc mục bỏ trống mà không ghi "Not applicable: <lý do>".
-#   4. D-xx thiếu/ sai ô duyệt (tools/lib/approval-tick.sh) hoặc "Author"; mã trùng; D đã
+#   4. DEC-xxx thiếu/ sai ô duyệt (tools/lib/approval-tick.sh) hoặc "Author"; mã trùng; DEC đã
 #      tick mà nội dung đổi sau đó (dấu duyệt không khớp).
-#   5. "Based on: D-xx" trỏ về D không tồn tại.
-#   6. Mục "YC mapping" bỏ sót YC của spec, hoặc trỏ về YC không có.
-#   7. Mode 2: spec "Risk: high" mà không có D-xx nào do người viết.
+#   5. "Based on: DEC-xxx" trỏ về DEC không tồn tại.
+#   6. Mục "REQ mapping" bỏ sót REQ của spec, hoặc trỏ về REQ không có.
+#   7. Mode 2: spec "Risk: high" mà không có DEC-xxx nào do người viết.
 #   8. Checker LLM: chưa có design-findings.md, hoặc còn phát hiện `block` chưa xử lý (tools/lib/findings.sh).
 #   9. File khai ở rules_design (conventions.md) không có hoặc chưa commit.
-#  10. D-xx: "Promote:" khác adr | no; Promote: adr thiếu Scope; Supersedes sai dạng, trỏ về
+#  10. DEC-xxx: "Promote:" khác adr | no; Promote: adr thiếu Scope; Supersedes sai dạng, trỏ về
 #      ADR không có hoặc không còn accepted, hay thay ADR mà không nâng ADR mới.
 # Cảnh báo (không chặn): artifact lỗi thời.
 #
@@ -95,12 +95,12 @@ while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] 
 $tl
 EOF
 
-# Ô duyệt từng D-xx — trạng thái lấy từ thư viện chung, không tự đọc lại.
+# Ô duyệt từng DEC-xxx — trạng thái lấy từ thư viện chung, không tự đọc lại.
 kld=$(kc_loi_duyet "$TDD" tdd)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $kld
 EOF
-# Trường người quyết trong D: Promote / Scope / Supersedes (ADR — tools/lib/adr.sh).
+# Trường người quyết trong DEC: Promote / Scope / Supersedes (ADR — tools/lib/adr.sh).
 alt=$(adr_loi_truong "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $alt
@@ -129,7 +129,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     n_kv = split(dtt, kv, ";"); for (i = 1; i <= n_kv; i++) if (kv[i] != "") { split(kv[i], kv2, "="); d_tt[kv2[1]] = kv2[2] }
     muc[1] = "Existing code"; muc[2] = "Decisions"; muc[3] = "Data model"
     muc[4] = "Contract"; muc[5] = "Flow"; muc[6] = "Non-functional"
-    muc[7] = "Test strategy"; muc[8] = "YC mapping"; muc[9] = "Target structure"
+    muc[7] = "Test strategy"; muc[8] = "REQ mapping"; muc[9] = "Target structure"
     muc[10] = "Rollout"; n_muc = 10
   }
 
@@ -141,7 +141,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
   # ---- File 1: spec.md ----
   idx==1 {
     if ($0 ~ /^[ \t]*-[ \t]*\**Risk\**:/ && rui_ro == "") rui_ro = gia_tri($0)
-    if ($0 ~ /^###[ \t]+YC-[0-9]+/) { match($0, /YC-[0-9]+/); c = substr($0, RSTART, RLENGTH); co_yc[c] = 1; ds_yc[++n_yc] = c }
+    if ($0 ~ /^###[ \t]+REQ-[0-9]+/) { match($0, /REQ-[0-9]+/); c = substr($0, RSTART, RLENGTH); co_yc[c] = 1; ds_yc[++n_yc] = c }
     next
   }
 
@@ -157,8 +157,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     }
     if (sect == "") next
 
-    if (sect == "Decisions" && $0 ~ /^###[ \t]+D-[0-9]+/) {
-      match($0, /D-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+    if (sect == "Decisions" && $0 ~ /^###[ \t]+DEC-[0-9]+/) {
+      match($0, /DEC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
       if (cur in co_d) loi("Mã quyết định " cur " bị trùng")
       co_d[cur] = 1; ds_d[++n_d] = cur
       co_nd[sect] = 1
@@ -176,18 +176,18 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
       }
     }
 
-    # Dòng "Based on" có thể liệt kê nhiều D: D-01, D-02
-    if ($0 ~ /Based on/) { s = $0; while (match(s, /D-[0-9]+/)) { tham_chieu[substr(s, RSTART, RLENGTH)] = 1; s = substr(s, RSTART + RLENGTH) } }
+    # Dòng "Based on" có thể liệt kê nhiều DEC: DEC-001, DEC-002
+    if ($0 ~ /Based on/) { s = $0; while (match(s, /DEC-[0-9]+/)) { tham_chieu[substr(s, RSTART, RLENGTH)] = 1; s = substr(s, RSTART + RLENGTH) } }
 
-    if (sect == "YC mapping" && $0 ~ /^[ \t]*\|/) {
-      s = $0; while (match(s, /YC-[0-9]+/)) { anh_xa[substr(s, RSTART, RLENGTH)] = 1; s = substr(s, RSTART + RLENGTH) }
+    if (sect == "REQ mapping" && $0 ~ /^[ \t]*\|/) {
+      s = $0; while (match(s, /REQ-[0-9]+/)) { anh_xa[substr(s, RSTART, RLENGTH)] = 1; s = substr(s, RSTART + RLENGTH) }
     }
     next
   }
 
   # ---- File 3: design-findings.md (có thể là /dev/null) ----
   idx==3 {
-    if ($0 ~ /^###[ \t]+PH-[0-9]+/) { match($0, /PH-[0-9]+/); ph = substr($0, RSTART, RLENGTH); ds_ph[++n_ph] = ph; ph_muc[ph] = ""; ph_xl[ph] = "" }
+    if ($0 ~ /^###[ \t]+FND-[0-9]+/) { match($0, /FND-[0-9]+/); ph = substr($0, RSTART, RLENGTH); ds_ph[++n_ph] = ph; ph_muc[ph] = ""; ph_xl[ph] = "" }
     if (ph != "" && ph_truong($0) == "muc") ph_muc[ph] = ph_chuan_muc(gia_tri($0))
     if (ph != "" && ph_truong($0) == "xl") ph_xl[ph] = ph_chuan_xl(gia_tri($0))
     next
@@ -198,11 +198,11 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     for (i = 1; i <= n_muc; i++) {
       m = muc[i]
       if (!(m in co_sect)) { loi("tdd.md thiếu mục \"## " m "\""); continue }
-      if (m == "Decisions") continue           # mục D-xx được phép rỗng
+      if (m == "Decisions") continue           # mục DEC-xxx được phép rỗng
       if (!(m in co_nd)) loi("tdd.md § " m ": để trống. Không áp dụng thì ghi \"Not applicable: <lý do>\".")
     }
 
-    # 4. D-xx
+    # 4. DEC-xxx
     # Ô duyệt (thiếu, sai dạng, đổi sau duyệt) đã báo ở trên — thư viện approval-tick.sh.
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
@@ -211,16 +211,16 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
       if (d_tg[d] == "human") co_nguoi = 1
     }
 
-    # 5. tham chiếu D
+    # 5. tham chiếu DEC
     for (d in tham_chieu) if (!(d in co_d)) loi("tdd.md ghi \"Based on: " d "\" nhưng mục Decisions không có " d)
 
-    # 6. ánh xạ YC hai chiều
-    for (i = 1; i <= n_yc; i++) if (!(ds_yc[i] in anh_xa)) loi(ds_yc[i] ": chưa được ánh xạ tới mục nào trong \"YC mapping\"")
-    for (c in anh_xa) if (!(c in co_yc)) loi("\"YC mapping\" trỏ về " c " nhưng spec.md không có mã này")
+    # 6. ánh xạ REQ hai chiều
+    for (i = 1; i <= n_yc; i++) if (!(ds_yc[i] in anh_xa)) loi(ds_yc[i] ": chưa được ánh xạ tới mục nào trong \"REQ mapping\"")
+    for (c in anh_xa) if (!(c in co_yc)) loi("\"REQ mapping\" trỏ về " c " nhưng spec.md không có mã này")
 
     # 7. Mode 2 — chống neo
     if (rui_ro == "high" && !co_nguoi)
-      loi("spec.md có \"Risk: high\" nhưng không D-xx nào có \"Author: human\". " \
+      loi("spec.md có \"Risk: high\" nhưng không DEC-xxx nào có \"Author: human\". " \
           "Người phải phác quyết định trước (Mode 2); agent chỉ phản biện.")
 
     # 8. checker LLM
@@ -238,12 +238,12 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     }
 
     print ""
-    printf "Tổng: %d YC, %d quyết định D-xx, %d phát hiện LLM — Risk: %s\n", n_yc, n_d, n_ph, (rui_ro == "" ? "?" : rui_ro)
+    printf "Tổng: %d REQ, %d quyết định DEC-xxx, %d phát hiện LLM — Risk: %s\n", n_yc, n_d, n_ph, (rui_ro == "" ? "?" : rui_ro)
     for (i = 1; i <= n_d; i++) printf "  %-6s %s (Author: %s)\n", ds_d[i], d_tt[ds_d[i]], d_tg[ds_d[i]]
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
     print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện block chưa xử lý."
-    print "Bước tiếp: NGƯỜI duyệt từng D-xx (tick ô \"Approved by human\"). /aw-plan sẽ chặn nếu còn D chưa duyệt."
+    print "Bước tiếp: NGƯỜI duyệt từng DEC-xxx (tick ô \"Approved by human\"). /aw-plan sẽ chặn nếu còn DEC chưa duyệt."
   }
 ' "$SPEC" "$TDD" "$PHF"
 ma=$?

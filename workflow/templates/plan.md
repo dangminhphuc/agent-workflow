@@ -10,9 +10,9 @@ based_on: []
 
 ## Tasks
 
-### T-01 — <tiêu đề>
-- Covers: `YC-001`
-- Based on: `D-01`
+### TSK-001 — <tiêu đề>
+- Covers: `REQ-001`
+- Based on: `DEC-001`
 - Design: [tdd.md § Contract / API](tdd.md#contract--api)
 - Depends on: none
 - Expected files: `src/<...>` `test/<...>`
@@ -20,13 +20,13 @@ based_on: []
 - On assumption: no
 - Status: `[ ]`
 
-### T-02 — <tiêu đề>
-- Covers: `YC-002`
+### TSK-002 — <tiêu đề>
+- Covers: `REQ-002`
 - Design: [tdd.md § Data model](tdd.md#data-model)
-- Depends on: T-01
+- Depends on: TSK-001
 - Expected files: `<...>`
 - Verify: `<...>`
-- On assumption: **yes** — [open-questions.md § YC-002](open-questions.md#yc-002)
+- On assumption: **yes** — [open-questions.md § REQ-002](open-questions.md#req-002)
 - Status: `[ ]`
 
 > **Status:** `[ ]` chưa làm · `[~]` đang làm · `[x]` xong.
@@ -35,7 +35,7 @@ based_on: []
 
 ## Deferred
 
-Mã `YC` không có task nào phủ, kèm lý do. Để trống mục này mà vẫn thiếu phủ thì
+Mã `REQ` không có task nào phủ, kèm lý do. Để trống mục này mà vẫn thiếu phủ thì
 kiểm tra bằng máy sẽ fail.
 
 | ID | Reason |
@@ -44,7 +44,7 @@ kiểm tra bằng máy sẽ fail.
 
 ## Manual verification
 
-YC không test tự động được, kèm lý do. Không ghi ở đây mà cũng không có test gắn
+REQ không test tự động được, kèm lý do. Không ghi ở đây mà cũng không có test gắn
 tag `covers:` thì `/aw-implement` cảnh báo, `/aw-review` chặn.
 
 | ID | Why not automated |

@@ -26,7 +26,7 @@ needs_clean_context: false
 
 Do each task in `plan.md` per `tdd.md`, **without leaving scope**. The typical failure is not wrong code but scope creep: fixing things "while there", changing signatures, tidying files.
 
-`plan.md` is the only source of work; `tdd.md` says how (contract, data, flow, D-xx); `spec.md` says why. Test file patterns and `covers:` syntax: conventions.
+`plan.md` is the only source of work; `tdd.md` says how (contract, data, flow, DEC-xxx); `spec.md` says why. Test file patterns and `covers:` syntax: conventions.
 
 ## Loop
 
@@ -46,9 +46,9 @@ loop:
       XONG → commit T
 ```
 
-- **Doing T:** tag each test `covers: YC-NNN`. A YC not testable automatically → `plan.md` "Manual verification" + reason.
-- **Promote when the task covers it — never write by hand** (the machine compares with the approved item): D with `Promote: adr` → `aw adr promote <dir> D-NN`; YC with `Promote: BR-…` → `aw rule promote <dir> YC-NNN`. Do it in the task that implements that D / YC.
-- **Commit T** right after it goes `[x]`: stage by path only T's files, its "Unplanned" files and the ADR / rule files it promoted (never `git add -A`), message `T-NN: <task title>` unless repo rules set a format. Nothing uncommitted may remain at the end — `/aw-ship` will not commit for you.
+- **Doing T:** tag each test `covers: REQ-NNN`. A REQ not testable automatically → `plan.md` "Manual verification" + reason.
+- **Promote when the task covers it — never write by hand** (the machine compares with the approved item): DEC with `Promote: adr` → `aw adr promote <dir> DEC-NNN`; REQ with `Promote: BR-…` → `aw rule promote <dir> REQ-NNN`. Do it in the task that implements that DEC / REQ.
+- **Commit T** right after it goes `[x]`: stage by path only T's files, its "Unplanned" files and the ADR / rule files it promoted (never `git add -A`), message `TSK-NNN: <task title>` unless repo rules set a format. Nothing uncommitted may remain at the end — `/aw-ship` will not commit for you.
 - **`aw check implement`** writes results stamped with the code tree: code changed afterwards, even uncommitted → rerun. Scans only: `aw check security <dir>`. Fix every warning it prints now; `/aw-review` blocks on them. Same violation twice in a row → stop, tell the human.
 
 ## Unplanned
@@ -59,7 +59,7 @@ Every surprise goes to `plan.md` "Unplanned" (task, what came up, extra files in
 |---|---|
 | A file outside T's "Expected files" is unavoidable for T itself | **Continue** |
 | A repo rule asks for work outside T, or contradicts `tdd.md` | **Continue**, without doing what it asks |
-| `DỪNG`, `KẸT`; work not in any task; `tdd.md`/`spec.md`/a D-xx must change (D-xx → `/aw-design`) | **Stop**, tell the human |
+| `DỪNG`, `KẸT`; work not in any task; `tdd.md`/`spec.md`/a DEC-xxx must change (DEC-xxx → `/aw-design`) | **Stop**, tell the human |
 | An existing test is really wrong; a scan finding is a false positive (+ evidence) | **Stop**, tell the human — they decide |
 
 ## By work type
@@ -77,6 +77,6 @@ Forgot `repro`/`--before` and already changed code → the script refuses: `git 
 
 - Editing `Status` in `plan.md` yourself; editing `tdd.md`/`spec.md`.
 - Editing or disabling tests to go green (`.only(`, `.skip(`, `@Disabled`…).
-- `covers:` on a test that does not really check that YC.
+- `covers:` on a test that does not really check that REQ.
 - Ignoring lint/type errors as "unrelated".
 - Making scans green by loosening tools (`nosemgrep`, `.gitleaksignore`, `.trivyignore`, lower thresholds, removing lines from `SECURITY_CMDS`).

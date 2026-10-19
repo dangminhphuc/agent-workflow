@@ -2,15 +2,15 @@
 # Đọc / ghi trạng thái task trong plan.md — dùng chung cho aw task, aw ready và
 # checker implement. Một nguồn duy nhất cho việc "task nào đang ở đâu".
 #
-# Task là mục "### T-NN — <tiêu đề>" trong plan.md, các dòng cần đọc:
-#   - Depends on: none | T-01, T-02
+# Task là mục "### TSK-NNN — <tiêu đề>" trong plan.md, các dòng cần đọc:
+#   - Depends on: none | TSK-001, TSK-002
 #   - Verify: `<lệnh>` → <kết quả mong đợi>
 #   - Status: `[ ]` | `[~]` | `[x]`
 #
 # Trạng thái chỉ được nâng lên [x] bằng `aw task done` — lệnh đó chạy lệnh trong
 # "Verify" và ghi bằng chứng vào task-results.md (xem tools/task.sh).
 
-# tk_ds <plan.md> -> mỗi task một dòng "T-NN|<s>|<phụ thuộc cách dấu phẩy>|<lệnh verify>"
+# tk_ds <plan.md> -> mỗi task một dòng "TSK-NNN|<s>|<phụ thuộc cách dấu phẩy>|<lệnh verify>"
 # <s>: ' ' chưa làm, '~' đang làm, 'x' xong, '?' không đọc được ô Status.
 # Lệnh verify là chuỗi trong cặp backtick ĐẦU TIÊN của dòng Verify (rỗng nếu không có).
 tk_ds() {
@@ -19,12 +19,12 @@ tk_ds() {
     function xuat() { if (id != "") print id "|" st "|" dep "|" vf }
     { sub(/\r$/, "") }
     /^##[ \t]/ && !/^###/ { xuat(); id = ""; next }
-    /^###[ \t]+T-[0-9]+/ {
-      xuat(); match($0, /T-[0-9]+/); id = substr($0, RSTART, RLENGTH); st = "?"; dep = ""; vf = ""; next
+    /^###[ \t]+TSK-[0-9]+/ {
+      xuat(); match($0, /TSK-[0-9]+/); id = substr($0, RSTART, RLENGTH); st = "?"; dep = ""; vf = ""; next
     }
     id != "" && /^[ \t]*-[ \t]*\**Depends on\**:/ {
       s = $0; sub(/^[^:]*:/, "", s); d = ""
-      while (match(s, /T-[0-9]+/)) { d = d (d == "" ? "" : ",") substr(s, RSTART, RLENGTH); s = substr(s, RSTART + RLENGTH) }
+      while (match(s, /TSK-[0-9]+/)) { d = d (d == "" ? "" : ",") substr(s, RSTART, RLENGTH); s = substr(s, RSTART + RLENGTH) }
       dep = d; next
     }
     id != "" && /^[ \t]*-[ \t]*\**Verify\**:/ {
@@ -40,14 +40,14 @@ tk_ds() {
   ' "$1"
 }
 
-# tk_dong <plan.md> <T-NN> -> dòng của task đó trong tk_ds (mã 1 nếu không có)
+# tk_dong <plan.md> <TSK-NNN> -> dòng của task đó trong tk_ds (mã 1 nếu không có)
 tk_dong() {
   _tk_d=$(tk_ds "$1" | awk -F'|' -v t="$2" '$1 == t { print; exit }')
   [ -n "$_tk_d" ] || return 1
   printf '%s\n' "$_tk_d"
 }
 
-# tk_verify <plan.md> <T-NN> -> lệnh verify của task (rỗng nếu không có)
+# tk_verify <plan.md> <TSK-NNN> -> lệnh verify của task (rỗng nếu không có)
 tk_verify() { tk_dong "$1" "$2" | cut -d'|' -f4- | sed 's/¦/|/g'; }
 
 # tk_tiep <plan.md> -> task phải làm tiếp: task đang [~] nếu có (làm cho xong
@@ -67,14 +67,14 @@ tk_tiep() {
     }'
 }
 
-# tk_dat <plan.md> <T-NN> <s> -> ghi ô Status của task thành `[<s>]`, giữ phần
+# tk_dat <plan.md> <TSK-NNN> <s> -> ghi ô Status của task thành `[<s>]`, giữ phần
 # chữ sau ô (vd danh sách file đã đụng). Mã 1 nếu không tìm thấy dòng Status.
 tk_dat() {
   _tk_tmp="$1.tk.$$"
   awk -v t="$2" -v s="$3" '
     { sub(/\r$/, "") }
     /^##[ \t]/ { vao = 0 }
-    /^###[ \t]+T-[0-9]+/ { match($0, /T-[0-9]+/); vao = (substr($0, RSTART, RLENGTH) == t) }
+    /^###[ \t]+TSK-[0-9]+/ { match($0, /TSK-[0-9]+/); vao = (substr($0, RSTART, RLENGTH) == t) }
     vao && !xong && /^[ \t]*-[ \t]*\**Status\**:/ {
       l = $0
       if (match(l, /`\[[ ~x]\]`/)) l = substr(l, 1, RSTART - 1) "`[" s "]`" substr(l, RSTART + RLENGTH)
@@ -88,13 +88,13 @@ tk_dat() {
 }
 
 # ------------------------------------------------------------------ bằng chứng task
-# task-results.md: mỗi task một mục "## T-NN", do `aw task done` ghi (không ai sửa tay).
+# task-results.md: mỗi task một mục "## TSK-NNN", do `aw task done` ghi (không ai sửa tay).
 #   - Lệnh: `<lệnh verify lúc chạy>`
 #   - Mã thoát: `<n>`
 #   - Lần chạy: <n>        (đếm cả lần đỏ — giới hạn vòng lặp đọc số này)
 #   - HEAD / Tree / Thời điểm (kc_dong_moi)
 
-# tk_bc <task-results.md> <T-NN> <khoá> -> giá trị dòng "- <khoá>:" trong mục của task
+# tk_bc <task-results.md> <TSK-NNN> <khoá> -> giá trị dòng "- <khoá>:" trong mục của task
 tk_bc() {
   [ -f "$1" ] || return 0
   awk -v t="$2" -v k="$3" '
@@ -129,11 +129,11 @@ tk_thieu_bang_chung() {
 
 # tk_chua_xong <thư-mục-feature> -> task chưa làm `[ ]` hoặc ô Status không đọc
 # được. Implement xong = MỌI task [x]; task người quyết bỏ thì xoá khỏi plan.md
-# (YC của nó sang "Deferred"), không để [ ] lặng lẽ.
+# (REQ của nó sang "Deferred"), không để [ ] lặng lẽ.
 tk_chua_xong() {
   tk_ds "$1/plan.md" | while IFS='|' read -r _t _s _d _v; do
     case "$_s" in
-      " ") echo "$_t chưa làm (\`[ ]\`) — làm cho xong; người quyết bỏ thì xoá task khỏi plan.md và ghi YC của nó vào \"Deferred\"" ;;
+      " ") echo "$_t chưa làm (\`[ ]\`) — làm cho xong; người quyết bỏ thì xoá task khỏi plan.md và ghi REQ của nó vào \"Deferred\"" ;;
       "?") echo "$_t: ô Status không đọc được — phải là \`[ ]\`, \`[~]\` hoặc \`[x]\`" ;;
     esac
   done
@@ -144,21 +144,21 @@ tk_dang_do() {
   tk_ds "$1/plan.md" | awk -F'|' '$2 == "~" { print $1 " còn ở trạng thái đang làm dở `[~]`" }'
 }
 
-# tk_phu <plan.md> <YC-NNN|D-NN> -> task chịu ảnh hưởng khi mã đó đổi, mỗi dòng "T-NN|<s>".
-# YC: dòng "Covers" hoặc "On assumption" nhắc mã; D: dòng "Based on". So nguyên mã
-# (YC-01 không khớp YC-010).
+# tk_phu <plan.md> <REQ-NNN|DEC-NNN> -> task chịu ảnh hưởng khi mã đó đổi, mỗi dòng "TSK-NNN|<s>".
+# REQ: dòng "Covers" hoặc "On assumption" nhắc mã; DEC: dòng "Based on". So nguyên mã
+# (REQ-01 không khớp REQ-010).
 tk_phu() {
   [ -f "$1" ] || return 0
   awk -v ma="$2" '
     function co_ma(s,   m) {
-      while (match(s, /(YC|D)-[0-9]+/)) { m = substr(s, RSTART, RLENGTH); if (m == ma) return 1; s = substr(s, RSTART + RLENGTH) }
+      while (match(s, /(REQ|DEC)-[0-9]+/)) { m = substr(s, RSTART, RLENGTH); if (m == ma) return 1; s = substr(s, RSTART + RLENGTH) }
       return 0
     }
     function xuat() { if (id != "" && trung) print id "|" st }
-    BEGIN { truong = (ma ~ /^YC-/) ? "(Covers|On assumption)" : "Based on" }
+    BEGIN { truong = (ma ~ /^REQ-/) ? "(Covers|On assumption)" : "Based on" }
     { sub(/\r$/, "") }
     /^##[ \t]/ && !/^###/ { xuat(); id = ""; next }
-    /^###[ \t]+T-[0-9]+/ { xuat(); match($0, /T-[0-9]+/); id = substr($0, RSTART, RLENGTH); st = "?"; trung = 0; next }
+    /^###[ \t]+TSK-[0-9]+/ { xuat(); match($0, /TSK-[0-9]+/); id = substr($0, RSTART, RLENGTH); st = "?"; trung = 0; next }
     id != "" && $0 ~ ("^[ \t]*-[ \t]*[*]*" truong "[*]*:") { s = $0; sub(/^[^:]*:/, "", s); if (co_ma(s)) trung = 1; next }
     id != "" && /^[ \t]*-[ \t]*\**Status\**:/ {
       if ($0 ~ /\[x\]/) st = "x"; else if ($0 ~ /\[~\]/) st = "~"; else if ($0 ~ /\[ \]/) st = " "

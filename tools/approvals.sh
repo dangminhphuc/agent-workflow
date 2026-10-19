@@ -3,11 +3,11 @@
 # sau khi NGƯỜI đã chọn duyệt (lệnh /aw-approvals).
 #
 #   aw approvals [--global]
-#       Liệt kê ô duyệt chưa đạt (spec.md, từng D-xx trong tdd.md) của mọi việc
+#       Liệt kê ô duyệt chưa đạt (spec.md, từng DEC-xxx trong tdd.md) của mọi việc
 #       trong worktree hiện tại; --global: mọi worktree của bản clone. Mỗi mục có
 #       đường dẫn tuyệt đối:dòng của ô duyệt (mở thẳng tới artifact), hash nội dung
 #       hiện tại, và đúng lệnh tick.
-#   aw approvals tick <thư-mục-feature> <spec|D-NN> <hash>
+#   aw approvals tick <thư-mục-feature> <spec|DEC-NNN> <hash>
 #       Tick ô đó và ghi dấu duyệt = <hash>. Chỉ ghi khi mục còn chờ duyệt VÀ hash
 #       nội dung hiện tại đúng bằng <hash> (bản người vừa thấy khi chọn duyệt) —
 #       nội dung đổi giữa chừng thì không tick. Ghi một dòng vào
@@ -41,14 +41,14 @@ mt_dat
 
 # ------------------------------------------------------------------ tick
 if [ "${1:-}" = tick ]; then
-  [ $# -eq 4 ] || { echo "Dùng: aw approvals tick <thư-mục-feature> <spec|D-NN> <hash>" >&2; exit 2; }
+  [ $# -eq 4 ] || { echo "Dùng: aw approvals tick <thư-mục-feature> <spec|DEC-NNN> <hash>" >&2; exit 2; }
   DIR=$2; KHOA=$3; HASH=$4
   [ -d "$DIR" ] || { echo "LỖI: không có thư mục feature \"$DIR\"" >&2; exit 2; }
   DIR=$(CDPATH= cd -- "$DIR" && pwd)
   case "$KHOA" in
     spec) LOAI=spec ;;
-    D-[0-9]*) LOAI=tdd ;;
-    *) echo "LỖI: khoá \"$KHOA\" — chỉ nhận spec hoặc D-NN" >&2; exit 2 ;;
+    DEC-[0-9]*) LOAI=tdd ;;
+    *) echo "LỖI: khoá \"$KHOA\" — chỉ nhận spec hoặc DEC-NNN" >&2; exit 2 ;;
   esac
   F="$DIR/$LOAI.md"
   [ -f "$F" ] || { echo "LỖI: không tìm thấy $F" >&2; exit 2; }
@@ -81,7 +81,7 @@ PHAM_VI=wt
 case "${1:-}" in
   "") ;;
   --global) PHAM_VI=all ;;
-  *) echo "Dùng: aw approvals [--global] | aw approvals tick <thư-mục-feature> <spec|D-NN> <hash>" >&2; exit 2 ;;
+  *) echo "Dùng: aw approvals [--global] | aw approvals tick <thư-mục-feature> <spec|DEC-NNN> <hash>" >&2; exit 2 ;;
 esac
 
 # Danh sách "worktree|branch"
@@ -111,9 +111,9 @@ ten_muc() {
   awk -v loai="$2" '
     { sub(/\r$/, "") }
     loai == "spec" && /^#[ \t]/ { t = $0; sub(/^#[ \t]+/, "", t); print "spec|" t; exit }
-    loai == "tdd" && /^###[ \t]+D-[0-9]+/ {
-      match($0, /D-[0-9]+/); d = substr($0, RSTART, RLENGTH)
-      t = $0; sub(/^###[ \t]+D-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); print d "|" t
+    loai == "tdd" && /^###[ \t]+DEC-[0-9]+/ {
+      match($0, /DEC-[0-9]+/); d = substr($0, RSTART, RLENGTH)
+      t = $0; sub(/^###[ \t]+DEC-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); print d "|" t
     }' "$1"
 }
 

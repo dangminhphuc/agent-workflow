@@ -19,10 +19,10 @@
 #        Theo loai viec (intake.md): bugfix thieu repro.md do; refactor/perf
 #        xoa test cu; perf thieu so do truoc/sau; chore dung code production,
 #        nang dependency khong khai, hoac dung file dependency ma SCA chua xanh.
-#        ADR: D "Promote: adr" chua nang (aw adr promote), ADR lech D da duyet,
+#        ADR: DEC "Promote: adr" chua nang (aw adr promote), ADR lech DEC da duyet,
 #        thu muc ADR sai hinh thuc (aw adr check).
-#        Luat: YC "Promote: BR-…" chua nang (aw rule promote) hoac khoi luat lech YC da duyet.
-# Canh bao (review se chan): YC chua co test, diff ngoai pham vi, artifact loi thoi,
+#        Luat: REQ "Promote: BR-…" chua nang (aw rule promote) hoac khoi luat lech REQ da duyet.
+# Canh bao (review se chan): REQ chua co test, diff ngoai pham vi, artifact loi thoi,
 #        test moi bi tat / chay rieng (.only, .skip… — skipped_test_regex),
 #        loai viec lech tien to branch, refactor/perf sua test cu chua khai,
 #        diem mu muc "chan review" chua tra loi; kien thuc ben co the loi thoi (diff dung
@@ -150,7 +150,7 @@ while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $xd
 EOF
 
-# ---- 4d. ADR — D "Promote: adr" da nang dung noi dung D da duyet (chinh xac nen CHAN) ----
+# ---- 4d. ADR — DEC "Promote: adr" da nang dung noi dung DEC da duyet (chinh xac nen CHAN) ----
 adl=$(adr_loi_viec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi "ADR: $l"; done <<EOF
 $adl

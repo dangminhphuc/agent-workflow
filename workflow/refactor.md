@@ -13,14 +13,14 @@ argument_hint: [yêu-cầu] [tên-feature]
 
 Start:
 - Arguments (minus a feature name) → they are the first request: step 1.
-- No arguments, `refactor-requests.md` has `open` RFs → one choice question: `Thêm yêu cầu` (→ ask "Bạn muốn refactor gì?", step 1) / `Chọn đường đi cho N RF đang chờ` (→ step 4).
+- No arguments, `refactor-requests.md` has `open` RFRs → one choice question: `Thêm yêu cầu` (→ ask "Bạn muốn refactor gì?", step 1) / `Chọn đường đi cho N RFR đang chờ` (→ step 4).
 - Otherwise → ask "Bạn muốn refactor gì?".
 
 Rerun with an existing file = append; never rewrite or renumber.
 
 ## 1. Review the request (write nothing yet)
 
-Read `intake.md` (`Type`, `Goal`, `Base`), the existing RFs, and the code the request names — only enough to check it, never to design the change. Look for:
+Read `intake.md` (`Type`, `Goal`, `Base`), the existing RFRs, and the code the request names — only enough to check it, never to design the change. Look for:
 
 | Check | Raise when |
 |---|---|
@@ -30,7 +30,7 @@ Read `intake.md` (`Type`, `Goal`, `Base`), the existing RFs, and the code the re
 | Protecting tests | The area has no test on `Base` → behaviour preservation cannot be shown; tests must come first |
 | Scope and risk | Many callers, public API, `sensitive_code`, migration; a smaller change reaching the same aim |
 | One request or several | Independent changes in one sentence → propose splitting |
-| Existing RFs | Duplicate, contradicts, or must come before/after an RF |
+| Existing RFRs | Duplicate, contradicts, or must come before/after an RFR |
 | Current job | Touches files this job changes (`git diff <Base>`) → merge conflict risk |
 
 Only real issues, each backed by code or the request text. None → say so in one line; never invent objections.
@@ -39,7 +39,7 @@ Only real issues, each backed by code or the request text. None → say so in on
 
 Present in one message: each concern (max 5) — evidence, why it matters, your counter-proposal; then a draft **Summary** (1–2 sentences: what changes, where, behaviour kept) and the `Location` you verified.
 
-Then one choice question "Ghi RF-NNN thế nào?" — recommended first, label starting `(Đề xuất)`:
+Then one choice question "Ghi RFR-NNN thế nào?" — recommended first, label starting `(Đề xuất)`:
 - `Ghi như đề xuất` — Summary as drafted, the human's request verbatim;
 - `Tách thành N yêu cầu` — only if you proposed a split;
 - `Bỏ yêu cầu này` — nothing is written.
@@ -48,40 +48,40 @@ Free text = the human's answer to your concerns, or a restated request (the new 
 
 ## 3. Record
 
-Append `## RF-NNN — <short title>` (next number; first use → create from the template, delete its comments):
+Append `## RFR-NNN — <short title>` (next number; first use → create from the template, delete its comments):
 - `Summary`: the approved draft. `Request`: the human's words **verbatim**. `Requested by`: who + today.
 - `Location`: only places you saw exist; otherwise `None`.
 - `Review`: each concern raised + the human's answer verbatim; none raised → `None`.
 - `Status: open`.
 
-Then ask "Còn yêu cầu nào nữa không?" — `Thêm yêu cầu` / `Xong — đã đủ`. Free text = the next request → back to step 1 (review it against the RFs already recorded too).
+Then ask "Còn yêu cầu nào nữa không?" — `Thêm yêu cầu` / `Xong — đã đủ`. Free text = the next request → back to step 1 (review it against the RFRs already recorded too).
 
-Only the human edits a `Request` or drops an RF (`dropped: <their reason>`).
+Only the human edits a `Request` or drops an RFR (`dropped: <their reason>`).
 
 ## 4. After the last request: next step
 
-List the `open` RFs (id + Summary, one line each), then one choice question "Đưa các yêu cầu này đi đâu?":
+List the `open` RFRs (id + Summary, one line each), then one choice question "Đưa các yêu cầu này đi đâu?":
 
 | Option | Recommended when | Tell the human |
 |---|---|---|
-| `Gộp vào việc này` | `Type: refactor` and the RFs fit its `Goal` | "This job" |
+| `Gộp vào việc này` | `Type: refactor` and the RFRs fit its `Goal` | "This job" |
 | `Việc refactor riêng` | Any other case | "Separate job" |
-| `Để đó, quyết sau` | Never | Rerun `/aw-refactor` without arguments to come back here; the RFs stay `open` |
+| `Để đó, quyết sau` | Never | Rerun `/aw-refactor` without arguments to come back here; the RFRs stay `open` |
 
-`Gộp vào việc này` is not offered when `Type` ≠ `refactor`: one job = one type; a refactor riding a feature has no preserve YC, no protecting test, no separate MR.
+`Gộp vào việc này` is not offered when `Type` ≠ `refactor`: one job = one type; a refactor riding a feature has no preserve REQ, no protecting test, no separate MR.
 
-After the human picks a route, set those RFs to `routed: this-job` or `routed: separate-job` (only status the route; `open` = not routed yet). Then print commands for the human to run; run none of them yourself.
+After the human picks a route, set those RFRs to `routed: this-job` or `routed: separate-job` (only status the route; `open` = not routed yet). Then print commands for the human to run; run none of them yourself.
 
 ### This job
 
 1. Run `/aw-intake <dir>/refactor-requests.md` in this worktree — rerun appends the file as a `[FILE]` input.
-2. Then `/aw-spec` (YCs `preserve`/`structural`, cited `[FILE] … § RF-NNN`; approved spec → re-approve); `tdd.md`/`plan.md` exist → `/aw-design`, `/aw-plan`.
+2. Then `/aw-spec` (REQs `preserve`/`structural`, cited `[FILE] … § RFR-NNN`; approved spec → re-approve); `tdd.md`/`plan.md` exist → `/aw-design`, `/aw-plan`.
 
 ### Separate job
 
-1. Finish this job as planned, through `/aw-ship`; the RFs do not enter its spec or plan.
-2. On the main checkout: `/aw-intake` with the RFs' `Request` lines as arguments (print them as one copyable block) → `[HUMAN]` input, type `refactor`. Base: this job's base once it merged; RFs on code this job adds that cannot wait → stack on this branch (review warns).
-3. In the new worktree: copy the file into the new job dir and append it as input, so the spec can cite `§ RF-NNN` and the `Review` notes:
+1. Finish this job as planned, through `/aw-ship`; the RFRs do not enter its spec or plan.
+2. On the main checkout: `/aw-intake` with the RFRs' `Request` lines as arguments (print them as one copyable block) → `[HUMAN]` input, type `refactor`. Base: this job's base once it merged; RFRs on code this job adds that cannot wait → stack on this branch (review warns).
+3. In the new worktree: copy the file into the new job dir and append it as input, so the spec can cite `§ RFR-NNN` and the `Review` notes:
    ```sh
    cp <dir>/refactor-requests.md <new-worktree>/.agent-workflow/<new-branch>/
    ```
@@ -90,6 +90,6 @@ After the human picks a route, set those RFs to `routed: this-job` or `routed: s
 ## Forbidden
 
 - **Implementing:** editing code, tests, `intake.md`, `spec.md`, `tdd.md`, `plan.md` or their boxes. Only `refactor-requests.md` is written.
-- Writing an RF before the human chose; paraphrasing `Request` or the human's answers; a `Summary` the human did not see.
-- Dropping, weakening or blocking a request because you disagree; adding your own refactor ideas as RFs.
+- Writing an RFR before the human chose; paraphrasing `Request` or the human's answers; a `Summary` the human did not see.
+- Dropping, weakening or blocking a request because you disagree; adding your own refactor ideas as RFRs.
 - Designing the change (that is `/aw-design`); choosing the route; creating a worktree or branch.

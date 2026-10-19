@@ -45,16 +45,16 @@ kc_loi_thoi() {
 }
 
 # kc_test_yc <thư-mục-feature>
-# YC nào chưa có test gắn tag, chưa ghi "Manual verification", chưa ở "Deferred".
+# REQ nào chưa có test gắn tag, chưa ghi "Manual verification", chưa ở "Deferred".
 kc_test_yc() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/spec.md" ] || return 0
   _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
-    echo "Không kiểm được test ↔ YC: thư mục không nằm trong git repo"; return 0; }
+    echo "Không kiểm được test ↔ REQ: thư mục không nằm trong git repo"; return 0; }
   _mau=$(conv_get "$_conv" test_files)
   _tag=$(conv_get "$_conv" covers_tag); [ -n "$_tag" ] || _tag="covers:"
   if [ -z "$_mau" ]; then
-    echo "Không kiểm được test ↔ YC: conventions.md chưa khai test_files"; return 0
+    echo "Không kiểm được test ↔ REQ: conventions.md chưa khai test_files"; return 0
   fi
 
   _ds="${TMPDIR:-/tmp}/kc-test.$$"
@@ -77,23 +77,23 @@ kc_test_yc() {
     idx==1 {                                   # dòng chứa tag trong file test
       s=$0; i=index(s, tag); if (i==0) next
       s=substr(s, i + length(tag))
-      while (match(s, /YC-[0-9]+/)) { co_test[substr(s, RSTART, RLENGTH)]=1; s=substr(s, RSTART+RLENGTH) }
+      while (match(s, /REQ-[0-9]+/)) { co_test[substr(s, RSTART, RLENGTH)]=1; s=substr(s, RSTART+RLENGTH) }
       next
     }
-    idx==2 && /^###[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); ds[++n]=substr($0, RSTART, RLENGTH); next }
+    idx==2 && /^###[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); ds[++n]=substr($0, RSTART, RLENGTH); next }
     idx==3 && /^##[ \t]+Manual verification/ { sect="tc"; next }
     idx==3 && /^##[ \t]+Deferred/            { sect="hl"; next }
     idx==3 && /^##[ \t]/                     { sect=""; next }
-    idx==3 && sect!="" && /^[ \t]*\|/ && /YC-[0-9]+/ {
+    idx==3 && sect!="" && /^[ \t]*\|/ && /REQ-[0-9]+/ {
       split($0, f, "|"); ly=f[3]; gsub(/^[ \t]+|[ \t]+$/, "", ly)
-      match($0, /YC-[0-9]+/); c=substr($0, RSTART, RLENGTH)
+      match($0, /REQ-[0-9]+/); c=substr($0, RSTART, RLENGTH)
       if (ly != "" && ly !~ /^<.*>$/) ngoai_le[c]=sect
     }
     END {
       for (i=1; i<=n; i++) {
         c=ds[i]
         if (!(c in co_test) && !(c in ngoai_le))
-          print c ": chưa có test gắn \"" tag " " c "\", cũng không ghi ở \"Manual verification\" của plan.md — thêm test gắn tag, hoặc ghi YC vào \"Manual verification\" kèm lý do"
+          print c ": chưa có test gắn \"" tag " " c "\", cũng không ghi ở \"Manual verification\" của plan.md — thêm test gắn tag, hoặc ghi REQ vào \"Manual verification\" kèm lý do"
       }
     }
   ' "$_ds" "$_d/spec.md" "$_d/plan.md" 2>/dev/null
@@ -482,7 +482,7 @@ kc_canh_bao_theo_loai() {
 # Ba mức chặn của một điểm mù ([OPEN-QUESTION]) — người duyệt nhãn ở gate spec:
 #   blocking         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; không có design: plan)
 #   review-blocking  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
-#   non-blocking     sai thì sửa nhỏ                 → giao được; review ghi YC đó "pending"
+#   non-blocking     sai thì sửa nhỏ                 → giao được; review ghi REQ đó "pending"
 
 MUC_CHAN_HOP_LE="blocking|review-blocking|non-blocking"
 
@@ -493,7 +493,7 @@ kc_diem_mu() {
   awk '
     function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     { sub(/\r$/, "") }
-    /^##[ \t]+YC-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /YC-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "open"; next }
+    /^##[ \t]+REQ-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /REQ-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "open"; next }
     /^##?[ \t]/ { if (q != "") print q "|" m "|" t; q = ""; next }
     q != "" && /^[ \t]*-[ \t]*\**Blocking\**:/ { m = gia_tri($0) }
     q != "" && /^[ \t]*-[ \t]*\**Status\**:/   { t = gia_tri($0) }

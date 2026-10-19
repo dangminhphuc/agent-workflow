@@ -7,16 +7,16 @@
 #   - Đầu vào: tdd.md không qua check-design.sh (entry check = checker phase trước).
 #   - Đầu vào (không có design: chore, hoặc spec "Design: skip"): spec không qua check-spec.sh,
 #     spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
-#   - Đầu vào: còn D-xx chưa được người tick duyệt (hoặc đổi sau khi tick). plan và implement không có người —
+#   - Đầu vào: còn DEC-xxx chưa được người tick duyệt (hoặc đổi sau khi tick). plan và implement không có người —
 #     chúng chỉ được thực thi những gì người đã duyệt.
-#   - Kiểm HAI CHIỀU phủ YC:
-#       xuôi  — mọi task trỏ về mã YC có thật trong spec.md   (bắt task thừa)
-#       ngược — mọi mã YC được task phủ, hoặc nằm ở "Deferred" (bắt yêu cầu sót)
-#   - Task thiếu "Verify", "Expected files"; "Based on: D-xx" trỏ về D không có.
+#   - Kiểm HAI CHIỀU phủ REQ:
+#       xuôi  — mọi task trỏ về mã REQ có thật trong spec.md   (bắt task thừa)
+#       ngược — mọi mã REQ được task phủ, hoặc nằm ở "Deferred" (bắt yêu cầu sót)
+#   - Task thiếu "Verify", "Expected files"; "Based on: DEC-xxx" trỏ về DEC không có.
 #   - File khai ở rules_plan (conventions.md) không có hoặc chưa commit.
-#   - D-xx "Promote: adr" không có task "Based on" nó mà "Expected files" gồm thư mục ADR.
-#   - YC "Promote: BR-…" không có task phủ nó mà "Expected files" gồm file luật đích.
-# Cảnh báo: artifact lỗi thời; YC "Priority: must" nằm ở "Deferred".
+#   - DEC-xxx "Promote: adr" không có task "Based on" nó mà "Expected files" gồm thư mục ADR.
+#   - REQ "Promote: BR-…" không có task phủ nó mà "Expected files" gồm file luật đích.
+# Cảnh báo: artifact lỗi thời; REQ "Priority: must" nằm ở "Deferred".
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -45,7 +45,7 @@ n_loi=0
 
 # Không có design (chore, hoặc bugfix/refactor "Design: skip" — kc_bo_design): entry check
 # lùi về checker của spec, và không có tdd.md
-# (task nào ghi "Based on: D-xx" sẽ bị chặn vì không có D nào).
+# (task nào ghi "Based on: DEC-xxx" sẽ bị chặn vì không có DEC nào).
 if kc_bo_design "$DIR"; then
   for f in "$SPEC" "$PLAN"; do
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
@@ -85,7 +85,7 @@ else
   fi
 fi
 
-# YC người chọn nâng thành luật phải có task ghi file luật (tools/lib/rule.sh).
+# REQ người chọn nâng thành luật phải có task ghi file luật (tools/lib/rule.sh).
 llk=$(luat_loi_ke_hoach "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $llk
@@ -100,12 +100,12 @@ while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] 
 $qtl
 EOF
 
-# Trạng thái duyệt từng D-xx — thư viện chung (tick + dấu duyệt khớp nội dung).
+# Trạng thái duyệt từng DEC-xxx — thư viện chung (tick + dấu duyệt khớp nội dung).
 DTT=""
 if [ "$TDD" != /dev/null ]; then
   dy_dong_dau "$TDD" tdd >/dev/null
   DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
-  # D người quyết nâng thành ADR phải có task nâng (tools/lib/adr.sh).
+  # DEC người quyết nâng thành ADR phải có task nâng (tools/lib/adr.sh).
   alk=$(adr_loi_ke_hoach "$DIR")
   while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $alk
@@ -131,17 +131,17 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
 
   # ---- File 1: spec.md — thu mọi mã yêu cầu ----
   idx==1 {
-    if ($0 ~ /^###[ \t]+YC-[0-9]+/) {
-      match($0, /YC-[0-9]+/); c = substr($0, RSTART, RLENGTH)
+    if ($0 ~ /^###[ \t]+REQ-[0-9]+/) {
+      match($0, /REQ-[0-9]+/); c = substr($0, RSTART, RLENGTH)
       co_yc[c] = 1; dsach_yc[++n_yc] = c
     } else if ($0 ~ /^##/) c = ""
     if (c != "" && $0 ~ /^[ \t]*-[ \t]*\**Priority\**:/) uu_tien[c] = gia_tri($0)
     next
   }
 
-  # ---- File 2: tdd.md — thu mọi D-xx và trạng thái ----
+  # ---- File 2: tdd.md — thu mọi DEC-xxx và trạng thái ----
   idx==2 {
-    if ($0 ~ /^###[ \t]+D-[0-9]+/) { match($0, /D-[0-9]+/); d = substr($0, RSTART, RLENGTH); co_d[d] = 1; ds_d[++n_d] = d; next }
+    if ($0 ~ /^###[ \t]+DEC-[0-9]+/) { match($0, /DEC-[0-9]+/); d = substr($0, RSTART, RLENGTH); co_d[d] = 1; ds_d[++n_d] = d; next }
     if ($0 ~ /^##?[ \t]/) d = ""
     next
   }
@@ -150,16 +150,16 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
   $0 ~ /^##[ \t]+Deferred/ { sect = "hoan"; cur = ""; next }
   $0 ~ /^##[ \t]/          { sect = "";     cur = ""; next }
 
-  $0 ~ /^###[ \t]+T-/ {
-    match($0, /T-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+  $0 ~ /^###[ \t]+TSK-/ {
+    match($0, /TSK-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
     if (cur in co_task) loi("Mã task " cur " bị trùng")
     co_task[cur] = 1; dsach_task[++n_task] = cur
     next
   }
 
-  sect == "hoan" && $0 ~ /YC-[0-9]+/ && $0 ~ /^[ \t]*\|/ {
+  sect == "hoan" && $0 ~ /REQ-[0-9]+/ && $0 ~ /^[ \t]*\|/ {
     split($0, f, "|")
-    match($0, /YC-[0-9]+/); c = substr($0, RSTART, RLENGTH)
+    match($0, /REQ-[0-9]+/); c = substr($0, RSTART, RLENGTH)
     co_mat_hoan[c] = 1
     ly_do = trim(f[3])
     if (ly_do == "" || ly_do ~ /^<.*>$/)
@@ -170,9 +170,9 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
   }
 
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Covers\**:/ {
-    thu_ma($0, "YC-[0-9]+")
+    thu_ma($0, "REQ-[0-9]+")
     if (n_tim == 0) {
-      loi(cur ": dòng \"Covers:\" không trỏ về mã YC nào")
+      loi(cur ": dòng \"Covers:\" không trỏ về mã REQ nào")
     } else {
       for (i = 1; i <= n_tim; i++) {
         c = ma_tim[i]
@@ -185,7 +185,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
   }
 
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Based on\**:/ {
-    thu_ma($0, "D-[0-9]+")
+    thu_ma($0, "DEC-[0-9]+")
     for (i = 1; i <= n_tim; i++) {
       d = ma_tim[i]
       if (!(d in co_d)) loi(cur ": \"Based on: " d "\" nhưng tdd.md không có " d)
@@ -210,10 +210,10 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
   }
 
   END {
-    if (n_yc == 0)   loi("spec.md không có mã YC nào")
-    if (n_task == 0) loi("plan.md không có task nào (không thấy heading \"### T-NN\")")
+    if (n_yc == 0)   loi("spec.md không có mã REQ nào")
+    if (n_task == 0) loi("plan.md không có task nào (không thấy heading \"### TSK-NNN\")")
 
-    # D-xx phải được người duyệt trước khi lập kế hoạch
+    # DEC-xxx phải được người duyệt trước khi lập kế hoạch
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
       if (d_tt[d] != "approved")
@@ -242,7 +242,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
       else if (c in hoan)  printf "  %s ← (hoãn lại)\n", c
       else                 printf "  %s ← KHÔNG PHỦ\n", c
     }
-    # Hoãn YC "must" không sai cú pháp, nhưng nghĩa là giao thiếu: người phải thấy.
+    # Hoãn REQ "must" không sai cú pháp, nhưng nghĩa là giao thiếu: người phải thấy.
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
       if ((c in hoan) && uu_tien[c] != "should")

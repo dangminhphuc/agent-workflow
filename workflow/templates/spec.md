@@ -39,13 +39,13 @@ based_on: []
 
 ## Requirements
 
-<!-- Source, Quote, Priority, Type, Protected by, Target phải nằm ngay dưới "### YC-NNN".
-Heading "###" khác (vd "### Ghi chú") đóng vùng YC; muốn chia nhỏ một YC thì dùng "####".
-Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — checker chặn nếu thiếu.
+<!-- Source, Quote, Priority, Type, Protected by, Target phải nằm ngay dưới "### REQ-NNN".
+Heading "###" khác (vd "### Ghi chú") đóng vùng REQ; muốn chia nhỏ một REQ thì dùng "####".
+Mỗi REQ có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — checker chặn nếu thiếu.
 Quote: nguồn [CONFLUENCE] [JIRA] [FILE] bắt buộc — chép NGUYÊN VĂN câu nguồn, mỗi câu một dòng "> …"
 (không thêm ngoặc kép). [FILE]: máy kiểm từng câu có trong file (khoảng trắng, xuống dòng không tính). -->
 
-### YC-001 — <tiêu đề ngắn>
+### REQ-001 — <tiêu đề ngắn>
 
 - Source: `[CONFLUENCE]` [Tên page](URL) § Tên heading
 - Quote:
@@ -55,25 +55,25 @@ Quote: nguồn [CONFLUENCE] [JIRA] [FILE] bắt buộc — chép NGUYÊN VĂN c�
 - Acceptance criteria:
   - [ ] <quan sát được từ bên ngoài, có số liệu nếu là yêu cầu phi chức năng>
 
-### YC-002 — <tiêu đề ngắn>
+### REQ-002 — <tiêu đề ngắn>
 
-- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002)
+- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002)
 - Priority: `must`
 - Description: <...>
 - Assumption: <đang hiểu thế nào để đi tiếp>
 - Acceptance criteria:
   - [ ] <...>
 
-<!-- Luật bền (tuỳ chọn, NGƯỜI quyết bằng cách duyệt spec): YC là bất biến nghiệp vụ còn đúng
+<!-- Luật bền (tuỳ chọn, NGƯỜI quyết bằng cách duyệt spec): REQ là bất biến nghiệp vụ còn đúng
 sau việc này (không phải chi tiết màn hình), nguồn bền ([JIRA] [CONFLUENCE] [FILE], hay lời người
-đã ghi trong intake.md / open-questions.md) → thêm dưới YC:
-- Promote: BR-<MIỀN>-NNN       vd BR-BILLING-003; 04-implement chép YC thành luật (aw rule promote) -->
+đã ghi trong intake.md / open-questions.md) → thêm dưới REQ:
+- Promote: BR-<MIỀN>-NNN       vd BR-BILLING-003; 04-implement chép REQ thành luật (aw rule promote) -->
 
-<!-- CHỈ refactor / perf: mỗi YC có thêm
+<!-- CHỈ refactor / perf: mỗi REQ có thêm
 - Type: `preserve | structural | performance`   (performance: chỉ perf)
-- Protected by: `test/<file>.test.ts`         (YC preserve — file có sẵn trên nhánh gốc)
-- Target: p95 < 150 ms với 10k bản ghi         (YC performance — có số liệu)
-Không có YC hành vi mới. -->
+- Protected by: `test/<file>.test.ts`         (REQ preserve — file có sẵn trên nhánh gốc)
+- Target: p95 < 150 ms với 10k bản ghi         (REQ performance — có số liệu)
+Không có REQ hành vi mới. -->
 
 <!-- CHỈ bugfix: thêm mục dưới, bỏ comment
 ## Reproduction
@@ -86,7 +86,7 @@ Không có YC hành vi mới. -->
 ## Constraints & dependencies
 
 <!-- Điều kiện bên ngoài mà việc này phải chịu — không phải yêu cầu, không phải giải pháp.
-`Risk` và các quyết định D-xx ở `02-design` dựa vào mục này. -->
+`Risk` và các quyết định DEC-xxx ở `02-design` dựa vào mục này. -->
 
 - <hệ thống ngoài / quy định pháp lý–kế toán / deadline / việc của team khác> — nguồn: <...>
 
@@ -101,7 +101,7 @@ Không có gì thì ghi "Không có." — checker chặn mục rỗng. -->
 
 ## Source conflicts
 
-<!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § YC-NNN](open-questions.md#yc-nnn)`, hoặc trỏ tới
+<!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § REQ-NNN](open-questions.md#req-nnn)`, hoặc trỏ tới
 nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
 Agent không tự phân xử mâu thuẫn nghiệp vụ — checker chặn. -->
 

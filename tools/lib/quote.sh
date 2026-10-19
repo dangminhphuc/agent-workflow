@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Câu trích nguyên văn của YC ("- Quote:" + các dòng "> …" trong spec.md) — một nguồn cho
+# Câu trích nguyên văn của REQ ("- Quote:" + các dòng "> …" trong spec.md) — một nguồn cho
 # checker spec (chặn) và rule promote (đường dẫn nguồn [FILE]).
 #
 #   - Mỗi dòng "> …" là một câu trích, so riêng.

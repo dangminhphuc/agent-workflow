@@ -3,7 +3,7 @@
 #
 # spec.md: đúng một dòng ở phần đầu file (trước heading "##" đầu tiên):
 #   - [ ] **Approved by human** — …
-# tdd.md: mỗi "### D-NN" có đúng một dòng trong mục của nó:
+# tdd.md: mỗi "### DEC-NNN" có đúng một dòng trong mục của nó:
 #   - [ ] **Approved by human**
 #
 # Chỉ NGƯỜI tick [x]. Lần đầu thấy tick, máy ghi dấu duyệt — hash nội dung lúc
@@ -11,7 +11,7 @@
 # Nội dung đổi sau đó mà tick vẫn còn thì trạng thái là "changed-after-approval": bản
 # người đã duyệt không còn là bản này. Duyệt lại = người xoá dấu duyệt (giữ tick).
 #
-# Hash bỏ qua: dòng trống, chú thích HTML, chính dòng ô duyệt; với D-xx bỏ cả
+# Hash bỏ qua: dòng trống, chú thích HTML, chính dòng ô duyệt; với DEC-xxx bỏ cả
 # mục "Critique (agent):" — agent được phản biện mà không làm mất duyệt.
 #
 # Dòng ô duyệt trong chú thích HTML hay khối ``` không được tính. Dòng có nhãn
@@ -55,7 +55,7 @@ _DY_AWK_CHUNG='
 
 # dy_quet <file> <spec|tdd> -> bản ghi, mỗi dòng một:
 #   O|<khoá>|<tick 0/1>|<dấu duyệt>|<số dòng>|<mở lại 0/1>   một ô duyệt
-#   T|<khoá>                                              D-xx không có ô duyệt
+#   T|<khoá>                                              DEC-xxx không có ô duyệt
 #   L|<thông báo>                                         lỗi vị trí/dạng
 dy_quet() {
   if [ "$2" = spec ]; then _dy_n=$DY_NHAN_SPEC; else _dy_n=$DY_NHAN_D; fi
@@ -84,14 +84,14 @@ dy_quet() {
       else print "O|" d "|" d_tick[d] "|" d_dau[d] "|" d_nr[d] "|" ((!d_tick[d] && (d in ly_do)) ? 1 : 0)
       d = ""
     }
-    sach ~ /^###[ \t]+D-[0-9]+/ {
-      dong_d(); match(sach, /D-[0-9]+/); d = substr(sach, RSTART, RLENGTH)
+    sach ~ /^###[ \t]+DEC-[0-9]+/ {
+      dong_d(); match(sach, /DEC-[0-9]+/); d = substr(sach, RSTART, RLENGTH)
       if (d in da_gap) d = ""; else da_gap[d] = 1   # mã lặp: checker design báo
       next
     }
     sach ~ /^##?#?[ \t]/ { dong_d(); next }
     od {
-      if (d == "") { print "L|tdd.md dòng " NR ": approval checkbox nằm ngoài mục \"### D-NN\""; next }
+      if (d == "") { print "L|tdd.md dòng " NR ": approval checkbox nằm ngoài mục \"### DEC-NNN\""; next }
       if (d in co_od) { print "L|tdd.md dòng " NR ": " d " có nhiều approval checkbox — chỉ được có một"; next }
       co_od[d] = 1; d_tick[d] = tick; d_dau[d] = dau; d_nr[d] = NR; next
     }
@@ -114,7 +114,7 @@ dy_noi_dung() {
     { sub(/\r$/, ""); dy_dong($0) }
     bo || od { next }
     loai == "tdd" {
-      if (sach ~ /^###[ \t]+D-[0-9]+/) { match(sach, /D-[0-9]+/); trong = (substr(sach, RSTART, RLENGTH) == khoa); pb = 0 }
+      if (sach ~ /^###[ \t]+DEC-[0-9]+/) { match(sach, /DEC-[0-9]+/); trong = (substr(sach, RSTART, RLENGTH) == khoa); pb = 0 }
       else if (sach ~ /^##?#?[ \t]/) trong = 0
       if (!trong) next
       # "- Critique (agent): …" và các dòng thụt vào ngay dưới nó
