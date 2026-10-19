@@ -48,14 +48,14 @@ Mode 2 prevents anchoring on the agent's option. Never edit the human's D; write
 
 1. Do step 1 below (survey existing code) first.
 2. Show the **decision points**, one line each, as questions: what must be decided, which YC/constraint forces it, facts found (call sites, data volume, external consumers, existing ADR), why it may be hard to reverse. Ask the human to add, drop or merge points.
-3. Go through the points **one at a time**, with open questions:
+3. Go through the points **one at a time**, with open questions. A point settled → **write nothing yet**; keep the human's words and go to the next point:
    - "What ways do you see to do this?" — ≥ 2 options; if they give one: "What else could someone choose?"
    - Per option: "What does it buy? What does it cost?" You may point out a **fact** they missed ("`X` is called from 14 places"), never an option or a verdict.
    - "Which one, and why?" then "What would make this hard to undo?"
 4. The human asks you for options or "what would you do" → decline in one line (Mode 2 is anti-anchoring); offer only neutral dimensions to think through (reversibility, migration, compatibility, call sites, operations, testing). If they insist, they may lower `Risk` via `/aw-clarify` (their call).
-5. Write each D into `tdd.md` in the human's own words (fix format only), `Author: human`, box unticked. Show the D-xx back; the human confirms or corrects.
+5. All points settled (or the human says `dừng`: only the settled ones, then stop — rerunning `/aw-design` continues with the rest) → show **one** preview: every D-xx as it will be written, in the human's own words (fix format only), `Author: human`, box unticked, numbered consecutively. Ask once: "ghi như vậy được không?". Corrections → fix only those D, show only them, ask again. Then write them all into `tdd.md` in one go.
 6. The human prefers to write `tdd.md` alone → stop, tell them the D format and to rerun `/aw-design`.
-7. Drafts confirmed → continue with **Steps**: critique each human D, write the rest.
+7. Preview confirmed and written → continue with **Steps**: critique each human D, write the rest.
 
 ## Steps
 
@@ -80,6 +80,7 @@ Mode 2 prevents anchoring on the agent's option. Never edit the human's D; write
 - Requirements not in `spec.md` — go back to `01-spec`.
 - **Ticking a D-xx box**, editing/deleting its approval hash. Editing a ticked D → untick it (adding `- Critique (agent):` does not count).
 - Mode 2: editing/replacing the human's D instead of critiquing.
+- Mode 2: writing or showing D-xx one by one for confirmation instead of one preview after all points.
 - Mode 2: proposing, ranking or hinting at an option before the human has written their D; putting words in the human's D they did not say.
 - Hiding a real choice in prose instead of a D.
 - Treating "LLM checker reported nothing" as a pass when it has not run.

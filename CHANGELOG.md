@@ -41,6 +41,17 @@ ngầm giữa các bản.
   thời. Mẫu artifact có sẵn mục `## Contents`.
 
 ### Thay đổi
+- **`/aw-clarify` chốt hết rồi mới ghi, một lần.** Trước đây mỗi mục chốt xong là agent hiện dòng
+  trước → sau, hỏi "ghi như vậy được không?", ghi file, chạy checker, rồi mới sang mục sau — mỗi mục
+  tốn hai lượt. Giờ agent hỏi lần lượt hết hàng đợi, chưa ghi gì; xong (hoặc khi bạn nói `dừng`)
+  thì hiện **một** bản xem trước gom theo file, mỗi thay đổi gắn id mục (`PH-38`, `YC-115`…), hỏi
+  một lần, ghi tất cả, chạy `aw task reopen` / `aw check spec` / `aw check design` một lần. Muốn ghi
+  giữa chừng: nói `ghi luôn`. Nhiều mục cùng sửa một đoạn → một before → after chung; D-xx mới
+  đánh số liền nhau trong đợt.
+- **`/aw-design` Mode 2 cũng gom: phác hết D-xx rồi mới xác nhận, một lần.** Agent hỏi lần lượt từng
+  điểm cần quyết, chưa ghi gì; xong hết thì hiện mọi D-xx sắp ghi trong một bản xem trước, hỏi một
+  lần, ghi tất cả vào `tdd.md`. Nói `dừng` giữa chừng → ghi các D đã chốt rồi dừng, chạy lại
+  `/aw-design` để làm tiếp. Việc tick ô duyệt D-xx không đổi (bạn tự tick trong file).
 - **Agent nói với bạn bằng thuật ngữ tiếng Anh gốc, không tự dịch.** Trước đây agent (và
   `docs/thuat-ngu.md`) dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo" — khó đối chiếu
   với tên field, file và output `aw`. Giờ có danh sách chuẩn `workflow/rules/terms.md` (`open question`,
