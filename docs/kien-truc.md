@@ -621,10 +621,18 @@ kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu h�
 1. `workflow/phases/NN-<id>.md` với frontmatter đầy đủ; thêm vào `phases:` của `workflow.yaml`.
 2. Có `exit_machine` → script trong `tools/`, thêm tên vào `tools/lib/commands.sh`.
 3. Artifact mới → mẫu trong `workflow/templates/`.
-4. Ca kiểm trong `tools/run-tests.sh`.
+4. Ca kiểm trong phần cùng chủ đề ở `tools/tests/` (chạy bằng `tools/run-tests.sh`).
 5. Thử: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code` (VERSION khớp target repo).
 
 Không phase nào khác phải sửa — không phase nào biết về phase sau nó (vì vậy `06-ship` thêm được sau).
+
+**Test chia phần chạy song song.** Bộ test hồi quy gọi checker thật hàng nghìn lần nên tốn CPU; chạy
+tuần tự một file thì ~8,5 phút trên 4 lõi chỉ dùng một. Ca kiểm chia thành các phần trong `tools/tests/`,
+mỗi phần tự dựng fixture và thư mục tạm, nên `tools/run-tests.sh` chạy song song (~2,5–3 phút).
+Ranh giới phần đặt ở chỗ trạng thái fixture trùng với fixture dựng mới (hoặc trạng thái như sau nhóm
+check-security: `fixture_sau_bao_mat`), để không ca nào đổi điều kiện đầu vào. Phần dừng giữa
+chừng (không in `Tổng:`) tính là hỏng — không ca nào bị bỏ qua câm. Không bớt ca để nhanh hơn:
+release vẫn chạy lại test trên đúng commit được đóng gói.
 
 ## Cách thêm một adapter
 

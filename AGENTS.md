@@ -81,6 +81,9 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
 ## Verify
 
 - `sh tools/run-tests.sh` must end with label `MỌI CA ĐẠT`.
+- Tests live in `tools/tests/NN-<topic>.sh` (helpers + fixture: `tools/tests/lib.sh`), run in parallel.
+  Add a case to the part of the same topic; a part must not depend on another part. While
+  iterating: `sh tools/run-tests.sh <part-name>` or `sh tools/tests/<part>.sh`.
 - Tests: `ky_vong <code> "<name>" <cmd>`, `dung "<name>" <test>`. Test every checker both ways
   (blocks when it should, passes when it should). Changed text a test greps → fix the test in the same commit.
 - Inspect generated commands: `sh adapters/claude-code/build.sh --out <tmp-git-dir>`.

@@ -60,9 +60,9 @@ không tab, không khoá trùng, khoá thuộc danh sách trên; giá trị mở
 subagent, skill có `name` + `description`, `name` = tên file / tên thư mục, dạng `a-z0-9` nối `-`,
 ≤ 64 ký tự; skill: `description` ≤ 1024 ký tự, không `< >`; tên file lệnh cùng dạng; thân không
 rỗng; chỉ ghi vào `commands/<tên>.md`, `agents/<tên>.md`, `skills/<tên>/SKILL.md`. Thiếu biến chuẩn
-→ `ĐỊNH NGHĨA QUY TRÌNH LỖI`. Test: `tools/run-tests.sh`, mục "chuẩn định dạng của agent".
+→ `ĐỊNH NGHĨA QUY TRÌNH LỖI`. Test: `tools/tests/08-adapters.sh`, mục "chuẩn định dạng của agent".
 
-**Test đối chiếu** (`tools/run-tests.sh`, mục "đối chiếu mọi adapter"): build MỌI
+**Test đối chiếu** (`tools/tests/08-adapters.sh`, mục "đối chiếu mọi adapter"): build MỌI
 adapter trong `adapters/*/` với `AW_COMPARE=1` — hook in tên của nó thay cho nội
 dung — và đòi output giống hệt nhau từng byte. Adapter mới tự động vào phép đối
 chiếu. Câu hỏi và ba nhãn của cổng duyệt cũng được so giữa các adapter.
@@ -148,5 +148,5 @@ phẩy): `ADAPTER="claude-code cursor"`. `aw init` exclude đường dẫn của
    LLM, câu hỏi lựa chọn, hộp xác nhận của cổng duyệt), **ghi rõ trong output và
    README** thay vì bỏ qua.
 5. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.
-6. Chạy `sh tools/run-tests.sh`: phép đối chiếu tự lấy adapter mới; thêm test riêng
-   cho chữ trong hook của nó (như mục `adapters/cursor/build.sh`).
+6. Chạy `sh tools/run-tests.sh`: phép đối chiếu tự lấy adapter mới; thêm test riêng vào
+   `tools/tests/08-adapters.sh` cho chữ trong hook của nó (như mục `adapters/cursor/build.sh`).

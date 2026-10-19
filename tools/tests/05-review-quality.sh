@@ -1,0 +1,98 @@
+#!/usr/bin/env sh
+# check-review: Lens 3, Conclusion, Reviewed tree, code nhạy cảm.
+# Chạy riêng: sh tools/tests/05-review-quality.sh (AW_TEST_VERBOSE=1 in từng ca).
+
+. "$(dirname -- "$0")/lib.sh"
+fixture_sau_bao_mat
+nhom "check-review.sh"
+CHK="$T/check-review.sh"
+
+# ---- Lens 3 — Quality, Conclusion, Reviewed tree
+viet_review; thay "$F/review.md" '- None
+' ''
+ky_vong 1 "chặn Lens 3 không finding mà không ghi \"- None\"" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'không ghi \"- None\"'"
+viet_review; thay "$F/review.md" '## Lens 3 — Quality' '## Ghi chú'
+ky_vong 1 "chặn khi thiếu mục Lens 3 — Quality" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' "$L3_SF"
+toc_f review.md
+ky_vong 0 "Lens 3 có finding đủ Location file:dòng thì cho qua" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' "- None
+$L3_SF"
+ky_vong 1 "chặn Lens 3 vừa \"- None\" vừa có finding" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Category: duplicate-code
+- Problem: có sẵn hàm tương tự'
+ky_vong 1 "chặn [Should fix] thiếu Location" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Category: duplicate-code
+- Location: `file:dòng`'
+ky_vong 1 "chặn Location giữ chỗ của mẫu (không phải file:dòng)" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
+- Location: `src/a.txt:1`'
+ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
+toc_f review.md
+ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+- Location: `src/a.txt:1`'
+ky_vong 1 "chặn [Should fix] thiếu Category" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu dòng \"- Category: <loại>\"'"
+viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/duplicate-code/Trùng Code/')"
+ky_vong 1 "chặn Category không phải kebab-case" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên
+- Category: Tên Tuỳ Ý'
+toc_f review.md
+ky_vong 0 "[Nit] không bắt Category" sh "$CHK" "$F"
+L3_B='### [Blocker] mất dữ liệu
+- Category: data-loss
+- Location: `src/a.txt:1`
+- Problem: ghi đè'
+viet_review; thay "$F/review.md" '- None' "$L3_B"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 1 "chặn [Blocker] thiếu Failure scenario" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu \"- Failure scenario:\"'"
+viet_review; thay "$F/review.md" '- None' "$L3_B
+- Failure scenario: <đầu vào cụ thể → kết quả sai>"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+ky_vong 1 "chặn Failure scenario giữ chỗ của mẫu" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' "$L3_B
+- Failure scenario: lưu hai lần → bản ghi đầu mất"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+toc_f review.md
+ky_vong 0 "[Blocker] đủ trường, Conclusion khớp số → review đạt (ship mới chặn)" sh "$CHK" "$F"
+thay "$F/review.md" '- Blocker findings: 1' '- Blocker findings: 0'
+ky_vong 1 "chặn Conclusion ghi số Blocker lệch số mục" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Blocker findings: 0 nhưng Lens 3 có 1'"
+viet_review; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: <n>'
+ky_vong 1 "chặn Conclusion còn giữ chỗ <n>" sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- Blocker findings: 0
+' ''
+ky_vong 1 "chặn Conclusion thiếu dòng Blocker findings" sh "$CHK" "$F"
+viet_review; grep -v '^- Reviewed tree:' "$F/review.md" > "$TMP/rv" && cp "$TMP/rv" "$F/review.md"
+ky_vong 1 "chặn review.md thiếu Reviewed tree" sh "$CHK" "$F"
+dung "…lời nhắc có giá trị hiện tại" sh -c "sh '$CHK' '$F' | grep -q 'hiện tại: [0-9a-f]\{40\}'"
+viet_review; thay "$F/review.md" "- Reviewed tree: \`$(van_tay)\`" '- Reviewed tree: `0000000000000000000000000000000000000000`'
+ky_vong 1 "chặn Reviewed tree khác code hiện tại" sh "$CHK" "$F"
+viet_review
+
+# ---- Code nhạy cảm (sensitive_code) → cần người rà bảo mật
+viet_review
+ky_vong 0 "không khai sensitive_code → không đòi Security reviewer" sh "$CHK" "$F"
+cp "$CFG/conventions.md" "$TMP/conv-nc.bak"
+thay "$CFG/conventions.md" 'sensitive_code:' 'sensitive_code: src/*'
+ky_vong 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" sh "$CHK" "$F"
+dung "…đúng lý do, nêu file nhạy cảm" sh -c "sh '$CHK' '$F' | grep -q 'code nhạy cảm (sensitive_code: src/a.txt)'"
+dung "…implement chỉ LƯU Ý, không chặn" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'LƯU Ý.*src/a.txt' && sh '$T/check-implement.sh' '$F' >/dev/null 2>&1"
+printf -- '- Security reviewer: <tên người>\n' >> "$F/review.md"
+ky_vong 1 "chặn Security reviewer còn giữ chỗ" sh "$CHK" "$F"
+viet_review; printf -- '- Security reviewer: Claude\n' >> "$F/review.md"
+ky_vong 1 "chặn Security reviewer là tên agent" sh "$CHK" "$F"
+viet_review; printf -- '- **Security reviewer:** Nguyễn Văn A — 2026-10-07\n' >> "$F/review.md"
+ky_vong 0 "Security reviewer là người → cho qua" sh "$CHK" "$F"
+thay "$CFG/conventions.md" 'sensitive_code: src/*' 'sensitive_code: src/auth/*'
+viet_review
+ky_vong 0 "diff không đụng mẫu nhạy cảm → không đòi" sh "$CHK" "$F"
+cp "$TMP/conv-nc.bak" "$CFG/conventions.md"
+
+# Bảng khác nhắc mã YC ở cột lý do không được ghi đè kết luận của Lens 1
+viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |' '| Authn / authz | pass | khớp YC-002 |'
+ky_vong 0 "dòng Lens 4 nhắc YC-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
+ket_thuc

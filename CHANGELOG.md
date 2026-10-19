@@ -11,6 +11,16 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Nội bộ
+- **Test hồi quy chạy song song: ~8,5 phút → ~2,5–3 phút (4 CPU), đủ 1398 ca như cũ.** `tools/run-tests.sh`
+  giờ chia việc cho các phần trong `tools/tests/NN-<tên>.sh` (helper + fixture ở `tools/tests/lib.sh`), chạy
+  cùng lúc theo số CPU (`AW_TEST_JOBS` để đổi), rồi cộng tổng. Danh sách ca và kết quả trùng khớp bản cũ;
+  phần dừng giữa chừng tính là hỏng. Chạy một phần: `sh tools/run-tests.sh review` hoặc
+  `sh tools/tests/05-review-quality.sh`. CI (`kiem-tra`, `release`) không đổi lệnh. Người phát triển engine:
+  thêm ca vào phần cùng chủ đề, không thêm vào `tools/run-tests.sh`.
+
 ## [2026.10.29]
 
 ### Thay đổi
