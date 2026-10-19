@@ -32,6 +32,7 @@ kq_khai check-plan.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
 . "$HERE/lib/toc.sh"
 
@@ -50,7 +51,11 @@ if kc_bo_design "$DIR"; then
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
   done
   TDD=/dev/null
-  if ! sh "$HERE/check-spec.sh" "$DIR" >/dev/null 2>&1; then
+  # Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
+  ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
+  ma_spec=$?
+  printf '%s\n' "$ra_spec" | grep -F '[CẢNH BÁO]'
+  if [ "$ma_spec" -ne 0 ]; then
     n_loi=1
     echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
   fi

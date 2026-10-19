@@ -23,6 +23,7 @@ The sentence around a term stays Vietnamese: "YC-003 còn một `open question` 
 | `artifact` | File written into the job dir (`spec.md`, `tdd.md`…) | |
 | `input` | The sources spec reads: `## Input` of `intake.md` | |
 | `source label` | `[CONFLUENCE]`, `[JIRA]`, `[FILE]`, `[INFERRED]`, `[OPEN-QUESTION]`, `[HUMAN]` | nhãn nguồn |
+| `Quote` | Source sentences copied verbatim under a YC's `Source:`, one `> …` line each | |
 | `open question` | Something the source does not say; agent assumes, human answers: `open-questions.md` | điểm mù |
 | `Blocking` | Level of an open question: `blocking`, `review-blocking`, `non-blocking` | mức chặn |
 | `Risk` | `high \| normal` in `spec.md`; `high` → design Mode 2 | |

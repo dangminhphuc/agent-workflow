@@ -56,6 +56,16 @@ ngầm giữa các bản.
   là cột `Not` của `terms.md`. Không kiểm `intake.md`, `refactor-requests.md`, `*-results.md` và
   dòng trích `>`, vì đó là nguyên văn lời người hoặc do máy ghi. Job đã ghim engine cũ không bị ảnh
   hưởng. Job mới gặp chặn thì sửa chữ theo gợi ý trong dòng báo.
+- **YC có nguồn phải có câu trích nguyên văn — `- Quote:` + các dòng `> …` ngay dưới `Source:`.** Trước
+  đây phase spec bảo agent trích câu nguồn nhưng mẫu không có chỗ ghi, nên người duyệt phải tự mở
+  nguồn để so YC với câu gốc. Giờ `aw check spec` chặn YC `[CONFLUENCE]` `[JIRA]` `[FILE]` thiếu
+  `Quote`; với `[FILE]` (kể cả lời người trong `intake.md`, câu trả lời trong `open-questions.md`)
+  chặn câu trích không có trong file nguồn — khoảng trắng, xuống dòng không tính, còn lại phải đúng
+  từng chữ. File nguồn đổi sau khi viết spec thì `aw check design` (không có design: `aw check plan`)
+  chỉ cảnh báo. `/aw-clarify` đổi nhãn nguồn sang câu trả lời thì đổi cả `Quote`.
+  **Ai bị ảnh hưởng:** việc đang làm dở chuyển sang engine mới mà spec chưa có `Quote` bị chặn ở
+  spec và mọi phase sau — thêm câu trích cho từng YC có nguồn rồi người duyệt lại spec. Việc đã ghim
+  engine cũ không bị ảnh hưởng.
 - Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
   `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
   task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.
@@ -71,6 +81,9 @@ ngầm giữa các bản.
   tên trường, lệnh cũ (`Mức chặn`, `/open-questions`); chỉ giữ việc còn lại.
 
 ### Nội bộ
+- `tools/lib/quote.sh`: so câu trích và đọc đường dẫn nguồn `[FILE]` — một chỗ cho `check-spec.sh`
+  và `aw rule promote` (trước đây `rule.sh` tự đọc đường dẫn). `check-spec.sh --entry` cho phase sau
+  chạy lại spec.
 - **Mọi thay đổi trong repo engine phải kèm tài liệu cho người đọc** (`AGENTS.md` § Human docs): một
   mục tóm tắt trong `CHANGELOG.md` (làm gì, vì sao, ảnh hưởng ai) và cập nhật tài liệu sống (README,
   `docs/huong-dan.md`, `docs/kien-truc.md`, `docs/thuat-ngu.md`) — kể cả thay đổi nội bộ, refactor,

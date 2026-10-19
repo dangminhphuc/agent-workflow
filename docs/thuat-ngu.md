@@ -38,6 +38,7 @@ Tên trường, heading trong artifact giữ tiếng Anh vì checker đọc đú
 | `job type` *(trước: loại việc)* | `Type` trong `intake.md`: `feature \| bugfix \| refactor \| perf \| chore`, **đổi luật** của mọi phase sau. Xem [`huong-dan.md` §5](huong-dan.md#5-khác-nhau-theo-job-type) |
 | `input` | Nguồn duy nhất spec được đọc: mã Jira, URL Confluence, file, hoặc lời người. Liệt kê ở `## Input` của `intake.md` |
 | `source label` *(trước: nhãn nguồn)* | Mỗi YC ghi nguồn: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định kỹ thuật hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói). Lời người trong `intake.md` mang nhãn `[HUMAN]` |
+| `Quote` *(câu trích)* | Câu nguồn chép **nguyên văn** dưới `Source:` của YC (`[CONFLUENCE]` `[JIRA]` `[FILE]`), mỗi câu một dòng `> …`. Với `[FILE]` máy kiểm câu có thật trong file |
 | `open question` *(trước: điểm mù)* | Chỗ nguồn chưa nói mà agent phải giả định tạm. Ghi trong `open-questions.md` theo YC: câu hỏi, hỏi ai, giả định, *If wrong, redo*, `Blocking` |
 | `Blocking` *(trước: mức chặn)* | Mức của một `open question`: `blocking` (chặn design), `review-blocking` (chạy tiếp, review chặn), `non-blocking` (không chặn, YC ghi `pending`). Agent đề xuất, người duyệt |
 | `Risk` | `high \| normal` trong `spec.md`. `high` → design chạy `Mode 2` |

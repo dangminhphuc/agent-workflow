@@ -42,7 +42,7 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 
 1. **Read every source fully.** Record exact identifiers and the **version** read (Confluence page version, Jira `updated`, `[FILE]` commit sha) in `## Sources`.
 2. **Active business rules:** `aw knowledge spec <dir>` — read every file it prints (`### BR-…`). A source contradicting an active rule → a `## Source conflicts` row or an `[OPEN-QUESTION]`; never pick a side.
-3. **Quote requirement sentences verbatim** before interpreting — separate "what the source says" from "how we read it".
+3. **Quote requirement sentences verbatim** into each YC's `Quote:` before interpreting — separate "what the source says" (`Quote`) from "how we read it" (`Description`). Copy character for character; never paraphrase or add quotation marks.
 4. **Write verifiable YCs.** Each `YC-NNN` has exactly one `Source:` label (`rules/source-tracing.md`), at least one `- [ ] …` **observable from outside** ("under 300ms with 10k records", not "must be fast"), and `Priority: must | should` — `should` **only if the source says so** ("nice to have", "phase 2 if time"); source silent = `must`.
 5. **Check NFRs.** For each group: does the work touch it, what does the source say?
 

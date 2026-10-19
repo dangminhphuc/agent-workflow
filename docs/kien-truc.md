@@ -359,6 +359,30 @@ artifact khác là link có anchor tới đúng mục.
 - **Chỉ artifact agent viết.** File máy ghi (`*-results.md`, `repro.md`, `perf.md`, `ship.md`) không có
   mục lục và không phải đích bắt buộc có anchor.
 
+### Câu trích nguyên văn của YC
+
+Phase spec bảo agent trích câu nguồn trước khi diễn giải, nhưng không có chỗ ghi thì bước đó không để
+lại dấu vết: người duyệt phải tự mở nguồn để so. Nên YC có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` có
+`- Quote:` + các dòng `> …` — "nguồn nói gì" tách khỏi "agent hiểu thế nào" (`Description`).
+
+- **Bắt buộc, không tuỳ chọn.** Tuỳ chọn thì agent bỏ, và người không phân biệt được "không có câu
+  gốc" với "quên trích". `[INFERRED]`, `[OPEN-QUESTION]` không có câu gốc (open question đã có
+  `Source says`).
+- **`[FILE]`: máy kiểm câu có thật trong file** (`tools/lib/quote.sh`) — thu hẹp điểm yếu 3 cho nguồn
+  máy đọc được, gồm lời người trong `intake.md` và câu trả lời trong `open-questions.md`. So chuỗi con,
+  chỉ gộp khoảng trắng / xuống dòng và bỏ `>` đầu dòng; không chuẩn hoá thêm (markdown, dấu nháy):
+  nới thêm là bắt đầu đoán "gần giống", còn chép đúng thì sửa mất vài giây. Mỗi dòng `>` một câu,
+  so riêng — một YC thường gộp vài câu ở vài chỗ trong nguồn. Confluence/Jira script không gọi được
+  MCP: câu trích chỉ cho người đọc.
+- **Chặn ở spec, cảnh báo khi phase sau chạy lại spec** (`check-spec.sh --entry`, design và plan
+  không có design gọi). Lúc viết spec, lệch nguồn là lỗi của chính phase đó — chính xác, chặn. Về sau
+  lệch thường do file nguồn đổi, không phải lỗi của phase đang chạy; chặn ở đó làm tắc việc. Thiếu
+  `Quote` vẫn chặn ở mọi phase — đó là lỗi của spec.
+- **Không kiểm theo phiên bản trong `## Sources`.** Bảng Sources không gắn với từng YC, nên không
+  biết câu trích nào ứng với sha nào; so với file hiện tại, lệch thì cảnh báo như trên.
+- **Không đặt độ dài tối thiểu.** Trích qua loa ("khách") là gian lận có chủ ý — ngoài mục tiêu
+  (chặn quên, không chặn cố tình); người duyệt thấy ngay trong spec.
+
 ### Artifact stale
 
 `based_on` là hash **cả file** đầu vào, dạng phẳng `- spec.md@<hash>` (đọc được bằng tập con
@@ -621,7 +645,8 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
    chỉ suy từ git, không nhận ra squash có sửa xung đột.
 2. **"clean context" không cưỡng chế được ở agent không có subagent** — lùi về lời dặn người.
 3. **Checker kiểm hình thức, không kiểm nội dung.** Mọi YC có nhãn ≠ YC đúng với BRD. Đừng nhầm "qua
-   hết checker" với "làm đúng"; LLM checker chỉ thu hẹp khoảng trống này.
+   hết checker" với "làm đúng"; LLM checker chỉ thu hẹp khoảng trống này. Câu trích `[FILE]` máy kiểm
+   được có thật trong nguồn — nhưng YC diễn giải đúng câu trích hay không vẫn là việc của người.
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
 6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng, lỗi lộ muộn.
