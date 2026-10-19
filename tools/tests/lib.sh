@@ -20,6 +20,8 @@ AWE="$ROOT/bin/aw-engine"
 # Phần không dựng fixture bắt đầu như sau một nhóm đã dọn biến (unset): không mang theo
 # AW_REPO/AW_CONFIG của shell gọi test.
 unset AW_REPO AW_CONFIG
+# Engine tự commit (artifact trong git): máy chạy test (CI, máy mới) có thể chưa đặt git identity.
+export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
 
 n_ok=0
 n_fail=0

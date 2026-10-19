@@ -80,6 +80,9 @@ ngầm giữa các bản.
   `02-spec-design-plan.sh` → `02-spec.sh` + `02-design-plan.sh`; `07-ship-rules-uses.sh` →
   `07-ship-rules.sh` + `07-uses-pending-based-on.sh`. Danh sách ca của từng phần cũ trùng khớp từng dòng
   với hai phần mới ghép lại.
+- **Sửa test đỏ trên `main` và CI từ khi artifact vào git:** 9 ca của `tools/tests/14-ship-ready.sh` hỏng trên
+  máy chưa đặt git identity (gồm runner CI), vì engine tự commit artifact. `tools/tests/lib.sh` giờ đặt identity
+  giả qua `GIT_AUTHOR_*`/`GIT_COMMITTER_*` cho mọi phần test.
 
 ## [2026.10.29]
 
