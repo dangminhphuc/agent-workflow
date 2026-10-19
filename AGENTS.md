@@ -84,6 +84,8 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
 - Tests live in `tools/tests/NN-<topic>.sh` (helpers + fixture: `tools/tests/lib.sh`), run in parallel.
   Add a case to the part of the same topic; a part must not depend on another part. While
   iterating: `sh tools/run-tests.sh <part-name>` or `sh tools/tests/<part>.sh`.
+- Output ends with per-part timing. A part your change makes slow (`CẢNH BÁO … nên tách`) → split it
+  at a fixture boundary in the same PR (`docs/kien-truc.md` § Cách thêm một phase).
 - Tests: `ky_vong <code> "<name>" <cmd>`, `dung "<name>" <test>`. Test every checker both ways
   (blocks when it should, passes when it should). Changed text a test greps → fix the test in the same commit.
 - Inspect generated commands: `sh adapters/claude-code/build.sh --out <tmp-git-dir>`.

@@ -5,6 +5,8 @@
 #   AW_TEST_VERBOSE=1 sh tools/run-tests.sh   # in từng ca
 #   sh tools/run-tests.sh review ship         # chỉ các phần có tên chứa "review" hoặc "ship"
 #   AW_TEST_JOBS=1 sh tools/run-tests.sh      # số phần chạy cùng lúc (mặc định: số CPU)
+#   AW_TEST_SLOW_MIN=10 sh tools/run-tests.sh # ngưỡng giây để cảnh báo phần chậm (mặc định 30)
+#   AW_TEST_DIR=<thư-mục>                     # thư mục chứa các phần (mặc định tools/tests; dùng cho test của chính file này)
 #
 # Repo nay ban cac cong chan; neu chinh cong chan hong ma khong ai biet thi
 # ca quy trinh tro thanh trang tri. Moi ca kiem CA HAI CHIEU: chan dung luc
@@ -25,10 +27,11 @@ kq_khai run-tests.sh \
   "1=CÓ CA HỎNG — xem các dòng FAIL phía trên" \
   "2=SAI THAM SỐ — không phần test nào khớp tên đã cho"
 kq_don 'rm -rf "$TMP"'
-TD="$ROOT/tools/tests"
+TD="${AW_TEST_DIR:-$ROOT/tools/tests}"
 
 DS=""
 for f in "$TD"/[0-9]*.sh; do
+  [ -f "$f" ] || continue
   p=$(basename "$f" .sh)
   if [ $# -gt 0 ]; then
     chon=""
@@ -49,8 +52,12 @@ case "$LUONG" in ''|*[!0-9]*|0) LUONG=2 ;; esac
 lam() {
   for p in $DS; do
     mkdir "$TMP/lay.$p" 2>/dev/null || continue
+    bd=$(date +%s 2>/dev/null)
     sh "$TD/$p.sh" > "$TMP/$p.log" 2>&1
     echo "$?" > "$TMP/$p.ma"
+    kt=$(date +%s 2>/dev/null)
+    # date không có %s (hiếm) → bỏ đo thời gian, không ảnh hưởng kết quả
+    case "$bd$kt" in ''|*[!0-9]*) ;; *) echo "$((kt - bd))" > "$TMP/$p.giay" ;; esac
   done
 }
 i=0
@@ -75,6 +82,30 @@ for p in $DS; do
   n_ok=$((n_ok + dat)); n_fail=$((n_fail + hong))
   if [ "$hong" != 0 ]; then printf '  → chạy lại riêng phần này: sh tools/tests/%s.sh\n' "$p"; fi
 done
+
+# Thời gian từng phần. Các phần chạy song song nên phần chậm hơn hẳn các phần khác kéo dài cả
+# bộ test: cảnh báo để tách (AGENTS.md § Verify). Chỉ cảnh báo, không đổi kết quả.
+CHAM_MIN=${AW_TEST_SLOW_MIN:-30}
+case "$CHAM_MIN" in ''|*[!0-9]*) CHAM_MIN=30 ;; esac
+for p in $DS; do
+  if [ -f "$TMP/$p.giay" ]; then printf '%s %s\n' "$(cat "$TMP/$p.giay")" "$p"; fi
+done | sort -n -r > "$TMP/giay"
+if [ -s "$TMP/giay" ]; then
+  echo ""
+  awk -v min="$CHAM_MIN" '
+    { g[NR] = $1; t[NR] = $2; s += $1 }
+    END {
+      d = "Thời gian từng phần (giây, chậm nhất trước):"
+      for (i = 1; i <= NR; i++) d = d (i == 1 ? " " : " · ") t[i] " " g[i]
+      print d
+      if (NR < 2) exit
+      for (i = 1; i <= NR; i++) {
+        tb = (s - g[i]) / (NR - 1)
+        if (g[i] >= min && g[i] > 2 * tb)
+          printf "  CẢNH BÁO  %s chạy %ds, gấp hơn 2 lần trung bình các phần còn lại (%.0fs) — nên tách (AGENTS.md § Verify)\n", t[i], g[i], tb
+      }
+    }' "$TMP/giay"
+fi
 
 echo ""
 echo "─────────────────────────────────────────"
