@@ -73,13 +73,13 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : (FILENAME == ARGV[3]) ? 3 : 4; cur = ""; nguon = ten_file(FILENAME) }
 
   # ---- File 1: open-questions.md ----
-  idx==1 && /^##[ \t]+REQ-[0-9]+/ {
+  idx==1 && /^###[ \t]+REQ-[0-9]+/ {
     match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
     ds[++n] = cur; tt[cur] = "open"; muc[cur] = ""
-    t = $0; sub(/^##[ \t]+REQ-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t
+    t = $0; sub(/^###[ \t]+REQ-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t
     next
   }
-  idx==1 && /^##?[ \t]/ { cur = ""; next }
+  idx==1 && /^(#|##|###)[ \t]/ { cur = ""; next }
   idx==1 && cur != "" && /^[ \t]*-/ {
     if ($0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/)            muc[cur] = gia_tri($0)
     else if ($0 ~ /^[ \t]*-[ \t]*\**Status\**:/)         tt[cur]  = gia_tri($0)

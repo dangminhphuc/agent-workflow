@@ -180,7 +180,7 @@ The human disagrees with how the spec reads a source — description, criteria o
 
 1. **Read** the REQ, its `Source:` passage, what depends on it: `tdd.md` (`REQ mapping`, `Based on: DEC-xxx` of those sections), `plan.md` (`Covers: REQ-NNN`).
 2. **Ask** as in 2a. Context: what the source says, what the REQ says now, what must be redone (step 1). Options: the human's change as they stated it, keep the current reading, at most one other reading the source supports.
-3. **`open-questions.md`** (written in 3.2, like everything else) — the REQ's entry; create `## REQ-NNN — <same title as spec>` if missing (replacing a "No open questions." line):
+3. **`open-questions.md`** (written in 3.2, like everything else) — the REQ's entry; create `### REQ-NNN — <same title as spec>` under `## Questions` if missing (replacing a "No open questions." line):
    - `Source says` verbatim; `Question`: the reading in dispute; `Ask`: the human; `Assumption`: the previous reading; `If wrong, redo`: what step 1 found;
    - `Status: answered`; `Answer:` verbatim + who + date + `(đã xác nhận sửa REQ-NNN)`.
    - Entry already answered → move the old answer to `- **Superseded answer:** …`, then write the new `Answer:`.

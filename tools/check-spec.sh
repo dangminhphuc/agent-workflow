@@ -12,6 +12,8 @@
 #            REQ nguồn [CONFLUENCE] [JIRA] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
 #            [FILE]: câu trích không có trong file nguồn (tools/lib/quote.sh) — với --entry chỉ
 #            cảnh báo: nguồn đổi sau khi viết spec không phải lỗi của phase sau.
+#            open-questions.md / refactor-requests.md: mục ở cấp cũ "## REQ-/RFR-" (phải "###");
+#            RFR sai dạng (không đúng 3 chữ số) hay trùng.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -72,6 +74,22 @@ lsl=$(luat_loi_spec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $lsl
 EOF
+# refactor-requests.md (/aw-refactor ghi ở phase nào cũng được — phase sau chạy lại spec nên vẫn bắt):
+# mã "### RFR-NNN" dưới "## Requests", đúng 3 chữ số, không trùng.
+if [ -f "$DIR/refactor-requests.md" ]; then
+  rl=$(awk '
+    { sub(/\r$/, "") }
+    /^###?[ \t]+RFR-[0-9]+/ {
+      match($0, /RFR-[0-9]+/); c = substr($0, RSTART, RLENGTH)
+      if ($0 ~ /^##[ \t]/) print "refactor-requests.md: \"## " c "\" là cấp heading cũ — đổi thành \"### " c "\" dưới \"## Requests\""
+      if (c !~ /^RFR-[0-9][0-9][0-9]$/) print "Mã " c " sai dạng trong refactor-requests.md: phải đúng 3 chữ số (RFR-001)"
+      if (c in gap) print "Mã " c " xuất hiện nhiều lần trong refactor-requests.md"
+      gap[c] = 1
+    }' "$DIR/refactor-requests.md")
+  while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$rl
+EOF
+fi
 TT_SPEC=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
 LOAI=$(kc_loai "$DIR")
 BV="${TMPDIR:-/tmp}/tv-bv.$$"
@@ -98,8 +116,10 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
 
   # ---- File 1: open-questions.md ----
   idx==1 {
-    if ($0 ~ /^##[ \t]+REQ-[0-9]+/) {
+    # Mục là "### REQ-NNN" dưới "## Questions"; cấp cũ "## REQ-NNN" vẫn đọc để không kéo theo lỗi khác.
+    if ($0 ~ /^###?[ \t]+REQ-[0-9]+/) {
       match($0, /REQ-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
+      if ($0 ~ /^##[ \t]/) loi("open-questions.md: \"## " cur_oq "\" là cấp heading cũ — đổi thành \"### " cur_oq "\" dưới \"## Questions\", rồi chạy aw toc")
       if (cur_oq !~ /^REQ-[0-9][0-9][0-9]$/) loi("Mã " cur_oq " sai dạng trong open-questions.md: phải đúng 3 chữ số (REQ-001)")
       co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
     }
@@ -174,7 +194,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     ten = (a == "" ? "dòng " n_mt : "\"" a "\"")
     if (match(x, /REQ-[0-9]+/)) {
       q = substr(x, RSTART, RLENGTH)
-      if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"## " q "\"")
+      if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"### " q "\"")
     } else if (x !~ /\[(CONFLUENCE|JIRA|FILE)\]/) {
       loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § REQ-NNN](open-questions.md#req-nnn)) hoặc nguồn đã chốt " \
           "([CONFLUENCE] [JIRA] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
@@ -287,7 +307,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       }
       if (t == "OPEN-QUESTION") {
         if (!(c in co_muc))
-          loi(c ": gắn [OPEN-QUESTION] nhưng open-questions.md không có mục \"## " c "\". " \
+          loi(c ": gắn [OPEN-QUESTION] nhưng open-questions.md không có mục \"### " c "\". " \
               "Gắn nhãn mà không hỏi ai thì nhãn vô nghĩa.")
         else if (!(c in co_gia_dinh))
           loi(c ": mục trong open-questions.md thiếu dòng \"Assumption:\". " \
@@ -304,7 +324,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       if (t == "FILE" && (c in tro_oq)) {
         q = tro_oq[c]
         if (!(q in co_muc))
-          loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng không có mục \"## " q "\". " \
+          loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng không có mục \"### " q "\". " \
               "Câu trả lời của người phải được ghi ở đó (/aw-clarify).")
         else if (tt_oq[q] != "answered" && q != c)
           loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng mục đó chưa \"answered\".")
@@ -316,7 +336,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     for (i = 1; i <= n_oq; i++) {
       q = ds_oq[i]; s = tt_oq[q]
       if (!(q in da_gap)) {
-        loi("open-questions.md có mục \"## " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
+        loi("open-questions.md có mục \"### " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
         continue
       }
       if (s != "open" && s != "answered") {

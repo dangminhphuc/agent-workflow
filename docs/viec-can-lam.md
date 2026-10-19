@@ -12,15 +12,9 @@ Khoá mới `high_risk_keywords` trong `conventions.md`; spec ghi `Risk: normal`
 
 ## Mã định danh (sau khi đổi sang `REQ`/`DEC`/`FND`/`TSK`/`RFR`)
 
-- **Cấp heading thống nhất** — PR riêng. Mã hiện nằm ở cấp khác nhau: `### REQ` trong `spec.md` nhưng
-  `## REQ` trong `open-questions.md`, `## RFR` nhưng `### FND`. Đề xuất: mã luôn ở `###`, dưới một
-  `##` của nhóm.
 - **`FND` trùng giữa nhiều checker LLM** — chưa xảy ra (mới có checker design). `pending.sh` phải ghép
   tên file (`design-findings.md:FND-001`) để phân biệt. Thêm checker thứ hai thì cần tiền tố/namespace
   riêng hoặc một file findings chung.
-- **Mã sai dạng — phần còn lại.** Đã chặn heading không đúng 3 chữ số (`REQ`, `DEC`, `FND`, `TSK`).
-  Chưa kiểm: đánh số liên tiếp (dễ báo nhầm khi xoá một mục giữa chừng — cần quyết độ chặt), và `RFR`
-  (chưa có checker máy nào đọc `refactor-requests.md`).
 
 ## Ngoài phạm vi (luật mới, cần quyết định độ chặt)
 

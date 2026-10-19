@@ -235,29 +235,29 @@ EOF
 cat > "$LQ/open-questions.md" <<'EOF'
 # Open questions
 
-## REQ-001 — không chặn
+### REQ-001 — không chặn
 - **Question:** hỏi 1
 - **Blocking:** `non-blocking`
 - **Status:** `open`
 
-## REQ-002 — chặn review, bắt buộc, không task
+### REQ-002 — chặn review, bắt buộc, không task
 - **Blocking:** `review-blocking`
 - **Status:** `open`
 
-## REQ-003 — chặn review, bắt buộc, 2 task
+### REQ-003 — chặn review, bắt buộc, 2 task
 - **Blocking:** `review-blocking`
 - **Status:** `open`
 
-## REQ-004 — chặn, nên có
+### REQ-004 — chặn, nên có
 - **Blocking:** `blocking`
 - **Status:** `open`
 
-## REQ-005 — chặn, bắt buộc
+### REQ-005 — chặn, bắt buộc
 - **Ask:** PO
 - **Blocking:** `blocking`
 - **Status:** `open`
 
-## REQ-006 — đã trả lời
+### REQ-006 — đã trả lời
 - **Blocking:** `blocking`
 - **Status:** `answered`
 - **Answer:** có
@@ -294,15 +294,15 @@ ky_vong 3 "fixture: chỉ có điểm mù không chặn" sh "$CHK" "$F"
 cat > "$LQ/open-questions.md" <<'EOF'
 # Open questions
 
-## REQ-001 — không chặn
+### REQ-001 — không chặn
 - **Blocking:** `non-blocking`
 - **Status:** `open`
 
-## REQ-002 — chặn review
+### REQ-002 — chặn review
 - **Blocking:** `review-blocking`
 - **Status:** `open`
 
-## REQ-005 — chặn
+### REQ-005 — chặn
 - **Blocking:** `blocking`
 - **Status:** `open`
 EOF

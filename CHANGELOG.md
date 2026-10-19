@@ -20,7 +20,19 @@ ngầm giữa các bản.
   `open-questions.md`), `aw check design` cho `DEC` và `FND`, `aw check plan` cho `TSK`.
   **Ai bị ảnh hưởng:** chỉ những việc đang có mã sai dạng. Sửa heading về dạng `REQ-001` cùng mọi
   tham chiếu tới nó, rồi chạy lại `aw check`. Việc đã ghim engine cũ trong `intake.md` không bị ảnh
-  hưởng. Hai điểm chưa kiểm: đánh số liên tiếp, và `RFR` (chưa có checker máy nào đọc).
+  hưởng. Đánh số liên tiếp không kiểm (xoá một mục giữa chừng là hợp lệ).
+- **Mã định danh luôn ở heading `###`, dưới một `##` của nhóm.** Trước đây mỗi file một kiểu:
+  `### REQ` trong `spec.md` nhưng `## REQ` trong `open-questions.md`, `## RFR` trong
+  `refactor-requests.md`, còn `### FND` lại nằm dưới `## Contents`. Giờ:
+  `open-questions.md` dùng `## Questions` → `### REQ-NNN`; `refactor-requests.md` dùng
+  `## Requests` → `### RFR-NNN`; `design-findings.md` dùng `## Findings` → `### FND-NNN`.
+  `aw check spec` **chặn** dạng cũ `## REQ-NNN`/`## RFR-NNN` và chỉ cách đổi. Anchor không đổi nên
+  link `open-questions.md#req-002-…` vẫn đúng. **Ai bị ảnh hưởng:** việc đã ghim engine cũ trong
+  `intake.md` chạy tiếp bình thường. Việc chuyển sang engine này mà đã có `open-questions.md` hay
+  `refactor-requests.md`: đổi `## REQ-`/`## RFR-` thành `### …`, thêm `## Questions`/`## Requests`
+  phía trên, rồi chạy `aw toc`.
+- **`aw check spec` kiểm `refactor-requests.md`** (nếu có): chặn mã `RFR` không đúng 3 chữ số và
+  mã trùng. Phase sau chạy lại spec nên RFR ghi ở phase nào cũng được kiểm.
 
 ### Sửa
 - **`aw check review` không xoá finding cũ khi review chạy lại mà không còn finding nào.** Nhật ký

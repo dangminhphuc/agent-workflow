@@ -57,9 +57,31 @@ ky_vong 1 "chặn mã REQ trùng nhau" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" "### REQ-002" "### REQ-2"
 ky_vong 1 "chặn mã REQ sai dạng (không đủ 3 chữ số)" sh "$CHK" "$F"
 dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-2 sai dạng'"
-viet_spec; thay "$F/open-questions.md" "## REQ-002" "## REQ-0002"
+viet_spec; thay "$F/open-questions.md" "### REQ-002" "### REQ-0002"
 ky_vong 1 "chặn mã REQ sai dạng trong open-questions.md" sh "$CHK" "$F"
 dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-0002 sai dạng'"
+
+# Mã luôn ở "###" dưới một "##" của nhóm — dạng cũ "## REQ-NNN" trong open-questions.md bị chặn
+viet_spec; thay "$F/open-questions.md" "### REQ-002" "## REQ-002"; toc_f open-questions.md
+ky_vong 1 "chặn mục open question ở cấp cũ \"## REQ-NNN\"" sh "$CHK" "$F"
+dung "…đúng lý do, chỉ cách đổi" sh -c "sh '$CHK' '$F' | grep -qF 'open-questions.md: \"## REQ-002\" là cấp heading cũ — đổi thành \"### REQ-002\" dưới \"## Questions\"'"
+
+# refactor-requests.md (/aw-refactor): "### RFR-NNN", đúng 3 chữ số, không trùng
+viet_spec
+rfr() { printf '# Refactor requests — feat_x\n\n## Requests\n\n%s\n- **Summary:** gộp hàm\n- **Status:** `open`\n' "$1" > "$F/refactor-requests.md"; }
+rfr '### RFR-001 — gộp hàm'
+ky_vong 0 "refactor-requests.md \"### RFR-001\" → cho qua" sh "$CHK" "$F"
+rfr '## RFR-001 — gộp hàm'
+ky_vong 1 "chặn RFR ở cấp cũ \"## RFR-NNN\"" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'refactor-requests.md: \"## RFR-001\" là cấp heading cũ — đổi thành \"### RFR-001\" dưới \"## Requests\"'"
+rfr '### RFR-01 — gộp hàm'
+ky_vong 1 "chặn mã RFR sai dạng" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'Mã RFR-01 sai dạng trong refactor-requests.md: phải đúng 3 chữ số (RFR-001)'"
+rfr '### RFR-001 — a
+### RFR-001 — b'
+ky_vong 1 "chặn mã RFR trùng" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'Mã RFR-001 xuất hiện nhiều lần trong refactor-requests.md'"
+rm -f "$F/refactor-requests.md"
 
 viet_spec; rm -f "$F/open-questions.md"
 ky_vong 2 "chặn khi thiếu hẳn open-questions.md" sh "$CHK" "$F"
@@ -128,7 +150,7 @@ dung "bỏ tick thì máy xoá dấu duyệt thừa" sh -c "! grep -q 'approval-
 viet_spec
 
 # open-questions.md <-> spec.md phải khớp trạng thái
-viet_spec; printf '\n## REQ-099 — mồ côi\n- **Assumption:** z\n- **Blocking:** `non-blocking`\n- **Status:** `open`\n' >> "$F/open-questions.md"
+viet_spec; printf '\n### REQ-099 — mồ côi\n- **Assumption:** z\n- **Blocking:** `non-blocking`\n- **Status:** `open`\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn mục open-questions trỏ về REQ không có trong spec" sh "$CHK" "$F"
 dung "…đúng lý do: mục mồ côi REQ-099" sh -c "sh '$CHK' '$F' | grep -q 'spec.md không có REQ-099'"
 viet_spec; thay "$F/open-questions.md" '`open`' '`xong`'
@@ -147,7 +169,7 @@ viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-00
 ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
 # Người đổi REQ đã có nguồn (/aw-clarify REQ-NNN): ghi thành điểm mù đã trả lời
 viet_spec; sh "$CHK" "$F" >/dev/null 2>&1   # máy ghi dấu duyệt cho bản người đã tick
-printf '\n## REQ-001 — a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa REQ-001)\n' >> "$F/open-questions.md"
+printf '\n### REQ-001 — a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa REQ-001)\n' >> "$F/open-questions.md"
 toc_f open-questions.md
 thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
 - Quote:

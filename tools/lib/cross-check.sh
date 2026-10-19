@@ -495,8 +495,8 @@ kc_diem_mu() {
   awk '
     function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     { sub(/\r$/, "") }
-    /^##[ \t]+REQ-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /REQ-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "open"; next }
-    /^##?[ \t]/ { if (q != "") print q "|" m "|" t; q = ""; next }
+    /^###[ \t]+REQ-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /REQ-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "open"; next }
+    /^(#|##|###)[ \t]/ { if (q != "") print q "|" m "|" t; q = ""; next }
     q != "" && /^[ \t]*-[ \t]*\**Blocking\**:/ { m = gia_tri($0) }
     q != "" && /^[ \t]*-[ \t]*\**Status\**:/   { t = gia_tri($0) }
     END { if (q != "") print q "|" m "|" t }

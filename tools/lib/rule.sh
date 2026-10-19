@@ -130,7 +130,7 @@ luat_nguon() {
           _lh=$(dy_quet "$_lS" spec | awk -F'|' '$1 == "O" { print $4; exit }')
           if [ "$_lp" = open-questions.md ]; then
             _lq=$(awk -v yc="$2" '
-              { sub(/\r$/, "") } /^##[ \t]/ { t = (index($0, yc) > 0); next }
+              { sub(/\r$/, "") } /^(#|##|###)[ \t]/ { t = (index($0, yc) > 0); next }
               t && /Answer[^:]*:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/\*\*/, "", s); gsub(/<!--.*-->/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }' "$1/open-questions.md")
           else
             _lq=$(awk '{ sub(/\r$/, "") } /^##[ \t]+Input/ { t = 1; next } /^##/ { t = 0 } t && /\[HUMAN\]/ { h = 1; next } t && h && /^[ \t]*>/ { s = $0; sub(/^[ \t]*>[ \t]*/, "", s); gsub(/<!--.*-->/, "", s); sub(/[ \t]+$/, "", s); o = o (o == "" ? "" : " ") s; next } t && h && /^[ \t]*-/ { h = 0 } END { print o }' "$1/intake.md")

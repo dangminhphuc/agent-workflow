@@ -15,7 +15,9 @@
 
 <!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
 
-## REQ-002 — <tiêu đề trùng với mục trong spec.md>
+## Questions
+
+### REQ-002 — <tiêu đề trùng với mục trong spec.md>
 
 - **Source says:** <trích nguyên văn, hoặc "không đề cập">
 - **Question:** <câu hỏi cụ thể, trả lời được bằng một câu>

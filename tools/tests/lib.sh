@@ -175,7 +175,9 @@ EOF
   cat > "$F/open-questions.md" <<'EOF'
 # Open questions
 
-## REQ-002 — b
+## Questions
+
+### REQ-002 — b
 - **Assumption:** y
 - **Blocking:** `non-blocking`   <!-- blocking | review-blocking | non-blocking -->
 - **Status:** `open`   <!-- open | answered -->
