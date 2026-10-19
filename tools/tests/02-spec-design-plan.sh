@@ -51,6 +51,20 @@ ky_vong 1 "chặn spec thiếu Mức rủi ro" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '`normal`' '`<high | normal>`'
 ky_vong 1 "chặn Mức rủi ro còn chỗ giữ chỗ" sh "$CHK" "$F"
 
+# high_risk_keywords: Risk normal mà spec chứa từ khoá → chỉ cảnh báo (từ khoá hay báo nhầm)
+viet_spec; thay "$CFG/conventions.md" 'high_risk_keywords:' 'high_risk_keywords: thanh toán, Migration'
+thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] mở y thấy a sau migration dữ liệu'
+OUT=$(sh "$CHK" "$F"); MA=$?
+dung "Risk normal chứa từ khoá rủi ro → vẫn cho qua" bang "$MA" 0
+dung "…nhưng cảnh báo, nêu từ khoá (không phân biệt hoa thường)" sh -c "printf '%s' \"\$1\" | grep -qF '[CẢNH BÁO] \"Risk: normal\" nhưng spec có từ khoá rủi ro cao (high_risk_keywords): Migration'" _ "$OUT"
+thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `high`'
+dung "Risk high → không cảnh báo từ khoá" sh -c "! sh '$CHK' '$F' | grep -qF 'high_risk_keywords'"
+viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] mở y thấy a <!-- thanh toán -->'
+dung "từ khoá chỉ nằm trong comment → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -qF 'high_risk_keywords'"
+thay "$CFG/conventions.md" 'high_risk_keywords: thanh toán, Migration' 'high_risk_keywords:'
+viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] mở y thấy a khi thanh toán'
+dung "high_risk_keywords trống → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -qF 'high_risk_keywords'"
+
 viet_spec; thay "$F/spec.md" '### REQ-002' '### REQ-001'
 ky_vong 1 "chặn mã REQ trùng nhau" sh "$CHK" "$F"
 
@@ -180,6 +194,38 @@ viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
 - Quote:
   > khách mở y thấy a' '- Source: `[INFERRED]` index cho REQ-002'
 ky_vong 0 "[INFERRED] không cần Quote" sh "$CHK" "$F"
+
+# [INFERRED] phải ghi lý do; [JIRA] phải có mã issue; nguồn ngoài "## Input" của intake → cảnh báo
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[INFERRED]`'
+ky_vong 1 "chặn [INFERRED] không ghi lý do" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'REQ-001: nguồn [INFERRED] không ghi lý do'"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[INFERRED]` <lý do + REQ phục vụ>'
+ky_vong 1 "chặn [INFERRED] lý do còn chỗ giữ chỗ" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` https://jira.x/browse'
+ky_vong 1 "chặn [JIRA] không có mã issue" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'REQ-001: nguồn [JIRA] không có mã issue khớp jira_key_regex'"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` [ABC-1](https://jira.x/browse/ABC-1)'
+ky_vong 0 "[JIRA] mã trong link → cho qua" sh "$CHK" "$F"
+dung "…mã có trong Input → không cảnh báo nguồn ngoài intake" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` ABC-9'
+OUT=$(sh "$CHK" "$F"); MA=$?
+dung "[JIRA] mã không có trong Input của intake → vẫn cho qua" bang "$MA" 0
+dung "…nhưng cảnh báo, nêu mã" sh -c "printf '%s' \"\$1\" | grep -qF '[CẢNH BÁO] REQ-001: nguồn ABC-9 không có trong \"## Input\" của intake.md'" _ "$OUT"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` ABC-10'
+dung "[JIRA] ABC-10 không khớp nhầm ABC-1 trong Input" sh -c "sh '$CHK' '$F' | grep -qF 'nguồn ABC-10 không có trong'"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[CONFLUENCE]` [Trang](https://wiki.x/p/1#muc) § Mục'
+dung "[CONFLUENCE] URL không có trong Input → cảnh báo" sh -c "sh '$CHK' '$F' | grep -qF 'nguồn https://wiki.x/p/1 không có trong'"
+thay "$F/intake.md" '- `[JIRA]` ABC-1' '- `[JIRA]` ABC-1
+- `[CONFLUENCE]` https://wiki.x/p/1'
+dung "…URL có trong Input (bỏ anchor) → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
+viet_intake
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)'
+dung "[FILE] trỏ open-questions.md của việc → không cảnh báo nguồn ngoài intake" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
+viet_spec
 printf '# BRD\n\n## Hoàn tiền\n\nKhách được hoàn tiền trong vòng\n30 ngày   kể từ ngày thanh toán.\n> Phí: 1.5%% * số tiền (C:\\tmp\\n) [tối đa].\n' > "$R/docs/brd.md"
 quote_file() {
   viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/brd.md § Hoàn tiền'
