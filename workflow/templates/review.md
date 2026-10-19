@@ -19,12 +19,12 @@
 
 ## Lens 1 — Spec conformance
 
-Mọi mã `YC` trong `spec.md` phải có mặt ở bảng này.
+Mọi mã `REQ` trong `spec.md` phải có mặt ở bảng này.
 
 | ID | Verdict | Evidence | Notes |
 |---|---|---|---|
-| YC-001 | pass | `file.ts:42` | |
-| YC-002 | pending | `file.ts:88` | Giả định tạm chưa được xác nhận |
+| REQ-001 | pass | `file.ts:42` | |
+| REQ-002 | pending | `file.ts:88` | Giả định tạm chưa được xác nhận |
 
 Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
@@ -36,13 +36,13 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
 <!-- refactor / perf: với từng file ở "Modified existing tests" của plan.md, xác nhận diff chỉ
      đổi import/cấu trúc, không đổi assertion.
-     perf: đọc perf.md, kết luận YC performance pass/fail theo số đo.
+     perf: đọc perf.md, kết luận REQ performance pass/fail theo số đo.
      chore: xác nhận mức "patch | minor" ở "Dependency upgrades" là đúng.
      Job type khác: xoá mục này. -->
 
 ## Lens 2 — Design and scope
 
-- Deviations from `tdd.md` (D-xx / contract / data model): <liệt kê, hoặc "không có">
+- Deviations from `tdd.md` (DEC-xxx / contract / data model): <liệt kê, hoặc "không có">
 - Changes outside any task: <...>
 - Tasks marked done with no trace in the diff: <...>
 - Unplanned items handled silently: <...>
@@ -93,7 +93,7 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
 <!-- Đủ cả bảy dòng, không đổi tên hạng mục — máy chặn nếu thiếu.
      Verdict: pass | finding (kèm file:dòng, thêm finding ở Lens 3) | not applicable (kèm lý do).
-     Authn / authz: đối chiếu YC Phân quyền trong spec.md. -->
+     Authn / authz: đối chiếu REQ Phân quyền trong spec.md. -->
 
 | Item | Verdict | Location / reason |
 |---|---|---|

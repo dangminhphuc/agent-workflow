@@ -122,7 +122,7 @@ RQC="$TMP/repo-qu-cu"; mkdir -p "$RQC"; git -C "$RQC" init -q; mkdir -p "$RQC/.g
 printf '# của tôi\n' > "$RQC/.git/agent-workflow/conventions.md"
 ky_vong 0 "aw init ở repo chỉ có quy ước trong bản clone (init bằng engine cũ)" sh -c "AW_REPO='$RQC' AW_CONFIG='$RQC/.git/agent-workflow' AW_ENGINE='$ROOT' sh '$ROOT/bin/aw-engine' init --test-cmd true"
 dung "…giữ nguyên bản clone, không tạo file trong repo" sh -c "grep -q 'của tôi' '$RQC/.git/agent-workflow/conventions.md' && [ ! -e '$RQC/$DQ' ]"
-# tk_plan_t2 <dòng Verify + Status> — plan gốc, thay riêng hai dòng cuối của T-02
+# tk_plan_t2 <dòng Verify + Status> — plan gốc, thay riêng hai dòng cuối của TSK-002
 tk_plan_t2() { viet_plan; ghi_based_on; thay "$F/plan.md" '- Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
 
@@ -131,33 +131,33 @@ tk_plan_t2() { viet_plan; ghi_based_on; thay "$F/plan.md" '- Verify: `test -f sr
 ## Deferred"; }
 tk_plan_t2 '- Verify: `test -f src/a.txt` → có file
 - Status: `[ ]`'
-dung "tiến độ: bước tiếp chỉ đúng task kế" sh -c "sh '$SS' '$F' 2>/dev/null | grep -q 'Bước tiếp: /aw-implement — task tiếp: T-02'"
+dung "tiến độ: bước tiếp chỉ đúng task kế" sh -c "sh '$SS' '$F' 2>/dev/null | grep -q 'Bước tiếp: /aw-implement — task tiếp: TSK-002'"
 
 # ---------------------------------------------------------------- aw task (task.sh)
 nhom "task.sh (aw task)"
 TK="$T/task.sh"; HT="$T/check-implement.sh"
-dung "next → T-02 (stdout)" bang "$(sh "$TK" next "$F" 2>/dev/null)" "T-02"
+dung "next → TSK-002 (stdout)" bang "$(sh "$TK" next "$F" 2>/dev/null)" "TSK-002"
 ky_vong 1 "implement chặn task chưa làm [ ]" sh "$HT" "$F"
-dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'T-02 chưa làm'"
-ky_vong 1 "done khi chưa start → TỪ CHỐI" sh "$TK" done "$F" T-02
-ky_vong 0 "start T-02 → [~]" sh "$TK" start "$F" T-02
+dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'TSK-002 chưa làm'"
+ky_vong 1 "done khi chưa start → TỪ CHỐI" sh "$TK" done "$F" TSK-002
+ky_vong 0 "start TSK-002 → [~]" sh "$TK" start "$F" TSK-002
 dung "…plan.md ghi [~]" grep -q '^- Status: `\[~\]`' "$F/plan.md"
-ky_vong 0 "start lại task đang [~] → không lỗi" sh "$TK" start "$F" T-02
-ky_vong 1 "start task đã [x] → TỪ CHỐI" sh "$TK" start "$F" T-01
-thay "$F/plan.md" '- Based on: `D-01`
+ky_vong 0 "start lại task đang [~] → không lỗi" sh "$TK" start "$F" TSK-002
+ky_vong 1 "start task đã [x] → TỪ CHỐI" sh "$TK" start "$F" TSK-001
+thay "$F/plan.md" '- Based on: `DEC-001`
 - Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
-- Status: `[x]`' '- Based on: `D-01`
+- Status: `[x]`' '- Based on: `DEC-001`
 - Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[ ]`'
-ky_vong 1 "WIP=1: start task khác khi T-02 đang [~] → TỪ CHỐI" sh "$TK" start "$F" T-01
-dung "next ưu tiên task đang [~]" bang "$(sh "$TK" next "$F" 2>/dev/null)" "T-02"
+ky_vong 1 "WIP=1: start task khác khi TSK-002 đang [~] → TỪ CHỐI" sh "$TK" start "$F" TSK-001
+dung "next ưu tiên task đang [~]" bang "$(sh "$TK" next "$F" 2>/dev/null)" "TSK-002"
 ky_vong 1 "implement chặn task [~]" sh "$HT" "$F"
-ky_vong 0 "done T-02, Verify xanh → [x]" sh "$TK" done "$F" T-02
-dung "…ghi bằng chứng xanh vào task-results.md" sh -c "grep -q '^## T-02' '$F/task-results.md' && awk '/^## T-02/{p=1} p && /Mã thoát/{print; exit}' '$F/task-results.md' | grep -q '\`0\`'"
-ky_vong 0 "start T-01 sau khi T-02 xong" sh "$TK" start "$F" T-01
-ky_vong 0 "done T-01" sh "$TK" done "$F" T-01
+ky_vong 0 "done TSK-002, Verify xanh → [x]" sh "$TK" done "$F" TSK-002
+dung "…ghi bằng chứng xanh vào task-results.md" sh -c "grep -q '^## TSK-002' '$F/task-results.md' && awk '/^## TSK-002/{p=1} p && /Mã thoát/{print; exit}' '$F/task-results.md' | grep -q '\`0\`'"
+ky_vong 0 "start TSK-001 sau khi TSK-002 xong" sh "$TK" start "$F" TSK-001
+ky_vong 0 "done TSK-001" sh "$TK" done "$F" TSK-001
 ky_vong 4 "mọi task [x] → next HẾT TASK" sh "$TK" next "$F"
 ky_vong 0 "implement ĐẠT khi mọi task xong bằng máy" sh "$HT" "$F"
 
@@ -172,95 +172,95 @@ thay "$F/plan.md" '- Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt`' '- Expected files: `src/b.txt`
 - Verify: `test -d src`'
 ky_vong 1 "implement chặn khi Verify đổi sau khi task xong" sh "$HT" "$F"
-dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'T-02: lệnh Verify trong plan.md đã đổi'"
+dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'TSK-002: lệnh Verify trong plan.md đã đổi'"
 
 # Đỏ liên tiếp → DỪNG (điều kiện dừng của vòng lặp)
 viet_plan; ghi_based_on
 tk_plan_t2 '- Verify: `echo VERIFY-DO; false` → xanh
 - Status: `[ ]`'
-sh "$TK" start "$F" T-02 >/dev/null 2>&1
-ky_vong 1 "done, Verify đỏ → giữ [~]" sh "$TK" done "$F" T-02
+sh "$TK" start "$F" TSK-002 >/dev/null 2>&1
+ky_vong 1 "done, Verify đỏ → giữ [~]" sh "$TK" done "$F" TSK-002
 dung "…ghi output đỏ thật" grep -q 'VERIFY-DO' "$F/task-results.md"
-dung "…đỏ liên tiếp: 1" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' T-02 'Đỏ liên tiếp'")" "1"
-ky_vong 1 "đỏ lần 2" sh "$TK" done "$F" T-02
-ky_vong 6 "đỏ lần 3 = MAX_RED_RUNS mặc định → DỪNG" sh "$TK" done "$F" T-02
+dung "…đỏ liên tiếp: 1" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'")" "1"
+ky_vong 1 "đỏ lần 2" sh "$TK" done "$F" TSK-002
+ky_vong 6 "đỏ lần 3 = MAX_RED_RUNS mặc định → DỪNG" sh "$TK" done "$F" TSK-002
 ky_vong 6 "next cũng DỪNG ở task đó" sh "$TK" next "$F"
 printf 'MAX_RED_RUNS=5\n' >> "$CFG/config.sh"
 ky_vong 0 "MAX_RED_RUNS=5 → next còn cho làm" sh "$TK" next "$F"
 cp "$TMP/ch-ss.bak" "$CFG/config.sh"
 tk_plan_t2 '- Verify: `test -f src/a.txt` → xanh
 - Status: `[~]`'
-ky_vong 0 "sửa xong, Verify xanh → [x]" sh "$TK" done "$F" T-02
-dung "…xanh thì đỏ liên tiếp về 0" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' T-02 'Đỏ liên tiếp'")" "0"
+ky_vong 0 "sửa xong, Verify xanh → [x]" sh "$TK" done "$F" TSK-002
+dung "…xanh thì đỏ liên tiếp về 0" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'")" "0"
 dung "TASK_FULL_TEST tắt: done không chạy TEST_CMD" sh -c "! grep -q 'Toàn bộ test' '$F/task-results.md'"
 
 # TASK_FULL_TEST=1: Verify xanh thì chạy thêm TEST_CMD
 printf 'TASK_FULL_TEST=1\nTEST_CMD="echo TOAN-BO-DO; false"\n' >> "$CFG/config.sh"
-ky_vong 1 "TASK_FULL_TEST=1: Verify xanh, toàn bộ test đỏ → ĐỎ" sh "$TK" done "$F" T-02
+ky_vong 1 "TASK_FULL_TEST=1: Verify xanh, toàn bộ test đỏ → ĐỎ" sh "$TK" done "$F" TSK-002
 dung "…về [~]" grep -q '^- Status: `\[~\]`' "$F/plan.md"
 dung "…ghi output toàn bộ test" grep -q 'TOAN-BO-DO' "$F/task-results.md"
-dung "…ghi dòng Toàn bộ test ĐỎ, tính đỏ liên tiếp" sh -c "grep -q 'Toàn bộ test:.*ĐỎ' '$F/task-results.md' && sh -c \". '$T/lib/task.sh'; tk_bc '$F/task-results.md' T-02 'Đỏ liên tiếp'\" | grep -qx 1"
+dung "…ghi dòng Toàn bộ test ĐỎ, tính đỏ liên tiếp" sh -c "grep -q 'Toàn bộ test:.*ĐỎ' '$F/task-results.md' && sh -c \". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'\" | grep -qx 1"
 cp "$TMP/ch-ss.bak" "$CFG/config.sh"
 printf 'TASK_FULL_TEST=1\nTEST_CMD="true"\n' >> "$CFG/config.sh"
-ky_vong 0 "TASK_FULL_TEST=1: Verify và toàn bộ test xanh → [x]" sh "$TK" done "$F" T-02
+ky_vong 0 "TASK_FULL_TEST=1: Verify và toàn bộ test xanh → [x]" sh "$TK" done "$F" TSK-002
 dung "…ghi dòng Toàn bộ test XANH" grep -q 'Toàn bộ test:.*XANH' "$F/task-results.md"
 cp "$TMP/ch-ss.bak" "$CFG/config.sh"
 
 # Kiểm chứng thủ công
 tk_plan_t2 '- Verify: mở màn hình y thấy b
 - Status: `[~]`'
-ky_vong 1 "Verify không có lệnh, không --manual → TỪ CHỐI" sh "$TK" done "$F" T-02
-ky_vong 1 "--manual bằng chứng giữ chỗ → TỪ CHỐI" sh "$TK" done "$F" T-02 --manual "<bằng chứng>"
-ky_vong 0 "--manual có bằng chứng → [x]" sh "$TK" done "$F" T-02 --manual "mở y, thấy b ở góc phải"
-dung "implement ĐẠT kèm lưu ý task thủ công" sh -c "sh '$HT' '$F' | grep -q 'LƯU Ý.*thủ công: T-02'"
+ky_vong 1 "Verify không có lệnh, không --manual → TỪ CHỐI" sh "$TK" done "$F" TSK-002
+ky_vong 1 "--manual bằng chứng giữ chỗ → TỪ CHỐI" sh "$TK" done "$F" TSK-002 --manual "<bằng chứng>"
+ky_vong 0 "--manual có bằng chứng → [x]" sh "$TK" done "$F" TSK-002 --manual "mở y, thấy b ở góc phải"
+dung "implement ĐẠT kèm lưu ý task thủ công" sh -c "sh '$HT' '$F' | grep -q 'LƯU Ý.*thủ công: TSK-002'"
 tk_plan_t2 '- Verify: `true` → xanh
 - Status: `[~]`'
-ky_vong 1 "--manual khi Verify có lệnh → TỪ CHỐI" sh "$TK" done "$F" T-02 --manual "đã xem"
+ky_vong 1 "--manual khi Verify có lệnh → TỪ CHỐI" sh "$TK" done "$F" TSK-002 --manual "đã xem"
 
 # Phụ thuộc
 viet_plan; ghi_based_on
 thay "$F/plan.md" '- Status: `[x]`' '- Status: `[ ]`'
 thay "$F/plan.md" '- Status: `[x]`' '- Status: `[ ]`'
-thay "$F/plan.md" '- Covers: `YC-002`' '- Covers: `YC-002`
-- Depends on: T-01'
-ky_vong 1 "start task phụ thuộc chưa [x] → TỪ CHỐI" sh "$TK" start "$F" T-02
-dung "next chọn T-01 trước" bang "$(sh "$TK" next "$F" 2>/dev/null)" "T-01"
+thay "$F/plan.md" '- Covers: `REQ-002`' '- Covers: `REQ-002`
+- Depends on: TSK-001'
+ky_vong 1 "start task phụ thuộc chưa [x] → TỪ CHỐI" sh "$TK" start "$F" TSK-002
+dung "next chọn TSK-001 trước" bang "$(sh "$TK" next "$F" 2>/dev/null)" "TSK-001"
 thay "$F/plan.md" '- Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[ ]`' '- Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[~]`'
 ky_vong 2 "task không có trong plan.md: sai mã → SAI THAM SỐ" sh "$TK" start "$F" X-1
-ky_vong 1 "task không có trong plan.md → TỪ CHỐI" sh "$TK" start "$F" T-09
+ky_vong 1 "task không có trong plan.md → TỪ CHỐI" sh "$TK" start "$F" TSK-009
 
-# reopen: người đổi YC / mở lại D → chỉ đúng task bị ảnh hưởng về [ ]
+# reopen: người đổi REQ / mở lại DEC → chỉ đúng task bị ảnh hưởng về [ ]
 tk_st() { sh -c ". '$T/lib/task.sh'; tk_dong '$F/plan.md' $1" | cut -d'|' -f2; }
 viet_plan; ghi_based_on
-ky_vong 0 "reopen YC-002 → XONG" sh "$TK" reopen "$F" YC-002
-dung "…T-02 (Covers YC-002) về [ ]" bang "$(tk_st T-02)" " "
-dung "…T-01 giữ [x]" bang "$(tk_st T-01)" "x"
+ky_vong 0 "reopen REQ-002 → XONG" sh "$TK" reopen "$F" REQ-002
+dung "…TSK-002 (Covers REQ-002) về [ ]" bang "$(tk_st TSK-002)" " "
+dung "…TSK-001 giữ [x]" bang "$(tk_st TSK-001)" "x"
 viet_plan
-ky_vong 0 "reopen D-01 → XONG" sh "$TK" reopen "$F" D-01
-dung "…T-01 (Based on D-01) về [ ], T-02 giữ [x]" sh -c "[ '$(tk_st T-01)' = ' ' ] && [ '$(tk_st T-02)' = x ]"
+ky_vong 0 "reopen DEC-001 → XONG" sh "$TK" reopen "$F" DEC-001
+dung "…TSK-001 (Based on DEC-001) về [ ], TSK-002 giữ [x]" sh -c "[ '$(tk_st TSK-001)' = ' ' ] && [ '$(tk_st TSK-002)' = x ]"
 viet_plan
-thay "$F/plan.md" '- Covers: `YC-001`' '- Covers: `YC-001`
-- On assumption: **yes** — [open-questions.md § YC-002](open-questions.md#yc-002--b)'
-thay "$F/plan.md" '- Covers: `YC-002`
+thay "$F/plan.md" '- Covers: `REQ-001`' '- Covers: `REQ-001`
+- On assumption: **yes** — [open-questions.md § REQ-002](open-questions.md#req-002--b)'
+thay "$F/plan.md" '- Covers: `REQ-002`
 - Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt` → có file
-- Status: `[x]`' '- Covers: `YC-002`
+- Status: `[x]`' '- Covers: `REQ-002`
 - Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[~]`'
-ky_vong 0 "reopen YC theo cả On assumption, và task đang [~]" sh "$TK" reopen "$F" YC-002
-dung "…T-01, T-02 đều về [ ]" sh -c "[ '$(tk_st T-01)' = ' ' ] && [ '$(tk_st T-02)' = ' ' ]"
+ky_vong 0 "reopen REQ theo cả On assumption, và task đang [~]" sh "$TK" reopen "$F" REQ-002
+dung "…TSK-001, TSK-002 đều về [ ]" sh -c "[ '$(tk_st TSK-001)' = ' ' ] && [ '$(tk_st TSK-002)' = ' ' ]"
 viet_plan
-ky_vong 0 "reopen mã không task nào phủ (khớp nguyên mã, YC-00 ≠ YC-001) → không đổi gì" sh "$TK" reopen "$F" YC-00
-dung "…plan.md giữ nguyên [x]" sh -c "[ '$(tk_st T-01)' = x ] && [ '$(tk_st T-02)' = x ]"
-ky_vong 2 "reopen mã không phải YC/D → SAI THAM SỐ" sh "$TK" reopen "$F" T-01
+ky_vong 0 "reopen mã không task nào phủ (khớp nguyên mã, REQ-00 ≠ REQ-001) → không đổi gì" sh "$TK" reopen "$F" REQ-00
+dung "…plan.md giữ nguyên [x]" sh -c "[ '$(tk_st TSK-001)' = x ] && [ '$(tk_st TSK-002)' = x ]"
+ky_vong 2 "reopen mã không phải REQ/DEC → SAI THAM SỐ" sh "$TK" reopen "$F" TSK-001
 ky_vong 2 "reopen thiếu mã → SAI THAM SỐ" sh "$TK" reopen "$F"
 mv "$F/plan.md" "$TMP/plan.bak"
-ky_vong 0 "reopen khi chưa có plan.md → không có gì để làm lại" sh "$TK" reopen "$F" YC-001
+ky_vong 0 "reopen khi chưa có plan.md → không có gì để làm lại" sh "$TK" reopen "$F" REQ-001
 mv "$TMP/plan.bak" "$F/plan.md"
 viet_plan; ghi_based_on; ghi_bang_chung_task
 
@@ -272,7 +272,7 @@ printf 'moi\n<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> feat\n' > "$R/src/a.txt"
 ky_vong 1 "implement chặn dấu xung đột merge" sh "$HT" "$F"
 dung "…chỉ đúng file:dòng" sh -c "sh '$HT' '$F' | grep -q 'src/a.txt:2: còn dấu xung đột merge'"
 printf 'moi\n' > "$R/src/a.txt"
-printf '// covers: YC-001, YC-002\nit.only("a", () => {})\n' > "$R/test/a.test.js"
+printf '// covers: REQ-001, REQ-002\nit.only("a", () => {})\n' > "$R/test/a.test.js"
 ky_vong 0 "test mới .only chỉ CẢNH BÁO ở implement" sh "$HT" "$F"
 dung "…có in cảnh báo" sh -c "sh '$HT' '$F' | grep -q 'CẢNH BÁO.*test/a.test.js: thêm test bị bỏ qua'"
 ghi_tree_review
@@ -280,11 +280,11 @@ ky_vong 1 "…review CHẶN" sh "$T/check-review.sh" "$F"
 thay "$F/plan.md" '| Task | What came up | Extra files | Resolution |
 |---|---|---|---|' '| Task | What came up | Extra files | Resolution |
 |---|---|---|---|
-| T-01 | test a chỉ chạy được riêng | `test/a.test.js` | người quyết |'
+| TSK-001 | test a chỉ chạy được riêng | `test/a.test.js` | người quyết |'
 dung "khai file ở Unplanned → hết cảnh báo" sh -c "! sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua'"
 viet_plan; ghi_based_on
 g checkout -q main
-printf '// covers: YC-001, YC-002\nit.skip("cu", () => {})\n' > "$R/test/a.test.js"; g add test; g commit -q -m "test cu"
+printf '// covers: REQ-001, REQ-002\nit.skip("cu", () => {})\n' > "$R/test/a.test.js"; g add test; g commit -q -m "test cu"
 g checkout -q feat_x; g rebase -q --autostash main
 dung "dòng .skip có sẵn trên base không tính (chỉ dòng thêm mới)" sh -c "! sh '$HT' '$F' | grep -q 'thêm test bị bỏ qua'"
 thay "$CFG/conventions.md" 'skipped_test_regex:' 'skipped_test_regex: SKIPME'

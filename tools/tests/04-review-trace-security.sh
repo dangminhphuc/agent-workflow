@@ -23,30 +23,30 @@ printf 'Người viết: còn điểm mù\n' > "$F/refactor-requests.md"
 ky_vong 0 "…refactor-requests.md (nguyên văn lời người) thì cho qua" sh "$CHK" "$F"
 rm -f "$F/refactor-requests.md"
 
-# Điểm mù: "không chặn" còn mở thì giao được (YC chờ xác nhận); "chặn review" thì không
+# Điểm mù: "không chặn" còn mở thì giao được (REQ chờ xác nhận); "chặn review" thì không
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
 ky_vong 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" sh "$CHK" "$F"
-dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: open question mức \"review-blocking\"'"
+dung "…đúng lý do: điểm mù REQ-002" sh -c "sh '$CHK' '$F' | grep -q 'REQ-002: open question mức \"review-blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '`[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)
 - Quote: > "đúng như giả định" — PO, 2026-10-04'
 duyet_lai "$F/spec.md"; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec; ghi_based_on
 
-printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n' > "$F/review.md"
+printf '| ID | Verdict |\n|---|---|\n| REQ-001 | pass |\n' > "$F/review.md"
 ky_vong 1 "chặn khi bỏ sót một yêu cầu" sh "$CHK" "$F"
 
-printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pass |\n' > "$F/review.md"
+printf '| ID | Verdict |\n|---|---|\n| REQ-001 | pass |\n| REQ-002 | pass |\n' > "$F/review.md"
 ky_vong 1 "chặn kết luận 'đạt' cho yêu cầu đứng trên giả định tạm" sh "$CHK" "$F"
 
-printf '| ID | Verdict |\n|---|---|\n| YC-001 | ổn |\n| YC-002 | pending |\n' > "$F/review.md"
+printf '| ID | Verdict |\n|---|---|\n| REQ-001 | ổn |\n| REQ-002 | pending |\n' > "$F/review.md"
 ky_vong 1 "chặn kết luận tự chế ngoài 4 giá trị hợp lệ" sh "$CHK" "$F"
 viet_review
 
 # ---- Lens 4 — Security
-printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n' > "$F/review.md"
+printf '| ID | Verdict |\n|---|---|\n| REQ-001 | pass |\n| REQ-002 | pending |\n' > "$F/review.md"
 ky_vong 1 "chặn khi thiếu mục Lens 4 — Security" sh "$CHK" "$F"
 dung "…đúng lý do: thiếu mục Lens 4" sh -c "sh '$CHK' '$F' | grep -q 'thiếu mục \"## Lens 4 — Security\"'"
 viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |
@@ -74,6 +74,6 @@ toc_f review.md
 ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
 viet_review; cp "$ROOT/workflow/templates/review.md" "$TMP/review-mau.md"
 awk '/^## Lens 4/ { p = 1 } /^## Conclusion/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
-printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n\n' > "$F/review.md"; cat "$TMP/lens4-mau.md" >> "$F/review.md"
+printf '| ID | Verdict |\n|---|---|\n| REQ-001 | pass |\n| REQ-002 | pending |\n\n' > "$F/review.md"; cat "$TMP/lens4-mau.md" >> "$F/review.md"
 ky_vong 1 "chặn bảng Lens 4 chép nguyên mẫu chưa điền" sh "$CHK" "$F"
 ket_thuc

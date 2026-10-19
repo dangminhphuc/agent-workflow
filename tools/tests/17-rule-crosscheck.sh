@@ -6,7 +6,7 @@
 KT="$T/knowledge.sh"
 
 # ---------------------------------------------------------------- luật nghiệp vụ (aw rule)
-nhom "Luật nghiệp vụ BR-: YC đã duyệt nâng thành kiến thức bền"
+nhom "Luật nghiệp vụ BR-: REQ đã duyệt nâng thành kiến thức bền"
 tao_fixture
 LU="$T/rule.sh"; SK="$T/check-spec.sh"; PK="$T/check-plan.sh"
 LF="$R/docs/product/rules/billing.md"
@@ -18,17 +18,17 @@ sua_spec '- Priority: `must`' '- Priority: `must`
 ky_vong 1 "spec: Promote sai dạng ID → KHÔNG ĐẠT" sh "$SK" "$F"
 dung "…nêu dạng đúng" sh -c "sh '$SK' '$F' | grep -q 'dạng BR-<MIỀN>-NNN'"
 sua_spec '- Promote: BR-billing-1' '- Promote: BR-BILLING-001'
-ky_vong 0 "spec: Promote: BR-BILLING-001 trên YC nguồn [JIRA] → ĐẠT" sh "$SK" "$F"
+ky_vong 0 "spec: Promote: BR-BILLING-001 trên REQ nguồn [JIRA] → ĐẠT" sh "$SK" "$F"
 sua_spec '- Priority: `should`' '- Priority: `should`
 - Promote: BR-BILLING-002'
-ky_vong 1 "spec: Promote trên YC [OPEN-QUESTION] → KHÔNG ĐẠT" sh "$SK" "$F"
+ky_vong 1 "spec: Promote trên REQ [OPEN-QUESTION] → KHÔNG ĐẠT" sh "$SK" "$F"
 sua_spec '- Priority: `should`
 - Promote: BR-BILLING-002' '- Priority: `should`'
-ky_vong 1 "plan: YC Promote chưa có task ghi file luật → KHÔNG ĐẠT" sh "$PK" "$F"
+ky_vong 1 "plan: REQ Promote chưa có task ghi file luật → KHÔNG ĐẠT" sh "$PK" "$F"
 dung "…nêu file đích" sh -c "sh '$PK' '$F' | grep -q 'docs/product/rules/billing.md'"
 thay "$F/plan.md" '- Expected files: `src/*` `test/*`' '- Expected files: `src/*` `test/*` `docs/product/rules/billing.md`'; ghi_based_on 2>/dev/null
-ky_vong 0 "…task phủ YC-001 có file luật → ĐẠT" sh "$PK" "$F"
-ky_vong 1 "promote: nguồn [JIRA] chưa có phiên bản trong ## Sources → TỪ CHỐI" sh "$LU" promote "$F" YC-001
+ky_vong 0 "…task phủ REQ-001 có file luật → ĐẠT" sh "$PK" "$F"
+ky_vong 1 "promote: nguồn [JIRA] chưa có phiên bản trong ## Sources → TỪ CHỐI" sh "$LU" promote "$F" REQ-001
 dung "…không ghi gì" test ! -e "$LF"
 sua_spec '## Requirements' '## Sources
 
@@ -38,25 +38,25 @@ sua_spec '## Requirements' '## Sources
 
 ## Requirements'
 thay "$F/spec.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
-ky_vong 1 "promote: spec chưa duyệt → TỪ CHỐI" sh "$LU" promote "$F" YC-001
+ky_vong 1 "promote: spec chưa duyệt → TỪ CHỐI" sh "$LU" promote "$F" REQ-001
 thay "$F/spec.md" '- [ ] **Approved by human**' '- [x] **Approved by human**'
-ky_vong 1 "promote: YC không khai Promote → TỪ CHỐI" sh "$LU" promote "$F" YC-002
-ky_vong 0 "promote YC-001 → ĐÃ NÂNG" sh "$LU" promote "$F" YC-001
-dung "…khối chép YC: tên, Rule, Scope (bỏ file test, file luật), Source có phiên bản, tiêu chí, Origin" sh -c "grep -qx '### BR-BILLING-001: a' '$LF' && grep -qxF -- '- Rule: luôn mở được y' '$LF' && grep -qxF -- '- Scope: \`src/*\`' '$LF' && grep -qxF -- '- Source: \`[JIRA]\` ABC-1 (version: updated 2026-10-01)' '$LF' && grep -qxF -- '  - mở y thấy a' '$LF' && grep -qxF -- '- Origin: \`feat_x\` § YC-001' '$LF' && grep -qxF -- '- Status: active' '$LF'"
-ky_vong 0 "promote lại → vẫn ĐÃ NÂNG" sh "$LU" promote "$F" YC-001
+ky_vong 1 "promote: REQ không khai Promote → TỪ CHỐI" sh "$LU" promote "$F" REQ-002
+ky_vong 0 "promote REQ-001 → ĐÃ NÂNG" sh "$LU" promote "$F" REQ-001
+dung "…khối chép REQ: tên, Rule, Scope (bỏ file test, file luật), Source có phiên bản, tiêu chí, Origin" sh -c "grep -qx '### BR-BILLING-001: a' '$LF' && grep -qxF -- '- Rule: luôn mở được y' '$LF' && grep -qxF -- '- Scope: \`src/*\`' '$LF' && grep -qxF -- '- Source: \`[JIRA]\` ABC-1 (version: updated 2026-10-01)' '$LF' && grep -qxF -- '  - mở y thấy a' '$LF' && grep -qxF -- '- Origin: \`feat_x\` § REQ-001' '$LF' && grep -qxF -- '- Status: active' '$LF'"
+ky_vong 0 "promote lại → vẫn ĐÃ NÂNG" sh "$LU" promote "$F" REQ-001
 dung "…viết lại tại chỗ, không nhân đôi" bang "$(grep -c '^### BR-BILLING-001' "$LF")" "1"
 ky_vong 0 "aw rule check → HỢP LỆ" sh "$LU" check
 dung "…cảnh báo luật active chưa có test covers" sh -c "sh '$LU' check 2>/dev/null | grep -q '! BR-BILLING-001'"
-printf '// covers: YC-001, YC-002, BR-BILLING-001\n' > "$R/test/a.test.js"
+printf '// covers: REQ-001, REQ-002, BR-BILLING-001\n' > "$R/test/a.test.js"
 dung "…test gắn covers: BR-BILLING-001 → hết cảnh báo" sh -c "! sh '$LU' check 2>/dev/null | grep -q '! BR-BILLING-001'"
-ky_vong 0 "implement: khối luật khớp YC đã duyệt → ĐẠT" sh "$T/check-implement.sh" "$F"
+ky_vong 0 "implement: khối luật khớp REQ đã duyệt → ĐẠT" sh "$T/check-implement.sh" "$F"
 thay "$LF" '- Rule: luôn mở được y' '- Rule: thỉnh thoảng mở được y'
-ky_vong 1 "implement: khối luật sửa tay lệch YC → KHÔNG ĐẠT" sh "$T/check-implement.sh" "$F"
-dung "…nêu lệch YC-001" sh -c "sh '$T/check-implement.sh' '$F' 2>/dev/null | grep -q 'Luật: docs/product/rules/billing.md: BR-BILLING-001 lệch YC-001'"
+ky_vong 1 "implement: khối luật sửa tay lệch REQ → KHÔNG ĐẠT" sh "$T/check-implement.sh" "$F"
+dung "…nêu lệch REQ-001" sh -c "sh '$T/check-implement.sh' '$F' 2>/dev/null | grep -q 'Luật: docs/product/rules/billing.md: BR-BILLING-001 lệch REQ-001'"
 rm -f "$LF"
-ky_vong 1 "review: YC Promote chưa có khối luật → KHÔNG ĐẠT" sh "$T/check-review.sh" "$F"
-dung "…nêu lý do" sh -c "sh '$T/check-review.sh' '$F' 2>/dev/null | grep -q 'Luật: YC-001 khai Promote: BR-BILLING-001 nhưng chưa có khối luật'"
-sh "$LU" promote "$F" YC-001 >/dev/null 2>&1
+ky_vong 1 "review: REQ Promote chưa có khối luật → KHÔNG ĐẠT" sh "$T/check-review.sh" "$F"
+dung "…nêu lý do" sh -c "sh '$T/check-review.sh' '$F' 2>/dev/null | grep -q 'Luật: REQ-001 khai Promote: BR-BILLING-001 nhưng chưa có khối luật'"
+sh "$LU" promote "$F" REQ-001 >/dev/null 2>&1
 luat_khoi_sao() { awk '/^### BR-BILLING-001/ { t = 1 } t' "$LF"; }
 printf '# khác\n\n%s\n' "$(luat_khoi_sao)" > "$R/docs/product/rules/khac.md"
 ky_vong 1 "rule check: trùng ID ở hai file → KHÔNG HỢP LỆ" sh "$LU" check
@@ -71,11 +71,11 @@ ky_vong 0 "…sửa lại → HỢP LỆ" sh "$LU" check
 # Lời người đã ghi (câu trả lời điểm mù): nguồn [HUMAN] + Quote nguyên văn
 thay "$F/open-questions.md" '- **Status:** `open`' '- **Status:** `answered`
 - **Answer:** PO Lan, 2026-10-05: luôn hiện b'
-sua_spec '- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '- Source: `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+sua_spec '- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '- Source: `[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)
 - Description: luôn hiện b
 - Promote: BR-BILLING-002'
 thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Expected files: `src/b.txt` `docs/product/rules/billing.md`'; ghi_based_on 2>/dev/null
-ky_vong 0 "promote YC-002 nguồn là câu trả lời của người → ĐÃ NÂNG" sh "$LU" promote "$F" YC-002
+ky_vong 0 "promote REQ-002 nguồn là câu trả lời của người → ĐÃ NÂNG" sh "$LU" promote "$F" REQ-002
 dung "…Source [HUMAN] có ngày làm phiên bản, Quote nguyên văn" sh -c "grep -qxF -- '- Source: \`[HUMAN]\` open-questions.md (\`feat_x\`) (version: 2026-10-05)' '$LF' && grep -qxF -- '- Quote: \"PO Lan, 2026-10-05: luôn hiện b\"' '$LF'"
 dung "…hai luật cùng một file miền" bang "$(grep -c '^### BR-' "$LF")" "2"
 # Việc khác chọn trùng ID → spec chặn

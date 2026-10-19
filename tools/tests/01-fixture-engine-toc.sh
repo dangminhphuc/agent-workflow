@@ -50,8 +50,8 @@ ky_vong 0 "Engine khớp → ĐẠT" sh "$T/check-intake.sh" "$F"
 nhom "aw toc / tools/lib/toc.sh"
 TOC="$T/toc.sh"; CHK="$T/check-spec.sh"
 viet_spec
-dung "fixture: spec có ## Contents, YC lồng dưới Requirements" sh -c "grep -qxF -- '- [Requirements](#requirements)' '$F/spec.md' && grep -qxF -- '  - [YC-001 — a](#yc-001--a)' '$F/spec.md'"
-dung "aw toc mở rộng anchor rút gọn trong link — chỉ khi khớp đúng một mục" grep -qF '(open-questions.md#yc-002--b)' "$F/spec.md"
+dung "fixture: spec có ## Contents, REQ lồng dưới Requirements" sh -c "grep -qxF -- '- [Requirements](#requirements)' '$F/spec.md' && grep -qxF -- '  - [REQ-001 — a](#req-001--a)' '$F/spec.md'"
+dung "aw toc mở rộng anchor rút gọn trong link — chỉ khi khớp đúng một mục" grep -qF '(open-questions.md#req-002--b)' "$F/spec.md"
 ky_vong 0 "spec có mục lục, link đúng → ĐẠT" sh "$CHK" "$F"
 cksum "$F/spec.md" "$F/open-questions.md" > "$TMP/toc.ck"
 ky_vong 0 "aw toc chạy lại trên artifact đã khớp → ĐÃ KHỚP" sh "$TOC" "$F"
@@ -73,24 +73,24 @@ viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Out of scope
 ## Constraints & dependencies'
 toc_f spec.md
 dung "heading trùng tên → anchor thứ hai có hậu tố -1 (như GitHub)" grep -qxF -- '- [Out of scope](#out-of-scope-1)' "$F/spec.md"
-viet_spec; thay "$F/spec.md" '(open-questions.md#yc-002--b)' '(open-questions.md#yc-009)'
+viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md#req-009)'
 ky_vong 1 "chặn link tới mục không có của artifact khác" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'link \"open-questions.md#yc-009\" không trỏ tới mục nào'"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'link \"open-questions.md#req-009\" không trỏ tới mục nào'"
 ky_vong 1 "aw toc báo CÒN LINK SAI khi link không mở rộng được" sh "$TOC" "$F" spec.md
-viet_spec; thay "$F/spec.md" '(open-questions.md#yc-002--b)' '(open-questions.md)'
+viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md)'
 ky_vong 1 "chặn link tới artifact mà không trỏ tới mục" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '[open-questions.md § YC-002](open-questions.md#yc-002--b)' '`open-questions.md` § YC-002'
-ky_vong 1 "chặn tham chiếu \"open-questions.md § YC-002\" chữ trơn" sh "$CHK" "$F"
-dung "…gợi ý đúng link đầy đủ" sh -c "sh '$CHK' '$F' | grep -qF 'viết thành [open-questions.md § YC-002](open-questions.md#yc-002--b)'"
-viet_spec; thay "$F/spec.md" '[open-questions.md § YC-002](open-questions.md#yc-002--b)' '[open-questions.md § YC-002](open-questions.md#YC-002)'; toc_f spec.md
-dung "aw toc mở rộng anchor viết hoa / rút gọn" grep -qF '(open-questions.md#yc-002--b)' "$F/spec.md"
+viet_spec; thay "$F/spec.md" '[open-questions.md § REQ-002](open-questions.md#req-002--b)' '`open-questions.md` § REQ-002'
+ky_vong 1 "chặn tham chiếu \"open-questions.md § REQ-002\" chữ trơn" sh "$CHK" "$F"
+dung "…gợi ý đúng link đầy đủ" sh -c "sh '$CHK' '$F' | grep -qF 'viết thành [open-questions.md § REQ-002](open-questions.md#req-002--b)'"
+viet_spec; thay "$F/spec.md" '[open-questions.md § REQ-002](open-questions.md#req-002--b)' '[open-questions.md § REQ-002](open-questions.md#REQ-002)'; toc_f spec.md
+dung "aw toc mở rộng anchor viết hoa / rút gọn" grep -qF '(open-questions.md#req-002--b)' "$F/spec.md"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/plan.md § Tổng quan'
 thay "$F/spec.md" '- Priority: `must`' '- Priority: `must`
 - Note: [y](#khong-co)'
 ky_vong 1 "chặn link #anchor không có trong chính file" sh "$CHK" "$F"
 dung "…nhưng không bắt file repo trùng tên artifact (docs/plan.md § …)" sh -c "! sh '$CHK' '$F' | grep -q 'plan.md § …'"
-viet_spec; thay "$F/spec.md" '### YC-001 — a' '### YC-001 — Đăng Nhập (OTP) & “mã”'; toc_f spec.md
-dung "anchor tính như GitHub: chữ Việt thường hoá, bỏ dấu câu" grep -qF '(#yc-001--đăng-nhập-otp--mã)' "$F/spec.md"
+viet_spec; thay "$F/spec.md" '### REQ-001 — a' '### REQ-001 — Đăng Nhập (OTP) & “mã”'; toc_f spec.md
+dung "anchor tính như GitHub: chữ Việt thường hoá, bỏ dấu câu" grep -qF '(#req-001--đăng-nhập-otp--mã)' "$F/spec.md"
 ky_vong 0 "…và checker chấp nhận" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '## Out of scope' '<!--
 ## Không tính
@@ -104,14 +104,14 @@ toc_f spec.md
 dung "heading trong HTML comment / khối code không vào mục lục" sh -c "! grep -qF '[Không tính]' '$F/spec.md' && ! grep -qF '[cũng không tính]' '$F/spec.md'"
 ky_vong 0 "…và checker không đòi chúng" sh "$CHK" "$F"
 printf '# Open questions\n\nNo open questions.\n' > "$TMP/oq.md"
-viet_spec; thay "$F/spec.md" '- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
+viet_spec; thay "$F/spec.md" '- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
 - Assumption: y' '- Source: `[JIRA]` ABC-1
 - Quote: > khách mở y thấy b'; cp "$TMP/oq.md" "$F/open-questions.md"
 ky_vong 0 "artifact không có heading ## / ### thì không cần mục lục" sh "$CHK" "$F"
 ky_vong 2 "aw toc: artifact lạ → SAI THAM SỐ" sh "$TOC" "$F" task-results.md
 viet_spec
 # review chặn link gãy ở artifact phase trước (heading đích đổi sau khi link được viết)
-thay "$F/plan.md" '- Covers: `YC-001`' '- Covers: `YC-001`
+thay "$F/plan.md" '- Covers: `REQ-001`' '- Covers: `REQ-001`
 - Design: [tdd.md § Data model](tdd.md#data-model)'
 ky_vong 0 "plan có link Design tới mục có thật → ĐẠT" sh "$T/check-plan.sh" "$F"
 thay "$F/tdd.md" '## Data model' '## Data'

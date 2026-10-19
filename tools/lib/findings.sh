@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # File phát hiện của checker LLM (<checker>-findings.md) — một nguồn duy nhất cho
-# cách đọc trường của mỗi "### PH-NN" (check-design, approval, pending).
+# cách đọc trường của mỗi "### FND-NNN" (check-design, approval, pending).
 #
 #   - Severity: `block | warn`
 #   - Category: `<kebab-case>`
@@ -13,7 +13,7 @@
 # về giá trị mới để phần còn lại của checker chỉ biết một bộ giá trị.
 
 # Phần awk dùng chung — nối vào trước chương trình awk: awk "$PH_AWK"'…'
-#   ph_truong(s)  tên trường chuẩn của dòng "- <trường>: …" trong một PH, hoặc ""
+#   ph_truong(s)  tên trường chuẩn của dòng "- <trường>: …" trong một FND, hoặc ""
 #   ph_chuan_muc(v) block | warn | <giá trị lạ giữ nguyên>
 #   ph_chuan_xl(v)  open | fixed | rejected: <lý do> | <giá trị lạ giữ nguyên>
 #   ph_xong(v)    1 nếu đã đóng: fixed, hoặc rejected có lý do thật

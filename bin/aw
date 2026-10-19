@@ -29,18 +29,18 @@
 #   aw rules <phase>                       phase: spec design plan implement review
 #   aw uses <phase>                        skill / subagent của repo mà phase phải gọi (khoá uses_<phase>)
 #   aw knowledge spec|design <feature-dir> kiến thức bền phase phải đọc: luật BR-, chỉ mục ADR, ADR, tài liệu module
-#   aw adr promote <feature-dir> D-NN      chép D-NN đã duyệt (Promote: adr) thành ADR trong worktree
+#   aw adr promote <feature-dir> DEC-NNN      chép DEC-NNN đã duyệt (Promote: adr) thành ADR trong worktree
 #   aw adr check                           kiểm hình thức thư mục ADR và chỉ mục
-#   aw rule promote <feature-dir> YC-NNN   chép YC đã duyệt (Promote: BR-…) thành luật nghiệp vụ trong worktree
+#   aw rule promote <feature-dir> REQ-NNN   chép REQ đã duyệt (Promote: BR-…) thành luật nghiệp vụ trong worktree
 #   aw rule check                          kiểm hình thức mọi luật BR- trong repo
 #   aw conventions check                   kiểm conventions.md sau khi người sửa (khoá, giá trị, placeholder)
 #   aw ready <feature-dir> [--no-test]     worktree sẵn sàng chưa (test xanh trên base…), bước tiếp
-#   aw task start|done|next <feature-dir> [T-NN] [--manual "<bằng chứng>"]   trạng thái task do máy giữ
+#   aw task start|done|next <feature-dir> [TSK-NNN] [--manual "<bằng chứng>"]   trạng thái task do máy giữ
 #   aw journal [report] | aw journal add <layer> "<mô tả>"   nhật ký thất bại của harness
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
 #   aw approvals [--global]               mọi ô duyệt chờ người, kèm link tới artifact (lệnh /aw-approvals gọi)
-#   aw approvals tick <feature-dir> <spec|D-NN> <hash>   tick sau khi NGƯỜI chọn duyệt trong /aw-approvals
+#   aw approvals tick <feature-dir> <spec|DEC-NNN> <hash>   tick sau khi NGƯỜI chọn duyệt trong /aw-approvals
 #
 # Biến môi trường:
 #   AW_ENGINE_DIR  dùng engine có sẵn ở thư mục này (máy/CI không có mạng);

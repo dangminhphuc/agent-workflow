@@ -126,7 +126,7 @@ viet_spec() {
 
 ## Requirements
 
-### YC-001 — a
+### REQ-001 — a
 - Source: `[JIRA]` ABC-1
 - Quote:
   > khách mở y thấy a
@@ -134,8 +134,8 @@ viet_spec() {
 - Acceptance criteria:
   - [ ] mở y thấy a
 
-### YC-002 — b
-- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
+### REQ-002 — b
+- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
 - Assumption: y
 - Priority: `should`
 - Acceptance criteria:
@@ -175,7 +175,7 @@ EOF
   cat > "$F/open-questions.md" <<'EOF'
 # Open questions
 
-## YC-002 — b
+## REQ-002 — b
 - **Assumption:** y
 - **Blocking:** `non-blocking`   <!-- blocking | review-blocking | non-blocking -->
 - **Status:** `open`   <!-- open | answered -->
@@ -198,15 +198,15 @@ Module src/a.
 ## Target structure
 Not applicable: không đổi cấu trúc module.
 
-## Decisions (D-xx)
+## Decisions (DEC-xxx)
 
-### D-01 — lưu ở đâu
+### DEC-001 — lưu ở đâu
 - Author: `agent`
 - Choice: file
 - [x] **Approved by human**
 
 ## Data model
-Based on: D-01
+Based on: DEC-001
 Một file văn bản.
 
 ## Contract / API
@@ -224,12 +224,12 @@ Triển khai một lần, quay lui bằng revert commit.
 ## Test strategy
 Unit test.
 
-## YC mapping
+## REQ mapping
 
-| YC | Mục |
+| REQ | Mục |
 |---|---|
-| YC-001 | § Data model |
-| YC-002 | § Flow |
+| REQ-001 | § Data model |
+| REQ-002 | § Flow |
 EOF
   cat > "$F/design-findings.md" <<'EOF'
 # Phát hiện
@@ -245,15 +245,15 @@ viet_plan() {
 
 ## Tasks
 
-### T-01 — a
-- Covers: `YC-001`
-- Based on: `D-01`
+### TSK-001 — a
+- Covers: `REQ-001`
+- Based on: `DEC-001`
 - Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
 
-### T-02 — b
-- Covers: `YC-002`
+### TSK-002 — b
+- Covers: `REQ-002`
 - Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[x]`
@@ -284,7 +284,7 @@ viet_plan() {
 |---|---|---|---|
 EOF
   if [ "$LOAI" = "chore" ]; then
-    thay "$F/plan.md" '- Based on: `D-01`
+    thay "$F/plan.md" '- Based on: `DEC-001`
 ' ''
     thay "$F/plan.md" '`src/*` `test/*`' '`docs/*`'
   fi
@@ -292,7 +292,7 @@ EOF
 }
 
 viet_review() {
-  printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n| YC-002 | pending |\n' > "$F/review.md"
+  printf '| ID | Verdict |\n|---|---|\n| REQ-001 | pass |\n| REQ-002 | pending |\n' > "$F/review.md"
   [ "$LOAI" = "bugfix" ] && printf '\n- Repro test fails because: grep không thấy "moi" trong src/a.txt\n' >> "$F/review.md"
   viet_lens4
   printf '\n## Lens 3 — Quality\n\n- None\n\n## Conclusion\n\n- Blocker findings: 0\n- Mergeable: yes\n' >> "$F/review.md"
@@ -321,7 +321,7 @@ viet_lens4() {
 | Item | Verdict | Location / reason |
 |---|---|---|
 | Input validation / injection | not applicable | diff không nhận input từ ngoài |
-| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |
+| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp REQ-001 |
 | Sensitive data / PII in logs | not applicable | không log, không dữ liệu cá nhân |
 | Secrets / config | pass | |
 | Crypto | not applicable | không dùng crypto |
@@ -342,7 +342,7 @@ ghi_based_on() {
 
 # ghi_bang_chung_task — task xong bằng máy: aw task done ghi task-results.md
 ghi_bang_chung_task() {
-  for _t in T-01 T-02; do sh "$T/task.sh" done "$F" "$_t" >/dev/null 2>&1; done
+  for _t in TSK-001 TSK-002; do sh "$T/task.sh" done "$F" "$_t" >/dev/null 2>&1; done
 }
 
 # tao_fixture [loai] [branch]
@@ -363,7 +363,7 @@ tao_fixture() {
     printf '%s\n' "$BM_XANH"
   } > "$CFG/config.sh"
   printf 'goc\n' > "$R/src/a.txt"
-  printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
+  printf '// covers: REQ-001, REQ-002\n' > "$R/test/a.test.js"
   # Quy tắc riêng của repo (rules_*): file phải đã commit vào base.
   printf '# quy tắc a\n' > "$R/docs/quy-tac.md"; printf '# quy tắc b\n' > "$R/docs/quy-tac-2.md"
   # Skill của team đã commit sẵn trong base (uses_*): có trong cây, không nằm trong diff của việc.
@@ -374,7 +374,7 @@ tao_fixture() {
   ghi_based_on
   case "$LOAI" in
     bugfix)
-      printf '// covers: YC-001\n' > "$R/test/b.test.js"
+      printf '// covers: REQ-001\n' > "$R/test/b.test.js"
       sh "$T/check-repro.sh" "$F" >/dev/null 2>&1 ;;
     perf)
       sh "$T/check-perf.sh" "$F" --before >/dev/null 2>&1 ;;

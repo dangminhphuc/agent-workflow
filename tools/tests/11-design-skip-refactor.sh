@@ -6,13 +6,13 @@
 
 # ---------------------------------------------------------------- bỏ design (Design: skip)
 nhom "bỏ design: bugfix/refactor nhỏ khai \"Design: skip\""
-# bo_design — spec khai skip (người duyệt lại), không có tdd.md, plan không có D-xx
+# bo_design — spec khai skip (người duyệt lại), không có tdd.md, plan không có DEC-xxx
 bo_design() {
   thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `normal`
 - **Design:** `skip`'
   duyet_lai "$F/spec.md"
   rm -f "$F/tdd.md" "$F/design-findings.md"
-  thay "$F/plan.md" '- Based on: `D-01`
+  thay "$F/plan.md" '- Based on: `DEC-001`
 ' ''
   sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
   sh "$T/based-on.sh" "$F" plan.md spec.md >/dev/null 2>&1
@@ -31,7 +31,7 @@ thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
   > Khách được hoàn tiền trong vòng 30 ngày.'
 duyet_lai "$F/spec.md"; printf 'Khách được hoàn tiền trong vòng 60 ngày.\n' > "$R/docs/brd.md"
 ky_vong 0 "Design: skip: nguồn đổi sau spec → plan không chặn" sh "$T/check-plan.sh" "$F"
-dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$T/check-plan.sh' '$F' | grep -qF '[CẢNH BÁO] YC-001: câu trích không có trong docs/brd.md'"
+dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$T/check-plan.sh' '$F' | grep -qF '[CẢNH BÁO] REQ-001: câu trích không có trong docs/brd.md'"
 thay "$F/spec.md" '- Source: `[FILE]` docs/brd.md § Hoàn tiền
 - Quote:
   > Khách được hoàn tiền trong vòng 30 ngày.' '- Source: `[JIRA]` ABC-1
@@ -53,10 +53,10 @@ thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `high`'; duyet_lai "$F/spe
 ky_vong 1 "Design: skip với Risk: high → spec chặn" sh "$T/check-spec.sh" "$F"
 ky_vong 1 "…và plan chặn theo (entry check chạy lại spec)" sh "$T/check-plan.sh" "$F"
 thay "$F/spec.md" '- **Risk:** `high`' '- **Risk:** `normal`'; duyet_lai "$F/spec.md"
-thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Based on: `D-01`
+thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Based on: `DEC-001`
 - Expected files: `src/b.txt`'
-ky_vong 1 "Design: skip: task Dựa trên D-xx bị chặn (không có tdd.md)" sh "$T/check-plan.sh" "$F"
-thay "$F/plan.md" '- Based on: `D-01`
+ky_vong 1 "Design: skip: task Dựa trên DEC-xxx bị chặn (không có tdd.md)" sh "$T/check-plan.sh" "$F"
+thay "$F/plan.md" '- Based on: `DEC-001`
 ' ''
 thay "$F/spec.md" '- **Design:** `skip`' '- **Design:** `bỏ`'; duyet_lai "$F/spec.md"
 ky_vong 1 "spec chặn Design khác required | skip" sh "$T/check-spec.sh" "$F"
@@ -96,15 +96,15 @@ for c in spec design plan implement review; do
 done
 
 thay "$F/spec.md" '- Type: `structural`' ''
-ky_vong 1 "spec refactor chặn YC không có Loại YC (hành vi mới)" sh "$T/check-spec.sh" "$F"
+ky_vong 1 "spec refactor chặn REQ không có Loại REQ (hành vi mới)" sh "$T/check-spec.sh" "$F"
 viet_spec
 
 thay "$F/spec.md" '`test/a.test.js`' '`test/moi.test.js`'
-printf '// covers: YC-001\n' > "$R/test/moi.test.js"
+printf '// covers: REQ-001\n' > "$R/test/moi.test.js"
 ky_vong 1 "spec refactor chặn test bảo vệ không có sẵn trên nhánh gốc" sh "$T/check-spec.sh" "$F"
 rm -f "$R/test/moi.test.js"; viet_spec; ghi_based_on
 
-printf '// covers: YC-001, YC-002\n// doi import\n' > "$R/test/a.test.js"
+printf '// covers: REQ-001, REQ-002\n// doi import\n' > "$R/test/a.test.js"
 ky_vong 0 "sửa test cũ chưa khai chỉ CẢNH BÁO ở implement" sh "$T/check-implement.sh" "$F"
 ky_vong 1 "…nhưng review chặn" sh "$T/check-review.sh" "$F"
 thay "$F/plan.md" '| Test file | Reason |

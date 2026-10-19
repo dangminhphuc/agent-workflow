@@ -14,7 +14,7 @@ ky_vong 1 "CỔNG CUỐI: chặn file ngoài phạm vi" sh "$CHK" "$F"
 dung "…và chặn kết quả kiểm thử/quét lỗi thời (code đổi sau lần chạy)" sh -c "sh '$CHK' '$F' | grep -q 'test-results.md stale'"
 thay "$F/plan.md" '|---|---|---|---|
 ' '|---|---|---|---|
-| T-01 | cần README | `README.md` | đã ghi |
+| TSK-001 | cần README | `README.md` | đã ghi |
 '
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 ky_vong 1 "chạy lại implement mà chưa rà lại → chặn Reviewed tree cũ" sh "$CHK" "$F"
@@ -24,25 +24,25 @@ ky_vong 0 "ghi file vào Phát sinh (chạy lại implement, rà lại) thì cho
 rm -f "$R/README.md"; viet_plan; ghi_based_on
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
-printf '// covers: YC-001\n' > "$R/test/a.test.js"
-ky_vong 1 "CỔNG CUỐI: chặn YC chưa có test gắn tag" sh "$CHK" "$F"
+printf '// covers: REQ-001\n' > "$R/test/a.test.js"
+ky_vong 1 "CỔNG CUỐI: chặn REQ chưa có test gắn tag" sh "$CHK" "$F"
 thay "$F/plan.md" '| ID | Why not automated |
 |---|---|
 ' '| ID | Why not automated |
 |---|---|
-| YC-002 | cần kiểm bằng mắt trên UI |
+| REQ-002 | cần kiểm bằng mắt trên UI |
 '
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "ghi Kiểm chứng thủ công có lý do thì cho qua" sh "$CHK" "$F"
-printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"; viet_plan; ghi_based_on
+printf '// covers: REQ-001, REQ-002\n' > "$R/test/a.test.js"; viet_plan; ghi_based_on
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 # Không test nào gắn tag: danh sách dòng tag rỗng không được làm kiểm chéo câm
 printf '// chua gan tag\n' > "$R/test/a.test.js"
 ky_vong 1 "CỔNG CUỐI: chặn khi CHƯA test nào gắn tag covers" sh "$CHK" "$F"
-dung "…đúng lý do: YC chưa có test" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: chưa có test'"
-dung "…và implement có in cảnh báo YC chưa có test" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'CẢNH BÁO.*YC-001'"
-printf '// covers: YC-001, YC-002\n' > "$R/test/a.test.js"
+dung "…đúng lý do: REQ chưa có test" sh -c "sh '$CHK' '$F' | grep -q 'REQ-002: chưa có test'"
+dung "…và implement có in cảnh báo REQ chưa có test" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'CẢNH BÁO.*REQ-001'"
+printf '// covers: REQ-001, REQ-002\n' > "$R/test/a.test.js"
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
 printf '\n<!-- sửa sau khi đã viết spec -->\n' >> "$F/intake.md"

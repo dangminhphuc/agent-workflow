@@ -37,10 +37,10 @@ rm -f "$R/README.md"
 
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" còn mở chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
-dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: open question mức \"review-blocking\"'"
+dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*REQ-002: open question mức \"review-blocking\"'"
 viet_spec; ghi_based_on
 
-printf 'Ghi chú: YC-002 còn một Điểm mù.\n' > "$F/ghi-chu.md"
+printf 'Ghi chú: REQ-002 còn một Điểm mù.\n' > "$F/ghi-chu.md"
 ky_vong 0 "từ dịch trong artifact chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
 dung "…nhưng có in cảnh báo từ dịch (không phân biệt hoa thường)" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*ghi-chu.md dòng 1: \"điểm mù\" là từ dịch — viết \`open question\`'"
 rm -f "$F/ghi-chu.md"

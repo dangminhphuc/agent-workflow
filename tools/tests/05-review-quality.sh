@@ -92,7 +92,7 @@ viet_review
 ky_vong 0 "diff không đụng mẫu nhạy cảm → không đòi" sh "$CHK" "$F"
 cp "$TMP/conv-nc.bak" "$CFG/conventions.md"
 
-# Bảng khác nhắc mã YC ở cột lý do không được ghi đè kết luận của Lens 1
-viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp YC-001 |' '| Authn / authz | pass | khớp YC-002 |'
-ky_vong 0 "dòng Lens 4 nhắc YC-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
+# Bảng khác nhắc mã REQ ở cột lý do không được ghi đè kết luận của Lens 1
+viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp REQ-001 |' '| Authn / authz | pass | khớp REQ-002 |'
+ky_vong 0 "dòng Lens 4 nhắc REQ-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
 ket_thuc

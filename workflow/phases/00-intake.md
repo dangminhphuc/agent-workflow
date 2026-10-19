@@ -26,7 +26,7 @@ choice_ui: true
 
 Answer exactly three questions in `intake.md`, and only **point to** sources — never summarise them:
 1. **Work type** — `feature`, `bugfix`, `refactor`, `perf` or `chore`. It changes the rules of every later phase.
-2. **Input** — documents with identifiers, or the user's own words. Every later `YC-xxx` traces back here.
+2. **Input** — documents with identifiers, or the user's own words. Every later `REQ-xxx` traces back here.
 3. **Goal** — one sentence.
 
 ## Work type
@@ -47,8 +47,8 @@ Does it change code that runs in production?
 |---|---|
 | `feature` | Standard flow |
 | `bugfix` | Spec has "Reproduction"; repro test must be **red on unfixed code** (`aw check repro`) |
-| `refactor` | YCs only `preserve`/`structural`; preserve YCs have a protecting test already on the base branch; never delete old tests, declare edited ones |
-| `perf` | Like refactor + `performance` YC with numbers, before/after measured by the machine (`aw check perf`) |
+| `refactor` | REQs only `preserve`/`structural`; preserve REQs have a protecting test already on the base branch; never delete old tests, declare edited ones |
+| `perf` | Like refactor + `performance` REQ with numbers, before/after measured by the machine (`aw check perf`) |
 | `chore` | No design phase; no production code; declare dependency bumps (major = refactor) |
 
 - Not separate types: `utils` (new shared helper = feature, dedupe = refactor), `hotfix` (= urgent bugfix), `security` (= bugfix/feature + high risk).

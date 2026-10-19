@@ -112,7 +112,7 @@ sinh tự động…). Bugfix được đụng các file này ở bước tái h
 ## Test
 
 ### `covers_tag`
-Chuỗi đứng trước mã YC trong test, vd `// covers: YC-001, YC-002`. Trống = `covers:`.
+Chuỗi đứng trước mã REQ trong test, vd `// covers: REQ-001, REQ-002`. Trống = `covers:`.
 
 ### `skipped_test_regex`
 Regex (ERE) cho test bị tắt / chạy riêng trong **dòng thêm mới** của file test. Khớp
@@ -144,16 +144,16 @@ cảnh báo).
 
 ### `knowledge_adr_dir`
 Thư mục ADR, tương đối với gốc repo; mặc định `docs/adr`. Phải nằm trong git (không dưới
-`.agent-workflow/`). `aw adr promote` ghi `NNNN-<việc>-d-NN.md` và dựng lại bảng chỉ mục
+`.agent-workflow/`). `aw adr promote` ghi `NNNN-<việc>-dec-nnn.md` và dựng lại bảng chỉ mục
 `README.md`; `aw adr check` kiểm hình thức (số không trùng, `Status: accepted | superseded by
-NNNN`, có `Scope`, chỉ mục khớp). Chỉ D-xx người duyệt kèm `- Promote: adr` mới được nâng.
+NNNN`, có `Scope`, chỉ mục khớp). Chỉ DEC-xxx người duyệt kèm `- Promote: adr` mới được nâng.
 
 ### `knowledge_rules_dir`
 Thư mục luật nghiệp vụ, mặc định `docs/product/rules`. `aw rule promote` ghi khối `### BR-<MIỀN>-NNN:`
 vào `<miền>.md` ở đây (tạo file nếu chưa có). Khối gồm `Rule`, `Scope`, `Source` (nhãn + `(version:
 …)`), `Quote` (chỉ `[HUMAN]`), `Status: active | superseded by BR-…`, `Acceptance`, `Origin`. Người dời
 khối sang tài liệu module được — `aw rule check` tìm theo ID trong thư mục này và `knowledge_files`.
-Test gắn `covers: BR-…` như với YC.
+Test gắn `covers: BR-…` như với REQ.
 
 ### `knowledge_files`
 Glob tài liệu module đã commit; mặc định `*/ARCHITECTURE.md`. Phạm vi của mỗi file là thư mục

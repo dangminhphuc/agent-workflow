@@ -13,6 +13,29 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+### Thay đổi
+- **Mã định danh trong artifact theo một dạng chung: `<TIỀN TỐ>-NNN`, tiền tố ba chữ tiếng Anh, đúng
+  3 chữ số.** Trước đây mỗi loại mã một kiểu: chữ Việt viết tắt (`YC`, `PH`), một chữ (`D`, `T`), khi
+  2 khi 3 chữ số. Giờ:
+
+  | Trước | Giờ | Ở đâu |
+  |---|---|---|
+  | `YC-001` | `REQ-001` | `spec.md`, `open-questions.md`, tag `covers:` trong test |
+  | `D-01` | `DEC-001` | `tdd.md` (mục `## REQ mapping` thay cho `## YC mapping`) |
+  | `PH-01` | `FND-001` | `design-findings.md` |
+  | `T-01` | `TSK-001` | `plan.md`, commit message `TSK-NNN: …` |
+  | `RF-001` | `RFR-001` | `refactor-requests.md` |
+
+  Anchor đổi theo (`#req-001`, `#dec-001`, `#tsk-001`). Tham số lệnh dùng mã mới: `aw task reopen
+  <dir> REQ-001|DEC-001`, `aw adr promote <dir> DEC-001`, `aw rule promote <dir> REQ-001`, `aw
+  approvals tick <dir> DEC-001 <hash>`, `/aw-clarify REQ-001`. `BR-<MIỀN>-NNN` và `ADR-NNNN` giữ
+  nguyên. Quy tắc ghi ở `docs/thuat-ngu.md` § Mã định danh, lý do ở `docs/kien-truc.md`.
+
+  **Ai bị ảnh hưởng:** engine mới **không đọc mã cũ**. Job đang chạy ghim version engine trong
+  `intake.md` nên chạy hết bằng engine cũ, không phải làm gì. Job mới dùng mã mới. Test trong target
+  repo còn tag `covers: YC-…` từ job cũ thì không ảnh hưởng job mới (chỉ tag của job đang chạy được
+  đối chiếu); tag `covers: BR-…` giữ nguyên.
+
 ### Nội bộ
 - **Test hồi quy chạy song song: ~8,5 phút → ~2,5–3 phút (4 CPU), đủ 1398 ca như cũ.** `tools/run-tests.sh`
   giờ chia việc cho các phần trong `tools/tests/NN-<tên>.sh` (helper + fixture ở `tools/tests/lib.sh`), chạy

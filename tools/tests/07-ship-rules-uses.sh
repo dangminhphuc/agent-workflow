@@ -32,7 +32,7 @@ viet_mr
 printf '\n## Lens 3 — Quality\n\n### [Blocker] tràn bộ nhớ\n' >> "$F/review.md"
 ky_vong 1 "review.md còn [Blocker] → chặn" sh "$SHC" "$F"
 viet_review
-printf '| ID | Verdict |\n|---|---|\n| YC-001 | pass |\n' > "$F/review.md"
+printf '| ID | Verdict |\n|---|---|\n| REQ-001 | pass |\n' > "$F/review.md"
 ky_vong 1 "aw check review không đạt → chặn" sh "$SHC" "$F"
 viet_review
 ky_vong 0 "aw-engine check ship → đúng checker" sh "$AWE" check ship "$F"
@@ -218,58 +218,58 @@ nhom "pending.sh (/aw-clarify)"
 CHK="$T/pending.sh"
 LQ="$TMP/lq"; rm -rf "$LQ"; mkdir -p "$LQ"
 cat > "$LQ/spec.md" <<'EOF'
-### YC-001 — a
+### REQ-001 — a
 - Priority: `should`
-### YC-002 — b
+### REQ-002 — b
 - Priority: `must`
-### YC-003 — c
+### REQ-003 — c
 - Priority: `must`
-### YC-004 — d
+### REQ-004 — d
 - Priority: `should`
-### YC-005 — e
+### REQ-005 — e
 - Priority: `must`
-### YC-006 — f
+### REQ-006 — f
 - Priority: `must`
 EOF
 # Thứ tự trong file cố tình ngược với thứ tự phải giải quyết.
 cat > "$LQ/open-questions.md" <<'EOF'
 # Open questions
 
-## YC-001 — không chặn
+## REQ-001 — không chặn
 - **Question:** hỏi 1
 - **Blocking:** `non-blocking`
 - **Status:** `open`
 
-## YC-002 — chặn review, bắt buộc, không task
+## REQ-002 — chặn review, bắt buộc, không task
 - **Blocking:** `review-blocking`
 - **Status:** `open`
 
-## YC-003 — chặn review, bắt buộc, 2 task
+## REQ-003 — chặn review, bắt buộc, 2 task
 - **Blocking:** `review-blocking`
 - **Status:** `open`
 
-## YC-004 — chặn, nên có
+## REQ-004 — chặn, nên có
 - **Blocking:** `blocking`
 - **Status:** `open`
 
-## YC-005 — chặn, bắt buộc
+## REQ-005 — chặn, bắt buộc
 - **Ask:** PO
 - **Blocking:** `blocking`
 - **Status:** `open`
 
-## YC-006 — đã trả lời
+## REQ-006 — đã trả lời
 - **Blocking:** `blocking`
 - **Status:** `answered`
 - **Answer:** có
 EOF
-thu_tu() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \(YC-[0-9]*\).*/\1/p' | tr '\n' ' '; }
+thu_tu() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \(REQ-[0-9]*\).*/\1/p' | tr '\n' ' '; }
 ky_vong 1 "còn điểm mù \"chặn\" mở → ĐANG CHẶN" sh "$CHK" "$LQ"
-dung "xếp: chặn → chặn review → không chặn; bắt buộc trước nên có" bang "$(thu_tu)" "YC-005 YC-004 YC-002 YC-003 YC-001 "
-printf '### T-01\n- On assumption: **yes** — `open-questions.md` § YC-003\n### T-02\n- On assumption: **yes** — § YC-003\n' > "$LQ/plan.md"
-dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định hơn thì trước" bang "$(thu_tu)" "YC-005 YC-004 YC-003 YC-002 YC-001 "
-dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task on assumption: 2 (T-01 T-02)'"
-dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-006'"
-dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'YC-005.*ĐANG CHẶN /aw-implement'"
+dung "xếp: chặn → chặn review → không chặn; bắt buộc trước nên có" bang "$(thu_tu)" "REQ-005 REQ-004 REQ-002 REQ-003 REQ-001 "
+printf '### TSK-001\n- On assumption: **yes** — `open-questions.md` § REQ-003\n### TSK-002\n- On assumption: **yes** — § REQ-003\n' > "$LQ/plan.md"
+dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định hơn thì trước" bang "$(thu_tu)" "REQ-005 REQ-004 REQ-003 REQ-002 REQ-001 "
+dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task on assumption: 2 (TSK-001 TSK-002)'"
+dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'REQ-006'"
+dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'REQ-005.*ĐANG CHẶN /aw-implement'"
 dung "khối Kết quả: [x] CÓ VIỆC ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ VIỆC ĐANG CHẶN'"
 thay "$LQ/open-questions.md" '`blocking`
 - **Status:** `open`' '`non-blocking`
@@ -280,7 +280,7 @@ ky_vong 1 "…tới review thì chặn review thành ĐANG CHẶN" sh "$CHK" "$L
 rm -f "$LQ/test-results.md"
 thay "$LQ/open-questions.md" '`review-blocking`' '`toàn bộ thiết kế`'
 ky_vong 1 "mức thiếu/sai (nhãn cũ) → CHƯA PHÂN MỨC, đang chặn spec" sh "$CHK" "$LQ"
-dung "…xếp lên đầu" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -A1 '^\[CHƯA PHÂN MỨC\]' | grep -q '1\. YC-00'"
+dung "…xếp lên đầu" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -A1 '^\[CHƯA PHÂN MỨC\]' | grep -q '1\. REQ-00'"
 printf '# Open questions\n\nNo open questions.\n' > "$LQ/open-questions.md"
 ky_vong 0 "không còn điểm mù mở, không có phát hiện" sh "$CHK" "$LQ"
 : > "$LQ/open-questions.md"
@@ -294,15 +294,15 @@ ky_vong 3 "fixture: chỉ có điểm mù không chặn" sh "$CHK" "$F"
 cat > "$LQ/open-questions.md" <<'EOF'
 # Open questions
 
-## YC-001 — không chặn
+## REQ-001 — không chặn
 - **Blocking:** `non-blocking`
 - **Status:** `open`
 
-## YC-002 — chặn review
+## REQ-002 — chặn review
 - **Blocking:** `review-blocking`
 - **Status:** `open`
 
-## YC-005 — chặn
+## REQ-005 — chặn
 - **Blocking:** `blocking`
 - **Status:** `open`
 EOF
@@ -310,49 +310,49 @@ EOF
 cat > "$LQ/design-findings.md" <<'EOF'
 # Phát hiện
 
-### PH-01 — cảnh báo
+### FND-001 — cảnh báo
 - Severity: `warn`
 - Location: `tdd.md` § Flow
 - Problem: mơ hồ
 - Resolution: `open`
 
-### PH-02 — chặn chưa xử lý
+### FND-002 — chặn chưa xử lý
 - Severity: `block`   <!-- block | warn -->
 - Category: `hidden-decision`
 - Location: `tdd.md` § Contract
-- Problem: chọn gRPC mà không nêu D
+- Problem: chọn gRPC mà không nêu DEC
 - Resolution: `open`   <!-- open | fixed | rejected: <lý do> -->
 
-### PH-03 — đã sửa
+### FND-003 — đã sửa
 - Severity: `block`
 - Resolution: `fixed`
 
-### PH-04 — bác bỏ không lý do
+### FND-004 — bác bỏ không lý do
 - Severity: `block`
 - Resolution: `rejected:`
 
-### PH-05 — bác bỏ có lý do
+### FND-005 — bác bỏ có lý do
 - Severity: `block`
-- Resolution: `rejected: D-02 đã chốt — PO, 2026-10-06`
+- Resolution: `rejected: DEC-002 đã chốt — PO, 2026-10-06`
 EOF
 thu_tu_all() { sh "$CHK" "$LQ" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \([A-Z]*-[0-9]*\).*/\1/p' | tr '\n' ' '; }
 ky_vong 1 "phát hiện Chặn chưa xử lý → ĐANG CHẶN" sh "$CHK" "$LQ"
 dung "xếp: điểm mù chặn → phát hiện Chặn → chặn review → phát hiện Cảnh báo → không chặn" \
-  bang "$(thu_tu_all)" "YC-005 PH-02 PH-04 YC-002 PH-01 YC-001 "
-dung "…phát hiện Chặn đánh dấu ĐANG CHẶN /aw-plan" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'PH-02.*ĐANG CHẶN /aw-plan'"
+  bang "$(thu_tu_all)" "REQ-005 FND-002 FND-004 REQ-002 FND-001 REQ-001 "
+dung "…phát hiện Chặn đánh dấu ĐANG CHẶN /aw-plan" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'FND-002.*ĐANG CHẶN /aw-plan'"
 dung "…in vị trí + vấn đề của phát hiện" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Problem: chọn gRPC mà không nêu D'"
 dung "phát hiện đã đóng chỉ nằm ở [ĐÃ XỬ LÝ], không đánh số" sh -c \
-  "o=\$(sh '$CHK' '$LQ' 2>/dev/null); echo \"\$o\" | grep -q '^  - PH-03' && echo \"\$o\" | grep -q '^  - PH-05' && ! echo \"\$o\" | grep -q '^  [0-9]*\. PH-0[35]'"
+  "o=\$(sh '$CHK' '$LQ' 2>/dev/null); echo \"\$o\" | grep -q '^  - FND-003' && echo \"\$o\" | grep -q '^  - FND-005' && ! echo \"\$o\" | grep -q '^  [0-9]*\. FND-00[35]'"
 thay "$LQ/open-questions.md" '`blocking`
 - **Status:** `open`' '`non-blocking`
 - **Status:** `open`'
 thay "$LQ/design-findings.md" '`open`   <!-- open' '`fixed`   <!-- open'
-thay "$LQ/design-findings.md" '`rejected:`' '`rejected: trùng PH-02`'
+thay "$LQ/design-findings.md" '`rejected:`' '`rejected: trùng FND-002`'
 ky_vong 3 "chỉ còn phát hiện Cảnh báo + điểm mù chưa chặn → chưa chặn" sh "$CHK" "$LQ"
 printf '# Open questions\n\nNo open questions.\n' > "$LQ/open-questions.md"
 printf '# Phát hiện\n\nNo blocking findings.\n' > "$LQ/design-findings.md"
 ky_vong 0 "file phát hiện rỗng + không điểm mù → không còn việc" sh "$CHK" "$LQ"
-printf '### PH-01 — x\n- Severity: `block`\n- Resolution: `open`\n' > "$LQ/plan-findings.md"
+printf '### FND-001 — x\n- Severity: `block`\n- Resolution: `open`\n' > "$LQ/plan-findings.md"
 ky_vong 1 "checker mới (<id>-findings.md) tự được gom" sh "$CHK" "$LQ"
 rm -f "$LQ/plan-findings.md" "$LQ/design-findings.md" "$LQ/tdd.md"
 

@@ -2,19 +2,20 @@
 
 Name workflow concepts with these exact terms — in chat with the human and in the Vietnamese body text
 of artifacts. Never use a Vietnamese translation of them; column `Not` lists the ones seen before.
-The sentence around a term stays Vietnamese: "YC-003 còn một `open question` chặn design".
+The sentence around a term stays Vietnamese: "REQ-003 còn một `open question` chặn design".
 
 `aw check implement` warns and `aw check review` blocks on a `Not` phrase in an artifact (except
 `intake.md`, `refactor-requests.md`, `*-results.md` and `>` quote lines, which hold the human's words).
 
 | Term | Meaning | Not |
 |---|---|---|
-| `requirement` | One thing the product must do: `YC-NNN` in `spec.md` | |
-| `decision` | Technical choice with ≥ 2 options: `D-NN` in `tdd.md`, one approval each | |
-| `finding` | LLM checker result on the design: `PH-NN` in `design-findings.md` | |
-| `task` | Plan step: `T-NN` in `plan.md` | |
-| `business rule` | Approved YC promoted to a product invariant: `BR-<DOMAIN>-NNN` | luật nghiệp vụ bền |
-| `ADR` | Approved D-xx promoted to `docs/adr/` of the target repo | |
+| `requirement` | One thing the product must do: `REQ-NNN` in `spec.md` | |
+| `decision` | Technical choice with ≥ 2 options: `DEC-NNN` in `tdd.md`, one approval each | |
+| `finding` | LLM checker result on the design: `FND-NNN` in `design-findings.md` | |
+| `task` | Plan step: `TSK-NNN` in `plan.md` | |
+| `refactor request` | Human's refactoring wish, recorded only: `RFR-NNN` in `refactor-requests.md` | |
+| `business rule` | Approved REQ promoted to a product invariant: `BR-<DOMAIN>-NNN` | luật nghiệp vụ bền |
+| `ADR` | Approved DEC-xxx promoted to `docs/adr/` of the target repo | |
 | `phase` | One workflow step (`00-intake` … `06-ship`), run by `/aw-<phase>` | |
 | `utility command` | Non-phase command: `/aw-clarify`, `/aw-import`, `/aw-bootstrap` | lệnh tiện ích |
 | `job` | One unit of work through the workflow: one branch, one worktree, one job dir | |
@@ -23,14 +24,14 @@ The sentence around a term stays Vietnamese: "YC-003 còn một `open question` 
 | `artifact` | File written into the job dir (`spec.md`, `tdd.md`…) | |
 | `input` | The sources spec reads: `## Input` of `intake.md` | |
 | `source label` | `[CONFLUENCE]`, `[JIRA]`, `[FILE]`, `[INFERRED]`, `[OPEN-QUESTION]`, `[HUMAN]` | nhãn nguồn |
-| `Quote` | Source sentences copied verbatim under a YC's `Source:`, one `> …` line each | |
+| `Quote` | Source sentences copied verbatim under a REQ's `Source:`, one `> …` line each | |
 | `open question` | Something the source does not say; agent assumes, human answers: `open-questions.md` | điểm mù |
 | `Blocking` | Level of an open question: `blocking`, `review-blocking`, `non-blocking` | mức chặn |
 | `Risk` | `high \| normal` in `spec.md`; `high` → design Mode 2 | |
-| `Mode 1` | Design: agent writes every D-xx, human approves | |
-| `Mode 2` | Design: human drafts D-xx first, agent only critiques | |
+| `Mode 1` | Design: agent writes every DEC-xxx, human approves | |
+| `Mode 2` | Design: human drafts DEC-xxx first, agent only critiques | |
 | `Design: skip` | Small bugfix/refactor skips design; plan works from spec | |
-| `Promote` | Human marks a D-xx or YC to become durable knowledge | |
+| `Promote` | Human marks a DEC-xxx or REQ to become durable knowledge | |
 | `durable knowledge` | What stays true after the job, in the target repo's git: conventions, ADR, BR-, `ARCHITECTURE.md` | kiến thức bền |
 | `machine checker` | `aw check <name>`: exact checks, machine exit of a phase | checker máy |
 | `LLM checker` | Clean-context subagent that writes findings; may only block, never pass | checker llm |
@@ -44,8 +45,8 @@ The sentence around a term stays Vietnamese: "YC-003 còn một `open question` 
 | `entry check` | A checker re-runs the previous phase's checker on its input | |
 | `based_on` | Hashes of an artifact's inputs (`aw based-on`) | |
 | `stale` | Artifact built from an older version of its input; rerun the phase that made it | lỗi thời |
-| `cross-check` | Check across phases (stale, test ↔ YC, diff scope); warn in implement, block in review | kiểm chéo |
-| `covers:` | Test tag linking a test to a YC or BR- | |
+| `cross-check` | Check across phases (stale, test ↔ REQ, diff scope); warn in implement, block in review | kiểm chéo |
+| `covers:` | Test tag linking a test to a REQ or BR- | |
 | `Expected files` | Diff boundary of a task; others go to `## Unplanned` | |
 | `Tree` | Code tree hash a result (test, scan, review) belongs to | |
 | `Lens 1–4` | The four angles of `review.md`: spec, design and scope, quality, security | |

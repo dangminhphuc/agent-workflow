@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 # Luật nghiệp vụ bền của repo đích (tools/lib/rule.sh).
 #
-#   aw rule promote <thư-mục-feature> YC-NNN   chép YC đã duyệt thành khối luật BR- trong worktree
+#   aw rule promote <thư-mục-feature> REQ-NNN   chép REQ đã duyệt thành khối luật BR- trong worktree
 #   aw rule check                              kiểm hình thức mọi khối luật trong repo
 #
-# promote chỉ chạy khi NGƯỜI đã quyết trong chính YC đó — "Promote: BR-<MIỀN>-NNN"
+# promote chỉ chạy khi NGƯỜI đã quyết trong chính REQ đó — "Promote: BR-<MIỀN>-NNN"
 # nằm dưới dấu duyệt spec — và spec đang ở trạng thái đã duyệt. ID, file đích, nội dung
 # đều lấy từ artifact đã duyệt; không có tham số nào để agent tự chọn. Chạy lại an toàn:
-# khối của cùng việc + YC được viết lại tại chỗ. Không commit gì.
+# khối của cùng việc + REQ được viết lại tại chỗ. Không commit gì.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -16,7 +16,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 case "${1:-}" in
   promote) kq_khai rule.sh \
     "0=ĐÃ NÂNG — khối luật đã ghi trong worktree, commit cùng việc" \
-    "1=TỪ CHỐI — YC chưa đủ điều kiện, lý do phía trên; không viết luật bằng tay" \
+    "1=TỪ CHỐI — REQ chưa đủ điều kiện, lý do phía trên; không viết luật bằng tay" \
     "2=SAI THAM SỐ" ;;
   *) kq_khai rule.sh \
     "0=HỢP LỆ — đọc các dòng ! (nếu có)" \
@@ -32,7 +32,7 @@ esac
 . "$HERE/lib/env.sh"
 mt_dat
 
-DUNG="Dùng: aw rule promote <thư-mục-feature> YC-NNN | aw rule check"
+DUNG="Dùng: aw rule promote <thư-mục-feature> REQ-NNN | aw rule check"
 LENH="${1:-}"; [ $# -gt 0 ] && shift
 
 case "$LENH" in
@@ -58,7 +58,7 @@ esac
 
 [ $# -eq 2 ] || { echo "$DUNG" >&2; exit 2; }
 DIR=${1%/}; YC=$2
-case "$YC" in YC-[0-9]*) ;; *) echo "LỖI: \"$YC\" không phải mã YC-NNN." >&2; exit 2 ;; esac
+case "$YC" in REQ-[0-9]*) ;; *) echo "LỖI: \"$YC\" không phải mã REQ-NNN." >&2; exit 2 ;; esac
 SPEC="$DIR/spec.md"
 for f in "$SPEC" "$DIR/plan.md"; do
   [ -f "$f" ] || { echo "LỖI: không có $f" >&2; exit 2; }
@@ -69,9 +69,9 @@ n_tc=0
 tu_choi() { echo "  ✗ $1"; n_tc=$((n_tc + 1)); }
 dy_dong_dau "$SPEC" spec >/dev/null
 tt=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
-[ "$tt" = approved ] || tu_choi "spec.md chưa được người duyệt (${tt:-?}) — chỉ nâng YC trong spec đã duyệt"
+[ "$tt" = approved ] || tu_choi "spec.md chưa được người duyệt (${tt:-?}) — chỉ nâng REQ trong spec đã duyệt"
 ID=$(yc_truong "$SPEC" "$YC" Promote | tr -d '`')
-[ -n "$ID" ] || tu_choi "$YC không khai \"- Promote: BR-<MIỀN>-NNN\" — người quyết nâng YC nào, trong chính YC đó (dưới approval checkbox spec)"
+[ -n "$ID" ] || tu_choi "$YC không khai \"- Promote: BR-<MIỀN>-NNN\" — người quyết nâng REQ nào, trong chính REQ đó (dưới approval checkbox spec)"
 ls_=$(luat_loi_spec "$DIR" | awk -v yc="$YC" 'index($0, yc ":") == 1')
 [ -z "$ls_" ] || { printf '%s\n' "$ls_" | while IFS= read -r x; do echo "  ✗ $x"; done; n_tc=$((n_tc + 1)); }
 KHOI="${TMPDIR:-/tmp}/aw-luat-moi.$$"
@@ -87,7 +87,7 @@ CU=$(luat_ds "$MT_REPO" "$MT_CONV" | awk -F'|' -v id="$ID" '$2 == id { print $1;
 DICH=${CU:-$(luat_dich "$ID" "$MT_CONV")}
 mkdir -p "$(dirname "$MT_REPO/$DICH")" || exit 2
 if [ ! -f "$MT_REPO/$DICH" ]; then
-  printf '# Business rules — %s\n\n> Business rule: bất biến còn đúng sau từng việc. `aw rule promote` thêm khối từ YC\n> đã duyệt; sửa qua PR. Không xoá luật — đổi `Status: superseded by BR-…`.\n' \
+  printf '# Business rules — %s\n\n> Business rule: bất biến còn đúng sau từng việc. `aw rule promote` thêm khối từ REQ\n> đã duyệt; sửa qua PR. Không xoá luật — đổi `Status: superseded by BR-…`.\n' \
     "$(printf '%s' "$ID" | awk -F- '{ print tolower($2) }')" > "$MT_REPO/$DICH"
 fi
 awk -v id="$ID" -v khoi="$KHOI" '

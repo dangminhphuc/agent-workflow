@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Viết lại mục lục "## Contents" của artifact theo heading, mở rộng anchor rút gọn
-# trong link (spec.md#yc-001 → spec.md#yc-001--đăng-nhập), rồi kiểm link còn sai.
+# trong link (spec.md#req-001 → spec.md#req-001--đăng-nhập), rồi kiểm link còn sai.
 #
 #   aw toc <thư-mục-feature> [artifact...]     bỏ trống artifact = mọi artifact agent viết
 #
