@@ -80,7 +80,7 @@ The engine holds no token; it uses the first route that works: logged-in `gh`/`g
 |---|---|
 | `ĐÃ TẠO MR` | Give the URL (stdout). "Mô tả CHƯA gửi" → give the content of `mr-description.md` |
 | `ĐÃ CÓ MR ĐANG MỞ` | New commits pushed to the existing MR (description untouched). Give its URL |
-| `CHƯA ĐỦ ĐIỀU KIỆN` | `aw check ship` fails or uncommitted changes remain. Never commit unknown changes (that is `/aw-implement`'s job) |
+| `CHƯA ĐỦ ĐIỀU KIỆN` | `aw check ship` fails, uncommitted changes remain, or the MR would still carry `docs/sdlc/` files. Never commit unknown changes (that is `/aw-implement`'s job); never `git rm` another job's dir yourself — tell the human |
 | `KÉO THEO COMMIT NGOÀI VIỆC` | Print the commit list. Human decides: other target, new branch + cherry-pick, or accept — `--allow-extra-commits` only when the human says accept |
 | `KHÔNG TẠO ĐƯỢC MR` | Branch pushed. Give the prefilled link; once the human gives the MR link → `aw ship create <dir> --target <branch> --url <link>` |
 

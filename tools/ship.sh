@@ -15,6 +15,8 @@
 #     của việc? có) — vd việc dựa trên develop mà gửi vào main. Người quyết:
 #     đổi đích, tách branch, hoặc chấp nhận bằng --allow-extra-commits.
 #   - đã có MR đang mở vào đúng đích đó: chỉ push commit mới, không tạo thêm, in URL.
+#   - sau khi gỡ thư mục việc khỏi branch (ar_go, tools/lib/artifact.sh), MR vẫn mang
+#     file trong docs/sdlc/ — artifact không bao giờ vào nhánh đích.
 # Cách tạo MR (xem tools/lib/mr.sh): gh/glab đã đăng nhập → GitLab: git push
 # options (không cần token, chỉ gửi tiêu đề; mô tả để ở mr-description.md cho người dán)
 # → link tạo tay điền sẵn; người tạo xong thì ghi lại bằng --url.
@@ -53,12 +55,14 @@ esac
 . "$HERE/lib/worktree.sh"
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/mr.sh"
+. "$HERE/lib/adapter.sh"
+. "$HERE/lib/artifact.sh"
 . "$HERE/lib/env.sh"
 mt_dat "$HERE"
 CONV="$MT_CONV"; R="$MT_REPO"
 
 DIR="${1:-}"; [ $# -gt 0 ] && shift
-[ -n "$DIR" ] && [ -d "$DIR" ] || { echo "LỖI: cần thư mục feature (aw feature in ra), vd .agent-workflow/feat_x" >&2; exit 2; }
+[ -n "$DIR" ] && [ -d "$DIR" ] || { echo "LỖI: cần thư mục feature (aw feature in ra), vd docs/sdlc/feat_x" >&2; exit 2; }
 SHIP="$DIR/ship.md"
 FT=$(basename "$DIR")
 
@@ -147,10 +151,12 @@ create)
   if ! sh "$HERE/check-ship.sh" "$DIR" >/dev/null 2>&1; then
     echo "  ✗ aw check ship $DIR chưa ĐẠT — chạy nó để xem chi tiết." >&2; chua=1
   fi
-  bn=$(git -C "$R" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  # Thư mục việc không tính: ar_go bên dưới gỡ nó khỏi branch, bản sửa dở vẫn ở máy.
+  KTV=":(top,exclude)$TM_VIEC/$FT"
+  bn=$(git -C "$R" status --porcelain -- . "$KTV" 2>/dev/null | wc -l | tr -d ' ')
   if [ "$bn" != 0 ]; then
     echo "  ✗ Worktree còn $bn thay đổi chưa commit — MR sẽ thiếu chúng:" >&2
-    git -C "$R" status --short | head -5 | sed 's/^/      /' >&2; chua=1
+    git -C "$R" status --short -- . "$KTV" | head -5 | sed 's/^/      /' >&2; chua=1
   fi
   [ "$chua" = 0 ] || exit 1
 
@@ -165,6 +171,19 @@ create)
       exit 4
     fi
     echo "  --allow-extra-commits: người đã chấp nhận." >&2
+  fi
+
+  # Artifact không vào nhánh đích: gỡ thư mục việc khỏi branch (một commit), file
+  # vẫn ở máy — ship.md, mr-description.md ghi sau đó chỉ ở máy (tools/lib/artifact.sh).
+  AR_DA_COMMIT=""
+  ar_go "$DIR" || { echo "LỖI: không gỡ được $DIR khỏi branch — xem thông báo của git phía trên." >&2; exit 1; }
+  [ -z "$AR_DA_COMMIT" ] || echo "  commit  gỡ $DIR khỏi branch (chore(sdlc): remove $FT artifacts before MR) — file vẫn ở máy" >&2
+  con=$(ar_trong_diff "$R" "refs/remotes/origin/$DICH")
+  if [ -n "$con" ]; then
+    echo "  ✗ MR $B → $DICH vẫn mang artifact trong $TM_VIEC/ (không được vào nhánh đích):" >&2
+    printf '%s\n' "$con" | head -5 | sed 's/^/      /' >&2
+    echo "    Thường là thư mục việc khác (branch xếp chồng lên việc chưa ship): git rm -r --cached <thư-mục> rồi commit." >&2
+    exit 1
   fi
 
   NT=$(mr_nen_tang "$R" "$CONV")

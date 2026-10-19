@@ -141,6 +141,29 @@ intake_base_dong() {
   ' "$1/intake.md"
 }
 
+# ---- thư mục việc ----
+# Artifact của việc: <worktree>/TM_VIEC/<tên-branch>/ — commit vào branch khi
+# aw check ĐẠT, gỡ khỏi branch trước khi tạo MR (tools/lib/artifact.sh).
+# TM_CU: thư mục cục bộ (bị exclude) — .engine/, .adapters, .guard-pre của engine,
+# và thư mục việc tạo bằng engine cũ (vẫn đọc được, không commit).
+# Lý do: docs/kien-truc.md § Artifact theo feature.
+TM_VIEC="docs/sdlc"
+TM_CU=".agent-workflow"
+
+# tm_viec <gốc worktree> <tên-thư-mục> -> đường dẫn tương đối của thư mục việc:
+# TM_VIEC/<tên>, trừ khi chỉ có bản ở TM_CU (việc bắt đầu bằng engine cũ).
+tm_viec() {
+  if [ ! -d "$1/$TM_VIEC/$2" ] && [ -d "$1/$TM_CU/$2" ]; then printf '%s/%s\n' "$TM_CU" "$2"
+  else printf '%s/%s\n' "$TM_VIEC" "$2"; fi
+}
+
+# tm_bo <đường-dẫn tương đối> -> 0 nếu nằm trong thư mục việc (mới hoặc cũ):
+# diff, dấu vân tay, quét tài liệu bỏ qua chúng.
+tm_bo() {
+  case "$1" in "$TM_VIEC"/*|"$TM_CU"/*) return 0 ;; esac
+  return 1
+}
+
 # ---- conventions.md hiệu lực ----
 # Quy ước của repo đích nằm trong git (QU_DUONG_DAN); bản của bản clone
 # ($AW_CONFIG/conventions.md) chỉ được ghi đè các khoá QU_KHOA_MAY. Repo chưa
@@ -163,13 +186,17 @@ qu_diem_re() {
   _qt=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
   [ "$(CDPATH= cd -- "$_qt" && pwd -P)" != "$_qg" ] || return 0
   _qb=$(git -C "$1" rev-parse --abbrev-ref HEAD 2>/dev/null)
-  _qf="$_qt/.agent-workflow/$(printf '%s' "$_qb" | tr '/' '_')"
+  _qf="$_qt/$(tm_viec "$_qt" "$(printf '%s' "$_qb" | tr '/' '_')")"
   if [ ! -f "$_qf/intake.md" ]; then
     # Branch không theo branch_patterns: thư mục việc mang tên người đặt —
     # worktree chỉ có một việc thì lấy việc đó.
-    set -- "$1" "$_qt"/.agent-workflow/*/intake.md
-    [ $# -eq 2 ] && [ -f "$2" ] || return 0
-    _qf=$(dirname "$2")
+    _qn=0; _qy=""
+    for _qx in "$_qt/$TM_VIEC"/*/intake.md "$_qt/$TM_CU"/*/intake.md; do
+      [ -f "$_qx" ] || continue
+      _qn=$((_qn + 1)); _qy=$_qx
+    done
+    [ "$_qn" -eq 1 ] || return 0
+    _qf=$(dirname "$_qy")
   fi
   set -- "$1" $(intake_base_dong "$_qf")
   for _qr in "${2:-}" "${3:-}"; do

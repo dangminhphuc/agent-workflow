@@ -75,8 +75,34 @@ thiếu hàm vẫn tính là "tái hiện được").
 
 ### Artifact theo feature, worktree bắt buộc
 
-- Artifact ở `.agent-workflow/<tên-branch>/`, tên branch **đầy đủ** để feat và refactor cùng tên
+- Artifact ở `docs/sdlc/<tên-branch>/`, tên branch **đầy đủ** để feat và refactor cùng tên
   không đè nhau. Agent luôn in `Đang làm với: …` — ghi nhầm feature là lỗi im lặng.
+- **Artifact commit vào branch của việc, không bao giờ vào nhánh đích.** Trước đây artifact chỉ ở
+  máy (`.agent-workflow/`, bị exclude): mất máy hay gỡ worktree là mất. Mở phiên ở máy khác cũng
+  không có. Giờ:
+  - Mỗi `aw check` ĐẠT (và `aw approvals tick`) commit **chỉ** thư mục việc. Lệnh dùng
+    `git add -f`, commit với pathspec để không cuốn phần người đã stage, và `--no-verify`.
+    Hook của repo viết cho code: lint-staged định dạng lại artifact thì mất approval hash,
+    commit-msg có thể từ chối.
+  - `aw ship create` gỡ thư mục khỏi branch bằng một commit trước khi push. Diff của MR không có
+    artifact, nên lý do cũ, reviewer đọc nhiễu, vẫn được giữ.
+  - Đặt commit trong `aw check`, không tách thành lệnh agent tự gọi: agent quên thì artifact không
+    vào git mà không ai biết, và cùng một bước sẽ phải lặp ở mọi phase.
+  - `docs/sdlc/` vẫn bị exclude: file đã track thì git vẫn theo dõi, file mới thì `git add -A`
+    không kéo vào commit code. Sau khi ship, file thành chưa track (bị exclude); dấu `.local-only`
+    giữ cho `aw check` không commit lại, vì commit lại là artifact quay về MR.
+  - Diff, `Tree`, quét tài liệu bỏ qua cả `docs/sdlc/` lẫn `.agent-workflow/` (`tm_bo`,
+    `tools/lib/md.sh`). Commit artifact không làm `stale` kết quả máy ghi, cũng không bị tính là
+    file ngoài phạm vi.
+  - Lớp chặn ở `aw ship create`: sau khi gỡ mà MR vẫn mang file trong `docs/sdlc/` (thư mục việc
+    khác, từ branch xếp chồng hoặc commit tay) thì chặn. Máy không tự gỡ thư mục của việc khác.
+  - Đường dẫn cố định (`TM_VIEC`), không cấu hình, cùng lý do với `conventions.md`.
+  - Tương thích ngược: việc bắt đầu bằng engine cũ vẫn ở `.agent-workflow/<tên>/` (`tm_viec`):
+    đọc được, không commit. `.agent-workflow/` vẫn là thư mục cục bộ của engine (`.engine/`,
+    `.adapters`, `.guard-pre`).
+  - Giới hạn: lịch sử artifact chỉ còn trong commit của branch, nên squash-merge hay xoá branch là
+    mất (archive vẫn còn). Merge tay không qua `aw ship create` thì artifact vào nhánh đích; engine
+    không chặn được ở phía server.
 - Main checkout chỉ chạy `/aw-intake`, `/aw-bootstrap` (đề xuất worktree) và dọn ở `/aw-ship`; `aw feature`
   chặn mọi lệnh khác ở đó.
   Chốt đặt ở script mọi phase đều gọi — "fresh session" thành cấu trúc, không còn là khuyến nghị.
@@ -121,7 +147,8 @@ Bộ cài cũ chép quy trình vào target repo và bắt commit vào nhánh g�
   trong cùng job (tag tạo bằng `GITHUB_TOKEN` không kích được workflow khác). Hai PR cùng số: CI
   của PR chặn PR merge sau.
 - Wrapper và engine có số giao thức (`AW_PROTOCOL`): lệch thì dừng, không chạy thiếu biến.
-- **Artifact chỉ ở máy**: không vào PR; gỡ worktree thì chép vào `archive/` trước.
+- **Artifact không vào PR**: commit vào branch của việc, gỡ trước khi tạo MR (mục "Artifact theo
+  feature"); gỡ worktree thì chép vào `archive/` trước.
 
 ## Trạng thái của việc và durable knowledge
 
@@ -132,7 +159,7 @@ máy thì với phiên đó coi như không có. Ranh giới:
 | | Trạng thái của việc | Durable knowledge |
 |---|---|---|
 | Là gì | `intake/spec/tdd/plan/review`, `*-results.md`, approval checkbox đang chờ | Quy ước, quyết định, ràng buộc, luật nghiệp vụ còn đúng sau khi việc xong |
-| Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của target repo, qua PR |
+| Ở đâu | `docs/sdlc/<branch>/` — trong branch của việc, gỡ trước MR; gỡ worktree thì vào `archive/` | Trong git của target repo, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
 Các mục dưới: `conventions.md` trong git, mẫu điểm vào và lệnh kiểm, ADR từ D-xx, luật nghiệp vụ
@@ -146,7 +173,7 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
 - **Vị trí cố định** `docs/agent-workflow/conventions.md` (`QU_DUONG_DAN`, `tools/lib/md.sh`).
   Không cho cấu hình: chỗ đặt nó lại phải nằm trong một cấu hình khác, và mỗi máy trỏ một file là
   đúng thứ cần bỏ. Không đặt dưới `.agent-workflow/` (bị exclude; `--from-legacy` dùng
-  `.agent-workflow/conventions.md` làm dấu hiệu bộ cài cũ).
+  `.agent-workflow/conventions.md` làm dấu hiệu bộ cài cũ) hay `docs/sdlc/` (gỡ khỏi branch trước MR).
 - **Bản clone chỉ ghi đè `worktree_dir`** (`QU_KHOA_MAY`) — khoá duy nhất chỉ ảnh hưởng máy cục
   bộ. Khoá khác ở bản clone: `aw conventions check` báo ✗ và không có hiệu lực (nếu không, một máy
   lặng lẽ chạy luật khác cả team). Thêm khoá máy là thay đổi engine, có lý do.
@@ -455,7 +482,7 @@ làm `tdd.md` stale). LLM checker mới chỉ cần ghi `<id>-findings.md` đún
   chỉ kiểm kết quả xanh và **còn mới**. Thiếu nhóm chỉ cảnh báo; riêng chore đụng dependency phải
   có `sca` xanh.
 - **Độ mới theo `Tree`**, không theo HEAD: tree SHA của nội dung worktree (đã/chưa commit, chưa
-  track, trừ `.agent-workflow/`), tính bằng index tạm. Theo HEAD thì sửa chưa commit lọt, còn commit
+  track, trừ thư mục việc `docs/sdlc/`, `.agent-workflow/`), tính bằng index tạm. Theo HEAD thì sửa chưa commit lọt, còn commit
   đúng code đã review lại bị coi stale. `review.md` ghi `Reviewed tree:` để kết luận gắn với
   đúng code đã rà.
 
@@ -478,7 +505,7 @@ làm `tdd.md` stale). LLM checker mới chỉ cần ghi `<id>-findings.md` đún
 ## Cross-check, trạng thái sạch, nhật ký
 
 - Test ↔ YC (`covers:`) và phạm vi diff ("Expected files" + "Unplanned") chỉ cảnh báo. Phạm vi so
-  từ `git merge-base <base> HEAD` **tới cây làm việc** + file chưa track, bỏ `.agent-workflow/`.
+  từ `git merge-base <base> HEAD` **tới cây làm việc** + file chưa track, bỏ `docs/sdlc/` và `.agent-workflow/`.
 - **Trạng thái sạch**: task `[ ]` sót, dấu xung đột merge → chặn. Dòng test *thêm mới* khớp
   `skipped_test_regex` → cảnh báo (chỉ dòng mới, để test tắt từ trước không đổ lên việc này).
 - **harness journal** (`$AW_CONFIG/journal/`): `checks.tsv` (engine ghi mỗi `aw check`),

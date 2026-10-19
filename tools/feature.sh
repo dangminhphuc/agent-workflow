@@ -11,7 +11,8 @@
 #   2. khong khop thi lay tham so;
 #   3. khong co tham so thi ma 3 — agent phai DUNG LAI HOI, khong tu dat ten.
 #
-# In ra stdout: <artifact_dir>/<ten-feature>, vd .agent-workflow/feat_tao-todo
+# In ra stdout: docs/sdlc/<ten-feature> (TM_VIEC, tools/lib/md.sh), vd docs/sdlc/feat_tao-todo;
+# viec bat dau bang engine cu (chi co .agent-workflow/<ten-feature>/) thi in duong dan cu.
 # Ten branch co "/" duoc doi thanh "_" de khong tao thu muc long nhau.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -28,7 +29,6 @@ kq_khai feature.sh \
 
 . "$HERE/lib/env.sh"
 mt_dat "$HERE"
-ART=$MT_ART_DIR
 CONV="$MT_CONV"
 
 # Chữ giữ chỗ của adapter còn nguyên (agent quên chép phần người gõ sau tên lệnh:
@@ -73,7 +73,7 @@ fi
 
 if [ -z "$ten" ]; then
   echo "KHÔNG XÁC ĐỊNH ĐƯỢC FEATURE." >&2
-  echo "  Branch \"${branch:-?}\" không khớp branch_patterns trong $ART/conventions.md, và không có tham số." >&2
+  echo "  Branch \"${branch:-?}\" không khớp branch_patterns trong $CONV, và không có tham số." >&2
   echo "  Agent: DỪNG LẠI hỏi tên feature. Không tự đặt tên." >&2
   exit 3
 fi
@@ -82,5 +82,7 @@ case "$ten" in
   *" "*|*/*|*..*|.*) echo "LỖI: tên feature \"$ten\" không hợp lệ (không được có dấu cách, \"/\", \"..\", hay bắt đầu bằng \".\")." >&2; exit 2 ;;
 esac
 
-echo "Đang làm với: $ART/$ten ($tu)" >&2
-echo "$ART/$ten"
+TM=$(tm_viec "$MT_REPO" "$ten")
+case "$TM" in "$TM_CU"/*) tu="$tu; việc tạo bằng engine cũ — artifact chỉ ở máy" ;; esac
+echo "Đang làm với: $TM ($tu)" >&2
+echo "$TM"

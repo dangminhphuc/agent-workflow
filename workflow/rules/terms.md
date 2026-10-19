@@ -19,7 +19,7 @@ The sentence around a term stays Vietnamese: "YC-003 còn một `open question` 
 | `utility command` | Non-phase command: `/aw-clarify`, `/aw-import`, `/aw-bootstrap` | lệnh tiện ích |
 | `job` | One unit of work through the workflow: one branch, one worktree, one job dir | |
 | `job type` | `Type` in `intake.md`: `feature \| bugfix \| refactor \| perf \| chore` | loại việc |
-| `job dir` | `.agent-workflow/<branch>/` — the job's artifacts | thư mục việc |
+| `job dir` | `docs/sdlc/<branch>/` — the job's artifacts; committed on the job branch, removed from it before the MR | thư mục việc |
 | `artifact` | File written into the job dir (`spec.md`, `tdd.md`…) | |
 | `input` | The sources spec reads: `## Input` of `intake.md` | |
 | `source label` | `[CONFLUENCE]`, `[JIRA]`, `[FILE]`, `[INFERRED]`, `[OPEN-QUESTION]`, `[HUMAN]` | nhãn nguồn |

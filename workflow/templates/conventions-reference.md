@@ -47,7 +47,7 @@ còn sót. `aw ready` gọi lệnh này.
 
 ### `branch_patterns`
 Mẫu glob tên branch. Branch khớp mẫu thì tên branch là tên feature → artifact ở
-`.agent-workflow/<tên-branch>/` (`aw feature`). Không khớp thì lấy tham số lệnh,
+`docs/sdlc/<tên-branch>/` (`aw feature`). Không khớp thì lấy tham số lệnh,
 không có thì hỏi người. bắt buộc.
 
 ### `type_by_prefix`
@@ -144,7 +144,7 @@ cảnh báo).
 
 ### `knowledge_adr_dir`
 Thư mục ADR, tương đối với gốc repo; mặc định `docs/adr`. Phải nằm trong git (không dưới
-`.agent-workflow/`). `aw adr promote` ghi `NNNN-<việc>-d-NN.md` và dựng lại bảng chỉ mục
+`.agent-workflow/` hay `docs/sdlc/`). `aw adr promote` ghi `NNNN-<việc>-d-NN.md` và dựng lại bảng chỉ mục
 `README.md`; `aw adr check` kiểm hình thức (số không trùng, `Status: accepted | superseded by
 NNNN`, có `Scope`, chỉ mục khớp). Chỉ D-xx người duyệt kèm `- Promote: adr` mới được nâng.
 

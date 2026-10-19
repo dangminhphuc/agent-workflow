@@ -15,7 +15,7 @@
 #   - khoá bắt buộc trống: base_branch branch_patterns type_by_prefix test_files
 #   - giá trị sai dạng: mr_platform, type_by_prefix (cặp, loại, khớp branch_patterns),
 #     regex không biên dịch được hoặc dùng {n}, worktree_dir thiếu {ten} / nằm trong repo
-#   - knowledge_adr_dir, knowledge_rules_dir tuyệt đối, có "..", hay nằm trong .agent-workflow/
+#   - knowledge_adr_dir, knowledge_rules_dir tuyệt đối, có "..", hay nằm trong .agent-workflow/ hoặc docs/sdlc/
 #   - base_branch không có (local lẫn origin); file khai ở rules_* hay mục uses_* không dùng được
 #
 # Cảnh báo (!) — chạy được nhưng nhiều khả năng chưa đúng ý:
@@ -198,7 +198,8 @@ for k in knowledge_adr_dir knowledge_rules_dir; do
   case "$AD" in
     "") ;;
     /*|*..*) loi "$k \"$AD\" phải là đường dẫn tương đối trong repo, không có \"..\"" ;;
-    .agent-workflow*) loi "$k \"$AD\" nằm trong .agent-workflow/ (bị exclude) — durable knowledge phải vào git" ;;
+    "$TM_CU"*) loi "$k \"$AD\" nằm trong $TM_CU/ (bị exclude) — durable knowledge phải vào git" ;;
+    "$TM_VIEC"|"$TM_VIEC"/*) loi "$k \"$AD\" nằm trong $TM_VIEC/ (artifact của việc, gỡ khỏi branch trước MR) — durable knowledge phải vào nhánh gốc" ;;
   esac
 done
 qt=$(kc_quy_tac_loi "$MT_REPO" review)

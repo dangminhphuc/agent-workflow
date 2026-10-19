@@ -8,7 +8,7 @@
 #
 # Yêu cầu: đã source tools/lib/md.sh (và tools/lib/commands.sh nếu dùng kc_quy_tac_*).
 #
-# Thư mục feature có dạng <repo>/.agent-workflow/<tên-branch>. conventions.md và
+# Thư mục feature có dạng <repo>/docs/sdlc/<tên-branch> (TM_VIEC; việc cũ: TM_CU). conventions.md và
 # config.sh nằm trong $AW_CONFIG (cấu hình của bản clone, wrapper aw truyền vào).
 if [ -z "${AW_CONFIG:-}" ]; then
   echo "LỖI: thiếu AW_CONFIG — chạy qua wrapper aw (vd: aw check spec <thư-mục-feature>)." >&2
@@ -61,6 +61,7 @@ kc_test_yc() {
   : > "$_ds"
   set -f
   git -C "$_top" ls-files --cached --others --exclude-standard | while IFS= read -r _f; do
+    tm_bo "$_f" && continue   # artifact đã commit (test-results.md…) không phải file test
     # shellcheck disable=SC2086
     khop_glob "$_f" $_mau && printf '%s\n' "$_f"
   done > "$_ds.files"
@@ -127,7 +128,7 @@ kc_pham_vi() {
   { git -C "$_top" diff --name-only "$_mb"; git -C "$_top" ls-files --others --exclude-standard; } \
     | sort -u | while IFS= read -r _f; do
       [ -n "$_f" ] || continue
-      case "$_f" in .agent-workflow/*) continue ;; esac
+      tm_bo "$_f" && continue
       # shellcheck disable=SC2086
       khop_glob "$_f" $_bo && continue
       # shellcheck disable=SC2086
@@ -282,9 +283,10 @@ kc_doi() {
   {
     git -C "$_top" -c core.quotepath=off diff --name-status -M "$_mb"
     git -C "$_top" -c core.quotepath=off ls-files --others --exclude-standard | awk '{ print "A\t" $0 }'
-  } | awk -F'\t' '
+  } | awk -F'\t' -v m="$TM_VIEC/" -v c="$TM_CU/" '
     { s = substr($1, 1, 1); p = $2; q = (NF > 2 ? $3 : "") }
-    p ~ /^\.agent-workflow\// && (q == "" || q ~ /^\.agent-workflow\//) { next }
+    function bo(x) { return index(x, m) == 1 || index(x, c) == 1 }
+    bo(p) && (q == "" || bo(q)) { next }
     { print s "\t" p (q != "" ? "\t" q : "") }
   '
 }
@@ -710,7 +712,7 @@ kc_van_tay() {
   # Không dùng pathspec exclude: thư mục artifact thường bị .git/info/exclude bỏ
   # qua, và git add báo lỗi khi pathspec nhắc tới đường dẫn bị bỏ qua.
   _vt=$(GIT_INDEX_FILE="$_tmp" git -C "$_top" add -A >/dev/null 2>&1 &&
-        GIT_INDEX_FILE="$_tmp" git -C "$_top" rm -r -q --cached --ignore-unmatch -- .agent-workflow >/dev/null 2>&1 &&
+        GIT_INDEX_FILE="$_tmp" git -C "$_top" rm -r -q --cached --ignore-unmatch -- "$TM_VIEC" "$TM_CU" >/dev/null 2>&1 &&
         GIT_INDEX_FILE="$_tmp" git -C "$_top" write-tree 2>/dev/null)
   _r=$?
   rm -f "$_tmp"

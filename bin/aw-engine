@@ -88,12 +88,26 @@ case "$LENH" in
     fi
     # Nhật ký harness (aw journal): ghi mỗi lần chạy — checker nào, đạt không,
     # vi phạm đầu tiên. stdout vẫn chảy ra ngay (tee); mã thoát giữ nguyên.
-    [ "${AW_JOURNAL:-1}" = 0 ] && exec sh "$T/$s" "$@"
-    _nk="${TMPDIR:-/tmp}/aw-nk.$$"
-    { sh "$T/$s" "$@"; echo $? > "$_nk.ma"; } | tee "$_nk"
-    _ma=$(cat "$_nk.ma" 2>/dev/null); _ma=${_ma:-1}
-    sh "$T/journal.sh" _check "$ten" "$1" "$_ma" "$_nk" >/dev/null 2>&1
-    rm -f "$_nk" "$_nk.ma"
+    if [ "${AW_JOURNAL:-1}" = 0 ]; then
+      sh "$T/$s" "$@"; _ma=$?
+    else
+      _nk="${TMPDIR:-/tmp}/aw-nk.$$"
+      { sh "$T/$s" "$@"; echo $? > "$_nk.ma"; } | tee "$_nk"
+      _ma=$(cat "$_nk.ma" 2>/dev/null); _ma=${_ma:-1}
+      sh "$T/journal.sh" _check "$ten" "$1" "$_ma" "$_nk" >/dev/null 2>&1
+      rm -f "$_nk" "$_nk.ma"
+    fi
+    # ĐẠT → commit thư mục việc vào branch (tools/lib/artifact.sh). Commit hỏng
+    # không đổi kết quả chấm — chỉ báo.
+    if [ "$_ma" = 0 ]; then
+      . "$T/lib/md.sh"; . "$T/lib/adapter.sh"; . "$T/lib/artifact.sh"
+      AR_DA_COMMIT=""
+      if ar_commit "$1" "chore(sdlc): $(basename "$1") $ten"; then
+        [ -z "$AR_DA_COMMIT" ] || echo "Artifact: đã commit $TM_VIEC/$(basename "$1")/ (chore(sdlc): $(basename "$1") $ten)" >&2
+      else
+        echo "CẢNH BÁO: không commit được artifact $1 — xem thông báo của git phía trên; commit tay: git add -f $1 && git commit -- $1" >&2
+      fi
+    fi
     exit "$_ma" ;;
   init)      can_repo; exec sh "$T/init.sh" "$@" ;;
   feature)   can_repo; exec sh "$T/feature.sh" "$@" ;;

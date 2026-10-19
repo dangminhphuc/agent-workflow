@@ -419,10 +419,12 @@ cmd_doctor() {
     [ -f "$AW_CONFIG/config.sh" ] && co "config.sh" || khong "config.sh không có — chạy: aw init"
     _ex="$GIT_CHUNG/info/exclude"
     _ds="/.agent-workflow/"
+    # Engine commit artifact vào branch (tools/lib/artifact.sh) thì docs/sdlc/ cũng phải bị exclude.
+    _e=""; if [ -n "${AW_ENGINE_DIR:-}" ]; then _e=$AW_ENGINE_DIR; elif [ -n "$_v" ]; then _e="$AW_CACHE/$_v"; fi
+    [ -f "$_e/tools/lib/artifact.sh" ] && _ds="$_ds /docs/sdlc/"
     # ADAPTER: một hoặc nhiều id, cách nhau dấu cách hoặc dấu phẩy (bỏ trống = claude-code)
     _ad=$( [ -f "$AW_CONFIG/config.sh" ] && (. "$AW_CONFIG/config.sh" >/dev/null 2>&1; printf '%s' "${ADAPTER:-}") | tr ',' ' ')
     _ad=$(printf '%s\n' ${_ad:-claude-code} | awk 'NF && !t[$0]++ { printf "%s%s", (n++ ? " " : ""), $0 }')
-    _e=""; if [ -n "${AW_ENGINE_DIR:-}" ]; then _e=$AW_ENGINE_DIR; elif [ -n "$_v" ]; then _e="$AW_CACHE/$_v"; fi
     for _a in $_ad; do
       [ -f "$_e/adapters/$_a/exclude" ] && _ds="$_ds $(grep -v '^#' "$_e/adapters/$_a/exclude" | tr '\n' ' ')"
       [ -d "$_e/adapters" ] && [ ! -f "$_e/adapters/$_a/build.sh" ] && khong "ADAPTER khai \"$_a\" nhưng engine $_v không có adapter đó — sửa $AW_CONFIG/config.sh"

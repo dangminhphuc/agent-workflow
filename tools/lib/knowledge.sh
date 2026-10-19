@@ -16,7 +16,7 @@
 kt_tai_lieu() {
   _kkf=$(conv_get "$2" knowledge_files); _kkf=${_kkf:-*/ARCHITECTURE.md}
   git -C "$1" ls-files --cached --others --exclude-standard 2>/dev/null | while IFS= read -r _kf; do
-    case "$_kf" in .agent-workflow/*) continue ;; esac
+    tm_bo "$_kf" && continue
     set -f
     # shellcheck disable=SC2086
     if khop_glob "$_kf" $_kkf; then set +f; printf '%s|%s/*\n' "$_kf" "$(dirname "$_kf")"; else set +f; fi

@@ -34,9 +34,12 @@ else
     "1=CÓ Ô CHỜ DUYỆT — hỏi người từng mục; chỉ chạy lệnh tick sau khi người chọn duyệt mục đó" \
     "2=SAI THAM SỐ"
 fi
+. "$HERE/lib/md.sh"
 . "$HERE/lib/env.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
+. "$HERE/lib/adapter.sh"
+. "$HERE/lib/artifact.sh"
 mt_dat
 
 # ------------------------------------------------------------------ tick
@@ -73,6 +76,13 @@ if [ "${1:-}" = tick ]; then
       >> "$AW_CONFIG/journal/approvals.tsv" 2>/dev/null
   fi
   echo "Đã duyệt $KHOA ($(basename "$DIR")) — $F"
+  # Ô duyệt là một phần artifact: commit ngay (tools/lib/artifact.sh) — lỗi chỉ báo.
+  AR_DA_COMMIT=""
+  if ar_commit "$DIR" "chore(sdlc): $(basename "$DIR") approve $KHOA"; then
+    [ -z "$AR_DA_COMMIT" ] || echo "Artifact: đã commit (chore(sdlc): $(basename "$DIR") approve $KHOA)"
+  else
+    echo "CẢNH BÁO: không commit được artifact $DIR — xem thông báo của git phía trên." >&2
+  fi
   exit 0
 fi
 
@@ -122,7 +132,7 @@ else echo "Ô DUYỆT CHỜ BẠN — worktree hiện tại ($MT_REPO)"; fi
 
 TONG=0; N_VIEC=0; N_LOI=0
 while IFS='|' read -r WT BR; do
-  for d in "$WT/$MT_ART_DIR"/*/; do
+  for d in "$WT/$TM_VIEC"/*/ "$WT/$TM_CU"/*/; do
     [ -d "$d" ] || continue
     d=${d%/}; MUC=""; LOI=""; SO=0
     for LOAI in spec tdd; do

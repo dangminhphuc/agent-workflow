@@ -83,9 +83,9 @@ After the human picks a route, set those RFs to `routed: this-job` or `routed: s
 2. On the main checkout: `/aw-intake` with the RFs' `Request` lines as arguments (print them as one copyable block) → `[HUMAN]` input, type `refactor`. Base: this job's base once it merged; RFs on code this job adds that cannot wait → stack on this branch (review warns).
 3. In the new worktree: copy the file into the new job dir and append it as input, so the spec can cite `§ RF-NNN` and the `Review` notes:
    ```sh
-   cp <dir>/refactor-requests.md <new-worktree>/.agent-workflow/<new-branch>/
+   cp <dir>/refactor-requests.md <new-worktree>/docs/sdlc/<new-branch>/
    ```
-   then `/aw-intake .agent-workflow/<new-branch>/refactor-requests.md` there. Do this before `/aw-ship` cleans up this worktree (afterwards the file is only in the archive).
+   then `/aw-intake docs/sdlc/<new-branch>/refactor-requests.md` there. Do this before `/aw-ship` cleans up this worktree (afterwards the file is only in the archive).
 
 ## Forbidden
 

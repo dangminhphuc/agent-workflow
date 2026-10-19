@@ -11,6 +11,37 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [Chưa phát hành]
+
+### Thay đổi
+- **Artifact của việc chuyển sang `docs/sdlc/<tên-branch>/` và được commit vào branch của việc.**
+  Trước đây artifact nằm ở `.agent-workflow/<tên-branch>/`, bị exclude và chỉ ở máy: mất máy hay
+  gỡ worktree là mất (chỉ còn bản trong `archive/`), sang máy khác hay phiên mới cũng không có. Giờ:
+  - Mỗi lần `aw check <phase>` ĐẠT, máy commit **riêng** thư mục việc với message
+    `chore(sdlc): <tên-branch> <phase>`. Lệnh `aw approvals tick` và `aw rename` cũng commit.
+    Code bạn đã stage không bị cuốn theo. Commit chạy với `--no-verify`, vì hook của repo viết cho
+    code và có thể định dạng lại artifact, làm mất approval hash.
+  - `aw ship create` gỡ thư mục việc khỏi branch bằng một commit trước khi push. Nhờ vậy artifact
+    **không bao giờ vào nhánh đích** (develop/uat/main…) và PR chỉ có code. File vẫn ở máy, và từ
+    đó `aw check` không commit lại. Nếu MR vẫn mang file trong `docs/sdlc/` (ví dụ thư mục của
+    việc khác khi branch xếp chồng), lệnh trả `CHƯA ĐỦ ĐIỀU KIỆN` và nêu file.
+  - `docs/sdlc/` được thêm vào `.git/info/exclude`, nên `git add -A` không kéo artifact mới vào
+    commit code. Commit artifact không làm đổi `Tree`, nên kết quả máy ghi không thành `stale` và
+    approval không mất.
+  - `aw conventions check` báo lỗi nếu `knowledge_adr_dir` / `knowledge_rules_dir` nằm trong
+    `docs/sdlc/`, vì thư mục đó bị gỡ trước MR.
+
+  **Ai bị ảnh hưởng, cần làm gì:**
+  - Việc đang làm dở (đã ghim engine cũ trong `intake.md`) chạy tiếp như cũ ở
+    `.agent-workflow/<tên-branch>/`, chỉ ở máy. `aw feature` vẫn in đường dẫn cũ cho việc đó.
+  - Repo đã init: chạy lại `aw init` (hoặc `aw adapter build`) để thêm `/docs/sdlc/` vào exclude.
+    Lần commit artifact đầu tiên cũng tự thêm; `aw doctor` báo nếu còn thiếu.
+  - Tạo MR bằng `aw ship create`. Tự tạo PR trên web thì artifact nằm trong diff.
+  - Team squash-merge hoặc xoá branch sau khi merge thì lịch sử artifact mất theo branch. Bản ở
+    `archive/` khi gỡ worktree vẫn còn.
+  - `.agent-workflow/` vẫn là thư mục cục bộ của engine (`.engine/`, dấu build adapter, mốc của
+    `aw guard`), bị exclude như trước.
+
 ## [2026.10.29]
 
 ### Thay đổi

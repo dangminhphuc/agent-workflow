@@ -17,7 +17,8 @@
 #   ad_sinh "$@"         # --out <thư-mục> [--force]
 #
 # Đường dẫn trong lời dặn agent (tương đối với gốc worktree):
-#   .agent-workflow/<tên-branch>/   artifact của việc (bị exclude, không commit)
+#   docs/sdlc/<tên-branch>/         artifact của việc (aw check ĐẠT thì commit vào
+#                                   branch; aw ship create gỡ khỏi branch trước MR)
 #   .agent-workflow/.engine/        rules, templates, checkers của engine — aw adapter
 #                                   build chép vào; conventions.md là liên kết tới
 #                                   quy ước hiệu lực (repo + khoá máy của bản clone)
@@ -38,7 +39,7 @@ OUT=""; FORCE=0; DA_SINH=""
 MANIFEST="$ROOT/workflow.yaml"
 man_scalar() { awk -v k="$1" '{ sub(/\r$/, "") } $0 ~ "^" k ":" { sub("^" k ":[ \t]*", ""); print; exit }' "$MANIFEST"; }
 ART=$(man_scalar artifact_dir)
-DOCS="$ART/.engine"
+DOCS="$(man_scalar local_dir)/.engine"
 CONV_DOC="$DOCS/conventions.md"
 FD='<dir>'
 
@@ -626,7 +627,7 @@ ad_sinh() {
     printf '\n## Hard rules\n\n'
     luat_tom_tat
     printf '## Artifacts and commands\n\n'
-    printf -- '- Job artifacts: `%s/<branch-name>/` — the feature dir `<dir>` printed by `aw feature` (outside git)\n' "$ART"
+    printf -- '- Job artifacts: `%s/<branch-name>/` — the feature dir `<dir>` printed by `aw feature`; `aw check` commits it on pass, `aw ship create` removes it from the branch before the MR — never `git add` it yourself\n' "$ART"
     printf -- '- Repo conventions: `%s`; per-phase repo rules: `aw rules <phase>`, repo skills and subagents to invoke: `aw uses <phase>` (%s)\n' "$CONV_DOC" "$BL_QUY_TAC"
     printf -- '- Engine rules, templates, LLM checkers: `%s/`\n' "$DOCS"
     printf -- '- Machine checkers: `aw check <name> %s` — names: %s\n' "$FD" "$BL_CHECKERS"

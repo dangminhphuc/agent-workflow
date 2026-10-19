@@ -24,19 +24,20 @@ kq_khai guard.sh \
   "0=KHÔNG CÓ GÌ PHẢI CHẶN" \
   "2=ĐÃ BỎ TICK — chỉ người được tick approval checkbox; xem thông báo phía trên" \
   "3=SAI THAM SỐ"
+. "$HERE/lib/md.sh"
 . "$HERE/lib/env.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
-mt_dat
+MT_BO_QU=1 mt_dat
 
 PHA="${1:-}"
 case "$PHA" in pre|post) ;; *) echo "Dùng: aw guard pre|post" >&2; exit 3 ;; esac
-[ -d "$MT_ART" ] || exit 0
-MOC="$MT_ART/.guard-pre"
+[ -d "$MT_ART" ] || [ -d "$MT_CU" ] || exit 0
+MOC="$MT_CU/.guard-pre"   # mốc cục bộ: TM_CU bị exclude, không lẫn vào artifact
 
 # cac_file -> mọi spec.md / tdd.md của các việc trong worktree này
 cac_file() {
-  for _d in "$MT_ART"/*/; do
+  for _d in "$MT_ART"/*/ "$MT_CU"/*/; do
     for _f in spec.md tdd.md; do [ -f "$_d$_f" ] && printf '%s\n' "$_d$_f"; done
   done
 }
@@ -45,7 +46,7 @@ if [ "$PHA" = pre ]; then
   cac_file | while IFS= read -r f; do
     dy_dong_dau "$f" "$(basename "$f" .md)" >/dev/null 2>&1
   done
-  : > "$MOC" 2>/dev/null
+  mkdir -p "$MT_CU" 2>/dev/null; : > "$MOC" 2>/dev/null
   exit 0
 fi
 

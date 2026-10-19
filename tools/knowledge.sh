@@ -78,6 +78,7 @@ DD=$( [ -f "$DIR/tdd.md" ] && awk '
   # Tài liệu module: file đã commit khớp knowledge_files, thư mục chứa nó là cha của đường dẫn.
   KF=$(conv_get "$MT_CONV" knowledge_files); KF=${KF:-*/ARCHITECTURE.md}
   git -C "$R" ls-files 2>/dev/null | while IFS= read -r f; do
+    tm_bo "$f" && continue
     set -f
     # shellcheck disable=SC2086
     khop_glob "$f" $KF || { set +f; continue; }
