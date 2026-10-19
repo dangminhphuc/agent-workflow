@@ -35,6 +35,12 @@ F2="$R/.agent-workflow/feat_y"; cp -R "$F" "$F2"
 dung "loại lặp ở việc thứ hai → GỢI Ý nâng thành luật" sh -c "sh '$T/check-review.sh' '$F2' | grep -q 'GỢI Ý.*duplicate-code.*2 việc'"
 dung "report đánh dấu loại lặp lại" sh -c "sh '$NK' 2>/dev/null | grep -q 'duplicate-code.*lặp lại'"
 rm -rf "$F2"; viet_review
+sh "$T/check-review.sh" "$F" >/dev/null 2>&1
+dung "review chạy lại hết finding → xoá finding cũ của việc" sh -c "! awk -F'\t' '\$2 == \"feat_x\"' '$JD/findings.tsv' | grep -q ."
+dung "…không sót file tạm findings.tsv.<pid>" sh -c "! ls '$JD' | grep -q '^findings.tsv[.]'"
+rm -rf "$JD"
+sh "$T/check-review.sh" "$F" >/dev/null 2>&1
+dung "chưa có findings.tsv, review không finding → không sót file tạm" sh -c "! ls '$JD' | grep -q '^findings.tsv[.]'"
 
 # ---------------------------------------------------------------- ADR (aw adr, aw knowledge)
 nhom "ADR: DEC-xxx đã duyệt nâng thành kiến thức bền"
