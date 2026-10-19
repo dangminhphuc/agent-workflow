@@ -352,7 +352,13 @@ sweep --apply`) chép artifact vào `.git/agent-workflow/archive/<tên>/` trư�
 ```sh
 sh tools/run-tests.sh                     # chỉ in ca hỏng + tổng
 AW_TEST_VERBOSE=1 sh tools/run-tests.sh   # in từng ca
+sh tools/run-tests.sh review ship         # chỉ các phần có tên chứa review / ship
+sh tools/tests/05-review-quality.sh       # chạy thẳng một phần
+AW_TEST_JOBS=1 sh tools/run-tests.sh      # số phần chạy cùng lúc (mặc định: số CPU)
 ```
+
+Ca kiểm nằm trong `tools/tests/NN-<tên>.sh` (helper + fixture: `tools/tests/lib.sh`); mỗi phần chạy
+độc lập nên `run-tests.sh` chạy song song rồi cộng tổng. Ca mới thêm vào phần cùng chủ đề.
 
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng
 đúng chuỗi đó, không có `v`.

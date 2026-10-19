@@ -36,6 +36,14 @@ ngầm giữa các bản.
   repo còn tag `covers: YC-…` từ job cũ thì không ảnh hưởng job mới (chỉ tag của job đang chạy được
   đối chiếu); tag `covers: BR-…` giữ nguyên.
 
+### Nội bộ
+- **Test hồi quy chạy song song: nhanh khoảng 3 lần trên máy 4 CPU (8,5 → 2,8 phút; máy chậm 13 → 4,5 phút), đủ 1398 ca như cũ.** `tools/run-tests.sh`
+  giờ chia việc cho các phần trong `tools/tests/NN-<tên>.sh` (helper + fixture ở `tools/tests/lib.sh`), chạy
+  cùng lúc theo số CPU (`AW_TEST_JOBS` để đổi), rồi cộng tổng. Danh sách ca và kết quả trùng khớp bản cũ;
+  phần dừng giữa chừng tính là hỏng. Chạy một phần: `sh tools/run-tests.sh review` hoặc
+  `sh tools/tests/05-review-quality.sh`. CI (`kiem-tra`, `release`) không đổi lệnh. Người phát triển engine:
+  thêm ca vào phần cùng chủ đề, không thêm vào `tools/run-tests.sh`.
+
 ## [2026.10.29]
 
 ### Thay đổi
