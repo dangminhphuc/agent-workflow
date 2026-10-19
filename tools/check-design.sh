@@ -61,7 +61,11 @@ for f in "$SPEC" "$OQ" "$TDD"; do
 done
 
 n_loi=0
-if ! sh "$HERE/check-spec.sh" "$DIR" >/dev/null 2>&1; then
+# Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
+ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
+ma_spec=$?
+printf '%s\n' "$ra_spec" | grep -F '[CẢNH BÁO]'
+if [ "$ma_spec" -ne 0 ]; then
   n_loi=1
   echo "  [LỖI] Đầu vào chưa đạt: spec.md/open-questions.md không qua aw check spec — chạy nó để xem chi tiết."
 fi

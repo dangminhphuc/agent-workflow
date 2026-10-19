@@ -124,6 +124,8 @@ viet_spec() {
 
 ### YC-001 — a
 - Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a
 - Priority: `must`
 - Acceptance criteria:
   - [ ] mở y thấy a
@@ -487,7 +489,8 @@ dung "heading trong HTML comment / khối code không vào mục lục" sh -c "!
 ky_vong 0 "…và checker không đòi chúng" sh "$CHK" "$F"
 printf '# Open questions\n\nNo open questions.\n' > "$TMP/oq.md"
 viet_spec; thay "$F/spec.md" '- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
-- Assumption: y' '- Source: `[JIRA]` ABC-1'; cp "$TMP/oq.md" "$F/open-questions.md"
+- Assumption: y' '- Source: `[JIRA]` ABC-1
+- Quote: > khách mở y thấy b'; cp "$TMP/oq.md" "$F/open-questions.md"
 ky_vong 0 "artifact không có heading ## / ### thì không cần mục lục" sh "$CHK" "$F"
 ky_vong 2 "aw toc: artifact lạ → SAI THAM SỐ" sh "$TOC" "$F" task-results.md
 viet_spec
@@ -570,7 +573,8 @@ ky_vong 0 "Nguồn dưới \"### phụ\" không bị cộng vào YC phía trên"
 
 # open-questions.md 0 byte = đã rà, không có điểm mù (không được làm lệch thứ tự file)
 viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
-- Assumption: y' '`[JIRA]` ABC-1'
+- Assumption: y' '`[JIRA]` ABC-1
+- Quote: > khách mở y thấy b'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte thì cho qua" sh "$CHK" "$F"
 
@@ -623,7 +627,8 @@ ky_vong 1 "chặn Trạng thái điểm mù tự chế" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [OPEN-QUESTION]" sh "$CHK" "$F"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Quote: > qua email'
 ky_vong 1 "spec đã duyệt mà bị sửa (vd /aw-clarify đổi nhãn) thì phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời + spec đổi nhãn nguồn + người duyệt lại thì cho qua" sh "$CHK" "$F"
@@ -635,7 +640,11 @@ ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$
 viet_spec; sh "$CHK" "$F" >/dev/null 2>&1   # máy ghi dấu duyệt cho bản người đã tick
 printf '\n## YC-001 — a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)\n' >> "$F/open-questions.md"
 toc_f open-questions.md
-thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § YC-001](open-questions.md#yc-001--a)'
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[FILE]` [open-questions.md § YC-001](open-questions.md#yc-001--a)
+- Quote:
+  > "a tối đa 30 ngày" — PO, 2026-10-09'
 ky_vong 1 "đổi YC sau khi spec đã duyệt → phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đổi YC: mục answered (kể cả Superseded answer) + nhãn [FILE] + duyệt lại → cho qua" sh "$CHK" "$F"
@@ -646,9 +655,61 @@ ky_vong 1 "chặn nhãn [FILE] trỏ vào open-questions.md § YC-001 mà mục 
 dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'YC-001: nguồn trỏ tới open-questions.md § YC-001 nhưng không có mục'"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 ky_vong 1 "chặn nhãn trỏ vào điểm mù của YC khác còn open" sh "$CHK" "$F"
+printf '# A\n\n## Tổng quan\n\nkhách mở y thấy a\n' > "$R/docs/a.md"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/a.md § Tổng quan'
 duyet_lai "$F/spec.md"
 ky_vong 0 "nhãn [FILE] trỏ file khác → không bị luật này chặn" sh "$CHK" "$F"
+viet_spec
+rm -f "$R/docs/a.md"
+
+
+# Câu trích nguyên văn (Quote): nguồn có câu gốc thì phải trích; [FILE] thì máy kiểm câu có thật trong file
+viet_spec; thay "$F/spec.md" '- Quote:
+  > khách mở y thấy a
+' ''
+ky_vong 1 "chặn YC nguồn [JIRA] thiếu Quote" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'YC-001: nguồn [JIRA] thiếu câu trích'"
+viet_spec; thay "$F/spec.md" '  > khách mở y thấy a' '  > <chép nguyên văn câu nguồn>'
+ky_vong 1 "chặn Quote còn chỗ giữ chỗ" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Quote:
+  > khách mở y thấy a' '- Quote: > khách mở y thấy a'
+ky_vong 0 "Quote một dòng (\"- Quote: > …\") cũng được" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[INFERRED]` index cho YC-002'
+ky_vong 0 "[INFERRED] không cần Quote" sh "$CHK" "$F"
+printf '# BRD\n\n## Hoàn tiền\n\nKhách được hoàn tiền trong vòng\n30 ngày   kể từ ngày thanh toán.\n> Phí: 1.5%% * số tiền (C:\\tmp\\n) [tối đa].\n' > "$R/docs/brd.md"
+quote_file() {
+  viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/brd.md § Hoàn tiền'
+  thay "$F/spec.md" '  > khách mở y thấy a' "$1"
+}
+quote_file '  > Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán.'
+ky_vong 0 "[FILE]: câu trích có trong file (khoảng trắng, xuống dòng không tính) → cho qua" sh "$CHK" "$F"
+quote_file '  > QUOTE_DAC_BIET'
+Q='  > Phí: 1.5% * số tiền (C:\tmp\n) [tối đa].' awk '{ if ($0 == "  > QUOTE_DAC_BIET") print ENVIRON["Q"]; else print }' "$F/spec.md" > "$F/spec.md.tmp" && mv "$F/spec.md.tmp" "$F/spec.md"
+ky_vong 0 "[FILE]: ký tự đặc biệt (\\ * [ %) so đúng từng chữ" sh "$CHK" "$F"
+quote_file '  > Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán.
+  > Khách được hoàn tiền trong vòng 60 ngày.'
+ky_vong 1 "[FILE]: một câu trích không có trong file → chặn" sh "$CHK" "$F"
+dung "…nêu đúng câu và file" sh -c "sh '$CHK' '$F' | grep -qF 'YC-001: câu trích không có trong docs/brd.md: \"Khách được hoàn tiền trong vòng 60 ngày.\"'"
+dung "…câu đúng thì không bị nêu" sh -c "! sh '$CHK' '$F' | grep -qF '30 ngày kể từ'"
+quote_file '  > "Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán."'
+ky_vong 1 "[FILE]: tự thêm ngoặc kép → không còn nguyên văn, chặn" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/khong-co.md § X'
+ky_vong 1 "[FILE]: file nguồn không có → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'YC-001: không tìm thấy file nguồn docs/khong-co.md'"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [intake.md § Input](intake.md#input)'
+thay "$F/spec.md" '  > khách mở y thấy a' '  > cần làm x cho màn hình y'
+ky_vong 0 "[FILE] lời người trong intake.md: câu trích có trong intake → cho qua" sh "$CHK" "$F"
+thay "$F/spec.md" '  > cần làm x cho màn hình y' '  > cần làm x cho màn hình z'; duyet_lai "$F/spec.md"
+ky_vong 1 "…sai một chữ → chặn" sh "$CHK" "$F"
+# Phase sau chạy lại spec (--entry): nguồn đổi sau khi viết spec chỉ cảnh báo
+ky_vong 0 "--entry: câu trích lệch chỉ cảnh báo, không chặn" sh "$CHK" "$F" --entry
+dung "…có dòng cảnh báo" sh -c "sh '$CHK' '$F' --entry | grep -qF '[CẢNH BÁO] YC-001: câu trích không có trong intake.md'"
+thay "$F/spec.md" '- Quote:
+  > cần làm x cho màn hình z
+' ''; duyet_lai "$F/spec.md"
+ky_vong 1 "--entry: thiếu Quote vẫn chặn (lỗi của spec, không phải nguồn đổi)" sh "$CHK" "$F" --entry
 viet_spec
 
 # Tiêu chí chấp nhận, Ưu tiên
@@ -735,7 +796,8 @@ ky_vong 1 "chặn điểm mù \"chặn\" còn mở" sh "$CHK" "$F"
 dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Quote: > qua email'
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec
@@ -746,7 +808,8 @@ dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
-- Assumption: y' '`[JIRA]` ABC-1'
+- Assumption: y' '`[JIRA]` ABC-1
+- Quote: > khách mở y thấy b'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte không làm design đọc lệch file" sh "$CHK" "$F"
 viet_spec
@@ -820,6 +883,20 @@ thay "$F/tdd.md" 'Based on: D-01' ''
 toc_f tdd.md
 ky_vong 0 "mục Quyết định được phép rỗng" sh "$CHK" "$F"
 viet_tdd
+
+
+# Nguồn [FILE] đổi sau khi viết spec: design chạy lại spec, chỉ cảnh báo
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/brd.md § Hoàn tiền'
+thay "$F/spec.md" '  > khách mở y thấy a' '  > Khách được hoàn tiền trong vòng 30 ngày.'
+printf 'Khách được hoàn tiền trong vòng 30 ngày.\n' > "$R/docs/brd.md"
+duyet_lai "$F/spec.md"
+ky_vong 0 "câu trích [FILE] khớp → design qua" sh "$CHK" "$F"
+printf 'Khách được hoàn tiền trong vòng 60 ngày.\n' > "$R/docs/brd.md"
+ky_vong 0 "nguồn đổi sau spec → design không chặn" sh "$CHK" "$F"
+dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$CHK' '$F' | grep -qF '[CẢNH BÁO] YC-001: câu trích không có trong docs/brd.md'"
+ky_vong 1 "…còn aw check spec thì chặn" sh "$T/check-spec.sh" "$F"
+rm -f "$R/docs/brd.md"
+viet_spec
 
 # ---------------------------------------------------------------- ke hoach
 nhom "check-plan.sh"
@@ -959,7 +1036,8 @@ ky_vong 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" sh "$C
 dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"review-blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Quote: > "đúng như giả định" — PO, 2026-10-04'
 duyet_lai "$F/spec.md"; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec; ghi_based_on
@@ -2452,6 +2530,21 @@ for c in spec plan implement review; do
   ky_vong 0 "bugfix Design: skip (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
 done
 ky_vong 1 "bugfix Design: skip chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
+# Không có design: plan là phase chạy lại spec — câu trích lệch chỉ cảnh báo
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[FILE]` docs/brd.md § Hoàn tiền
+- Quote:
+  > Khách được hoàn tiền trong vòng 30 ngày.'
+duyet_lai "$F/spec.md"; printf 'Khách được hoàn tiền trong vòng 60 ngày.\n' > "$R/docs/brd.md"
+ky_vong 0 "Design: skip: nguồn đổi sau spec → plan không chặn" sh "$T/check-plan.sh" "$F"
+dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$T/check-plan.sh' '$F' | grep -qF '[CẢNH BÁO] YC-001: câu trích không có trong docs/brd.md'"
+thay "$F/spec.md" '- Source: `[FILE]` docs/brd.md § Hoàn tiền
+- Quote:
+  > Khách được hoàn tiền trong vòng 30 ngày.' '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a'
+duyet_lai "$F/spec.md"; rm -f "$R/docs/brd.md"
 dung "…đúng lý do: spec khai Design: skip" sh -c "sh '$T/check-design.sh' '$F' | grep -q 'Design: skip'"
 ky_vong 2 "Design: skip: aw approval design → SAI THAM SỐ" sh "$T/approval.sh" design "$F"
 ky_vong 0 "Design: skip: aw approval plan hỏi duyệt SPEC, spec đã duyệt → ĐÃ DUYỆT" sh "$T/approval.sh" plan "$F"
@@ -3714,7 +3807,7 @@ printf '# ADR\n\n| ADR | Title | Status | Scope |\n|---|---|---|---|\n| [0001](0
 printf '# Business rules — kho\n\n### BR-KHO-001: y\n- Rule: y\n- Scope: `src/*`\n- Source: `[JIRA]` ABC-9 (version: v1)\n- Status: active\n- Acceptance:\n  - y\n' > "$R/docs/product/rules/kho.md"
 g add src/ARCHITECTURE.md lib/ARCHITECTURE.md docs/adr docs/product; g commit -q -m "kien thuc ben"
 g checkout -q feat_x; g merge -q main
-kt_ah() { sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/sha256.sh'; . '$T/lib/approval-tick.sh'; . '$T/lib/adr.sh'; . '$T/lib/rule.sh'; . '$T/lib/knowledge.sh'; kt_anh_huong '$F'" | cut -d'|' -f1,2 | sort | tr '\n' ' '; }
+kt_ah() { sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/sha256.sh'; . '$T/lib/approval-tick.sh'; . '$T/lib/adr.sh'; . '$T/lib/quote.sh'; . '$T/lib/rule.sh'; . '$T/lib/knowledge.sh'; kt_anh_huong '$F'" | cut -d'|' -f1,2 | sort | tr '\n' ' '; }
 dung "tài liệu bị diff ảnh hưởng: module cha, ADR và file luật có Scope khớp; bỏ module khác" bang "$(kt_ah)" "docs/adr/0001-cu.md|0 docs/product/rules/kho.md|0 src/ARCHITECTURE.md|0 "
 ky_vong 0 "implement: tài liệu có thể lỗi thời → vẫn ĐẠT (chỉ cảnh báo)" sh "$HT" "$F"
 dung "…cảnh báo nêu tài liệu và file đổi" sh -c "sh '$HT' '$F' 2>/dev/null | grep -q 'CẢNH BÁO.*diff đụng src/a.txt (phạm vi của src/ARCHITECTURE.md) mà src/ARCHITECTURE.md không đổi'"

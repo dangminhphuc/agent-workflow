@@ -39,13 +39,17 @@ based_on: []
 
 ## Requirements
 
-<!-- Source, Priority, Type, Protected by, Target phải nằm ngay dưới "### YC-NNN".
+<!-- Source, Quote, Priority, Type, Protected by, Target phải nằm ngay dưới "### YC-NNN".
 Heading "###" khác (vd "### Ghi chú") đóng vùng YC; muốn chia nhỏ một YC thì dùng "####".
-Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — checker chặn nếu thiếu. -->
+Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — checker chặn nếu thiếu.
+Quote: nguồn [CONFLUENCE] [JIRA] [FILE] bắt buộc — chép NGUYÊN VĂN câu nguồn, mỗi câu một dòng "> …"
+(không thêm ngoặc kép). [FILE]: máy kiểm từng câu có trong file (khoảng trắng, xuống dòng không tính). -->
 
 ### YC-001 — <tiêu đề ngắn>
 
 - Source: `[CONFLUENCE]` [Tên page](URL) § Tên heading
+- Quote:
+  > <chép nguyên văn câu nguồn>
 - Priority: `must`   <!-- must | should — "should" chỉ khi NGUỒN nói vậy; nguồn im lặng = must -->
 - Description: <yêu cầu, diễn đạt lại cho rõ>
 - Acceptance criteria:
