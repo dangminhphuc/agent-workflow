@@ -20,6 +20,8 @@ AWE="$ROOT/bin/aw-engine"
 # Phần không dựng fixture bắt đầu như sau một nhóm đã dọn biến (unset): không mang theo
 # AW_REPO/AW_CONFIG của shell gọi test.
 unset AW_REPO AW_CONFIG
+# Engine tự commit (artifact trong git): máy chạy test (CI, máy mới) có thể chưa đặt git identity.
+export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
 
 n_ok=0
 n_fail=0
@@ -448,6 +450,9 @@ Refs: ABC-1
 EOF
   toc_f merge-request.md
 }
+
+# them_muc_qt <dòng bảng> — thêm mục "## Repo rules" vào review.md (rules_*, uses_*)
+them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; }
 
 # L3_SF — một finding [Should fix] hợp lệ của Lens 3
 L3_SF='### [Should fix] trùng hàm
