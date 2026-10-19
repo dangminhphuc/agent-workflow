@@ -17,11 +17,11 @@ Kiểm file sau khi sửa: `aw conventions check`.
 
 ```conventions
 # ── Branches & worktrees ──────────────────────────────────────────
-# [edit] nhánh checkout chính luôn đứng; base mặc định của việc mới
+# [edit] nhánh main checkout luôn đứng; base mặc định của việc mới
 base_branch: main
 # [default] branch khớp mẫu → tên branch là tên feature
 branch_patterns: feat_* fix_* refactor_* perf_* chore_*
-# [default] tiền tố branch = loại việc (feature bugfix refactor perf chore)
+# [default] tiền tố branch = job type (feature bugfix refactor perf chore)
 type_by_prefix: feat_=feature fix_=bugfix refactor_=refactor perf_=perf chore_=chore
 # [default] vị trí worktree, phải ngoài repo; {repo} {ten} được thay
 worktree_dir: ../{repo}.wt/{ten}
@@ -60,7 +60,7 @@ jira_key_regex: [A-Z][A-Z0-9]*-[0-9]+
 # [optional] glob miền Confluence, vd wiki.cong-ty.vn *.atlassian.net/wiki
 confluence_domains:
 
-# ── Durable knowledge (kiến thức bền trong repo, agent đọc qua `aw knowledge`) ──
+# ── Durable knowledge (durable knowledge trong repo, agent đọc qua `aw knowledge`) ──
 # [default] thư mục ADR: aw adr promote ghi vào, phase design đọc chỉ mục README.md
 knowledge_adr_dir: docs/adr
 # [default] thư mục luật nghiệp vụ BR-: aw rule promote ghi <miền>.md vào đây
@@ -90,9 +90,9 @@ uses_review:
 <Quy ước đặt tên branch cụ thể của team, ví dụ: `feat_<mô-tả>` cho tính năng,
 `refactor_<mô-tả>` cho refactor; `<mô-tả>` không nhất thiết là mã Jira.>
 
-Worktree là bắt buộc: checkout chính luôn đứng ở `base_branch` và chỉ dùng để chạy
+Worktree là bắt buộc: main checkout luôn đứng ở `base_branch` và chỉ dùng để chạy
 `/aw-intake`; mỗi việc làm trong worktree riêng (`aw worktree new`). Gửi MR bằng
-`/aw-ship` trong worktree; sau khi merge, `/aw-ship` ở checkout chính dọn worktree và
+`/aw-ship` trong worktree; sau khi merge, `/aw-ship` ở main checkout dọn worktree và
 branch (`aw ship sweep`). Việc không qua `/aw-ship` thì dọn bằng `aw worktree remove`.
 
 ### Commit message

@@ -206,7 +206,7 @@ qu_hieu_luc() {
   else
     _qg=$(qu_goc "$1")
     if [ -n "$_qg" ] && [ -f "$_qg/$QU_DUONG_DAN" ]; then
-      QU_CHINH="$_qg/$QU_DUONG_DAN"; QU_NGUON="$QU_CHINH (checkout chính)"
+      QU_CHINH="$_qg/$QU_DUONG_DAN"; QU_NGUON="$QU_CHINH (main checkout)"
     fi
   fi
   if [ -z "$QU_CHINH" ]; then

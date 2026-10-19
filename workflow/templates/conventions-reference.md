@@ -1,7 +1,7 @@
 # `conventions.md` key reference
 
-> Tài liệu của engine — cập nhật theo engine, KHÔNG chép vào repo đích. File
-> `conventions.md` của repo đích chỉ giữ giá trị và chú thích một dòng; giải thích
+> Tài liệu của engine — cập nhật theo engine, KHÔNG chép vào target repo. File
+> `conventions.md` của target repo chỉ giữ giá trị và chú thích một dòng; giải thích
 > đầy đủ nằm ở đây. Trong worktree: `.agent-workflow/.engine/templates/conventions-reference.md`.
 
 ## Location & machine overrides
@@ -14,8 +14,8 @@
   có hiệu lực.
 - **Việc đọc quy ước tại điểm rẽ khỏi base** (dòng `Base:` của `intake.md`), không đọc
   bản trong worktree: việc sửa `conventions.md` không đổi luật của chính nó; thay đổi có
-  hiệu lực cho việc sau khi PR merge. Checkout chính (và việc rẽ từ base chưa có file)
-  đọc bản ở cây làm việc của checkout chính.
+  hiệu lực cho việc sau khi PR merge. Main checkout (và việc rẽ từ base chưa có file)
+  đọc bản ở cây làm việc của main checkout.
 - **Repo init bằng engine cũ** (quy ước chỉ ở bản clone): chạy như cũ, `aw conventions
   check` cảnh báo và in cách chuyển — chép file vào `docs/agent-workflow/`, commit qua
   PR, rồi chỉ giữ ở bản clone các khoá máy (hoặc xoá file).
@@ -52,12 +52,12 @@ không có thì hỏi người. bắt buộc.
 
 ### `type_by_prefix`
 Cặp `tiền-tố=loại`, loại thuộc `feature bugfix refactor perf chore`. `aw worktree new`
-dùng để đặt tên branch theo loại việc; `/aw-intake` dùng để gợi ý loại. Loại trong
+dùng để đặt tên branch theo job type; `/aw-intake` dùng để gợi ý loại. Loại trong
 `intake.md` lệch tiền tố thì `implement` cảnh báo, `review` chặn. Bắt buộc; mỗi
 tiền tố ghép với mô tả phải khớp `branch_patterns`.
 
 ### `base_branch`
-Nhánh checkout chính luôn đứng; ứng viên base chính khi tạo worktree. Checker so
+Nhánh main checkout luôn đứng; ứng viên base chính khi tạo worktree. Checker so
 diff với **base ghi trong `intake.md`**, chỉ quay về khoá này khi intake chưa có
 dòng Base. Bắt buộc; phải có trong repo (local hoặc origin).
 

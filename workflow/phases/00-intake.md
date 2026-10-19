@@ -1,7 +1,7 @@
 ---
 id: intake
 name: Tiếp nhận việc
-summary: Bước 1/6 · Bắt đầu việc mới từ ticket, URL hoặc file: chốt loại việc, tạo worktree, ghi intake.md
+summary: Bước 1/6 · Bắt đầu việc mới từ ticket, URL hoặc file: chốt job type, tạo worktree, ghi intake.md
 required: true
 inputs:
   - confluence
@@ -80,7 +80,7 @@ All human decisions in **one choice question turn**, one question each, in this 
 
 | header | Question | Options |
 |---|---|---|
-| `Loại việc` | the work type | your classification (recommended), then the other plausible types — two types at once → option `Tách hai việc` (one worktree each) |
+| `Job type` | the work type | your classification (recommended), then the other plausible types — two types at once → option `Tách hai việc` (one worktree each) |
 | `Tên` | the name | the proposed name (recommended), then at most one shorter alternative |
 | `Base` | the base | each candidate base, ★ first (recommended, no ★ = none recommended); description = its commit, age, subject from the proposal |
 | `Input` | whether `[HUMAN]` is verbatim | `Đúng nguyên văn` — its description **quotes the `[HUMAN]` words exactly** as they will go in `## Input` |
@@ -92,7 +92,7 @@ All human decisions in **one choice question turn**, one question each, in this 
 
 ## Inside the worktree
 
-- Suggest the type from the branch prefix (`type_by_prefix`), check it against the input, ask the human to confirm (confirmation turn: `Loại việc`, `Input`). Confirmed type ≠ prefix → fix the type, or `aw rename` (the human then opens a new session at the new path).
+- Suggest the type from the branch prefix (`type_by_prefix`), check it against the input, ask the human to confirm (confirmation turn: `Job type`, `Input`). Confirmed type ≠ prefix → fix the type, or `aw rename` (the human then opens a new session at the new path).
 - **Rerun with an existing `intake.md` = append input:** keep `Type` and `Goal`; run `aw input --skip <dir>/intake.md -` (skips inputs already present) and **append** stdout to `## Input`. New input suggests another type → tell the human. Run the checker, confirm the **new inputs** (confirmation turn: `Input`, one question per new `[HUMAN]` entry), then stop.
 - No command removes input — the human edits by hand. A changed `intake.md` makes `spec.md` stale: rerun `/aw-spec`.
 

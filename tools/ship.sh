@@ -41,7 +41,7 @@ case "$SUB" in
       "8=KHÔNG TẠO ĐƯỢC MR — đã in link tạo tay điền sẵn; tạo xong ghi lại bằng --url" ;;
   status)
     kq_khai "aw ship status" \
-      "0=ĐÃ MERGE HẾT — dọn từ checkout chính: aw ship sweep" \
+      "0=ĐÃ MERGE HẾT — dọn từ main checkout: aw ship sweep" \
       "2=SAI THAM SỐ — hoặc việc chưa có MR (ship.md)" \
       "3=CÒN MR ĐANG MỞ — chờ review/merge" \
       "4=CÓ MR BỊ ĐÓNG KHÔNG MERGE — người quyết" \
@@ -63,7 +63,7 @@ SHIP="$DIR/ship.md"
 FT=$(basename "$DIR")
 
 if wt_la_chinh "$R"; then
-  echo "LỖI: đang ở checkout chính — aw ship $SUB chạy trong worktree của việc. Dọn việc đã merge: aw ship sweep" >&2
+  echo "LỖI: đang ở main checkout — aw ship $SUB chạy trong worktree của việc. Dọn việc đã merge: aw ship sweep" >&2
   exit 2
 fi
 

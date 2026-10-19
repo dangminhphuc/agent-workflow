@@ -20,7 +20,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 kq_khai check-repro.sh \
   "0=ĐẠT — test tái hiện đỏ trên code chưa sửa, giờ mới được sửa code" \
   "1=KHÔNG HỢP LỆ — lý do in phía trên" \
-  "2=KHÔNG CHẠY ĐƯỢC — sai loại việc hoặc thiếu cấu hình"
+  "2=KHÔNG CHẠY ĐƯỢC — sai job type hoặc thiếu cấu hình"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 
@@ -28,7 +28,7 @@ DIR="${1:-.}"
 OUT="$DIR/repro.md"
 CAUHINH=$(kc_cau_hinh "$DIR")
 
-[ "$(kc_loai "$DIR")" = "bugfix" ] || { echo "LỖI: chỉ dùng cho loại việc bugfix (intake.md)." >&2; exit 2; }
+[ "$(kc_loai "$DIR")" = "bugfix" ] || { echo "LỖI: chỉ dùng cho job type bugfix (intake.md)." >&2; exit 2; }
 TEST_CMD=""
 # shellcheck disable=SC1090
 ch_nap "$CAUHINH"

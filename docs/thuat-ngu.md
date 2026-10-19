@@ -3,24 +3,30 @@
 Từ ngữ dùng trong [`huong-dan.md`](huong-dan.md), [`kien-truc.md`](kien-truc.md), output của `aw`,
 các artifact — và **trong lời agent nói với bạn**.
 
-Agent gọi khái niệm bằng **đúng thuật ngữ tiếng Anh** ở cột đầu, không tự dịch sang tiếng Việt;
-câu quanh nó vẫn là tiếng Việt: "YC-003 còn một `open question` chặn design". Luật nằm ở
-[`workflow/rules/terms.md`](../workflow/rules/terms.md) (agent đọc lúc chạy); file này giải thích
-nghĩa cho người. Từ trong ngoặc *(trước: …)* là tên tiếng Việt cũ, để tra nếu gặp ở tài liệu cũ.
+Agent gọi khái niệm bằng **đúng thuật ngữ tiếng Anh** ở cột đầu — khi nói với bạn và trong phần
+chữ tiếng Việt của artifact — không tự dịch; câu quanh nó vẫn là tiếng Việt: "YC-003 còn một
+`open question` chặn design". Danh sách agent đọc lúc chạy:
+[`workflow/rules/terms.md`](../workflow/rules/terms.md); file này giải thích nghĩa cho người. Từ
+trong ngoặc *(trước: …)* là tên tiếng Việt cũ, để tra nếu gặp ở tài liệu cũ.
+
+Artifact còn từ dịch cũ (cột `Not` của `terms.md`: "điểm mù", "lỗi thời", "ô duyệt"…) thì
+`aw check implement` cảnh báo, `aw check review` chặn. Không kiểm `intake.md`,
+`refactor-requests.md`, `*-results.md` và dòng trích `>` — chỗ đó là nguyên văn lời người hoặc
+do máy ghi. Lời agent nói trong chat thì không máy nào kiểm được.
 
 Tên trường, heading trong artifact giữ tiếng Anh vì checker đọc đúng chữ đó. Nhãn `aw` in ra
 (`Kết quả`, `ĐẠT`, `DỪNG`, `KẸT`…) giữ tiếng Việt vì checker và agent khớp đúng chữ.
 
 ## Mã định danh
 
-| Mã | Thuật ngữ | Là gì | Nằm ở | Ai đặt |
+| Thuật ngữ | Mã | Là gì | Nằm ở | Ai đặt |
 |---|---|---|---|---|
-| `YC-NNN` | `requirement` *(trước: yêu cầu)* | Một điều sản phẩm phải làm, có đúng một `source label`, tiêu chí chấp nhận quan sát được, `Priority: must \| should` | `spec.md` (`### YC-NNN`) | agent viết, người duyệt cả spec |
-| `D-NN` | `decision` *(trước: quyết định kỹ thuật)* | Lựa chọn mà người khác có thể chọn khác — ≥ 2 phương án, đánh đổi, lựa chọn, vì sao khó đảo ngược. Mỗi D một `approval checkbox` | `tdd.md` (`### D-NN`) | agent (`Mode 1`) hoặc người phác trước (`Mode 2`) |
-| `PH-NN` | `finding` *(trước: phát hiện)* | Kết quả của `LLM checker` về thiết kế: `Severity: block \| warn` | `design-findings.md` | `LLM checker` |
-| `T-NN` | `task` | Bước của kế hoạch: `Covers` YC nào, `Based on` D nào, `Expected files`, `Verify` | `plan.md` | agent; `Status` do máy giữ |
-| `BR-<MIỀN>-NNN` | `business rule` *(trước: luật nghiệp vụ bền)* | YC đã duyệt được nâng thành bất biến của sản phẩm, đọc lại ở các `job` sau | `docs/product/rules/<miền>.md` của `target repo` | người chọn nâng (`- Promote: BR-…`) |
-| `ADR-NNNN` | `ADR` | **Architecture Decision Record**: D-xx đã duyệt được nâng thành "vì sao code như vậy" của repo | `docs/adr/` của `target repo` | người chọn nâng (`- Promote: adr`) |
+| `requirement` *(trước: yêu cầu)* | `YC-NNN` | Một điều sản phẩm phải làm, có đúng một `source label`, tiêu chí chấp nhận quan sát được, `Priority: must \| should` | `spec.md` (`### YC-NNN`) | agent viết, người duyệt cả spec |
+| `decision` *(trước: quyết định kỹ thuật)* | `D-NN` | Lựa chọn mà người khác có thể chọn khác — ≥ 2 phương án, đánh đổi, lựa chọn, vì sao khó đảo ngược. Mỗi D một `approval checkbox` | `tdd.md` (`### D-NN`) | agent (`Mode 1`) hoặc người phác trước (`Mode 2`) |
+| `finding` *(trước: phát hiện)* | `PH-NN` | Kết quả của `LLM checker` về thiết kế: `Severity: block \| warn` | `design-findings.md` | `LLM checker` |
+| `task` | `T-NN` | Bước của kế hoạch: `Covers` YC nào, `Based on` D nào, `Expected files`, `Verify` | `plan.md` | agent; `Status` do máy giữ |
+| `business rule` *(trước: luật nghiệp vụ bền)* | `BR-<MIỀN>-NNN` | YC đã duyệt được nâng thành bất biến của sản phẩm, đọc lại ở các `job` sau | `docs/product/rules/<miền>.md` của `target repo` | người chọn nâng (`- Promote: BR-…`) |
+| `ADR` | `ADR-NNNN` | **Architecture Decision Record**: D-xx đã duyệt được nâng thành "vì sao code như vậy" của repo | `docs/adr/` của `target repo` | người chọn nâng (`- Promote: adr`) |
 
 ## Quy trình
 
@@ -29,7 +35,7 @@ Tên trường, heading trong artifact giữ tiếng Anh vì checker đọc đú
 | `phase` | Một bước của quy trình (`00-intake` … `06-ship`), là một hộp **file vào → file ra**. Gọi bằng lệnh `/aw-<phase>` trong agent |
 | `utility command` *(trước: lệnh tiện ích)* | Lệnh không phải phase: `/aw-clarify`, `/aw-import`, `/aw-bootstrap` |
 | `job` *(trước: việc)* | Một đơn vị công việc đi qua quy trình (một ticket, một bug…). Mỗi `job` có một branch, một `worktree`, một `job dir`, cùng tên |
-| `job type` *(trước: loại việc)* | `Type` trong `intake.md`: `feature \| bugfix \| refactor \| perf \| chore`, **đổi luật** của mọi phase sau. Xem [`huong-dan.md` §5](huong-dan.md#5-khác-nhau-theo-loại-việc) |
+| `job type` *(trước: loại việc)* | `Type` trong `intake.md`: `feature \| bugfix \| refactor \| perf \| chore`, **đổi luật** của mọi phase sau. Xem [`huong-dan.md` §5](huong-dan.md#5-khác-nhau-theo-job-type) |
 | `input` | Nguồn duy nhất spec được đọc: mã Jira, URL Confluence, file, hoặc lời người. Liệt kê ở `## Input` của `intake.md` |
 | `source label` *(trước: nhãn nguồn)* | Mỗi YC ghi nguồn: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định kỹ thuật hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói). Lời người trong `intake.md` mang nhãn `[HUMAN]` |
 | `open question` *(trước: điểm mù)* | Chỗ nguồn chưa nói mà agent phải giả định tạm. Ghi trong `open-questions.md` theo YC: câu hỏi, hỏi ai, giả định, *If wrong, redo*, `Blocking` |
@@ -77,7 +83,7 @@ Tên trường, heading trong artifact giữ tiếng Anh vì checker đọc đú
 | `main checkout` *(trước: checkout chính)* | Bản clone gốc, luôn đứng ở `base_branch`. Chỉ chạy `/aw-intake`, `/aw-bootstrap`, và dọn ở `/aw-ship` |
 | `worktree` | Thư mục `git worktree` riêng của một `job`, nằm **ngoài** repo (`../<repo>.wt/<tên>`). Mọi phase khác chạy ở đây |
 | `base` | Nhánh/commit `job` rẽ ra, **người chọn**, ghi trong `intake.md`. Mọi checker so diff với điểm rẽ khỏi base |
-| `job dir` *(trước: thư mục việc, `<dir>`)* | `.agent-workflow/<tên-branch>/` trong `worktree` — chứa artifact của `job`. Bị exclude: không vào commit |
+| `job dir` *(trước: thư mục việc, <dir>)* | `.agent-workflow/<tên-branch>/` trong `worktree` — chứa artifact của `job`. Bị exclude: không vào commit |
 | `artifact` | File agent/máy viết ra trong `job dir` (`intake.md`, `spec.md`, `tdd.md`…). Danh sách: [`huong-dan.md` §4](huong-dan.md#4-bản-đồ-artifact) |
 | `conventions.md` | Quy ước của `target repo` (`docs/agent-workflow/conventions.md`), trong git, sửa qua PR. Mỗi `job` đọc bản **tại điểm rẽ khỏi base** |
 | `config.sh` | Cấu hình của từng bản clone (`.git/agent-workflow/config.sh`), không commit: `TEST_CMD`, `SECURITY_CMDS`, `ADAPTER`… |

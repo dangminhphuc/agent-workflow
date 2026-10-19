@@ -44,7 +44,7 @@ done
 WT=$(wt_cua_branch "$MT_REPO" "$TEN")
 [ -n "$WT" ] || { echo "LỖI: branch \"$TEN\" không có worktree nào (xem: git worktree list)." >&2; exit 2; }
 CHINH=$(wt_chinh "$MT_REPO")
-[ "$WT" != "$CHINH" ] || { echo "LỖI: \"$TEN\" đang ở checkout chính — không phải worktree để dọn." >&2; exit 2; }
+[ "$WT" != "$CHINH" ] || { echo "LỖI: \"$TEN\" đang ở main checkout — không phải worktree để dọn." >&2; exit 2; }
 
 up=$(git -C "$MT_REPO" rev-parse --abbrev-ref "$TEN@{upstream}" 2>/dev/null)
 if [ -n "$up" ]; then
@@ -71,8 +71,8 @@ fi
 
 chan=0
 dang_o=$(pwd -P)
-case "$dang_o/" in "$WT"/*) echo "  ✗ Đang đứng trong chính worktree này — chạy từ checkout chính ($CHINH)."; chan=1 ;; esac
-case "$HERE/" in "$WT"/*) [ "$chan" = 1 ] || echo "  ✗ Script đang chạy là bản nằm trong worktree cần dọn — chạy bản ở checkout chính ($CHINH)."; chan=1 ;; esac
+case "$dang_o/" in "$WT"/*) echo "  ✗ Đang đứng trong chính worktree này — chạy từ main checkout ($CHINH)."; chan=1 ;; esac
+case "$HERE/" in "$WT"/*) [ "$chan" = 1 ] || echo "  ✗ Script đang chạy là bản nằm trong worktree cần dọn — chạy bản ở main checkout ($CHINH)."; chan=1 ;; esac
 if [ "$bn" != 0 ]; then
   echo "  ✗ Còn $bn thay đổi chưa commit / file chưa track:"
   git -C "$WT" status --short | head -5 | sed 's/^/      /'

@@ -17,7 +17,7 @@ Thư mục `adapters/<id>/` gồm:
 
 **Toàn bộ việc sinh nằm trong `adapters/lib/common.sh` (`ad_sinh`)**: lệnh cho từng
 phase (Bước 0 xác định feature, phân loại input, cổng duyệt, hợp đồng phase, quy
-tắc repo, thân phase), lệnh tiện ích, subagent rà soát, subagent checker LLM,
+tắc repo, thân phase), utility command, subagent rà soát, subagent LLM checker,
 skill tổng; kiểm `exit_machine` là `aw check <tên>` có thật; không ghi đè file
 người viết tay; bỏ qua file git đang theo dõi; dọn file sinh tự động đã cũ (chỉ
 trong thư mục của adapter đó). Adapter **không** tự viết phần nào trong đó.
@@ -126,11 +126,11 @@ phẩy): `ADAPTER="claude-code cursor"`. `aw init` exclude đường dẫn của
   của agent khác (Cursor nạp `.claude/`) sẽ ưu tiên bản của chính nó.
 - **`ad_danh_cho`**: file nào cũng nói nó dành cho agent nào, agent khác nạp nhầm thì dừng.
 - **Engine chặn chữ giữ chỗ chưa thay** (`$ARGUMENTS`, `<tham-số>`) ở `aw feature`
-  và `aw input`: agent quên thay tham số thì bị chặn, không thành thư mục việc hay
+  và `aw input`: agent quên thay tham số thì bị chặn, không thành job dir hay
   mục `[HUMAN]` rác.
 - **`aw guard` chạy hai lần là vô hại** (Cursor có thể chạy cả hook của
   `.claude/settings.json` lẫn `.cursor/hooks.json`) — có test.
-- **Mỗi worktree chỉ một agent chạy tại một lúc**: mốc của hook gác ô duyệt
+- **Mỗi worktree chỉ một agent chạy tại một lúc**: mốc của approval guard
   (`.agent-workflow/.guard-pre`) là một file chung trong worktree.
 
 ## Viết adapter mới
@@ -144,7 +144,7 @@ phẩy): `ADAPTER="claude-code cursor"`. `aw init` exclude đường dẫn của
    file khác trong đó (Cursor: `.cursor/rules/`, `hooks.json`).
 3. Lời dặn agent chỉ gọi `aw …` và đọc mẫu/luật trong `.agent-workflow/.engine/`.
    Không nhúng luật vào hook.
-4. Với mỗi khả năng không dịch được (ngữ cảnh sạch, hook, MCP, cách gọi, checker
+4. Với mỗi khả năng không dịch được (clean context, hook, MCP, cách gọi, checker
    LLM, câu hỏi lựa chọn, hộp xác nhận của cổng duyệt), **ghi rõ trong output và
    README** thay vì bỏ qua.
 5. Thêm mục vào `adapters:` trong `workflow.yaml`, đổi `status` thành `active`.

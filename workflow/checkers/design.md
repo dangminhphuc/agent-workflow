@@ -1,7 +1,7 @@
 ---
 id: design
 name: Soát thiết kế
-summary: Checker LLM cho tdd.md — tìm chỗ lệch D-xx và quyết định ngầm. Chỉ được chặn, không được duyệt.
+summary: LLM checker cho tdd.md — tìm chỗ lệch D-xx và quyết định ngầm. Chỉ được chặn, không được duyệt.
 inputs:
   - spec.md
   - open-questions.md

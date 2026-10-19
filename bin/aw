@@ -118,7 +118,7 @@ tim_repo() {
   AW_CONFIG="$GIT_CHUNG/agent-workflow"
 }
 can_repo() {
-  tim_repo || loi 9 "LỖI: không đứng trong git repo nào — aw cần repo đích (git rev-parse thất bại)."
+  tim_repo || loi 9 "LỖI: không đứng trong git repo nào — aw cần target repo (git rev-parse thất bại)."
 }
 
 version_cau_hinh() { [ -f "$AW_CONFIG/version" ] && awk 'NF { gsub(/[ \t\r]/, ""); print; exit }' "$AW_CONFIG/version"; }

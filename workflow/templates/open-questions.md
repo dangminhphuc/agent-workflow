@@ -3,7 +3,7 @@
 <!-- Blocking (agent đề xuất, NGƯỜI duyệt): blocking | review-blocking | non-blocking —
      chọn theo "nếu giả định sai thì phải làm lại gì"; bảng đầy đủ: rules/source-tracing.md.
      Agent không hạ mức để khỏi bị chặn. Lệnh `clarify` dẫn người trả lời từng mục.
-     Trả lời: ghi Answer, Status → answered, và đổi nhãn nguồn của YC trong spec.md
+     Trả lời: ghi Answer, Status → answered, và đổi source label của YC trong spec.md
      (vd `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002)) — checker đối chiếu hai chiều.
      Người không đồng ý một YC đã có nguồn: `/aw-clarify YC-NNN` ghi việc đổi thành một mục ở đây
      (Status answered); câu trả lời cũ, nếu có, chuyển thành `Superseded answer:`. -->
@@ -24,4 +24,4 @@
 - **If wrong, redo:** <task/module cụ thể>
 - **Blocking:** `<blocking | review-blocking | non-blocking>`   <!-- agent đề xuất, người duyệt -->
 - **Status:** `open`   <!-- open | answered -->
-- **Answer:** <nguyên văn câu trả lời — ai trả lời, ngày; khi đó sửa luôn nhãn nguồn trong spec.md>
+- **Answer:** <nguyên văn câu trả lời — ai trả lời, ngày; khi đó sửa luôn source label trong spec.md>

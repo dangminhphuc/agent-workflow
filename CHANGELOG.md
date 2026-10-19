@@ -41,13 +41,21 @@ ngầm giữa các bản.
   thời. Mẫu artifact có sẵn mục `## Contents`.
 
 ### Thay đổi
-- **Agent nói với bạn bằng thuật ngữ tiếng Anh gốc, không tự dịch.** Trước đây agent (và
-  `docs/thuat-ngu.md`) dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo" — khó đối chiếu
-  với tên field, file và output `aw`. Giờ có danh sách chuẩn `workflow/rules/terms.md` (`open question`,
-  `human gate`, `stale`, `cross-check`, `job`, `target repo`…); `general.md` §5 bắt agent dùng đúng các
-  từ đó, câu quanh vẫn tiếng Việt. `docs/thuat-ngu.md` viết lại theo thuật ngữ gốc, ghi tên cũ trong
-  ngoặc để tra. Luật này không có checker (lời nói không kiểm được). Có hiệu lực với job mới hoặc khi
-  nâng engine; không cần làm gì.
+- **Agent dùng thuật ngữ tiếng Anh gốc, không tự dịch — trong chat và trong artifact.** Trước đây
+  agent, tài liệu và output `aw` dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo".
+  Những từ này không có trong tên field, file hay output, nên người phải tự dịch ngược. Giờ:
+  - Danh sách chuẩn ở `workflow/rules/terms.md` (`open question`, `human gate`, `stale`,
+    `cross-check`, `job`, `target repo`…). `general.md` §5 bắt agent dùng đúng các từ đó; câu quanh
+    vẫn là tiếng Việt.
+  - `docs/thuat-ngu.md` viết lại theo thuật ngữ gốc, tên cũ ghi trong ngoặc để tra.
+  - Output `aw`, README, `docs/huong-dan.md`, `docs/kien-truc.md`, template và mô tả lệnh `/aw-*`
+    dùng thuật ngữ mới. Nhãn `Kết quả` (`ĐẠT`, `DỪNG`, `KẸT`…) và `ĐANG Ở CHECKOUT CHÍNH` giữ nguyên.
+  - Neo link đổi theo heading mới, vd `huong-dan.md#2-cài-đặt-và-cấu-hình-target-repo`,
+    `adapters/*/README.md#approval-guard`. Ai lưu link cũ thì cập nhật.
+- **Artifact còn từ dịch cũ: `aw check implement` cảnh báo, `aw check review` chặn.** Danh sách từ
+  là cột `Not` của `terms.md`. Không kiểm `intake.md`, `refactor-requests.md`, `*-results.md` và
+  dòng trích `>`, vì đó là nguyên văn lời người hoặc do máy ghi. Job đã ghim engine cũ không bị ảnh
+  hưởng. Job mới gặp chặn thì sửa chữ theo gợi ý trong dòng báo.
 - Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
   `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
   task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.

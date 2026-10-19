@@ -22,7 +22,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai guard.sh \
   "0=KHÔNG CÓ GÌ PHẢI CHẶN" \
-  "2=ĐÃ BỎ TICK — chỉ người được tick ô duyệt; xem thông báo phía trên" \
+  "2=ĐÃ BỎ TICK — chỉ người được tick approval checkbox; xem thông báo phía trên" \
   "3=SAI THAM SỐ"
 . "$HERE/lib/env.sh"
 . "$HERE/lib/sha256.sh"
@@ -77,7 +77,7 @@ done
 
 [ -s "$BAO" ] || exit 0
 {
-  echo "ĐÃ BỎ TICK ô duyệt — chỉ người được tick, và tick chỉ còn giá trị khi nội dung chưa đổi:"
+  echo "ĐÃ BỎ TICK approval checkbox — chỉ người được tick, và tick chỉ còn giá trị khi nội dung chưa đổi:"
   cat "$BAO"
   echo "Agent KHÔNG tick lại. Báo người: mở file, đọc lại phần đó rồi tự tick."
   echo "(Người vừa tick đúng lúc lệnh đang chạy thì chỉ cần tick lại.)"

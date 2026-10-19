@@ -65,7 +65,7 @@ tt=$(dy_trang_thai "$TDD" tdd | awk -F'|' -v d="$D" '$1 == "S" && $2 == d { prin
 [ -n "$tt" ] || { echo "LỖI: tdd.md không có $D." >&2; exit 2; }
 [ "$tt" = approved ] || tu_choi "$D chưa được người duyệt ($tt) — chỉ nâng D đã duyệt"
 [ "$(d_truong "$TDD" "$D" Promote)" = adr ] ||
-  tu_choi "$D không khai \"- Promote: adr\" — người quyết nâng D nào, trong chính D đó (dưới ô duyệt)"
+  tu_choi "$D không khai \"- Promote: adr\" — người quyết nâng D nào, trong chính D đó (dưới approval checkbox)"
 SC=$(d_truong "$TDD" "$D" Scope)
 case "$SC" in ""|"<"*) tu_choi "$D thiếu \"- Scope: \`<glob>\`\" — phần code ADR ràng buộc" ;; esac
 SS=$(d_truong "$TDD" "$D" Supersedes); SO_CU=""

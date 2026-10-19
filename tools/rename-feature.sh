@@ -30,7 +30,7 @@ ART_ABS=$MT_ART
 MOI="${1:-}"
 [ -n "$MOI" ] || { echo "Dùng: aw rename <tên-branch-mới>" >&2; exit 2; }
 if wt_la_chinh "$MT_REPO"; then
-  echo "LỖI: đang ở checkout chính — chạy lệnh này trong worktree của việc cần đổi tên." >&2; exit 2
+  echo "LỖI: đang ở main checkout — chạy lệnh này trong worktree của việc cần đổi tên." >&2; exit 2
 fi
 CU=$(git -C "$MT_REPO" rev-parse --abbrev-ref HEAD 2>/dev/null)
 [ -n "$CU" ] && [ "$CU" != "HEAD" ] || { echo "LỖI: không xác định được branch hiện tại." >&2; exit 2; }

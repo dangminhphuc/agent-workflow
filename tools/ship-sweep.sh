@@ -39,7 +39,7 @@ for a in "$@"; do
     *) [ -z "$CHI" ] || { echo "LỖI: chỉ nhận một branch." >&2; exit 2; }; CHI=$a ;;
   esac
 done
-wt_la_chinh "$MT_REPO" || { echo "LỖI: aw ship sweep chạy từ checkout chính ($(wt_chinh "$MT_REPO")) — không thể gỡ worktree đang đứng." >&2; exit 2; }
+wt_la_chinh "$MT_REPO" || { echo "LỖI: aw ship sweep chạy từ main checkout ($(wt_chinh "$MT_REPO")) — không thể gỡ worktree đang đứng." >&2; exit 2; }
 CHINH=$(wt_chinh "$MT_REPO")
 
 DS="${TMPDIR:-/tmp}/aw-sweep.$$"; kq_don 'rm -f "$DS" "$DS.err"'

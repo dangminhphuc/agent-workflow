@@ -17,7 +17,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 kq_khai check-perf.sh \
   "0=ĐÃ GHI SỐ ĐO" \
   "1=KHÔNG HỢP LỆ — lý do in phía trên" \
-  "2=KHÔNG CHẠY ĐƯỢC — sai tham số, sai loại việc hoặc thiếu cấu hình"
+  "2=KHÔNG CHẠY ĐƯỢC — sai tham số, sai job type hoặc thiếu cấu hình"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 
@@ -30,7 +30,7 @@ esac
 OUT="$DIR/perf.md"
 CAUHINH=$(kc_cau_hinh "$DIR")
 
-[ "$(kc_loai "$DIR")" = "perf" ] || { echo "LỖI: chỉ dùng cho loại việc perf (intake.md)." >&2; exit 2; }
+[ "$(kc_loai "$DIR")" = "perf" ] || { echo "LỖI: chỉ dùng cho job type perf (intake.md)." >&2; exit 2; }
 PERF_CMD=""
 # shellcheck disable=SC1090
 ch_nap "$CAUHINH"

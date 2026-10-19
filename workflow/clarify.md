@@ -87,7 +87,7 @@ Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu q
   …
 ```
 
-Order (max 4): `(Đề xuất) <option>` → 1–2 other options (from the source first) → **Chưa trả lời được** (you draft a message to `<Ask>`). Free text also accepts "đổi mức chặn sang …" or "bỏ qua".
+Order (max 4): `(Đề xuất) <option>` → 1–2 other options (from the source first) → **Chưa trả lời được** (you draft a message to `<Ask>`). Free text also accepts "đổi mức `Blocking` sang …" or "bỏ qua".
 
 `CHƯA PHÂN MỨC` item: the first question picks the level (`blocking`/`review-blocking`/`non-blocking`), the one implied by "If wrong, redo" first as `(Đề xuất)` — then ask for the answer.
 

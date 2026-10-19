@@ -39,7 +39,7 @@ kc_loi_thoi() {
         continue
       fi
       _moi=$(file_hash "$1/$_in")
-      [ "$_cu" = "$_moi" ] || echo "$_an: lỗi thời — $_in đã đổi sau khi $_an được viết (chạy lại phase sinh ra $_an)"
+      [ "$_cu" = "$_moi" ] || echo "$_an: stale — $_in đã đổi sau khi $_an được viết (chạy lại phase sinh ra $_an)"
     done
   done
 }
@@ -203,7 +203,7 @@ kc_spec_chua_duyet() {
     proposed)
       echo "spec.md chưa được người duyệt (ô \"$DY_NHAN_SPEC\" chưa tick). Người đọc spec rồi tự tick [x]." ;;
     *)
-      echo "spec.md không có ô duyệt hợp lệ — chạy aw check spec để xem chi tiết." ;;
+      echo "spec.md không có approval checkbox hợp lệ — chạy aw check spec để xem chi tiết." ;;
   esac
 }
 
@@ -215,7 +215,7 @@ kc_loi_duyet() {
     $1 == "L" { print $2 }
     $1 == "S" && $3 == "changed-after-approval" {
       k = ($2 == "spec") ? "spec.md" : $2
-      print k " đã đổi sau khi người duyệt (dấu duyệt không khớp nội dung). Agent sửa thì phải bỏ tick; người đọc lại và đồng ý thì xoá \"<!-- approval-hash: … -->\" trong " f " (giữ tick)."
+      print k " đã đổi sau khi người duyệt (approval hash không khớp nội dung). Agent sửa thì phải bỏ tick; người đọc lại và đồng ý thì xoá \"<!-- approval-hash: … -->\" trong " f " (giữ tick)."
     }'
 }
 
@@ -511,8 +511,8 @@ kc_diem_mu_mo() {
     for _w in "$@"; do
       [ "$_m" = "$_w" ] || continue
       case "$_m" in
-        blocking) echo "$_q: điểm mù mức \"blocking\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh clarify dẫn dắt việc này)" ;;
-        *)    echo "$_q: điểm mù mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh clarify dẫn dắt việc này)" ;;
+        blocking) echo "$_q: open question mức \"blocking\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh clarify dẫn dắt việc này)" ;;
+        *)    echo "$_q: open question mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh clarify dẫn dắt việc này)" ;;
       esac
     done
   done
@@ -736,7 +736,7 @@ kc_ket_qua_cu() {
     echo "$_ten không ghi Tree (dấu vân tay code lúc chạy) — chạy lại $3"; return 0
   fi
   _nay=$(kc_van_tay "$1") || { echo "$_ten: không tính được dấu vân tay code hiện tại (git) — không xác nhận được kết quả còn mới"; return 0; }
-  [ "$_ghi" = "$_nay" ] || echo "$_ten lỗi thời — code đã đổi sau lần chạy (Tree ghi $_ghi, hiện tại $_nay). Chạy lại $3. Không sửa code mà vẫn lệch: lệnh kiểm thử/quét đang ghi file vào repo — cho file đó vào .gitignore"
+  [ "$_ghi" = "$_nay" ] || echo "$_ten stale — code đã đổi sau lần chạy (Tree ghi $_ghi, hiện tại $_nay). Chạy lại $3. Không sửa code mà vẫn lệch: lệnh kiểm thử/quét đang ghi file vào repo — cho file đó vào .gitignore"
 }
 
 # ------------------------------------------------------------------ quét bảo mật
@@ -780,4 +780,35 @@ kc_chore_sca() {
   [ -n "$_co" ] || return 0
   kc_bm_nhom_xanh "$1/security-results.md" sca ||
     echo "Diff đụng file dependency nhưng security-results.md không có lệnh nhóm \"sca\" chạy XANH — khai dòng \"sca: <lệnh>\" trong SECURITY_CMDS (giống CI) rồi chạy aw check security"
+}
+
+# kc_tu_dich <thư-mục-feature> — artifact dùng từ dịch thay cho thuật ngữ gốc. Danh sách: cột
+# "Not" của workflow/rules/terms.md. Bỏ qua chỗ chứa lời người (intake.md, refactor-requests.md,
+# dòng trích ">") và file máy ghi (*-results.md). Không phân biệt hoa thường: tolower chỉ đổi
+# ASCII nên Đ, Ô (chữ đầu các từ dịch) đổi tay.
+kc_tu_dich() {
+  _td_ds="${AW_ENGINE:-$HERE/..}/workflow/rules/terms.md"
+  [ -f "$_td_ds" ] || return 0
+  _td_dir=$1
+  set -- "$_td_ds"
+  for _td in "$_td_dir"/*.md; do
+    case "${_td##*/}" in intake.md|refactor-requests.md|*-results.md|'*.md') continue ;; esac
+    set -- "$@" "$_td"
+  done
+  [ $# -gt 1 ] || return 0
+  awk -F'|' '
+    FILENAME == ARGV[1] {
+      if ($0 ~ /^\| `/) { t = $2; gsub(/^ *`|` *$/, "", t); n = split($(NF - 1), ds, ",")
+        for (i = 1; i <= n; i++) { p = ds[i]; gsub(/^ +| +$/, "", p); if (p != "") cu[p] = t } }
+      next
+    }
+    {
+      s = $0; if (s ~ /^[ \t]*>/) next
+      gsub(/Đ/, "đ", s); gsub(/Ô/, "ô", s); s = tolower(s)
+      f = FILENAME; sub(/.*\//, "", f)
+      for (p in cu) if (!((f, p) in da) && index(s, p)) {
+        da[f, p] = 1
+        printf "%s dòng %d: \"%s\" là từ dịch — viết `%s` (rules/terms.md)\n", f, FNR, p, cu[p]
+      }
+    }' "$@"
 }

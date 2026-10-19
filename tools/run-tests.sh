@@ -167,7 +167,7 @@ Không có ràng buộc hay phụ thuộc ngoài.
 Không phát hiện mâu thuẫn.
 EOF
   cat > "$F/open-questions.md" <<'EOF'
-# Điểm mù
+# Open questions
 
 ## YC-002 — b
 - **Assumption:** y
@@ -732,7 +732,7 @@ viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
 ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
 viet_spec; viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`blocking`'
 ky_vong 1 "chặn điểm mù \"chặn\" còn mở" sh "$CHK" "$F"
-dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"blocking\"'"
+dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: open question mức \"blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
@@ -902,8 +902,14 @@ rm -f "$R/README.md"
 
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" còn mở chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
-dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: điểm mù mức \"review-blocking\"'"
+dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*YC-002: open question mức \"review-blocking\"'"
 viet_spec; ghi_based_on
+
+printf 'Ghi chú: YC-002 còn một Điểm mù.\n' > "$F/ghi-chu.md"
+ky_vong 0 "từ dịch trong artifact chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
+dung "…nhưng có in cảnh báo từ dịch (không phân biệt hoa thường)" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*ghi-chu.md dòng 1: \"điểm mù\" là từ dịch — viết \`open question\`'"
+rm -f "$F/ghi-chu.md"
+dung "…không có từ dịch thì không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'là từ dịch'"
 
 # ---------------------------------------------------------------- bao mat (aw check security)
 nhom "check-security.sh (aw check security)"
@@ -953,10 +959,21 @@ sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
 ky_vong 0 "rà soát đủ và đúng thì cho qua" sh "$CHK" "$F"
 
+# Từ dịch thay cho thuật ngữ gốc (cột Not của workflow/rules/terms.md): review chặn
+printf 'Ghi chú: spec bị lỗi thời.\n' > "$F/ghi-chu.md"
+ky_vong 1 "CỔNG CUỐI: chặn từ dịch trong artifact" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'ghi-chu.md dòng 1: \"lỗi thời\" là từ dịch — viết \`stale\`'"
+printf '> PO: "spec bị lỗi thời"\n' > "$F/ghi-chu.md"
+ky_vong 0 "…dòng trích lời người (>) thì cho qua" sh "$CHK" "$F"
+rm -f "$F/ghi-chu.md"
+printf 'Người viết: còn điểm mù\n' > "$F/refactor-requests.md"
+ky_vong 0 "…refactor-requests.md (nguyên văn lời người) thì cho qua" sh "$CHK" "$F"
+rm -f "$F/refactor-requests.md"
+
 # Điểm mù: "không chặn" còn mở thì giao được (YC chờ xác nhận); "chặn review" thì không
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
 ky_vong 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" sh "$CHK" "$F"
-dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"review-blocking\"'"
+dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: open question mức \"review-blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
@@ -1101,7 +1118,7 @@ viet_review
 
 printf 'x\n' > "$R/README.md"
 ky_vong 1 "CỔNG CUỐI: chặn file ngoài phạm vi" sh "$CHK" "$F"
-dung "…và chặn kết quả kiểm thử/quét lỗi thời (code đổi sau lần chạy)" sh -c "sh '$CHK' '$F' | grep -q 'test-results.md lỗi thời'"
+dung "…và chặn kết quả kiểm thử/quét lỗi thời (code đổi sau lần chạy)" sh -c "sh '$CHK' '$F' | grep -q 'test-results.md stale'"
 thay "$F/plan.md" '|---|---|---|---|
 ' '|---|---|---|---|
 | T-01 | cần README | `README.md` | đã ghi |
@@ -1137,7 +1154,7 @@ sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
 printf '\n<!-- sửa sau khi đã viết spec -->\n' >> "$F/intake.md"
 ky_vong 1 "CỔNG CUỐI: chặn spec lỗi thời khi intake.md đổi" sh "$CHK" "$F"
-dung "…đúng lý do: spec.md lỗi thời theo intake.md" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: lỗi thời — intake.md'"
+dung "…đúng lý do: spec.md lỗi thời theo intake.md" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: stale — intake.md'"
 viet_intake
 
 printf '\n<!-- sửa sau khi đã có tdd -->\n' >> "$F/spec.md"
@@ -1155,7 +1172,7 @@ dung "security-results.md ghi HEAD, Tree, output thật từng nhóm" sh -c "gre
 
 printf 'sua sau review\n' > "$R/src/a.txt"; printf 'moi\n' >> "$R/src/a.txt"
 ky_vong 1 "CỔNG CUỐI: chặn khi code đổi (chưa commit) sau lần chạy test/quét" sh "$CHK" "$F"
-dung "…đúng lý do: cả hai file kết quả lỗi thời" sh -c "out=\$(sh '$CHK' '$F'); echo \"\$out\" | grep -q 'test-results.md lỗi thời' && echo \"\$out\" | grep -q 'security-results.md lỗi thời'"
+dung "…đúng lý do: cả hai file kết quả lỗi thời" sh -c "out=\$(sh '$CHK' '$F'); echo \"\$out\" | grep -q 'test-results.md stale' && echo \"\$out\" | grep -q 'security-results.md stale'"
 printf 'moi\n' > "$R/src/a.txt"
 ky_vong 0 "…hoàn tác về đúng nội dung đã chạy thì hết lỗi thời" sh "$CHK" "$F"
 
@@ -1447,7 +1464,7 @@ cat > "$LQ/spec.md" <<'EOF'
 EOF
 # Thứ tự trong file cố tình ngược với thứ tự phải giải quyết.
 cat > "$LQ/open-questions.md" <<'EOF'
-# Điểm mù
+# Open questions
 
 ## YC-001 — không chặn
 - **Question:** hỏi 1
@@ -1506,7 +1523,7 @@ ky_vong 3 "fixture: chỉ có điểm mù không chặn" sh "$CHK" "$F"
 
 # Phát hiện checker LLM chen vào hàng đợi theo phase bị chặn.
 cat > "$LQ/open-questions.md" <<'EOF'
-# Điểm mù
+# Open questions
 
 ## YC-001 — không chặn
 - **Blocking:** `non-blocking`
@@ -2359,7 +2376,7 @@ sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
 ky_vong 0 "spec ghi based_on intake.md vẫn qua check-spec" sh "$T/check-spec.sh" "$F"
 printf -- '- `[JIRA]` ABC-2\n' >> "$F/intake.md"
 ky_vong 1 "gộp thêm input sau khi có spec → review chặn (spec lỗi thời)" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do: spec.md lỗi thời vì intake.md" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'spec.md: lỗi thời — intake.md'"
+dung "…đúng lý do: spec.md lỗi thời vì intake.md" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'spec.md: stale — intake.md'"
 viet_intake; viet_spec
 
 thay "$F/intake.md" '`feature`' '`chore`'
@@ -2665,7 +2682,7 @@ dung "…chỉ đúng file và dòng phải tick" sh -c "printf '%s' \"\$1\" | g
 dung "…liệt kê YC [INFERRED] kèm tên" sh -c "printf '%s' \"\$1\" | grep -q 'YC-003 — log khi từ chối'" _ "$OUT_CD"
 dung "…liệt kê Ngoài phạm vi" sh -c "printf '%s' \"\$1\" | grep -q 'màn hình z'" _ "$OUT_CD"
 dung "…nói hệ quả của mức rủi ro (Mode 1/2)" sh -c "printf '%s' \"\$1\" | grep -q 'Risk: normal — /aw-design chạy Mode 1'" _ "$OUT_CD"
-dung "…đếm điểm mù còn mở theo mức chặn" sh -c "printf '%s' \"\$1\" | grep -q 'Điểm mù còn mở: 1 (blocking: 0 · review-blocking: 0 · non-blocking: 1)'" _ "$OUT_CD"
+dung "…đếm điểm mù còn mở theo mức chặn" sh -c "printf '%s' \"\$1\" | grep -q 'Open question còn mở: 1 (blocking: 0 · review-blocking: 0 · non-blocking: 1)'" _ "$OUT_CD"
 dung "…không tự tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
 thay "$F/spec.md" '- [ ] **Approved by human** — đã đọc' '- [x] **Approved by human** — đã đọc'
 ky_vong 0 "người tick xong → ĐÃ DUYỆT (kiểm lại)" sh "$CD" design "$F"
@@ -3756,19 +3773,29 @@ ky_vong 2 "aw knowledge thiếu tham số → engine trả SAI THAM SỐ" aw7 kn
 
 # ---------------------------------------------------------------- thuật ngữ
 nhom "thuật ngữ: workflow/rules/terms.md ↔ docs/thuat-ngu.md"
-# thieu_thuat_ngu <terms.md> <thuat-ngu.md> — in mỗi thuật ngữ (cột 1 của bảng
-# terms.md) mà tài liệu cho người không có; trả 1 nếu thiếu
-thieu_thuat_ngu() {
-  awk -F'|' 'FILENAME == ARGV[1] && /^\| `/ { t = $2; gsub(/^ *`|` *$/, "", t); can[t] = 1; next }
-    FILENAME == ARGV[2] { for (t in can) if (index($0, "`" t "`")) delete can[t] }
-    END { n = 0; for (t in can) { print t; n++ }; exit n > 0 }' "$1" "$2"
+# lech_thuat_ngu <terms.md> <thuat-ngu.md> — thuật ngữ = cột 1 bảng terms.md; bên tài liệu cho
+# người = mọi `…` trong ô đầu mỗi dòng bảng. In mỗi thuật ngữ chỉ một bên có; trả 1 nếu lệch.
+lech_thuat_ngu() {
+  awk -F'|' '
+    FILENAME == ARGV[1] && /^\| `/ { t = $2; gsub(/^ *`|` *$/, "", t); a[t] = 1; next }
+    FILENAME == ARGV[2] && /^\|/ { s = $2
+      while (match(s, /`[^`]+`/)) { b[substr(s, RSTART + 1, RLENGTH - 2)] = 1; s = substr(s, RSTART + RLENGTH) } }
+    END { n = 0
+      for (t in a) if (!(t in b)) { print "thiếu trong thuat-ngu.md: " t; n++ }
+      for (t in b) if (!(t in a)) { print "thiếu trong terms.md: " t; n++ }
+      exit n > 0 }' "$1" "$2"
 }
 TN="$ROOT/workflow/rules/terms.md"; TD="$ROOT/docs/thuat-ngu.md"
 dung "terms.md có bảng thuật ngữ" grep -q '^| `' "$TN"
-dung "mọi thuật ngữ của terms.md đều có trong thuat-ngu.md" thieu_thuat_ngu "$TN" "$TD"
-grep -v '`harness journal`' "$TD" > "$TMP/thuat-ngu-thieu.md"
-ky_vong 1 "…thuat-ngu.md thiếu một thuật ngữ → báo" thieu_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md"
-dung "…đúng thuật ngữ thiếu" bang "$(thieu_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md")" "harness journal"
+dung "terms.md và thuat-ngu.md cùng một bộ thuật ngữ" lech_thuat_ngu "$TN" "$TD"
+grep -v '^| `harness journal`' "$TD" > "$TMP/thuat-ngu-thieu.md"
+ky_vong 1 "…thuat-ngu.md thiếu một thuật ngữ → báo" lech_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md"
+dung "…đúng thuật ngữ thiếu" bang "$(lech_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md")" "thiếu trong thuat-ngu.md: harness journal"
+grep -v '^| `harness journal`' "$TN" > "$TMP/terms-thieu.md"
+ky_vong 1 "…terms.md thiếu một thuật ngữ thuat-ngu.md có → báo" lech_thuat_ngu "$TMP/terms-thieu.md" "$TD"
+dung "…đúng thuật ngữ thiếu" bang "$(lech_thuat_ngu "$TMP/terms-thieu.md" "$TD")" "thiếu trong terms.md: harness journal"
+# Cột Not phải viết thường: kc_tu_dich so khớp sau khi hạ chữ thường dòng artifact
+dung "cột Not của terms.md viết thường" sh -c "! awk -F'|' '/^[|] \`/ { print \$(NF - 1) }' '$TN' | grep -q '[A-ZĐÔ]'"
 dung "general.md §5 trỏ tới rules/terms.md" grep -q 'rules/terms.md' "$ROOT/workflow/rules/general.md"
 dung "workflow.yaml đăng ký terms.md" grep -q '^  - workflow/rules/terms.md$' "$ROOT/workflow.yaml"
 

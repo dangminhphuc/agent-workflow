@@ -152,7 +152,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
       q = substr(x, RSTART, RLENGTH)
       if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"## " q "\"")
     } else if (x !~ /\[(CONFLUENCE|JIRA|FILE)\]/) {
-      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới điểm mù ([open-questions.md § YC-NNN](open-questions.md#yc-nnn)) hoặc nguồn đã chốt " \
+      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § YC-NNN](open-questions.md#yc-nnn)) hoặc nguồn đã chốt " \
           "([CONFLUENCE] [JIRA] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
     }
     next
@@ -207,7 +207,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
       else if (thiet_ke == "required" && loai == "chore")
         loi("chore không có phase design — bỏ dòng \"Design:\" hoặc ghi skip")
       else if (thiet_ke == "skip" && loai != "chore" && loai != "bugfix" && loai != "refactor")
-        loi("\"Design: skip\" chỉ dành cho bugfix/refactor nhỏ — " (loai == "" ? "loại việc chưa rõ" : loai) " phải qua design")
+        loi("\"Design: skip\" chỉ dành cho bugfix/refactor nhỏ — " (loai == "" ? "job type chưa rõ" : loai) " phải qua design")
       else if (thiet_ke == "skip" && loai != "chore" && rui_ro != "normal")
         loi("\"Design: skip\" cần \"Risk: normal\" — việc rủi ro cao phải qua design (Mode 2: người phác D-xx trước)")
     }
@@ -290,12 +290,12 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
         continue
       }
       if (s == "answered" && !(q in tra_loi))
-        loi(q ": điểm mù ghi \"answered\" nhưng dòng \"Answer:\" còn trống.")
+        loi(q ": open question ghi \"answered\" nhưng dòng \"Answer:\" còn trống.")
       else if (s == "answered" && nhan[q] == "OPEN-QUESTION")
-        loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [OPEN-QUESTION]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
+        loi(q ": open question đã trả lời nhưng spec.md vẫn gắn [OPEN-QUESTION]. Đổi source label sang nơi chứa câu trả lời " \
             "(vd `[FILE]` [open-questions.md § " q "](open-questions.md#" tolower(q) ") rồi chạy aw toc).")
       else if (s == "open" && so_nguon[q] == 1 && nhan[q] != "OPEN-QUESTION")
-        loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng điểm mù trong open-questions.md vẫn \"open\". " \
+        loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng open question trong open-questions.md vẫn \"open\". " \
             "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")
     }
 
@@ -323,7 +323,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
     }
 
     print ""
-    print "Tổng: " n " yêu cầu — Loại việc: " (loai == "" ? "?" : loai) " — Risk: " (co_rui_ro ? rui_ro : "?") \
+    print "Tổng: " n " yêu cầu — Job type: " (loai == "" ? "?" : loai) " — Risk: " (co_rui_ro ? rui_ro : "?") \
           (thiet_ke == "skip" ? " — Design: skip (không có phase design)" : "") " — Duyệt: " tt_spec
     for (t in dem_nhan) printf "  [%s] %d\n", t, dem_nhan[t]
     if (n_loi > 0) exit 1

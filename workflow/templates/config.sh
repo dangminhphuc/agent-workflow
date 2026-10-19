@@ -5,7 +5,7 @@
 # Adapter sinh lệnh cho agent team dùng — một hoặc nhiều id, cách nhau dấu cách:
 #   ADAPTER="claude-code"            chỉ Claude Code (.claude/)
 #   ADAPTER="claude-code cursor"     cả hai — mỗi worktree có cả .claude/ lẫn .cursor/
-# Sửa xong thì chạy aw init (thêm exclude) rồi aw adapter build ở checkout chính.
+# Sửa xong thì chạy aw init (thêm exclude) rồi aw adapter build ở main checkout.
 ADAPTER="claude-code"
 
 # Lệnh kiểm thử — điều kiện ra của phase 04-implement.
@@ -59,7 +59,7 @@ MAX_RED_RUNS=""
 # đỏ. Bỏ trống = tắt (test chạy lâu thì để tắt).
 TASK_FULL_TEST=""
 
-# Lệnh đo hiệu năng — chỉ dùng cho loại việc perf. Phải in một dòng
+# Lệnh đo hiệu năng — chỉ dùng cho job type perf. Phải in một dòng
 # "RESULT: <số> <đơn vị>", vd: RESULT: 138 ms
 PERF_CMD=""
 

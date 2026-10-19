@@ -198,7 +198,7 @@ for k in knowledge_adr_dir knowledge_rules_dir; do
   case "$AD" in
     "") ;;
     /*|*..*) loi "$k \"$AD\" phải là đường dẫn tương đối trong repo, không có \"..\"" ;;
-    .agent-workflow*) loi "$k \"$AD\" nằm trong .agent-workflow/ (bị exclude) — kiến thức bền phải vào git" ;;
+    .agent-workflow*) loi "$k \"$AD\" nằm trong .agent-workflow/ (bị exclude) — durable knowledge phải vào git" ;;
   esac
 done
 qt=$(kc_quy_tac_loi "$MT_REPO" review)

@@ -62,7 +62,7 @@ for _cap in $(conv_get "$CONV" type_by_prefix); do
   [ "${_cap#*=}" = "$LOAI" ] && { tien_to=${_cap%%=*}; break; }
 done
 if [ -z "$tien_to" ]; then
-  echo "LỖI: loại việc \"$LOAI\" không có tiền tố trong type_by_prefix ($CONV)." >&2
+  echo "LỖI: job type \"$LOAI\" không có tiền tố trong type_by_prefix ($CONV)." >&2
   echo "      Loại hợp lệ: feature | bugfix | refactor | perf | chore." >&2
   exit 2
 fi

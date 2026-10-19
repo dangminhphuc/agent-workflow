@@ -94,7 +94,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
 
   /^[ \t]*-[ \t]/ {
     dong_cho()
-    if (!match($0, /\[[^]]+\]/)) { loi("Input: dòng không có nhãn nguồn — " $0); next }
+    if (!match($0, /\[[^]]+\]/)) { loi("Input: dòng không có source label — " $0); next }
     t = substr($0, RSTART + 1, RLENGTH - 2); rest = substr($0, RSTART + RLENGTH)
     n_in++
     if (t == "INFERRED") { loi("Input #" n_in ": [INFERRED] không được là input — input chỉ là tài liệu hoặc lời người dùng nguyên văn"); next }
@@ -123,11 +123,11 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     if (n_in == 0) loi("Mục \"## Input\" không có nguồn nào. Không có input thì không có gì để các phase sau truy về.")
 
     print ""
-    printf "Loại việc: %s — %d input\n", (co_loai ? loai : "?"), n_in
+    printf "Job type: %s — %d input\n", (co_loai ? loai : "?"), n_in
     for (t in dem) printf "  [%s] %d\n", t, dem[t]
     print ""
     if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
-    print "ĐẠT — mục đích và input hợp lệ. Bước tiếp: NGƯỜI xác nhận loại việc và input."
+    print "ĐẠT — mục đích và input hợp lệ. Bước tiếp: NGƯỜI xác nhận job type và input."
   }
 ' "$MD"
 ma=$?

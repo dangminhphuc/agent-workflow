@@ -157,7 +157,7 @@ kiem_tra_nguon() {
     *) echo "LỖI: $_file khai runs_on_main_checkout \"$_mc\" — chỉ nhận \"true\" (bỏ trống = không)." >&2; _bad=1 ;;
   esac
   if [ "$_mc" = true ] && [ "$_ar" = input ]; then
-    echo "LỖI: $_file khai cả runs_on_main_checkout và arguments: input — phase input đã có lối riêng ở checkout chính." >&2; _bad=1
+    echo "LỖI: $_file khai cả runs_on_main_checkout và arguments: input — phase input đã có lối riêng ở main checkout." >&2; _bad=1
   fi
   _lc=$(fm_scalar "$_src" llm_checker)
   if [ -n "$_lc" ] && [ ! -f "$ROOT/$_lc" ]; then
@@ -367,7 +367,7 @@ ad_doc_tham_so() {
     case "$(CDPATH= cd -- "$OUT" && pwd)/" in
       "$ROOT"/*)
         echo "LỖI: --out nằm trong repo agent-workflow ($OUT)." >&2
-        echo "      Sinh vào đây sẽ lẫn $AD_GOC/ vào mã nguồn; hãy trỏ tới repo đích." >&2
+        echo "      Sinh vào đây sẽ lẫn $AD_GOC/ vào mã nguồn; hãy trỏ tới target repo." >&2
         exit 2 ;;
     esac
   fi
@@ -559,7 +559,7 @@ ad_sinh() {
     cargs=$(fm_scalar "$csrc" arguments)
     case "$cargs" in
       ""|mixed) ;;
-      *) echo "LỖI: $cfile khai arguments \"$cargs\" — lệnh tiện ích chỉ nhận \"mixed\" (bỏ trống = tên feature)." >&2; exit 4 ;;
+      *) echo "LỖI: $cfile khai arguments \"$cargs\" — utility command chỉ nhận \"mixed\" (bỏ trống = tên feature)." >&2; exit 4 ;;
     esac
     cmc=$(fm_scalar "$csrc" runs_on_main_checkout)
     case "$cmc" in

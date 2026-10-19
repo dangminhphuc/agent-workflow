@@ -1,5 +1,5 @@
 <!--
-Mẫu AGENTS.md cho repo đích — tài liệu của engine agent-workflow, KHÔNG phải luật.
+Mẫu AGENTS.md cho target repo — tài liệu của engine agent-workflow, KHÔNG phải luật.
 Chép vào gốc repo (cp .agent-workflow/.engine/templates/target-repo/AGENTS.md AGENTS.md),
 sửa các chỗ <…>, xoá khối chú thích này, commit qua PR.
 

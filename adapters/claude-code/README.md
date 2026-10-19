@@ -21,7 +21,7 @@ dùng bản `.cursor/`.
 |---|---|
 | `workflow/phases/<id>.md` | `.claude/commands/aw-<id>.md` (`/aw-intake` … `/aw-ship`) |
 | `commands:` trong `workflow.yaml` | `.claude/commands/aw-<id>.md` (`/aw-import`, `/aw-clarify`, `/aw-bootstrap`) |
-| Phase `requires_fresh_agent: true` (`05-review`) | `.claude/agents/independent-reviewer.md` — subagent ngữ cảnh sạch, mang mô tả phase đầy đủ |
+| Phase `requires_fresh_agent: true` (`05-review`) | `.claude/agents/independent-reviewer.md` — subagent clean context, mang mô tả phase đầy đủ |
 | `llm_checker:` (`workflow/checkers/<id>.md`) | `.claude/agents/<id>-checker.md` |
 | `approval_gate: true` (`02-design`, `03-plan`) | Bước "Approval gate": `aw approval <phase>` + hộp xác nhận `AskUserQuestion` |
 | Khoá `uses_<phase>` của `conventions.md` (lúc chạy, không lúc build) | Bước "Repo skills & subagents": `aw uses <phase>`, gọi skill qua Skill tool, subagent qua `subagent_type` |
@@ -33,24 +33,24 @@ Mỗi lệnh phase gồm:
    chính: dừng (trừ `arguments: input` — `/aw-intake` đề xuất worktree — và
    `runs_on_main_checkout: true` — `/aw-ship` dọn việc đã merge). Logic nằm trong script, không
    trong prompt.
-2. **Hợp đồng phase** dựng từ frontmatter: đọc gì, ghi gì, mẫu nào, checker LLM, điều kiện ra
+2. **Hợp đồng phase** dựng từ frontmatter: đọc gì, ghi gì, mẫu nào, LLM checker, điều kiện ra
    máy/người, file luật phải đọc (`trace_rule: true` thêm `source-tracing.md`).
 3. **Mô tả phase** lấy nguyên văn từ thân file nguồn. Riêng phase `requires_fresh_agent`: lệnh
    chỉ bàn giao cho subagent, không nạp mô tả vào phiên chính.
 
-Lệnh tiện ích chỉ có Step 0 và thân file (`argument_hint`, `arguments: mixed` khi tham số có thứ
-khác ngoài tên feature). Luật theo loại việc nằm hoàn toàn trong thân phase và checker — adapter
+Utility command chỉ có Step 0 và thân file (`argument_hint`, `arguments: mixed` khi tham số có thứ
+khác ngoài tên feature). Luật theo job type nằm hoàn toàn trong thân phase và checker — adapter
 không sinh nhánh nào theo loại.
 
 ## Phần không portable và cách xử lý
 
 | Khả năng | Claude Code | Agent không có |
 |---|---|---|
-| Ngữ cảnh sạch cho review | Subagent `independent-reviewer` | Người tự mở phiên mới — adapter phải ghi rõ |
-| Hook gác ô duyệt | `aw guard` (người tự cài, mục dưới) | Chỉ còn lời dặn + dấu duyệt mà `aw check` vẫn kiểm |
+| clean context cho review | Subagent `independent-reviewer` | Người tự mở phiên mới — adapter phải ghi rõ |
+| approval guard | `aw guard` (người tự cài, mục dưới) | Chỉ còn lời dặn + approval hash mà `aw check` vẫn kiểm |
 | Confluence/Jira | MCP Atlassian | Tải tài liệu về repo, nhãn `[FILE]` |
 | Cách gọi | Slash command | Lời dặn / rules của agent đó |
-| Checker LLM | Subagent `design-checker`; thiếu file phát hiện thì `aw check design` fail | Người tự chạy; không có file ≠ đạt |
+| LLM checker | Subagent `design-checker`; thiếu file phát hiện thì `aw check design` fail | Người tự chạy; không có file ≠ đạt |
 | Câu hỏi lựa chọn (`choice_ui`) | `AskUserQuestion`; "Type something" / "Chat about this" có sẵn nên không thêm vào `options` | In lựa chọn đánh số + lối tự nhập / trao đổi |
 | Hộp xác nhận cổng duyệt | `AskUserQuestion` + `preview` (file/dòng phải tick) | In ba lựa chọn đánh số |
 | Skill của team (`uses_<phase>`) | Skill tool: tham số, dòng chèn lệnh shell, `allowed-tools`, `hooks` có hiệu lực; cần quyền `Skill(<tên>)` | Đọc `SKILL.md` như tài liệu — frontmatter không có hiệu lực |
@@ -65,7 +65,7 @@ mà lần này không sinh ra (lệnh đổi tên/bỏ). File không có dấu �
 
 ## Hỏi quyền cho `aw approvals tick`
 
-`/aw-approvals` là lối duy nhất agent được tick ô duyệt: bạn chọn **Duyệt** cho một mục, agent chạy
+`/aw-approvals` là lối duy nhất agent được tick approval checkbox: bạn chọn **Duyệt** cho một mục, agent chạy
 `aw approvals tick <dir> <khoá> <hash>`. Để agent không tự chạy lệnh này khi bạn chưa chọn, thêm luật
 `ask` vào `.claude/settings.json` (hoặc `settings.local.json`) — Claude Code hỏi bạn mỗi lần, agent
 không tự cho phép được:
@@ -77,12 +77,12 @@ không tự cho phép được:
 - Hộp hỏi quyền hiện đúng việc, khoá (`spec`, `D-NN`) và hash — đối chiếu với mục bạn vừa chọn.
 - Không có tác dụng ở chế độ bỏ qua quyền (`bypassPermissions`): đừng chạy `/aw-approvals` ở chế độ đó.
 - Agent gọi thẳng script của engine (không qua `aw`) thì luật không bắt; hook `aw guard` cũng không
-  bắt vì dấu duyệt hợp lệ. Còn lại: `journal/approvals.tsv` ghi mọi lần tick qua lệnh.
+  bắt vì approval hash hợp lệ. Còn lại: `journal/approvals.tsv` ghi mọi lần tick qua lệnh.
 - Adapter không tự ghi file này (cùng lý do với hook bên dưới).
 
-## Hook gác ô duyệt
+## Approval guard
 
-Thêm vào `.claude/settings.json` (hoặc `settings.local.json`) của repo đích — adapter không tự
+Thêm vào `.claude/settings.json` (hoặc `settings.local.json`) của target repo — adapter không tự
 ghi file này (ghi đè settings của người khác không đảo ngược được):
 
 ```json
@@ -100,7 +100,7 @@ ghi file này (ghi đè settings của người khác không đảo ngược đ�
 }
 ```
 
-- `pre`: ghi dấu duyệt cho ô người vừa tick, đặt mốc. Luôn cho qua.
+- `pre`: ghi approval hash cho ô người vừa tick, đặt mốc. Luôn cho qua.
 - `post`: ô được tick trong lúc lệnh agent chạy (chưa có dấu), hoặc có dấu mà nội dung đổi → bỏ
   tick, trả mã 2 để agent đọc lý do.
 - Hai hook **phải cùng matcher** (`post` chỉ bỏ tick khi thấy mốc của `pre`). Bắt cả `sed -i`

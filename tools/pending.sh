@@ -46,7 +46,7 @@ OQ="$DIR/open-questions.md"
 PLAN="$DIR/plan.md"
 
 [ -f "$SPEC" ] || { echo "LỖI: không tìm thấy $SPEC — chạy /aw-spec trước" >&2; exit 2; }
-[ -f "$OQ" ]   || { echo "LỖI: không tìm thấy $OQ — /aw-spec chưa rà điểm mù" >&2; exit 2; }
+[ -f "$OQ" ]   || { echo "LỖI: không tìm thấy $OQ — /aw-spec chưa rà open question" >&2; exit 2; }
 
 # Phase kế tiếp, suy từ artifact đã có. Điểm mù mức "blocking" chặn phase ngay sau
 # spec, và vì mỗi checker chạy lại checker phase trước, nó chặn mọi phase sau đó.
@@ -125,12 +125,12 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   END {
     nhom[0] = "CHƯA PHÂN MỨC"; nhom[1] = "BLOCKING"; nhom[2] = "PHÁT HIỆN — CHẶN"
     nhom[3] = "REVIEW-BLOCKING"; nhom[4] = "PHÁT HIỆN — CẢNH BÁO"; nhom[5] = "NON-BLOCKING"
-    mo_ta[0] = "điểm mù thiếu hoặc sai \"Blocking\" — checker của spec chặn; NGƯỜI gán: blocking | review-blocking | non-blocking"
-    mo_ta[1] = "điểm mù: sai giả định thì cả thiết kế đổi hướng — chặn /" csp
-    mo_ta[2] = "phát hiện của checker LLM, NGƯỜI phân xử: đồng ý (sửa → fixed) hoặc bác bỏ (rejected: <lý do>)"
-    mo_ta[3] = "điểm mù: flow đi tiếp trên giả định tạm; /aw-review chặn tới khi có câu trả lời"
-    mo_ta[4] = "phát hiện của checker LLM, không chặn — vẫn nên phân xử trước khi phase sau dựa vào"
-    mo_ta[5] = "điểm mù: giao được trên giả định tạm; review ghi YC đó \"pending\""
+    mo_ta[0] = "open question thiếu hoặc sai \"Blocking\" — checker của spec chặn; NGƯỜI gán: blocking | review-blocking | non-blocking"
+    mo_ta[1] = "open question: sai giả định thì cả thiết kế đổi hướng — chặn /" csp
+    mo_ta[2] = "finding của LLM checker, NGƯỜI phân xử: đồng ý (sửa → fixed) hoặc bác bỏ (rejected: <lý do>)"
+    mo_ta[3] = "open question: flow đi tiếp trên giả định tạm; /aw-review chặn tới khi có câu trả lời"
+    mo_ta[4] = "finding của LLM checker, không chặn — vẫn nên phân xử trước khi phase sau dựa vào"
+    mo_ta[5] = "open question: giao được trên giả định tạm; review ghi YC đó \"pending\""
     # Phase nào chặn "ngay": phase kế tiếp, hoặc mọi phase sau khi đã qua phase bị chặn
     # (checker mỗi phase chạy lại checker phase trước).
     thu["spec"] = 1; thu["design"] = 2; thu["plan"] = 3; thu["implement"] = 4; thu["review"] = 5
@@ -169,7 +169,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
     for (i = 2; i <= n_mo; i++) { k = khoa[i]; j = i - 1; while (j >= 1 && khoa[j] > k) { khoa[j+1] = khoa[j]; j-- } khoa[j+1] = k }
 
     printf "Việc chờ người: %d — phase kế tiếp: /%s\n", n_mo, ke
-    printf "  Điểm mù: %d open, %d answered · Phát hiện LLM: %d chờ phân xử, %d đã xử lý\n", n_dm, n_xong, n_phmo, n_ph_xong
+    printf "  Open question: %d open, %d answered · Phát hiện LLM: %d chờ phân xử, %d đã xử lý\n", n_dm, n_xong, n_phmo, n_ph_xong
     if (n_mo) {
       printf "  blocking: %d · phát hiện Chặn: %d · review-blocking: %d · phát hiện Cảnh báo: %d · non-blocking: %d", \
         dem[1] + 0, dem[2] + 0, dem[3] + 0, dem[4] + 0, dem[5] + 0
