@@ -2,7 +2,7 @@
 # Ghi dong based_on (hash ca file dau vao) vao frontmatter cua mot artifact.
 #
 #   aw based-on <thu-muc-feature> <artifact> <dau-vao>...
-#   vd: aw based-on .agent-workflow/feat_x tdd.md spec.md open-questions.md
+#   vd: aw based-on docs/sdlc/feat_x tdd.md spec.md open-questions.md
 #
 # Hash do MAY tinh, khong de agent tu ghi — agent chep sai mot ky tu la
 # artifact bi bao loi thoi (hoac te hon, khong bao khi da loi thoi).
