@@ -10,13 +10,23 @@ Every `### YC-NNN` in `spec.md` has **exactly one** `Source:` line with one labe
 
 | Label | Meaning | Must include |
 |---|---|---|
-| `[CONFLUENCE]` | Quoted from a Confluence page | Page URL + heading |
-| `[JIRA]` | Quoted from a Jira issue | Issue key + URL |
-| `[FILE]` | Quoted from a file in the repo | Path + heading |
+| `[CONFLUENCE]` | Quoted from a Confluence page | Page URL + heading; `Quote:` |
+| `[JIRA]` | Quoted from a Jira issue | Issue key + URL; `Quote:` |
+| `[FILE]` | Quoted from a file in the repo | Path + heading; `Quote:` found in that file |
 | `[INFERRED]` | Technical decision you derived | Reason + the YC it serves |
 | `[OPEN-QUESTION]` | No source yet, temporary assumption | Entry with the same id in `open-questions.md` |
 
 No sixth label. Does not fit the five → not a requirement → put it in `open-questions.md`.
+
+`Quote:` = the source sentences **verbatim**, one `> …` line each, right under `Source:`:
+
+```markdown
+- Source: `[FILE]` [docs/brd.md](docs/brd.md) § Hoàn tiền
+- Quote:
+  > Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán.
+```
+
+`[FILE]` path: `intake.md` / `open-questions.md` = the feature directory; anything else = repo root.
 
 ## `[INFERRED]` vs `[OPEN-QUESTION]`
 
@@ -31,11 +41,11 @@ The agent proposes `Blocking`, the human approves. Choose by "if the assumption 
 
 | Level | When | What it blocks |
 |---|---|---|
-| `blocking` | Wrong → the whole design changes direction | `02-design` (chore: `03-plan`) and every later phase, until `answered` |
+| `blocking` | Wrong → the whole design changes direction | `02-design` (no design phase: `03-plan`) and every later phase, until `answered` |
 | `review-blocking` | Wrong → part of the code is redone | Flow continues on the assumption; `04-implement` warns, `05-review` blocks |
 | `non-blocking` | Wrong → small fix, may ship first | Nothing; review marks that YC `pending` |
 
-Answering an open question: write `Answer:`, set `Status: answered`, **and** change the YC's source label in the spec (e.g. `[FILE]` open-questions.md § YC-002). The checker blocks if the two files disagree.
+Answering an open question: write `Answer:`, set `Status: answered`, **and** change the YC's source label in the spec (e.g. `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002)) and its `Quote:` to the answer words. The checker blocks if the two files disagree.
 
 ## Common failures
 
@@ -43,3 +53,4 @@ Answering an open question: write `Answer:`, set `Status: answered`, **and** cha
 - An acceptance criterion still `<...>` or inside an HTML comment does not count.
 - `open-questions.md` and the spec disagree: `open` ↔ YC still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and the YC label was changed.
 - `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` left empty — write "Không có…" / "Không phát hiện mâu thuẫn." instead.
+- `Quote:` not character-for-character: added quotation marks, fixed typos, dropped markdown (`**`, links). Whitespace and line breaks do not count.

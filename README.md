@@ -11,6 +11,7 @@ Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa 
 | Đọc gì | Ở đâu |
 |---|---|
 | **Hướng dẫn dùng cho người**: cài, cấu hình, từng phase sinh artifact gì và quyết định gì | [`docs/huong-dan.md`](docs/huong-dan.md) |
+| Thuật ngữ agent dùng khi nói với bạn: YC, D-xx, `open question`, `stale`, worktree… | [`docs/thuat-ngu.md`](docs/thuat-ngu.md) |
 | Luật từng phase (nguồn sự thật) | [`workflow/phases/`](workflow/phases), [`workflow/rules/`](workflow/rules) |
 | Vì sao thiết kế như vậy, điểm yếu | [`docs/kien-truc.md`](docs/kien-truc.md) |
 | Adapter | [`adapters/README.md`](adapters/README.md) |
@@ -42,7 +43,7 @@ Lựa chọn kỹ thuật được tách thành mục **D-xx** để người *q
 ```mermaid
 flowchart TD
     INTAKE["00-intake<br/>→ intake.md (loại việc + input)<br/><i>NGƯỜI: chọn base, xác nhận loại việc</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>NGƯỜI: duyệt YC, Blocking, Risk</i>"]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>NGƯỜI: duyệt YC, Blocking, Risk, Design</i>"]
     PHAC[/"Người phác D-xx trước<br/>(Risk: high)"/]
     DESIGN["02-design<br/>→ tdd.md (D-xx) + checker LLM<br/><i>NGƯỜI: duyệt từng D-xx</i>"]
     PLAN["03-plan → plan.md"]
@@ -53,7 +54,7 @@ flowchart TD
 
     INTAKE --> SPEC --> DESIGN --> PLAN --> IMPL --> REVIEW --> SHIP
     PHAC -.-> DESIGN
-    SPEC -. "chore: bỏ design" .-> PLAN
+    SPEC -. "chore / Design: skip: bỏ design" .-> PLAN
     IMPL -. "cảnh báo dồn về" .-> REVIEW
     IMPORT -.-> SPEC
     IMPORT -.-> DESIGN
@@ -68,20 +69,23 @@ flowchart TD
 | Lệnh | Đọc → ghi | Máy chặn (`aw check …`) | Người |
 |---|---|---|---|
 | `/aw-intake` | ticket, URL, file, lời người → `intake.md` | loại việc, input, `Base`, `Engine` | chọn base, xác nhận loại việc và input |
-| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md` | mọi YC truy được về nguồn; điểm mù khớp hai file | duyệt YC, `Blocking`, `Risk`; tick "Approved by human" |
+| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md` | mọi YC truy được về nguồn; điểm mù khớp hai file | duyệt YC, `Blocking`, `Risk`, `Design`; tick "Approved by human" |
 | `/aw-design` | spec đã duyệt → `tdd.md` | đủ mục, D-xx hợp lệ, YC được ánh xạ, checker LLM không còn `Chặn` | duyệt từng D-xx |
-| `/aw-plan` | D-xx đã duyệt → `plan.md` | mọi YC có task phủ hoặc hoãn có lý do | — |
+| `/aw-plan` | D-xx đã duyệt (không có design: spec đã duyệt) → `plan.md` | mọi YC có task phủ hoặc hoãn có lý do | — |
 | `/aw-implement` | `plan.md` → diff | test và quét bảo mật **xanh** (máy tự chạy), mọi task có bằng chứng | — |
 | `/aw-review` | mọi artifact + diff → `review.md` | từng YC có kết luận; không còn cảnh báo; kết quả còn mới so với code | xác nhận kết luận |
 | `/aw-ship` | `review.md` → MR/PR | review đạt, không còn `Blocker` | chọn nhánh đích, merge |
 | `/aw-clarify [YC-NNN]` | — | — | trả lời điểm mù, phân xử phát hiện checker LLM (từng mục, có phương án đề xuất); có `YC-NNN`: đổi một YC bạn không đồng ý (ghi thành điểm mù đã trả lời) |
 | `/aw-refactor [yêu-cầu]` | lời bạn → agent review, phản biện → `refactor-requests.md` (nguyên văn + tóm tắt, chưa làm) | — | trả lời phản biện, duyệt bản tóm tắt; chọn: việc refactor riêng hay gộp vào việc `refactor` hiện tại |
+| `/aw-approvals [--global]` | ô "Approved by human" chưa đạt → danh sách kèm link tới artifact | — | duyệt từng mục (spec, D-xx); chọn Duyệt thì máy tick hộ |
 | `/aw-bootstrap` | repo, CI, `git log` → `AGENTS.md`, `Makefile`, `ARCHITECTURE.md`, ADR có sẵn (một lần, trong worktree `chore`) | `aw conventions check`, `aw adr check`, `aw rule check` | trả lời câu hỏi trong báo cáo, mở PR |
 
 - **Không có phase test riêng** — test là điều kiện ra của `implement`: chưa xanh là chưa xong.
 - **Loại việc đổi luật** (`feature | bugfix | refactor | perf | chore`): bugfix cần test tái hiện
   đỏ trước khi sửa, refactor cấm hành vi mới, perf cần số đo trước/sau, chore bỏ design và không
-  đụng code production. Chi tiết: [`00-intake.md`](workflow/phases/00-intake.md).
+  đụng code production. Bugfix/refactor nhỏ (`Risk: normal`, không có lựa chọn kỹ thuật) cũng bỏ
+  được design: spec khai `Design: skip`, bạn duyệt cùng spec. Chi tiết:
+  [`00-intake.md`](workflow/phases/00-intake.md).
 - **Worktree bắt buộc.** Checkout chính chỉ chạy `/aw-intake`, `/aw-bootstrap` (đề xuất worktree,
   **bạn chọn base**) và `/aw-ship` (dọn việc đã merge). Mọi phase khác chạy trong worktree, mỗi việc
   một phiên.
@@ -96,9 +100,14 @@ Spec và mỗi D-xx có một ô; bạn duyệt bằng cách đổi `[ ]` thành
 
 - Máy ghi **dấu duyệt** (hash nội dung) lần đầu thấy tick. Nội dung đổi sau đó → `aw check` chặn.
   Duyệt lại bản mới: đọc chỗ đổi, xoá `<!-- approval-hash: … -->`, giữ tick.
-- **Agent không bao giờ tick**; sửa nội dung đã tick thì bỏ tick. Muốn máy chặn cứng: cài hook
+- **Agent không bao giờ tự tick** (trừ `aw approvals tick` khi bạn vừa chọn Duyệt, dưới đây); sửa nội dung đã tick thì bỏ tick. Muốn máy chặn cứng: cài hook
   `aw guard` ([Claude Code](adapters/claude-code/README.md#hook-gác-ô-duyệt) ·
   [Cursor](adapters/cursor/README.md#hook-gác-ô-duyệt)).
+- **Duyệt tập trung `/aw-approvals [--global]`**: liệt kê mọi ô chờ duyệt (worktree này; `--global`:
+  mọi worktree), mỗi mục kèm `đường-dẫn:dòng` mở thẳng tới artifact; agent dẫn bạn đi từng mục, bạn
+  chọn **Duyệt** thì máy tick hộ (`aw approvals tick`, kèm hash bản bạn vừa thấy). Đây là lối duy
+  nhất agent được chạy lệnh tick — nên thêm luật hỏi quyền cho nó
+  ([Claude Code](adapters/claude-code/README.md#hỏi-quyền-cho-aw-approvals-tick)).
 - Gõ `/aw-design` hay `/aw-plan` khi chưa duyệt: agent in bản tóm tắt máy dựng (`aw approval`) —
   file, dòng phải tick, điểm nên đọc kỹ — rồi hỏi: **Tôi đã duyệt xong — kiểm lại** /
   **Giải thích từng điểm cần duyệt** / **Dừng — tôi duyệt sau**.
@@ -130,7 +139,7 @@ Engine không cài vào repo đích. Bốn phần:
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.25/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.27/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 ```
@@ -293,6 +302,7 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 |---|---|
 | `aw init [--version V] [--adapter a[,b]] [--test-cmd "…"] [--from <url>] [--from-legacy]` | Tạo cấu hình, exclude, sinh adapter |
 | `aw upgrade <V>` | Đổi engine cho việc mới (việc đang làm giữ version cũ) |
+| `aw self-update [<V>]` | Nâng chính wrapper `aw` (mặc định lên version engine của repo), kiểm sha256 |
 | `aw version` · `aw doctor` | Version đang dùng · kiểm cài đặt |
 | `aw ready <thư-mục-feature> [--no-test]` | Worktree sẵn sàng chưa (test xanh trên base) và bước tiếp |
 | `aw conventions check` | Kiểm `conventions.md` |
@@ -305,7 +315,8 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 | `aw adapter build [a[,b]] [--out <dir>] [--force]` | Sinh lại adapter |
 | `aw adr promote <thư-mục-feature> D-NN` · `aw adr check` | Chép D-xx đã duyệt (`Promote: adr`) thành ADR trong repo · kiểm thư mục ADR |
 | `aw rule promote <thư-mục-feature> YC-NNN` · `aw rule check` | Chép YC đã duyệt (`Promote: BR-…`) thành luật nghiệp vụ · kiểm mọi luật `BR-` |
-| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw rename` · `aw rules` · `aw uses` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
+| `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw toc` · `aw rename` · `aw rules` · `aw uses` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
+| `aw approvals [--global]` · `aw approvals tick <thư-mục-feature> <spec\|D-NN> <hash>` | Mọi ô chờ duyệt kèm link · tick sau khi bạn chọn duyệt (`/aw-approvals`) |
 | `aw guard pre\|post` | Hook gác ô duyệt |
 
 ### Nhiều agent trong một team
@@ -322,6 +333,8 @@ aw init --adapter claude-code,cursor     # hoặc ADAPTER="claude-code cursor" t
 
 ### Nâng cấp, chạy không mạng, chuyển từ bộ cài cũ
 
+- `aw self-update [<V>]`: nâng chính wrapper (wrapper không tự nâng theo `aw upgrade`); `aw version`
+  nhắc khi wrapper cũ hơn engine.
 - `aw upgrade <V>`: tải, ghim sha256, sinh lại adapter. **Việc đang làm không đổi luật** — mọi
   `aw check` chạy đúng version ở dòng `Engine:` của `intake.md`; không có thì `KHÔNG HỢP LỆ`.
 - Không mạng: `AW_ENGINE_DIR` (engine có sẵn, `VERSION` phải khớp), `AW_MIRROR`
@@ -337,15 +350,17 @@ sweep --apply`) chép artifact vào `.git/agent-workflow/archive/<tên>/` trư�
 ## Chạy test và phát hành
 
 ```sh
-sh tools/run-tests.sh
+sh tools/run-tests.sh                     # chỉ in ca hỏng + tổng
+AW_TEST_VERBOSE=1 sh tools/run-tests.sh   # in từng ca
 ```
 
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng
 đúng chuỗi đó, không có `v`.
 
-1. Ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md`.
+1. Mỗi PR ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md` và cập nhật tài liệu liên quan
+   (`AGENTS.md` § Human docs).
 2. Trong PR muốn phát hành: `sh tools/prepare-release.sh [YYYY.M.N]` — ghi version vào
-   `VERSION`, `bin/aw`, CHANGELOG, link tải trong README. Commit vào PR.
+   `VERSION`, `bin/aw`, CHANGELOG, link tải trong README và `docs/huong-dan.md`. Commit vào PR.
 3. Workflow `kiem-tra` chạy test + `tools/check-release.sh` (version nhất quán, tag chưa có).
 4. Merge vào `main` → workflow `release` tự tạo tag + Release (tarball, `aw`, `SHA256SUMS`).
 

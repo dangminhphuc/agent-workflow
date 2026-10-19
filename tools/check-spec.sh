@@ -2,10 +2,16 @@
 # Kiểm tra điều kiện ra của phase 01-spec — xem workflow/rules/source-tracing.md
 #
 #   aw check spec <thư-mục-feature>
+#   check-spec.sh <thư-mục-feature> --entry   # phase sau chạy lại spec (entry check)
 #
 # Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
 #            YC "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
-#            Nhãn `[FILE]` open-questions.md § YC-NNN mà mục đó không có (hay chưa answered).
+#            Nhãn `[FILE]` [open-questions.md § YC-NNN](open-questions.md#…) mà mục đó không có (hay chưa answered).
+#            "Design:" khác required | skip; skip ngoài bugfix/refactor hoặc khi Risk khác normal;
+#            chore ghi required.
+#            YC nguồn [CONFLUENCE] [JIRA] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
+#            [FILE]: câu trích không có trong file nguồn (tools/lib/quote.sh) — với --entry chỉ
+#            cảnh báo: nguồn đổi sau khi viết spec không phải lỗi của phase sau.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -16,7 +22,9 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
+. "$HERE/lib/toc.sh"
 . "$HERE/lib/result.sh"
 kq_khai check-spec.sh \
   "0=ĐẠT — được sang phase sau" \
@@ -24,6 +32,7 @@ kq_khai check-spec.sh \
   "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 
 DIR="${1:-.}"
+CHE_DO=""; if [ "${2:-}" = "--entry" ]; then CHE_DO=entry; fi
 SPEC="$DIR/spec.md"
 OQ="$DIR/open-questions.md"
 
@@ -53,6 +62,11 @@ kld=$(kc_loi_duyet "$SPEC" spec)
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $kld
 EOF
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" spec.md open-questions.md)
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$tl
+EOF
 # YC người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/rule.sh.
 lsl=$(luat_loi_spec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
@@ -62,12 +76,19 @@ TT_SPEC=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
 LOAI=$(kc_loai "$DIR")
 BV="${TMPDIR:-/tmp}/tv-bv.$$"
 : > "$BV"
+QT="${TMPDIR:-/tmp}/tv-qt.$$"
+: > "$QT"
 
-awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC:-?}" '
+awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_spec="${TT_SPEC:-?}" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   BEGIN { n_loi = loi_truoc }
   function gia_tri(s) {          # phần sau dấu ":" đầu tiên, bỏ * ` và khoảng trắng
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
+  }
+  function them_cau(c, s) {      # một câu trích của YC c (dòng "> …"), bỏ chỗ giữ chỗ
+    gsub(/\t/, " ", s); sub(/[ \t]+$/, "", s)
+    if (s == "" || s ~ /^<.*>$/) return
+    cau[c, ++so_cau[c]] = s
   }
 
   { sub(/\r$/, "") }
@@ -96,7 +117,19 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
   $0 ~ /^[ \t]*<!--/ && $0 !~ /-->/ { trong_cmt = 1; next }
   $0 ~ /^[ \t]*<!--.*-->[ \t]*$/ { next }
 
+  # Câu trích: "- Quote:" rồi các dòng "> …" ngay dưới — mỗi dòng một câu (tools/lib/quote.sh).
+  trong_qt && $0 ~ /^[ \t]*>/ { s = $0; sub(/^[ \t]*>[ \t]*/, "", s); them_cau(cur, s); next }
+  trong_qt { trong_qt = 0 }
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Quote\**:/ {
+    trong_qt = 1; s = $0; sub(/^[^:]*:[ \t]*/, "", s)
+    if (s ~ /^>/) { sub(/^>[ \t]*/, "", s); them_cau(cur, s) }
+    next
+  }
+
   rui_ro == "" && $0 ~ /^[ \t]*-[ \t]*\**Risk\**:/ { rui_ro = gia_tri($0); co_rui_ro = 1 }
+  # "Design:" chỉ tính ở phần đầu (trước "## " đầu tiên) — cùng chỗ kc_design đọc.
+  $0 ~ /^##[ \t]/ { qua_dau = 1 }
+  !qua_dau && !co_tk && $0 ~ /^[ \t]*-[ \t]*\**Design\**:/ { thiet_ke = gia_tri($0); co_tk = 1 }
 
   $0 ~ /^###[ \t]+YC-[0-9]+/ {
     match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
@@ -141,7 +174,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
       q = substr(x, RSTART, RLENGTH)
       if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"## " q "\"")
     } else if (x !~ /\[(CONFLUENCE|JIRA|FILE)\]/) {
-      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới điểm mù (open-questions.md § YC-NNN) hoặc nguồn đã chốt " \
+      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới điểm mù ([open-questions.md § YC-NNN](open-questions.md#yc-nnn)) hoặc nguồn đã chốt " \
           "([CONFLUENCE] [JIRA] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
     }
     next
@@ -170,6 +203,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
     so_nguon[cur]++
     dong = $0
     sub(/^[^:]*:[ \t]*/, "", dong)
+    nguon[cur] = dong
     # Nhãn trỏ vào câu trả lời trong open-questions.md (/aw-clarify) thì mục đó phải có thật.
     if (match(dong, /open-questions\.md[^Y]*YC-[0-9]+/)) { p = substr(dong, RSTART, RLENGTH); match(p, /YC-[0-9]+/); tro_oq[cur] = substr(p, RSTART, RLENGTH) }
     if (match(dong, /\[[^]]+\]/)) {
@@ -188,6 +222,18 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
       loi("spec.md thiếu dòng \"Risk:\" (high | normal). `design` cần nó để biết có phải chạy Mode 2.")
     else if (rui_ro != "high" && rui_ro != "normal")
       loi("\"Risk: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: high | normal")
+
+    # Bỏ design: chỉ việc nhỏ có thể không có lựa chọn kỹ thuật — người duyệt cùng spec.
+    if (co_tk) {
+      if (thiet_ke != "required" && thiet_ke != "skip")
+        loi("\"Design: " thiet_ke "\" không hợp lệ. Chỉ chấp nhận: required | skip")
+      else if (thiet_ke == "required" && loai == "chore")
+        loi("chore không có phase design — bỏ dòng \"Design:\" hoặc ghi skip")
+      else if (thiet_ke == "skip" && loai != "chore" && loai != "bugfix" && loai != "refactor")
+        loi("\"Design: skip\" chỉ dành cho bugfix/refactor nhỏ — " (loai == "" ? "loại việc chưa rõ" : loai) " phải qua design")
+      else if (thiet_ke == "skip" && loai != "chore" && rui_ro != "normal")
+        loi("\"Design: skip\" cần \"Risk: normal\" — việc rủi ro cao phải qua design (Mode 2: người phác D-xx trước)")
+    }
 
     if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### YC-NNN\")")
 
@@ -227,6 +273,15 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
         loi(c ": nhãn [" t "] không hợp lệ. Chỉ chấp nhận: " \
             "[CONFLUENCE] [JIRA] [FILE] [INFERRED] [OPEN-QUESTION]")
         continue
+      }
+      if (t == "CONFLUENCE" || t == "JIRA" || t == "FILE") {
+        if (!(c in so_cau))
+          loi(c ": nguồn [" t "] thiếu câu trích — thêm \"- Quote:\" và chép nguyên văn câu nguồn vào các dòng \"> …\" ngay dưới. " \
+              "Người duyệt so YC với câu gốc ngay trong spec.")
+        else if (t == "FILE") {
+          x = nguon[c]; sub(/^`*\[[A-Z-]*\]`*[ \t]*/, "", x)
+          for (k = 1; k <= so_cau[c]; k++) print c "\t" x "\t" cau[c, k] > ds_qt
+        }
       }
       if (t == "OPEN-QUESTION") {
         if (!(c in co_muc))
@@ -270,7 +325,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
         loi(q ": điểm mù ghi \"answered\" nhưng dòng \"Answer:\" còn trống.")
       else if (s == "answered" && nhan[q] == "OPEN-QUESTION")
         loi(q ": điểm mù đã trả lời nhưng spec.md vẫn gắn [OPEN-QUESTION]. Đổi nhãn nguồn sang nơi chứa câu trả lời " \
-            "(vd `[FILE]` open-questions.md § " q ").")
+            "(vd `[FILE]` [open-questions.md § " q "](open-questions.md#" tolower(q) ") rồi chạy aw toc).")
       else if (s == "open" && so_nguon[q] == 1 && nhan[q] != "OPEN-QUESTION")
         loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng điểm mù trong open-questions.md vẫn \"open\". " \
             "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")
@@ -301,7 +356,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v tt_spec="${TT_SPEC
 
     print ""
     print "Tổng: " n " yêu cầu — Loại việc: " (loai == "" ? "?" : loai) " — Risk: " (co_rui_ro ? rui_ro : "?") \
-          " — Duyệt: " tt_spec
+          (thiet_ke == "skip" ? " — Design: skip (không có phase design)" : "") " — Duyệt: " tt_spec
     for (t in dem_nhan) printf "  [%s] %d\n", t, dem_nhan[t]
     if (n_loi > 0) exit 1
   }
@@ -324,8 +379,37 @@ if [ -s "$BV" ]; then
 fi
 rm -f "$BV"
 
+# Câu trích [FILE] phải có trong file nguồn. Phase sau chạy lại spec (--entry): nguồn đổi sau khi
+# viết spec thì chỉ cảnh báo — chặn ở đây làm tắc việc vì lỗi không thuộc phase đó.
+n_qt=0
+if [ -s "$QT" ]; then
+  GOC=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null) || GOC=${AW_REPO:-.}
+  thieu=""
+  while IFS="$(printf '\t')" read -r yc src cau; do
+    p=$(tq_duong_dan "$src")
+    case "$p" in
+      intake.md|open-questions.md) f="$DIR/$p" ;;
+      *) f="$GOC/$p" ;;
+    esac
+    if [ -z "$p" ] || [ ! -f "$f" ]; then
+      [ "$thieu" = "$yc" ] && continue
+      thieu=$yc; msg="$yc: không tìm thấy file nguồn ${p:-?} để kiểm câu trích"
+    elif ! tq_khop "$f" "$cau"; then
+      msg="$yc: câu trích không có trong $p: \"$cau\" — chép đúng từng chữ từ nguồn (khoảng trắng, xuống dòng không tính)"
+    else
+      continue
+    fi
+    if [ "$CHE_DO" = entry ]; then
+      echo "  [CẢNH BÁO] $msg. Nguồn đổi sau khi viết spec? Xem lại YC, sửa spec qua /aw-clarify nếu cần"
+    else
+      echo "  [LỖI] $msg"; n_qt=$((n_qt + 1))
+    fi
+  done < "$QT"
+fi
+rm -f "$QT"
+
 echo ""
-if [ "$ma" -ne 0 ] || [ "$n_bv" -gt 0 ]; then
+if [ "$ma" -ne 0 ] || [ "$n_bv" -gt 0 ] || [ "$n_qt" -gt 0 ]; then
   echo "KHÔNG ĐẠT."
   exit 1
 fi

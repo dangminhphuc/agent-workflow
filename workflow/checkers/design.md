@@ -42,4 +42,4 @@ You review `tdd.md` **with a clean context** — you never saw the reasoning beh
 
 ## Output
 
-`design-findings.md` per `templates/design-findings.md`, written in Vietnamese. One `### PH-NN` per finding, always `Resolution: open`. Rerun → **overwrite** the file (old findings still valid are written again; resolved ones dropped). No findings → still write the file with the single item `No blocking findings.` (the file existing = the checker ran).
+`design-findings.md` per `templates/design-findings.md`, written in Vietnamese. One `### PH-NN` per finding, always `Resolution: open`. Rerun → **overwrite** the file (old findings still valid are written again; resolved ones dropped). No findings → still write the file with the single item `No blocking findings.` (the file existing = the checker ran). Then run `aw toc <dir> design-findings.md`.

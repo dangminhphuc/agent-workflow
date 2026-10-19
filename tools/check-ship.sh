@@ -24,6 +24,7 @@ kq_khai check-ship.sh \
   "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 MR="$DIR/merge-request.md"
@@ -37,6 +38,12 @@ loi() { n=$((n + 1)); echo "  [LỖI] $1"; }
 
 sh "$HERE/check-review.sh" "$DIR" >/dev/null 2>&1 ||
   loi "Đầu vào chưa đạt: aw check review không ĐẠT — chạy nó để xem chi tiết."
+
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" merge-request.md)
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$tl
+EOF
 
 nb=$(awk '{ sub(/\r$/, "") } /^###[ \t]+\[Blocker\]/ && !/<tiêu đề>/' "$REVIEW" | wc -l | tr -d ' ')
 [ "$nb" = 0 ] || loi "review.md còn $nb finding [Blocker] — không được merge. Sửa ở /aw-implement rồi chạy lại /aw-review."

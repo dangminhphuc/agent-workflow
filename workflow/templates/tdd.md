@@ -4,6 +4,10 @@ based_on: []
 
 # Technical Design — <TÊN TÍNH NĂNG>
 
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
+
 ## Existing code
 
 | Module / file | Current role | Planned change |

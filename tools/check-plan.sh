@@ -5,7 +5,8 @@
 #
 # Chặn:
 #   - Đầu vào: tdd.md không qua check-design.sh (entry check = checker phase trước).
-#   - Đầu vào (chore): spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
+#   - Đầu vào (không có design: chore, hoặc spec "Design: skip"): spec không qua check-spec.sh,
+#     spec chưa duyệt, còn điểm mù "Blocking: blocking" chưa trả lời.
 #   - Đầu vào: còn D-xx chưa được người tick duyệt (hoặc đổi sau khi tick). plan và implement không có người —
 #     chúng chỉ được thực thi những gì người đã duyệt.
 #   - Kiểm HAI CHIỀU phủ YC:
@@ -31,34 +32,40 @@ kq_khai check-plan.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
 TDD="$DIR/tdd.md"
 PLAN="$DIR/plan.md"
 
-LOAI=$(kc_loai "$DIR")
 n_loi=0
 
-# chore không có design: entry check lùi về checker của spec, và không có tdd.md
+# Không có design (chore, hoặc bugfix/refactor "Design: skip" — kc_bo_design): entry check
+# lùi về checker của spec, và không có tdd.md
 # (task nào ghi "Based on: D-xx" sẽ bị chặn vì không có D nào).
-if [ "$LOAI" = "chore" ]; then
+if kc_bo_design "$DIR"; then
   for f in "$SPEC" "$PLAN"; do
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
   done
   TDD=/dev/null
-  if ! sh "$HERE/check-spec.sh" "$DIR" >/dev/null 2>&1; then
+  # Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
+  ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
+  ma_spec=$?
+  printf '%s\n' "$ra_spec" | grep -F '[CẢNH BÁO]'
+  if [ "$ma_spec" -ne 0 ]; then
     n_loi=1
     echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
   fi
-  # Với feature/bugfix/... cổng duyệt spec nằm ở design; chore bỏ design nên nằm ở đây.
+  # Việc có design thì cổng duyệt spec nằm ở design; bỏ design thì nằm ở đây.
   cd_duyet=$(kc_spec_chua_duyet "$DIR")
   if [ -n "$cd_duyet" ]; then
     n_loi=$((n_loi + 1))
     echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
   fi
-  # Điểm mù mức "blocking" chặn phase ngay sau spec — với chore là phase này.
+  # Điểm mù mức "blocking" chặn phase ngay sau spec — khi bỏ design là phase này.
   dm=$(kc_diem_mu_mo "$DIR" "blocking")
   if [ -n "$dm" ]; then
     while IFS= read -r l; do
@@ -82,6 +89,11 @@ fi
 llk=$(luat_loi_ke_hoach "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $llk
+EOF
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" plan.md)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$tl
 EOF
 qtl=$(kc_quy_tac_loi "$DIR" plan)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF

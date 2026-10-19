@@ -100,6 +100,13 @@ Cursor chạy nhiều model; chế độ Auto có thể đổi model giữa các
 checker LLM thì có. Nên chọn cố định một model cho phiên chạy phase, nhất là `/aw-design`
 (subagent `design-checker`) và `/aw-review`.
 
+## Lệnh `aw approvals tick`
+
+`/aw-approvals` cho agent chạy `aw approvals tick` sau khi bạn chọn **Duyệt** cho một mục. Đừng đưa
+lệnh này vào danh sách lệnh Cursor được tự chạy (auto-run allowlist), và đừng bật auto-run cho mọi
+lệnh khi dùng `/aw-approvals`: để Cursor hỏi bạn mỗi lần. Lý do và giới hạn:
+[../claude-code/README.md](../claude-code/README.md#hỏi-quyền-cho-aw-approvals-tick).
+
 ## Hook gác ô duyệt
 
 Như Claude Code (xem [../claude-code/README.md](../claude-code/README.md#hook-gác-ô-duyệt)):

@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 # Test hoi quy cho cac cong chan va cho adapter.
 #
-#   sh tools/run-tests.sh
+#   sh tools/run-tests.sh                     # gọn: chỉ in ca hỏng (kèm nhóm) + tổng
+#   AW_TEST_VERBOSE=1 sh tools/run-tests.sh   # in từng ca
 #
 # Repo nay ban cac cong chan; neu chinh cong chan hong ma khong ai biet thi
 # ca quy trinh tro thanh trang tri. Moi ca kiem CA HAI CHIEU: chan dung luc
@@ -18,6 +19,24 @@ T="$ROOT/tools"
 
 n_ok=0
 n_fail=0
+CHI_TIET="${AW_TEST_VERBOSE:-}"
+_nhom=""
+
+# nhom <tieu-de> — mo mot nhom ca. Che do gon: chi in tieu de khi nhom co ca hong.
+nhom() {
+  if [ -n "$CHI_TIET" ]; then printf '\n%s\n' "$1"; _nhom=""; else _nhom=$1; fi
+}
+
+# ca_dat <ten-ca>, ca_hong <dong-bao-loi>
+ca_dat() {
+  n_ok=$((n_ok + 1))
+  if [ -n "$CHI_TIET" ]; then printf '  ok    %s\n' "$1"; fi
+}
+ca_hong() {
+  n_fail=$((n_fail + 1))
+  if [ -n "$_nhom" ]; then printf '\n%s\n' "$_nhom"; _nhom=""; fi
+  printf '  FAIL  %s\n' "$1"
+}
 
 # ky_vong <ma-mong-doi> <ten-ca> <lenh...>
 ky_vong() {
@@ -25,22 +44,16 @@ ky_vong() {
   "$@" >/dev/null 2>&1
   _got=$?
   if [ "$_got" = "$_mong" ]; then
-    n_ok=$((n_ok + 1))
-    printf '  ok    %s\n' "$_ten"
+    ca_dat "$_ten"
   else
-    n_fail=$((n_fail + 1))
-    printf '  FAIL  %s — mã thoát %s, mong đợi %s\n' "$_ten" "$_got" "$_mong"
+    ca_hong "$_ten — mã thoát $_got, mong đợi $_mong"
   fi
 }
 
 # dung <ten-ca> <lenh...> — lenh la mot phep thu tra 0/1
 dung() {
   _ten="$1"; shift
-  if "$@" >/dev/null 2>&1; then
-    n_ok=$((n_ok + 1)); printf '  ok    %s\n' "$_ten"
-  else
-    n_fail=$((n_fail + 1)); printf '  FAIL  %s\n' "$_ten"
-  fi
+  if "$@" >/dev/null 2>&1; then ca_dat "$_ten"; else ca_hong "$_ten"; fi
 }
 
 # bang <a> <b> — so chuỗi, dùng với dung
@@ -79,6 +92,9 @@ sca: echo sca-sach
 
 F="$R/.agent-workflow/feat_x"
 
+# toc_f <artifact>... — máy sinh mục lục "## Contents" + mở rộng anchor (aw toc), như agent làm
+toc_f() { sh "$T/toc.sh" "$F" "$@" >/dev/null 2>&1; return 0; }
+
 viet_intake() {
   cat > "$F/intake.md" <<EOF
 # Intake — x
@@ -94,6 +110,7 @@ viet_intake() {
 - \`[HUMAN]\`
   > cần làm x cho màn hình y
 EOF
+  toc_f intake.md
 }
 
 viet_spec() {
@@ -107,12 +124,14 @@ viet_spec() {
 
 ### YC-001 — a
 - Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a
 - Priority: `must`
 - Acceptance criteria:
   - [ ] mở y thấy a
 
 ### YC-002 — b
-- Source: `[OPEN-QUESTION]` → open-questions.md § YC-002
+- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
 - Assumption: y
 - Priority: `should`
 - Acceptance criteria:
@@ -157,6 +176,7 @@ EOF
 - **Blocking:** `non-blocking`   <!-- blocking | review-blocking | non-blocking -->
 - **Status:** `open`   <!-- open | answered -->
 EOF
+  toc_f spec.md open-questions.md
 }
 
 viet_tdd() {
@@ -212,6 +232,7 @@ EOF
 
 No blocking findings.
 EOF
+  toc_f tdd.md
 }
 
 viet_plan() {
@@ -263,6 +284,7 @@ EOF
 ' ''
     thay "$F/plan.md" '`src/*` `test/*`' '`docs/*`'
   fi
+  toc_f plan.md
 }
 
 viet_review() {
@@ -270,6 +292,7 @@ viet_review() {
   [ "$LOAI" = "bugfix" ] && printf '\n- Repro test fails because: grep không thấy "moi" trong src/a.txt\n' >> "$F/review.md"
   viet_lens4
   printf '\n## Lens 3 — Quality\n\n- None\n\n## Conclusion\n\n- Blocker findings: 0\n- Mergeable: yes\n' >> "$F/review.md"
+  toc_f review.md
   ghi_tree_review
   return 0
 }
@@ -304,12 +327,12 @@ EOF
 }
 
 ghi_based_on() {
-  sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null
+  sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
   if [ "$LOAI" = "chore" ]; then
-    sh "$T/based-on.sh" "$F" plan.md spec.md >/dev/null
+    sh "$T/based-on.sh" "$F" plan.md spec.md >/dev/null 2>&1
   else
-    sh "$T/based-on.sh" "$F" tdd.md spec.md open-questions.md >/dev/null
-    sh "$T/based-on.sh" "$F" plan.md spec.md tdd.md >/dev/null
+    sh "$T/based-on.sh" "$F" tdd.md spec.md open-questions.md >/dev/null 2>&1
+    sh "$T/based-on.sh" "$F" plan.md spec.md tdd.md >/dev/null 2>&1
   fi
 }
 
@@ -365,16 +388,14 @@ tao_fixture() {
 }
 
 # ---------------------------------------------------------------- fixture goc
-echo ""
-echo "fixture"
+nhom "fixture"
 tao_fixture
 for c in spec design plan implement review; do
   ky_vong 0 "feature đầy đủ qua check-$c.sh" sh "$T/check-$c.sh" "$F"
 done
 
 # ---------------------------------------------------------------- aw-engine
-echo ""
-echo "bin/aw-engine"
+nhom "bin/aw-engine"
 AWE="$ROOT/bin/aw-engine"
 dung "version in đúng VERSION" bang "$(sh "$AWE" version)" "$(cat "$ROOT/VERSION")"
 for c in intake spec design plan implement review; do
@@ -408,9 +429,82 @@ done
 cp "$TMP/intake.bak" "$F/intake.md"
 ky_vong 0 "Engine khớp → ĐẠT" sh "$T/check-intake.sh" "$F"
 
+
+# ---------------------------------------------------------------- mục lục, link tới mục
+nhom "aw toc / tools/lib/toc.sh"
+TOC="$T/toc.sh"; CHK="$T/check-spec.sh"
+viet_spec
+dung "fixture: spec có ## Contents, YC lồng dưới Requirements" sh -c "grep -qxF -- '- [Requirements](#requirements)' '$F/spec.md' && grep -qxF -- '  - [YC-001 — a](#yc-001--a)' '$F/spec.md'"
+dung "aw toc mở rộng anchor rút gọn trong link — chỉ khi khớp đúng một mục" grep -qF '(open-questions.md#yc-002--b)' "$F/spec.md"
+ky_vong 0 "spec có mục lục, link đúng → ĐẠT" sh "$CHK" "$F"
+cksum "$F/spec.md" "$F/open-questions.md" > "$TMP/toc.ck"
+ky_vong 0 "aw toc chạy lại trên artifact đã khớp → ĐÃ KHỚP" sh "$TOC" "$F"
+dung "…không ghi lại file (artifact phía sau không lỗi thời)" sh -c "cksum '$F/spec.md' '$F/open-questions.md' | cmp -s - '$TMP/toc.ck'"
+awk '/^## Contents$/ { bo = 1; next } bo && /^## / { bo = 0 } !bo' "$F/spec.md" > "$TMP/s.md" && mv "$TMP/s.md" "$F/spec.md"
+ky_vong 1 "chặn artifact có heading mà thiếu ## Contents" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: thiếu mục \"## Contents\"'"
+toc_f spec.md
+ky_vong 0 "aw toc thêm lại mục lục → ĐẠT" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'
+ky_vong 1 "chặn mục lục lệch heading (đổi tên heading)" sh "$CHK" "$F"
+dung "…đúng lý do: thiếu mục mới, thừa link cũ" sh -c "sh '$CHK' '$F' | grep -q 'Contents\" thiếu mục \"Out of scope now\"' && sh '$CHK' '$F' | grep -q 'link \"#out-of-scope\" không ứng'"
+viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'; toc_f spec.md
+ky_vong 0 "…aw toc sinh lại mục lục → ĐẠT" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Out of scope
+
+- trùng tên
+
+## Constraints & dependencies'
+toc_f spec.md
+dung "heading trùng tên → anchor thứ hai có hậu tố -1 (như GitHub)" grep -qxF -- '- [Out of scope](#out-of-scope-1)' "$F/spec.md"
+viet_spec; thay "$F/spec.md" '(open-questions.md#yc-002--b)' '(open-questions.md#yc-009)'
+ky_vong 1 "chặn link tới mục không có của artifact khác" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'link \"open-questions.md#yc-009\" không trỏ tới mục nào'"
+ky_vong 1 "aw toc báo CÒN LINK SAI khi link không mở rộng được" sh "$TOC" "$F" spec.md
+viet_spec; thay "$F/spec.md" '(open-questions.md#yc-002--b)' '(open-questions.md)'
+ky_vong 1 "chặn link tới artifact mà không trỏ tới mục" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '[open-questions.md § YC-002](open-questions.md#yc-002--b)' '`open-questions.md` § YC-002'
+ky_vong 1 "chặn tham chiếu \"open-questions.md § YC-002\" chữ trơn" sh "$CHK" "$F"
+dung "…gợi ý đúng link đầy đủ" sh -c "sh '$CHK' '$F' | grep -qF 'viết thành [open-questions.md § YC-002](open-questions.md#yc-002--b)'"
+viet_spec; thay "$F/spec.md" '[open-questions.md § YC-002](open-questions.md#yc-002--b)' '[open-questions.md § YC-002](open-questions.md#YC-002)'; toc_f spec.md
+dung "aw toc mở rộng anchor viết hoa / rút gọn" grep -qF '(open-questions.md#yc-002--b)' "$F/spec.md"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/plan.md § Tổng quan'
+thay "$F/spec.md" '- Priority: `must`' '- Priority: `must`
+- Note: [y](#khong-co)'
+ky_vong 1 "chặn link #anchor không có trong chính file" sh "$CHK" "$F"
+dung "…nhưng không bắt file repo trùng tên artifact (docs/plan.md § …)" sh -c "! sh '$CHK' '$F' | grep -q 'plan.md § …'"
+viet_spec; thay "$F/spec.md" '### YC-001 — a' '### YC-001 — Đăng Nhập (OTP) & “mã”'; toc_f spec.md
+dung "anchor tính như GitHub: chữ Việt thường hoá, bỏ dấu câu" grep -qF '(#yc-001--đăng-nhập-otp--mã)' "$F/spec.md"
+ky_vong 0 "…và checker chấp nhận" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '## Out of scope' '<!--
+## Không tính
+-->
+```
+## cũng không tính
+```
+
+## Out of scope'
+toc_f spec.md
+dung "heading trong HTML comment / khối code không vào mục lục" sh -c "! grep -qF '[Không tính]' '$F/spec.md' && ! grep -qF '[cũng không tính]' '$F/spec.md'"
+ky_vong 0 "…và checker không đòi chúng" sh "$CHK" "$F"
+printf '# Open questions\n\nNo open questions.\n' > "$TMP/oq.md"
+viet_spec; thay "$F/spec.md" '- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Assumption: y' '- Source: `[JIRA]` ABC-1
+- Quote: > khách mở y thấy b'; cp "$TMP/oq.md" "$F/open-questions.md"
+ky_vong 0 "artifact không có heading ## / ### thì không cần mục lục" sh "$CHK" "$F"
+ky_vong 2 "aw toc: artifact lạ → SAI THAM SỐ" sh "$TOC" "$F" task-results.md
+viet_spec
+# review chặn link gãy ở artifact phase trước (heading đích đổi sau khi link được viết)
+thay "$F/plan.md" '- Covers: `YC-001`' '- Covers: `YC-001`
+- Design: [tdd.md § Data model](tdd.md#data-model)'
+ky_vong 0 "plan có link Design tới mục có thật → ĐẠT" sh "$T/check-plan.sh" "$F"
+thay "$F/tdd.md" '## Data model' '## Data'
+ky_vong 1 "review chặn link sang mục không còn (heading đích đổi tên)" sh "$T/check-review.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'plan.md: link \"tdd.md#data-model\" không trỏ tới mục nào'"
+tao_fixture
+
 # ---------------------------------------------------------------- truy vet
-echo ""
-echo "check-spec.sh"
+nhom "check-spec.sh"
 CHK="$T/check-spec.sh"
 
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Description: không nguồn'
@@ -474,11 +568,13 @@ viet_spec; thay "$F/spec.md" '### YC-002' '### Ghi chú
 - Source: `[JIRA]` ABC-9
 
 ### YC-002'
+toc_f spec.md
 ky_vong 0 "Nguồn dưới \"### phụ\" không bị cộng vào YC phía trên" sh "$CHK" "$F"
 
 # open-questions.md 0 byte = đã rà, không có điểm mù (không được làm lệch thứ tự file)
-viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002
-- Assumption: y' '`[JIRA]` ABC-1'
+viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Assumption: y' '`[JIRA]` ABC-1
+- Quote: > khách mở y thấy b'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte thì cho qua" sh "$CHK" "$F"
 
@@ -531,31 +627,89 @@ ky_vong 1 "chặn Trạng thái điểm mù tự chế" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [OPEN-QUESTION]" sh "$CHK" "$F"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Quote: > qua email'
 ky_vong 1 "spec đã duyệt mà bị sửa (vd /aw-clarify đổi nhãn) thì phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời + spec đổi nhãn nguồn + người duyệt lại thì cho qua" sh "$CHK" "$F"
 thay "$F/open-questions.md" '- **Answer:** qua email' '- **Answer:** <người trả lời ghi vào đây>'
 ky_vong 1 "chặn đã trả lời mà Trả lời còn trống/chỗ giữ chỗ" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[JIRA]` ABC-2'
+viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[JIRA]` ABC-2'
 ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
 # Người đổi YC đã có nguồn (/aw-clarify YC-NNN): ghi thành điểm mù đã trả lời
 viet_spec; sh "$CHK" "$F" >/dev/null 2>&1   # máy ghi dấu duyệt cho bản người đã tick
 printf '\n## YC-001 — a\n- **Assumption:** cách đọc cũ\n- **Status:** `answered`\n- **Superseded answer:** "bản cũ" — PO, 2026-10-01\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-001'
+toc_f open-questions.md
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[FILE]` [open-questions.md § YC-001](open-questions.md#yc-001--a)
+- Quote:
+  > "a tối đa 30 ngày" — PO, 2026-10-09'
 ky_vong 1 "đổi YC sau khi spec đã duyệt → phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đổi YC: mục answered (kể cả Superseded answer) + nhãn [FILE] + duyệt lại → cho qua" sh "$CHK" "$F"
 thay "$F/open-questions.md" '- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa YC-001)' ''
 ky_vong 1 "…Superseded answer không thay được Answer" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-001'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § YC-001](open-questions.md#yc-001--a)'
 ky_vong 1 "chặn nhãn [FILE] trỏ vào open-questions.md § YC-001 mà mục đó không có" sh "$CHK" "$F"
 dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'YC-001: nguồn trỏ tới open-questions.md § YC-001 nhưng không có mục'"
-viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` open-questions.md § YC-002'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 ky_vong 1 "chặn nhãn trỏ vào điểm mù của YC khác còn open" sh "$CHK" "$F"
+printf '# A\n\n## Tổng quan\n\nkhách mở y thấy a\n' > "$R/docs/a.md"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/a.md § Tổng quan'
 duyet_lai "$F/spec.md"
 ky_vong 0 "nhãn [FILE] trỏ file khác → không bị luật này chặn" sh "$CHK" "$F"
+viet_spec
+rm -f "$R/docs/a.md"
+
+
+# Câu trích nguyên văn (Quote): nguồn có câu gốc thì phải trích; [FILE] thì máy kiểm câu có thật trong file
+viet_spec; thay "$F/spec.md" '- Quote:
+  > khách mở y thấy a
+' ''
+ky_vong 1 "chặn YC nguồn [JIRA] thiếu Quote" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'YC-001: nguồn [JIRA] thiếu câu trích'"
+viet_spec; thay "$F/spec.md" '  > khách mở y thấy a' '  > <chép nguyên văn câu nguồn>'
+ky_vong 1 "chặn Quote còn chỗ giữ chỗ" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Quote:
+  > khách mở y thấy a' '- Quote: > khách mở y thấy a'
+ky_vong 0 "Quote một dòng (\"- Quote: > …\") cũng được" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[INFERRED]` index cho YC-002'
+ky_vong 0 "[INFERRED] không cần Quote" sh "$CHK" "$F"
+printf '# BRD\n\n## Hoàn tiền\n\nKhách được hoàn tiền trong vòng\n30 ngày   kể từ ngày thanh toán.\n> Phí: 1.5%% * số tiền (C:\\tmp\\n) [tối đa].\n' > "$R/docs/brd.md"
+quote_file() {
+  viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/brd.md § Hoàn tiền'
+  thay "$F/spec.md" '  > khách mở y thấy a' "$1"
+}
+quote_file '  > Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán.'
+ky_vong 0 "[FILE]: câu trích có trong file (khoảng trắng, xuống dòng không tính) → cho qua" sh "$CHK" "$F"
+quote_file '  > QUOTE_DAC_BIET'
+Q='  > Phí: 1.5% * số tiền (C:\tmp\n) [tối đa].' awk '{ if ($0 == "  > QUOTE_DAC_BIET") print ENVIRON["Q"]; else print }' "$F/spec.md" > "$F/spec.md.tmp" && mv "$F/spec.md.tmp" "$F/spec.md"
+ky_vong 0 "[FILE]: ký tự đặc biệt (\\ * [ %) so đúng từng chữ" sh "$CHK" "$F"
+quote_file '  > Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán.
+  > Khách được hoàn tiền trong vòng 60 ngày.'
+ky_vong 1 "[FILE]: một câu trích không có trong file → chặn" sh "$CHK" "$F"
+dung "…nêu đúng câu và file" sh -c "sh '$CHK' '$F' | grep -qF 'YC-001: câu trích không có trong docs/brd.md: \"Khách được hoàn tiền trong vòng 60 ngày.\"'"
+dung "…câu đúng thì không bị nêu" sh -c "! sh '$CHK' '$F' | grep -qF '30 ngày kể từ'"
+quote_file '  > "Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán."'
+ky_vong 1 "[FILE]: tự thêm ngoặc kép → không còn nguyên văn, chặn" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/khong-co.md § X'
+ky_vong 1 "[FILE]: file nguồn không có → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'YC-001: không tìm thấy file nguồn docs/khong-co.md'"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [intake.md § Input](intake.md#input)'
+thay "$F/spec.md" '  > khách mở y thấy a' '  > cần làm x cho màn hình y'
+ky_vong 0 "[FILE] lời người trong intake.md: câu trích có trong intake → cho qua" sh "$CHK" "$F"
+thay "$F/spec.md" '  > cần làm x cho màn hình y' '  > cần làm x cho màn hình z'; duyet_lai "$F/spec.md"
+ky_vong 1 "…sai một chữ → chặn" sh "$CHK" "$F"
+# Phase sau chạy lại spec (--entry): nguồn đổi sau khi viết spec chỉ cảnh báo
+ky_vong 0 "--entry: câu trích lệch chỉ cảnh báo, không chặn" sh "$CHK" "$F" --entry
+dung "…có dòng cảnh báo" sh -c "sh '$CHK' '$F' --entry | grep -qF '[CẢNH BÁO] YC-001: câu trích không có trong intake.md'"
+thay "$F/spec.md" '- Quote:
+  > cần làm x cho màn hình z
+' ''; duyet_lai "$F/spec.md"
+ky_vong 1 "--entry: thiếu Quote vẫn chặn (lỗi của spec, không phải nguồn đổi)" sh "$CHK" "$F" --entry
 viet_spec
 
 # Tiêu chí chấp nhận, Ưu tiên
@@ -591,9 +745,9 @@ ky_vong 1 "chặn bảng mâu thuẫn rỗng, chỉ có chỗ giữ chỗ" sh "$
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | chọn 30 ngày cho an toàn |'
 ky_vong 1 "chặn mâu thuẫn do agent tự phân xử" sh "$CHK" "$F"
 dung "…đúng lý do: cột Xử lý" sh -c "sh '$CHK' '$F' | grep -q 'Agent không tự phân xử'"
-viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | open-questions.md § YC-002 |'
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § YC-002](open-questions.md#yc-002--b) |'
 ky_vong 0 "mâu thuẫn trỏ tới điểm mù có thật thì cho qua" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | open-questions.md § YC-099 |'
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § YC-099](open-questions.md#yc-099) |'
 ky_vong 1 "chặn mâu thuẫn trỏ tới điểm mù không có" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | `[JIRA]` ABC-1 comment PO chốt 60 |'
 ky_vong 0 "mâu thuẫn trỏ tới nguồn đã chốt thì cho qua" sh "$CHK" "$F"
@@ -608,8 +762,7 @@ ky_vong 1 "mẫu spec chưa điền thì không qua" sh "$CHK" "$F"
 viet_spec
 
 # ---------------------------------------------------------------- thiet ke
-echo ""
-echo "check-design.sh"
+nhom "check-design.sh"
 CHK="$T/check-design.sh"
 
 viet_spec; viet_tdd
@@ -623,14 +776,17 @@ printf '### PH-01 — x\n- Severity: `block`\n- Resolution: `rejected:`\n' > "$F
 ky_vong 1 "chặn bác bỏ phát hiện mà không có lý do" sh "$CHK" "$F"
 
 printf '### PH-01 — x\n- Severity: `block`\n- Resolution: rejected: D-01 đã nói rõ\n### PH-02 — y\n- Severity: `warn`\n- Resolution: open\n' > "$F/design-findings.md"
+toc_f design-findings.md
 ky_vong 0 "bác bỏ có lý do + cảnh báo chưa xử lý thì cho qua" sh "$CHK" "$F"
 
 # Việc tạo trước khi đổi sang tiếng Anh: trường cũ (Mức / Xử lý) vẫn đọc được
 printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: `chưa`   <!-- chưa | đã sửa -->\n' > "$F/design-findings.md"
 ky_vong 1 "trường cũ: phát hiện Chặn chưa xử lý vẫn bị chặn" sh "$CHK" "$F"
 printf '### PH-01 — x\n- Mức: `Chặn`\n- Xử lý: bác bỏ: D-01 đã nói rõ\n### PH-02 — y\n- Mức: `Cảnh báo`\n- Xử lý: chưa\n' > "$F/design-findings.md"
+toc_f design-findings.md
 ky_vong 0 "trường cũ: bác bỏ có lý do + cảnh báo thì cho qua" sh "$CHK" "$F"
 printf '### PH-01 — x\n- Severity: `block`\n- Resolution: fixed\n- Problem: Location và Resolution: chưa rõ\n' > "$F/design-findings.md"
+toc_f design-findings.md
 ky_vong 0 "tên trường chỉ khớp ở đầu dòng, không khớp trong nội dung" sh "$CHK" "$F"
 
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
@@ -640,7 +796,8 @@ ky_vong 1 "chặn điểm mù \"chặn\" còn mở" sh "$CHK" "$F"
 dung "…đúng lý do: YC-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Quote: > qua email'
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec
@@ -650,8 +807,9 @@ ky_vong 1 "chặn vào design khi người chưa duyệt spec" sh "$CHK" "$F"
 dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'chưa được người duyệt'"
 viet_spec
 
-viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002
-- Assumption: y' '`[JIRA]` ABC-1'
+viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Assumption: y' '`[JIRA]` ABC-1
+- Quote: > khách mở y thấy b'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte không làm design đọc lệch file" sh "$CHK" "$F"
 viet_spec
@@ -722,12 +880,26 @@ viet_tdd; thay "$F/tdd.md" '## Decisions (D-xx)' '## Decisions (D-xx)
 Không có quyết định cần duyệt.
 ## Bỏ'
 thay "$F/tdd.md" 'Based on: D-01' ''
+toc_f tdd.md
 ky_vong 0 "mục Quyết định được phép rỗng" sh "$CHK" "$F"
 viet_tdd
 
+
+# Nguồn [FILE] đổi sau khi viết spec: design chạy lại spec, chỉ cảnh báo
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/brd.md § Hoàn tiền'
+thay "$F/spec.md" '  > khách mở y thấy a' '  > Khách được hoàn tiền trong vòng 30 ngày.'
+printf 'Khách được hoàn tiền trong vòng 30 ngày.\n' > "$R/docs/brd.md"
+duyet_lai "$F/spec.md"
+ky_vong 0 "câu trích [FILE] khớp → design qua" sh "$CHK" "$F"
+printf 'Khách được hoàn tiền trong vòng 60 ngày.\n' > "$R/docs/brd.md"
+ky_vong 0 "nguồn đổi sau spec → design không chặn" sh "$CHK" "$F"
+dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$CHK' '$F' | grep -qF '[CẢNH BÁO] YC-001: câu trích không có trong docs/brd.md'"
+ky_vong 1 "…còn aw check spec thì chặn" sh "$T/check-spec.sh" "$F"
+rm -f "$R/docs/brd.md"
+viet_spec
+
 # ---------------------------------------------------------------- ke hoach
-echo ""
-echo "check-plan.sh"
+nhom "check-plan.sh"
 CHK="$T/check-plan.sh"
 ghi_based_on
 
@@ -776,8 +948,7 @@ ky_vong 1 "chặn chỗ giữ chỗ chưa điền" sh "$CHK" "$F"
 viet_plan; ghi_based_on
 
 # ---------------------------------------------------------------- hien thuc
-echo ""
-echo "check-implement.sh"
+nhom "check-implement.sh"
 CHK="$T/check-implement.sh"
 CH="$CFG/config.sh"
 
@@ -812,8 +983,7 @@ dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 
 viet_spec; ghi_based_on
 
 # ---------------------------------------------------------------- bao mat (aw check security)
-echo ""
-echo "check-security.sh (aw check security)"
+nhom "check-security.sh (aw check security)"
 BMC="$T/check-security.sh"
 cp "$CH" "$TMP/ch.bak"
 ky_vong 0 "đủ ba nhóm, mọi lệnh xanh → ĐẠT" sh "$BMC" "$F"
@@ -854,8 +1024,7 @@ cp "$TMP/ch.bak" "$CH"
 sh "$CHK" "$F" >/dev/null 2>&1
 
 # ---------------------------------------------------------------- ra soat
-echo ""
-echo "check-review.sh"
+nhom "check-review.sh"
 CHK="$T/check-review.sh"
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
@@ -867,7 +1036,8 @@ ky_vong 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" sh "$C
 dung "…đúng lý do: điểm mù YC-002" sh -c "sh '$CHK' '$F' | grep -q 'YC-002: điểm mù mức \"review-blocking\"'"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → open-questions.md § YC-002' '`[FILE]` open-questions.md § YC-002'
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '`[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
+- Quote: > "đúng như giả định" — PO, 2026-10-04'
 duyet_lai "$F/spec.md"; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec; ghi_based_on
@@ -907,6 +1077,7 @@ thay "$F/review.md" '- None' '### [Should fix] token cứng
 - Category: hardcoded-secret
 - Location: `src/a.txt:1`
 - Problem: token trong code'
+toc_f review.md
 ky_vong 0 "finding bảo mật có mục ở Lens 3 thì cho qua" sh "$CHK" "$F"
 viet_review; cp "$ROOT/workflow/templates/review.md" "$TMP/review-mau.md"
 awk '/^## Lens 4/ { p = 1 } /^## Conclusion/ { p = 0 } p' "$TMP/review-mau.md" > "$TMP/lens4-mau.md"
@@ -924,6 +1095,7 @@ L3_SF='### [Should fix] trùng hàm
 - Location: `src/a.txt:1`
 - Problem: có sẵn hàm tương tự'
 viet_review; thay "$F/review.md" '- None' "$L3_SF"
+toc_f review.md
 ky_vong 0 "Lens 3 có finding đủ Location file:dòng thì cho qua" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "- None
 $L3_SF"
@@ -940,6 +1112,7 @@ viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
 - Location: `src/a.txt:1`'
 ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
+toc_f review.md
 ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
 - Location: `src/a.txt:1`'
@@ -949,6 +1122,7 @@ viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/dup
 ky_vong 1 "chặn Category không phải kebab-case" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên
 - Category: Tên Tuỳ Ý'
+toc_f review.md
 ky_vong 0 "[Nit] không bắt Category" sh "$CHK" "$F"
 L3_B='### [Blocker] mất dữ liệu
 - Category: data-loss
@@ -962,6 +1136,7 @@ viet_review; thay "$F/review.md" '- None' "$L3_B
 ky_vong 1 "chặn Failure scenario giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "$L3_B
 - Failure scenario: lưu hai lần → bản ghi đầu mất"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
+toc_f review.md
 ky_vong 0 "[Blocker] đủ trường, Conclusion khớp số → review đạt (ship mới chặn)" sh "$CHK" "$F"
 thay "$F/review.md" '- Blocker findings: 1' '- Blocker findings: 0'
 ky_vong 1 "chặn Conclusion ghi số Blocker lệch số mục" sh "$CHK" "$F"
@@ -1076,8 +1251,7 @@ ky_vong 1 "chặn security-results.md không XANH" sh "$CHK" "$F"
 sh "$T/check-security.sh" "$F" >/dev/null 2>&1
 
 # ---------------------------------------------------------------- check-ship (aw check ship)
-echo ""
-echo "check-ship.sh (aw check ship)"
+nhom "check-ship.sh (aw check ship)"
 SHC="$T/check-ship.sh"
 # viet_mr — mô tả MR điền đủ theo mẫu (comment của mẫu giữ nguyên: là lời dặn, không tính)
 viet_mr() {
@@ -1124,6 +1298,7 @@ None
 
 Refs: ABC-1
 EOF
+  toc_f merge-request.md
 }
 ky_vong 2 "chưa có merge-request.md → THIẾU ĐẦU VÀO" sh "$SHC" "$F"
 viet_mr
@@ -1155,14 +1330,13 @@ viet_review
 ky_vong 0 "aw-engine check ship → đúng checker" sh "$AWE" check ship "$F"
 
 # ---------------------------------------------------------------- quy tac repo
-echo ""
-echo "quy tắc riêng của repo (rules_*, aw rules)"
+nhom "quy tắc riêng của repo (rules_*, aw rules)"
 QT="$T/rules.sh"
 CONV="$CFG/conventions.md"
 cp "$CONV" "$TMP/conv-qt.bak"
 # khai_qt <phase> <giá trị> — khai lại từ đầu một khoá rules_<phase>
 khai_qt() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "rules_$1:" "rules_$1: $2"; }
-them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; }
+them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; }
 
 ky_vong 0 "không khai gì → aw rules ĐÃ LIỆT KÊ" sh "$QT" implement
 dung "…stdout rỗng" bang "$(sh "$QT" implement 2>/dev/null)" ""
@@ -1238,8 +1412,7 @@ cp "$TMP/conv-qt.bak" "$CONV"; viet_review
 ky_vong 0 "bỏ hết khoá → review như cũ" sh "$T/check-review.sh" "$F"
 
 # ---------------------------------------------------------------- skill / subagent cua repo
-echo ""
-echo "skill / subagent của repo (uses_*, aw uses)"
+nhom "skill / subagent của repo (uses_*, aw uses)"
 US="$T/uses.sh"
 # khai_us <phase> <giá trị> — khai lại từ đầu một khoá uses_<phase>
 khai_us() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "uses_$1:" "uses_$1: $2"; }
@@ -1333,8 +1506,7 @@ cp "$TMP/conv-qt.bak" "$CONV"; viet_review
 ky_vong 0 "bỏ hết khoá uses_* → review như cũ" sh "$T/check-review.sh" "$F"
 
 # ---------------------------------------------------------------- liet ke cau hoi
-echo ""
-echo "pending.sh (/aw-clarify)"
+nhom "pending.sh (/aw-clarify)"
 CHK="$T/pending.sh"
 LQ="$TMP/lq"; rm -rf "$LQ"; mkdir -p "$LQ"
 cat > "$LQ/spec.md" <<'EOF'
@@ -1477,29 +1649,27 @@ ky_vong 1 "checker mới (<id>-findings.md) tự được gom" sh "$CHK" "$LQ"
 rm -f "$LQ/plan-findings.md" "$LQ/design-findings.md" "$LQ/tdd.md"
 
 # ---------------------------------------------------------------- based_on
-echo ""
-echo "based-on.sh"
+nhom "based-on.sh"
 printf -- '---\nkhac: giu\nbased_on:\n  - spec.md@1\n---\n\n# x\n' > "$F/thu.md"
-sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null
-sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null
+sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null 2>&1
+sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null 2>&1
 dung "giữ khoá frontmatter khác" grep -q '^khac: giu' "$F/thu.md"
 dung "chạy lại không nhân đôi based_on" test "$(grep -c 'spec.md@' "$F/thu.md")" = 1
 dung "hash ghi ra khớp file (bỏ dấu duyệt)" grep -q "spec.md@$(tr -d '\r' < "$F/spec.md" | sed 's/ *<!-- approval-hash: [0-9a-f]* -->//' | cksum | awk '{print $1}')" "$F/thu.md"
-duyet_lai "$F/spec.md"; sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null
+duyet_lai "$F/spec.md"; sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null 2>&1
 H_TRUOC=$(grep 'spec.md@' "$F/thu.md")
 sh "$T/check-spec.sh" "$F" >/dev/null 2>&1
 dung "…(spec giờ có dấu duyệt)" grep -q 'approval-hash:' "$F/spec.md"
-sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null
+sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null 2>&1
 dung "máy ghi lại dấu duyệt không làm đổi hash based_on" bang "$H_TRUOC" "$(grep 'spec.md@' "$F/thu.md")"
 printf '# không frontmatter\n' > "$F/thu.md"
-sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null
+sh "$T/based-on.sh" "$F" thu.md spec.md >/dev/null 2>&1
 dung "thêm frontmatter khi file chưa có" sh -c "head -1 '$F/thu.md' | grep -q '^---\$'"
 rm -f "$F/thu.md"
 
 # ---------------------------------------------------------------- adapter
 unset AW_REPO AW_CONFIG   # các mục dưới dùng bộ cài 1.x (install.sh) cho tới khi chuyển sang aw
-echo ""
-echo "adapters/claude-code/build.sh"
+nhom "adapters/claude-code/build.sh"
 BUILD="$ROOT/adapters/claude-code/build.sh"
 
 O="$TMP/out1"; mkdir -p "$O"
@@ -1507,7 +1677,7 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/aw-intake.md commands/aw-spec.md commands/aw-design.md commands/aw-plan.md commands/aw-implement.md commands/aw-review.md \
-         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md commands/aw-refactor.md agents/independent-reviewer.md agents/design-checker.md skills/agent-workflow/SKILL.md; do
+         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md commands/aw-refactor.md commands/aw-approvals.md agents/independent-reviewer.md agents/design-checker.md skills/agent-workflow/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 dung "sinh đúng bộ file" test "$du" = 1
@@ -1563,6 +1733,9 @@ dung "skill liệt kê /aw-bootstrap" grep -q '/aw-bootstrap' "$O/.claude/skills
 dung "/aw-refactor: review + phản biện rồi chỉ ghi refactor-requests.md; chỉ lệnh intake tiếp theo" sh -c \
   "grep -q 'refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'Việc refactor riêng' '$O/.claude/commands/aw-refactor.md' && grep -q 'Debate once' '$O/.claude/commands/aw-refactor.md' && grep -q 'Chọn đường đi cho N RF đang chờ' '$O/.claude/commands/aw-refactor.md' && ! grep -q 'moved:' '$O/.claude/commands/aw-refactor.md' && grep -q 'aw-intake <dir>/refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-refactor.md' && grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' '$O/.claude/commands/aw-refactor.md'"
 dung "skill liệt kê /aw-refactor" grep -q '/aw-refactor' "$O/.claude/skills/agent-workflow/SKILL.md"
+dung "/aw-approvals: không chạy aw feature, liệt kê rồi chỉ tick mục người chọn Duyệt" sh -c \
+  "! grep -q 'Run .aw feature' '$O/.claude/commands/aw-approvals.md' && grep -q 'Needs no feature dir' '$O/.claude/commands/aw-approvals.md' && grep -q 'aw approvals --global' '$O/.claude/commands/aw-approvals.md' && grep -q 'aw approvals tick <dir> <key> <hash>' '$O/.claude/commands/aw-approvals.md' && grep -q 'never .approve all' '$O/.claude/commands/aw-approvals.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-approvals.md'"
+dung "luật chung: ngoại lệ duy nhất là aw approvals tick trong /aw-approvals" grep -q 'Only `/aw-approvals` runs `aw approvals tick`' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase> (review: subagent đọc)" sh -c \
   "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
 dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -c \
@@ -1572,8 +1745,8 @@ dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắ
 dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
 dung "mọi lệnh phase kết thúc bằng Kết quả · Cần bạn" sh -c \
   "for p in intake spec design plan implement review ship; do grep -q 'Cần bạn:' '$O/.claude/commands/aw-'\$p.md || exit 1; done"
-dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec có nhánh chore)" sh -c \
-  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore: .*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
+dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec có nhánh không design)" sh -c \
+  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore or .*Design: skip.*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
 dung "…phase cuối không có lệnh tiếp theo" sh -c "! grep -q 'Tiếp theo:' '$O/.claude/commands/aw-ship.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/independent-reviewer.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/design-checker.md"
@@ -1658,9 +1831,12 @@ tao_fake
 thay "$FAKE/workflow/bootstrap.md" 'runs_on_main_checkout: true' 'runs_on_main_checkout: co'
 ky_vong 4 "từ chối build khi lệnh tiện ích khai runs_on_main_checkout khác \"true\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7b"
 
+tao_fake
+thay "$FAKE/workflow/approvals.md" 'feature_dir: none' 'feature_dir: co'
+ky_vong 4 "từ chối build khi lệnh tiện ích khai feature_dir khác \"none\"" sh "$FAKE/adapters/claude-code/build.sh" --out "$TMP/out7c"
+
 # ---------------------------------------------------------------- adapter cursor
-echo ""
-echo "adapters/cursor/build.sh"
+nhom "adapters/cursor/build.sh"
 CB="$ROOT/adapters/cursor/build.sh"
 O3="$TMP/cur1"; mkdir -p "$O3"
 ky_vong 0 "build bản đúng thành công" sh "$CB" --out "$O3"
@@ -1764,8 +1940,7 @@ dung "…không sinh file nào" sh -c "[ -z \"\$(find '$TMP/f-thieu' -type f 2>/
 # ---------------------------------------------------------------- chuẩn định dạng của agent
 # adapters/lib/format.sh: mọi file sinh ra phải đúng chuẩn agent đọc (frontmatter
 # YAML, khoá được phép, name = tên file/thư mục…) — sai thì SAI CHUẨN, file không vào chỗ.
-echo ""
-echo "chuẩn định dạng của agent (adapters/lib/format.sh)"
+nhom "chuẩn định dạng của agent (adapters/lib/format.sh)"
 # ad_gia <adapter> <tên-bản-sao> <đoạn-shell> — bản sao adapter, chèn đoạn ngay trước ad_sinh
 ad_gia() {
   mkdir -p "$FAKE/adapters/$2"
@@ -1833,8 +2008,7 @@ ky_vong 1 "dd_kiem: đường dẫn agent không đọc → sai" dd_tho cursor r
 # thay cho nội dung — phần còn lại (hợp đồng phase, Bước 0, cổng duyệt, quy tắc
 # repo, thân phase…) phải GIỐNG HỆT nhau từng byte. Ai sửa hợp đồng cho một agent
 # mà quên agent kia, hay viết chữ riêng của agent ngoài hook, là hỏng ở đây.
-echo ""
-echo "đối chiếu mọi adapter (một hợp đồng phase cho mọi agent)"
+nhom "đối chiếu mọi adapter (một hợp đồng phase cho mọi agent)"
 DC="$TMP/doi-chieu"; mkdir -p "$DC"
 n_ad=0; dc_build=1; dc_goc=1
 for b in "$ROOT"/adapters/*/build.sh; do
@@ -1888,8 +2062,7 @@ dung "mọi subagent trùng tên giữa các adapter (bản .cursor/ che bản .
   bang "$(ls "$DT/cursor/.cursor/agents")" "$(ls "$DT/claude-code/.claude/agents")"
 
 # Hai adapter cùng một worktree: không đè, không dọn file của nhau
-echo ""
-echo "hai adapter cùng một thư mục"
+nhom "hai adapter cùng một thư mục"
 B2="$TMP/ca-hai"; mkdir -p "$B2"
 ky_vong 0 "build claude-code rồi cursor vào cùng thư mục" sh -c "sh '$ROOT/adapters/claude-code/build.sh' --out '$B2' && sh '$CB' --out '$B2'"
 dung "….claude/ giống hệt khi build riêng" diff -r "$B2/.claude" "$DT/claude-code/.claude"
@@ -1913,8 +2086,7 @@ dung "…adapter kia vẫn sinh đủ, dấu build chỉ ghi adapter đạt" sh 
   "diff -r '$TMP/ca-hai-4/.claude' '$DT/claude-code/.claude' && grep -q '^claude-code ' '$TMP/ca-hai-4/.agent-workflow/.adapters' && ! grep -q '^cursor ' '$TMP/ca-hai-4/.agent-workflow/.adapters'"
 
 # exclude của từng adapter phủ đúng file nó sinh — và không giấu file của team
-echo ""
-echo "exclude của adapter"
+nhom "exclude của adapter"
 for b in "$ROOT"/adapters/*/build.sh; do
   a=$(basename "$(dirname "$b")"); RX="$TMP/ex-$a"; mkdir -p "$RX"; git -C "$RX" init -q
   grep -v '^#' "$ROOT/adapters/$a/exclude" >> "$RX/.git/info/exclude"
@@ -1928,8 +2100,7 @@ dung "cursor: không giấu file team commit (.cursor/rules, hooks.json, skill k
   "?? .cursor/hooks.json|?? .cursor/rules/team.mdc|?? .cursor/skills/cua-team/SKILL.md|"
 
 # ---------------------------------------------------------------- khong cai vao engine
-echo ""
-echo "không cài vào chính engine"
+nhom "không cài vào chính engine"
 ky_vong 2 "aw-engine init từ chối repo đích là chính engine" env AW_REPO="$ROOT" AW_CONFIG="$TMP/cfg-engine" sh "$ROOT/bin/aw-engine" init
 dung "…và không ghi gì" test ! -e "$TMP/cfg-engine/conventions.md"
 ky_vong 2 "aw-engine init từ chối thư mục con của engine" env AW_REPO="$ROOT/adapters" AW_CONFIG="$TMP/cfg-engine" sh "$ROOT/bin/aw-engine" init
@@ -1938,8 +2109,7 @@ ky_vong 2 "aw adapter build từ chối --out nằm trong engine" sh "$ROOT/bin/
 
 # ---------------------------------------------------------------- xac dinh feature
 # Từ đây: repo đích init bằng wrapper aw, engine là chính repo này (AW_ENGINE_DIR).
-echo ""
-echo "aw feature (feature.sh)"
+nhom "aw feature (feature.sh)"
 unset AW_REPO AW_CONFIG
 AWHD="$TMP/awhome-dev"; VDEV=$(cat "$ROOT/VERSION")
 # awd <thư-mục> <tham-số...> — chạy aw đứng tại <thư-mục>
@@ -1972,8 +2142,7 @@ dung "in 'Đang làm với:'" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='
 g9 worktree remove --force "$W4"
 
 # ---------------------------------------------------------------- tao worktree (/aw-intake)
-echo ""
-echo "aw worktree new (worktree-new.sh)"
+nhom "aw worktree new (worktree-new.sh)"
 thay "$CV9" 'release_branches:' 'release_branches: release/*'
 g9 branch release/1.2
 DX=$(awd "$R9" worktree new bugfix phi-hoan-tien 2>/dev/null)
@@ -2027,8 +2196,7 @@ g9 reset -q --hard HEAD~1
 
 # ---------------------------------------------------------------- nhiều adapter
 # Team dùng cả Claude Code lẫn Cursor: ADAPTER="claude-code cursor" trong config.sh.
-echo ""
-echo "nhiều adapter (ADAPTER=\"claude-code cursor\")"
+nhom "nhiều adapter (ADAPTER=\"claude-code cursor\")"
 R10="$TMP/repo10"; mkdir -p "$R10"
 git -C "$R10" init -q; git -C "$R10" checkout -q -b main
 git -C "$R10" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
@@ -2098,8 +2266,7 @@ cp "$TMP/config10.bak" "$C10/config.sh"
 dung "…sửa lại thì doctor ✓" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor >/dev/null 2>&1"
 
 # ---------------------------------------------------------------- don worktree
-echo ""
-echo "aw worktree status|remove (worktree-cleanup.sh)"
+nhom "aw worktree status|remove (worktree-cleanup.sh)"
 ky_vong 0 "status: chỉ in trạng thái" awd "$R9" worktree status fix_phi-hoan-tien
 dung "…worktree còn nguyên" test -d "$W5"
 printf 'nhap\n' > "$W5/nhap.txt"
@@ -2130,8 +2297,7 @@ dung "…conventions.md trong đó trỏ tới cấu hình của bản clone" sh
 dung "mọi đường dẫn .agent-workflow/.engine/… mà lệnh sinh ra nhắc tới đều có thật" sh -c "cd '$R9' && for p in \$(grep -rhoE '\.agent-workflow/\.engine/[A-Za-z0-9_./-]+\.md' .claude | sort -u); do [ -e \"\$p\" ] || { echo \$p; exit 1; }; done"
 
 # ---------------------------------------------------------------- phan loai input (/aw-intake)
-echo ""
-echo "aw input (input.sh)"
+nhom "aw input (input.sh)"
 mkdir -p "$R9/docs"; printf 'x\n' > "$R9/docs/a.md"
 # ra <tham-số...> -> stdout; loi <tham-số...> -> stderr
 ra() { awd "$R9" input "$@" 2>/dev/null; }
@@ -2216,8 +2382,7 @@ dung "--skip: lời người dùng mới thì vẫn in" bang "$(ra --skip "$TMP/
 ky_vong 2 "--skip trỏ tới file không có → SAI CÁCH GỌI" pl --skip "$TMP/khong-co.md" "ABC-1"
 
 # ---------------------------------------------------------------- muc dich (00)
-echo ""
-echo "check-intake.sh"
+nhom "check-intake.sh"
 CHK="$T/check-intake.sh"
 tao_fixture feature feat_x
 
@@ -2268,7 +2433,7 @@ ky_vong 0 "[JIRA] dạng link markdown có mã thì cho qua" sh "$CHK" "$F"
 viet_intake
 
 # spec ghi based_on intake.md: gop them input -> spec loi thoi, review chan
-sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null
+sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
 ky_vong 0 "spec ghi based_on intake.md vẫn qua check-spec" sh "$T/check-spec.sh" "$F"
 printf -- '- `[JIRA]` ABC-2\n' >> "$F/intake.md"
 ky_vong 1 "gộp thêm input sau khi có spec → review chặn (spec lỗi thời)" sh "$T/check-review.sh" "$F"
@@ -2316,8 +2481,7 @@ dung "base khớp release_branches → không cảnh báo" sh -c "! sh '$T/check
 thay "$CFG/conventions.md" 'release_branches: moi-*' 'release_branches:'
 
 # ---------------------------------------------------------------- bugfix
-echo ""
-echo "loại việc: bugfix"
+nhom "loại việc: bugfix"
 tao_fixture bugfix fix_y
 for c in intake spec design plan implement review; do
   ky_vong 0 "bugfix đầy đủ qua check-$c.sh" sh "$T/check-$c.sh" "$F"
@@ -2347,9 +2511,92 @@ printf 'TEST_CMD="true"\n%s\n' "$BM_XANH" > "$CFG/config.sh"
 ky_vong 1 "check-repro chặn khi test XANH trên code chưa sửa" sh "$T/check-repro.sh" "$F"
 dung "…đúng lý do: test xanh, không phải vì đã sửa code" sh -c "sh '$T/check-repro.sh' '$F' | grep -q 'XANH'"
 
+# ---------------------------------------------------------------- bỏ design (Design: skip)
+nhom "bỏ design: bugfix/refactor nhỏ khai \"Design: skip\""
+# bo_design — spec khai skip (người duyệt lại), không có tdd.md, plan không có D-xx
+bo_design() {
+  thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `normal`
+- **Design:** `skip`'
+  duyet_lai "$F/spec.md"
+  rm -f "$F/tdd.md" "$F/design-findings.md"
+  thay "$F/plan.md" '- Based on: `D-01`
+' ''
+  sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
+  sh "$T/based-on.sh" "$F" plan.md spec.md >/dev/null 2>&1
+}
+tao_fixture bugfix fix_nho
+bo_design
+for c in spec plan implement review; do
+  ky_vong 0 "bugfix Design: skip (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
+done
+ky_vong 1 "bugfix Design: skip chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
+# Không có design: plan là phase chạy lại spec — câu trích lệch chỉ cảnh báo
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[FILE]` docs/brd.md § Hoàn tiền
+- Quote:
+  > Khách được hoàn tiền trong vòng 30 ngày.'
+duyet_lai "$F/spec.md"; printf 'Khách được hoàn tiền trong vòng 60 ngày.\n' > "$R/docs/brd.md"
+ky_vong 0 "Design: skip: nguồn đổi sau spec → plan không chặn" sh "$T/check-plan.sh" "$F"
+dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$T/check-plan.sh' '$F' | grep -qF '[CẢNH BÁO] YC-001: câu trích không có trong docs/brd.md'"
+thay "$F/spec.md" '- Source: `[FILE]` docs/brd.md § Hoàn tiền
+- Quote:
+  > Khách được hoàn tiền trong vòng 30 ngày.' '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a'
+duyet_lai "$F/spec.md"; rm -f "$R/docs/brd.md"
+dung "…đúng lý do: spec khai Design: skip" sh -c "sh '$T/check-design.sh' '$F' | grep -q 'Design: skip'"
+ky_vong 2 "Design: skip: aw approval design → SAI THAM SỐ" sh "$T/approval.sh" design "$F"
+ky_vong 0 "Design: skip: aw approval plan hỏi duyệt SPEC, spec đã duyệt → ĐÃ DUYỆT" sh "$T/approval.sh" plan "$F"
+thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
+ky_vong 1 "Design: skip: plan chặn khi người chưa duyệt spec" sh "$T/check-plan.sh" "$F"
+dung "…aw approval plan nêu Design: skip là điểm cần đọc kỹ" sh -c "sh '$T/approval.sh' plan '$F' 2>/dev/null | grep -q 'Design: skip — bỏ phase design'"
+thay "$F/spec.md" '- [ ] **Approved by human** — đã đọc' '- [x] **Approved by human** — đã đọc'
+thay "$F/open-questions.md" '`non-blocking`' '`blocking`'
+ky_vong 1 "Design: skip: điểm mù \"blocking\" còn mở thì plan chặn" sh "$T/check-plan.sh" "$F"
+dung "…aw pending tính cổng chặn là plan, không phải design" sh -c "sh '$T/pending.sh' '$F' 2>/dev/null | grep -q 'đổi hướng — chặn /plan'"
+thay "$F/open-questions.md" '`blocking`' '`non-blocking`'
+thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `high`'; duyet_lai "$F/spec.md"
+ky_vong 1 "Design: skip với Risk: high → spec chặn" sh "$T/check-spec.sh" "$F"
+ky_vong 1 "…và plan chặn theo (entry check chạy lại spec)" sh "$T/check-plan.sh" "$F"
+thay "$F/spec.md" '- **Risk:** `high`' '- **Risk:** `normal`'; duyet_lai "$F/spec.md"
+thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Based on: `D-01`
+- Expected files: `src/b.txt`'
+ky_vong 1 "Design: skip: task Dựa trên D-xx bị chặn (không có tdd.md)" sh "$T/check-plan.sh" "$F"
+thay "$F/plan.md" '- Based on: `D-01`
+' ''
+thay "$F/spec.md" '- **Design:** `skip`' '- **Design:** `bỏ`'; duyet_lai "$F/spec.md"
+ky_vong 1 "spec chặn Design khác required | skip" sh "$T/check-spec.sh" "$F"
+thay "$F/spec.md" '- **Design:** `bỏ`' '- **Design:** `required`'; duyet_lai "$F/spec.md"
+ky_vong 0 "bugfix Design: required → spec qua" sh "$T/check-spec.sh" "$F"
+ky_vong 2 "…nhưng plan đòi tdd.md (phải qua design) → THIẾU ĐẦU VÀO" sh "$T/check-plan.sh" "$F"
+
+tao_fixture refactor refactor_nho
+bo_design
+for c in spec plan; do
+  ky_vong 0 "refactor Design: skip (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
+done
+ky_vong 1 "refactor Design: skip chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
+
+tao_fixture perf perf_nho
+bo_design
+ky_vong 1 "perf không được Design: skip" sh "$T/check-spec.sh" "$F"
+ky_vong 2 "…check-plan vẫn đòi tdd.md → THIẾU ĐẦU VÀO" sh "$T/check-plan.sh" "$F"
+
+tao_fixture feature feat_nho
+bo_design
+ky_vong 1 "feature không được Design: skip" sh "$T/check-spec.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-spec.sh' '$F' | grep -q 'chỉ dành cho bugfix/refactor'"
+
+tao_fixture chore chore_nho
+thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `normal`
+- **Design:** `required`'; duyet_lai "$F/spec.md"
+ky_vong 1 "chore ghi Design: required → spec chặn" sh "$T/check-spec.sh" "$F"
+thay "$F/spec.md" '- **Design:** `required`' '- **Design:** `skip`'; duyet_lai "$F/spec.md"
+ky_vong 0 "chore ghi Design: skip → spec qua" sh "$T/check-spec.sh" "$F"
+
 # ---------------------------------------------------------------- refactor
-echo ""
-echo "loại việc: refactor"
+nhom "loại việc: refactor"
 tao_fixture refactor refactor_z
 for c in spec design plan implement review; do
   ky_vong 0 "refactor đầy đủ qua check-$c.sh" sh "$T/check-$c.sh" "$F"
@@ -2384,8 +2631,7 @@ g checkout -q -- test/a.test.js
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
 # ---------------------------------------------------------------- perf
-echo ""
-echo "loại việc: perf"
+nhom "loại việc: perf"
 tao_fixture perf perf_w
 for c in spec design plan implement review; do
   ky_vong 0 "perf đầy đủ qua check-$c.sh" sh "$T/check-$c.sh" "$F"
@@ -2405,8 +2651,7 @@ ky_vong 1 "đo \"sau\" bị từ chối khi chưa có số đo trước" sh "$T/
 mv "$F/perf.bak" "$F/perf.md"
 
 # ---------------------------------------------------------------- gác ô duyệt (hook)
-echo ""
-echo "guard.sh (aw guard)"
+nhom "guard.sh (aw guard)"
 GAC="$T/guard.sh"
 co_tick() { grep -q '^- \[x\] \*\*Approved by human' "$F/spec.md"; }
 d_tick() { grep -q '^- \[x\] \*\*Approved by human' "$F/tdd.md"; }
@@ -2493,8 +2738,7 @@ rm -f "$R/.agent-workflow/.guard-pre"
 viet_spec; viet_tdd; ghi_based_on
 
 # ---------------------------------------------------------------- cổng duyệt
-echo ""
-echo "approval.sh (aw approval)"
+nhom "approval.sh (aw approval)"
 CD="$T/approval.sh"
 viet_spec; viet_tdd
 ky_vong 2 "approval sai phase → SAI THAM SỐ" sh "$CD" review "$F"
@@ -2531,9 +2775,64 @@ dung "…đếm D chưa duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'CÒN 1/1 
 dung "…tên D, dòng, tác giả, lựa chọn, có phản biện" sh -c "printf '%s' \"\$1\" | grep -q 'D-01 — lưu ở đâu' && printf '%s' \"\$1\" | grep -q 'dòng [0-9]* · chưa tick' && printf '%s' \"\$1\" | grep -q 'tác giả: agent · Choice: file · có 1 phản biện'" _ "$OUT_CD"
 viet_spec; viet_tdd; ghi_based_on
 
+
+# ---------------------------------------------------------------- duyệt tập trung
+nhom "approvals.sh (aw approvals, /aw-approvals)"
+AP="$T/approvals.sh"
+viet_spec; viet_tdd
+ky_vong 0 "mọi ô đã tick → KHÔNG CÒN Ô CHỜ DUYỆT" sh "$AP"
+ky_vong 2 "tham số lạ → SAI THAM SỐ" sh "$AP" --tat-ca
+ky_vong 2 "tick thiếu tham số → SAI THAM SỐ" sh "$AP" tick "$F" spec
+ky_vong 2 "tick khoá lạ → SAI THAM SỐ" sh "$AP" tick "$F" YC-001 0000000000000000
+ky_vong 0 "aw-engine approvals → approvals.sh" sh "$AWE" approvals
+thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
+ky_vong 1 "spec chưa tick → CÓ Ô CHỜ DUYỆT" sh "$AP"
+OUT_AP=$(sh "$AP" 2>/dev/null)
+dung "…link tuyệt đối tới đúng dòng ô duyệt" sh -c "printf '%s' \"\$1\" | grep -q \"^ *$F/spec.md:\$(grep -n 'Approved by human' '$F/spec.md' | cut -d: -f1)\$\"" _ "$OUT_AP"
+dung "…in đúng lệnh tick kèm hash" sh -c "printf '%s' \"\$1\" | grep -q 'duyệt: aw approvals tick $F spec [0-9a-f]\{16\}'" _ "$OUT_AP"
+dung "…liệt kê không tự tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
+H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F spec ||p")
+ky_vong 1 "tick với hash khác bản hiện tại → KHÔNG TICK" sh "$AP" tick "$F" spec 0000000000000000
+dung "…file giữ nguyên chưa tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
+rm -f "$CFG/journal/approvals.tsv"
+ky_vong 0 "tick với hash người vừa thấy → ĐÃ DUYỆT" sh "$AP" tick "$F" spec "$H_AP"
+dung "…ô được tick, dấu duyệt = hash đó" grep -q "^- \[x\] \*\*Approved by human.*approval-hash: $H_AP -->" "$F/spec.md"
+ky_vong 0 "…cổng duyệt spec thấy ĐÃ DUYỆT" sh "$CD" design "$F"
+dung "…ghi nhật ký approvals.tsv" grep -q "spec	$H_AP	aw approvals tick" "$CFG/journal/approvals.tsv"
+ky_vong 0 "tick lại mục đã duyệt → không làm gì" sh "$AP" tick "$F" spec "$H_AP"
+thay "$F/spec.md" '### YC-002 — b' '### YC-002 — bb'
+OUT_AP=$(sh "$AP" 2>/dev/null)
+dung "spec đổi sau duyệt → liệt kê ĐÃ ĐỔI sau khi duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'ĐÃ ĐỔI sau khi duyệt'" _ "$OUT_AP"
+ky_vong 1 "…tick bằng hash cũ → KHÔNG TICK" sh "$AP" tick "$F" spec "$H_AP"
+H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F spec ||p")
+ky_vong 0 "…tick bằng hash bản mới → ĐÃ DUYỆT lại" sh "$AP" tick "$F" spec "$H_AP"
+ky_vong 0 "…cổng duyệt spec thấy ĐÃ DUYỆT" sh "$CD" design "$F"
+viet_spec; viet_tdd
+thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
+OUT_AP=$(sh "$AP" 2>/dev/null)
+dung "D-xx chưa tick → liệt kê kèm tên D" sh -c "printf '%s' \"\$1\" | grep -q 'D-01 — lưu ở đâu' && printf '%s' \"\$1\" | grep -q '$F/tdd.md:[0-9]'" _ "$OUT_AP"
+H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F D-01 ||p")
+sh "$GAC" pre >/dev/null 2>&1
+sh "$AP" tick "$F" D-01 "$H_AP" >/dev/null 2>&1
+ky_vong 0 "tick qua aw approvals tick → aw guard post không bỏ" sh "$GAC" post
+ky_vong 0 "…cổng duyệt plan thấy ĐÃ DUYỆT" sh "$CD" plan "$F"
+thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
+sh "$GAC" pre >/dev/null 2>&1
+thay "$F/tdd.md" '- [ ] **Approved by human**' '- [x] **Approved by human**'
+ky_vong 2 "tick bằng sửa file → aw guard post vẫn bỏ" sh "$GAC" post
+viet_spec; viet_tdd
+# --global: việc ở worktree khác
+g worktree add -q "$TMP/wt-ap" -b feat/ap-khac
+mkdir -p "$TMP/wt-ap/.agent-workflow/feat_ap-khac"
+sed 's/- \[x\] \*\*Approved by human\*\* — đã đọc/- [ ] **Approved by human** — đã đọc/; s/ *<!-- approval-hash: [0-9a-f]* -->//' "$F/spec.md" > "$TMP/wt-ap/.agent-workflow/feat_ap-khac/spec.md"
+ky_vong 0 "worktree khác có ô chờ — mặc định chỉ xét worktree hiện tại" sh "$AP"
+ky_vong 1 "--global → thấy ô chờ ở worktree khác" sh "$AP" --global
+dung "…kèm tên việc, branch và link vào worktree đó" sh -c "sh '$AP' --global 2>/dev/null | grep -q 'feat_ap-khac · branch feat/ap-khac' && sh '$AP' --global 2>/dev/null | grep -q '$TMP/wt-ap/.agent-workflow/feat_ap-khac/spec.md:[0-9]'"
+g worktree remove --force "$TMP/wt-ap"; g branch -D feat/ap-khac
+viet_spec; viet_tdd; ghi_based_on
+
 # ---------------------------------------------------------------- chore
-echo ""
-echo "loại việc: chore"
+nhom "loại việc: chore"
 tao_fixture chore chore_v
 for c in spec plan implement review; do
   ky_vong 0 "chore đầy đủ (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
@@ -2586,8 +2885,7 @@ ky_vong 1 "chore: task Dựa trên D-xx bị chặn (không có tdd.md)" sh "$T/
 viet_plan; ghi_based_on
 
 # ---------------------------------------------------------------- doi ten feature
-echo ""
-echo "aw rename (rename-feature.sh)"
+nhom "aw rename (rename-feature.sh)"
 unset AW_REPO AW_CONFIG
 ky_vong 2 "từ chối chạy ở checkout chính" awd "$R9" rename feat_x
 W7="$TMP/repo9.wt/fix_sai-loai"
@@ -2603,8 +2901,7 @@ dung "worktree dời sang tên mới, cùng thư mục cha" sh -c "[ ! -e '$W7' 
 dung "thư mục artifact dời theo" sh -c "[ -f '$W8/.agent-workflow/feat_dung-loai/intake.md' ] && [ ! -d '$W8/.agent-workflow/fix_sai-loai' ]"
 
 # ---------------------------------------------------------------- chuyen tu bo cai 1.x
-echo ""
-echo "aw init --from-legacy (chuyển từ bộ cài 1.x)"
+nhom "aw init --from-legacy (chuyển từ bộ cài 1.x)"
 ky_vong 3 "tools/install.sh chỉ in hướng dẫn, không cài gì" sh "$T/install.sh" "$TMP/khong-quan-trong"
 dung "…hướng dẫn dùng aw init / aw init --from-legacy" sh -c "sh '$T/install.sh' 2>/dev/null | grep -q 'aw init --from-legacy'"
 ky_vong 3 "tools/sync.sh chỉ in hướng dẫn aw upgrade" sh "$T/sync.sh"
@@ -2651,8 +2948,7 @@ ky_vong 2 "init --adapter khác ADAPTER trong config.sh → SAI THAM SỐ" awd "
 
 # ---------------------------------------------------------------- khoi "Ket qua"
 # Nguoi va agent doc NHAN, khong doc ma so: moi script in khoi nay ra stderr.
-echo ""
-echo "lib/result.sh"
+nhom "lib/result.sh"
 KQT="$TMP/kq-thu.sh"
 cat > "$KQT" <<EOF
 . "$T/lib/result.sh"
@@ -2674,8 +2970,7 @@ dung "aw feature ở checkout chính → [x] ĐANG Ở CHECKOUT CHÍNH" sh -c "p
 dung "…stdout không lẫn khối Kết quả" sh -c "! printf '%s' \"\$1\" | grep -q 'Kết quả'" _ "$(awd "$R9" feature 2>/dev/null)"
 
 # ---------------------------------------------------------------- dong goi (phat hanh)
-echo ""
-echo "tools/package.sh"
+nhom "tools/package.sh"
 # tao_nguon <thư-mục> <YYYY.M.N> — chép repo này (cả thay đổi chưa commit) thành một
 # repo git riêng mang version <YYYY.M.N>. Dùng làm "bản phát hành" giả.
 tao_nguon() {
@@ -2712,8 +3007,7 @@ dung "workflow release bắt tag dạng YYYY.M.N, không có v" grep -qF "tags: 
 dung "CHANGELOG.md có mục cho VERSION" grep -qF "## [$(cat "$ROOT/VERSION")]" "$ROOT/CHANGELOG.md"
 
 # ---------------------------------------------------------------- chuẩn bị + kiểm phát hành
-echo ""
-echo "tools/prepare-release.sh + tools/check-release.sh"
+nhom "tools/prepare-release.sh + tools/check-release.sh"
 git_t() { _gt_d=$1; shift; git -C "$_gt_d" -c user.name=t -c user.email=t@t "$@"; }
 PH="$TMP/ph"; PHO="$TMP/ph-origin.git"
 tao_nguon "$PH" 2099.9.1
@@ -2727,7 +3021,7 @@ ky_vong 4 "chuẩn bị: version truyền tay trùng tag đã có → VERSION L�
 ky_vong 4 "chuẩn bị: version sai dạng (số 0 đứng đầu) → VERSION LỖI" sh "$PH/tools/prepare-release.sh" 2099.09.2
 ky_vong 0 "chuẩn bị: version truyền tay" sh "$PH/tools/prepare-release.sh" 2099.9.2
 dung "…ghi VERSION, bin/aw, CHANGELOG cùng một version" sh -c "grep -qx 2099.9.2 '$PH/VERSION' && grep -q '^AW_WRAPPER_VERSION=\"2099.9.2\"' '$PH/bin/aw' && grep -qx '## \[2099.9.2\]' '$PH/CHANGELOG.md' && ! grep -q 'Chưa phát hành' '$PH/CHANGELOG.md'"
-dung "…link tải wrapper trong README trỏ version mới" grep -q 'releases/download/2099.9.2/aw' "$PH/README.md"
+dung "…link tải wrapper trong README và huong-dan trỏ version mới" sh -c "grep -q releases/download/2099.9.2/aw '$PH/README.md' && grep -q releases/download/2099.9.2/aw '$PH/docs/huong-dan.md'"
 git -C "$PH" checkout -q -b pr; git_t "$PH" commit -qam "phát hành 2099.9.2"
 ky_vong 0 "kiểm phát hành: PR đổi VERSION, tag chưa có → đạt" sh "$PH/tools/check-release.sh" main
 git -C "$PH" tag 2099.9.2 main; git -C "$PH" push -q origin 2099.9.2 2>/dev/null
@@ -2738,7 +3032,7 @@ git -C "$PH" checkout -q -- bin/aw
 thay "$PH/CHANGELOG.md" '## [2099.9.2]' '## [Chưa phát hành]'
 ky_vong 1 "kiểm phát hành: CHANGELOG thiếu mục cho VERSION → KHÔNG ĐẠT" sh "$PH/tools/check-release.sh"
 git -C "$PH" checkout -q -- .; git -C "$PH" checkout -q main; git -C "$PH" branch -qD pr
-ph_cl; git_t "$PH" commit -qam cl2
+ph_cl; git_t "$PH" commit -qam cl2 >/dev/null
 THANG_NAY="$(date +%Y).$(date +%m | sed 's/^0//')"
 git -C "$PH" tag "$THANG_NAY.1"; git -C "$PH" tag "$THANG_NAY.3"; git -C "$PH" push -q origin --tags 2>/dev/null
 ky_vong 0 "chuẩn bị: tự tính version" sh "$PH/tools/prepare-release.sh"
@@ -2753,8 +3047,7 @@ ky_vong 3 "chuẩn bị: CHANGELOG không có [Chưa phát hành] → KHÔNG CÓ
 dung "…không đổi file nào" sh -c "grep -qx 2099.9.1 '$PH/VERSION'"
 
 # ---------------------------------------------------------------- wrapper aw
-echo ""
-echo "bin/aw (wrapper)"
+nhom "bin/aw (wrapper)"
 unset AW_REPO AW_CONFIG
 AWH="$TMP/awhome"; MIR="$TMP/mirror"
 # Mirror giả (file://): mỗi version là một bản phát hành đóng gói từ repo này.
@@ -2816,6 +3109,20 @@ ky_vong 0 "aw upgrade 2099.1.2" aw7 upgrade 2099.1.2
 dung "…version mới, ghim thêm sha của 2099.1.2, giữ sha cũ" sh -c "grep -qx 2099.1.2 '$C7/version' && grep -q 'agent-workflow-2099.1.2' '$C7/checksums' && grep -q 'agent-workflow-2099.1.1' '$C7/checksums'"
 dung "…vẫn không có commit nào; upgrade không đụng quy ước" sh -c "[ \"\$(git -C '$R7' rev-parse HEAD)\" = '$GOC7' ] && [ \"\$(git -C '$R7' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 
+# aw self-update: wrapper tự thay bằng bản `aw` của bản phát hành
+WB="$TMP/wbin"; mkdir -p "$WB"; cp "$TMP/nguon-2099.1.1/bin/aw" "$WB/aw"
+awb() { (cd "$R7" && AW_HOME="$AWH" AW_MIRROR="file://$MIR" sh "$WB/aw" "$@"); }
+dung "wrapper cũ hơn engine → aw version nhắc self-update" sh -c "cd '$R7' && AW_HOME='$AWH' sh '$WB/aw' version 2>&1 | grep -q 'wrapper 2099.1.1 cũ hơn engine 2099.1.2.*aw self-update'"
+ky_vong 2 "self-update version sai dạng → SAI THAM SỐ" awb self-update 2099.01.2
+ky_vong 2 "self-update ngoài repo, không ghi version → SAI THAM SỐ" sh -c "cd '$TMP' && AW_HOME='$AWH' sh '$WB/aw' self-update"
+ky_vong 9 "SHA256SUMS không có dòng aw → KHÔNG HỢP LỆ" awb self-update 2099.1.4
+cp -R "$MIR/2099.1.2" "$MIR/2099.1.6"; printf '# tráo\n' >> "$MIR/2099.1.6/aw"
+ky_vong 9 "aw tải về sai checksum → KHÔNG HỢP LỆ" awb self-update 2099.1.6
+dung "…wrapper giữ nguyên, không để lại file tạm" sh -c "grep -q '^AW_WRAPPER_VERSION=\"2099.1.1\"' '$WB/aw' && [ \"\$(ls -A '$WB')\" = aw ]"
+ky_vong 0 "aw self-update (không tham số) → lên version engine của repo" awb self-update
+dung "…file wrapper giống hệt aw của bản phát hành, vẫn chạy được" sh -c "cmp -s '$WB/aw' '$MIR/2099.1.2/aw' && [ -x '$WB/aw' ] && sh '$WB/aw' version 2>/dev/null | grep -q 'aw (wrapper) 2099.1.2'"
+ky_vong 0 "self-update lại cùng version → không làm gì" awb self-update
+
 # cấu hình dùng chung của team: một repo riêng chứa version, checksums, conventions.md
 TEAM="$TMP/team-cfg"; mkdir -p "$TEAM"; git -C "$TEAM" init -q
 cp "$C7/version" "$C7/checksums" "$TEAM/"; printf '# của team\n' > "$TEAM/conventions.md"
@@ -2845,8 +3152,7 @@ dung "wrapper và VERSION cùng version (đóng gói kiểm lại)" bang "$(awk 
 # ---------------------------------------------------------------- aw ship (ship.sh, ship-sweep.sh)
 # Việc đã qua review nằm trong worktree; origin là repo bare; gh là bản giả
 # (ghi lại tham số, trạng thái PR đọc từ $FG/state).
-echo ""
-echo "aw ship targets|create|status|sweep (ship.sh, ship-sweep.sh)"
+nhom "aw ship targets|create|status|sweep (ship.sh, ship-sweep.sh)"
 tao_fixture 2>/dev/null
 viet_mr
 printf '/.agent-workflow/\n' >> "$R/.git/info/exclude"
@@ -2985,8 +3291,7 @@ ky_vong 0 "sweep lần nữa: không còn gì để dọn" sw
 export AW_REPO="$R"
 
 # ---------------------------------------------------------------- aw ready (ready.sh)
-echo ""
-echo "ready.sh (aw ready)"
+nhom "ready.sh (aw ready)"
 tao_fixture
 SS="$T/ready.sh"
 CH="$CFG/config.sh"; cp "$CH" "$TMP/ch-ss.bak"
@@ -3007,8 +3312,7 @@ ky_vong 1 "conventions.md thiếu test_files → CHƯA SẴN SÀNG" sh "$SS" "$F
 thay "$CFG/conventions.md" 'mau_file_test_cu: ' 'test_files: '
 
 # ---------------------------------------------------------------- aw conventions check (check-conventions.sh)
-echo ""
-echo "check-conventions.sh (aw conventions check)"
+nhom "check-conventions.sh (aw conventions check)"
 QU="$T/check-conventions.sh"; CV="$CFG/conventions.md"; cp "$CV" "$TMP/conv-qu.bak"
 qu_ra() { sh "$QU" 2>/dev/null; }
 ky_vong 0 "mẫu của engine trên fixture → HỢP LỆ" sh "$QU"
@@ -3059,8 +3363,7 @@ dung "…nêu lỗi của aw conventions check" sh -c "sh '$SS' '$F' --no-test 2
 cp "$TMP/conv-qu.bak" "$CV"
 
 # ---------------------------------------------------------------- quy ước đã commit (qu_hieu_luc)
-echo ""
-echo "conventions.md trong repo đích + bản clone chỉ ghi đè khoá máy"
+nhom "conventions.md trong repo đích + bản clone chỉ ghi đè khoá máy"
 dung "repo chỉ có quy ước ở bản clone → vẫn HỢP LỆ, cảnh báo chưa commit vào repo" sh -c "sh '$QU' 2>/dev/null | grep -q '! quy ước chưa commit vào repo'"
 RQ="$TMP/repo-qu"; CQ="$RQ/.git/agent-workflow"; DQ="docs/agent-workflow/conventions.md"
 gq() { git -C "$RQ" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
@@ -3135,8 +3438,7 @@ tk_plan_t2 '- Verify: `test -f src/a.txt` → có file
 dung "tiến độ: bước tiếp chỉ đúng task kế" sh -c "sh '$SS' '$F' 2>/dev/null | grep -q 'Bước tiếp: /aw-implement — task tiếp: T-02'"
 
 # ---------------------------------------------------------------- aw task (task.sh)
-echo ""
-echo "task.sh (aw task)"
+nhom "task.sh (aw task)"
 TK="$T/task.sh"; HT="$T/check-implement.sh"
 dung "next → T-02 (stdout)" bang "$(sh "$TK" next "$F" 2>/dev/null)" "T-02"
 ky_vong 1 "implement chặn task chưa làm [ ]" sh "$HT" "$F"
@@ -3246,7 +3548,7 @@ ky_vong 0 "reopen D-01 → XONG" sh "$TK" reopen "$F" D-01
 dung "…T-01 (Based on D-01) về [ ], T-02 giữ [x]" sh -c "[ '$(tk_st T-01)' = ' ' ] && [ '$(tk_st T-02)' = x ]"
 viet_plan
 thay "$F/plan.md" '- Covers: `YC-001`' '- Covers: `YC-001`
-- On assumption: **yes** — `open-questions.md` § YC-002'
+- On assumption: **yes** — [open-questions.md § YC-002](open-questions.md#yc-002--b)'
 thay "$F/plan.md" '- Covers: `YC-002`
 - Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt` → có file
@@ -3267,8 +3569,7 @@ mv "$TMP/plan.bak" "$F/plan.md"
 viet_plan; ghi_based_on; ghi_bang_chung_task
 
 # ---------------------------------------------------------------- trạng thái sạch
-echo ""
-echo "trạng thái sạch (implement/review)"
+nhom "trạng thái sạch (implement/review)"
 sh "$HT" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "fixture sạch → review ĐẠT" sh "$T/check-review.sh" "$F"
 printf 'moi\n<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> feat\n' > "$R/src/a.txt"
@@ -3296,8 +3597,7 @@ dung "skipped_test_regex riêng của repo được dùng" sh -c "sh '$HT' '$F' 
 thay "$CFG/conventions.md" 'skipped_test_regex: SKIPME' 'skipped_test_regex:'
 
 # ---------------------------------------------------------------- nhật ký harness (aw journal)
-echo ""
-echo "journal.sh (aw journal)"
+nhom "journal.sh (aw journal)"
 NK="$T/journal.sh"; JD="$CFG/journal"
 tao_fixture
 rm -rf "$JD"
@@ -3317,7 +3617,7 @@ ky_vong 2 "journal add lớp lạ → SAI THAM SỐ" sh "$NK" add mood "buồn"
 ky_vong 2 "journal add thiếu mô tả → SAI THAM SỐ" sh "$NK" add env ""
 ky_vong 0 "journal report" sh "$NK"
 dung "…có ba phần" sh -c "sh '$NK' 2>/dev/null | grep -q 'Thất bại theo lớp' && sh '$NK' 2>/dev/null | grep -q 'Checker (aw check)' && sh '$NK' 2>/dev/null | grep -q 'Finding của review'"
-viet_review; thay "$F/review.md" '- None' "$L3_SF"; ghi_tree_review
+viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md; ghi_tree_review
 ky_vong 0 "review ĐẠT ghi finding theo Category" sh "$T/check-review.sh" "$F"
 dung "…findings.tsv có duplicate-code" sh -c "awk -F'\t' '\$4 == \"duplicate-code\"' '$JD/findings.tsv' | grep -q ."
 sh "$T/check-review.sh" "$F" >/dev/null 2>&1
@@ -3328,8 +3628,7 @@ dung "report đánh dấu loại lặp lại" sh -c "sh '$NK' 2>/dev/null | grep
 rm -rf "$F2"; viet_review
 
 # ---------------------------------------------------------------- ADR (aw adr, aw knowledge)
-echo ""
-echo "ADR: D-xx đã duyệt nâng thành kiến thức bền"
+nhom "ADR: D-xx đã duyệt nâng thành kiến thức bền"
 tao_fixture
 AD="$T/adr.sh"; KT="$T/knowledge.sh"; TK="$T/check-design.sh"; PK="$T/check-plan.sh"
 A1="$R/docs/adr/0001-feat_x-d-01.md"
@@ -3397,6 +3696,7 @@ thay "$F/tdd.md" '## Data model' '### D-02 — đổi chỗ lưu
 ky_vong 0 "promote D-02 (Supersedes: ADR-0001) → ĐÃ NÂNG" sh "$AD" promote "$F" D-02
 dung "…ADR cũ thành superseded by 0002, chỉ mục cập nhật" sh -c "grep -qx -- '- Status: superseded by 0002' '$A1' && grep -qF '| superseded by 0002 |' '$R/docs/adr/README.md' && grep -qF -- '- Supersedes: ADR-0001' '$R/docs/adr/0002-feat_x-d-02.md'"
 ky_vong 0 "…aw adr check HỢP LỆ" sh "$AD" check
+toc_f tdd.md
 ky_vong 0 "design vẫn ĐẠT khi ADR cũ đã bị chính việc này thay" sh "$TK" "$F"
 # aw knowledge design: chỉ mục, ADR accepted đúng phạm vi, tài liệu module cha
 mkdir -p "$R/lib"; printf '# src\n' > "$R/src/ARCHITECTURE.md"; printf '# lib\n' > "$R/lib/ARCHITECTURE.md"
@@ -3408,13 +3708,12 @@ ky_vong 2 "knowledge phase chưa hỗ trợ → SAI THAM SỐ" sh "$KT" plan "$F
 tao_fixture
 
 # ---------------------------------------------------------------- luật nghiệp vụ (aw rule)
-echo ""
-echo "Luật nghiệp vụ BR-: YC đã duyệt nâng thành kiến thức bền"
+nhom "Luật nghiệp vụ BR-: YC đã duyệt nâng thành kiến thức bền"
 tao_fixture
 LU="$T/rule.sh"; SK="$T/check-spec.sh"; PK="$T/check-plan.sh"
 LF="$R/docs/product/rules/billing.md"
 # sua_spec <tìm> <thay> — sửa spec, người duyệt lại bản mới
-sua_spec() { thay "$F/spec.md" "$1" "$2"; duyet_lai "$F/spec.md"; ghi_based_on 2>/dev/null; }
+sua_spec() { thay "$F/spec.md" "$1" "$2"; toc_f spec.md; duyet_lai "$F/spec.md"; ghi_based_on 2>/dev/null; }
 sua_spec '- Priority: `must`' '- Priority: `must`
 - Description: luôn mở được y
 - Promote: BR-billing-1'
@@ -3474,7 +3773,7 @@ ky_vong 0 "…sửa lại → HỢP LỆ" sh "$LU" check
 # Lời người đã ghi (câu trả lời điểm mù): nguồn [HUMAN] + Quote nguyên văn
 thay "$F/open-questions.md" '- **Status:** `open`' '- **Status:** `answered`
 - **Answer:** PO Lan, 2026-10-05: luôn hiện b'
-sua_spec '- Source: `[OPEN-QUESTION]` → open-questions.md § YC-002' '- Source: `[FILE]` open-questions.md § YC-002
+sua_spec '- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002--b)' '- Source: `[FILE]` [open-questions.md § YC-002](open-questions.md#yc-002--b)
 - Description: luôn hiện b
 - Promote: BR-BILLING-002'
 thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Expected files: `src/b.txt` `docs/product/rules/billing.md`'; ghi_based_on 2>/dev/null
@@ -3495,8 +3794,7 @@ dung "…Scope không khớp → không in" sh -c "! sh '$KT' design '$F' 2>/dev
 tao_fixture
 
 # ---------------------------------------------------------------- kiến thức bền lỗi thời (kiểm chéo)
-echo ""
-echo "Kiểm chéo kiến thức bền ↔ diff: implement cảnh báo, review đòi verdict"
+nhom "Kiểm chéo kiến thức bền ↔ diff: implement cảnh báo, review đòi verdict"
 tao_fixture
 HT="$T/check-implement.sh"; RS="$T/check-review.sh"
 # Tài liệu nằm ở base: tài liệu module src/ (diff đụng src/a.txt) và lib/ (không đụng),
@@ -3509,7 +3807,7 @@ printf '# ADR\n\n| ADR | Title | Status | Scope |\n|---|---|---|---|\n| [0001](0
 printf '# Business rules — kho\n\n### BR-KHO-001: y\n- Rule: y\n- Scope: `src/*`\n- Source: `[JIRA]` ABC-9 (version: v1)\n- Status: active\n- Acceptance:\n  - y\n' > "$R/docs/product/rules/kho.md"
 g add src/ARCHITECTURE.md lib/ARCHITECTURE.md docs/adr docs/product; g commit -q -m "kien thuc ben"
 g checkout -q feat_x; g merge -q main
-kt_ah() { sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/sha256.sh'; . '$T/lib/approval-tick.sh'; . '$T/lib/adr.sh'; . '$T/lib/rule.sh'; . '$T/lib/knowledge.sh'; kt_anh_huong '$F'" | cut -d'|' -f1,2 | sort | tr '\n' ' '; }
+kt_ah() { sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/sha256.sh'; . '$T/lib/approval-tick.sh'; . '$T/lib/adr.sh'; . '$T/lib/quote.sh'; . '$T/lib/rule.sh'; . '$T/lib/knowledge.sh'; kt_anh_huong '$F'" | cut -d'|' -f1,2 | sort | tr '\n' ' '; }
 dung "tài liệu bị diff ảnh hưởng: module cha, ADR và file luật có Scope khớp; bỏ module khác" bang "$(kt_ah)" "docs/adr/0001-cu.md|0 docs/product/rules/kho.md|0 src/ARCHITECTURE.md|0 "
 ky_vong 0 "implement: tài liệu có thể lỗi thời → vẫn ĐẠT (chỉ cảnh báo)" sh "$HT" "$F"
 dung "…cảnh báo nêu tài liệu và file đổi" sh -c "sh '$HT' '$F' 2>/dev/null | grep -q 'CẢNH BÁO.*diff đụng src/a.txt (phạm vi của src/ARCHITECTURE.md) mà src/ARCHITECTURE.md không đổi'"
@@ -3519,7 +3817,7 @@ viet_review
 ky_vong 1 "review: thiếu mục Durable knowledge → KHÔNG ĐẠT" sh "$RS" "$F"
 dung "…nêu thiếu mục" sh -c "sh '$RS' '$F' 2>/dev/null | grep -q 'thiếu mục \"## Durable knowledge\"'"
 # dk_review <bảng> — thêm mục Durable knowledge vào review.md
-dk_review() { viet_review; printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; ghi_tree_review; }
+dk_review() { viet_review; printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; ghi_tree_review; }
 DK_DU='| `src/ARCHITECTURE.md` | pass | |
 | `docs/adr/0001-cu.md` | pass | |
 | `docs/product/rules/kho.md` | not applicable | đổi chữ, không đổi luật kho |'
@@ -3541,14 +3839,31 @@ ky_vong 0 "…review: updated cho tài liệu đã sửa → ĐẠT" sh "$RS" "$
 tao_fixture
 
 # ---------------------------------------------------------------- wrapper → lệnh mới
-echo ""
-echo "wrapper: ready, task, journal"
+nhom "wrapper: ready, task, journal"
 ky_vong 0 "aw journal → engine" aw7 journal
 ky_vong 2 "aw task sai tham số → engine trả SAI THAM SỐ" aw7 task lam-gi
 ky_vong 2 "aw ready thiếu thư mục → engine trả SAI THAM SỐ" aw7 ready
 ky_vong 0 "aw adr check → engine (repo chưa có ADR: HỢP LỆ)" aw7 adr check
 ky_vong 0 "aw rule check → engine (repo chưa có luật: HỢP LỆ)" aw7 rule check
 ky_vong 2 "aw knowledge thiếu tham số → engine trả SAI THAM SỐ" aw7 knowledge
+
+# ---------------------------------------------------------------- thuật ngữ
+nhom "thuật ngữ: workflow/rules/terms.md ↔ docs/thuat-ngu.md"
+# thieu_thuat_ngu <terms.md> <thuat-ngu.md> — in mỗi thuật ngữ (cột 1 của bảng
+# terms.md) mà tài liệu cho người không có; trả 1 nếu thiếu
+thieu_thuat_ngu() {
+  awk -F'|' 'FILENAME == ARGV[1] && /^\| `/ { t = $2; gsub(/^ *`|` *$/, "", t); can[t] = 1; next }
+    FILENAME == ARGV[2] { for (t in can) if (index($0, "`" t "`")) delete can[t] }
+    END { n = 0; for (t in can) { print t; n++ }; exit n > 0 }' "$1" "$2"
+}
+TN="$ROOT/workflow/rules/terms.md"; TD="$ROOT/docs/thuat-ngu.md"
+dung "terms.md có bảng thuật ngữ" grep -q '^| `' "$TN"
+dung "mọi thuật ngữ của terms.md đều có trong thuat-ngu.md" thieu_thuat_ngu "$TN" "$TD"
+grep -v '`harness journal`' "$TD" > "$TMP/thuat-ngu-thieu.md"
+ky_vong 1 "…thuat-ngu.md thiếu một thuật ngữ → báo" thieu_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md"
+dung "…đúng thuật ngữ thiếu" bang "$(thieu_thuat_ngu "$TN" "$TMP/thuat-ngu-thieu.md")" "harness journal"
+dung "general.md §5 trỏ tới rules/terms.md" grep -q 'rules/terms.md' "$ROOT/workflow/rules/general.md"
+dung "workflow.yaml đăng ký terms.md" grep -q '^  - workflow/rules/terms.md$' "$ROOT/workflow.yaml"
 
 # ---------------------------------------------------------------- tong ket
 echo ""

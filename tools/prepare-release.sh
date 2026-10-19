@@ -12,7 +12,7 @@
 #   VERSION                         <version>
 #   bin/aw                          AW_WRAPPER_VERSION="<version>"
 #   CHANGELOG.md                    "## [Chưa phát hành]" → "## [<version>]"
-#   README.md                       link tải wrapper releases/download/<version>/aw
+#   README.md, docs/huong-dan.md    link tải wrapper releases/download/<version>/aw
 #
 # Merge PR vào main là workflow release tự tạo tag + Release (xem README, mục
 # "Chạy test và phát hành").
@@ -70,9 +70,11 @@ thay_file() { sed "$1" "$2" > "$TMPF" && cat "$TMPF" > "$2"; }
 printf '%s\n' "$V" > "$ROOT/VERSION"
 thay_file "s/^AW_WRAPPER_VERSION=\"[^\"]*\"/AW_WRAPPER_VERSION=\"$V\"/" "$ROOT/bin/aw"
 awk -v v="$V" '!xong && /^## \[Chưa phát hành\][ \t]*$/ { print "## [" v "]"; xong = 1; next } { print }' "$CL" > "$TMPF" && cat "$TMPF" > "$CL"
-thay_file "s#releases/download/[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/aw#releases/download/$V/aw#" "$ROOT/README.md"
+for tep in "$ROOT/README.md" "$ROOT/docs/huong-dan.md"; do
+  thay_file "s#releases/download/[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/aw#releases/download/$V/aw#" "$tep"
+done
 
 echo "Version $V:"
-echo "  VERSION, bin/aw (AW_WRAPPER_VERSION), CHANGELOG.md ([Chưa phát hành] → [$V]), README.md (link tải wrapper)"
+echo "  VERSION, bin/aw (AW_WRAPPER_VERSION), CHANGELOG.md ([Chưa phát hành] → [$V]), README.md, docs/huong-dan.md (link tải wrapper)"
 echo "Kiểm lại: sh tools/check-release.sh"
 exit 0

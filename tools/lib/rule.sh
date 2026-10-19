@@ -20,7 +20,8 @@
 # Khối nằm trong file ở knowledge_rules_dir (mặc định docs/product/rules/<miền>.md),
 # hoặc trong tài liệu module (knowledge_files) — người dời khối được, checker tìm theo ID.
 #
-# Cần nạp trước: tools/lib/md.sh, tools/lib/sha256.sh, tools/lib/approval-tick.sh, tools/lib/adr.sh
+# Cần nạp trước: tools/lib/md.sh, tools/lib/sha256.sh, tools/lib/approval-tick.sh, tools/lib/adr.sh,
+#                tools/lib/quote.sh
 
 LUAT_MAC_DINH="docs/product/rules"
 LUAT_RE_ID='BR-[A-Z][A-Z0-9]*-[0-9]+'
@@ -123,7 +124,7 @@ luat_nguon() {
       if [ -z "$_lpb" ]; then echo "L|$2: nguồn [$_lnh] không có phiên bản trong bảng \"## Sources\" của spec.md (dòng có \"$_lkey\")"; return; fi
       echo "S|\`[$_lnh]\` $_lcon (version: $_lpb)" ;;
     FILE)
-      _lp=$(printf '%s' "$_lcon" | tr -d '`' | awk '{ print $1 }')
+      _lp=$(tq_duong_dan "$_lcon")
       case "$_lp" in
         intake.md|open-questions.md)
           _lh=$(dy_quet "$_lS" spec | awk -F'|' '$1 == "O" { print $4; exit }')

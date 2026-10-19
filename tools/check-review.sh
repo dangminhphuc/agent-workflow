@@ -60,8 +60,10 @@ kq_khai check-review.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
 . "$HERE/lib/knowledge.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -125,6 +127,11 @@ $cb
 CB
 fi
 
+# Mục lục và link của MỌI artifact: link sang artifact khác có thể gãy khi file đích đổi heading sau đó.
+tl=$(toc_loi "$DIR" $TOC_ART)
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<TOC
+$tl
+TOC
 # Quy tắc riêng của repo (mọi khoá rules_*): file khai phải dùng được, và
 # review.md có kết luận cho TỪNG file — thiếu là người rà soát chưa đối chiếu.
 qtl=$( { kc_quy_tac_khoa_la "$DIR"; kc_quy_tac_loi "$DIR" review; } )

@@ -23,19 +23,19 @@ needs_clean_context: true
 
 Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages execution — **no new technical choices** (this phase has no human gate). `open-questions.md` tells which tasks stand on a temporary assumption.
 
-`chore` (no `tdd.md`): input is the approved `spec.md`; tasks have no `Based on: D-xx`.
+No design phase (`chore`, or `Design: skip` in `spec.md`) → no `tdd.md`: input is the approved `spec.md`; tasks have no `Based on: D-xx` and no `Design:` line.
 
 ## Steps
 
 1. **Split into tasks.** Each task:
    - `Covers:` ≥ 1 `YC-NNN` from `spec.md`;
    - `Based on: D-xx` if it implements a decision;
-   - `Design: tdd.md § …`;
+   - `Design: [tdd.md § …](tdd.md#…)`;
    - `Expected files:` — paths in backticks, globs allowed (`src/todo/*`) — used to check diff scope;
    - `Verify:` — command in backticks + what to observe;
    - `Depends on:` if any;
    - small enough to finish in one go without breaking the build on its own.
-2. **Tasks on a temporary assumption:** `On assumption: **yes** — open-questions.md § YC-NNN`, else `no`.
+2. **Tasks on a temporary assumption:** `On assumption: **yes** — [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`, else `no`.
 3. **Every YC is covered by a task or listed in `## Deferred` with a reason.** Prefer deferring `should`; deferring `must` warns — tell the human.
 4. **`## Manual verification`:** YCs that cannot be tested automatically + reason (missing → implement warns, review blocks).
 5. **By work type:**
@@ -45,7 +45,7 @@ Split the **approved** `tdd.md` into executable tasks. `plan.md` only manages ex
    - `chore`: dependency bumps → `## Dependency upgrades` (`patch | minor` only).
    - D with `Promote: adr` → a task `Based on: D-NN` whose `Expected files` include the ADR directory (`docs/adr/*` by default) and whose `Verify` is `aw adr check`.
    - YC with `Promote: BR-<DOMAIN>-NNN` → a task covering it whose `Expected files` include the rule file (`docs/product/rules/<domain>.md` by default) and whose `Verify` is `aw rule check`.
-6. **Record inputs:** `aw based-on <dir> plan.md spec.md tdd.md` (chore: drop `tdd.md`).
+6. **Record inputs:** `aw based-on <dir> plan.md spec.md tdd.md` (no design phase: drop `tdd.md`).
 
 ## Forbidden
 

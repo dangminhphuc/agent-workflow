@@ -36,6 +36,7 @@ kq_khai check-design.sh \
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/findings.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 SPEC="$DIR/spec.md"
@@ -43,8 +44,13 @@ OQ="$DIR/open-questions.md"
 TDD="$DIR/tdd.md"
 PH="$DIR/design-findings.md"
 
-if [ "$(kc_loai "$DIR")" = "chore" ]; then
-  echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+if kc_bo_design "$DIR"; then
+  if [ "$(kc_loai "$DIR")" = "chore" ]; then
+    echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+  else
+    echo "  [LỖI] spec.md khai \"Design: skip\" — việc này KHÔNG có phase design. Đi thẳng /aw-plan."
+    echo "        Cần design thì đổi thành \"Design: required\" trong spec (người duyệt lại spec)."
+  fi
   echo ""
   echo "KHÔNG ĐẠT."
   exit 1
@@ -55,7 +61,11 @@ for f in "$SPEC" "$OQ" "$TDD"; do
 done
 
 n_loi=0
-if ! sh "$HERE/check-spec.sh" "$DIR" >/dev/null 2>&1; then
+# Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
+ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
+ma_spec=$?
+printf '%s\n' "$ra_spec" | grep -F '[CẢNH BÁO]'
+if [ "$ma_spec" -ne 0 ]; then
   n_loi=1
   echo "  [LỖI] Đầu vào chưa đạt: spec.md/open-questions.md không qua aw check spec — chạy nó để xem chi tiết."
 fi
@@ -77,6 +87,12 @@ fi
 qtl=$(kc_quy_tac_loi "$DIR" design)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $qtl
+EOF
+
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" tdd.md design-findings.md)
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$tl
 EOF
 
 # Ô duyệt từng D-xx — trạng thái lấy từ thư viện chung, không tự đọc lại.

@@ -4,7 +4,7 @@
 #
 #   aw approval design <thư-mục-feature>   vào /aw-design: spec đã được duyệt chưa
 #   aw approval plan   <thư-mục-feature>   vào /aw-plan: mọi D-xx đã được duyệt chưa
-#                                          (chore không có design: hỏi spec)
+#                                          (không có design — chore, "Design: skip": hỏi spec)
 #
 # Lệnh này KHÔNG duyệt gì. Agent in nguyên văn stdout cho người rồi hỏi bằng hộp
 # xác nhận (xem bước "Cổng duyệt" trong lệnh phase); người tự tick trong file.
@@ -33,10 +33,13 @@ LOAI=$(kc_loai "$DIR")
 REPO=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)
 tuong_doi() { if [ -n "$REPO" ]; then printf '%s' "${1#"$REPO"/}"; else printf '%s' "$1"; fi; }
 
-if [ "$PHASE" = design ] && [ "$LOAI" = chore ]; then
-  echo "LỖI: loại việc chore không có phase design — đi thẳng /aw-plan." >&2; exit 2
+BO_TK=0; kc_bo_design "$DIR" && BO_TK=1
+if [ "$PHASE" = design ] && [ "$BO_TK" = 1 ]; then
+  if [ "$LOAI" = chore ]; then echo "LỖI: loại việc chore không có phase design — đi thẳng /aw-plan." >&2
+  else echo "LỖI: spec.md khai \"Design: skip\" — việc này không có phase design, đi thẳng /aw-plan." >&2; fi
+  exit 2
 fi
-if [ "$PHASE" = plan ] && [ "$LOAI" != chore ]; then CONG=tdd; else CONG=spec; fi
+if [ "$PHASE" = plan ] && [ "$BO_TK" = 0 ]; then CONG=tdd; else CONG=spec; fi
 
 # ------------------------------------------------------------------ spec
 if [ "$CONG" = spec ]; then
@@ -71,7 +74,7 @@ if [ "$CONG" = spec ]; then
       echo "Cách duyệt:  sửa ô duyệt theo mẫu templates/spec.md (agent được sửa dạng, không được tick)" ;;
   esac
   echo ""
-  awk -v phase="$PHASE" '
+  awk -v phase="$PHASE" -v loai="$LOAI" '
     function ra(s) { sub(/^[ \t]*[-*][ \t]*/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     { sub(/\r$/, "") }
     FNR == 1 { idx = (FILENAME == ARGV[1]) ? 1 : 2; sec = ""; cur = ""; cmt = 0 }
@@ -104,8 +107,11 @@ if [ "$CONG" = spec ]; then
         if (rui_ro == "high") hq = "/aw-design chạy Mode 2: agent hỏi dẫn để BẠN phác các quyết định D-xx (không gợi ý phương án), rồi viết phần còn lại"
         else if (rui_ro == "normal") hq = "/aw-design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
         else hq = "chưa có nhãn hợp lệ — aw check spec sẽ chặn"
-      } else hq = "chore không có design"
+      } else if (loai == "chore") hq = "chore không có design"
+      else hq = "không có design (Design: skip)"
       printf "  %d. Risk: %s — %s\n", ++k, (rui_ro == "" ? "?" : rui_ro), hq
+      if (phase == "plan" && loai != "chore")
+        printf "  %d. Design: skip — bỏ phase design: không có D-xx nào để bạn duyệt, /aw-plan đi thẳng từ spec. Bản sửa có lựa chọn kỹ thuật (đổi API, schema, nhiều module) thì đổi thành \"Design: required\"\n", ++k
       mo = 0; mo_chan = ""
       for (i = 1; i <= n_oq; i++) if (tt[oq[i]] != "answered") { mo++; dmc[mc[oq[i]]]++; if (mc[oq[i]] == "blocking") mo_chan = mo_chan " " oq[i] }
       if (mo == 0) printf "  %d. Điểm mù còn mở: 0\n", ++k

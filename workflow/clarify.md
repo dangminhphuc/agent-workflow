@@ -2,7 +2,7 @@
 id: clarify
 choice_ui: true
 name: Chốt việc chờ người
-summary: Dẫn bạn chốt từng điểm mù và phát hiện của checker đang chặn phase, việc gấp nhất trước; hoặc đổi một YC bạn không đồng ý
+summary: Dẫn bạn chốt từng `open question` và `finding` của checker đang chặn phase, việc gấp nhất trước; hoặc đổi một YC bạn không đồng ý
 arguments: mixed
 argument_hint: [YC-NNN] [tên-feature]
 trace_rule: true
@@ -138,7 +138,7 @@ Write everything, then: `aw task reopen <dir> YC-NNN` once per YC whose descript
 
 **Human answered:**
 1. `open-questions.md`: `Answer:` = the human's **verbatim** words + who + date (e.g. `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status: answered`. Human **picked** an option → verbatim = its label (without `(Đề xuất)`) plus `(chọn từ phương án agent đề xuất)`. Several questions → record each answer.
-2. `spec.md`: change the YC's source label to `[FILE]` open-questions.md § YC-NNN (or the source the human named). Remove that YC's `Assumption` line.
+2. `spec.md`: change the YC's source label to `[FILE]` [open-questions.md § YC-NNN](open-questions.md#yc-nnn) (or the source the human named), and its `Quote:` to the `Answer:` words (or that source's sentence), verbatim. Remove that YC's `Assumption` line.
 3. **Answer differs from the assumption:** edit the description / criteria of **that YC only** (before → after in the preview). Append `(đã xác nhận sửa YC-NNN)` to `Answer:`; reopen its tasks (3.2). Same as the assumption → only change the label.
 4. Spec was ticked and steps 2–3 change it → **untick** (you may untick, never tick). Remind the human to re-tick in the summary.
 
@@ -176,7 +176,7 @@ The human disagrees with how the spec reads a source — description, criteria o
 | Change an existing YC | This section |
 | Add a YC, drop one, move something in/out of `## Out of scope` | Scope change: the human adds it to `intake.md` as `[HUMAN]` input, then `/aw-spec`. Never add/delete a YC here |
 | `Blocking` | 3a "Human changes the level" |
-| `Risk`, `## Constraints & dependencies` | Before → after in the batch preview (section 3), write exactly what the human said, untick the spec. `tdd.md` exists → rerun `/aw-design` (`Risk` now `high` → Mode 2) |
+| `Risk`, `Design`, `## Constraints & dependencies` | Before → after in the batch preview (section 3), write exactly what the human said, untick the spec. `tdd.md` exists → rerun `/aw-design` (`Risk` now `high` → Mode 2). `Design` now `required` with no `tdd.md` → `/aw-design`, then `/aw-plan` |
 
 1. **Read** the YC, its `Source:` passage, what depends on it: `tdd.md` (`YC mapping`, `Based on: D-xx` of those sections), `plan.md` (`Covers: YC-NNN`).
 2. **Ask** as in 2a. Context: what the source says, what the YC says now, what must be redone (step 1). Options: the human's change as they stated it, keep the current reading, at most one other reading the source supports.
@@ -184,7 +184,7 @@ The human disagrees with how the spec reads a source — description, criteria o
    - `Source says` verbatim; `Question`: the reading in dispute; `Ask`: the human; `Assumption`: the previous reading; `If wrong, redo`: what step 1 found;
    - `Status: answered`; `Answer:` verbatim + who + date + `(đã xác nhận sửa YC-NNN)`.
    - Entry already answered → move the old answer to `- **Superseded answer:** …`, then write the new `Answer:`.
-4. **`spec.md`**: before → after of that YC's lines in the batch preview; edit **that YC only**; source label → `[FILE]` open-questions.md § YC-NNN. **Untick** the spec.
+4. **`spec.md`**: before → after of that YC's lines in the batch preview; edit **that YC only**; source label → `[FILE]` [open-questions.md § YC-NNN](open-questions.md#yc-nnn), `Quote:` → the new `Answer:` words verbatim. **Untick** the spec.
 5. After the write: `aw task reopen <dir> YC-NNN` and `aw check spec <dir>` (3.2) — paste both real results.
 6. Summary (section 4): spec unticked → the human re-ticks. `tdd.md` exists → `/aw-design` updates the sections mapped to YC-NNN (a D-xx no longer fits → "Reopening a D-xx"), then `/aw-plan`.
 

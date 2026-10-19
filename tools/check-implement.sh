@@ -48,8 +48,10 @@ kq_khai check-implement.sh \
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
 . "$HERE/lib/knowledge.sh"
+. "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
 PLAN="$DIR/plan.md"
@@ -69,6 +71,11 @@ loi() { n_loi=$((n_loi + 1)); echo "  [LỖI] $1"; }
 if ! sh "$HERE/check-plan.sh" "$DIR" >/dev/null 2>&1; then
   loi "Đầu vào chưa đạt: plan.md không qua aw check plan — chạy nó để xem chi tiết."
 fi
+# Mục lục và link tới mục của plan.md — implement ghi tiếp vào đó ("Unplanned") (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" plan.md)
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$tl
+EOF
 qtl=$(kc_quy_tac_loi "$DIR" implement)
 while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $qtl

@@ -14,6 +14,106 @@ ngầm giữa các bản.
 ## [Chưa phát hành]
 
 ### Thêm
+- **Bugfix/refactor nhỏ bỏ được phase design — `Design: skip` trong `spec.md`.** Trước đây chỉ chore
+  bỏ design; bugfix sửa một dòng vẫn phải viết `tdd.md` đủ 8 mục (gần như toàn "Not applicable"), mở
+  phiên mới và chạy checker LLM. Giờ `/aw-spec` đề xuất `- **Design:** \`required | skip\``, người
+  duyệt cùng spec; `skip` thì đi như chore: `/aw-plan` làm thẳng từ spec đã duyệt, chặn điểm mù
+  `blocking` ở plan, task không có `Based on: D-xx`. Test tái hiện của bugfix vẫn bắt buộc.
+- `aw check spec` chặn `Design` khác `required | skip`, `skip` ở feature/perf hoặc khi `Risk: high`,
+  và chore ghi `required`. Spec cũ không có dòng `Design` = `required`, chạy như trước.
+- `aw approval plan` với `Design: skip` hỏi duyệt spec và nêu `Design: skip` là điểm cần đọc kỹ;
+  `aw check design`, `aw approval design` báo "đi thẳng /aw-plan"; `aw pending`, `aw ready` tính phase
+  kế tiếp theo.
+- **Tài liệu:** `docs/thuat-ngu.md` — bảng thuật ngữ (YC, D-xx, PH, T, BR, ADR, điểm mù, mức chặn,
+  Mode 1/2, base, worktree…); `docs/huong-dan.md` §1.1 thêm bảng phân phần việc của "Người" theo vai
+  trong team (người cài, dev, người duyệt spec, PO/BA, người duyệt thiết kế, người rà bảo mật,
+  reviewer MR).
+- **Artifact phải có mục lục, tham chiếu phải là link tới mục — luật cứng.** Mọi artifact agent viết
+  (`intake.md`, `spec.md`, `open-questions.md`, `tdd.md`, `design-findings.md`, `plan.md`,
+  `review.md`, `merge-request.md`) có heading `##`/`###` thì phải có `## Contents` đứng trước heading
+  đầu tiên, liệt kê đúng mọi heading `##`/`###` theo thứ tự. Tham chiếu sang artifact khác viết thành
+  link tới mục (`[spec.md § YC-001](spec.md#yc-001--đăng-nhập)`), không còn chữ trơn
+  `spec.md § YC-001` hay link chỉ tới file. Checker của phase chặn trên artifact đầu ra của nó;
+  `aw check review` chặn trên mọi artifact (link sang file khác gãy khi file đó đổi heading).
+- **`aw toc <thư-mục-feature> [artifact…]`** — máy sinh lại `## Contents` theo heading, mở rộng anchor
+  rút gọn (`#yc-001`, `#d-01`, `#t-02`) thành anchor đầy đủ của heading, rồi in link còn sai. Anchor
+  tính như GitHub / VS Code. Chỉ ghi file khi nội dung đổi — chạy lại không làm artifact phía sau lỗi
+  thời. Mẫu artifact có sẵn mục `## Contents`.
+
+### Thay đổi
+- **`/aw-clarify` chốt hết rồi mới ghi, một lần.** Trước đây mỗi mục chốt xong là agent hiện dòng
+  trước → sau, hỏi "ghi như vậy được không?", ghi file, chạy checker, rồi mới sang mục sau — mỗi mục
+  tốn hai lượt. Giờ agent hỏi lần lượt hết hàng đợi, chưa ghi gì; xong (hoặc khi bạn nói `dừng`)
+  thì hiện **một** bản xem trước gom theo file, mỗi thay đổi gắn id mục (`PH-38`, `YC-115`…), hỏi
+  một lần, ghi tất cả, chạy `aw task reopen` / `aw check spec` / `aw check design` một lần. Muốn ghi
+  giữa chừng: nói `ghi luôn`. Nhiều mục cùng sửa một đoạn → một before → after chung; D-xx mới
+  đánh số liền nhau trong đợt.
+- **`/aw-design` Mode 2 cũng gom: phác hết D-xx rồi mới xác nhận, một lần.** Agent hỏi lần lượt từng
+  điểm cần quyết, chưa ghi gì; xong hết thì hiện mọi D-xx sắp ghi trong một bản xem trước, hỏi một
+  lần, ghi tất cả vào `tdd.md`. Nói `dừng` giữa chừng → ghi các D đã chốt rồi dừng, chạy lại
+  `/aw-design` để làm tiếp. Việc tick ô duyệt D-xx không đổi (bạn tự tick trong file).
+- **Agent nói với bạn bằng thuật ngữ tiếng Anh gốc, không tự dịch.** Trước đây agent (và
+  `docs/thuat-ngu.md`) dùng từ dịch như "điểm mù", "cổng người", "lỗi thời", "kiểm chéo" — khó đối chiếu
+  với tên field, file và output `aw`. Giờ có danh sách chuẩn `workflow/rules/terms.md` (`open question`,
+  `human gate`, `stale`, `cross-check`, `job`, `target repo`…); `general.md` §5 bắt agent dùng đúng các
+  từ đó, câu quanh vẫn tiếng Việt. `docs/thuat-ngu.md` viết lại theo thuật ngữ gốc, ghi tên cũ trong
+  ngoặc để tra. Luật này không có checker (lời nói không kiểm được). Có hiệu lực với job mới hoặc khi
+  nâng engine; không cần làm gì.
+- **YC có nguồn phải có câu trích nguyên văn — `- Quote:` + các dòng `> …` ngay dưới `Source:`.** Trước
+  đây phase spec bảo agent trích câu nguồn nhưng mẫu không có chỗ ghi, nên người duyệt phải tự mở
+  nguồn để so YC với câu gốc. Giờ `aw check spec` chặn YC `[CONFLUENCE]` `[JIRA]` `[FILE]` thiếu
+  `Quote`; với `[FILE]` (kể cả lời người trong `intake.md`, câu trả lời trong `open-questions.md`)
+  chặn câu trích không có trong file nguồn — khoảng trắng, xuống dòng không tính, còn lại phải đúng
+  từng chữ. File nguồn đổi sau khi viết spec thì `aw check design` (không có design: `aw check plan`)
+  chỉ cảnh báo. `/aw-clarify` đổi nhãn nguồn sang câu trả lời thì đổi cả `Quote`.
+  **Ai bị ảnh hưởng:** việc đang làm dở chuyển sang engine mới mà spec chưa có `Quote` bị chặn ở
+  spec và mọi phase sau — thêm câu trích cho từng YC có nguồn rồi người duyệt lại spec. Việc đã ghim
+  engine cũ không bị ảnh hưởng.
+- Nhãn nguồn trả lời điểm mù đổi thành link: `[FILE] [open-questions.md § YC-NNN](open-questions.md#yc-nnn)`;
+  `[HUMAN]` trích dẫn là `[FILE] [intake.md § Input](intake.md#input)`; `Design:` / `On assumption:` của
+  task và `Location:` của phát hiện checker LLM cũng là link. Việc đã ghim engine cũ không bị ảnh hưởng.
+- `tools/run-tests.sh` mặc định in gọn: chỉ ca hỏng (kèm tên nhóm), dòng tổng và khối `Kết quả` —
+  output khi đạt hết từ ~2.200 dòng (~97 KB) còn vài dòng, đỡ tốn ngữ cảnh của agent.
+  `AW_TEST_VERBOSE=1` in từng ca như trước. Bịt output lọt ra (khối `Kết quả` của `based-on.sh`,
+  `git commit` rỗng).
+
+### Sửa
+- `tools/prepare-release.sh` cập nhật cả link tải wrapper trong `docs/huong-dan.md` (trước đây chỉ
+  README, link trong hướng dẫn bị bỏ lại ở `2026.10.23`).
+- `docs/kien-truc.md`: `ket-qua-*` → `*-results.md`. `docs/viec-can-lam.md` bỏ lịch sử đã làm và
+  tên trường, lệnh cũ (`Mức chặn`, `/open-questions`); chỉ giữ việc còn lại.
+
+### Nội bộ
+- `tools/lib/quote.sh`: so câu trích và đọc đường dẫn nguồn `[FILE]` — một chỗ cho `check-spec.sh`
+  và `aw rule promote` (trước đây `rule.sh` tự đọc đường dẫn). `check-spec.sh --entry` cho phase sau
+  chạy lại spec.
+- **Mọi thay đổi trong repo engine phải kèm tài liệu cho người đọc** (`AGENTS.md` § Human docs): một
+  mục tóm tắt trong `CHANGELOG.md` (làm gì, vì sao, ảnh hưởng ai) và cập nhật tài liệu sống (README,
+  `docs/huong-dan.md`, `docs/kien-truc.md`, `docs/thuat-ngu.md`) — kể cả thay đổi nội bộ, refactor,
+  test. Thay đổi người dùng `aw` không thấy ghi ở mục `Nội bộ`.
+
+## [2026.10.27]
+
+### Thêm
+- **`aw self-update [<YYYY.M.N>]`: wrapper tự nâng.** Tải `aw` của bản phát hành (mặc định: version
+  engine của repo đang đứng), kiểm sha256 theo `SHA256SUMS`, kiểm đúng `AW_WRAPPER_VERSION`, rồi thay
+  chính file wrapper (ghi tạm cạnh nó rồi `mv`). Checksum sai hay thiếu dòng `aw` → không cài.
+  `aw upgrade` và `aw version` nhắc chạy lệnh này khi wrapper cũ hơn engine (vd wrapper 2026.10.25
+  chưa biết `aw approvals`). Wrapper từ 2026.10.26 trở về trước chưa có lệnh này: tải tay một lần.
+
+## [2026.10.26]
+
+### Thêm
+- **Lệnh tiện ích `/aw-approvals [--global]`: duyệt tập trung, không phải mở từng artifact để
+  tick.** `aw approvals` liệt kê mọi ô "Approved by human" chưa đạt (spec, từng D-xx: chưa tick, đổi
+  sau khi duyệt, mở lại, thiếu ô) của worktree hiện tại — `--global`: mọi worktree, chạy được cả ở
+  checkout chính — mỗi mục kèm `đường-dẫn-tuyệt-đối:dòng` mở thẳng tới ô duyệt. Agent đi từng mục, in
+  phần cần duyệt do máy dựng, hỏi Duyệt / Chưa duyệt / Bỏ qua / Dừng; chọn Duyệt thì agent chạy
+  `aw approvals tick <dir> <spec|D-NN> <hash>` — máy chỉ tick khi nội dung còn đúng bản người vừa
+  thấy, ghi `journal/approvals.tsv`. **Nới luật "agent không tự duyệt"**: đây là lối duy nhất agent
+  được tick, chỉ sau khi người chọn Duyệt đúng mục đó; tick bằng sửa file vẫn bị `aw guard` bỏ. Nên
+  thêm luật hỏi quyền `Bash(aw approvals tick:*)` (adapters/claude-code/README.md). Cần wrapper `aw`
+  mới (lệnh `approvals`). Lệnh tiện ích khai được `feature_dir: none` (không chạy `aw feature`).
 - **Lệnh tiện ích `/aw-refactor [yêu-cầu]`: review, phản biện rồi ghi nhận yêu cầu refactor, chưa
   làm.** Mỗi lần gọi một yêu cầu. Agent đọc code để kiểm (rõ chưa, có thật là refactor, tiền đề khớp
   code, test bảo vệ trên base, phạm vi/rủi ro, nên tách, trùng/mâu thuẫn RF trước, đụng file việc hiện
@@ -37,17 +137,6 @@ ngầm giữa các bản.
   Task sau làm hỏng task trước lộ ra ngay ở task gây ra, không đợi tới `aw check implement`. Mặc định tắt.
 
 ### Thay đổi
-- **`/aw-clarify` chốt hết rồi mới ghi, một lần.** Trước đây mỗi mục chốt xong là agent hiện dòng
-  trước → sau, hỏi "ghi như vậy được không?", ghi file, chạy checker, rồi mới sang mục sau — mỗi mục
-  tốn hai lượt. Giờ agent hỏi lần lượt hết hàng đợi, chưa ghi gì; xong (hoặc khi bạn nói `dừng`)
-  thì hiện **một** bản xem trước gom theo file, mỗi thay đổi gắn id mục (`PH-38`, `YC-115`…), hỏi
-  một lần, ghi tất cả, chạy `aw task reopen` / `aw check spec` / `aw check design` một lần. Muốn ghi
-  giữa chừng: nói `ghi luôn`. Nhiều mục cùng sửa một đoạn → một before → after chung; D-xx mới
-  đánh số liền nhau trong đợt.
-- **`/aw-design` Mode 2 cũng gom: phác hết D-xx rồi mới xác nhận, một lần.** Agent hỏi lần lượt từng
-  điểm cần quyết, chưa ghi gì; xong hết thì hiện mọi D-xx sắp ghi trong một bản xem trước, hỏi một
-  lần, ghi tất cả vào `tdd.md`. Nói `dừng` giữa chừng → ghi các D đã chốt rồi dừng, chạy lại
-  `/aw-design` để làm tiếp. Việc tick ô duyệt D-xx không đổi (bạn tự tick trong file).
 - **`/aw-design` Mode 2 hỏi dẫn người phác D-xx thay vì dừng trơn.** Trước đây `Risk: high` mà chưa
   có D `Author: human` thì agent chỉ dừng và đưa mẫu, người phải tự nghĩ ra các điểm cần quyết từ
   trang trắng. Giờ agent khảo sát code, liệt kê các điểm cần quyết dưới dạng câu hỏi kèm dữ kiện

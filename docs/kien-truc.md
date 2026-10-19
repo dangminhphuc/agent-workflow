@@ -13,7 +13,7 @@ nhất — quá yếu để dùng.
 ```
 tài liệu / lời người ─▶ 00-intake ─▶ intake.md
                                        ▼
-                        01-spec ─▶ spec.md ─▶ 02-design ─▶ tdd.md    (chore: bỏ design)
+                        01-spec ─▶ spec.md ─▶ 02-design ─▶ tdd.md    (chore, Design: skip: bỏ design)
                                    ▼                       ▼
                                 03-plan ◀──────────────────┘
                                    ▼
@@ -131,7 +131,7 @@ máy thì với phiên đó coi như không có. Ranh giới:
 
 | | Trạng thái của việc | Kiến thức bền |
 |---|---|---|
-| Là gì | `intake/spec/tdd/plan/review`, `ket-qua-*`, ô duyệt đang chờ | Quy ước, quyết định, ràng buộc, luật nghiệp vụ còn đúng sau khi việc xong |
+| Là gì | `intake/spec/tdd/plan/review`, `*-results.md`, ô duyệt đang chờ | Quy ước, quyết định, ràng buộc, luật nghiệp vụ còn đúng sau khi việc xong |
 | Ở đâu | `.agent-workflow/<branch>/` — bị exclude, gỡ worktree thì vào `archive/` | Trong git của repo đích, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
@@ -296,8 +296,24 @@ checklist, ô duyệt có thêm hai lớp (`tools/lib/approval-tick.sh`):
 **Cổng duyệt** (`approval_gate: true`): gõ lệnh phase sau khi chưa duyệt thì `aw approval` in tóm
 tắt **do máy dựng** (file/dòng phải tick, YC `[INFERRED]`, Out of scope, Risk, điểm mù; hay D nào
 chưa duyệt) rồi agent hỏi hộp xác nhận. Máy dựng để thông tin ổn định, không bị chọn lọc. Hộp
-**không** tick hộ: bấm nút không chứng minh người đã đọc, và máy không phân biệt "agent tick vì
-người bấm" với "agent tự tick".
+cổng **không** tick hộ: nó hỏi "đã duyệt xong chưa", không hỏi duyệt mục nào.
+
+**Duyệt tập trung** (`/aw-approvals`, `tools/approvals.sh`): nhiều việc song song thì mở từng
+artifact để tick là việc tay lặp lại, dễ sót. Luật được nới **về hình thức, không về thực chất**:
+điều phải giữ là *quyết định* đến từ người, không phải *phím `x`*. Người chọn **Duyệt** cho đúng
+một mục → agent chạy `aw approvals tick <dir> <khoá> <hash>`. Chặn agent tự duyệt bằng nhiều lớp:
+
+- **Hash bản người thấy**: danh sách in hash nội dung hiện tại; `tick` chỉ ghi khi hash vẫn khớp —
+  nội dung đổi giữa lúc hỏi và lúc tick thì không tick. Ngoại lệ chỉ cho `tick`, không cho sửa file:
+  `aw guard` vẫn bỏ tick ghi bằng Edit/Write/`sed`.
+- **Luật hỏi quyền của agent** (Claude Code `permissions.ask`, Cursor: ngoài allowlist): mỗi lần
+  tick, harness hỏi người — lớp duy nhất agent không tự vượt được. Người tự cài, như hook.
+- **Nhật ký** `journal/approvals.tsv`: tick qua lệnh để lại dòng, tick tay thì không.
+
+Không dùng "một nút duyệt tất cả": một câu trả lời duyệt đúng một mục, để mỗi lần bấm gắn với một
+nội dung cụ thể. Liệt kê mặc định chỉ worktree hiện tại (mỗi việc một phiên); `--global` gom mọi
+worktree của bản clone, chạy được cả ở checkout chính — lệnh khai `feature_dir: none` để không chạy
+`aw feature`.
 
 Parser chỉ nhận ô đúng chỗ (spec: trước `##` đầu tiên; D-xx: trong `### D-NN`), đúng một ô; ô
 trong chú thích hay khối code không tính; sai dạng là lỗi, không đoán.
@@ -322,6 +338,51 @@ sai sót chỉ tốn thời gian người.
 Chặn nhầm làm tắc flow và người học cách lách. Mọi cảnh báo dồn về `review` (cổng cuối). Tiêu chí
 xếp checker mới: độ chính xác, chi phí nếu lọt, nơi sửa rẻ nhất.
 
+### Mục lục và link tới mục
+
+Artifact viết cho người đọc, và người đọc nhảy giữa chúng: plan trỏ tới D-xx, spec trỏ tới điểm
+mù, review trỏ tới YC. Chữ trơn `open-questions.md § YC-002` bắt người tự tìm; link chỉ tới file
+cũng vậy. Nên luật là: artifact có heading `##`/`###` thì có `## Contents`, và tham chiếu sang
+artifact khác là link có anchor tới đúng mục.
+
+- **Máy sinh, không để agent gõ.** Anchor tính như GitHub / VS Code (chữ thường gồm cả chữ Việt,
+  bỏ dấu câu, dấu cách thành `-`, trùng thì `-1`): `### YC-001 — Đăng nhập` → `#yc-001--đăng-nhập`.
+  Agent gõ tay thì sai một dấu là link chết. `aw toc` sinh mục lục và mở rộng anchor rút gọn
+  (`#yc-001` → anchor đầy đủ) khi chỉ khớp một heading; agent chỉ cần viết mã.
+- **Chặn, không cảnh báo.** Kiểm chính xác: mục lục khớp heading hay không, anchor có trong file đích
+  hay không — không có báo nhầm. Checker phase chặn trên artifact đầu ra của chính nó; link sang
+  artifact phase trước có thể gãy khi file đó đổi heading sau này, nên `review` chặn lại trên mọi
+  artifact.
+- **Chạy trước `aw based-on`.** `based_on` là hash cả file: mục lục của `spec.md` đổi sau khi `tdd.md`
+  đã ghi `based_on` thì `tdd.md` thành lỗi thời. `aw toc` chỉ ghi file khi nội dung đổi, nên chạy lại
+  khi heading không đổi là vô hại.
+- **Chỉ artifact agent viết.** File máy ghi (`*-results.md`, `repro.md`, `perf.md`, `ship.md`) không có
+  mục lục và không phải đích bắt buộc có anchor.
+
+### Câu trích nguyên văn của YC
+
+Phase spec bảo agent trích câu nguồn trước khi diễn giải, nhưng không có chỗ ghi thì bước đó không để
+lại dấu vết: người duyệt phải tự mở nguồn để so. Nên YC có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` có
+`- Quote:` + các dòng `> …` — "nguồn nói gì" tách khỏi "agent hiểu thế nào" (`Description`).
+
+- **Bắt buộc, không tuỳ chọn.** Tuỳ chọn thì agent bỏ, và người không phân biệt được "không có câu
+  gốc" với "quên trích". `[INFERRED]`, `[OPEN-QUESTION]` không có câu gốc (điểm mù đã có
+  `Source says`).
+- **`[FILE]`: máy kiểm câu có thật trong file** (`tools/lib/quote.sh`) — thu hẹp điểm yếu 3 cho nguồn
+  máy đọc được, gồm lời người trong `intake.md` và câu trả lời trong `open-questions.md`. So chuỗi con,
+  chỉ gộp khoảng trắng / xuống dòng và bỏ `>` đầu dòng; không chuẩn hoá thêm (markdown, dấu nháy):
+  nới thêm là bắt đầu đoán "gần giống", còn chép đúng thì sửa mất vài giây. Mỗi dòng `>` một câu,
+  so riêng — một YC thường gộp vài câu ở vài chỗ trong nguồn. Confluence/Jira script không gọi được
+  MCP: câu trích chỉ cho người đọc.
+- **Chặn ở spec, cảnh báo khi phase sau chạy lại spec** (`check-spec.sh --entry`, design và plan
+  không có design gọi). Lúc viết spec, lệch nguồn là lỗi của chính phase đó — chính xác, chặn. Về sau
+  lệch thường do file nguồn đổi, không phải lỗi của phase đang chạy; chặn ở đó làm tắc việc. Thiếu
+  `Quote` vẫn chặn ở mọi phase — đó là lỗi của spec.
+- **Không kiểm theo phiên bản trong `## Sources`.** Bảng Sources không gắn với từng YC, nên không
+  biết câu trích nào ứng với sha nào; so với file hiện tại, lệch thì cảnh báo như trên.
+- **Không đặt độ dài tối thiểu.** Trích qua loa ("khách") là gian lận có chủ ý — ngoài mục tiêu
+  (chặn quên, không chặn cố tình); người duyệt thấy ngay trong spec.
+
 ### Artifact lỗi thời
 
 `based_on` là hash **cả file** đầu vào, dạng phẳng `- spec.md@<hash>` (đọc được bằng tập con
@@ -343,6 +404,14 @@ phép rỗng. `tdd.md` là output duy nhất (tách file quyết định thì ha
   `aw task reopen <dir> D-xx` đưa task `Based on` D đó về `[ ]`, chỉ chúng.
 - **`plan` tách khỏi `tdd.md`**: plan là ranh giới do **phiên khác** đặt cho `implement`, và tick
   task không được sửa vào thiết kế đã duyệt.
+- **Bỏ design cho việc nhỏ (`Design: skip`)**: bugfix/refactor sửa vài dòng không có lựa chọn
+  kỹ thuật nào — `tdd.md` thành 8 mục "Not applicable" cộng một phiên và một lượt checker LLM, không
+  đổi lại được gì. Phần bảo đảm của bugfix nằm ở test tái hiện đỏ (`aw check repro`) và review, không
+  ở design. **Người** quyết, không phải máy: lúc viết spec chưa có diff để đo "nhỏ", nên agent đề xuất
+  `skip` trong `spec.md` và người duyệt cùng spec (đổi sau khi duyệt → duyệt lại). Máy chỉ chặn chỗ
+  chắc chắn sai: `skip` ngoài bugfix/refactor (feature thêm hành vi, perf cần thiết kế đo), hoặc khi
+  `Risk: high` (Mode 2 là để người phác D-xx trước — bỏ design là bỏ luôn nó). Việc bỏ design đi
+  đúng đường của chore (`kc_bo_design`): plan nhận cổng duyệt spec và cổng điểm mù `blocking`.
 
 ## Giả định chưa xác nhận
 
@@ -523,7 +592,7 @@ subagent `<id>-checker`.
 | Kiểm `conventions.md` | `tools/check-conventions.sh` | Khoá biết = khoá trong mẫu + `rules_<phase>`; `aw ready` gọi |
 | Hash `based_on` | `tools/based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` |
 | Kiểm chéo | `tools/lib/cross-check.sh` | Một hàm; `implement` gọi là cảnh báo, `review` gọi là lỗi |
-| Mức chặn điểm mù | `kc_diem_mu_mo` | design (chore: plan) chặn `blocking`; implement cảnh báo, review chặn cả `review-blocking` |
+| Mức chặn điểm mù | `kc_diem_mu_mo` | design (không có design: plan) chặn `blocking`; implement cảnh báo, review chặn cả `review-blocking` |
 | Hàng đợi việc chờ người | `tools/pending.sh` | Chỉ đọc |
 | Entry check | Đầu mỗi `check-*.sh` | `review → plan → design → spec` |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | |
@@ -565,14 +634,17 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
    chỉ suy từ git, không nhận ra squash có sửa xung đột.
 2. **"Ngữ cảnh sạch" không cưỡng chế được ở agent không có subagent** — lùi về lời dặn người.
 3. **Checker kiểm hình thức, không kiểm nội dung.** Mọi YC có nhãn ≠ YC đúng với BRD. Đừng nhầm "qua
-   hết checker" với "làm đúng"; checker LLM chỉ thu hẹp khoảng trống này.
+   hết checker" với "làm đúng"; checker LLM chỉ thu hẹp khoảng trống này. Câu trích `[FILE]` máy kiểm
+   được có thật trong nguồn — nhưng YC diễn giải đúng câu trích hay không vẫn là việc của người.
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
 6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng, lỗi lộ muộn.
 7. **Máy không biết ai tick.** Hook chỉ có khi repo cài và agent có hook; không có hook thì agent tự
    tick vẫn lọt (artifact ngoài git, không có `git blame`). Hook không bắt dấu giả agent tự tính, và
    bỏ nhầm tick nếu người tick đúng lúc lệnh agent đang chạy. Nội dung đổi **trước** lần ghi dấu
-   đầu tiên cũng lọt.
+   đầu tiên cũng lọt. `aw approvals tick` ghi dấu hợp lệ nên hook không phân biệt được với người
+   duyệt: chặn nó là việc của luật hỏi quyền — không cài, chạy ở chế độ bỏ qua quyền, hay agent gọi
+   thẳng script engine thì chỉ còn nhật ký.
 8. **`review` không chạy lại test hay quét** — biết kết quả cũ, không biết lệnh có đủ. Lệnh lệch
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.

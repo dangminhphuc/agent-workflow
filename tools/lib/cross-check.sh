@@ -161,6 +161,33 @@ kc_loai() {
   ' "$1/intake.md"
 }
 
+# kc_design <thư-mục-feature> -> giá trị "- **Design:**" ở đầu spec.md (trước "## " đầu
+# tiên, bỏ qua comment); rỗng nếu không khai (= required).
+kc_design() {
+  [ -f "$1/spec.md" ] || return 0
+  awk '
+    { sub(/\r$/, "") }
+    cmt { if ($0 ~ /-->/) cmt = 0; next }
+    /^[ \t]*<!--/ && !/-->/ { cmt = 1; next }
+    /^##[ \t]/ { exit }
+    /^[ \t]*-[ \t]*\**Design\**:/ {
+      s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s)
+      gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit
+    }
+  ' "$1/spec.md"
+}
+
+# kc_bo_design <thư-mục-feature> -> thành công nếu việc KHÔNG có phase design: chore, hoặc
+# bugfix/refactor mà spec khai "Design: skip" (check-spec chặn skip sai loại / Risk high,
+# và mọi phase sau chạy lại check-spec nên skip sai không lọt qua được).
+kc_bo_design() {
+  case "$(kc_loai "$1")" in
+    chore) return 0 ;;
+    bugfix|refactor) [ "$(kc_design "$1")" = skip ] ;;
+    *) return 1 ;;
+  esac
+}
+
 # kc_spec_chua_duyet <thư-mục-feature> -> in lý do nếu spec.md chưa được NGƯỜI duyệt
 # (ô "Approved by human" chưa tick, hoặc nội dung đổi sau khi tick). Dùng làm cổng
 # vào phase ngay sau spec. Ghi dấu duyệt nếu người vừa tick.
@@ -453,7 +480,7 @@ kc_canh_bao_theo_loai() {
 
 # ------------------------------------------------------------------ điểm mù
 # Ba mức chặn của một điểm mù ([OPEN-QUESTION]) — người duyệt nhãn ở gate spec:
-#   blocking         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; chore: plan)
+#   blocking         sai thì cả thiết kế đổi hướng   → chặn phase ngay sau spec (design; không có design: plan)
 #   review-blocking  sai thì làm lại một phần code   → flow đi tiếp trên giả định tạm; review chặn
 #   non-blocking     sai thì sửa nhỏ                 → giao được; review ghi YC đó "pending"
 
@@ -475,7 +502,7 @@ kc_diem_mu() {
 }
 
 # kc_diem_mu_mo <thư-mục-feature> <mức...> -> điểm mù CÒN MỞ thuộc các mức đã cho.
-# Gọi với "blocking" làm cổng vào design (chore: plan); với "blocking" + "review-blocking"
+# Gọi với "blocking" làm cổng vào design (không có design — kc_bo_design: plan); với "blocking" + "review-blocking"
 # ở implement (cảnh báo) và review (chặn).
 kc_diem_mu_mo() {
   _dm_d="$1"; shift

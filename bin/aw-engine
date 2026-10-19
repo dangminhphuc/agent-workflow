@@ -19,9 +19,12 @@
 #   aw-engine task reopen <feature-dir> <YC-NNN|D-NN>
 #   aw-engine journal [report] | journal add <layer> <mô tả> [--feature <dir>]
 #   aw-engine based-on <feature-dir> <artifact> <input>...
+#   aw-engine toc <feature-dir> [artifact...]      mục lục ## Contents + anchor link của artifact
 #   aw-engine rename <new-branch>
 #   aw-engine guard pre|post                      hook gác ô duyệt (Claude Code)
 #   aw-engine approval design|plan <feature-dir>  cổng duyệt khi vào phase: còn gì chờ người duyệt
+#   aw-engine approvals [--global]              mọi ô duyệt chờ người (worktree này / mọi worktree)
+#   aw-engine approvals tick <dir> <spec|D-NN> <hash>   tick sau khi NGƯỜI chọn duyệt (/aw-approvals)
 #   aw-engine worktree new <type> <desc> [--create --base <ref>]
 #   aw-engine worktree status <branch>
 #   aw-engine worktree remove <branch> [--delete-branch]
@@ -108,9 +111,11 @@ case "$LENH" in
   task)      can_repo; exec sh "$T/task.sh" "$@" ;;
   journal)   can_repo; exec sh "$T/journal.sh" "$@" ;;
   based-on)  can_repo; exec sh "$T/based-on.sh" "$@" ;;
+  toc)       can_repo; exec sh "$T/toc.sh" "$@" ;;
   rename)    can_repo; exec sh "$T/rename-feature.sh" "$@" ;;
   guard)     can_repo; exec sh "$T/guard.sh" "$@" ;;
   approval)  can_repo; exec sh "$T/approval.sh" "$@" ;;
+  approvals) can_repo; exec sh "$T/approvals.sh" "$@" ;;
   worktree)
     can_repo
     sub="${1:-}"; [ $# -gt 0 ] && shift

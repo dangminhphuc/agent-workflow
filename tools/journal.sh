@@ -4,7 +4,7 @@
 #   aw journal [report]                         tổng hợp
 #   aw journal add <layer> "<mô tả>" [--feature <thư-mục-feature>]
 #
-# Ba nguồn, lưu ở $AW_CONFIG/journal/ (dùng chung mọi worktree của bản clone,
+# Bốn nguồn, lưu ở $AW_CONFIG/journal/ (dùng chung mọi worktree của bản clone,
 # không commit):
 #   checks.tsv    mỗi lần `aw check` chạy — engine tự ghi (AW_JOURNAL=0 để tắt)
 #   failures.tsv  thất bại người/agent ghi tay, gắn một lớp:
@@ -14,6 +14,7 @@
 #                   verify    thiếu kiểm chứng (test không bắt được lỗi, checker lọt)
 #                   state     mất trạng thái giữa phiên (bàn giao thiếu)
 #                   model     giới hạn thật của model — chỉ ghi sau khi đã loại bốn lớp trên
+#   approvals.tsv mỗi lần `aw approvals tick` ghi tick hộ người (/aw-approvals) — tick tay không có dòng
 #   findings.tsv  finding [Blocker]/[Should fix] của review.md — `aw check review`
 #                 ghi khi ĐẠT, theo "Category". Loại nào lặp ở nhiều việc là ứng
 #                 viên để nâng thành luật máy kiểm (TEST_CMD, quy tắc repo).

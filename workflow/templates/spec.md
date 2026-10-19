@@ -6,12 +6,17 @@ based_on: []
 
 - **Risk:** `<high | normal>`
 - **Reason:** <high khi đụng tiền/hạch toán, tích hợp mới, schema lõi, hoặc khó đảo ngược>
+- **Design:** `<required | skip>`   <!-- skip: chỉ bugfix/refactor nhỏ có Risk normal, không có lựa chọn kỹ thuật — bỏ phase design, đi thẳng /aw-plan. Người duyệt cùng spec -->
 - [ ] **Approved by human** — đã đọc và đồng ý toàn bộ spec   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick, sửa nội dung thì agent bỏ tick. Máy ghi dấu duyệt (hash nội dung) cạnh tick; nội dung đổi sau đó thì bị chặn tới khi người duyệt lại -->
+
+## Contents
+
+<!-- Mục lục — máy sinh bằng `aw toc <thư-mục-feature>`, không viết tay. Mỗi heading ## / ### một link. -->
 
 ## Sources
 
 <!-- Phiên bản: Confluence = số version của page; Jira = thời điểm `updated` của issue;
-[FILE] = sha commit đã đọc. Nguồn đổi sau đó thì so phiên bản để biết spec có lỗi thời. -->
+[FILE] = sha commit đã đọc. Nguồn đổi sau đó thì so phiên bản để biết spec có bị `stale` không. -->
 
 | # | Type | Identifier | Version | Read on |
 |---|---|---|---|---|
@@ -34,13 +39,17 @@ based_on: []
 
 ## Requirements
 
-<!-- Source, Priority, Type, Protected by, Target phải nằm ngay dưới "### YC-NNN".
+<!-- Source, Quote, Priority, Type, Protected by, Target phải nằm ngay dưới "### YC-NNN".
 Heading "###" khác (vd "### Ghi chú") đóng vùng YC; muốn chia nhỏ một YC thì dùng "####".
-Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — checker chặn nếu thiếu. -->
+Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — checker chặn nếu thiếu.
+Quote: nguồn [CONFLUENCE] [JIRA] [FILE] bắt buộc — chép NGUYÊN VĂN câu nguồn, mỗi câu một dòng "> …"
+(không thêm ngoặc kép). [FILE]: máy kiểm từng câu có trong file (khoảng trắng, xuống dòng không tính). -->
 
 ### YC-001 — <tiêu đề ngắn>
 
 - Source: `[CONFLUENCE]` [Tên page](URL) § Tên heading
+- Quote:
+  > <chép nguyên văn câu nguồn>
 - Priority: `must`   <!-- must | should — "should" chỉ khi NGUỒN nói vậy; nguồn im lặng = must -->
 - Description: <yêu cầu, diễn đạt lại cho rõ>
 - Acceptance criteria:
@@ -48,7 +57,7 @@ Mỗi YC có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — ch
 
 ### YC-002 — <tiêu đề ngắn>
 
-- Source: `[OPEN-QUESTION]` → `open-questions.md` § YC-002
+- Source: `[OPEN-QUESTION]` → [open-questions.md § YC-002](open-questions.md#yc-002)
 - Priority: `must`
 - Description: <...>
 - Assumption: <đang hiểu thế nào để đi tiếp>
@@ -92,7 +101,7 @@ Không có gì thì ghi "Không có." — checker chặn mục rỗng. -->
 
 ## Source conflicts
 
-<!-- Cột "Resolution" CHỈ được: trỏ tới điểm mù `open-questions.md § YC-NNN`, hoặc trỏ tới
+<!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § YC-NNN](open-questions.md#yc-nnn)`, hoặc trỏ tới
 nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
 Agent không tự phân xử mâu thuẫn nghiệp vụ — checker chặn. -->
 
