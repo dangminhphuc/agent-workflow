@@ -3888,7 +3888,7 @@ grep -v '^| `harness journal`' "$TN" > "$TMP/terms-thieu.md"
 ky_vong 1 "…terms.md thiếu một thuật ngữ thuat-ngu.md có → báo" lech_thuat_ngu "$TMP/terms-thieu.md" "$TD"
 dung "…đúng thuật ngữ thiếu" bang "$(lech_thuat_ngu "$TMP/terms-thieu.md" "$TD")" "thiếu trong terms.md: harness journal"
 # Cột Not phải viết thường: kc_tu_dich so khớp sau khi hạ chữ thường dòng artifact
-dung "cột Not của terms.md viết thường" sh -c "! awk -F'|' '/^[|] \`/ { print \$(NF - 1) }' '$TN' | grep -q '[A-ZĐÔ]'"
+dung "cột Not của terms.md viết thường" sh -c "! awk -F'|' '/^[|] \`/ { print \$(NF - 1) }' '$TN' | grep -Eq '[A-Z]|Đ|Ô'"
 dung "general.md §5 trỏ tới rules/terms.md" grep -q 'rules/terms.md' "$ROOT/workflow/rules/general.md"
 dung "workflow.yaml đăng ký terms.md" grep -q '^  - workflow/rules/terms.md$' "$ROOT/workflow.yaml"
 
