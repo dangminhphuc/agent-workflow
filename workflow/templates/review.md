@@ -38,7 +38,7 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
      đổi import/cấu trúc, không đổi assertion.
      perf: đọc perf.md, kết luận YC performance pass/fail theo số đo.
      chore: xác nhận mức "patch | minor" ở "Dependency upgrades" là đúng.
-     Loại việc khác: xoá mục này. -->
+     Job type khác: xoá mục này. -->
 
 ## Lens 2 — Design and scope
 

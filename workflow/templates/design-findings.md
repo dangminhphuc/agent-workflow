@@ -1,6 +1,6 @@
 # Design findings
 
-> Checker LLM chỉ được **chặn**, không được duyệt. Thiếu file này = checker chưa chạy.
+> LLM checker chỉ được **chặn**, không được duyệt. Thiếu file này = checker chưa chạy.
 > Người phân xử từng mục qua `/aw-clarify`: đồng ý (sửa `tdd.md` → `fixed`) hoặc `rejected: <lý do>`.
 
 ## Contents

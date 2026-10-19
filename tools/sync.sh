@@ -14,7 +14,7 @@ main() {
   cat <<EOT
 tools/sync.sh đã bỏ từ engine 2026.10.6. Không có gì được đổi.
 
-Nâng cấp engine (không commit gì vào repo đích):
+Nâng cấp engine (không commit gì vào target repo):
   aw upgrade <YYYY.M.D>
 
 Việc đang làm vẫn chạy bằng version ghi ở dòng Engine: trong intake.md của nó.

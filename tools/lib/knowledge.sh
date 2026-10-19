@@ -58,7 +58,7 @@ kt_anh_huong() {
 # kt_canh_bao <thư-mục-feature> -> cảnh báo (implement): tài liệu bị ảnh hưởng mà không đổi
 kt_canh_bao() {
   kt_anh_huong "$1" | while IFS='|' read -r _kf _kd _kvd; do
-    [ "$_kd" = 0 ] && echo "kiến thức bền có thể lỗi thời: diff đụng $_kvd (phạm vi của $_kf) mà $_kf không đổi — cập nhật nó, hoặc review ghi verdict ở \"## Durable knowledge\""
+    [ "$_kd" = 0 ] && echo "durable knowledge có thể stale: diff đụng $_kvd (phạm vi của $_kf) mà $_kf không đổi — cập nhật nó, hoặc review ghi verdict ở \"## Durable knowledge\""
   done
 }
 
@@ -86,11 +86,11 @@ kt_loi_review() {
     _kdong=$(printf '%s\n' "$_kbang" | awk -F '	' -v f="$_kf" '$1 == f { print; exit }')
     _kkl=$(printf '%s' "$_kdong" | cut -f2); _kly=$(printf '%s' "$_kdong" | cut -f3)
     case "$_kkl" in
-      "") echo "kiến thức bền \"$_kf\": không có verdict trong \"## Durable knowledge\" (diff đụng $_kvd)" ;;
+      "") echo "durable knowledge \"$_kf\": không có verdict trong \"## Durable knowledge\" (diff đụng $_kvd)" ;;
       pass) ;;
-      updated) [ "$_kd" = 1 ] || echo "kiến thức bền \"$_kf\": verdict \"updated\" nhưng diff không đổi file này" ;;
-      "not applicable") case "$_kly" in ""|"<"*">") echo "kiến thức bền \"$_kf\": verdict \"not applicable\" mà thiếu lý do" ;; esac ;;
-      *) echo "kiến thức bền \"$_kf\": verdict \"$_kkl\" không hợp lệ. Chỉ chấp nhận: pass / updated / not applicable" ;;
+      updated) [ "$_kd" = 1 ] || echo "durable knowledge \"$_kf\": verdict \"updated\" nhưng diff không đổi file này" ;;
+      "not applicable") case "$_kly" in ""|"<"*">") echo "durable knowledge \"$_kf\": verdict \"not applicable\" mà thiếu lý do" ;; esac ;;
+      *) echo "durable knowledge \"$_kf\": verdict \"$_kkl\" không hợp lệ. Chỉ chấp nhận: pass / updated / not applicable" ;;
     esac
   done
 }

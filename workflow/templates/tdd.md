@@ -41,12 +41,12 @@ quyết định cần duyệt." và xoá mẫu bên dưới.
 - Option B: <...> — pros: <...> / cons: <...>
 - Choice: <A> — vì <...>
 - Hard to reverse because: <...>
-- [ ] **Approved by human**   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick. Máy ghi dấu duyệt (hash của D) cạnh tick; D đổi sau đó thì bị chặn tới khi người duyệt lại -->
+- [ ] **Approved by human**   <!-- CHỈ NGƯỜI tick [x]; agent không bao giờ tick. Máy ghi approval hash (hash của D) cạnh tick; D đổi sau đó thì bị chặn tới khi người duyệt lại -->
 <!-- Khi mở lại: bỏ tick và thêm dòng
 - Reopen reason: <...> -->
 <!-- Mode 2 (Author: human): agent không sửa mục này, chỉ thêm
 - Critique (agent): <...> -->
-<!-- Kiến thức bền (tuỳ chọn, NGƯỜI quyết bằng cách duyệt D này):
+<!-- Durable knowledge (tuỳ chọn, NGƯỜI quyết bằng cách duyệt D này):
 - Promote: adr                  nâng D thành ADR khi hiện thực (aw adr promote); mặc định: no
 - Scope: `src/<module>/*`       phần code ADR ràng buộc — bắt buộc khi Promote: adr
 - Supersedes: ADR-NNNN         D đi ngược một ADR accepted: ghi rõ, ADR cũ thành superseded -->

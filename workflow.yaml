@@ -1,7 +1,7 @@
 # Manifest trung lập của quy trình — NGUỒN SỰ THẬT DUY NHẤT.
 #
 # Adapter đọc file này + workflow/phases/*.md rồi biên dịch ra artifact riêng
-# của từng agent. Không sửa trực tiếp file được sinh ra trong repo đích (chúng bị
+# của từng agent. Không sửa trực tiếp file được sinh ra trong target repo (chúng bị
 # exclude và được sinh lại bởi aw adapter build).
 #
 # Quy ước ngôn ngữ: định danh (khoá, id, đường dẫn) tiếng Anh ASCII. Nội dung agent
@@ -16,19 +16,19 @@ language: vi
 # Đây là cơ chế duy nhất làm nên tính không-phụ-thuộc-agent: phase N đọc file
 # do phase N-1 ghi ra, và agent nào cũng đọc/ghi được file.
 # Artifact của từng feature nằm ở <artifact_dir>/<tên-branch>/ (xem
-# conventions.md của repo đích). Cả thư mục bị .git/info/exclude (aw init):
+# conventions.md của target repo). Cả thư mục bị .git/info/exclude (aw init):
 # artifact chỉ ở máy, không vào commit.
 artifact_dir: .agent-workflow
 
-# Lệnh tiện ích — không phải phase, không có điều kiện ra riêng. Adapter sinh
+# Utility command — không phải phase, không có điều kiện ra riêng. Adapter sinh
 # mỗi mục thành một lệnh (Claude Code: /<id>).
 #   import          đưa artifact làm bằng tool khác vào giữa quy trình — chỉ sắp
 #                   xếp lại theo mẫu, không thêm nội dung
 #   approvals       liệt kê mọi ô "Approved by human" chờ người (worktree này, hoặc
 #                   --global), dẫn người duyệt từng mục; người chọn Duyệt thì máy tick
-#   clarify         gom mọi việc chờ người quyết (điểm mù, phát hiện của checker
+#   clarify         gom mọi việc chờ người quyết (open question, phát hiện của checker
 #                   LLM) theo thứ tự phải chốt trước, dẫn người đi từng mục
-#   bootstrap       một lần cho mỗi repo đích: đưa kiến thức (điểm vào, lệnh kiểm,
+#   bootstrap       một lần cho mỗi target repo: đưa kiến thức (điểm vào, lệnh kiểm,
 #                   tài liệu module, ADR có sẵn) vào git — phiên agent mới không phải đoán
 #   refactor        review + phản biện từng yêu cầu refactor của người, rồi ghi vào
 #                   refactor-requests.md (nguyên văn + tóm tắt, chưa làm); xong thì chỉ lệnh intake

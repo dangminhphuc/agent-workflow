@@ -7,7 +7,7 @@ aw adapter build cursor [--out <thư-mục>] [--force]
 ```
 
 Thường bạn không gọi trực tiếp: khai `ADAPTER="cursor"` (hay `"claude-code cursor"`
-cho team dùng cả hai) trong `config.sh`, rồi `aw init` (ở checkout chính) và
+cho team dùng cả hai) trong `config.sh`, rồi `aw init` (ở main checkout) và
 `aw worktree new … --create` (ở worktree mới) sẽ gọi nó. Mọi file sinh ra nằm trong
 các đường dẫn khai ở file [`exclude`](exclude): `/.cursor/commands/`,
 `/.cursor/agents/`, `/.cursor/skills/agent-workflow/`. Adapter **không** exclude cả
@@ -28,7 +28,7 @@ repo, thân phase) **giống hệt** bản Claude Code — `tools/run-tests.sh` 
 | `workflow/phases/<id>.md` | `.cursor/commands/aw-<id>.md` — lệnh `/aw-intake`, `/aw-spec`, `/aw-design`, `/aw-plan`, `/aw-implement`, `/aw-review`, `/aw-ship` |
 | `commands:` trong `workflow.yaml` | `.cursor/commands/aw-<id>.md` — `/aw-import`, `/aw-clarify`, `/aw-bootstrap` |
 | Phase có `requires_fresh_agent: true` | `.cursor/agents/independent-reviewer.md` — subagent ngữ cảnh riêng |
-| `llm_checker:` của phase | `.cursor/agents/<id>-checker.md` — subagent checker LLM (`design-checker`) |
+| `llm_checker:` của phase | `.cursor/agents/<id>-checker.md` — subagent LLM checker (`design-checker`) |
 | `workflow.yaml` + tóm tắt luật | `.cursor/skills/agent-workflow/SKILL.md` |
 | Khoá `uses_<phase>` của `conventions.md` (lúc chạy) | Bước "Repo skills & subagents": `aw uses <phase>`; skill: dùng tool gọi skill nếu có, không thì đọc file (POC `cursor-agent` 2026-10: không có tool đó); subagent: giao việc |
 
@@ -53,17 +53,17 @@ dặn agent: `<tham-số>` là đúng phần chữ đó, chép nguyên văn; kh�
 Đây là chỗ yếu hơn Claude Code (máy thay, không phải LLM chép), nên **engine chặn**
 chữ giữ chỗ còn nguyên: `aw feature '<tham-số>'` → `TÊN KHÔNG HỢP LỆ`,
 `aw input` với `<tham-số>` → `SAI CÁCH GỌI`. Agent quên thay thì bị chặn, không tạo
-thư mục việc tên `<tham-số>` hay mục `[HUMAN]` rác.
+job dir tên `<tham-số>` hay mục `[HUMAN]` rác.
 
 ## Cái gì KHÔNG biên dịch portable được — Cursor xử lý thế nào
 
-### 1. Ngữ cảnh sạch cho phase rà soát
+### 1. clean context cho phase rà soát
 
 `/aw-review` bắt buộc chạy qua subagent `independent-reviewer` (`.cursor/agents/`). Bản Cursor
 chưa có subagent (trước 2.4) thì không tự động hoá được: **người tự mở chat mới**,
 gõ `/aw-review` ở đó — không rà soát bằng chính chat vừa viết code.
 
-### 2. Hook gác ô duyệt
+### 2. Approval guard
 
 Xem [mục dưới](#hook-gác-ô-duyệt). Adapter không tự ghi `.cursor/hooks.json`.
 
@@ -76,7 +76,7 @@ Atlassian thì đầu vào lùi về `file` — nhãn `[FILE]` kèm đường d�
 
 Lệnh `/…` trong `.cursor/commands/`. Skill `agent-workflow` được Cursor nạp khi liên quan.
 
-### 5. Checker LLM
+### 5. LLM checker
 
 `/aw-design` bảo agent gọi subagent `design-checker` sau khi viết `tdd.md`.
 `aw check design` fail nếu chưa có `design-findings.md` — quên gọi cũng không lọt.
@@ -97,7 +97,7 @@ nguyên trong khối text agent in ngay trước câu hỏi.
 
 Cursor chạy nhiều model; chế độ Auto có thể đổi model giữa các phase. Cổng máy
 (`aw check`) không đổi theo model, nhưng chất lượng spec, thiết kế và phát hiện của
-checker LLM thì có. Nên chọn cố định một model cho phiên chạy phase, nhất là `/aw-design`
+LLM checker thì có. Nên chọn cố định một model cho phiên chạy phase, nhất là `/aw-design`
 (subagent `design-checker`) và `/aw-review`.
 
 ## Lệnh `aw approvals tick`
@@ -107,11 +107,11 @@ lệnh này vào danh sách lệnh Cursor được tự chạy (auto-run allowli
 lệnh khi dùng `/aw-approvals`: để Cursor hỏi bạn mỗi lần. Lý do và giới hạn:
 [../claude-code/README.md](../claude-code/README.md#hỏi-quyền-cho-aw-approvals-tick).
 
-## Hook gác ô duyệt
+## Approval guard
 
 Như Claude Code (xem [../claude-code/README.md](../claude-code/README.md#hook-gác-ô-duyệt)):
 `aw guard pre` trước mỗi lệnh của agent, `aw guard post` sau lệnh đó. Thêm vào
-`.cursor/hooks.json` của repo đích (hay của máy):
+`.cursor/hooks.json` của target repo (hay của máy):
 
 ```json
 {
@@ -131,7 +131,7 @@ Như Claude Code (xem [../claude-code/README.md](../claude-code/README.md#hook-g
 - **Bỏ tick là việc của hook, không phụ thuộc Cursor:** `post` sửa thẳng file. Phần
   *báo agent* (mã 2 + stderr) thì tuỳ Cursor có đưa stderr của `postToolUse` lại cho
   agent hay không — chưa kiểm trên Cursor thật. Không được báo thì agent có thể tick
-  lại ở lệnh sau; hook lại bỏ tick, và `aw check` vẫn chặn vì thiếu dấu duyệt hợp lệ.
+  lại ở lệnh sau; hook lại bỏ tick, và `aw check` vẫn chặn vì thiếu approval hash hợp lệ.
 - Cursor cũng chạy hook của `.claude/settings.json` (chế độ tương thích). Team có cả
   hai file thì một lệnh có thể chạy `aw guard` hai lần — **vô hại**, có test
   (`pre pre · lệnh · post post`).

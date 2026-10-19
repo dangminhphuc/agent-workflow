@@ -1,7 +1,7 @@
 ---
 id: review
 name: Rà soát độc lập
-summary: Bước 6/6 · Subagent ngữ cảnh sạch đối chiếu diff với spec, thiết kế, kế hoạch; ghi review.md
+summary: Bước 6/6 · Subagent clean context đối chiếu diff với spec, thiết kế, kế hoạch; ghi review.md
 required: true
 inputs:
   - intake.md

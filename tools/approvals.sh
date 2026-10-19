@@ -25,7 +25,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 if [ "${1:-}" = tick ]; then
   kq_khai approvals.sh \
-    "0=ĐÃ DUYỆT — đã tick và ghi dấu duyệt" \
+    "0=ĐÃ DUYỆT — đã tick và ghi approval hash" \
     "1=KHÔNG TICK — mục không chờ duyệt, hoặc nội dung đổi so với bản người đã thấy; chạy lại aw approvals rồi hỏi lại người" \
     "2=SAI THAM SỐ HOẶC THIẾU FILE"
 else
@@ -56,15 +56,15 @@ if [ "${1:-}" = tick ]; then
   case "$TT" in
     proposed|reopened|changed-after-approval) ;;
     approved) echo "$KHOA đã được duyệt sẵn — không làm gì."; exit 0 ;;
-    missing-box) echo "KHÔNG TICK: $KHOA thiếu ô duyệt — agent thêm ô (chưa tick) trước." >&2; exit 1 ;;
-    *) echo "KHÔNG TICK: không thấy ô duyệt của $KHOA trong $F." >&2; exit 1 ;;
+    missing-box) echo "KHÔNG TICK: $KHOA thiếu approval checkbox — agent thêm ô (chưa tick) trước." >&2; exit 1 ;;
+    *) echo "KHÔNG TICK: không thấy approval checkbox của $KHOA trong $F." >&2; exit 1 ;;
   esac
   HIEN=$(dy_hash "$F" "$LOAI" "$KHOA")
   if [ "$HIEN" != "$HASH" ]; then
     echo "KHÔNG TICK: nội dung $KHOA đã đổi so với bản người đã thấy (hash $HASH, giờ là $HIEN)." >&2
     exit 1
   fi
-  dy_tick "$F" "$LOAI" "$KHOA" "$HASH" || { echo "KHÔNG TICK: không ghi được ô duyệt của $KHOA." >&2; exit 1; }
+  dy_tick "$F" "$LOAI" "$KHOA" "$HASH" || { echo "KHÔNG TICK: không ghi được approval checkbox của $KHOA." >&2; exit 1; }
   TT=$(dy_trang_thai "$F" "$LOAI" | awk -F'|' -v k="$KHOA" '$1 == "S" && $2 == k { print $3; exit }')
   [ "$TT" = approved ] || { echo "KHÔNG TICK: sau khi ghi, $KHOA vẫn là \"$TT\"." >&2; exit 1; }
   # Nhật ký: lỗi ở đây không làm hỏng lệnh.
@@ -101,7 +101,7 @@ nhan_tt() {
     proposed) echo "chưa tick" ;;
     reopened) echo "đang mở lại" ;;
     changed-after-approval) echo "ĐÃ ĐỔI sau khi duyệt — đọc lại cả mục (máy không chỉ ra được dòng nào đổi)" ;;
-    missing-box) echo "thiếu ô duyệt — agent thêm ô (chưa tick), chưa duyệt được" ;;
+    missing-box) echo "thiếu approval checkbox — agent thêm ô (chưa tick), chưa duyệt được" ;;
     *) echo "$1" ;;
   esac
 }
@@ -153,7 +153,7 @@ while IFS='|' read -r WT BR; do
     printf '%s' "$MUC"
     if [ -n "$LOI" ]; then
       N_LOI=$((N_LOI + 1))
-      echo "      Ô duyệt sai dạng/chỗ (agent sửa dạng, không tick):"
+      echo "      Approval checkbox sai dạng/chỗ (agent sửa dạng, không tick):"
       printf '%s' "$LOI"
     fi
   done

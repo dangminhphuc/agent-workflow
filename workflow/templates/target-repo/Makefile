@@ -1,4 +1,4 @@
-# Mẫu Makefile cho repo đích — tài liệu của engine agent-workflow, KHÔNG phải luật.
+# Mẫu Makefile cho target repo — tài liệu của engine agent-workflow, KHÔNG phải luật.
 # Chép vào gốc repo (cp .agent-workflow/.engine/templates/target-repo/Makefile Makefile),
 # thay từng dòng `chua_khai` bằng lệnh thật, commit qua PR.
 #

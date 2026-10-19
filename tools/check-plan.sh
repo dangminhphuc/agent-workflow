@@ -217,7 +217,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
       if (d_tt[d] != "approved")
-        loi(d ": chưa được người duyệt (" (d_tt[d] == "" ? "không đọc được ô duyệt" : d_tt[d]) ")" \
+        loi(d ": chưa được người duyệt (" (d_tt[d] == "" ? "không đọc được approval checkbox" : d_tt[d]) ")" \
             (d in dua_tren ? " — task bị ảnh hưởng:" dua_tren[d] " (đặt lại `[ ]`)" : ""))
     }
 

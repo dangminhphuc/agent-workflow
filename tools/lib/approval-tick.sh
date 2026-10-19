@@ -65,13 +65,13 @@ dy_quet() {
     bo { next }
     # Dạng cũ (trước ô duyệt): báo rõ để người đổi, không đọc lẫn hai dạng.
     loai == "spec" && !dau_file && (sach ~ /^[-*][ \t]*\*\*Status:\*\*/ || sach ~ /Trạng thái spec[^:]*:/) {
-      print "L|spec.md dòng " NR ": dạng cũ \"Status:\" — thay bằng ô duyệt \"- [ ] **" nhan_dy "**\" (xem templates/spec.md)"; next
+      print "L|spec.md dòng " NR ": dạng cũ \"Status:\" — thay bằng approval checkbox \"- [ ] **" nhan_dy "**\" (xem templates/spec.md)"; next
     }
     loai == "spec" {
       if (sach ~ /^##[ \t]/) dau_file = 1
       if (od) {
-        if (dau_file) { print "L|spec.md dòng " NR ": ô duyệt spec phải nằm ở phần đầu file, trước heading \"##\" đầu tiên"; next }
-        if (n_od++) { print "L|spec.md dòng " NR ": ô duyệt spec bị lặp — chỉ được có một"; next }
+        if (dau_file) { print "L|spec.md dòng " NR ": approval checkbox spec phải nằm ở phần đầu file, trước heading \"##\" đầu tiên"; next }
+        if (n_od++) { print "L|spec.md dòng " NR ": approval checkbox spec bị lặp — chỉ được có một"; next }
         print "O|spec|" tick "|" dau "|" NR "|0"; next
       }
       if (nhan) print "L|spec.md dòng " NR ": dòng có \"" nhan_dy "\" nhưng sai dạng — phải là \"- [ ] **" nhan_dy "**\" ở đầu dòng"
@@ -91,18 +91,18 @@ dy_quet() {
     }
     sach ~ /^##?#?[ \t]/ { dong_d(); next }
     od {
-      if (d == "") { print "L|tdd.md dòng " NR ": ô duyệt nằm ngoài mục \"### D-NN\""; next }
-      if (d in co_od) { print "L|tdd.md dòng " NR ": " d " có nhiều ô duyệt — chỉ được có một"; next }
+      if (d == "") { print "L|tdd.md dòng " NR ": approval checkbox nằm ngoài mục \"### D-NN\""; next }
+      if (d in co_od) { print "L|tdd.md dòng " NR ": " d " có nhiều approval checkbox — chỉ được có một"; next }
       co_od[d] = 1; d_tick[d] = tick; d_dau[d] = dau; d_nr[d] = NR; next
     }
     nhan { print "L|tdd.md dòng " NR ": dòng có \"" nhan_dy "\" nhưng sai dạng — phải là \"- [ ] **" nhan_dy "**\" ở đầu dòng"; next }
     d != "" && sach ~ /^[ \t]*-[ \t]*(Status|Trạng thái)[^:]*:/ {
-      print "L|tdd.md dòng " NR ": " d " dùng dạng cũ \"Status:\" — thay bằng ô duyệt \"- [ ] **" nhan_dy "**\" (xem templates/tdd.md)"; next
+      print "L|tdd.md dòng " NR ": " d " dùng dạng cũ \"Status:\" — thay bằng approval checkbox \"- [ ] **" nhan_dy "**\" (xem templates/tdd.md)"; next
     }
     d != "" && sach ~ /Reopen reason[^:]*:/ { v = sach; sub(/^[^:]*:/, "", v); gsub(/[*`]/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v); if (co_nd(v)) ly_do[d] = 1 }
     END {
       dong_d()
-      if (loai == "spec" && !n_od) print "L|spec.md thiếu ô duyệt \"- [ ] **" nhan_dy "**\" ở phần đầu file (xem templates/spec.md)"
+      if (loai == "spec" && !n_od) print "L|spec.md thiếu approval checkbox \"- [ ] **" nhan_dy "**\" ở phần đầu file (xem templates/spec.md)"
     }
   ' "$1"
 }
@@ -141,7 +141,7 @@ dy_trang_thai() {
     case "$_k" in
       L) printf 'L|%s\n' "$_a" ;;
       T) printf 'S|%s|missing-box\n' "$_a"
-         printf 'L|%s: thiếu ô duyệt "- [ ] **%s**"\n' "$_a" "$DY_NHAN_D" ;;
+         printf 'L|%s: thiếu approval checkbox "- [ ] **%s**"\n' "$_a" "$DY_NHAN_D" ;;
       O)
         if [ "$_b" = 1 ]; then
           if [ -z "$_c" ] || [ "$_c" = "$(dy_hash "$1" "$2" "$_a")" ]; then printf 'S|%s|approved\n' "$_a"

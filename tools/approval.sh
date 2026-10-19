@@ -35,7 +35,7 @@ tuong_doi() { if [ -n "$REPO" ]; then printf '%s' "${1#"$REPO"/}"; else printf '
 
 BO_TK=0; kc_bo_design "$DIR" && BO_TK=1
 if [ "$PHASE" = design ] && [ "$BO_TK" = 1 ]; then
-  if [ "$LOAI" = chore ]; then echo "LỖI: loại việc chore không có phase design — đi thẳng /aw-plan." >&2
+  if [ "$LOAI" = chore ]; then echo "LỖI: job type chore không có phase design — đi thẳng /aw-plan." >&2
   else echo "LỖI: spec.md khai \"Design: skip\" — việc này không có phase design, đi thẳng /aw-plan." >&2; fi
   exit 2
 fi
@@ -71,7 +71,7 @@ if [ "$CONG" = spec ]; then
     *)
       echo "Trạng thái:  ✗ KHÔNG ĐỌC ĐƯỢC Ô DUYỆT"
       [ -n "$LOI" ] && printf '%s\n' "$LOI"
-      echo "Cách duyệt:  sửa ô duyệt theo mẫu templates/spec.md (agent được sửa dạng, không được tick)" ;;
+      echo "Cách duyệt:  sửa approval checkbox theo mẫu templates/spec.md (agent được sửa dạng, không được tick)" ;;
   esac
   echo ""
   awk -v phase="$PHASE" -v loai="$LOAI" '
@@ -114,8 +114,8 @@ if [ "$CONG" = spec ]; then
         printf "  %d. Design: skip — bỏ phase design: không có D-xx nào để bạn duyệt, /aw-plan đi thẳng từ spec. Bản sửa có lựa chọn kỹ thuật (đổi API, schema, nhiều module) thì đổi thành \"Design: required\"\n", ++k
       mo = 0; mo_chan = ""
       for (i = 1; i <= n_oq; i++) if (tt[oq[i]] != "answered") { mo++; dmc[mc[oq[i]]]++; if (mc[oq[i]] == "blocking") mo_chan = mo_chan " " oq[i] }
-      if (mo == 0) printf "  %d. Điểm mù còn mở: 0\n", ++k
-      else printf "  %d. Điểm mù còn mở: %d (blocking: %d · review-blocking: %d · non-blocking: %d)%s\n", ++k, mo, dmc["blocking"] + 0, dmc["review-blocking"] + 0, dmc["non-blocking"] + 0, \
+      if (mo == 0) printf "  %d. Open question còn mở: 0\n", ++k
+      else printf "  %d. Open question còn mở: %d (blocking: %d · review-blocking: %d · non-blocking: %d)%s\n", ++k, mo, dmc["blocking"] + 0, dmc["review-blocking"] + 0, dmc["non-blocking"] + 0, \
              (mo_chan == "" ? "" : " — mục \"blocking\" phải trả lời qua /aw-clarify trước:" mo_chan)
       print ""
       t = ""
@@ -171,8 +171,8 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" "
       if (s == "approved") continue
       if (s == "proposed") lydo = "chưa tick"
       else if (s == "reopened") lydo = "đang mở lại — lý do: " ld[d]
-      else if (s == "changed-after-approval") lydo = "ĐÃ ĐỔI sau khi bạn tick — đọc lại; đồng ý thì xoá dấu duyệt (giữ [x])"
-      else lydo = "thiếu ô duyệt — agent thêm ô (chưa tick) rồi chạy lại"
+      else if (s == "changed-after-approval") lydo = "ĐÃ ĐỔI sau khi bạn tick — đọc lại; đồng ý thì xoá approval hash (giữ [x])"
+      else lydo = "thiếu approval checkbox — agent thêm ô (chưa tick) rồi chạy lại"
       printf "  %s — %s\n", d, ten[d]
       printf "         %s%s\n", (d in nr ? "dòng " nr[d] " · " : ""), lydo
       printf "         tác giả: %s%s%s\n", (tg[d] == "human" ? "bạn (human)" : (tg[d] == "" ? "?" : tg[d])), \
@@ -184,10 +184,10 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" "
     print "Cách duyệt:  đọc từng D ở trên, đổi \"- [ ] **" nhan "**\" thành \"- [x] **" nhan "**\""
     print "             ở dòng ghi bên cạnh. Không đồng ý thì để trống và nói agent cần sửa gì."
     c = 0; cc = 0; for (i = 1; i <= nph; i++) { x = xl[dsph[i]]; if (!ph_xong(x)) { c++; if (muc[dsph[i]] == "block") cc++ } }
-    if (c) print "Lưu ý:       còn " c " phát hiện của checker LLM chưa phân xử (block: " cc ") — chạy /aw-clarify"
+    if (c) print "Lưu ý:       còn " c " finding của LLM checker chưa phân xử (block: " cc ") — chạy /aw-clarify"
     exit 1
   }
 ' "$TDD" "$PHF"
 [ $? -eq 0 ] && exit 0
-[ -n "$LOI" ] && { echo ""; echo "Ô duyệt sai dạng/chỗ (agent sửa dạng, không tick):"; printf '%s\n' "$LOI"; }
+[ -n "$LOI" ] && { echo ""; echo "Approval checkbox sai dạng/chỗ (agent sửa dạng, không tick):"; printf '%s\n' "$LOI"; }
 exit 1

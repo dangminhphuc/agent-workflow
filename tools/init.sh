@@ -56,7 +56,7 @@ done
 if [ -n "$ADAPTER" ]; then al_kiem "$ENG" "$ADAPTER" || exit 2; fi
 
 case "$(CDPATH= cd -- "$AW_REPO" && pwd)/" in
-  "$ENG"/*) echo "LỖI: không init trong chính engine agent-workflow ($AW_REPO) — repo đích mới là nơi dùng." >&2; exit 2 ;;
+  "$ENG"/*) echo "LỖI: không init trong chính engine agent-workflow ($AW_REPO) — target repo mới là nơi dùng." >&2; exit 2 ;;
 esac
 
 mkdir -p "$AW_CONFIG" || exit 9
@@ -176,4 +176,4 @@ if [ ! -f "$AW_REPO/AGENTS.md" ] && [ ! -f "$AW_REPO/CLAUDE.md" ]; then
   echo "  $n. Repo chưa có AGENTS.md — phiên agent mới chỉ có repo sẽ phải đoán hệ thống là gì, chạy và"
   echo "     kiểm thế nào. Mẫu: .agent-workflow/.engine/templates/target-repo/AGENTS.md (commit qua PR)"; n=$((n + 1))
 fi
-echo "  $n. Mở agent ở checkout chính, chạy /aw-intake — nó đề xuất worktree cho việc"
+echo "  $n. Mở agent ở main checkout, chạy /aw-intake — nó đề xuất worktree cho việc"

@@ -17,10 +17,10 @@ Cài wrapper aw (một lần cho cả máy):
   curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/$V/aw -o ~/.local/bin/aw
   chmod +x ~/.local/bin/aw
 
-Repo chưa từng cài — trong repo đích:
+Repo chưa từng cài — trong target repo:
   aw init --test-cmd "npm test"
 
-Repo đã có bộ cài cũ (.agent-workflow/.quy-trinh/) — trong repo đích:
+Repo đã có bộ cài cũ (.agent-workflow/.quy-trinh/) — trong target repo:
   aw init --from-legacy
   (chuyển conventions.md, cau-hinh.sh vào .git/agent-workflow/; không xoá, không commit gì)
 

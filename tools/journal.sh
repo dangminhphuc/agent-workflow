@@ -119,7 +119,7 @@ fi
 # ---------------------------------------------------------------- report
 case "${1:-report}" in report) ;; *) echo "Dùng: aw journal [report] | aw journal add <layer> \"<mô tả>\"" >&2; exit 2 ;; esac
 
-echo "Nhật ký harness — $JD"
+echo "harness journal — $JD"
 
 echo ""
 echo "Checker (aw check)"

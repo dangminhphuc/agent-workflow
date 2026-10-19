@@ -22,7 +22,7 @@ Arguments contain `--global` → `aw approvals --global` (every worktree of this
 | `CÓ Ô CHỜ DUYỆT` | Print stdout **verbatim** in a ```` ```text ```` block (it holds the links), then step 2 |
 | `SAI THAM SỐ` | Report the error, stop |
 
-Items under "Ô duyệt sai dạng/chỗ" cannot be approved here: list them at the end, the job's own phase fixes them.
+Items under "Approval checkbox sai dạng/chỗ" cannot be approved here: list them at the end, the job's own phase fixes them.
 
 ## 2. One item per turn, in the listed order
 

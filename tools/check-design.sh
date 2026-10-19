@@ -46,7 +46,7 @@ PH="$DIR/design-findings.md"
 
 if kc_bo_design "$DIR"; then
   if [ "$(kc_loai "$DIR")" = "chore" ]; then
-    echo "  [LỖI] Loại việc là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+    echo "  [LỖI] Job type là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
   else
     echo "  [LỖI] spec.md khai \"Design: skip\" — việc này KHÔNG có phase design. Đi thẳng /aw-plan."
     echo "        Cần design thì đổi thành \"Design: required\" trong spec (người duyệt lại spec)."
@@ -225,7 +225,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
 
     # 8. checker LLM
     if (ph_thieu == 1) {
-      loi("Chưa có design-findings.md — checker LLM chưa chạy. Không có file phát hiện là KHÔNG ĐẠT, không phải \"không có gì để báo\".")
+      loi("Chưa có design-findings.md — LLM checker chưa chạy. Không có file phát hiện là KHÔNG ĐẠT, không phải \"không có gì để báo\".")
     } else {
       for (i = 1; i <= n_ph; i++) {
         p = ds_ph[i]

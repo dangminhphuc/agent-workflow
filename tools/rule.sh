@@ -71,7 +71,7 @@ dy_dong_dau "$SPEC" spec >/dev/null
 tt=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
 [ "$tt" = approved ] || tu_choi "spec.md chưa được người duyệt (${tt:-?}) — chỉ nâng YC trong spec đã duyệt"
 ID=$(yc_truong "$SPEC" "$YC" Promote | tr -d '`')
-[ -n "$ID" ] || tu_choi "$YC không khai \"- Promote: BR-<MIỀN>-NNN\" — người quyết nâng YC nào, trong chính YC đó (dưới ô duyệt spec)"
+[ -n "$ID" ] || tu_choi "$YC không khai \"- Promote: BR-<MIỀN>-NNN\" — người quyết nâng YC nào, trong chính YC đó (dưới approval checkbox spec)"
 ls_=$(luat_loi_spec "$DIR" | awk -v yc="$YC" 'index($0, yc ":") == 1')
 [ -z "$ls_" ] || { printf '%s\n' "$ls_" | while IFS= read -r x; do echo "  ✗ $x"; done; n_tc=$((n_tc + 1)); }
 KHOI="${TMPDIR:-/tmp}/aw-luat-moi.$$"
@@ -87,7 +87,7 @@ CU=$(luat_ds "$MT_REPO" "$MT_CONV" | awk -F'|' -v id="$ID" '$2 == id { print $1;
 DICH=${CU:-$(luat_dich "$ID" "$MT_CONV")}
 mkdir -p "$(dirname "$MT_REPO/$DICH")" || exit 2
 if [ ! -f "$MT_REPO/$DICH" ]; then
-  printf '# Business rules — %s\n\n> Luật nghiệp vụ bền: bất biến còn đúng sau từng việc. `aw rule promote` thêm khối từ YC\n> đã duyệt; sửa qua PR. Không xoá luật — đổi `Status: superseded by BR-…`.\n' \
+  printf '# Business rules — %s\n\n> Business rule: bất biến còn đúng sau từng việc. `aw rule promote` thêm khối từ YC\n> đã duyệt; sửa qua PR. Không xoá luật — đổi `Status: superseded by BR-…`.\n' \
     "$(printf '%s' "$ID" | awk -F- '{ print tolower($2) }')" > "$MT_REPO/$DICH"
 fi
 awk -v id="$ID" -v khoi="$KHOI" '
