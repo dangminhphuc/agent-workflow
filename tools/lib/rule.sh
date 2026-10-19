@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
-# Luật nghiệp vụ bền (BR-) — YC đã duyệt được nâng thành luật trong repo đích.
+# Luật nghiệp vụ bền (BR-) — REQ đã duyệt được nâng thành luật trong repo đích.
 #
-# Người quyết nâng YC nào ngay trong YC (dấu duyệt spec phủ trường này):
+# Người quyết nâng REQ nào ngay trong REQ (dấu duyệt spec phủ trường này):
 #   - Promote: BR-<MIỀN>-NNN
-# `aw rule promote` chỉ CHÉP: tiêu đề, Description, tiêu chí chấp nhận của YC; nguồn
-# lấy từ Source của YC + phiên bản trong bảng Sources; phạm vi = Expected files của
-# task phủ YC (trừ file test, thư mục ADR, thư mục luật). Không chép toàn văn PRD.
+# `aw rule promote` chỉ CHÉP: tiêu đề, Description, tiêu chí chấp nhận của REQ; nguồn
+# lấy từ Source của REQ + phiên bản trong bảng Sources; phạm vi = Expected files của
+# task phủ REQ (trừ file test, thư mục ADR, thư mục luật). Không chép toàn văn PRD.
 #
 # Khối luật (heading, tên trường tiếng Anh — checker đọc; nội dung tiếng Việt):
 #   ### BR-BILLING-003: <tên>
@@ -16,7 +16,7 @@
 #   - Status: active | superseded by BR-…
 #   - Acceptance:
 #     - <ví dụ kiểm được>
-#   - Origin: `<việc>` § YC-NNN
+#   - Origin: `<việc>` § REQ-NNN
 # Khối nằm trong file ở knowledge_rules_dir (mặc định docs/product/rules/<miền>.md),
 # hoặc trong tài liệu module (knowledge_files) — người dời khối được, checker tìm theo ID.
 #
@@ -78,18 +78,18 @@ luat_khoi() {
   ' "$1" | awk '{ l[NR] = $0 } END { n = NR; while (n > 0 && l[n] ~ /^[ \t]*$/) n--; for (i = 1; i <= n; i++) print l[i] }'
 }
 
-# yc_noi_dung <spec.md> <YC-NNN> -> dòng của mục YC, đã bỏ chú thích HTML
+# yc_noi_dung <spec.md> <REQ-NNN> -> dòng của mục REQ, đã bỏ chú thích HTML
 yc_noi_dung() {
   awk -v yc="$2" '
     { sub(/\r$/, "") }
     trong_cmt { if (index($0, "-->")) { trong_cmt = 0; sub(/^.*-->/, "") } else next }
     { while ((i = index($0, "<!--")) > 0) { j = index(substr($0, i), "-->"); if (j == 0) { $0 = substr($0, 1, i - 1); trong_cmt = 1; break } $0 = substr($0, 1, i - 1) substr($0, i + j + 2) } }
-    /^##/ { if (trong) exit; if ($0 ~ /^###[ \t]+YC-[0-9]+/) { match($0, /YC-[0-9]+/); if (substr($0, RSTART, RLENGTH) == yc) trong = 1 } }
+    /^##/ { if (trong) exit; if ($0 ~ /^###[ \t]+REQ-[0-9]+/) { match($0, /REQ-[0-9]+/); if (substr($0, RSTART, RLENGTH) == yc) trong = 1 } }
     trong { print }
   ' "$1"
 }
 
-# yc_truong <spec.md> <YC-NNN> <Trường> -> giá trị (bỏ backtick, **)
+# yc_truong <spec.md> <REQ-NNN> <Trường> -> giá trị (bỏ backtick, **)
 yc_truong() {
   yc_noi_dung "$1" "$2" | awk -v k="$3" '
     { s = $0; sub(/^[-*][ \t]*/, "", s); gsub(/\*\*/, "", s)
@@ -97,17 +97,17 @@ yc_truong() {
       v = substr(s, length(k) + 2); gsub(/^[ \t]+|[ \t]+$/, "", v); print v; exit }'
 }
 
-# luat_nang_ds <spec.md> -> "<YC>|<ID>" cho YC có "Promote:"
+# luat_nang_ds <spec.md> -> "<REQ>|<ID>" cho REQ có "Promote:"
 luat_nang_ds() {
   [ -f "$1" ] || return 0
-  awk '{ sub(/\r$/, "") } /^###[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); print substr($0, RSTART, RLENGTH) }' "$1" |
+  awk '{ sub(/\r$/, "") } /^###[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); print substr($0, RSTART, RLENGTH) }' "$1" |
   while IFS= read -r _ly; do
     _lp=$(yc_truong "$1" "$_ly" Promote | tr -d '`')
     [ -n "$_lp" ] && printf '%s|%s\n' "$_ly" "$_lp"
   done
 }
 
-# luat_nguon <thư-mục-feature> <YC> -> dòng "S|<Source>", tuỳ chọn "Q|<Quote>", hoặc "L|<lỗi>"
+# luat_nguon <thư-mục-feature> <REQ> -> dòng "S|<Source>", tuỳ chọn "Q|<Quote>", hoặc "L|<lỗi>"
 luat_nguon() {
   _lS="$1/spec.md"; _lv=$(basename "$1")
   _lsrc=$(yc_truong "$_lS" "$2" Source)
@@ -150,14 +150,14 @@ luat_nguon() {
   esac
 }
 
-# luat_pham_vi <thư-mục-feature> <YC> <conventions.md> -> glob phạm vi, cách nhau dấu cách:
-# Expected files của task phủ YC, trừ file test, thư mục ADR, thư mục luật.
+# luat_pham_vi <thư-mục-feature> <REQ> <conventions.md> -> glob phạm vi, cách nhau dấu cách:
+# Expected files của task phủ REQ, trừ file test, thư mục ADR, thư mục luật.
 luat_pham_vi() {
   _ltf=$(conv_get "$3" test_files); _lad=$(adr_thu_muc "$3"); _ltd=$(luat_thu_muc "$3")
   awk -v yc="$2" '
     { sub(/\r$/, "") }
     /^###?[ \t]/ { if (phu) for (i = 1; i <= n; i++) print g[i]; phu = 0; n = 0; next }
-    /^[ \t]*-[ \t]*\**Covers\**:/ { s = $0; while (match(s, /YC-[0-9]+/)) { if (substr(s, RSTART, RLENGTH) == yc) phu = 1; s = substr(s, RSTART + RLENGTH) } }
+    /^[ \t]*-[ \t]*\**Covers\**:/ { s = $0; while (match(s, /REQ-[0-9]+/)) { if (substr(s, RSTART, RLENGTH) == yc) phu = 1; s = substr(s, RSTART + RLENGTH) } }
     /^[ \t]*-[ \t]*\**Expected files\**:/ { s = $0; while (match(s, /`[^`]+`/)) { g[++n] = substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) } }
     END { if (phu) for (i = 1; i <= n; i++) print g[i] }
   ' "$1/plan.md" | while IFS= read -r _lg; do
@@ -170,7 +170,7 @@ luat_pham_vi() {
   done | awk '!t[$0]++ { printf "%s`%s`", (n++ ? " " : ""), $0 } END { if (n) print "" }'
 }
 
-# luat_khoi_moi <thư-mục-feature> <YC> <ID> <conventions.md> -> khối luật (hoặc "L|…" ra stdout, mã 1)
+# luat_khoi_moi <thư-mục-feature> <REQ> <ID> <conventions.md> -> khối luật (hoặc "L|…" ra stdout, mã 1)
 luat_khoi_moi() {
   _lS="$1/spec.md"
   _lng=$(luat_nguon "$1" "$2")
@@ -179,7 +179,7 @@ luat_khoi_moi() {
   [ -n "$_lsc" ] || { echo "L|$2: không có phạm vi — task phủ $2 không có Expected files nào ngoài file test"; return 1; }
   _lrule=$(yc_truong "$_lS" "$2" Description)
   case "$_lrule" in ""|"<"*) echo "L|$2: thiếu \"- Description:\" — nội dung luật chép từ đó"; return 1 ;; esac
-  printf '### %s: %s\n' "$3" "$(yc_noi_dung "$_lS" "$2" | awk 'NR == 1 { sub(/^###[ \t]+YC-[0-9]+[ \t]*/, ""); sub(/^(—|–|-|:)[ \t]*/, ""); print; exit }')"
+  printf '### %s: %s\n' "$3" "$(yc_noi_dung "$_lS" "$2" | awk 'NR == 1 { sub(/^###[ \t]+REQ-[0-9]+[ \t]*/, ""); sub(/^(—|–|-|:)[ \t]*/, ""); print; exit }')"
   printf -- '- Rule: %s\n- Scope: %s\n' "$_lrule" "$_lsc"
   printf '%s\n' "$_lng" | awk -F'|' '$1 == "S" { print "- Source: " substr($0, 3) } $1 == "Q" { print "- Quote: " substr($0, 3) }'
   printf -- '- Status: active\n- Acceptance:\n'
@@ -190,7 +190,7 @@ luat_khoi_moi() {
   printf -- '- Origin: `%s` § %s\n' "$(basename "$1")" "$2"
 }
 
-# luat_loi_spec <thư-mục-feature> -> lỗi trường "Promote:" của YC (checker spec chặn)
+# luat_loi_spec <thư-mục-feature> -> lỗi trường "Promote:" của REQ (checker spec chặn)
 luat_loi_spec() {
   _lS="$1/spec.md"; [ -f "$_lS" ] || return 0
   _lr=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || _lr=${AW_REPO:-.}
@@ -200,7 +200,7 @@ luat_loi_spec() {
       echo "$_ly: \"Promote: $_lid\" — dạng BR-<MIỀN>-NNN (chữ hoa, số), vd BR-BILLING-003"; continue
     fi
     case "$(yc_truong "$_lS" "$_ly" Source)" in
-      *INFERRED*|*OPEN-QUESTION*) echo "$_ly: nguồn [INFERRED]/[OPEN-QUESTION] không nâng được thành luật — chỉ YC có nguồn bền" ;;
+      *INFERRED*|*OPEN-QUESTION*) echo "$_ly: nguồn [INFERRED]/[OPEN-QUESTION] không nâng được thành luật — chỉ REQ có nguồn bền" ;;
     esac
     luat_ds "$_lr" "$_lc" | awk -F'|' -v id="$_lid" '$2 == id { print $1 }' | while IFS= read -r _lf; do
       _lo=$(luat_khoi "$_lr/$_lf" "$_lid" | sed -n 's/^[-*][ \t]*Origin:[ \t]*//p' | tr -d '`')
@@ -209,7 +209,7 @@ luat_loi_spec() {
   done
 }
 
-# luat_loi_ke_hoach <thư-mục-feature> -> YC "Promote:" không có task phủ nó mà Expected
+# luat_loi_ke_hoach <thư-mục-feature> -> REQ "Promote:" không có task phủ nó mà Expected
 # files gồm file luật đích (hoặc thư mục luật).
 luat_loi_ke_hoach() {
   [ -f "$1/spec.md" ] && [ -f "$1/plan.md" ] || return 0
@@ -222,7 +222,7 @@ luat_loi_ke_hoach() {
       function xong() { if (phu && co) ok = 1; phu = 0; co = 0 }
       { sub(/\r$/, "") }
       /^###?[ \t]/ { xong(); next }
-      /^[ \t]*-[ \t]*\**Covers\**:/ { s = $0; while (match(s, /YC-[0-9]+/)) { if (substr(s, RSTART, RLENGTH) == yc) phu = 1; s = substr(s, RSTART + RLENGTH) } }
+      /^[ \t]*-[ \t]*\**Covers\**:/ { s = $0; while (match(s, /REQ-[0-9]+/)) { if (substr(s, RSTART, RLENGTH) == yc) phu = 1; s = substr(s, RSTART + RLENGTH) } }
       /^[ \t]*-[ \t]*\**Expected files\**:/ { s = $0; while (match(s, /`[^`]+`/)) { g = substr(s, RSTART + 1, RLENGTH - 2); if (g == dich || index(g, tm) == 1) co = 1; s = substr(s, RSTART + RLENGTH) } }
       END { xong(); exit !ok }
     ' "$1/plan.md" ||
@@ -230,7 +230,7 @@ luat_loi_ke_hoach() {
   done
 }
 
-# luat_loi_viec <thư-mục-feature> -> YC "Promote:" chưa có khối luật, hoặc khối lệch YC đã duyệt
+# luat_loi_viec <thư-mục-feature> -> REQ "Promote:" chưa có khối luật, hoặc khối lệch REQ đã duyệt
 luat_loi_viec() {
   [ -f "$1/spec.md" ] && [ -f "$1/plan.md" ] || return 0
   _lr=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0

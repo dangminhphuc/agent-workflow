@@ -3,7 +3,7 @@
 # dễ đọc, dựng từ file (không để agent tự diễn giải).
 #
 #   aw approval design <thư-mục-feature>   vào /aw-design: spec đã được duyệt chưa
-#   aw approval plan   <thư-mục-feature>   vào /aw-plan: mọi D-xx đã được duyệt chưa
+#   aw approval plan   <thư-mục-feature>   vào /aw-plan: mọi DEC-xxx đã được duyệt chưa
 #                                          (không có design — chore, "Design: skip": hỏi spec)
 #
 # Lệnh này KHÔNG duyệt gì. Agent in nguyên văn stdout cho người rồi hỏi bằng hộp
@@ -82,9 +82,9 @@ if [ "$CONG" = spec ]; then
     /^[ \t]*<!--/ && !/-->/ { cmt = 1; next }
     /^[ \t]*<!--.*-->[ \t]*$/ { next }
     idx == 1 && rui_ro == "" && /^[-*][ \t]*\*\*Risk:\*\*/ { v = $0; sub(/^[^:]*:/, "", v); rui_ro = ra(v); next }
-    idx == 1 && /^###[ \t]+YC-[0-9]+/ {
-      match($0, /YC-[0-9]+/); cur = substr($0, RSTART, RLENGTH); ds[++n] = cur
-      t = $0; sub(/^###[ \t]+YC-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t; next
+    idx == 1 && /^###[ \t]+REQ-[0-9]+/ {
+      match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH); ds[++n] = cur
+      t = $0; sub(/^###[ \t]+REQ-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t; next
     }
     idx == 1 && /^##[ \t]/ { cur = ""; sec = ($0 ~ /^##[ \t]+Out of scope/) ? "npv" : ""; next }
     idx == 1 && /^###[ \t]/ { cur = ""; next }
@@ -92,7 +92,7 @@ if [ "$CONG" = spec ]; then
       if (match($0, /\[(CONFLUENCE|JIRA|FILE|INFERRED|OPEN-QUESTION)\]/)) { nhan[cur] = substr($0, RSTART + 1, RLENGTH - 2); dem[nhan[cur]]++ }
     }
     idx == 1 && sec == "npv" && $0 !~ /^[ \t]*$/ { v = ra($0); if (v != "" && v !~ /^</) npv[++n_npv] = v }
-    idx == 2 && /^##[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); q = substr($0, RSTART, RLENGTH); oq[++n_oq] = q; tt[q] = "open"; mc[q] = "?"; next }
+    idx == 2 && /^##[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); q = substr($0, RSTART, RLENGTH); oq[++n_oq] = q; tt[q] = "open"; mc[q] = "?"; next }
     idx == 2 && q != "" && /^[-*][ \t]*\*{0,2}Blocking[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); mc[q] = ra(v) }
     idx == 2 && q != "" && /^[-*][ \t]*\*{0,2}Status[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); tt[q] = ra(v) }
     END {
@@ -104,14 +104,14 @@ if [ "$CONG" = spec ]; then
       for (i = 1; i <= n_npv && i <= 6; i++) print "       - " npv[i]
       if (n_npv > 6) print "       … và " (n_npv - 6) " mục nữa"
       if (phase == "design") {
-        if (rui_ro == "high") hq = "/aw-design chạy Mode 2: agent hỏi dẫn để BẠN phác các quyết định D-xx (không gợi ý phương án), rồi viết phần còn lại"
-        else if (rui_ro == "normal") hq = "/aw-design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng D-xx"
+        if (rui_ro == "high") hq = "/aw-design chạy Mode 2: agent hỏi dẫn để BẠN phác các quyết định DEC-xxx (không gợi ý phương án), rồi viết phần còn lại"
+        else if (rui_ro == "normal") hq = "/aw-design chạy Mode 1: agent viết cả tdd.md, bạn duyệt từng DEC-xxx"
         else hq = "chưa có nhãn hợp lệ — aw check spec sẽ chặn"
       } else if (loai == "chore") hq = "chore không có design"
       else hq = "không có design (Design: skip)"
       printf "  %d. Risk: %s — %s\n", ++k, (rui_ro == "" ? "?" : rui_ro), hq
       if (phase == "plan" && loai != "chore")
-        printf "  %d. Design: skip — bỏ phase design: không có D-xx nào để bạn duyệt, /aw-plan đi thẳng từ spec. Bản sửa có lựa chọn kỹ thuật (đổi API, schema, nhiều module) thì đổi thành \"Design: required\"\n", ++k
+        printf "  %d. Design: skip — bỏ phase design: không có DEC-xxx nào để bạn duyệt, /aw-plan đi thẳng từ spec. Bản sửa có lựa chọn kỹ thuật (đổi API, schema, nhiều module) thì đổi thành \"Design: required\"\n", ++k
       mo = 0; mo_chan = ""
       for (i = 1; i <= n_oq; i++) if (tt[oq[i]] != "answered") { mo++; dmc[mc[oq[i]]]++; if (mc[oq[i]] == "blocking") mo_chan = mo_chan " " oq[i] }
       if (mo == 0) printf "  %d. Open question còn mở: 0\n", ++k
@@ -127,7 +127,7 @@ if [ "$CONG" = spec ]; then
   exit 1
 fi
 
-# ------------------------------------------------------------------ tdd (D-xx)
+# ------------------------------------------------------------------ tdd (DEC-xxx)
 TDD="$DIR/tdd.md"; PH="$DIR/design-findings.md"
 [ -f "$TDD" ] || { echo "LỖI: không tìm thấy $TDD — chạy /aw-design trước." >&2; exit 2; }
 dy_dong_dau "$TDD" tdd >/dev/null
@@ -143,22 +143,22 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" "
   BEGIN { nap(dtt, tt); nap(dnr, nr) }
   { sub(/\r$/, "") }
   FNR == 1 { idx = (FILENAME == ARGV[1]) ? 1 : 2; d = ""; ph = "" }
-  idx == 1 && /^###[ \t]+D-[0-9]+/ {
-    match($0, /D-[0-9]+/); d = substr($0, RSTART, RLENGTH)
+  idx == 1 && /^###[ \t]+DEC-[0-9]+/ {
+    match($0, /DEC-[0-9]+/); d = substr($0, RSTART, RLENGTH)
     if (d in co) { d = ""; next }
-    co[d] = 1; ds[++n] = d; t = $0; sub(/^###[ \t]+D-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[d] = t; next
+    co[d] = 1; ds[++n] = d; t = $0; sub(/^###[ \t]+DEC-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[d] = t; next
   }
   idx == 1 && /^##?#?[ \t]/ { d = ""; next }
   idx == 1 && d != "" && /^[ \t]*[-*][ \t]*Author[^:]*:/ { tg[d] = ra($0) }
   idx == 1 && d != "" && /^[ \t]*[-*][ \t]*Choice[^:]*:/ { chon[d] = ra($0) }
   idx == 1 && d != "" && /Reopen reason[^:]*:/ { ld[d] = ra($0) }
   idx == 1 && d != "" && /^[-*][ \t]*Critique \(agent\)/ { pb[d]++ }
-  idx == 2 && /^###[ \t]+PH-[0-9]+/ { match($0, /PH-[0-9]+/); ph = substr($0, RSTART, RLENGTH); dsph[++nph] = ph; xl[ph] = ""; next }
+  idx == 2 && /^###[ \t]+FND-[0-9]+/ { match($0, /FND-[0-9]+/); ph = substr($0, RSTART, RLENGTH); dsph[++nph] = ph; xl[ph] = ""; next }
   idx == 2 && ph != "" && ph_truong($0) == "xl" { xl[ph] = ph_chuan_xl(ra($0)) }
   idx == 2 && ph != "" && ph_truong($0) == "muc" { muc[ph] = ph_chuan_muc(ra($0)) }
   END {
     for (i = 1; i <= n; i++) if (tt[ds[i]] != "approved") cho++
-    print "CỔNG DUYỆT — vào /aw-plan cần mọi quyết định D-xx đã được bạn duyệt"
+    print "CỔNG DUYỆT — vào /aw-plan cần mọi quyết định DEC-xxx đã được bạn duyệt"
     print "Việc:        " viec
     if (n == 0) { print "Trạng thái:  ✓ KHÔNG CÓ QUYẾT ĐỊNH NÀO CẦN DUYỆT"; exit 0 }
     if (cho == 0) { print "Trạng thái:  ✓ ĐÃ DUYỆT ĐỦ " n "/" n " quyết định"; exit 0 }
@@ -181,7 +181,7 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" "
     xong = ""; for (i = 1; i <= n; i++) if (tt[ds[i]] == "approved") xong = xong (xong == "" ? "" : ", ") ds[i]
     if (xong != "") print "Đã duyệt:    " xong
     print ""
-    print "Cách duyệt:  đọc từng D ở trên, đổi \"- [ ] **" nhan "**\" thành \"- [x] **" nhan "**\""
+    print "Cách duyệt:  đọc từng DEC ở trên, đổi \"- [ ] **" nhan "**\" thành \"- [x] **" nhan "**\""
     print "             ở dòng ghi bên cạnh. Không đồng ý thì để trống và nói agent cần sửa gì."
     c = 0; cc = 0; for (i = 1; i <= nph; i++) { x = xl[dsph[i]]; if (!ph_xong(x)) { c++; if (muc[dsph[i]] == "block") cc++ } }
     if (c) print "Lưu ý:       còn " c " finding của LLM checker chưa phân xử (block: " cc ") — chạy /aw-clarify"

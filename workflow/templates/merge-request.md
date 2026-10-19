@@ -10,7 +10,7 @@ trông giống mục bị quên.
 
 Nguồn khi chạy theo quy trình (thư mục docs/sdlc/<branch>/):
   Problem          ← intake.md (mục tiêu, input), spec.md (Context)
-  Changes          ← tdd.md (D-xx đã duyệt), diff
+  Changes          ← tdd.md (DEC-xxx đã duyệt), diff
   External Impact  ← review.md Lens 2
   Out of Scope     ← spec.md "Out of scope"
   Testing          ← test-results.md, repro.md (bugfix), perf.md (perf)
@@ -86,7 +86,7 @@ None
 
 ## Open Questions
 
-<!-- Câu hỏi mở, giả định chưa xác nhận, D-xx đáng soi lại. Không có thì ghi
+<!-- Câu hỏi mở, giả định chưa xác nhận, DEC-xxx đáng soi lại. Không có thì ghi
      "None" — đừng để người review tự đoán chỗ nào yếu. -->
 
 None

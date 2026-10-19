@@ -244,7 +244,7 @@ buoc_phan_loai_input() {
 buoc_cong_duyet() {
   case "$1" in
     design) _cd_gi="the spec"; _cd_lenh="/aw-design" ;;
-    plan)   _cd_gi="every D-xx decision (no design phase — chore or \`Design: skip\`: the spec)"; _cd_lenh="/aw-plan" ;;
+    plan)   _cd_gi="every DEC-xxx decision (no design phase — chore or \`Design: skip\`: the spec)"; _cd_lenh="/aw-plan" ;;
     *)      _cd_gi="the previous phase"; _cd_lenh="/$(ten_lenh "$1")" ;;
   esac
   printf '## Step 1 — Approval gate (right after Step 0, before anything else)\n\n'
@@ -257,7 +257,7 @@ buoc_cong_duyet() {
   printf '1. **Tôi đã duyệt xong — kiểm lại** → rerun `aw approval %s %s`. ĐÃ DUYỆT → one line ("Đã thấy bạn duyệt — vào %s"), continue. Still CHƯA DUYỆT → reprint only `Trạng thái` and `Cách duyệt`/`Chưa duyệt`, ask again.\n' "$1" "$FD" "$_cd_lenh"
   printf '2. **Giải thích từng điểm cần duyệt** → 2–3 lines per item in stdout: what it says, where the source is, what goes wrong if approved by mistake. Read from files only. Then ask again.\n'
   printf '3. **Dừng — tôi duyệt sau** → do nothing of the phase; remind them to run `%s` again after approving.\n\n' "$_cd_lenh"
-  printf '"Duyệt hộ", "tick giúp", "ok cứ làm đi"… → **refuse** in one line (only the human may tick), point to the exact file and line, ask again. Wants to change content → that is `/aw-spec` (D-xx: `/aw-design`), do not edit here.\n\n'
+  printf '"Duyệt hộ", "tick giúp", "ok cứ làm đi"… → **refuse** in one line (only the human may tick), point to the exact file and line, ask again. Wants to change content → that is `/aw-spec` (DEC-xxx: `/aw-design`), do not edit here.\n\n'
 }
 
 # buoc_ket_thuc <phase> — tin nhắn cuối phase, cùng một dạng ở mọi phase: người
@@ -632,7 +632,7 @@ ad_sinh() {
     printf -- '- Engine rules, templates, LLM checkers: `%s/`\n' "$DOCS"
     printf -- '- Machine checkers: `aw check <name> %s` — names: %s\n' "$FD" "$BL_CHECKERS"
     printf -- '- Session start: `aw ready %s` (environment ready?, next step)\n' "$FD"
-    printf -- '- Tasks: `aw task next|start|done %s [T-NN]`; a YC changed or a D-xx reopened → `aw task reopen %s <YC-NNN|D-NN>` — never edit `Status` yourself\n' "$FD" "$FD"
+    printf -- '- Tasks: `aw task next|start|done %s [TSK-NNN]`; a REQ changed or a DEC-xxx reopened → `aw task reopen %s <REQ-NNN|DEC-NNN>` — never edit `Status` yourself\n' "$FD" "$FD"
     printf -- '- Agent failure no checker caught: `aw journal add <task|context|env|verify|state|model> "<description>"`\n'
   } | ghi_file "$SK"
 

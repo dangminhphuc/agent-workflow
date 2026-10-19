@@ -43,7 +43,7 @@ không thành đường tắt:
 
 - **Job type đổi luật** (bugfix cần test tái hiện, refactor cấm hành vi mới, perf cần số đo,
   chore không đụng production) — nên phải là dữ liệu máy đọc.
-- **Mọi YC có đúng một gốc**: spec chỉ đọc input được liệt kê.
+- **Mọi REQ có đúng một gốc**: spec chỉ đọc input được liệt kê.
 
 Intake chỉ **trỏ tới** tài liệu, nhận tài liệu có định danh hoặc lời người **nguyên văn**
 (`[HUMAN]`); cấm `[INFERRED]` — nếu không, suy đoán sẽ sang spec với nhãn `[FILE] intake.md`.
@@ -66,7 +66,7 @@ Mẫu chung cho bằng chứng theo loại: **máy tự chạy và tự ghi**, *
 | Loại | Máy chặn | Người phán | Vì sao không để máy phán |
 |---|---|---|---|
 | `bugfix` | `repro.md` ghi lúc diff chỉ đụng file test, `ĐỎ` | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
-| `refactor` | Xoá test cũ; sửa test cũ không khai; YC preserve không có test trên nhánh gốc | Diff test cũ chỉ đổi import | "Chỉ đổi import" phụ thuộc ngôn ngữ, hay báo nhầm |
+| `refactor` | Xoá test cũ; sửa test cũ không khai; REQ preserve không có test trên nhánh gốc | Diff test cũ chỉ đổi import | "Chỉ đổi import" phụ thuộc ngôn ngữ, hay báo nhầm |
 | `perf` | Thiếu số đo trước/sau | Đạt mục tiêu chưa | Số đo dao động; chặn theo ngưỡng sẽ nhầm |
 | `chore` | Đụng `production_code`; dependency không khai; khai `major` | Mức phiên bản đúng | Cú pháp phiên bản mỗi hệ sinh thái mỗi khác |
 
@@ -162,7 +162,7 @@ máy thì với phiên đó coi như không có. Ranh giới:
 | Ở đâu | `docs/sdlc/<branch>/` — trong branch của việc, gỡ trước MR; gỡ worktree thì vào `archive/` | Trong git của target repo, qua PR |
 | Vì sao | Nhiều, đổi liên tục, chỉ có nghĩa trong việc; vào PR thì reviewer đọc nhiễu | Phải đúng cho mọi bản clone và mọi việc sau |
 
-Các mục dưới: `conventions.md` trong git, mẫu điểm vào và lệnh kiểm, ADR từ D-xx, luật nghiệp vụ
+Các mục dưới: `conventions.md` trong git, mẫu điểm vào và lệnh kiểm, ADR từ DEC-xxx, luật nghiệp vụ
 `BR-`, cross-check stale. Ba rủi ro chung: **stale** (tài liệu lệch code còn tệ hơn không có —
 mục cross-check), **nhồi nhét** (chỉ thứ người chọn nâng, không chép PRD — mục ADR, luật), **nguồn đổi
 sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu" máy chỉ kiểm điều kiện cần (đủ file,
@@ -211,7 +211,7 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
 Các cơ chế trên chỉ đưa kiến thức vào git **theo từng việc**; repo đã chạy nhiều năm thì quyết định cũ
 vẫn nằm ngoài. `/aw-bootstrap` làm phần đó một lần, theo đúng các luật trên:
 
-- **Utility command, không phải job type mới.** Không có YC, D-xx hay human gate để kiểm — thêm loại
+- **Utility command, không phải job type mới.** Không có REQ, DEC-xxx hay human gate để kiểm — thêm loại
   việc là thêm checker cho thứ máy không chấm được (tài liệu có trả lời đúng năm câu không). Nó chạy
   trong worktree `chore` như mọi việc (main checkout chỉ đề xuất, người chọn base); kết quả là PR
   người duyệt.
@@ -219,7 +219,7 @@ vẫn nằm ngoài. `/aw-bootstrap` làm phần đó một lần, theo đúng c�
   bằng chứng thành câu hỏi trong báo cáo. Bịa lý do cho một quyết định là tạo đúng loại tài liệu sai
   mà agent sau tin là thật.
 - **ADR viết tay cho quyết định cũ**: đúng định dạng `aw adr check` nhận, `Origin` là commit/tài liệu
-  gốc. Implement và review chỉ đối chiếu ADR nâng từ D-xx của việc, nên ADR cũ không bị dựng lại để
+  gốc. Implement và review chỉ đối chiếu ADR nâng từ DEC-xxx của việc, nên ADR cũ không bị dựng lại để
   so — người duyệt PR là chốt nội dung.
 - **Không viết luật `BR-`**: luật cần nguồn có phiên bản và người có quyền xác nhận — chỉ liệt kê ứng
   viên, chúng vào qua `/aw-spec` của việc kế tiếp chạm tới.
@@ -228,21 +228,21 @@ vẫn nằm ngoài. `/aw-bootstrap` làm phần đó một lần, theo đúng c�
 - Báo cáo (`<thư-mục-feature>/bootstrap.md`, ngoài git) đo **khoảng cách hiển thị** — số mục kiến
   thức còn ngoài repo trên tổng số — và ghi kết quả bài kiểm tra phiên mới; làm mô tả PR.
 
-### ADR: D-xx đã duyệt thành "vì sao" của repo
+### ADR: DEC-xxx đã duyệt thành "vì sao" của repo
 
-D-xx là quyết định có giá trị nhất mà quy trình sinh ra, nhưng `tdd.md` là trạng thái của việc —
+DEC-xxx là quyết định có giá trị nhất mà quy trình sinh ra, nhưng `tdd.md` là trạng thái của việc —
 gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đúng sau việc vào git.
 
-- **Người quyết nâng, trong chính D**: `- Promote: adr`, `- Scope:`, `- Supersedes:` nằm dưới dấu
-  duyệt, nên duyệt D là duyệt luôn việc nâng. Không có cờ dòng lệnh `--supersedes`: tham số do
-  agent gõ, không ai duyệt. Agent đề xuất được, không tự quyết được — như mọi trường khác của D.
+- **Người quyết nâng, trong chính DEC**: `- Promote: adr`, `- Scope:`, `- Supersedes:` nằm dưới dấu
+  duyệt, nên duyệt DEC là duyệt luôn việc nâng. Không có cờ dòng lệnh `--supersedes`: tham số do
+  agent gõ, không ai duyệt. Agent đề xuất được, không tự quyết được — như mọi trường khác của DEC.
 - **Nâng ở implement, không sau review**: ADR là file trong diff; nâng sau review thì `Reviewed tree`
-  lệch, `aw check ship` chặn mãi. Plan buộc có task `Based on: D-NN` với `Expected files` gồm thư mục
+  lệch, `aw check ship` chặn mãi. Plan buộc có task `Based on: DEC-NNN` với `Expected files` gồm thư mục
   ADR (không thì diff lệch phạm vi); implement chạy `aw adr promote`; review đọc ADR như mọi code.
-- **Chỉ chép**: nội dung D (trừ approval checkbox và ba trường trên) cộng nguồn. Nguồn không ghi `YC-NNN` trần
-  — số YC theo từng spec, vô nghĩa sau việc — mà là `Source:` của các YC mà task "Based on: D-NN" phủ
-  (plan → spec): truy được về Jira/Confluence. Máy dựng lại ADR từ D và so (bỏ `Date`, `Status`):
-  sửa ADR bằng tay, hay D đổi sau khi nâng, đều chặn ở implement và review — chính xác nên chặn.
+- **Chỉ chép**: nội dung DEC (trừ approval checkbox và ba trường trên) cộng nguồn. Nguồn không ghi `REQ-NNN` trần
+  — số REQ theo từng spec, vô nghĩa sau việc — mà là `Source:` của các REQ mà task "Based on: DEC-NNN" phủ
+  (plan → spec): truy được về Jira/Confluence. Máy dựng lại ADR từ DEC và so (bỏ `Date`, `Status`):
+  sửa ADR bằng tay, hay DEC đổi sau khi nâng, đều chặn ở implement và review — chính xác nên chặn.
 - **`Scope` bắt buộc**: không có phạm vi thì `aw knowledge` không biết ADR nào liên quan việc nào,
   và cross-check stale (bước sau) không có dữ liệu.
 - **Không xoá ADR**: thay bằng `Status: superseded by NNNN`; người đọc sau vẫn thấy vì sao từng làm
@@ -253,14 +253,14 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
 - Đi ngược ADR mà không khai `Supersedes` máy không phát hiện được (cần hiểu nội dung) → LLM checker
   thiết kế chặn (`trái ADR`).
 
-### Luật nghiệp vụ `BR-`: YC đã duyệt thành bất biến của sản phẩm
+### Luật nghiệp vụ `BR-`: REQ đã duyệt thành bất biến của sản phẩm
 
-`YC-NNN` đánh số theo từng spec — việc sau không nhắc lại được, và luật từ PRD chỉ sống trong một
-`spec.md`. Luật `BR-` là phần của YC còn đúng sau việc: bất biến, không phải chi tiết màn hình.
+`REQ-NNN` đánh số theo từng spec — việc sau không nhắc lại được, và luật từ PRD chỉ sống trong một
+`spec.md`. Luật `BR-` là phần của REQ còn đúng sau việc: bất biến, không phải chi tiết màn hình.
 
-- **Không chép PRD**: chỉ YC người chọn. Chép toàn văn thì repo thành bản sao lệch của Confluence —
+- **Không chép PRD**: chỉ REQ người chọn. Chép toàn văn thì repo thành bản sao lệch của Confluence —
   nhồi nhét làm agent đọc nhiều mà quyết định không tốt hơn.
-- **Người quyết trong YC**: `- Promote: BR-<MIỀN>-NNN` nằm dưới approval hash spec. ID, file đích
+- **Người quyết trong REQ**: `- Promote: BR-<MIỀN>-NNN` nằm dưới approval hash spec. ID, file đích
   (`<knowledge_rules_dir>/<miền>.md`), nội dung đều lấy từ artifact đã duyệt — lệnh không có tham số
   `--id`, `--file` cho agent tự chọn. ID trùng luật của việc khác → spec chặn.
 - **Nguồn bền, có phiên bản**: `[JIRA]`/`[CONFLUENCE]` lấy phiên bản ở bảng `## Sources` của spec;
@@ -269,11 +269,11 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
   ngày trong câu trả lời, không có thì approval hash spec. `[INFERRED]`/`[OPEN-QUESTION]` không nâng được:
   luật phải truy được về người có quyền nói. Định dạng `(version: …)` thay cho `v<version>` vì phiên
   bản Jira là thời điểm `updated`.
-- **Phạm vi máy suy**: `Expected files` của task phủ YC, trừ file test và thư mục ADR/luật — truy được,
+- **Phạm vi máy suy**: `Expected files` của task phủ REQ, trừ file test và thư mục ADR/luật — truy được,
   không do agent khai.
 - **Khối tìm theo ID, không theo file**: người được dời khối vào `ARCHITECTURE.md` của module (một chỗ
   cho mọi thứ của module); checker quét thư mục luật và `knowledge_files`.
-- Implement và review dựng lại khối từ YC và so (bỏ `Status`) — như ADR. Không xoá luật: đổi
+- Implement và review dựng lại khối từ REQ và so (bỏ `Status`) — như ADR. Không xoá luật: đổi
   `Status: superseded by BR-…`; đổi luật cũ là một PR có người duyệt, không đi qua lệnh nâng.
 - `aw rule check` chặn hình thức (ID duy nhất, đủ trường, `Source` có nhãn và phiên bản, `Status` hợp
   lệ, `superseded by` trỏ tới luật có thật); luật active chưa có test `covers:` chỉ cảnh báo.
@@ -306,7 +306,7 @@ vào mục MÁY và agent tự duyệt (đã xảy ra một lần ở `review` k
 ### Human gate để lại dấu trong file
 
 Gate ở `intake`, `spec`, `design`, `review` (và `ship`). Gate nào có phase máy chạy ngay sau thì
-phải để lại dấu trong file: ô `- [ ] **Approved by human**` ở spec và từng D-xx. Gate chỉ nằm
+phải để lại dấu trong file: ô `- [ ] **Approved by human**` ở spec và từng DEC-xxx. Gate chỉ nằm
 trong tài liệu thì agent chạy tiếp trên spec chưa ai đọc.
 
 Checkbox chứ không phải chữ gõ tay (gõ sai một dấu là checker không nhận). Vì LLM quen tick
@@ -321,7 +321,7 @@ checklist, approval checkbox có thêm hai lớp (`tools/lib/approval-tick.sh`):
   cần đọc JSON (không có jq).
 
 **Cổng duyệt** (`approval_gate: true`): gõ lệnh phase sau khi chưa duyệt thì `aw approval` in tóm
-tắt **do máy dựng** (file/dòng phải tick, YC `[INFERRED]`, Out of scope, Risk, open question; hay D nào
+tắt **do máy dựng** (file/dòng phải tick, REQ `[INFERRED]`, Out of scope, Risk, open question; hay DEC nào
 chưa duyệt) rồi agent hỏi hộp xác nhận. Máy dựng để thông tin ổn định, không bị chọn lọc. Hộp
 cổng **không** tick hộ: nó hỏi "đã duyệt xong chưa", không hỏi duyệt mục nào.
 
@@ -342,7 +342,7 @@ nội dung cụ thể. Liệt kê mặc định chỉ worktree hiện tại (m�
 worktree của bản clone, chạy được cả ở main checkout — lệnh khai `feature_dir: none` để không chạy
 `aw feature`.
 
-Parser chỉ nhận ô đúng chỗ (spec: trước `##` đầu tiên; D-xx: trong `### D-NN`), đúng một ô; ô
+Parser chỉ nhận ô đúng chỗ (spec: trước `##` đầu tiên; DEC-xxx: trong `### DEC-NNN`), đúng một ô; ô
 trong chú thích hay khối code không tính; sai dạng là lỗi, không đoán.
 
 `plan` và `implement` **không có người**: chỉ thực thi điều đã duyệt; đặt người ở đó chỉ thêm
@@ -350,7 +350,7 @@ một chỗ duyệt văn xuôi không có quyết định thật.
 
 ### LLM checker: chỉ được chặn
 
-Điều script không kiểm được (lệch D-xx, quyết định ngầm) giao LLM checker, với ràng buộc: ghi phát
+Điều script không kiểm được (lệch DEC-xxx, quyết định ngầm) giao LLM checker, với ràng buộc: ghi phát
 hiện ra **file**; script fail nếu còn `Chặn` chưa xử lý; LLM **không bao giờ** nói "đạt"; người là
 trọng tài theo ngoại lệ. Cho LLM duyệt là quay lại "agent tự đánh giá là đạt"; cho nó chỉ chặn thì
 sai sót chỉ tốn thời gian người.
@@ -359,23 +359,38 @@ sai sót chỉ tốn thời gian người.
 
 | Loại checker | Ví dụ | Hành vi |
 |---|---|---|
-| **Chính xác** — hợp đồng output của chính phase | truy vết nguồn, phủ YC, test xanh | **Chặn** |
-| **Cross-check giữa phase**, hay báo nhầm | stale, test ↔ YC, phạm vi diff | **Cảnh báo**; `review` chặn |
+| **Chính xác** — hợp đồng output của chính phase | truy vết nguồn, phủ REQ, test xanh | **Chặn** |
+| **Cross-check giữa phase**, hay báo nhầm | stale, test ↔ REQ, phạm vi diff | **Cảnh báo**; `review` chặn |
 
 Chặn nhầm làm tắc flow và người học cách lách. Mọi cảnh báo dồn về `review` (cổng cuối). Tiêu chí
 xếp checker mới: độ chính xác, chi phí nếu lọt, nơi sửa rẻ nhất.
 
+### Mã định danh: một dạng cho mọi mã
+
+Trước đây mã mỗi loại một kiểu: `YC`/`PH` là chữ Việt viết tắt, `D`/`T` một chữ, phần số khi 2 khi
+3 chữ số. Người phải nhớ riêng từng loại, mã một chữ (`D`, `T`) lẫn với chữ thường trong câu và khó
+grep. Giờ mọi mã trong job dir là `<TIỀN TỐ>-NNN` (`REQ`, `DEC`, `FND`, `TSK`, `RFR`):
+
+- **Ba chữ tiếng Anh**, viết tắt đúng thuật ngữ — cùng luật với tên trường trong artifact (tiếng
+  Anh, checker khớp đúng chữ). Ba chữ đủ để thêm loại mới mà không đụng loại cũ; một chữ thì sớm hết.
+- **Đúng 3 chữ số**: mã cùng độ dài thì bảng thẳng hàng và sắp theo chữ cũng là sắp theo số.
+- **Không đọc mã cũ.** Mỗi job ghim version engine trong `intake.md` và chạy hết bằng version đó,
+  nên job cũ vẫn dùng `YC-`/`D-`… với engine cũ; job mới dùng mã mới. Đọc cả hai thì mọi parser
+  phải mang hai regex mãi, và job trộn hai kiểu không ai bắt.
+- **`BR-<MIỀN>-NNN` và `ADR-NNNN` giữ nguyên**: chúng sống trong git của `target repo`, dùng chung
+  mọi job, đã có trong code (`covers: BR-…`) và theo quy ước ADR thông dụng.
+
 ### Mục lục và link tới mục
 
-Artifact viết cho người đọc, và người đọc nhảy giữa chúng: plan trỏ tới D-xx, spec trỏ tới điểm
-mù, review trỏ tới YC. Chữ trơn `open-questions.md § YC-002` bắt người tự tìm; link chỉ tới file
+Artifact viết cho người đọc, và người đọc nhảy giữa chúng: plan trỏ tới DEC-xxx, spec trỏ tới điểm
+mù, review trỏ tới REQ. Chữ trơn `open-questions.md § REQ-002` bắt người tự tìm; link chỉ tới file
 cũng vậy. Nên luật là: artifact có heading `##`/`###` thì có `## Contents`, và tham chiếu sang
 artifact khác là link có anchor tới đúng mục.
 
 - **Máy sinh, không để agent gõ.** Anchor tính như GitHub / VS Code (chữ thường gồm cả chữ Việt,
-  bỏ dấu câu, dấu cách thành `-`, trùng thì `-1`): `### YC-001 — Đăng nhập` → `#yc-001--đăng-nhập`.
+  bỏ dấu câu, dấu cách thành `-`, trùng thì `-1`): `### REQ-001 — Đăng nhập` → `#req-001--đăng-nhập`.
   Agent gõ tay thì sai một dấu là link chết. `aw toc` sinh mục lục và mở rộng anchor rút gọn
-  (`#yc-001` → anchor đầy đủ) khi chỉ khớp một heading; agent chỉ cần viết mã.
+  (`#req-001` → anchor đầy đủ) khi chỉ khớp một heading; agent chỉ cần viết mã.
 - **Chặn, không cảnh báo.** Kiểm chính xác: mục lục khớp heading hay không, anchor có trong file đích
   hay không — không có báo nhầm. Checker phase chặn trên artifact đầu ra của chính nó; link sang
   artifact phase trước có thể gãy khi file đó đổi heading sau này, nên `review` chặn lại trên mọi
@@ -386,10 +401,10 @@ artifact khác là link có anchor tới đúng mục.
 - **Chỉ artifact agent viết.** File máy ghi (`*-results.md`, `repro.md`, `perf.md`, `ship.md`) không có
   mục lục và không phải đích bắt buộc có anchor.
 
-### Câu trích nguyên văn của YC
+### Câu trích nguyên văn của REQ
 
 Phase spec bảo agent trích câu nguồn trước khi diễn giải, nhưng không có chỗ ghi thì bước đó không để
-lại dấu vết: người duyệt phải tự mở nguồn để so. Nên YC có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` có
+lại dấu vết: người duyệt phải tự mở nguồn để so. Nên REQ có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` có
 `- Quote:` + các dòng `> …` — "nguồn nói gì" tách khỏi "agent hiểu thế nào" (`Description`).
 
 - **Bắt buộc, không tuỳ chọn.** Tuỳ chọn thì agent bỏ, và người không phân biệt được "không có câu
@@ -399,13 +414,13 @@ lại dấu vết: người duyệt phải tự mở nguồn để so. Nên YC c
   máy đọc được, gồm lời người trong `intake.md` và câu trả lời trong `open-questions.md`. So chuỗi con,
   chỉ gộp khoảng trắng / xuống dòng và bỏ `>` đầu dòng; không chuẩn hoá thêm (markdown, dấu nháy):
   nới thêm là bắt đầu đoán "gần giống", còn chép đúng thì sửa mất vài giây. Mỗi dòng `>` một câu,
-  so riêng — một YC thường gộp vài câu ở vài chỗ trong nguồn. Confluence/Jira script không gọi được
+  so riêng — một REQ thường gộp vài câu ở vài chỗ trong nguồn. Confluence/Jira script không gọi được
   MCP: câu trích chỉ cho người đọc.
 - **Chặn ở spec, cảnh báo khi phase sau chạy lại spec** (`check-spec.sh --entry`, design và plan
   không có design gọi). Lúc viết spec, lệch nguồn là lỗi của chính phase đó — chính xác, chặn. Về sau
   lệch thường do file nguồn đổi, không phải lỗi của phase đang chạy; chặn ở đó làm tắc việc. Thiếu
   `Quote` vẫn chặn ở mọi phase — đó là lỗi của spec.
-- **Không kiểm theo phiên bản trong `## Sources`.** Bảng Sources không gắn với từng YC, nên không
+- **Không kiểm theo phiên bản trong `## Sources`.** Bảng Sources không gắn với từng REQ, nên không
   biết câu trích nào ứng với sha nào; so với file hiện tại, lệch thì cảnh báo như trên.
 - **Không đặt độ dài tối thiểu.** Trích qua loa ("khách") là gian lận có chủ ý — ngoài mục tiêu
   (chặn quên, không chặn cố tình); người duyệt thấy ngay trong spec.
@@ -419,16 +434,16 @@ báo. Chuỗi: `spec` ← `intake`; `tdd` ← `spec` + `open-questions`; `plan` 
 ## Quyết định là thứ người duyệt
 
 Người lướt văn xuôi dài vì không thấy đâu là lựa chọn thật. Nên `design` tách lựa chọn thành
-**D-xx**; mục chi tiết ghi `Based on: D-xx`; LLM checker chặn chỗ lệch và quyết định ngầm. D được
+**DEC-xxx**; mục chi tiết ghi `Based on: DEC-xxx`; LLM checker chặn chỗ lệch và quyết định ngầm. DEC được
 phép rỗng. `tdd.md` là output duy nhất (tách file quyết định thì hai file lệch nhau).
 
 - **Mode 2 chống neo**: agent đưa phương án trước thì người neo vào nó. `Risk: high` → người phác
-  D-xx trước, agent chỉ phản biện; chưa có bản phác → chặn. Agent được **hỏi dẫn** người phác (nêu
+  DEC-xxx trước, agent chỉ phản biện; chưa có bản phác → chặn. Agent được **hỏi dẫn** người phác (nêu
   điểm cần quyết + dữ kiện từ code, hỏi câu mở) nhưng không nêu phương án: dừng trơn thì người
   phải tự nghĩ ra các điểm cần quyết từ trang giấy trắng, hay bỏ sót; hỏi dẫn giữ được chống neo vì
   câu hỏi và dữ kiện không chứa lựa chọn.
-- **Mở lại**: đúng một D, sửa tại chỗ (git giữ lịch sử), bỏ tick + `Reopen reason:`;
-  `aw task reopen <dir> D-xx` đưa task `Based on` D đó về `[ ]`, chỉ chúng.
+- **Mở lại**: đúng một DEC, sửa tại chỗ (git giữ lịch sử), bỏ tick + `Reopen reason:`;
+  `aw task reopen <dir> DEC-xxx` đưa task `Based on` DEC đó về `[ ]`, chỉ chúng.
 - **`plan` tách khỏi `tdd.md`**: plan là ranh giới do **phiên khác** đặt cho `implement`, và tick
   task không được sửa vào thiết kế đã duyệt.
 - **Bỏ design cho việc nhỏ (`Design: skip`)**: bugfix/refactor sửa vài dòng không có lựa chọn
@@ -437,7 +452,7 @@ phép rỗng. `tdd.md` là output duy nhất (tách file quyết định thì ha
   ở design. **Người** quyết, không phải máy: lúc viết spec chưa có diff để đo "nhỏ", nên agent đề xuất
   `skip` trong `spec.md` và người duyệt cùng spec (đổi sau khi duyệt → duyệt lại). Máy chỉ chặn chỗ
   chắc chắn sai: `skip` ngoài bugfix/refactor (feature thêm hành vi, perf cần thiết kế đo), hoặc khi
-  `Risk: high` (Mode 2 là để người phác D-xx trước — bỏ design là bỏ luôn nó). Việc bỏ design đi
+  `Risk: high` (Mode 2 là để người phác DEC-xxx trước — bỏ design là bỏ luôn nó). Việc bỏ design đi
   đúng đường của chore (`kc_bo_design`): plan nhận cổng duyệt spec và cổng open question `blocking`.
 
 ## Giả định chưa xác nhận
@@ -453,13 +468,13 @@ thoại **là** human gate của open question; dấu vết ở `Answer:` (ai, n
 sửa theo câu trả lời thì bỏ tick, người tick lại — máy không phân biệt "sửa người vừa xác nhận" với
 "sửa người chưa thấy".
 
-**Người đổi YC đã có nguồn** đi cùng đường open question (`/aw-clarify YC-NNN`): ghi thành mục `answered`
-trong `open-questions.md` (cách hiểu cũ ở `Assumption`, lời người ở `Answer`), YC đổi nhãn sang
-`[FILE] open-questions.md § YC-NNN`. Không thêm source label thứ sáu; checker spec chặn nhãn
-trỏ vào `open-questions.md § YC-NNN` mà mục đó không có — chính xác nên chặn. Sửa thẳng `spec.md` thì nhãn cũ
-(`[CONFLUENCE]`…) nói dối về nguồn và không máy nào bắt. Thêm/bỏ YC là đổi phạm vi → `[HUMAN]` trong
+**Người đổi REQ đã có nguồn** đi cùng đường open question (`/aw-clarify REQ-NNN`): ghi thành mục `answered`
+trong `open-questions.md` (cách hiểu cũ ở `Assumption`, lời người ở `Answer`), REQ đổi nhãn sang
+`[FILE] open-questions.md § REQ-NNN`. Không thêm source label thứ sáu; checker spec chặn nhãn
+trỏ vào `open-questions.md § REQ-NNN` mà mục đó không có — chính xác nên chặn. Sửa thẳng `spec.md` thì nhãn cũ
+(`[CONFLUENCE]`…) nói dối về nguồn và không máy nào bắt. Thêm/bỏ REQ là đổi phạm vi → `[HUMAN]` trong
 `intake.md`, chạy lại spec. Lan xuống dưới: `based_on` chỉ biết *file* đã đổi, nên `aw task reopen`
-đưa đúng task `Covers`/`On assumption` YC đó (hay `Based on` D đó) về `[ ]` — máy làm, khỏi để agent
+đưa đúng task `Covers`/`On assumption` REQ đó (hay `Based on` DEC đó) về `[ ]` — máy làm, khỏi để agent
 grep tay và sót.
 
 **Gộp ở chỗ người nhìn, không gộp chỗ lưu**: open question và phát hiện LLM ở file riêng (mỗi file một
@@ -493,7 +508,7 @@ làm `tdd.md` stale). LLM checker mới chỉ cần ghi `<id>-findings.md` đún
 - **Lens 4 — bảng bảy hạng mục cố định**: máy quét bắt *mẫu*, người rà bắt *ý đồ* (thiếu kiểm
   quyền, log lộ PII, IDOR). Danh sách mở thì "không thấy gì" và "không xét" trông như nhau. Máy
   kiểm hình dạng (đủ dòng, verdict hợp lệ, có vị trí/lý do), không biết `pass` có đúng không.
-  Parser Lens 1 chỉ đọc dòng có **ô đầu** là mã YC.
+  Parser Lens 1 chỉ đọc dòng có **ô đầu** là mã REQ.
 - **Lens 3 và Conclusion**: có finding **hoặc** `- None`; finding đủ trường để người khác kiểm lại;
   số Blocker ở Conclusion khớp số mục (`aw check ship` đếm theo đó).
 - **Code nhạy cảm theo đường dẫn, không theo job type**: rủi ro nằm ở chỗ code bị đụng
@@ -504,7 +519,7 @@ làm `tdd.md` stale). LLM checker mới chỉ cần ghi `<id>-findings.md` đún
 
 ## Cross-check, trạng thái sạch, nhật ký
 
-- Test ↔ YC (`covers:`) và phạm vi diff ("Expected files" + "Unplanned") chỉ cảnh báo. Phạm vi so
+- Test ↔ REQ (`covers:`) và phạm vi diff ("Expected files" + "Unplanned") chỉ cảnh báo. Phạm vi so
   từ `git merge-base <base> HEAD` **tới cây làm việc** + file chưa track, bỏ `docs/sdlc/` và `.agent-workflow/`.
 - **Trạng thái sạch**: task `[ ]` sót, dấu xung đột merge → chặn. Dòng test *thêm mới* khớp
   `skipped_test_regex` → cảnh báo (chỉ dòng mới, để test tắt từ trước không đổ lên việc này).
@@ -648,10 +663,18 @@ kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu h�
 1. `workflow/phases/NN-<id>.md` với frontmatter đầy đủ; thêm vào `phases:` của `workflow.yaml`.
 2. Có `exit_machine` → script trong `tools/`, thêm tên vào `tools/lib/commands.sh`.
 3. Artifact mới → mẫu trong `workflow/templates/`.
-4. Ca kiểm trong `tools/run-tests.sh`.
+4. Ca kiểm trong phần cùng chủ đề ở `tools/tests/` (chạy bằng `tools/run-tests.sh`).
 5. Thử: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code` (VERSION khớp target repo).
 
 Không phase nào khác phải sửa — không phase nào biết về phase sau nó (vì vậy `06-ship` thêm được sau).
+
+**Test chia phần chạy song song.** Bộ test hồi quy gọi checker thật hàng nghìn lần nên tốn CPU; chạy
+tuần tự một file thì ~8,5 phút trên 4 lõi chỉ dùng một. Ca kiểm chia thành các phần trong `tools/tests/`,
+mỗi phần tự dựng fixture và thư mục tạm, nên `tools/run-tests.sh` chạy song song (nhanh ~3 lần trên 4 lõi).
+Ranh giới phần đặt ở chỗ trạng thái fixture trùng với fixture dựng mới (hoặc trạng thái như sau nhóm
+check-security: `fixture_sau_bao_mat`), để không ca nào đổi điều kiện đầu vào. Phần dừng giữa
+chừng (không in `Tổng:`) tính là hỏng — không ca nào bị bỏ qua câm. Không bớt ca để nhanh hơn:
+release vẫn chạy lại test trên đúng commit được đóng gói.
 
 ## Cách thêm một adapter
 
@@ -671,9 +694,9 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 1. **`06-ship` chỉ lo MR**, không lo deploy/tag/release note. Không có `gh`/`glab` thì trạng thái MR
    chỉ suy từ git, không nhận ra squash có sửa xung đột.
 2. **"clean context" không cưỡng chế được ở agent không có subagent** — lùi về lời dặn người.
-3. **Checker kiểm hình thức, không kiểm nội dung.** Mọi YC có nhãn ≠ YC đúng với BRD. Đừng nhầm "qua
+3. **Checker kiểm hình thức, không kiểm nội dung.** Mọi REQ có nhãn ≠ REQ đúng với BRD. Đừng nhầm "qua
    hết checker" với "làm đúng"; LLM checker chỉ thu hẹp khoảng trống này. Câu trích `[FILE]` máy kiểm
-   được có thật trong nguồn — nhưng YC diễn giải đúng câu trích hay không vẫn là việc của người.
+   được có thật trong nguồn — nhưng REQ diễn giải đúng câu trích hay không vẫn là việc của người.
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
 6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng, lỗi lộ muộn.
@@ -686,7 +709,7 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 8. **`review` không chạy lại test hay quét** — biết kết quả cũ, không biết lệnh có đủ. Lệnh lệch
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.
-10. **Artifact không đi theo PR** — reviewer chỉ thấy code. D-xx người chọn nâng thì đi theo PR dưới
+10. **Artifact không đi theo PR** — reviewer chỉ thấy code. DEC-xxx người chọn nâng thì đi theo PR dưới
     dạng ADR; phần còn lại của `tdd.md` thì không.
 11. **Ghim sha256 là tin lần đầu (TOFU)**; repo cấu hình chung của team thu hẹp, không xoá rủi ro.
 12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `TEST_CMD`.
@@ -702,7 +725,7 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 18. **Số ADR cấp lúc nâng, theo thư mục ở worktree**: hai việc song song cùng lấy `0004`; PR merge sau
     có hai file trùng số (`aw adr check` chặn ở việc kế tiếp) và xung đột ở bảng chỉ mục — người
     đổi số, chạy lại `aw adr promote`.
-19. **"Đi ngược ADR" chỉ LLM checker thấy** — máy chỉ kiểm `Supersedes` khi D tự khai.
+19. **"Đi ngược ADR" chỉ LLM checker thấy** — máy chỉ kiểm `Supersedes` khi DEC tự khai.
     Tương tự, nguồn mới mâu thuẫn với luật `BR-` active chỉ agent spec và người phát hiện.
 20. **PRD đổi sau khi luật đã nâng**: máy không theo dõi Confluence/Jira; phiên bản ghi trong `Source`
     chỉ cho người so tay. Luật cũ vẫn `active` tới khi một việc thay nó.

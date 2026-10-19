@@ -11,7 +11,7 @@ Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa 
 | Đọc gì | Ở đâu |
 |---|---|
 | **Hướng dẫn dùng cho người**: cài, cấu hình, từng phase sinh artifact gì và quyết định gì | [`docs/huong-dan.md`](docs/huong-dan.md) |
-| Thuật ngữ agent dùng khi nói với bạn: YC, D-xx, `open question`, `stale`, worktree… | [`docs/thuat-ngu.md`](docs/thuat-ngu.md) |
+| Thuật ngữ agent dùng khi nói với bạn: REQ, DEC-xxx, `open question`, `stale`, worktree… | [`docs/thuat-ngu.md`](docs/thuat-ngu.md) |
 | Luật từng phase (nguồn sự thật) | [`workflow/phases/`](workflow/phases), [`workflow/rules/`](workflow/rules) |
 | Vì sao thiết kế như vậy, điểm yếu | [`docs/kien-truc.md`](docs/kien-truc.md) |
 | Adapter | [`adapters/README.md`](adapters/README.md) |
@@ -36,16 +36,16 @@ Bốn nguyên tắc:
 4. **Flow không tắc** — checker chính xác thì chặn; cross-check hay báo nhầm thì cảnh báo,
    `review` là cổng chặn cuối.
 
-Lựa chọn kỹ thuật được tách thành mục **D-xx** để người *quyết định*, không phải đọc duyệt văn xuôi.
+Lựa chọn kỹ thuật được tách thành mục **DEC-xxx** để người *quyết định*, không phải đọc duyệt văn xuôi.
 
 ## Các phase
 
 ```mermaid
 flowchart TD
     INTAKE["00-intake<br/>→ intake.md (job type + input)<br/><i>NGƯỜI: chọn base, xác nhận job type</i>"]
-    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>NGƯỜI: duyệt YC, Blocking, Risk, Design</i>"]
-    PHAC[/"Người phác D-xx trước<br/>(Risk: high)"/]
-    DESIGN["02-design<br/>→ tdd.md (D-xx) + LLM checker<br/><i>NGƯỜI: duyệt từng D-xx</i>"]
+    SPEC["01-spec<br/>→ spec.md + open-questions.md<br/><i>NGƯỜI: duyệt REQ, Blocking, Risk, Design</i>"]
+    PHAC[/"Người phác DEC-xxx trước<br/>(Risk: high)"/]
+    DESIGN["02-design<br/>→ tdd.md (DEC-xxx) + LLM checker<br/><i>NGƯỜI: duyệt từng DEC-xxx</i>"]
     PLAN["03-plan → plan.md"]
     IMPL["04-implement<br/>→ diff + kết quả test, quét bảo mật"]
     REVIEW["05-review · ngữ cảnh trắng<br/>→ review.md<br/><i>NGƯỜI: xác nhận kết luận</i>"]
@@ -69,15 +69,15 @@ flowchart TD
 | Lệnh | Đọc → ghi | Máy chặn (`aw check …`) | Người |
 |---|---|---|---|
 | `/aw-intake` | ticket, URL, file, lời người → `intake.md` | job type, input, `Base`, `Engine` | chọn base, xác nhận job type và input |
-| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md` | mọi YC truy được về nguồn; open question khớp hai file | duyệt YC, `Blocking`, `Risk`, `Design`; tick "Approved by human" |
-| `/aw-design` | spec đã duyệt → `tdd.md` | đủ mục, D-xx hợp lệ, YC được ánh xạ, LLM checker không còn `Chặn` | duyệt từng D-xx |
-| `/aw-plan` | D-xx đã duyệt (không có design: spec đã duyệt) → `plan.md` | mọi YC có task phủ hoặc hoãn có lý do | — |
+| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md` | mọi REQ truy được về nguồn; open question khớp hai file | duyệt REQ, `Blocking`, `Risk`, `Design`; tick "Approved by human" |
+| `/aw-design` | spec đã duyệt → `tdd.md` | đủ mục, DEC-xxx hợp lệ, REQ được ánh xạ, LLM checker không còn `Chặn` | duyệt từng DEC-xxx |
+| `/aw-plan` | DEC-xxx đã duyệt (không có design: spec đã duyệt) → `plan.md` | mọi REQ có task phủ hoặc hoãn có lý do | — |
 | `/aw-implement` | `plan.md` → diff | test và quét bảo mật **xanh** (máy tự chạy), mọi task có bằng chứng | — |
-| `/aw-review` | mọi artifact + diff → `review.md` | từng YC có kết luận; không còn cảnh báo; kết quả còn mới so với code | xác nhận kết luận |
+| `/aw-review` | mọi artifact + diff → `review.md` | từng REQ có kết luận; không còn cảnh báo; kết quả còn mới so với code | xác nhận kết luận |
 | `/aw-ship` | `review.md` → MR/PR | review đạt, không còn `Blocker` | chọn nhánh đích, merge |
-| `/aw-clarify [YC-NNN]` | — | — | trả lời open question, phân xử finding của LLM checker (từng mục, có phương án đề xuất); có `YC-NNN`: đổi một YC bạn không đồng ý (ghi thành open question đã trả lời) |
+| `/aw-clarify [REQ-NNN]` | — | — | trả lời open question, phân xử finding của LLM checker (từng mục, có phương án đề xuất); có `REQ-NNN`: đổi một REQ bạn không đồng ý (ghi thành open question đã trả lời) |
 | `/aw-refactor [yêu-cầu]` | lời bạn → agent review, phản biện → `refactor-requests.md` (nguyên văn + tóm tắt, chưa làm) | — | trả lời phản biện, duyệt bản tóm tắt; chọn: việc refactor riêng hay gộp vào việc `refactor` hiện tại |
-| `/aw-approvals [--global]` | ô "Approved by human" chưa đạt → danh sách kèm link tới artifact | — | duyệt từng mục (spec, D-xx); chọn Duyệt thì máy tick hộ |
+| `/aw-approvals [--global]` | ô "Approved by human" chưa đạt → danh sách kèm link tới artifact | — | duyệt từng mục (spec, DEC-xxx); chọn Duyệt thì máy tick hộ |
 | `/aw-bootstrap` | repo, CI, `git log` → `AGENTS.md`, `Makefile`, `ARCHITECTURE.md`, ADR có sẵn (một lần, trong worktree `chore`) | `aw conventions check`, `aw adr check`, `aw rule check` | trả lời câu hỏi trong báo cáo, mở PR |
 
 - **Không có phase test riêng** — test là điều kiện ra của `implement`: chưa xanh là chưa xong.
@@ -92,7 +92,7 @@ flowchart TD
 
 ### Approval checkbox
 
-Spec và mỗi D-xx có một ô; bạn duyệt bằng cách đổi `[ ]` thành `[x]`:
+Spec và mỗi DEC-xxx có một ô; bạn duyệt bằng cách đổi `[ ]` thành `[x]`:
 
 ```markdown
 - [x] **Approved by human** — đã đọc và đồng ý toàn bộ spec <!-- approval-hash: 3f2a9c01d4e7b6a8 -->
@@ -207,12 +207,12 @@ src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module 
 - Muốn agent đọc `ARCHITECTURE.md` của module trong phase: khai vào `rules_design`,
   `rules_implement` của `conventions.md` (`aw rules` in ra, review chấm từng file).
 - Mỗi luật một chỗ: phạm vi một module thì đặt cạnh module, nhiều module thì trong `docs/`.
-- **Vì sao code như vậy — ADR** (`docs/adr/`): quyết định D-xx mà người duyệt kèm `- Promote: adr`
+- **Vì sao code như vậy — ADR** (`docs/adr/`): quyết định DEC-xxx mà người duyệt kèm `- Promote: adr`
   được `aw adr promote` chép thành ADR ngay trong PR của việc. Phase design đọc chỉ mục và ADR
-  liên quan qua `aw knowledge design`; D đi ngược ADR phải ghi `- Supersedes: ADR-NNNN`.
-- **Business rule** (`docs/product/rules/<miền>.md`): YC là bất biến nghiệp vụ, người duyệt spec
+  liên quan qua `aw knowledge design`; DEC đi ngược ADR phải ghi `- Supersedes: ADR-NNNN`.
+- **Business rule** (`docs/product/rules/<miền>.md`): REQ là bất biến nghiệp vụ, người duyệt spec
   kèm `- Promote: BR-<MIỀN>-NNN`, được `aw rule promote` chép thành khối `### BR-…` (nguồn có phiên
-  bản). Phase spec đọc luật active qua `aw knowledge spec`; test gắn `covers: BR-…` như với YC.
+  bản). Phase spec đọc luật active qua `aw knowledge spec`; test gắn `covers: BR-…` như với REQ.
 - **Chống stale**: diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi
   → implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`
   (`pass | updated | not applicable`).
@@ -307,16 +307,16 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 | `aw ready <thư-mục-feature> [--no-test]` | Worktree sẵn sàng chưa (test xanh trên base) và bước tiếp |
 | `aw conventions check` | Kiểm `conventions.md` |
 | `aw check <tên> <thư-mục-feature>` | Machine checker: `intake spec design plan implement review repro perf security ship` |
-| `aw task next\|start\|done <thư-mục-feature> [T-NN]` | Trạng thái task do máy giữ |
-| `aw task reopen <thư-mục-feature> <YC-NNN\|D-NN>` | YC vừa đổi / D-xx mở lại: chỉ task phủ nó về `[ ]` |
+| `aw task next\|start\|done <thư-mục-feature> [TSK-NNN]` | Trạng thái task do máy giữ |
+| `aw task reopen <thư-mục-feature> <REQ-NNN\|DEC-NNN>` | REQ vừa đổi / DEC-xxx mở lại: chỉ task phủ nó về `[ ]` |
 | `aw journal` · `aw journal add <lớp> "<mô tả>"` | harness journal: checker trượt ở đâu, loại lỗi lặp lại |
 | `aw worktree new\|status\|remove …` | Đề xuất / tạo / dọn worktree |
 | `aw ship targets\|create\|status\|sweep …` | Gửi MR/PR, theo dõi, dọn việc đã merge |
 | `aw adapter build [a[,b]] [--out <dir>] [--force]` | Sinh lại adapter |
-| `aw adr promote <thư-mục-feature> D-NN` · `aw adr check` | Chép D-xx đã duyệt (`Promote: adr`) thành ADR trong repo · kiểm thư mục ADR |
-| `aw rule promote <thư-mục-feature> YC-NNN` · `aw rule check` | Chép YC đã duyệt (`Promote: BR-…`) thành luật nghiệp vụ · kiểm mọi luật `BR-` |
+| `aw adr promote <thư-mục-feature> DEC-NNN` · `aw adr check` | Chép DEC-xxx đã duyệt (`Promote: adr`) thành ADR trong repo · kiểm thư mục ADR |
+| `aw rule promote <thư-mục-feature> REQ-NNN` · `aw rule check` | Chép REQ đã duyệt (`Promote: BR-…`) thành luật nghiệp vụ · kiểm mọi luật `BR-` |
 | `aw feature` · `aw input` · `aw pending` · `aw based-on` · `aw toc` · `aw rename` · `aw rules` · `aw uses` · `aw knowledge` · `aw approval` | Lệnh agent gọi trong phase |
-| `aw approvals [--global]` · `aw approvals tick <thư-mục-feature> <spec\|D-NN> <hash>` | Mọi ô chờ duyệt kèm link · tick sau khi bạn chọn duyệt (`/aw-approvals`) |
+| `aw approvals [--global]` · `aw approvals tick <thư-mục-feature> <spec\|DEC-NNN> <hash>` | Mọi ô chờ duyệt kèm link · tick sau khi bạn chọn duyệt (`/aw-approvals`) |
 | `aw guard pre\|post` | approval guard |
 
 ### Nhiều agent trong một team
@@ -356,7 +356,13 @@ Chi tiết: `docs/huong-dan.md` § 1.2.
 ```sh
 sh tools/run-tests.sh                     # chỉ in ca hỏng + tổng
 AW_TEST_VERBOSE=1 sh tools/run-tests.sh   # in từng ca
+sh tools/run-tests.sh review ship         # chỉ các phần có tên chứa review / ship
+sh tools/tests/05-review-quality.sh       # chạy thẳng một phần
+AW_TEST_JOBS=1 sh tools/run-tests.sh      # số phần chạy cùng lúc (mặc định: số CPU)
 ```
+
+Ca kiểm nằm trong `tools/tests/NN-<tên>.sh` (helper + fixture: `tools/tests/lib.sh`); mỗi phần chạy
+độc lập nên `run-tests.sh` chạy song song rồi cộng tổng. Ca mới thêm vào phần cùng chủ đề.
 
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng
 đúng chuỗi đó, không có `v`.

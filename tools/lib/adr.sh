@@ -1,23 +1,23 @@
 #!/usr/bin/env sh
-# ADR — quyết định D-xx đã duyệt được nâng thành kiến thức bền trong repo đích.
+# ADR — quyết định DEC-xxx đã duyệt được nâng thành kiến thức bền trong repo đích.
 #
-# Người quyết nâng D nào ngay trong D đó (dấu duyệt phủ các trường này):
+# Người quyết nâng DEC nào ngay trong DEC đó (dấu duyệt phủ các trường này):
 #   - Promote: adr            nâng thành ADR khi hiện thực
 #   - Scope: `<glob>`         phần code ADR ràng buộc (bắt buộc khi Promote: adr)
-#   - Supersedes: ADR-NNNN    D này thay một ADR accepted
-# `aw adr promote` chỉ CHÉP nội dung D (không thêm), cộng nguồn của các YC mà task
-# "Based on: D-NN" phủ — truy được về spec, không phải lời agent.
+#   - Supersedes: ADR-NNNN    DEC này thay một ADR accepted
+# `aw adr promote` chỉ CHÉP nội dung DEC (không thêm), cộng nguồn của các REQ mà task
+# "Based on: DEC-NNN" phủ — truy được về spec, không phải lời agent.
 #
-# Thư mục: khoá knowledge_adr_dir (mặc định docs/adr). File NNNN-<việc>-d-NN.md,
+# Thư mục: khoá knowledge_adr_dir (mặc định docs/adr). File NNNN-<việc>-dec-nnn.md,
 # chỉ mục README.md (bảng dựng lại từ các file). Định dạng mỗi file:
 #   # ADR-NNNN: <tiêu đề D>
 #   - Status: accepted | superseded by NNNN
 #   - Date: YYYY-MM-DD
 #   - Scope: `<glob>`
 #   - Supersedes: ADR-NNNN          (nếu có)
-#   - Origin: `<việc>` § D-NN
-#   ## Decision      — nội dung D (trừ heading, ô duyệt, Promote/Scope/Supersedes)
-#   ## Sources       — "- YC-NNN (`<việc>`): <Source của YC trong spec>"
+#   - Origin: `<việc>` § DEC-NNN
+#   ## Decision      — nội dung DEC (trừ heading, ô duyệt, Promote/Scope/Supersedes)
+#   ## Sources       — "- REQ-NNN (`<việc>`): <Source của REQ trong spec>"
 #
 # Cần nạp trước: tools/lib/md.sh, tools/lib/sha256.sh, tools/lib/approval-tick.sh
 
@@ -29,7 +29,7 @@ adr_thu_muc() {
   printf '%s\n' "${_ad:-$ADR_MAC_DINH}"
 }
 
-# d_truong <tdd.md> <D-NN> <Trường> -> giá trị (bỏ backtick, **, khoảng trắng hai đầu)
+# d_truong <tdd.md> <DEC-NNN> <Trường> -> giá trị (bỏ backtick, **, khoảng trắng hai đầu)
 d_truong() {
   dy_noi_dung "$1" tdd "$2" | awk -v k="$3" '
     {
@@ -40,13 +40,13 @@ d_truong() {
     }'
 }
 
-# d_tieu_de <tdd.md> <D-NN> -> tiêu đề sau "### D-NN —"
+# d_tieu_de <tdd.md> <DEC-NNN> -> tiêu đề sau "### DEC-NNN —"
 d_tieu_de() {
   dy_noi_dung "$1" tdd "$2" | awk 'NR == 1 {
-    sub(/^###[ \t]+D-[0-9]+[ \t]*/, ""); sub(/^(—|–|-|:)[ \t]*/, ""); print; exit }'
+    sub(/^###[ \t]+DEC-[0-9]+[ \t]*/, ""); sub(/^(—|–|-|:)[ \t]*/, ""); print; exit }'
 }
 
-# d_nang_ds <tdd.md> -> các D khai "Promote: adr", mỗi dòng một
+# d_nang_ds <tdd.md> -> các DEC khai "Promote: adr", mỗi dòng một
 d_nang_ds() {
   [ -f "$1" ] || return 0
   dy_quet "$1" tdd | awk -F'|' '$1 == "O" || $1 == "T" { print $2 }' | while IFS= read -r _d; do
@@ -72,7 +72,7 @@ adr_ds() {
   for _af in "$1"/[0-9][0-9][0-9][0-9]-*.md; do [ -f "$_af" ] && printf '%s\n' "$_af"; done
 }
 
-# adr_cua_d <thư-mục ADR> <việc> <D-NN> -> file ADR có Origin đúng việc + D
+# adr_cua_d <thư-mục ADR> <việc> <DEC-NNN> -> file ADR có Origin đúng việc + DEC
 adr_cua_d() {
   adr_ds "$1" | while IFS= read -r _af; do
     [ "$(adr_truong "$_af" Origin)" = "$2 § $3" ] && { printf '%s\n' "$_af"; break; }
@@ -84,21 +84,21 @@ adr_so_moi() {
   adr_ds "$1" | awk -F/ '{ n = substr($NF, 1, 4) + 0; if (n > m) m = n } END { printf "%04d\n", m + 1 }'
 }
 
-# adr_nguon <thư-mục-feature> <D-NN> -> "- YC-NNN (`<việc>`): <Source>" cho mỗi YC
-# mà task "Based on: D-NN" phủ (plan.md → spec.md). Không có thì một dòng "- None".
+# adr_nguon <thư-mục-feature> <DEC-NNN> -> "- REQ-NNN (`<việc>`): <Source>" cho mỗi REQ
+# mà task "Based on: DEC-NNN" phủ (plan.md → spec.md). Không có thì một dòng "- None".
 adr_nguon() {
   _av=$(basename "$1")
   awk -v d="$2" -v viec="$_av" '
     function ma(s, re, mang,   n) { n = 0; while (match(s, re)) { mang[++n] = substr(s, RSTART, RLENGTH); s = substr(s, RSTART + RLENGTH) } return n }
     { sub(/\r$/, "") }
     FILENAME == ARGV[1] {
-      if (/^###[ \t]+T-[0-9]+/) { if (dua) for (i = 1; i <= nc; i++) if (!(c[i] in co)) { co[c[i]] = 1; thu[++n] = c[i] } ; dua = 0; nc = 0; next }
+      if (/^###[ \t]+TSK-[0-9]+/) { if (dua) for (i = 1; i <= nc; i++) if (!(c[i] in co)) { co[c[i]] = 1; thu[++n] = c[i] } ; dua = 0; nc = 0; next }
       if (/^##[ \t]/) { if (dua) for (i = 1; i <= nc; i++) if (!(c[i] in co)) { co[c[i]] = 1; thu[++n] = c[i] } ; dua = 0; nc = 0; next }
-      if (/^[ \t]*-[ \t]*\**Covers\**:/) nc = ma($0, "YC-[0-9]+", c)
-      if (/^[ \t]*-[ \t]*\**Based on\**:/) { k = ma($0, "D-[0-9]+", b); for (i = 1; i <= k; i++) if (b[i] == d) dua = 1 }
+      if (/^[ \t]*-[ \t]*\**Covers\**:/) nc = ma($0, "REQ-[0-9]+", c)
+      if (/^[ \t]*-[ \t]*\**Based on\**:/) { k = ma($0, "DEC-[0-9]+", b); for (i = 1; i <= k; i++) if (b[i] == d) dua = 1 }
       next
     }
-    /^###[ \t]+YC-[0-9]+/ { match($0, /YC-[0-9]+/); yc = substr($0, RSTART, RLENGTH); next }
+    /^###[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); yc = substr($0, RSTART, RLENGTH); next }
     /^##[ \t]/ { yc = ""; next }
     yc != "" && /^[ \t]*-[ \t]*\**Source\**:/ && !(yc in nguon) { s = $0; sub(/^[^:]*:[ \t]*/, "", s); nguon[yc] = s }
     END {
@@ -109,7 +109,7 @@ adr_nguon() {
   ' "$1/plan.md" "$1/spec.md"
 }
 
-# adr_noi_dung <thư-mục-feature> <D-NN> <số NNNN> <ngày> -> nội dung file ADR
+# adr_noi_dung <thư-mục-feature> <DEC-NNN> <số NNNN> <ngày> -> nội dung file ADR
 adr_noi_dung() {
   _at="$1/tdd.md"; _av=$(basename "$1")
   _ass=$(d_truong "$_at" "$2" Supersedes)
@@ -187,8 +187,8 @@ adr_loi_hinh_thuc() {
   fi
 }
 
-# adr_loi_viec <thư-mục-feature> -> lỗi của việc: D "Promote: adr" chưa có ADR, ADR
-# lệch D đã duyệt (sửa tay, hoặc D đổi sau khi nâng), cộng lỗi hình thức thư mục ADR.
+# adr_loi_viec <thư-mục-feature> -> lỗi của việc: DEC "Promote: adr" chưa có ADR, ADR
+# lệch DEC đã duyệt (sửa tay, hoặc DEC đổi sau khi nâng), cộng lỗi hình thức thư mục ADR.
 adr_loi_viec() {
   _aT="$1/tdd.md"; [ -f "$_aT" ] || return 0
   _arp=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
@@ -211,7 +211,7 @@ adr_loi_viec() {
 }
 
 # adr_loi_truong <thư-mục-feature> -> lỗi các trường Promote / Scope / Supersedes
-# của D-xx trong tdd.md (checker design chặn; plan, review chạy lại qua entry check).
+# của DEC-xxx trong tdd.md (checker design chặn; plan, review chạy lại qua entry check).
 adr_loi_truong() {
   _aT="$1/tdd.md"; [ -f "$_aT" ] || return 0
   _arp=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || _arp=${AW_REPO:-.}
@@ -247,7 +247,7 @@ adr_loi_truong() {
   done
 }
 
-# adr_loi_ke_hoach <thư-mục-feature> -> D "Promote: adr" không có task "Based on: D-NN"
+# adr_loi_ke_hoach <thư-mục-feature> -> DEC "Promote: adr" không có task "Based on: DEC-NNN"
 # mà "Expected files" gồm thư mục ADR — implement sẽ không có chỗ nâng, diff lệch phạm vi.
 adr_loi_ke_hoach() {
   [ -f "$1/tdd.md" ] && [ -f "$1/plan.md" ] || return 0
@@ -259,7 +259,7 @@ adr_loi_ke_hoach() {
       function xong() { if (dua && adr) co = 1; dua = 0; adr = 0 }
       { sub(/\r$/, "") }
       /^###?[ \t]/ { xong(); next }
-      /^[ \t]*-[ \t]*\**Based on\**:/ { s = $0; while (match(s, /D-[0-9]+/)) { if (substr(s, RSTART, RLENGTH) == d) dua = 1; s = substr(s, RSTART + RLENGTH) } }
+      /^[ \t]*-[ \t]*\**Based on\**:/ { s = $0; while (match(s, /DEC-[0-9]+/)) { if (substr(s, RSTART, RLENGTH) == d) dua = 1; s = substr(s, RSTART + RLENGTH) } }
       /^[ \t]*-[ \t]*\**Expected files\**:/ { s = $0; while (match(s, /`[^`]+`/)) { if (index(substr(s, RSTART + 1, RLENGTH - 2), tm) == 1) adr = 1; s = substr(s, RSTART + RLENGTH) } }
       END { xong(); exit !co }
     ' "$1/plan.md" ||
