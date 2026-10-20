@@ -7,7 +7,9 @@
 # (docs/kien-truc.md § Interface SDLC). Chặn:
 #   - File stage: id lệch tên file, thiếu purpose / provides, exit không phải machine | human | both,
 #     requires không do stage trước nó provides, invariant không có trong sdlc/invariants.md,
-#     skippable không phải true | false.
+#     skippable không phải true | false. Capability (thân file, "### CAP-<stage>-NN — <tên>"):
+#     không có cái nào, heading sai dạng hoặc mang stage khác, id trùng, thiếu "- Rule:" /
+#     "- Judged by:", Judged by không phải machine | agent | human.
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
 #     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
 #   - Khối sdlc: của workflow.yaml: stage không có, status lạ, partial / gap thiếu note.
@@ -97,7 +99,7 @@ for inv in $(awk -F'|' '$2 == "id" { print $1 }' "$W/inv"); do
 done
 
 # ---- stage: theo thứ tự NN của tên file
-: > "$W/stages"; : > "$W/prov"; i=0
+: > "$W/stages"; : > "$W/prov"; : > "$W/cap"; i=0
 for f in "$E"/sdlc/stages/[0-9]*.md; do
   [ -f "$f" ] || continue
   i=$((i + 1)); ten=${f##*/}; ten=${ten%.md}; ten=${ten#*-}
@@ -131,9 +133,45 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
     *) loi "stage $id: skippable \"$sk\" — chỉ nhận true | false."; sk=true ;;
   esac
   echo "$i|$id|$ex|$sk" >> "$W/stages"
+  # capability: "### CAP-<stage>-NN — <tên>" + "- Rule:" + "- Judged by:", khối hết ở heading kế tiếp
+  md_body "$f" | awk -v s="$id" '
+    function dong() {
+      if (cur == "") return
+      if (!rule) print "E|" cur ": thiếu \"- Rule:\" — thêm một câu nói điều phải đúng."
+      if (!coj) print "E|" cur ": thiếu \"- Judged by:\" — thêm machine | agent | human."
+      else if (jd != "machine" && jd != "agent" && jd != "human")
+        print "E|" cur ": Judged by \"" jd "\" — chỉ nhận machine | agent | human."
+      print "C|" cur "|" jd "|" ten; cur = ""
+    }
+    { sub(/\r$/, "") }
+    /^#/ {
+      dong()
+      if ($0 !~ /^### CAP/) next
+      c = $0; sub(/^### /, "", c); sub(/ — .*$/, "", c); st = c; sub(/^CAP-/, "", st); sub(/-[0-9][0-9]$/, "", st)
+      if ($0 !~ /^### CAP-[a-z]+-[0-9][0-9] — ./ || st != s) {
+        print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."; next
+      }
+      if (c in da_co) { print "E|stage " s ": " c " trùng — mỗi id chỉ khai một lần."; next }
+      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; next
+    }
+    cur != "" && /^- Rule:/ { rule = 1 }
+    cur != "" && /^- Judged by:/ { coj = 1; jd = $0; sub(/^- Judged by:[ \t]*/, "", jd); sub(/[ \t]+$/, "", jd) }
+    END { dong() }
+  ' > "$W/c1"
+  grep -q '^C|' "$W/c1" \
+    || loi "stage $id: không có capability — thêm \"## Capabilities\" với ít nhất một \"### CAP-$id-NN — <tên>\"."
+  while IFS= read -r l; do
+    case "$l" in
+      E\|*) loi "${l#E|}" ;;
+      C\|*) echo "$id|${l#C|}" >> "$W/cap" ;;
+    esac
+  done < "$W/c1"
 done
 stage_co() { awk -F'|' -v s="$1" '$2 == s' "$W/stages" | grep -q .; }
 stage_so() { awk -F'|' -v s="$1" '$2 == s { print $1 }' "$W/stages"; }
+# cap_co <CAP-id> -> 0 nếu capability có trong sdlc/stages/; cap_stage <CAP-id> -> stage của nó
+cap_co() { awk -F'|' -v c="$1" '$2 == c' "$W/cap" | grep -q .; }
+cap_stage() { awk -F'|' -v c="$1" '$2 == c { print $1; exit }' "$W/cap"; }
 
 # ---- loại artifact profile thêm (adds_provides của sdlc/profiles/*.md): phase được map chúng ra file
 : > "$W/padd"

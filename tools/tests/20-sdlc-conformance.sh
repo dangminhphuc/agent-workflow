@@ -104,6 +104,27 @@ vi_pham "id lệch tên file → chặn" "sdlc/stages/01-require.md: id \"requir
 moi; thay "$E/sdlc/stages/00-plan.md" 'purpose: ' 'purpose_x: '
 vi_pham "thiếu purpose → chặn" "stage plan: thiếu purpose"
 
+# ---------------------------------------------------------------- capability trong file stage
+nhom "check-sdlc.sh: capability trong file stage"
+moi; awk '/^## Capabilities/ { exit } { print }' "$E/sdlc/stages/06-operate.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-operate.md"
+vi_pham "stage không có capability → chặn" "stage operate: không có capability"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-01 — ' '### CAP-deploy-01 - '
+vi_pham "heading capability gõ - thay vì — → chặn" "stage deploy: heading capability \"### CAP-deploy-01 - "
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-01 — ' '### CAP-verify-01 — '
+vi_pham "id capability mang stage khác → chặn" "stage deploy: heading capability \"### CAP-verify-01"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-02 — ' '### CAP-deploy-01 — '
+vi_pham "id capability trùng → chặn" "stage deploy: CAP-deploy-01 trùng"
+moi; awk '!(/^- Rule:/ && ++n == 1)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+vi_pham "capability thiếu Rule → chặn" "CAP-deploy-01: thiếu \"- Rule:\""
+moi; awk '!(/^- Judged by:/ && ++n == 1)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+vi_pham "capability thiếu Judged by → chặn" "CAP-deploy-01: thiếu \"- Judged by:\""
+moi; thay "$E/sdlc/stages/05-deploy.md" '- Judged by: human' '- Judged by: robot'
+vi_pham "Judged by lạ → chặn" "Judged by \"robot\" — chỉ nhận machine | agent | human"
+moi; awk '!(/^- Rule:/ && ++n == 1)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && printf '\n## Notes\n\n- Rule: lạc chỗ\n' >> "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+vi_pham "Rule nằm dưới heading khác không tính → chặn" "CAP-deploy-01: thiếu \"- Rule:\""
+moi; sed 's/$/\r/' "$E/sdlc/stages/05-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
+
 # ---------------------------------------------------------------- invariant
 nhom "check-sdlc.sh: invariant trỏ tới checker + test có thật"
 moi; thay "$E/sdlc/stages/04-verify.md" '  - INV-004' '  - INV-099'
