@@ -3,18 +3,13 @@
 > Ghi chú tạm cho người phát triển engine, không phải tài liệu dùng. Việc đã làm xem `CHANGELOG.md`.
 > Xoá file này khi các mục dưới đã xong hoặc đã quyết định bỏ.
 >
-> Mục 2–5 đến từ một lượt đánh giá các phase (10/2026). Mỗi mục là **đề xuất**: đổi luật nên theo
-> `AGENTS.md` § Making a change, người duyệt cách làm (file đụng tới, chặn hay cảnh báo, test chứng
-> minh gì) trước khi code. Thứ tự mục = thứ tự nên làm.
+> Các mục ở § Đánh giá các phase đến từ một lượt đánh giá (10/2026). Mỗi mục là **đề xuất**: đổi
+> luật nên theo `AGENTS.md` § Making a change, người duyệt cách làm (file đụng tới, chặn hay
+> cảnh báo, test chứng minh gì) trước khi code. Thứ tự mục = thứ tự nên làm.
 
-## Còn lại
+## Đánh giá các phase (10/2026)
 
-### 1. Gợi ý nhãn `Risk` bằng từ khoá
-
-Khoá mới `high_risk_keywords` trong `conventions.md`; spec ghi `Risk: normal` mà chứa từ khoá thì
-**cảnh báo** (không chặn — từ khoá hay báo nhầm).
-
-### 2. Vòng review → implement chưa có cơ chế thêm task
+### 1. Vòng review → implement chưa có cơ chế thêm task
 
 **Vấn đề.** Ba chỗ cùng nói "quay lại `/aw-implement` (task mới)": `workflow/phases/05-review.md`
 § Forbidden ("Fixes go back to `04-implement` as new tasks"), `workflow/phases/06-ship.md` § 4 Follow up
@@ -89,7 +84,7 @@ review → sửa), và là chỗ hiện để agent tự ứng biến nhiều nh
 § Phase 03/05/06 + § 9 Tình huống thường gặp, `docs/kien-truc.md` § Review + § Mã định danh,
 `docs/thuat-ngu.md` (`RVW`, `Fixes`), `CHANGELOG.md` (`Thay đổi` — `/aw-plan` có hành vi mới).
 
-### 3. Phạm vi diff: `Expected files` không chặn được glob rộng, không kiểm theo task
+### 2. Phạm vi diff: `Expected files` không chặn được glob rộng, không kiểm theo task
 
 **Vấn đề.** `Expected files` do chính agent viết ở `/aw-plan` (không có cổng người), rồi dùng làm hàng
 rào cho diff của chính agent ở implement/review. Ba lỗ:
@@ -139,7 +134,7 @@ rào cho diff của chính agent ở implement/review. Ba lỗ:
 + § 2.5 (khoá mới), `docs/kien-truc.md`, `CHANGELOG.md` (`Thêm` — cảnh báo mới; người dùng có thể thấy
 cảnh báo trên plan cũ).
 
-### 4. Checker LLM cho spec: REQ có đọc đúng câu trích không
+### 3. Checker LLM cho spec: REQ có đọc đúng câu trích không
 
 **Vấn đề.** Chỗ dễ sai nhất của cả quy trình là REQ diễn giải sai nguồn — và chưa máy nào chạm tới.
 `aw check spec` chỉ kiểm hình thức: câu trích `[FILE]` có thật trong nguồn (`tools/lib/quote.sh`), REQ
@@ -180,7 +175,7 @@ implement, review đều làm đúng một yêu cầu sai.
    | `merged-requirements` | Một REQ gộp hai yêu cầu kiểm chứng độc lập | `warn` |
    | `unobservable-criterion` | Tiêu chí không quan sát được từ ngoài ("phải nhanh") | `warn` |
    | `nfr-unasked` | Việc đụng nhóm NFR (`01-spec.md` bước 5) mà không có REQ hay open question | `warn` |
-   | `risk-understated` | Đụng tiền/kế toán, schema lõi, tích hợp mới mà `Risk: normal` | `warn` (bù một phần mục 1) |
+   | `risk-understated` | Đụng tiền/kế toán, schema lõi, tích hợp mới mà `Risk: normal` | `warn` (bổ sung cho cảnh báo `high_risk_keywords`) |
 
 3. **Có đọc lại nguồn không?** Đọc lại `[FILE]` thì rẻ; `[JIRA]`/`[CONFLUENCE]` cần MCP và tốn ngữ
    cảnh. Đề xuất bản đầu chỉ so `spec.md` với `Quote` và lời `[HUMAN]` trong `intake.md` (đủ cho 6 loại
@@ -207,7 +202,7 @@ implement, review đều làm đúng một yêu cầu sai.
 § LLM checker + mục 3 của § Những chỗ yếu, `docs/huong-dan.md` § Phase 01 + § 4 Bản đồ artifact,
 `adapters/cursor/README.md`, `CHANGELOG.md` (`Thêm`).
 
-### 5. Đường tắt cho việc rất nhỏ — cần quyết định, chưa đề xuất code
+### 4. Đường tắt cho việc rất nhỏ — cần quyết định, chưa đề xuất code
 
 **Vấn đề.** Việc nhỏ nhất vẫn tốn: một phiên intake ở main checkout, rồi phiên mới cho spec, plan,
 implement, một subagent review, (tuỳ chọn) ship; người can thiệp ít nhất ba lần (xác nhận intake, tick
@@ -235,15 +230,10 @@ quy trình — chỉ làm khi người chủ engine muốn.
   `##` của nhóm.
 - **`FND` trùng giữa nhiều checker LLM** — chưa xảy ra (mới có checker design). `pending.sh` đã ghép
   tên file (`design-findings.md:FND-001`) để phân biệt; các chỗ còn gắn cứng `design-findings.md` liệt
-  kê ở mục 4.
+  kê ở § Đánh giá các phase, mục 3.
 - **Mã sai dạng — phần còn lại.** Đã chặn heading không đúng 3 chữ số (`REQ`, `DEC`, `FND`, `TSK`).
   Chưa kiểm: đánh số liên tiếp (dễ báo nhầm khi xoá một mục giữa chừng — cần quyết độ chặt), và `RFR`
   (chưa có checker máy nào đọc `refactor-requests.md`).
-
-## Ngoài phạm vi (luật mới, cần quyết định độ chặt)
-
-`aw check spec` hiện vẫn **cho qua**: `Source: [JIRA]` không có mã issue; `[INFERRED]` không ghi lý
-do; nguồn của REQ không có trong `## Input` của `intake.md`.
 
 ## Tốc độ test (sau khi chia phần song song)
 

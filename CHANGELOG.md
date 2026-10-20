@@ -13,6 +13,17 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+### Thêm
+- **`aw check spec` chặn hai lỗi nguồn trước đây lọt qua:** `Source: [JIRA]` không có mã issue khớp
+  `jira_key_regex` (cùng luật với `aw check intake`), và `[INFERRED]` không ghi lý do (để trống hay
+  còn `<…>`). Spec đang viết dở có hai lỗi này thì sửa dòng `Source:` rồi chạy lại.
+- **Cảnh báo nguồn ngoài intake:** REQ có nguồn `[JIRA]`/`[CONFLUENCE]`/`[FILE]` mà mã, URL hay đường
+  dẫn không có trong `## Input` của `intake.md` thì `aw check spec` **cảnh báo** (không chặn). Đúng
+  là đầu vào thì thêm vào intake; không thì kiểm lại nguồn.
+- **Khoá `high_risk_keywords` trong `conventions.md`** (tuỳ chọn): từ khoá rủi ro cao, cách nhau dấu
+  phẩy. Spec ghi `Risk: normal` mà chứa từ khoá thì `aw check spec` **cảnh báo** để người duyệt xem
+  lại `Risk`. Repo cài từ trước: thêm dòng `high_risk_keywords: …` nếu muốn bật; không thêm thì như cũ.
+
 ### Thay đổi
 - **Mã định danh không đúng 3 chữ số giờ bị chặn.** Luật `<PREFIX>-NNN` (đúng 3 chữ số) đã có từ
   trước nhưng checker vẫn nhận mọi dạng số, nên `REQ-1` hay `DEC-0001` lọt qua. Giờ checker của
@@ -35,6 +46,15 @@ ngầm giữa các bản.
   vòng review → implement chưa có cơ chế thêm task; `Expected files` không chặn được glob rộng và
   không kiểm theo từng task; checker LLM cho spec; đường tắt cho việc rất nhỏ (cần quyết định).
   Chưa đổi hành vi của `aw`; người dùng không cần làm gì.
+- **Repo engine: mọi thay đổi đi qua worktree từ `origin/main` rồi PR vào `main`, kể cả sửa tài liệu
+  hay lỗi chính tả.** Luật đưa lên đầu `AGENTS.md`. Với Claude Code, hook `.claude/hooks/block-main.sh`
+  (khai trong `.claude/settings.json`) chặn agent sửa file, commit, merge, push trên checkout đang ở
+  `main`, và chặn push thẳng vào `main` từ bất cứ đâu; worktree nhánh khác, repo khác, file ngoài git
+  vẫn cho qua. Hook không bắt lệnh shell tự ghi file (`sed -i`, `>`) và không áp cho agent khác
+  (Cursor…) — với các trường hợp đó luật chữ là chính. Người dùng `aw` không bị ảnh hưởng; người
+  phát triển engine cần mở phiên Claude Code từ repo đã có commit này để hook có hiệu lực.
+  `.claude/worktrees/` và `.claude/settings.local.json` được thêm vào `.gitignore`. Test:
+  `tools/tests/19-block-main-hook.sh`.
 
 ## [2026.10.30]
 
