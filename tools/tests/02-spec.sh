@@ -54,6 +54,13 @@ ky_vong 1 "chặn Mức rủi ro còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '### REQ-002' '### REQ-001'
 ky_vong 1 "chặn mã REQ trùng nhau" sh "$CHK" "$F"
 
+viet_spec; thay "$F/spec.md" "### REQ-002" "### REQ-2"
+ky_vong 1 "chặn mã REQ sai dạng (không đủ 3 chữ số)" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-2 sai dạng'"
+viet_spec; thay "$F/open-questions.md" "## REQ-002" "## REQ-0002"
+ky_vong 1 "chặn mã REQ sai dạng trong open-questions.md" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-0002 sai dạng'"
+
 viet_spec; rm -f "$F/open-questions.md"
 ky_vong 2 "chặn khi thiếu hẳn open-questions.md" sh "$CHK" "$F"
 
