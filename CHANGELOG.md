@@ -41,6 +41,11 @@ ngầm giữa các bản.
   sót có thể xoá tay.
 
 ### Nội bộ
+- `docs/viec-can-lam.md`: thêm bốn việc cần làm từ một lượt đánh giá các phase, mỗi việc ghi vấn đề
+  (kèm file, hàm liên quan), đề xuất cần duyệt, chặn hay cảnh báo, test và tài liệu phải đổi:
+  vòng review → implement chưa có cơ chế thêm task; `Expected files` không chặn được glob rộng và
+  không kiểm theo từng task; checker LLM cho spec; đường tắt cho việc rất nhỏ (cần quyết định).
+  Chưa đổi hành vi của `aw`; người dùng không cần làm gì.
 - **Repo engine: mọi thay đổi đi qua worktree từ `origin/main` rồi PR vào `main`, kể cả sửa tài liệu
   hay lỗi chính tả.** Luật đưa lên đầu `AGENTS.md`. Với Claude Code, hook `.claude/hooks/block-main.sh`
   (khai trong `.claude/settings.json`) chặn agent sửa file, commit, merge, push trên checkout đang ở
