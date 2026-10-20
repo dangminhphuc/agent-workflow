@@ -48,7 +48,7 @@ Free text = the human's answer to your concerns, or a restated request (the new 
 
 ## 3. Record
 
-Append `## RFR-NNN — <short title>` (next number; first use → create from the template, delete its comments):
+Append `### RFR-NNN — <short title>` under `## Requests` (next number; first use → create from the template, delete its comments):
 - `Summary`: the approved draft. `Request`: the human's words **verbatim**. `Requested by`: who + today.
 - `Location`: only places you saw exist; otherwise `None`.
 - `Review`: each concern raised + the human's answer verbatim; none raised → `None`.

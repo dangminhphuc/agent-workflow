@@ -385,6 +385,12 @@ grep. Giờ mọi mã trong job dir là `<TIỀN TỐ>-NNN` (`REQ`, `DEC`, `FND`
   phải mang hai regex mãi, và job trộn hai kiểu không ai bắt.
 - **`BR-<MIỀN>-NNN` và `ADR-NNNN` giữ nguyên**: chúng sống trong git của `target repo`, dùng chung
   mọi job, đã có trong code (`covers: BR-…`) và theo quy ước ADR thông dụng.
+- **Mã luôn ở `###`, dưới một `##` của nhóm** (`## Questions`, `## Requests`, `## Findings`;
+  `spec.md` đã có `## Requirements`). Một cấp cho mọi file thì một regex cho mọi parser, và vùng
+  của một mục kết thúc ở heading `##`/`###` kế tiếp như nhau. **Chặn dạng cũ, không đọc song song**
+  — cùng lý do như trên: việc cũ chạy bằng engine đã ghim.
+- **Không kiểm đánh số liên tiếp.** Xoá một mục giữa chừng để lại lỗ là hợp lệ; đánh lại số thì gãy
+  link và trace (`covers:`, `Source:`). Trùng mã và sai dạng thì chặn — đó là lỗi chính xác.
 
 ### Mục lục và link tới mục
 
