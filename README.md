@@ -14,6 +14,7 @@ Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa 
 | Thuật ngữ agent dùng khi nói với bạn: REQ, DEC-xxx, `open question`, `stale`, worktree… | [`docs/thuat-ngu.md`](docs/thuat-ngu.md) |
 | Luật từng phase (nguồn sự thật) | [`workflow/phases/`](workflow/phases), [`workflow/rules/`](workflow/rules) |
 | Vì sao thiết kế như vậy, điểm yếu | [`docs/kien-truc.md`](docs/kien-truc.md) |
+| Sửa engine: interface SDLC (stage, capability, invariant), công thức cho từng loại thay đổi, roadmap | [`docs/interface-sdlc.md`](docs/interface-sdlc.md) |
 | Adapter | [`adapters/README.md`](adapters/README.md) |
 | Phát triển chính repo này (cho agent) | [`AGENTS.md`](AGENTS.md) |
 
