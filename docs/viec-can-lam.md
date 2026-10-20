@@ -236,8 +236,9 @@ quy trình — chỉ làm khi người chủ engine muốn.
 - **`FND` trùng giữa nhiều checker LLM** — chưa xảy ra (mới có checker design). `pending.sh` đã ghép
   tên file (`design-findings.md:FND-001`) để phân biệt; các chỗ còn gắn cứng `design-findings.md` liệt
   kê ở mục 4.
-- **Chặn mã sai dạng** — checker vẫn nhận `[0-9]+`, `REQ-1` hay `DEC-01` lọt qua. Chính xác nên có thể
-  chặn ở checker của phase viết ra mã; cần quyết độ chặt.
+- **Mã sai dạng — phần còn lại.** Đã chặn heading không đúng 3 chữ số (`REQ`, `DEC`, `FND`, `TSK`).
+  Chưa kiểm: đánh số liên tiếp (dễ báo nhầm khi xoá một mục giữa chừng — cần quyết độ chặt), và `RFR`
+  (chưa có checker máy nào đọc `refactor-requests.md`).
 
 ## Ngoài phạm vi (luật mới, cần quyết định độ chặt)
 
@@ -252,5 +253,3 @@ do; nguồn của REQ không có trong `## Input` của `intake.md`.
   engine, cần đề xuất riêng.
 - **Ca "…đúng lý do" chạy checker lần hai** (~50 cặp `ky_vong` + `dung … | grep`): gộp được thành một
   lần chạy, bớt ~9% CPU của bộ test.
-- **`journal.sh` để sót file tạm `findings.tsv.<pid>`** khi chưa có `findings.tsv` và review không có
-  finding (`{ … } > tmp && mv` thất bại vì khối trả mã khác 0).

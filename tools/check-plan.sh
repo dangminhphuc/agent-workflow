@@ -153,6 +153,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
   $0 ~ /^###[ \t]+TSK-/ {
     match($0, /TSK-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
     if (cur in co_task) loi("Mã task " cur " bị trùng")
+    if (cur !~ /^TSK-[0-9][0-9][0-9]$/) loi("Mã " cur " sai dạng trong plan.md: phải đúng 3 chữ số (TSK-001)")
     co_task[cur] = 1; dsach_task[++n_task] = cur
     next
   }
