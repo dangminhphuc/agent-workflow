@@ -11,7 +11,9 @@
 # Ghi:
 #   VERSION                         <version>
 #   bin/aw                          AW_WRAPPER_VERSION="<version>"
-#   CHANGELOG.md                    "## [Chưa phát hành]" → "## [<version>]"
+#   CHANGELOG.md                    "## [<version>]" = mảnh changes/*.md (tools/lib/changelog.sh)
+#                                   + nội dung "## [Chưa phát hành]" nếu còn, gộp theo mục;
+#                                   các mảnh bị xoá
 #   README.md, docs/huong-dan.md    link tải wrapper releases/download/<version>/aw
 #
 # Merge PR vào main là workflow release tự tạo tag + Release (xem README, mục
@@ -22,11 +24,13 @@
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/tools/lib/result.sh"
 . "$ROOT/tools/lib/version.sh"
+. "$ROOT/tools/lib/changelog.sh"
 kq_khai prepare-release.sh \
-  "0=ĐÃ CHUẨN BỊ — commit các file đã đổi vào PR" \
+  "0=ĐÃ CHUẨN BỊ — commit các file đã đổi vào PR (cả các mảnh changes/ đã xoá)" \
   "2=SAI THAM SỐ" \
-  "3=KHÔNG CÓ GÌ ĐỂ PHÁT HÀNH — CHANGELOG.md thiếu mục \"## [Chưa phát hành]\" có nội dung" \
-  "4=VERSION LỖI — sai dạng YYYY.M.N hoặc tag đã có"
+  "3=KHÔNG CÓ GÌ ĐỂ PHÁT HÀNH — không có mảnh changes/*.md, CHANGELOG.md cũng không có \"## [Chưa phát hành]\" có nội dung" \
+  "4=VERSION LỖI — sai dạng YYYY.M.N hoặc tag đã có" \
+  "5=MẢNH CHANGELOG LỖI — xem các dòng LỖI phía trên"
 
 REMOTE="${AW_REMOTE:-origin}"
 [ $# -le 1 ] || { echo "Dùng: sh tools/prepare-release.sh [YYYY.M.N]" >&2; exit 2; }
@@ -56,25 +60,60 @@ if printf '%s\n' "$TAGS" | grep -qxF "$V"; then
 fi
 
 CL="$ROOT/CHANGELOG.md"
+MANH=$(cl_manh "$ROOT")
+# Tên file mảnh không có khoảng trắng (changes/<tên-nhánh>.md) — tách theo dòng là đủ.
+OIFS=$IFS; IFS='
+'
+# shellcheck disable=SC2086
+set -- $MANH
+IFS=$OIFS
+if [ $# -gt 0 ]; then
+  LOI_MANH=$(cl_kiem_manh "$@")
+  if [ -n "$LOI_MANH" ]; then
+    printf '%s\n' "$LOI_MANH" | sed 's/^/  [LỖI] changes\//'
+    exit 5
+  fi
+fi
+
+TMPF="$ROOT/.chuan-bi-phat-hanh.$$"
+kq_don 'rm -f "$TMPF" "$TMPF.cu" "$TMPF.moi"'   # không đặt trap EXIT riêng — kq_khai đã giữ trap đó
+thay_file() { sed "$1" "$2" > "$TMPF" && cat "$TMPF" > "$2"; }
+
+# Nội dung "## [Chưa phát hành]" (cách ghi trước khi có mảnh) vẫn được gom cùng.
 awk '
   /^## \[Chưa phát hành\][ \t]*$/ { on = 1; next }
   on && /^## \[/ { exit }
-  on && NF { co = 1 }
-  END { exit co ? 0 : 1 }
-' "$CL" || { echo "LỖI: CHANGELOG.md không có mục \"## [Chưa phát hành]\" có nội dung — ghi thay đổi vào đó trước." >&2; exit 3; }
-
-TMPF="$ROOT/.chuan-bi-phat-hanh.$$"
-kq_don 'rm -f "$TMPF"'   # không đặt trap EXIT riêng — kq_khai đã giữ trap đó
-thay_file() { sed "$1" "$2" > "$TMPF" && cat "$TMPF" > "$2"; }
+  on { print }
+' "$CL" > "$TMPF.cu"
+cl_gom "$TMPF.cu" "$@" > "$TMPF.moi"
+grep -q '[^[:space:]]' "$TMPF.moi" || {
+  echo "LỖI: không có gì để phát hành — mỗi PR ghi thay đổi vào changes/<tên-nhánh>.md (xem changes/README.md)." >&2
+  exit 3
+}
 
 printf '%s\n' "$V" > "$ROOT/VERSION"
 thay_file "s/^AW_WRAPPER_VERSION=\"[^\"]*\"/AW_WRAPPER_VERSION=\"$V\"/" "$ROOT/bin/aw"
-awk -v v="$V" '!xong && /^## \[Chưa phát hành\][ \t]*$/ { print "## [" v "]"; xong = 1; next } { print }' "$CL" > "$TMPF" && cat "$TMPF" > "$CL"
+# Mục mới thay chỗ "## [Chưa phát hành]"; không có thì đứng trước bản phát hành mới nhất.
+awk -v v="$V" -v moi="$TMPF.moi" '
+  function in_moi(  l) {
+    print "## [" v "]"; print ""
+    while ((getline l < moi) > 0) print l
+    close(moi); print ""; xong = 1
+  }
+  !xong && /^## \[Chưa phát hành\][ \t]*$/ { in_moi(); bo = 1; next }
+  bo && /^## \[/ { bo = 0 }
+  bo { next }
+  !xong && /^## \[/ { in_moi() }
+  { print }
+  END { if (!xong) { print ""; in_moi() } }
+' "$CL" > "$TMPF" && cat "$TMPF" > "$CL"
 for tep in "$ROOT/README.md" "$ROOT/docs/huong-dan.md"; do
   thay_file "s#releases/download/[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/aw#releases/download/$V/aw#" "$tep"
 done
+for m in "$@"; do rm -f "$m"; done
 
 echo "Version $V:"
-echo "  VERSION, bin/aw (AW_WRAPPER_VERSION), CHANGELOG.md ([Chưa phát hành] → [$V]), README.md, docs/huong-dan.md (link tải wrapper)"
+echo "  VERSION, bin/aw (AW_WRAPPER_VERSION), CHANGELOG.md ([$V]), README.md, docs/huong-dan.md (link tải wrapper)"
+[ $# = 0 ] || echo "  Đã gom và xoá $# mảnh trong changes/"
 echo "Kiểm lại: sh tools/check-release.sh"
 exit 0

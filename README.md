@@ -375,10 +375,14 @@ Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (khô
 0. Mọi thay đổi bắt đầu bằng worktree từ `origin/main` (`git fetch origin && git worktree add <đường-dẫn>
    -b <branch> origin/main`) và kết thúc bằng PR vào `main` — không sửa, commit hay push trực tiếp trên
    `main`. Trong Claude Code, hook `.claude/hooks/block-main.sh` chặn việc đó.
-1. Mỗi PR ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md` và cập nhật tài liệu liên quan
-   (`AGENTS.md` § Human docs).
-2. Trong PR muốn phát hành: `sh tools/prepare-release.sh [YYYY.M.N]` — ghi version vào
-   `VERSION`, `bin/aw`, CHANGELOG, link tải trong README và `docs/huong-dan.md`. Commit vào PR.
+1. Mỗi PR ghi thay đổi vào một file mới `changes/<tên-nhánh>.md` (dạng file: `changes/README.md`) —
+   không sửa `CHANGELOG.md`, để hai PR mở song song không conflict ở đó — và cập nhật tài liệu liên
+   quan (`AGENTS.md` § Human docs). Trước mỗi lần push, merge `origin/main` mới nhất vào nhánh và chạy
+   lại test.
+2. Trong PR muốn phát hành: `sh tools/prepare-release.sh [YYYY.M.N]` — gom các mảnh `changes/*.md`
+   (cùng nội dung `## [Chưa phát hành]` nếu còn) thành `## [YYYY.M.N]` của CHANGELOG rồi xoá mảnh;
+   ghi version vào `VERSION`, `bin/aw`, link tải trong README và `docs/huong-dan.md`. Commit vào PR
+   (`git add -A` để lấy cả các mảnh đã xoá).
 3. Workflow `kiem-tra` chạy test + `tools/check-release.sh` (version nhất quán, tag chưa có).
 4. Merge vào `main` → workflow `release` tự tạo tag + Release (tarball, `aw`, `SHA256SUMS`).
 

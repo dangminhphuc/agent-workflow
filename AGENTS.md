@@ -64,9 +64,10 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 Every change ships human-readable docs in the same PR — no exceptions for internal, refactor, test
 or tooling changes. Vietnamese, for a reader who does not read the diff.
 
-- **Summary**: an entry under `## [Chưa phát hành]` in `CHANGELOG.md` — what changed, why, who is
-  affected / what to do. Sections: `Thêm`, `Thay đổi`, `Sửa`, `Bỏ`; changes invisible to users of
-  `aw` go under `Nội bộ`.
+- **Summary**: a new file `changes/<branch>.md` (`/` → `-`), never an edit to `CHANGELOG.md` —
+  what changed, why, who is affected / what to do. Only `### <section>` headings + entries:
+  `Thêm`, `Thay đổi`, `Sửa`, `Bỏ`; changes invisible to users of `aw` go under `Nội bộ`. Format:
+  `changes/README.md`; `tools/prepare-release.sh` gathers fragments into `CHANGELOG.md`.
 - **Living docs**: update every doc the change makes wrong or incomplete — usage: README /
   `docs/huong-dan.md`; rationale: `docs/kien-truc.md`; new term: `docs/thuat-ngu.md`; open work:
   `docs/viec-can-lam.md`. Nothing to update → say so in the PR description.
@@ -81,7 +82,11 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
 - Worktree from fresh `origin/main` first (top of this file). Tests first, then code (§ Verify).
 - Stay in scope. Related ideas → propose; if accepted, add to `docs/viec-can-lam.md`,
   don't implement.
+- Before every push to a PR branch: `git fetch origin && git merge origin/main`, resolve, rerun
+  `sh tools/run-tests.sh`. Never rebase or force-push a pushed branch.
 - Finish with a PR into `main`: what changed, why, which tests cover it.
+- After a PR merges, check the other open PRs for conflicts with the new `main`; resolve each by
+  merging `origin/main` into its branch (same rules as above).
 
 ## Verify
 
