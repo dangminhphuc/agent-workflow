@@ -100,6 +100,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   idx==1 {
     if ($0 ~ /^##[ \t]+REQ-[0-9]+/) {
       match($0, /REQ-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
+      if (cur_oq !~ /^REQ-[0-9][0-9][0-9]$/) loi("Mã " cur_oq " sai dạng trong open-questions.md: phải đúng 3 chữ số (REQ-001)")
       co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
     }
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Assumption\**:/) co_gia_dinh[cur_oq] = 1
@@ -134,6 +135,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   $0 ~ /^###[ \t]+REQ-[0-9]+/ {
     match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
     if (cur in da_gap) loi("Mã " cur " xuất hiện nhiều lần trong spec.md")
+    if (cur !~ /^REQ-[0-9][0-9][0-9]$/) loi("Mã " cur " sai dạng trong spec.md: phải đúng 3 chữ số (REQ-001)")
     da_gap[cur] = 1
     thu_tu[++n] = cur
     so_nguon[cur] = 0

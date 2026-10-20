@@ -13,6 +13,22 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+### Thay đổi
+- **Mã định danh không đúng 3 chữ số giờ bị chặn.** Luật `<PREFIX>-NNN` (đúng 3 chữ số) đã có từ
+  trước nhưng checker vẫn nhận mọi dạng số, nên `REQ-1` hay `DEC-0001` lọt qua. Giờ checker của
+  phase viết ra mã sẽ chặn heading sai dạng: `aw check spec` cho `REQ` (trong `spec.md` và
+  `open-questions.md`), `aw check design` cho `DEC` và `FND`, `aw check plan` cho `TSK`.
+  **Ai bị ảnh hưởng:** chỉ những việc đang có mã sai dạng. Sửa heading về dạng `REQ-001` cùng mọi
+  tham chiếu tới nó, rồi chạy lại `aw check`. Việc đã ghim engine cũ trong `intake.md` không bị ảnh
+  hưởng. Hai điểm chưa kiểm: đánh số liên tiếp, và `RFR` (chưa có checker máy nào đọc).
+
+### Sửa
+- **`aw check review` không xoá finding cũ khi review chạy lại mà không còn finding nào.** Nhật ký
+  `findings.tsv` giữ lại finding đã sửa xong, nên `aw journal` đếm sai và có thể gợi ý nâng một loại
+  finding thành luật dù nó không còn. Lỗi này cũng để sót file tạm `findings.tsv.<pid>` trong thư mục
+  nhật ký. Không cần làm gì; lần chạy review kế tiếp của việc đó sẽ ghi đè finding cũ. File tạm đã
+  sót có thể xoá tay.
+
 ### Nội bộ
 - **Repo engine: mọi thay đổi đi qua worktree từ `origin/main` rồi PR vào `main`, kể cả sửa tài liệu
   hay lỗi chính tả.** Luật đưa lên đầu `AGENTS.md`. Với Claude Code, hook `.claude/hooks/block-main.sh`
