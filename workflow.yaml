@@ -73,6 +73,25 @@ phases:
     required: false
     when: the job passed /aw-review and needs an MR/PR (create it, follow until merged, clean up the worktree)
 
+# Engine là một implementation của interface SDLC (sdlc/stages/*.md, sdlc/invariants.md).
+# Phase khai stage nó implement bằng `implements:` trong frontmatter. Ở đây chỉ khai stage
+# KHÔNG implement đủ: partial (làm một phần) hoặc gap (không làm) — note bắt buộc, nói phần
+# thiếu. Stage không có mặt ở đây = implemented. Utility command không ánh xạ vào stage.
+# tools/check-sdlc.sh kiểm khối này cùng frontmatter phase (docs/kien-truc.md § Interface SDLC).
+sdlc:
+  - stage: plan
+    status: partial
+    note: Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
+  - stage: verify
+    status: partial
+    note: Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; không có e2e, kiểm tải hay UAT
+  - stage: deploy
+    status: partial
+    note: Dừng ở MR/PR đã merge; không release, tag, triển khai hay rollback
+  - stage: operate
+    status: gap
+    note: CI/CD và observability nằm ngoài engine; sự cố chưa quay lại thành việc mới
+
 rules:
   - workflow/rules/general.md
   - workflow/rules/source-tracing.md

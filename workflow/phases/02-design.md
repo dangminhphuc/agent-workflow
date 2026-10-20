@@ -11,6 +11,9 @@ inputs:
 outputs:
   - tdd.md
   - design-findings.md
+implements: design
+provides:
+  - design: tdd.md
 exit_machine:
   - aw check design
 exit_human:

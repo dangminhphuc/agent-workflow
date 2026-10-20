@@ -48,6 +48,9 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | Thuật ngữ | Nghĩa |
 |---|---|
 | `phase` | Một bước của quy trình (`00-intake` … `06-ship`), là một hộp **file vào → file ra**. Gọi bằng lệnh `/aw-<phase>` trong agent |
+| `stage` | Một bước của **interface SDLC** (`sdlc/stages/`: `plan`, `require`, `design`, `implement`, `verify`, `deploy`, `operate`) — *cái* một quy trình phát triển phải có, không nói *làm thế nào*. Mỗi `phase` khai `implements:` đúng một stage; một stage có thể do nhiều phase làm (`implement` = `03-plan` + `04-implement`). Xem [`kien-truc.md` § Interface SDLC](kien-truc.md#interface-sdlc) |
+| `stage status` | Engine làm một `stage` tới đâu: `implemented` (đủ), `partial` (một phần), `gap` (không làm). Khai ở khối `sdlc:` của `workflow.yaml`; `partial` và `gap` bắt buộc có note nói phần thiếu |
+| `invariant` | Luật xuyên stage `INV-NNN` trong `sdlc/invariants.md` (vd mọi task trỏ về một REQ), mỗi luật trỏ tới `machine checker` giữ nó và test chứng minh checker chặn được |
 | `utility command` *(trước: lệnh tiện ích)* | Lệnh không phải phase: `/aw-clarify`, `/aw-import`, `/aw-bootstrap` |
 | `job` *(trước: việc)* | Một đơn vị công việc đi qua quy trình (một ticket, một bug…). Mỗi `job` có một branch, một `worktree`, một `job dir`, cùng tên |
 | `job type` *(trước: loại việc)* | `Type` trong `intake.md`: `feature \| bugfix \| refactor \| perf \| chore`, **đổi luật** của mọi phase sau. Xem [`huong-dan.md` §5](huong-dan.md#5-khác-nhau-theo-job-type) |

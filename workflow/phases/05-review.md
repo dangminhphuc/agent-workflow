@@ -17,6 +17,9 @@ inputs:
   - diff
 outputs:
   - review.md
+implements: verify
+provides:
+  - review-report: review.md
 exit_machine:
   - aw check review
 exit_human:

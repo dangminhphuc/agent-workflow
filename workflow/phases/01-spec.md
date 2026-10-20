@@ -11,6 +11,10 @@ inputs:
 outputs:
   - spec.md
   - open-questions.md
+implements: require
+provides:
+  - requirements: spec.md
+  - open-questions: open-questions.md
 exit_machine:
   - aw check spec
 exit_human:

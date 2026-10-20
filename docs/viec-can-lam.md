@@ -237,3 +237,14 @@ quy trình — chỉ làm khi người chủ engine muốn.
   engine, cần đề xuất riêng.
 - **Ca "…đúng lý do" chạy checker lần hai** (~50 cặp `ky_vong` + `dung … | grep`): gộp được thành một
   lần chạy, bớt ~9% CPU của bộ test.
+
+## Interface SDLC (sau khi thêm `sdlc/`)
+
+- **Tách version / repo của interface** khi có implementation thứ hai (engine khác, hay quy trình làm
+  tay khai tuân thủ). Lúc đó `sdlc/` có version riêng và engine khai version interface nó tuân thủ;
+  hiện chung repo, chung version vì chỉ có một implementation (`docs/kien-truc.md` § Interface SDLC).
+- **Lấp các stage `partial`**: `plan` (roadmap, ước lượng, ưu tiên giữa các việc), `verify` (e2e, kiểm
+  tải, UAT), `deploy` (release, tag, rollback — xem cả § Những chỗ thiết kế này yếu mục 1). Mỗi mục là
+  đề xuất riêng; làm xong thì sửa khối `sdlc:` của `workflow.yaml`.
+- **Intake nhận incident / postmortem**: nối `operate` (đang `gap`) về `plan` — sự cố, postmortem thành
+  `input` của một job mới, có `source label` riêng. Cần đề xuất cách ghi nguồn trước khi code.

@@ -91,6 +91,24 @@ wf_commands() {
   ' "$1"
 }
 
+# wf_sdlc <workflow.yaml> -> in "stage|status|note" cho từng stage khai trong khối sdlc:
+# (stage partial / gap của interface SDLC — tools/check-sdlc.sh)
+wf_sdlc() {
+  awk '
+    { sub(/\r$/, "") }
+    /^[ \t]*#/ { next }
+    /^sdlc:[ \t]*$/ { ins=1; next }
+    ins==1 && /^[A-Za-z]/ { ins=0; next }
+    ins==1 && /^[ \t]*-[ \t]+stage:[ \t]*/ {
+      if (st != "") print st "|" stt "|" note
+      st=$0; sub(/^[ \t]*-[ \t]+stage:[ \t]*/, "", st); stt=""; note=""; next
+    }
+    ins==1 && /^[ \t]+status:[ \t]*/ { stt=$0; sub(/^[ \t]+status:[ \t]*/, "", stt); next }
+    ins==1 && /^[ \t]+note:[ \t]*/   { note=$0; sub(/^[ \t]+note:[ \t]*/, "", note); next }
+    END { if (st != "") print st "|" stt "|" note }
+  ' "$1"
+}
+
 # conv_get <conventions.md> <khoá> -> giá trị trong khối ```conventions
 # Khối máy đọc của conventions.md: mỗi dòng "khoá: giá trị", danh sách cách
 # nhau bằng dấu cách. File không tồn tại hoặc thiếu khoá -> in rỗng.

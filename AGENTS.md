@@ -11,13 +11,18 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 
 ## Map
 
-- `workflow.yaml` — source of truth: phases, utility commands, rules, adapters (with status).
+- `workflow.yaml` — source of truth: phases, utility commands, rules, adapters (with status),
+  `sdlc:` (stages the engine implements only partly or not at all).
 - `workflow/phases/*.md` — frontmatter = contract (adapters build I/O from it), body = agent
   instructions. Field list: `docs/kien-truc.md` § Định dạng file phase.
 - `workflow/checkers/` LLM checkers (block only) · `workflow/rules/` runtime rules ·
   `workflow/templates/` artifact templates (`target-repo/` is for target repos, not this one).
 - `bin/aw` global wrapper (picks version, downloads, checks sha256); `bin/aw-engine` dispatches to `tools/*.sh`.
-- `tools/check-*.sh` machine checkers, registered in `tools/lib/commands.sh`.
+- `tools/check-*.sh` machine checkers, registered in `tools/lib/commands.sh` — except
+  `check-release.sh` and `check-sdlc.sh`, which check this repo, not a job dir.
+- `sdlc/` SDLC interface the engine implements: `stages/NN-<stage>.md` (contract per stage),
+  `invariants.md` (cross-stage rules, each pointing to a checker + test). Phases declare
+  `implements:` + `provides:`; `tools/check-sdlc.sh` checks the mapping (`docs/kien-truc.md` § Interface SDLC).
 - `adapters/lib/common.sh` (`ad_sinh`) generates everything; `adapters/<id>/build.sh` only declares
   hooks + format spec (`adapters/README.md`).
 - `.claude/` dev setup for this repo only (hook above; test `tools/tests/19-block-main-hook.sh`).
@@ -53,8 +58,11 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 ## Change together
 
 - Phase: `workflow/phases/NN-<id>.md` + `phases:` in `workflow.yaml`; `exit_machine` →
-  `tools/check-<id>.sh` + `tools/lib/commands.sh`; new artifact → template; tests.
-- Utility command: `workflow/<id>.md` + `commands:` in `workflow.yaml`.
+  `tools/check-<id>.sh` + `tools/lib/commands.sh`; new artifact → template; tests;
+  `implements:` + `provides:` in frontmatter (stage it implements); `sh tools/check-sdlc.sh` passes.
+- SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `sdlc:` in `workflow.yaml`
+  (partial / gap with a note) + `tools/tests/20-sdlc-conformance.sh`.
+- Utility command: `workflow/<id>.md` + `commands:` in `workflow.yaml`; never `implements:` (not an SDLC stage).
 - Adapter: follow `adapters/README.md`; declare hooks only, never reimplement generation.
 - `conventions.md` key: `workflow/templates/conventions.md` + `conventions-reference.md`.
 - Every change, see § Human docs.
