@@ -23,6 +23,8 @@ outputs:
 implements: deploy
 provides:
   - delivery: merge-request.md
+capabilities:
+  - CAP-deploy-01
 exit_machine:
   - aw check ship
 exit_human:

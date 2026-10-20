@@ -20,6 +20,9 @@ outputs:
 implements: verify
 provides:
   - review-report: review.md
+capabilities:
+  - CAP-verify-01
+  - CAP-verify-02
 exit_machine:
   - aw check review
 exit_human:

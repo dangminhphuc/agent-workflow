@@ -22,6 +22,9 @@ provides:
   - test-evidence: test-results.md
   - reproduction-evidence: repro.md
   - performance-evidence: perf.md
+capabilities:
+  - CAP-implement-02
+  - CAP-implement-03
 exit_machine:
   - aw check implement
 exit_human: []

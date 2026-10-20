@@ -84,6 +84,18 @@ vi_pham "thứ tự phase lệch thứ tự stage → chặn" "phase intake (sta
 moi; thay "$E/workflow/clarify.md" 'id: clarify' 'id: clarify
 implements: require'
 vi_pham "utility command khai implements → chặn" "utility command clarify: khai implements"
+moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-09'
+vi_pham "phase nhận capability không tồn tại → chặn" "phase ship: capabilities \"CAP-deploy-09\" — không có capability đó"
+moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-01
+  - CAP-verify-03'
+vi_pham "phase nhận capability của stage khác → chặn" "phase ship: capabilities \"CAP-verify-03\" thuộc stage verify, phase implements deploy"
+moi; thay "$E/workflow/phases/04-implement.md" 'capabilities:' 'capabilities:
+  - CAP-implement-01'
+ky_vong 0 "hai phase cùng nhận một capability → ĐẠT" sh "$SC" "$E"
+moi; thay "$E/workflow/clarify.md" 'id: clarify' 'id: clarify
+capabilities:
+  - CAP-require-01'
+vi_pham "utility command khai capabilities → chặn" "utility command clarify: khai capabilities"
 
 # ---------------------------------------------------------------- điều kiện ra của stage
 nhom "check-sdlc.sh: exit của stage ↔ exit_machine / exit_human của phase"

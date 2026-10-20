@@ -14,11 +14,12 @@
 #     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
 #   - Khối sdlc: của workflow.yaml: stage không có, status lạ, partial / gap thiếu note.
 #   - Phase: thiếu implements hoặc implements stage không có; provides sai dạng, file không nằm
-#     trong outputs, loại mà stage không khai và không profile nào thêm; thứ tự phase lệch thứ tự stage.
+#     trong outputs, loại mà stage không khai và không profile nào thêm; thứ tự phase lệch thứ tự stage;
+#     capabilities: id không có, hoặc thuộc stage khác stage phase implements.
 #   - Stage: không phase nào implement mà không khai gap; gap mà có phase implement; partial mà
 #     không phase nào implement; provides của các phase không phủ provides của stage; exit
 #     human | both mà không phase nào có exit_human, machine | both mà không phase nào có exit_machine.
-#   - Utility command khai implements (utility command không ánh xạ vào stage).
+#   - Utility command khai implements hoặc capabilities (utility command không ánh xạ vào stage).
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -194,7 +195,7 @@ done < "$W/khai"
 trang_thai() { _tt=$(awk -F'|' -v s="$1" '$1 == s { print $2; exit }' "$W/khai"); echo "${_tt:-implemented}"; }
 
 # ---- phase: implements + provides, theo thứ tự trong workflow.yaml
-: > "$W/phases"; : > "$W/pprov"; truoc=""; truoc_so=0
+: > "$W/phases"; : > "$W/pprov"; : > "$W/nhan"; truoc=""; truoc_so=0
 wf_phases "$E/workflow.yaml" > "$W/wf"
 while IFS='|' read -r pid pfile preq _when; do
   [ -n "$pid" ] || continue
@@ -223,6 +224,16 @@ while IFS='|' read -r pid pfile preq _when; do
       || loi "phase $pid: provides \"$t\" — stage $s không khai loại đó, không profile nào thêm."
     echo "$s|$t" >> "$W/pprov"
   done < "$W/pp"
+  for c in $(fm_list "$src" capabilities); do
+    if ! cap_co "$c"; then
+      loi "phase $pid: capabilities \"$c\" — không có capability đó; sửa id hoặc thêm vào sdlc/stages/."; continue
+    fi
+    cs=$(cap_stage "$c")
+    if [ "$cs" != "$s" ]; then
+      loi "phase $pid: capabilities \"$c\" thuộc stage $cs, phase implements $s — chuyển id sang phase của stage $cs."; continue
+    fi
+    echo "$pid|$s|$c" >> "$W/nhan"
+  done
 done < "$W/wf"
 
 # ---- stage ↔ phase
@@ -406,6 +417,8 @@ while IFS='|' read -r cid cfile; do
   [ -n "$cid" ] && [ -f "$E/$cfile" ] || continue
   [ -z "$(fm_scalar "$E/$cfile" implements)" ] \
     || loi "utility command $cid: khai implements — utility command không ánh xạ vào stage SDLC."
+  [ -z "$(fm_list "$E/$cfile" capabilities)" ] \
+    || loi "utility command $cid: khai capabilities — xoá khoá; utility command không ánh xạ vào stage SDLC."
 done < "$W/cmd"
 
 [ "$n_loi" = 0 ] || exit 1

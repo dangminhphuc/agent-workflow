@@ -15,6 +15,10 @@ implements: require
 provides:
   - requirements: spec.md
   - open-questions: open-questions.md
+capabilities:
+  - CAP-require-01
+  - CAP-require-02
+  - CAP-require-03
 exit_machine:
   - aw check spec
 exit_human:
