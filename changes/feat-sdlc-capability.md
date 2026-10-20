@@ -18,7 +18,9 @@
   Khối `sdlc:` chỉ còn `note` (bắt buộc với `partial`/`gap`, cấm với `implemented`). Phase `implements`
   một stage mà không nhận capability nào → chặn. **Ai bị ảnh hưởng:** người sửa engine hay giữ bản fork
   có khối `sdlc:` riêng — xoá các dòng `status:` (còn sót thì `check-sdlc.sh` chặn và chỉ dòng cần xoá).
-  Người dùng `aw` trên repo dự án không thấy gì khác: lệnh adapter sinh ra giữ nguyên.
+  Người dùng `aw` trên repo dự án không thấy gì khác: lệnh adapter sinh ra giữ nguyên (đã so byte với
+  `main`); `workflow/rules/terms.md` (danh sách thuật ngữ agent đọc) có thêm `capability` và dòng
+  `stage status` nói trạng thái được suy ra.
 
 ### Nội bộ
 - **Interface đi trước implementation (`AGENTS.md`).** Mọi thay đổi engine nêu `CAP-…` / `INV-…` nó
