@@ -9,6 +9,9 @@ inputs:
   - file
 outputs:
   - intake.md
+implements: plan
+provides:
+  - work-item: intake.md
 exit_machine:
   - aw check intake
 exit_human:

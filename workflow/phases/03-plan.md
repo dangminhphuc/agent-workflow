@@ -11,6 +11,9 @@ inputs:
   - open-questions.md
 outputs:
   - plan.md
+implements: implement
+provides:
+  - task-plan: plan.md
 exit_machine:
   - aw check plan
 exit_human: []

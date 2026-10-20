@@ -627,6 +627,64 @@ Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đ
   `PreToolUse` chặn cứng được nhưng phải ghi `settings.json` của target repo và dễ chặn nhầm lượt
   sau của cùng lệnh — không làm.
 
+## Interface SDLC
+
+Phase nói engine **làm thế nào**; không chỗ nào nói một quy trình phát triển **phải có gì**, nên
+không trả lời được "engine bỏ sót bước nào của SDLC" — chỗ thiếu (không deploy, không vận hành) chỉ
+nằm trong đầu người viết. `sdlc/` tách hai thứ đó: **interface** là danh sách stage có đặc tả, engine
+là một **implementation** khai nó làm stage nào, tới đâu — và máy kiểm lời khai đó.
+
+- `sdlc/stages/NN-<stage>.md`: frontmatter (`id`, `purpose`, `requires`, `provides`, `exit`,
+  `invariants`) là hợp đồng, thân tiếng Anh ngắn. `requires`/`provides` là **loại artifact trừu
+  tượng** (`requirements`, `design`, `change`…), không phải tên file: interface không biết `spec.md`.
+  `exit`: `machine | human | both`.
+- `sdlc/invariants.md`: luật xuyên stage `INV-NNN` (trace REQ → task, DEC → task, REQ → test,
+  REQ → verdict review, chỉ dùng output đã duyệt, không dùng output stale). Mỗi luật trỏ tới checker
+  giữ nó (`Enforced by:`) và test chứng minh checker chặn (`Tested by:`) — invariant không có checker
+  là lời hứa, không phải luật.
+- Phase khai `implements: <stage>` và `provides: - <loại>: <file>` (file phải nằm trong `outputs`).
+  Đây là **nguồn duy nhất** của ánh xạ loại → file; stage không nhắc tên file nào.
+- Khối `sdlc:` của `workflow.yaml` chỉ khai stage **không** làm đủ: `partial` hay `gap`, kèm `note`
+  bắt buộc nói phần thiếu. Stage không có mặt = `implemented`. Trạng thái nằm ở manifest (phía
+  implementation), không ở file stage: interface không biết ai implement nó.
+
+Ánh xạ hiện tại (`sh tools/check-sdlc.sh` in lại bảng này):
+
+| Stage | Phase | `stage status` | Phần thiếu |
+|---|---|---|---|
+| `plan` | `00-intake` | `partial` | Chỉ nhận việc đã có; không roadmap, ước lượng, ưu tiên |
+| `require` | `01-spec` | `implemented` | |
+| `design` | `02-design` | `implemented` | |
+| `implement` | `03-plan`, `04-implement` | `implemented` | |
+| `verify` | `05-review` | `partial` | Không e2e, kiểm tải, UAT |
+| `deploy` | `06-ship` | `partial` | Dừng ở merge; không release, rollback |
+| `operate` | — | `gap` | CI/CD và observability bên ngoài |
+
+Tên stage trùng tên vài phase (`plan`, `design`, `implement`) nhưng không cùng nghĩa: stage `plan` là
+chọn việc nào vào quy trình (`00-intake`), phase `03-plan` thuộc stage `implement`. Nói "stage `plan`"
+hay "phase `plan`", không nói trống.
+
+**Quyết định:**
+
+- **Không làm thì khai `gap`, không im lặng.** Stage không phase nào implement mà không khai → checker
+  chặn. `partial`/`gap` thiếu note → chặn. Mục đích là chỗ thiếu luôn có chữ, có lý do.
+- **Chỉ kiểm cấu trúc.** `tools/check-sdlc.sh` chặn những gì đọc được từ file: stage có phase hay
+  khai `gap`, `provides` của các phase phủ `provides` của stage, `exit` của stage có `exit_machine` /
+  `exit_human` tương ứng ở phase, thứ tự phase theo thứ tự stage, `requires` do stage trước cung cấp,
+  invariant có checker + test có thật, utility command không khai `implements`. Danh sách đầy đủ ở đầu
+  script. Không kiểm phase làm stage **tốt** tới đâu — xem § Những chỗ thiết kế này yếu.
+- **Utility command không ánh xạ vào stage** (`clarify`, `approvals`, `import`, `bootstrap`,
+  `refactor`): chúng phục vụ phase, không tự tạo artifact của stage nào; khai `implements` → chặn.
+- **Interface chung repo, chung version với engine.** Chưa có implementation thứ hai thì tách repo chỉ
+  thêm việc đồng bộ. Khi có, tách ra và cho engine khai version interface nó tuân thủ
+  (`docs/viec-can-lam.md`).
+- **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
+  target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
+  `tools/tests/20-sdlc-conformance.sh` chạy nó trên engine hiện tại (phải ĐẠT) và trên bản chép bị làm
+  hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
+- Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
+  `provides` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt).
+
 ## Định dạng file phase
 
 Frontmatter (tập con YAML) + thân markdown:
@@ -651,6 +709,8 @@ approval_gate: true         # mở đầu bằng cổng duyệt (02-design, 03-p
 choice_ui: true             # hỏi người bằng câu hỏi lựa chọn (00-intake: lượt xác nhận)
 runs_on_main_checkout: true # có việc ở main checkout (06-ship)
 trace_rule: true            # lệnh bảo đọc rules/source-tracing.md
+implements: require         # stage SDLC phase này implement (sdlc/stages/) — bắt buộc
+provides: [requirements: spec.md, open-questions: open-questions.md]   # <loại của stage>: <file trong outputs>
 ---
 ```
 
@@ -660,7 +720,7 @@ kiện ra**. Mục **Cấm** chặn thất bại đặc trưng nhất: `01-spec`
 
 Utility command (`commands:` trong manifest — `import`, `clarify`, `bootstrap`): `id`, `name`, `summary`,
 tuỳ chọn `argument_hint`, `arguments: mixed`, `choice_ui: true`, `trace_rule: true`,
-`runs_on_main_checkout: true`. LLM checker
+`runs_on_main_checkout: true` — không có `implements` (§ Interface SDLC). LLM checker
 (`workflow/checkers/*.md`): `id`, `summary`, `inputs`, `output`, `repo_rules`; adapter biến thành
 subagent `<id>-checker`.
 
@@ -693,8 +753,11 @@ kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu h�
 1. `workflow/phases/NN-<id>.md` với frontmatter đầy đủ; thêm vào `phases:` của `workflow.yaml`.
 2. Có `exit_machine` → script trong `tools/`, thêm tên vào `tools/lib/commands.sh`.
 3. Artifact mới → mẫu trong `workflow/templates/`.
-4. Ca kiểm trong phần cùng chủ đề ở `tools/tests/` (chạy bằng `tools/run-tests.sh`).
-5. Thử: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code` (VERSION khớp target repo).
+4. `implements: <stage>` và `provides:` trong frontmatter (§ Interface SDLC). Phase làm stage đang
+   khai `gap` → sửa khối `sdlc:` của `workflow.yaml` (`partial` kèm note, hoặc bỏ mục nếu làm đủ).
+   `sh tools/check-sdlc.sh` phải ĐẠT.
+5. Ca kiểm trong phần cùng chủ đề ở `tools/tests/` (chạy bằng `tools/run-tests.sh`).
+6. Thử: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code` (VERSION khớp target repo).
 
 Không phase nào khác phải sửa — không phase nào biết về phase sau nó (vì vậy `06-ship` thêm được sau).
 
@@ -769,3 +832,8 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 21. **Phạm vi thô**: glob `case` (`*` khớp cả `/`), tài liệu module phủ cả thư mục — sửa một file test
     trong `src/` cũng đòi verdict cho `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen
     tay ghi `pass` không đọc.
+22. **Tuân thủ interface SDLC ≠ chất lượng.** `check-sdlc.sh` chỉ kiểm lời khai có nhất quán: stage
+    có phase, loại artifact có file, invariant có checker + test. Nó không biết phase làm stage đó
+    tốt không, `note` của `partial` có nói đủ phần thiếu không, hay `Tested by:` có thật sự thử
+    invariant đó. Khai `implemented` cho một stage làm hời hợt vẫn ĐẠT — người đọc lời khai, không
+    phải máy.

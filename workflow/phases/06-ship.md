@@ -20,6 +20,9 @@ outputs:
   - merge-request.md
   - ship.md (written by aw ship create — never edit by hand)
   - mr-description.md (written by aw ship create when the description could not be sent — for the human to paste)
+implements: deploy
+provides:
+  - delivery: merge-request.md
 exit_machine:
   - aw check ship
 exit_human:
