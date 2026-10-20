@@ -7,6 +7,7 @@ provides:
   - requirements
   - open-questions
 exit: both
+skippable: false
 invariants:
   - INV-005
 ---

@@ -5,6 +5,7 @@ requires: []
 provides:
   - work-item
 exit: both
+skippable: false
 invariants: []
 ---
 

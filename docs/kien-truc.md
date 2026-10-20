@@ -647,6 +647,11 @@ là một **implementation** khai nó làm stage nào, tới đâu — và máy 
 - Khối `sdlc:` của `workflow.yaml` chỉ khai stage **không** làm đủ: `partial` hay `gap`, kèm `note`
   bắt buộc nói phần thiếu. Stage không có mặt = `implemented`. Trạng thái nằm ở manifest (phía
   implementation), không ở file stage: interface không biết ai implement nó.
+- `sdlc/profiles/<job-type>.md`: **profile** — một file cho mỗi `job type`, khai cái loại việc đó đổi
+  so với luồng đầy đủ: `skippable` (stage có thể không chạy), `skipped` (stage luôn không chạy),
+  `adds_provides` / `adds_requires` (`<stage>: <loại>` — loại artifact chỉ loại việc này có),
+  `adds_invariants`. Thân tiếng Anh ngắn, mô tả artifact thêm như thân file stage. Stage khai
+  `skippable: false` (`plan`, `require`, `implement`, `verify`) thì không profile nào được bỏ.
 
 Ánh xạ hiện tại (`sh tools/check-sdlc.sh` in lại bảng này):
 
@@ -680,10 +685,50 @@ hay "phase `plan`", không nói trống.
   (`docs/viec-can-lam.md`).
 - **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
   target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
-  `tools/tests/20-sdlc-conformance.sh` chạy nó trên engine hiện tại (phải ĐẠT) và trên bản chép bị làm
-  hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
+  `tools/tests/20-sdlc-conformance.sh` (profile: `21-sdlc-profiles.sh`) chạy nó trên engine hiện tại
+  (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
 - Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
-  `provides` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt).
+  `provides` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map
+  `repro.md`/`perf.md` thành loại artifact buộc `04-implement` liệt kê hai file đó trong `outputs` (chúng
+  vốn do `aw check repro` / `aw check perf` ghi trong phase này), nên dòng "Writes" của `/aw-implement`
+  có thêm hai file — luật không đổi.
+
+### Profile theo job type
+
+`job type` đổi đúng những thứ interface mô tả — stage nào chạy, artifact nào có, luật nào giữ — nên
+interface phải biểu diễn được nó; trước khi có profile, stage `implement` `requires: design` vô điều
+kiện dù chore không có design, và `repro.md`/`perf.md` không thuộc loại artifact nào.
+
+Ma trận hiện tại (`sh tools/check-sdlc.sh` in lại bảng này; `tuỳ` = có thể bỏ):
+
+| Job type | `plan` | `require` | `design` | `implement` | `verify` | `deploy` | `operate` | Thêm |
+|---|---|---|---|---|---|---|---|---|
+| `feature` | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | |
+| `bugfix` | chạy | chạy | tuỳ | chạy | chạy | tuỳ | gap | `reproduction-evidence` (`repro.md`), `INV-007` |
+| `refactor` | chạy | chạy | tuỳ | chạy | chạy | tuỳ | gap | `INV-008`, `INV-009` |
+| `perf` | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | `performance-evidence` (`perf.md`), `INV-008`…`INV-010` |
+| `chore` | chạy | chạy | bỏ | chạy | chạy | tuỳ | gap | `INV-011` |
+
+**Quyết định:**
+
+- **Điều kiện ở profile, không ở phase.** Phase `04-implement` map `reproduction-evidence: repro.md`
+  và `performance-evidence: perf.md` như mọi `provides` khác; "chỉ với bugfix / perf" nằm ở
+  `adds_provides` của profile. Phase không có cú pháp "chỉ với job type X", và thêm cú pháp đó là
+  luật thứ hai cho cùng một điều. Phase map một loại mà cả stage lẫn profile không khai → chặn.
+- **Stage giữ `requires` của luồng đầy đủ; vắng mặt được khai, không ngầm định.** Một loại `requires`
+  mà mọi stage cung cấp nó đều nằm trong `skippable`/`skipped` của profile thì **có thể vắng** với
+  profile đó (`design` với bugfix, refactor, chore) — checker in danh sách này cho từng profile.
+  Không thêm trường `requires_optional` vào stage: nó lặp lại điều `skippable`/`skipped` đã nói.
+  Ngược lại, `adds_requires` là lời hứa của profile: phải có stage **đứng trước, luôn chạy** cung cấp.
+- **Một nguồn job type.** Tập profile phải trùng `LOAI_HOP_LE` (`tools/lib/cross-check.sh`) — đúng
+  danh sách `check-intake.sh` kiểm `Type`; checker đọc dòng đó, không giữ danh sách thứ hai.
+- **Stage bỏ được phải khớp hành vi engine, kiểm cả hai chiều.** Stage mà mọi phase `required: false`
+  (`deploy` ← `06-ship`) phải `skippable` ở mọi profile. `design` phải khớp `kc_bo_design` — checker
+  **gọi thẳng hàm đó** với `Type` + `Design: required | skip` giả, nên engine đổi luật bỏ design mà quên
+  profile thì chặn. Stage khác luôn chạy: khai bỏ → chặn.
+- **Invariant theo loại trỏ tới tên ca test**, không chỉ file: `Tested by:` `` `<file>` "ca", "ca" ``,
+  checker kiểm từng ca có trong file. Luật nào máy chưa giữ (refactor "không đổi assertion test cũ",
+  bugfix "đỏ vì đúng bug") chỉ ghi phần máy giữ; phần người phán ở review không thành invariant.
 
 ## Định dạng file phase
 
@@ -836,4 +881,6 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     có phase, loại artifact có file, invariant có checker + test. Nó không biết phase làm stage đó
     tốt không, `note` của `partial` có nói đủ phần thiếu không, hay `Tested by:` có thật sự thử
     invariant đó. Khai `implemented` cho một stage làm hời hợt vẫn ĐẠT — người đọc lời khai, không
-    phải máy.
+    phải máy. Profile cũng vậy: checker biết engine *cho phép* bỏ design với bugfix, không biết
+    việc bỏ đó có hợp lý không; invariant theo loại chỉ ghi phần máy giữ ("test đỏ"), phần người
+    phán ("đỏ vì đúng bug", "không đổi assertion") vẫn chỉ nằm ở review.

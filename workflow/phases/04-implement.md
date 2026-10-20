@@ -14,10 +14,14 @@ outputs:
   - task-results.md (written by aw task done)
   - test-results.md (written by aw check implement)
   - security-results.md (written by aw check implement)
+  - repro.md (bugfix — written by aw check repro)
+  - perf.md (perf — written by aw check perf)
 implements: implement
 provides:
   - change: diff
   - test-evidence: test-results.md
+  - reproduction-evidence: repro.md
+  - performance-evidence: perf.md
 exit_machine:
   - aw check implement
 exit_human: []
