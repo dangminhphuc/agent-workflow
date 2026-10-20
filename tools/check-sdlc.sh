@@ -12,13 +12,14 @@
 #     "- Judged by:", Judged by không phải machine | agent | human.
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
 #     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
-#   - Khối sdlc: của workflow.yaml: stage không có, status lạ, partial / gap thiếu note.
+#   - Khối sdlc: của workflow.yaml: stage không có, còn khoá status (trạng thái do máy suy ra).
 #   - Phase: thiếu implements hoặc implements stage không có; provides sai dạng, file không nằm
 #     trong outputs, loại mà stage không khai và không profile nào thêm; thứ tự phase lệch thứ tự stage;
-#     capabilities: id không có, hoặc thuộc stage khác stage phase implements.
-#   - Stage: không phase nào implement mà không khai gap; gap mà có phase implement; partial mà
-#     không phase nào implement; provides của các phase không phủ provides của stage; exit
-#     human | both mà không phase nào có exit_human, machine | both mà không phase nào có exit_machine.
+#     capabilities: id không có, thuộc stage khác stage phase implements, hoặc không nhận cái nào.
+#   - Stage: trạng thái suy ra từ capability được phase nhận (hết = implemented, một phần = partial,
+#     không = gap); partial / gap thiếu note, implemented còn note; provides của các phase không phủ
+#     provides của stage; exit human | both mà không phase nào có exit_human, machine | both mà không
+#     phase nào có exit_machine.
 #   - Utility command khai implements hoặc capabilities (utility command không ánh xạ vào stage).
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
@@ -27,7 +28,7 @@
 #     engine), stage khác luôn chạy. adds_provides: sai dạng, stage không có hoặc có thể không chạy,
 #     không phase nào của stage map loại đó ra file. adds_requires: sai dạng, stage không có hoặc bị
 #     bỏ, không stage nào trước nó luôn chạy và provides loại đó. adds_invariants không có.
-#   In ma trận job type × stage và loại có thể vắng theo profile (requires mà mọi stage cung cấp đều
+#   In bảng ánh xạ stage → phase, bảng capability còn thiếu (roadmap), ma trận job type × stage và loại có thể vắng theo profile (requires mà mọi stage cung cấp đều
 #   bỏ được / bị bỏ — khai qua skippable / skipped, không ngầm định).
 #
 # Không đăng ký trong tools/lib/commands.sh: bảng đó cho `aw check` trên job dir của target
@@ -186,13 +187,11 @@ wf_sdlc "$E/workflow.yaml" > "$W/khai"
 while IFS='|' read -r s st note; do
   [ -n "$s" ] || continue
   if ! stage_co "$s"; then loi "khối sdlc: khai stage \"$s\" không có trong sdlc/stages/."; continue; fi
-  case "$st" in
-    implemented) ;;
-    partial|gap) [ -n "$note" ] || loi "stage $s: status $st thiếu note (nói phần engine không làm)." ;;
-    *) loi "stage $s: status \"$st\" — chỉ nhận implemented | partial | gap." ;;
-  esac
+  [ -z "$st" ] \
+    || loi "khối sdlc: stage $s còn khoá status — xoá dòng status; trạng thái do máy suy ra từ capabilities: của phase."
 done < "$W/khai"
-trang_thai() { _tt=$(awk -F'|' -v s="$1" '$1 == s { print $2; exit }' "$W/khai"); echo "${_tt:-implemented}"; }
+# co_note <stage> -> 0 nếu khối sdlc: có note cho stage đó
+co_note() { awk -F'|' -v s="$1" '$1 == s && $3 != "" { co = 1 } END { exit !co }' "$W/khai"; }
 
 # ---- phase: implements + provides, theo thứ tự trong workflow.yaml
 : > "$W/phases"; : > "$W/pprov"; : > "$W/nhan"; truoc=""; truoc_so=0
@@ -234,23 +233,31 @@ while IFS='|' read -r pid pfile preq _when; do
     fi
     echo "$pid|$s|$c" >> "$W/nhan"
   done
+  awk -F'|' -v p="$pid" '$1 == p' "$W/nhan" | grep -q . \
+    || loi "phase $pid: implements $s nhưng không nhận capability nào — thêm id vào capabilities: (xem sdlc/stages/)."
 done < "$W/wf"
 
+# trang_thai <stage> -> implemented | partial | gap, suy ra: capability của stage được phase nhận hết / một phần / không
+trang_thai() {
+  awk -F'|' -v s="$1" 'FILENAME == ARGV[1] { if ($1 == s) n++; next }
+    $2 == s && !($3 in da) { da[$3] = 1; m++ }
+    END { print (m + 0 == 0) ? "gap" : (m == n) ? "implemented" : "partial" }' "$W/cap" "$W/nhan"
+}
+
 # ---- stage ↔ phase
-echo "Stage → phase (trạng thái khai trong workflow.yaml):"
+echo "Stage → phase (trạng thái suy ra từ capabilities: của phase):"
+: > "$W/thieu"
 while IFS='|' read -r _so s ex _sk; do
   st=$(trang_thai "$s")
   ph=$(awk -F'|' -v s="$s" '$2 == s { printf "%s%s", (n++ ? ", " : ""), $1 }' "$W/phases")
   printf '  %-10s %-12s %s\n' "$s" "$st" "${ph:-—}"
-  if [ "$st" = gap ]; then
-    [ -z "$ph" ] || loi "stage $s: khai gap nhưng phase $ph implement nó."
-    continue
+  if [ "$st" = implemented ]; then
+    ! co_note "$s" || loi "stage $s: suy ra implemented nhưng khối sdlc: còn note — xoá mục stage $s khỏi khối sdlc:."
+  else
+    co_note "$s" || loi "stage $s: suy ra $st nhưng khối sdlc: không có note — thêm note nói phần thiếu và lý do."
+    echo "$s|$st" >> "$W/thieu"
   fi
-  if [ -z "$ph" ]; then
-    if [ "$st" = partial ]; then loi "stage $s: khai partial nhưng không phase nào implement."
-    else loi "stage $s: không phase nào implement và không khai gap (khối sdlc: của workflow.yaml)."; fi
-    continue
-  fi
+  [ "$st" != gap ] || continue
   awk -F'|' -v s="$s" '$1 == s { print $2 }' "$W/prov" > "$W/sp"
   while IFS= read -r t; do
     co "$W/pprov" "$s|$t" || loi "stage $s: không phase nào provides \"$t\"."
@@ -264,6 +271,14 @@ while IFS='|' read -r _so s ex _sk; do
       || loi "stage $s: exit $ex nhưng không phase nào có exit_machine." ;;
   esac
 done < "$W/stages"
+if [ -s "$W/thieu" ]; then
+  echo "Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):"
+  while IFS='|' read -r s st; do
+    echo "  $s ($st): $(awk -F'|' -v s="$s" '$1 == s { print $3; exit }' "$W/khai")"
+    awk -F'|' -v s="$s" 'FILENAME == ARGV[1] { if ($2 == s) da[$3] = 1; next }
+      $1 == s && !($2 in da) { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/nhan" "$W/cap"
+  done < "$W/thieu"
+fi
 
 # ---- profile theo job type (sdlc/profiles/<job-type>.md)
 # Danh sách job type: LOAI_HOP_LE, nguồn check-intake.sh kiểm "Type" — không giữ bản thứ hai.
@@ -283,8 +298,8 @@ bo_design() {
 }
 # kieu <stage> -> tuy | bo | rỗng (luôn chạy) theo profile đang xét ($PK: " <stage>=<kiểu> …")
 kieu() { case "$PK" in *" $1=tuy "*) echo tuy ;; *" $1=bo "*) echo bo ;; esac; }
-# la_gap <stage> -> 0 nếu khối sdlc: khai gap
-GAP=" $(awk -F'|' '$2 == "gap" { printf "%s ", $1 }' "$W/khai")"
+# la_gap <stage> -> 0 nếu stage suy ra gap (không phase nào implement nó)
+GAP=" $(awk -F"|" '$2 == "gap" { printf "%s ", $1 }' "$W/thieu")"
 la_gap() { case "$GAP" in *" $1 "*) return 0 ;; esac; return 1; }
 # luon_co <stage> <loại> -> 0 nếu một stage đứng trước, luôn chạy với profile đang xét, provides
 # loại đó ($W/pq: provides của stage + adds_provides của profile; $W/luon: "số|stage" luôn chạy)

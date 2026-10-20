@@ -31,29 +31,32 @@ ky_vong 0 "bản chép chưa sửa → ĐẠT" sh "$SC" "$E"
 dung "…in ánh xạ stage → phase" sh -c "sh '$SC' '$E' 2>/dev/null | grep -q 'implement.*implemented.*plan, implement'"
 ky_vong 2 "thư mục không phải engine → SAI THAM SỐ" sh "$SC" "$TMP/khong-co"
 ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$SC" "$E" "$E"
+dung "…bảng ánh xạ in trạng thái suy ra" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^  verify +partial +review'"
+dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-02 +machine +'"
+dung "…roadmap không liệt kê capability đã nhận" sh -c "! sh '$SC' '$ROOT' 2>/dev/null | grep -q '^    CAP-deploy-01 '"
 dung "check-sdlc không đăng ký trong aw check (chỉ dùng cho repo engine)" sh -c ". '$T/lib/commands.sh'; ! bl_checker sdlc"
 
 # ---------------------------------------------------------------- trạng thái stage
 nhom "check-sdlc.sh: trạng thái stage (khối sdlc: của workflow.yaml)"
-moi; thay "$E/workflow.yaml" '  - stage: operate
-    status: gap' '  - stage: deploy
-    status: partial
-    note: x'
-vi_pham "stage không phase nào implement, không khai gap → chặn" "stage operate: không phase nào implement và không khai gap"
-moi; awk '!/note: Chỉ nhận việc đã có/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "partial thiếu note → chặn" "stage plan: status partial thiếu note"
-moi; awk '!/note: CI\/CD/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "gap thiếu note → chặn" "stage operate: status gap thiếu note"
 moi; thay "$E/workflow.yaml" '  - stage: deploy
-    status: partial' '  - stage: deploy
-    status: gap'
-vi_pham "gap mà có phase implement → chặn" "stage deploy: khai gap nhưng phase ship implement nó"
-moi; thay "$E/workflow.yaml" '  - stage: operate
-    status: gap' '  - stage: operate
-    status: partial'
-vi_pham "partial mà không phase nào implement → chặn" "stage operate: khai partial nhưng không phase nào implement"
-moi; thay "$E/workflow.yaml" '    status: gap' '    status: done'
-vi_pham "status lạ → chặn" "stage operate: status \"done\" — chỉ nhận implemented | partial | gap"
+    note:' '  - stage: deploy
+    status: partial
+    note:'
+vi_pham "khối sdlc: còn khoá status → chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
+moi; awk '!/note: Dừng ở MR\/PR/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
+vi_pham "suy ra partial mà thiếu note → chặn" "stage deploy: suy ra partial nhưng khối sdlc: không có note"
+moi; awk '!/note: CI\/CD/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
+vi_pham "suy ra gap mà thiếu note → chặn" "stage operate: suy ra gap nhưng khối sdlc: không có note"
+moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-01
+  - CAP-deploy-02
+  - CAP-deploy-03'
+vi_pham "nhận đủ capability mà còn note → chặn" "stage deploy: suy ra implemented nhưng khối sdlc: còn note"
+# chiều ngược: nhận đủ + xoá mục khối sdlc: → ĐẠT, stage thành implemented
+awk '/^  - stage: deploy$/ { bo = 1; next } bo && /^    / { next } { bo = 0; print }' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
+ky_vong 0 "nhận đủ capability + xoá note → ĐẠT" sh "$SC" "$E"
+dung "…stage deploy thành implemented" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  deploy +implemented +ship'"
+moi; awk '/^capabilities:$/ { print "capabilities: []"; next } !/^  - CAP-/' "$E/workflow/phases/06-ship.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/06-ship.md"
+vi_pham "phase implements mà không nhận capability nào → chặn" "phase ship: implements deploy nhưng không nhận capability nào"
 moi; thay "$E/workflow.yaml" '  - stage: operate' '  - stage: monitor'
 vi_pham "khối sdlc: khai stage không có → chặn" "khối sdlc: khai stage \"monitor\" không có trong sdlc/stages/"
 
