@@ -20,6 +20,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `stage` | One step of the SDLC interface (`sdlc/stages/`: plan … operate); a phase `implements:` one | |
 | `stage status` | How fully the engine implements a stage: `implemented \| partial \| gap` (`sdlc:` in `workflow.yaml`) | |
 | `invariant` | Cross-stage rule `INV-NNN` in `sdlc/invariants.md`, enforced by a machine checker | |
+| `profile` | What a job type changes in the SDLC interface: stages skipped, artifacts and invariants added (`sdlc/profiles/<job-type>.md`) | |
 | `utility command` | Non-phase command: `/aw-clarify`, `/aw-import`, `/aw-bootstrap` | lệnh tiện ích |
 | `job` | One unit of work through the workflow: one branch, one worktree, one job dir | |
 | `job type` | `Type` in `intake.md`: `feature \| bugfix \| refactor \| perf \| chore` | loại việc |

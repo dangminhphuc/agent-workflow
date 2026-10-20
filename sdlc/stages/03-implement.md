@@ -9,6 +9,7 @@ provides:
   - change
   - test-evidence
 exit: machine
+skippable: false
 invariants:
   - INV-001
   - INV-002

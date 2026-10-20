@@ -1,0 +1,25 @@
+### Nội bộ
+- **Profile theo job type trong interface SDLC (`sdlc/profiles/<job-type>.md`).** Một file cho mỗi
+  job type (`feature`, `bugfix`, `refactor`, `perf`, `chore`) khai stage nào có thể không chạy
+  (`skippable`: design với bugfix/refactor nhỏ, deploy với mọi loại), stage nào luôn bỏ (`skipped`:
+  design với chore), loại artifact thêm (`reproduction-evidence` của bugfix, `performance-evidence`
+  của perf) và invariant riêng của loại. Vì sao: interface trước đây chỉ mô tả luồng `feature` đầy
+  đủ — stage implement `requires: design` vô điều kiện dù chore không có design, `repro.md`/`perf.md`
+  không thuộc loại artifact nào, luật riêng của từng loại không có chỗ khai.
+- **Năm invariant mới `INV-007`…`INV-011`** (`sdlc/invariants.md`): bugfix — test tái hiện đỏ trên
+  code chưa sửa; refactor/perf — REQ không thêm hành vi, test cũ không bị xoá và mọi chỗ sửa được
+  khai; perf — số đo trước/sau do máy ghi; chore — không đụng `production_code`, dependency phải khai,
+  không nâng major. Mỗi cái trỏ tới checker có thật và **tên ca test cụ thể**: `Tested by:` nay nhận
+  tên ca trong ngoặc kép sau file, checker kiểm ca đó có trong file.
+- **`tools/check-sdlc.sh` kiểm profile:** tập profile phải trùng tập job type engine nhận
+  (`LOAI_HOP_LE`, nguồn `check-intake.sh` dùng); stage bỏ được phải khớp hành vi thật của engine
+  (deploy ⇔ `06-ship` có `required: false`; design ⇔ `kc_bo_design`, checker gọi thẳng hàm đó); stage
+  khai `skippable: false` (plan, require, implement, verify) không được bỏ; artifact thêm phải được một
+  phase map ra file và do stage luôn chạy cung cấp; invariant phải có. Checker in ma trận job type ×
+  stage và loại artifact có thể vắng theo từng profile. Test: `tools/tests/21-sdlc-profiles.sh` (part
+  mới, tách khỏi `20-sdlc-conformance.sh` vì chậm).
+- **`04-implement` khai thêm output `repro.md` (bugfix) và `perf.md` (perf)** — hai file `aw check
+  repro` / `aw check perf` vốn đã ghi trong phase này nhưng frontmatter chưa liệt kê. **Ai bị ảnh
+  hưởng:** dòng "Writes" của lệnh `/aw-implement` adapter sinh ra có thêm hai file đó; luật và hành vi
+  của `aw` không đổi. Người sửa engine: thêm job type mới thì thêm profile (`AGENTS.md` § Change
+  together).

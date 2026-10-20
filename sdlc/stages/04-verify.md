@@ -10,6 +10,7 @@ requires:
 provides:
   - review-report
 exit: both
+skippable: false
 invariants:
   - INV-004
   - INV-006

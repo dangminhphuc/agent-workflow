@@ -248,3 +248,10 @@ quy trình — chỉ làm khi người chủ engine muốn.
   đề xuất riêng; làm xong thì sửa khối `sdlc:` của `workflow.yaml`.
 - **Intake nhận incident / postmortem**: nối `operate` (đang `gap`) về `plan` — sự cố, postmortem thành
   `input` của một job mới, có `source label` riêng. Cần đề xuất cách ghi nguồn trước khi code.
+- **Map nốt artifact thành loại của interface**: `open-questions.md` đã là `open-questions`, nhưng
+  `task-results.md`, `security-results.md` chưa thuộc loại nào (stage `verify` đọc chúng như bằng chứng).
+  Cần chọn tên loại và stage cung cấp; nếu chỉ một job type có thì đặt ở profile.
+- **Tách stage `implement` thành `task-planning` và `coding`**: phase `03-plan` và `04-implement` cùng
+  implement một stage, nên `task-plan` và `change` không có ranh giới stage. Đổi interface, cần đề xuất riêng.
+- **Đổi tên để bớt nhầm phase ↔ stage** (`plan` phase thuộc stage `implement`, stage `plan` là
+  `00-intake`): đổi tên stage hay phase đều chạm test, docs, lệnh sinh ra — đề xuất riêng.

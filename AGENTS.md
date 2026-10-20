@@ -21,6 +21,7 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 - `tools/check-*.sh` machine checkers, registered in `tools/lib/commands.sh` — except
   `check-release.sh` and `check-sdlc.sh`, which check this repo, not a job dir.
 - `sdlc/` SDLC interface the engine implements: `stages/NN-<stage>.md` (contract per stage),
+  `profiles/<job-type>.md` (what each job type skips or adds),
   `invariants.md` (cross-stage rules, each pointing to a checker + test). Phases declare
   `implements:` + `provides:`; `tools/check-sdlc.sh` checks the mapping (`docs/kien-truc.md` § Interface SDLC).
 - `adapters/lib/common.sh` (`ad_sinh`) generates everything; `adapters/<id>/build.sh` only declares
@@ -62,6 +63,8 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
   `implements:` + `provides:` in frontmatter (stage it implements); `sh tools/check-sdlc.sh` passes.
 - SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `sdlc:` in `workflow.yaml`
   (partial / gap with a note) + `tools/tests/20-sdlc-conformance.sh`.
+- Job type (`LOAI_HOP_LE`): `sdlc/profiles/<job-type>.md` (stages it skips, artifacts and invariants it
+  adds) + `tools/tests/21-sdlc-profiles.sh`; `sh tools/check-sdlc.sh` passes.
 - Utility command: `workflow/<id>.md` + `commands:` in `workflow.yaml`; never `implements:` (not an SDLC stage).
 - Adapter: follow `adapters/README.md`; declare hooks only, never reimplement generation.
 - `conventions.md` key: `workflow/templates/conventions.md` + `conventions-reference.md`.
