@@ -101,11 +101,10 @@ sdlc:
 ```
 
 - Khoá `status` bị bỏ; còn `status` → lỗi kèm hướng dẫn xoá (không âm thầm bỏ qua).
-- `wf_sdlc` (`tools/lib/md.sh`) đổi thành in `stage|note`.
-- Luật cũ "gap mà có phase implement" / "partial mà không phase nào implement" được thay bằng suy ra:
-  stage có phase `implements` nhưng không nhận capability nào → `gap` theo suy ra; điều đó hợp lệ nhưng
-  `check-sdlc.sh` in **cảnh báo** "phase X implements stage Y mà không nhận capability nào".
-  Stage `gap` không có phase nào implement vẫn hợp lệ như hiện nay.
+- `wf_sdlc` (`tools/lib/md.sh`) giữ nguyên `stage|status|note`; `status` khác rỗng → lỗi.
+- Phase `implements` một stage mà không nhận capability nào → **chặn**. Nhờ vậy `gap` suy ra ⇔ không phase nào
+  implement stage — giữ luật cũ "gap mà có phase implement → chặn", và `la_gap` của phần profile ("engine
+  không chạy stage này") vẫn đúng nghĩa. `check-sdlc.sh` không có cơ chế cảnh báo; không thêm.
 
 ## 4. Nội dung capability ban đầu
 
@@ -157,8 +156,7 @@ dụng cho job type đó, giống `provides` của stage.
 | Khối `sdlc:` còn khoá `status` | xoá — trạng thái do máy suy ra |
 | Stage suy ra `partial`/`gap` mà không có `note` | thêm note nói phần thiếu và lý do |
 | Stage suy ra `implemented` mà có `note` | xoá mục khỏi khối `sdlc:` |
-
-**Cảnh báo** (không chặn): phase `implements` một stage mà không nhận capability nào.
+| Phase `implements` stage mà không nhận capability nào | thêm id vào `capabilities:` của phase |
 
 **In thêm**: bảng "Capability còn thiếu theo stage" (id, tên, `Judged by`, note của stage) sau bảng
 ánh xạ stage → phase; bảng ánh xạ hiện có lấy cột trạng thái từ suy ra.
@@ -219,7 +217,7 @@ Thêm vào `tools/tests/20-sdlc-conformance.sh` (cùng chủ đề; tách part n
 - Engine hiện tại ĐẠT; bảng ánh xạ in trạng thái suy ra đúng 7 stage như § 4; bảng roadmap liệt kê đúng
   các id có "—".
 - Mỗi lỗi § 5 có một ca trên bản chép bị làm hỏng → KHÔNG ĐẠT, grep đúng thông báo.
-- Cảnh báo phase không nhận capability: ĐẠT nhưng in cảnh báo.
+- Phase implements stage mà không nhận capability nào → KHÔNG ĐẠT.
 - Chiều ngược: phase nhận nốt capability còn thiếu của một stage + xoá note → ĐẠT, stage thành
   `implemented`; nhận thêm mà giữ note → KHÔNG ĐẠT.
 - Ca cũ về khối `sdlc:` (`status` lạ, `gap` có phase…) sửa theo mô hình mới trong cùng commit.
