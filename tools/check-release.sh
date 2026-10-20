@@ -4,7 +4,8 @@
 #   sh tools/check-release.sh [<base-ref>]
 #
 # Luôn kiểm: VERSION đúng dạng YYYY.M.N; AW_WRAPPER_VERSION trong bin/aw khớp;
-# CHANGELOG.md có mục "## [<version>]" có nội dung.
+# CHANGELOG.md có mục "## [<version>]" có nội dung; mảnh changes/*.md đúng dạng
+# (tools/lib/changelog.sh) — lỗi hiện ngay ở PR, không đợi lúc chuẩn bị phát hành.
 # Có <base-ref> (CI của PR truyền nhánh đích) và VERSION khác VERSION ở base —
 # tức PR này là một bản phát hành: tag <version> chưa được có ở remote (AW_REMOTE,
 # mặc định origin). Hai PR cùng lấy một số thì PR merge sau bị chặn ở đây: chạy lại
@@ -15,6 +16,7 @@
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/tools/lib/result.sh"
 . "$ROOT/tools/lib/version.sh"
+. "$ROOT/tools/lib/changelog.sh"
 kq_khai check-release.sh \
   "0=ĐẠT — version nhất quán" \
   "1=KHÔNG ĐẠT — xem các dòng LỖI phía trên" \
@@ -40,6 +42,19 @@ awk -v v="$V" '
   on && NF { co = 1 }
   END { exit co ? 0 : 1 }
 ' "$ROOT/CHANGELOG.md" || loi "CHANGELOG.md thiếu mục \"## [$V]\" có nội dung (chạy tools/prepare-release.sh)."
+
+MANH=$(cl_manh "$ROOT")
+if [ -n "$MANH" ]; then
+  OIFS=$IFS; IFS='
+'
+  # shellcheck disable=SC2086
+  set -- $MANH
+  IFS=$OIFS
+  LOI_MANH=$(cl_kiem_manh "$@")
+  while IFS= read -r l; do if [ -n "$l" ]; then loi "changes/$l"; fi; done <<EOF
+$LOI_MANH
+EOF
+fi
 
 if [ -n "$BASE" ]; then
   git -C "$ROOT" rev-parse --verify --quiet "$BASE^{commit}" >/dev/null || { echo "LỖI: không có ref \"$BASE\"." >&2; exit 2; }

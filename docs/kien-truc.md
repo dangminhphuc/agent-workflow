@@ -146,6 +146,12 @@ Bộ cài cũ chép quy trình vào target repo và bắt commit vào nhánh g�
   thẳng vào `main`, vượt bảo vệ nhánh). Merge chỉ *phát hành*: workflow `release` tạo tag + Release
   trong cùng job (tag tạo bằng `GITHUB_TOKEN` không kích được workflow khác). Hai PR cùng số: CI
   của PR chặn PR merge sau.
+- **Changelog theo mảnh** (`changes/<tên-nhánh>.md`, gom bởi `tools/prepare-release.sh`). Khi mọi
+  PR cùng chèn vào `## [Chưa phát hành]` của `CHANGELOG.md`, hai PR mở song song gần như chắc chắn
+  conflict ở đó (13 lần trong lịch sử merge; file kế tiếp chỉ 3). Mỗi PR một file mới thì không PR
+  nào sửa chung một chỗ. Không chọn `merge=union` trong `.gitattributes`: nó im lặng nhân đôi hoặc
+  đặt sai dòng khi hai bên cùng sửa một mục, và không chắc nút merge của GitHub tôn trọng. Dạng mảnh
+  kiểm ở PR (`tools/check-release.sh`) để lỗi không dồn tới lúc phát hành.
 - Wrapper và engine có số giao thức (`AW_PROTOCOL`): lệch thì dừng, không chạy thiếu biến.
 - **Artifact không vào PR**: commit vào branch của việc, gỡ trước khi tạo MR (mục "Artifact theo
   feature"); gỡ worktree thì chép vào `archive/` trước.

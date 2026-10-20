@@ -49,6 +49,7 @@ tao_nguon "$PH" 2099.9.1
 rm -rf "$PHO"; git init -q --bare "$PHO"; git -C "$PH" remote add origin "$PHO"
 git -C "$PH" push -q origin main 2>/dev/null
 git -C "$PH" tag 2099.9.1; git -C "$PH" push -q origin 2099.9.1 2>/dev/null
+for m in "$PH"/changes/*.md; do [ "${m##*/}" = README.md ] || rm -f "$m"; done   # mảnh của chính repo
 ph_cl() { printf '# Changelog\n\n## [Chưa phát hành]\n\n- thay đổi mới\n\n## [2099.9.1]\n\n- cũ\n' > "$PH/CHANGELOG.md"; }
 ph_cl; git_t "$PH" commit -qam cl
 ky_vong 0 "kiểm phát hành: VERSION không đổi so với base → đạt" sh "$PH/tools/check-release.sh" main
@@ -80,6 +81,36 @@ git -C "$PH" checkout -q -- .
 printf '# Changelog\n\n## [2099.9.1]\n\n- cũ\n' > "$PH/CHANGELOG.md"
 ky_vong 3 "chuẩn bị: CHANGELOG không có [Chưa phát hành] → KHÔNG CÓ GÌ ĐỂ PHÁT HÀNH" sh "$PH/tools/prepare-release.sh"
 dung "…không đổi file nào" sh -c "grep -qx 2099.9.1 '$PH/VERSION'"
+
+# Mảnh changelog changes/*.md: gom vào [<version>] theo mục, xoá mảnh; sai dạng thì chặn.
+manh() { printf "$2" > "$PH/changes/$1.md"; }
+muc_v() { awk -v v="$1" 'index($0, "## [" v "]") == 1 { on = 1 } on && /^## \[/ && index($0, "## [" v "]") != 1 { exit } on' "$PH/CHANGELOG.md"; }
+manh a '### Sửa\n- sửa A\n'
+manh b '### Nội bộ\n- nội bộ B\n\n### Thêm\n- thêm B\n'
+ky_vong 0 "kiểm phát hành: mảnh đúng dạng → đạt" sh "$PH/tools/check-release.sh"
+ky_vong 0 "chuẩn bị: chỉ có mảnh, CHANGELOG không có [Chưa phát hành] → gom mảnh" sh "$PH/tools/prepare-release.sh" 2099.9.5
+printf '## [2099.9.5]\n\n### Thêm\n- thêm B\n\n### Sửa\n- sửa A\n\n### Nội bộ\n- nội bộ B\n\n' > "$TMP/cl-mong"
+muc_v 2099.9.5 > "$TMP/cl-co"
+dung "…mục mới đứng trước bản cũ, gộp theo mục: Thêm, Sửa, Nội bộ" sh -c "cmp -s '$TMP/cl-co' '$TMP/cl-mong' && grep -q '^## \[2099.9.1\]' '$PH/CHANGELOG.md'"
+dung "…xoá các mảnh, giữ changes/README.md" sh -c "[ ! -e '$PH/changes/a.md' ] && [ ! -e '$PH/changes/b.md' ] && [ -f '$PH/changes/README.md' ]"
+git -C "$PH" checkout -q -- .
+manh c '### Thêm\n- thêm C\n'
+ky_vong 0 "chuẩn bị: [Chưa phát hành] còn nội dung (PR cũ) + mảnh → gom cả hai" sh "$PH/tools/prepare-release.sh" 2099.9.5
+muc_v 2099.9.5 | tr '\n' '|' > "$TMP/cl-co"
+dung "…nội dung cũ trước, rồi mục của mảnh; không còn [Chưa phát hành]" sh -c "grep -qxF '## [2099.9.5]||- thay đổi mới||### Thêm|- thêm C||' '$TMP/cl-co' && ! grep -q 'Chưa phát hành' '$PH/CHANGELOG.md'"
+git -C "$PH" checkout -q -- .
+manh x 'chữ ngoài mục\n### Thêm\n- x\n'
+ky_vong 5 "chuẩn bị: mảnh có chữ trước mục đầu tiên → MẢNH CHANGELOG LỖI" sh "$PH/tools/prepare-release.sh" 2099.9.5
+dung "…không đổi file nào, mảnh còn nguyên" sh -c "grep -qx 2099.9.1 '$PH/VERSION' && [ -f '$PH/changes/x.md' ] && grep -q 'Chưa phát hành' '$PH/CHANGELOG.md'"
+ky_vong 1 "kiểm phát hành (PR): mảnh sai dạng → KHÔNG ĐẠT" sh "$PH/tools/check-release.sh" main
+dung "…đúng lý do" sh -c "sh '$PH/tools/check-release.sh' | grep -qF 'changes/x.md: dòng 1: nội dung nằm ngoài mục'"
+manh x '### Thêm\n- x\n## [2099.9.9]\n'
+ky_vong 1 "kiểm phát hành: mảnh có heading ## → KHÔNG ĐẠT" sh "$PH/tools/check-release.sh"
+manh x '### Thêm\n\n### Sửa\n- x\n'
+ky_vong 1 "kiểm phát hành: mảnh có mục trống → KHÔNG ĐẠT" sh "$PH/tools/check-release.sh"
+: > "$PH/changes/x.md"
+ky_vong 1 "kiểm phát hành: mảnh trống → KHÔNG ĐẠT" sh "$PH/tools/check-release.sh"
+rm -f "$PH/changes/x.md"
 
 # ---------------------------------------------------------------- wrapper aw
 nhom "bin/aw (wrapper)"
