@@ -431,6 +431,22 @@ lại dấu vết: người duyệt phải tự mở nguồn để so. Nên REQ 
 - **Không đặt độ dài tối thiểu.** Trích qua loa ("khách") là gian lận có chủ ý — ngoài mục tiêu
   (chặn quên, không chặn cố tình); người duyệt thấy ngay trong spec.
 
+### Nguồn của REQ: phần máy kiểm thêm
+
+Bảng nhãn ở `workflow/rules/source-tracing.md` ghi mỗi nhãn "phải có gì"; máy kiểm phần chính xác,
+cảnh báo phần hay báo nhầm.
+
+- **Chặn `[JIRA]` không có mã issue** — cùng `jira_key_regex` với `aw check intake`; thiếu mã thì
+  không ai mở lại được issue để so.
+- **Chặn `[INFERRED]` không có chữ nào sau nhãn** (hay còn `<…>`). Chỉ kiểm có/không: máy không đánh
+  giá được lý do hay hay dở — đó là việc của người duyệt.
+- **Cảnh báo nguồn không có trong `## Input` của `intake.md`** (mã Jira, URL Confluence bỏ anchor,
+  đường dẫn `[FILE]`; trừ `intake.md`/`open-questions.md` của việc). Spec hay trích thêm link phụ,
+  file trong repo mà intake không liệt kê — chặn sẽ báo nhầm nhiều. Cảnh báo để người duyệt thấy
+  agent đi lấy nguồn ngoài phạm vi được giao.
+- **`high_risk_keywords`: cảnh báo, không chặn.** "thanh toán" xuất hiện trong spec không có nghĩa
+  việc đụng tiền; `Risk` là quyết định của người duyệt. Không khai từ khoá thì không bật.
+
 ### Artifact stale
 
 `based_on` là hash **cả file** đầu vào, dạng phẳng `- spec.md@<hash>` (đọc được bằng tập con
@@ -681,6 +697,13 @@ Ranh giới phần đặt ở chỗ trạng thái fixture trùng với fixture d
 check-security: `fixture_sau_bao_mat`), để không ca nào đổi điều kiện đầu vào. Phần dừng giữa
 chừng (không in `Tổng:`) tính là hỏng — không ca nào bị bỏ qua câm. Không bớt ca để nhanh hơn:
 release vẫn chạy lại test trên đúng commit được đóng gói.
+
+Song song chỉ nhanh khi các phần đều nhau: thời gian cả bộ ≈ phần chậm nhất, nếu nó dài hơn tổng chia
+số lõi. Ca mới cứ thêm vào "phần cùng chủ đề" thì một phần sẽ phình dần mà không ai thấy. Vì vậy
+`run-tests.sh` in thời gian từng phần và cảnh báo phần **≥ 30 giây và gấp hơn 2 lần trung bình các
+phần còn lại**. So với các phần *còn lại* (không phải trung bình chung) vì đồng hồ đo theo giây: một
+phần ngắn làm tròn lên 1 giây không được kéo trung bình đủ để che phần chậm. Ngưỡng 30 giây tránh cảnh
+báo khi chạy vài phần nhỏ. Chỉ cảnh báo, không chặn: thời gian phụ thuộc máy, chặn thì CI chập chờn.
 
 ## Cách thêm một adapter
 

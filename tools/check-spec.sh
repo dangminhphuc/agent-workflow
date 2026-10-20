@@ -14,6 +14,9 @@
 #            cảnh báo: nguồn đổi sau khi viết spec không phải lỗi của phase sau.
 #            open-questions.md / refactor-requests.md: mục ở cấp cũ "## REQ-/RFR-" (phải "###");
 #            RFR sai dạng (không đúng 3 chữ số) hay trùng.
+#            [JIRA] không có mã khớp jira_key_regex; [INFERRED] không ghi lý do.
+# Cảnh báo:  nguồn [JIRA]/[CONFLUENCE]/[FILE] không có trong "## Input" của intake.md;
+#            "Risk: normal" mà spec có từ khoá high_risk_keywords (conventions.md).
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -96,10 +99,44 @@ BV="${TMPDIR:-/tmp}/tv-bv.$$"
 : > "$BV"
 QT="${TMPDIR:-/tmp}/tv-qt.$$"
 : > "$QT"
+CONV=$(kc_conventions "$DIR")
+MJ=$(kc_mau_jira "$CONV")
+# Nguồn của REQ phải nằm trong "## Input" của intake.md — chỉ cảnh báo (link phụ, file trong repo hay báo nhầm).
+set -- "$OQ" "$SPEC"
+if [ -f "$DIR/intake.md" ]; then set -- "$@" "$DIR/intake.md"; fi
 
-awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_spec="${TT_SPEC:-?}" '
+# Từ khoá đi qua ENVIRON, không qua -v: -v diễn giải "\" trong chuỗi.
+TV_TU_KHOA=$(conv_get "$CONV" high_risk_keywords) \
+awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_spec="${TT_SPEC:-?}" -v mj="$MJ" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
+  function canh_bao(msg) { print "  [CẢNH BÁO] " msg }
   BEGIN { n_loi = loi_truoc }
+  function bo_nhan(s) {          # phần Source sau nhãn "[X]", bỏ ` và khoảng trắng hai đầu
+    sub(/^`*\[[A-Z-]*\]`*/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
+  }
+  function dinh_danh(t, x,    p) {  # định danh tài liệu nguồn để so với "## Input" của intake
+    gsub(/`/, "", x)
+    if (t == "JIRA") {
+      if (!match(x, "(^|[^A-Za-z0-9])(" mj ")")) return ""
+      p = substr(x, RSTART, RLENGTH); sub(/^[^A-Za-z0-9]/, "", p); return p
+    }
+    if (t == "CONFLUENCE") {
+      if (!match(x, /https?:\/\/[^ \t)>]+/)) return ""
+      p = substr(x, RSTART, RLENGTH); sub(/#.*$/, "", p); return p
+    }
+    # FILE: chữ đầu, hoặc đích của link "[x § Mục](x#anchor)" — như tq_duong_dan (tools/lib/quote.sh)
+    if (x ~ /^\[[^]]*\]\(/) { sub(/^\[[^]]*\]\(/, "", x); sub(/[#)].*$/, "", x); return x }
+    split(x, w, /[ \t]+/); return w[1]
+  }
+  function co_trong_input(t, d,    s, i) {  # d có trong "## Input", mã/URL không dính chữ phía sau
+    if (t == "FILE") return index(dau_vao, d) > 0
+    s = dau_vao
+    while ((i = index(s, d)) > 0) {
+      s = substr(s, i + length(d))
+      if (s == "" || s ~ /^[^A-Za-z0-9]/) return 1
+    }
+    return 0
+  }
   function gia_tri(s) {          # phần sau dấu ":" đầu tiên, bỏ * ` và khoảng trắng
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
   }
@@ -112,7 +149,15 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   { sub(/\r$/, "") }
 
   # Theo tên file, không đếm FNR==1: file 0 byte không có dòng nào nên sẽ làm lệch thứ tự.
-  FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : 2 }
+  { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : 3 }
+
+  # ---- File 3: intake.md — chỉ lấy chữ trong "## Input" ----
+  idx==3 {
+    if ($0 ~ /^##[ \t]/) { trong_input = ($0 ~ /^##[ \t]+Input[ \t]*$/); next }
+    if (trong_input) dau_vao = dau_vao "\n" $0
+    co_intake = 1
+    next
+  }
 
   # ---- File 1: open-questions.md ----
   idx==1 {
@@ -137,6 +182,8 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   trong_cmt { if ($0 ~ /-->/) trong_cmt = 0; next }
   $0 ~ /^[ \t]*<!--/ && $0 !~ /-->/ { trong_cmt = 1; next }
   $0 ~ /^[ \t]*<!--.*-->[ \t]*$/ { next }
+  # Chữ thật của spec (bỏ comment) để dò high_risk_keywords.
+  { s = $0; gsub(/<!--([^-]|-[^-]|--[^>])*-->/, "", s); van_ban = van_ban "\n" tolower(s) }
 
   # Câu trích: "- Quote:" rồi các dòng "> …" ngay dưới — mỗi dòng một câu (tools/lib/quote.sh).
   trong_qt && $0 ~ /^[ \t]*>/ { s = $0; sub(/^[ \t]*>[ \t]*/, "", s); them_cau(cur, s); next }
@@ -244,6 +291,16 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       loi("spec.md thiếu dòng \"Risk:\" (high | normal). `design` cần nó để biết có phải chạy Mode 2.")
     else if (rui_ro != "high" && rui_ro != "normal")
       loi("\"Risk: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: high | normal")
+    else if (rui_ro == "normal") {
+      n_tk = split(ENVIRON["TV_TU_KHOA"], tk, ",")
+      for (i = 1; i <= n_tk; i++) {
+        k = tk[i]; gsub(/^[ \t]+|[ \t]+$/, "", k)
+        if (k != "" && index(van_ban, tolower(k))) ds_tk = ds_tk (ds_tk == "" ? "" : ", ") k
+      }
+      if (ds_tk != "")
+        canh_bao("\"Risk: normal\" nhưng spec có từ khoá rủi ro cao (high_risk_keywords): " ds_tk \
+                 " — xem lại Risk; người duyệt quyết")
+    }
 
     # Bỏ design: chỉ việc nhỏ có thể không có lựa chọn kỹ thuật — người duyệt cùng spec.
     if (co_tk) {
@@ -295,6 +352,16 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
         loi(c ": nhãn [" t "] không hợp lệ. Chỉ chấp nhận: " \
             "[CONFLUENCE] [JIRA] [FILE] [INFERRED] [OPEN-QUESTION]")
         continue
+      }
+      x = bo_nhan(nguon[c])
+      if (t == "INFERRED" && (x == "" || x ~ /^<.*>$/))
+        loi(c ": nguồn [INFERRED] không ghi lý do — ghi lý do kỹ thuật và REQ nó phục vụ (vd \"index cho REQ-002\").")
+      if (t == "JIRA" && x !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)"))
+        loi(c ": nguồn [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " x)
+      else if (co_intake && (t == "CONFLUENCE" || t == "JIRA" || t == "FILE")) {
+        d = dinh_danh(t, x)
+        if (d != "" && d != "intake.md" && d != "open-questions.md" && !co_trong_input(t, d))
+          canh_bao(c ": nguồn " d " không có trong \"## Input\" của intake.md — đúng là đầu vào thì thêm vào intake, không thì kiểm lại nguồn")
       }
       if (t == "CONFLUENCE" || t == "JIRA" || t == "FILE") {
         if (!(c in so_cau))
@@ -382,7 +449,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     for (t in dem_nhan) printf "  [%s] %d\n", t, dem_nhan[t]
     if (n_loi > 0) exit 1
   }
-' "$OQ" "$SPEC"
+' "$@"
 ma=$?
 
 # Test bảo vệ REQ preserve phải CÓ SẴN trên base của việc (điểm rẽ nhánh): test thêm trong chính việc

@@ -13,6 +13,17 @@ ngầm giữa các bản.
 
 ## [Chưa phát hành]
 
+### Thêm
+- **`aw check spec` chặn hai lỗi nguồn trước đây lọt qua:** `Source: [JIRA]` không có mã issue khớp
+  `jira_key_regex` (cùng luật với `aw check intake`), và `[INFERRED]` không ghi lý do (để trống hay
+  còn `<…>`). Spec đang viết dở có hai lỗi này thì sửa dòng `Source:` rồi chạy lại.
+- **Cảnh báo nguồn ngoài intake:** REQ có nguồn `[JIRA]`/`[CONFLUENCE]`/`[FILE]` mà mã, URL hay đường
+  dẫn không có trong `## Input` của `intake.md` thì `aw check spec` **cảnh báo** (không chặn). Đúng
+  là đầu vào thì thêm vào intake; không thì kiểm lại nguồn.
+- **Khoá `high_risk_keywords` trong `conventions.md`** (tuỳ chọn): từ khoá rủi ro cao, cách nhau dấu
+  phẩy. Spec ghi `Risk: normal` mà chứa từ khoá thì `aw check spec` **cảnh báo** để người duyệt xem
+  lại `Risk`. Repo cài từ trước: thêm dòng `high_risk_keywords: …` nếu muốn bật; không thêm thì như cũ.
+
 ### Thay đổi
 - **Mã định danh không đúng 3 chữ số giờ bị chặn.** Luật `<PREFIX>-NNN` (đúng 3 chữ số) đã có từ
   trước nhưng checker vẫn nhận mọi dạng số, nên `REQ-1` hay `DEC-0001` lọt qua. Giờ checker của
@@ -40,6 +51,17 @@ ngầm giữa các bản.
   finding thành luật dù nó không còn. Lỗi này cũng để sót file tạm `findings.tsv.<pid>` trong thư mục
   nhật ký. Không cần làm gì; lần chạy review kế tiếp của việc đó sẽ ghi đè finding cũ. File tạm đã
   sót có thể xoá tay.
+
+### Nội bộ
+- **Repo engine: mọi thay đổi đi qua worktree từ `origin/main` rồi PR vào `main`, kể cả sửa tài liệu
+  hay lỗi chính tả.** Luật đưa lên đầu `AGENTS.md`. Với Claude Code, hook `.claude/hooks/block-main.sh`
+  (khai trong `.claude/settings.json`) chặn agent sửa file, commit, merge, push trên checkout đang ở
+  `main`, và chặn push thẳng vào `main` từ bất cứ đâu; worktree nhánh khác, repo khác, file ngoài git
+  vẫn cho qua. Hook không bắt lệnh shell tự ghi file (`sed -i`, `>`) và không áp cho agent khác
+  (Cursor…) — với các trường hợp đó luật chữ là chính. Người dùng `aw` không bị ảnh hưởng; người
+  phát triển engine cần mở phiên Claude Code từ repo đã có commit này để hook có hiệu lực.
+  `.claude/worktrees/` và `.claude/settings.local.json` được thêm vào `.gitignore`. Test:
+  `tools/tests/19-block-main-hook.sh`.
 
 ## [2026.10.30]
 
@@ -100,6 +122,19 @@ ngầm giữa các bản.
   phần dừng giữa chừng tính là hỏng. Chạy một phần: `sh tools/run-tests.sh review` hoặc
   `sh tools/tests/05-review-quality.sh`. CI (`kiem-tra`, `release`) không đổi lệnh. Người phát triển engine:
   thêm ca vào phần cùng chủ đề, không thêm vào `tools/run-tests.sh`.
+- **`tools/run-tests.sh` in thời gian từng phần và cảnh báo phần quá chậm**, để bộ test song song không
+  chậm dần khi ca mới dồn vào một phần. Cuối output có dòng `Thời gian từng phần` (chậm nhất trước); phần
+  ≥ 30 giây và gấp hơn 2 lần trung bình các phần còn lại có dòng `CẢNH BÁO … nên tách`. Chỉ cảnh báo,
+  kết quả không đổi. Người phát triển engine: thấy cảnh báo do thay đổi của mình thì tách phần đó trong
+  cùng PR (`AGENTS.md` § Verify). Thêm biến `AW_TEST_SLOW_MIN` (ngưỡng giây) và `AW_TEST_DIR` (thư mục
+  phần, dùng cho test của chính runner); thư mục không có phần nào giờ trả `SAI THAM SỐ`.
+  Cảnh báo bắt ngay hai phần đang lệch trên `main`, nên tách luôn trong thay đổi này:
+  `02-spec-design-plan.sh` → `02-spec.sh` + `02-design-plan.sh`; `07-ship-rules-uses.sh` →
+  `07-ship-rules.sh` + `07-uses-pending-based-on.sh`. Danh sách ca của từng phần cũ trùng khớp từng dòng
+  với hai phần mới ghép lại.
+- **Sửa test đỏ trên `main` và CI từ khi artifact vào git:** 9 ca của `tools/tests/14-ship-ready.sh` hỏng trên
+  máy chưa đặt git identity (gồm runner CI), vì engine tự commit artifact. `tools/tests/lib.sh` giờ đặt identity
+  giả qua `GIT_AUTHOR_*`/`GIT_COMMITTER_*` cho mọi phần test.
 
 ## [2026.10.29]
 
