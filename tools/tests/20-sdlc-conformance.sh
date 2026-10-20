@@ -32,6 +32,11 @@ dung "…in ánh xạ stage → phase" sh -c "sh '$SC' '$E' 2>/dev/null | grep -
 ky_vong 2 "thư mục không phải engine → SAI THAM SỐ" sh "$SC" "$TMP/khong-co"
 ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$SC" "$E" "$E"
 dung "…bảng ánh xạ in trạng thái suy ra" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^  verify +partial +review'"
+sh "$SC" "$ROOT" > "$TMP/sdlc-ra" 2>/dev/null
+dung "…trạng thái suy ra đúng cả 7 stage" bang "$(awk '/^Stage → phase/ { p = 1; next } /^[^ ]/ { p = 0 } p { printf "%s=%s ", $1, $2 }' "$TMP/sdlc-ra")" \
+  "plan=partial require=implemented design=implemented implement=implemented verify=partial deploy=partial operate=gap "
+dung "…roadmap liệt kê đúng các capability chưa phase nào nhận" bang "$(awk '/^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
+  "CAP-plan-03 CAP-plan-04 CAP-verify-03 CAP-verify-04 CAP-verify-05 CAP-deploy-02 CAP-deploy-03 CAP-operate-01 CAP-operate-02 "
 dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-02 +machine +'"
 dung "…roadmap không liệt kê capability đã nhận" sh -c "! sh '$SC' '$ROOT' 2>/dev/null | grep -q '^    CAP-deploy-01 '"
 dung "check-sdlc không đăng ký trong aw check (chỉ dùng cho repo engine)" sh -c ". '$T/lib/commands.sh'; ! bl_checker sdlc"
@@ -135,8 +140,15 @@ moi; awk '!(/^- Judged by:/ && ++n == 1)' "$E/sdlc/stages/05-deploy.md" > "$E/s"
 vi_pham "capability thiếu Judged by → chặn" "CAP-deploy-01: thiếu \"- Judged by:\""
 moi; thay "$E/sdlc/stages/05-deploy.md" '- Judged by: human' '- Judged by: robot'
 vi_pham "Judged by lạ → chặn" "Judged by \"robot\" — chỉ nhận machine | agent | human"
-moi; awk '!(/^- Rule:/ && ++n == 1)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && printf '\n## Notes\n\n- Rule: lạc chỗ\n' >> "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
-vi_pham "Rule nằm dưới heading khác không tính → chặn" "CAP-deploy-01: thiếu \"- Rule:\""
+# capability CUỐI file mất Rule; Rule lạc dưới heading sau nó không được tính cho nó
+moi; awk '!(/^- Rule:/ && ++n == 3)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && printf '\n## Notes\n\n- Rule: lạc chỗ\n' >> "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+vi_pham "Rule nằm dưới heading khác không tính → chặn" "CAP-deploy-03: thiếu \"- Rule:\""
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-03 — ' '#### CAP-deploy-03 — '
+vi_pham "capability với heading #### → chặn, không lờ đi" "stage deploy: heading capability \"#### CAP-deploy-03"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-03 — ' '### Cap-deploy-03 — '
+vi_pham "capability viết thường Cap- → chặn, không lờ đi" "stage deploy: heading capability \"### Cap-deploy-03"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-03 — ' '### Rollback — '
+vi_pham "heading lạ trong ## Capabilities → chặn" "stage deploy: heading capability \"### Rollback"
 moi; sed 's/$/\r/' "$E/sdlc/stages/05-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
 ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
 

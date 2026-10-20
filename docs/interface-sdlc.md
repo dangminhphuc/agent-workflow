@@ -183,7 +183,7 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `[LỖI]` bắt đầu bằng | Nghĩa | Sửa |
 |---|---|---|
 | `stage X: không có capability` | File stage chưa có `### CAP-X-NN — …` nào | Thêm `## Capabilities` với ít nhất một capability |
-| `stage X: heading capability "…" sai dạng` | Gõ `-` thay vì `—`, thiếu tên, `NN` không đủ hai số, hoặc id mang tên stage khác | Sửa heading đúng `### CAP-X-NN — <tên>` |
+| `stage X: heading capability "…" sai dạng` | Gõ `-` thay vì `—`, thiếu tên, `NN` không đủ hai số, id mang tên stage khác, heading `####` hay `Cap-…` trông như capability, hoặc heading `###` lạ nằm trong `## Capabilities` — máy báo thay vì lờ đi, để capability không biến mất âm thầm | Sửa heading đúng `### CAP-X-NN — <tên>` |
 | `stage X: CAP-X-NN trùng` | Hai khối cùng id | Đổi số của một khối |
 | `CAP-…: thiếu "- Rule:"` / `thiếu "- Judged by:"` | Khối capability thiếu dòng (dòng nằm dưới heading khác không tính) | Thêm dòng ngay dưới heading capability |
 | `CAP-…: Judged by "…"` | Giá trị lạ | Chỉ `machine`, `agent`, `human` |

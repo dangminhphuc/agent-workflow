@@ -8,7 +8,7 @@
 #   - File stage: id lệch tên file, thiếu purpose / provides, exit không phải machine | human | both,
 #     requires không do stage trước nó provides, invariant không có trong sdlc/invariants.md,
 #     skippable không phải true | false. Capability (thân file, "### CAP-<stage>-NN — <tên>"):
-#     không có cái nào, heading sai dạng hoặc mang stage khác, id trùng, thiếu "- Rule:" /
+#     không có cái nào, heading sai dạng hoặc mang stage khác (kể cả #### / Cap- / heading lạ trong ## Capabilities), id trùng, thiếu "- Rule:" /
 #     "- Judged by:", Judged by không phải machine | agent | human.
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
 #     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
@@ -146,9 +146,16 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
       print "C|" cur "|" jd "|" ten; cur = ""
     }
     { sub(/\r$/, "") }
+    /^## Capabilities[ \t]*$/ { dong(); trong = 1; next }
+    /^##? / { dong(); trong = 0; next }
     /^#/ {
       dong()
-      if ($0 !~ /^### CAP/) next
+      # heading khác trong ## Capabilities, hay heading trông như capability (####, Cap-): báo, không lờ đi
+      if ($0 !~ /^### CAP/) {
+        if (trong || toupper($0) ~ /^#+ *CAP-/)
+          print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."
+        next
+      }
       c = $0; sub(/^### /, "", c); sub(/ — .*$/, "", c); st = c; sub(/^CAP-/, "", st); sub(/-[0-9][0-9]$/, "", st)
       if ($0 !~ /^### CAP-[a-z]+-[0-9][0-9] — ./ || st != s) {
         print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."; next
