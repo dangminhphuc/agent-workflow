@@ -692,6 +692,13 @@ check-security: `fixture_sau_bao_mat`), để không ca nào đổi điều ki�
 chừng (không in `Tổng:`) tính là hỏng — không ca nào bị bỏ qua câm. Không bớt ca để nhanh hơn:
 release vẫn chạy lại test trên đúng commit được đóng gói.
 
+Song song chỉ nhanh khi các phần đều nhau: thời gian cả bộ ≈ phần chậm nhất, nếu nó dài hơn tổng chia
+số lõi. Ca mới cứ thêm vào "phần cùng chủ đề" thì một phần sẽ phình dần mà không ai thấy. Vì vậy
+`run-tests.sh` in thời gian từng phần và cảnh báo phần **≥ 30 giây và gấp hơn 2 lần trung bình các
+phần còn lại**. So với các phần *còn lại* (không phải trung bình chung) vì đồng hồ đo theo giây: một
+phần ngắn làm tròn lên 1 giây không được kéo trung bình đủ để che phần chậm. Ngưỡng 30 giây tránh cảnh
+báo khi chạy vài phần nhỏ. Chỉ cảnh báo, không chặn: thời gian phụ thuộc máy, chặn thì CI chập chờn.
+
 ## Cách thêm một adapter
 
 Xem `adapters/README.md`. Việc sinh ở `adapters/lib/common.sh`; adapter chỉ khai hook (chữ riêng

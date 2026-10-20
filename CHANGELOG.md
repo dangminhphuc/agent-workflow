@@ -24,6 +24,22 @@ ngầm giữa các bản.
   phẩy. Spec ghi `Risk: normal` mà chứa từ khoá thì `aw check spec` **cảnh báo** để người duyệt xem
   lại `Risk`. Repo cài từ trước: thêm dòng `high_risk_keywords: …` nếu muốn bật; không thêm thì như cũ.
 
+### Thay đổi
+- **Mã định danh không đúng 3 chữ số giờ bị chặn.** Luật `<PREFIX>-NNN` (đúng 3 chữ số) đã có từ
+  trước nhưng checker vẫn nhận mọi dạng số, nên `REQ-1` hay `DEC-0001` lọt qua. Giờ checker của
+  phase viết ra mã sẽ chặn heading sai dạng: `aw check spec` cho `REQ` (trong `spec.md` và
+  `open-questions.md`), `aw check design` cho `DEC` và `FND`, `aw check plan` cho `TSK`.
+  **Ai bị ảnh hưởng:** chỉ những việc đang có mã sai dạng. Sửa heading về dạng `REQ-001` cùng mọi
+  tham chiếu tới nó, rồi chạy lại `aw check`. Việc đã ghim engine cũ trong `intake.md` không bị ảnh
+  hưởng. Hai điểm chưa kiểm: đánh số liên tiếp, và `RFR` (chưa có checker máy nào đọc).
+
+### Sửa
+- **`aw check review` không xoá finding cũ khi review chạy lại mà không còn finding nào.** Nhật ký
+  `findings.tsv` giữ lại finding đã sửa xong, nên `aw journal` đếm sai và có thể gợi ý nâng một loại
+  finding thành luật dù nó không còn. Lỗi này cũng để sót file tạm `findings.tsv.<pid>` trong thư mục
+  nhật ký. Không cần làm gì; lần chạy review kế tiếp của việc đó sẽ ghi đè finding cũ. File tạm đã
+  sót có thể xoá tay.
+
 ## [2026.10.30]
 
 ### Thay đổi
@@ -83,6 +99,19 @@ ngầm giữa các bản.
   phần dừng giữa chừng tính là hỏng. Chạy một phần: `sh tools/run-tests.sh review` hoặc
   `sh tools/tests/05-review-quality.sh`. CI (`kiem-tra`, `release`) không đổi lệnh. Người phát triển engine:
   thêm ca vào phần cùng chủ đề, không thêm vào `tools/run-tests.sh`.
+- **`tools/run-tests.sh` in thời gian từng phần và cảnh báo phần quá chậm**, để bộ test song song không
+  chậm dần khi ca mới dồn vào một phần. Cuối output có dòng `Thời gian từng phần` (chậm nhất trước); phần
+  ≥ 30 giây và gấp hơn 2 lần trung bình các phần còn lại có dòng `CẢNH BÁO … nên tách`. Chỉ cảnh báo,
+  kết quả không đổi. Người phát triển engine: thấy cảnh báo do thay đổi của mình thì tách phần đó trong
+  cùng PR (`AGENTS.md` § Verify). Thêm biến `AW_TEST_SLOW_MIN` (ngưỡng giây) và `AW_TEST_DIR` (thư mục
+  phần, dùng cho test của chính runner); thư mục không có phần nào giờ trả `SAI THAM SỐ`.
+  Cảnh báo bắt ngay hai phần đang lệch trên `main`, nên tách luôn trong thay đổi này:
+  `02-spec-design-plan.sh` → `02-spec.sh` + `02-design-plan.sh`; `07-ship-rules-uses.sh` →
+  `07-ship-rules.sh` + `07-uses-pending-based-on.sh`. Danh sách ca của từng phần cũ trùng khớp từng dòng
+  với hai phần mới ghép lại.
+- **Sửa test đỏ trên `main` và CI từ khi artifact vào git:** 9 ca của `tools/tests/14-ship-ready.sh` hỏng trên
+  máy chưa đặt git identity (gồm runner CI), vì engine tự commit artifact. `tools/tests/lib.sh` giờ đặt identity
+  giả qua `GIT_AUTHOR_*`/`GIT_COMMITTER_*` cho mọi phần test.
 
 ## [2026.10.29]
 

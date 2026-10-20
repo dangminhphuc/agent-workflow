@@ -364,6 +364,11 @@ AW_TEST_JOBS=1 sh tools/run-tests.sh      # số phần chạy cùng lúc (mặc
 Ca kiểm nằm trong `tools/tests/NN-<tên>.sh` (helper + fixture: `tools/tests/lib.sh`); mỗi phần chạy
 độc lập nên `run-tests.sh` chạy song song rồi cộng tổng. Ca mới thêm vào phần cùng chủ đề.
 
+Cuối output có dòng `Thời gian từng phần` (chậm nhất trước). Phần nào chạy từ 30 giây trở lên và
+gấp hơn 2 lần trung bình các phần còn lại thì có dòng `CẢNH BÁO … nên tách`. Vì các phần chạy song
+song, phần chậm nhất quyết định thời gian của cả bộ test. Cảnh báo không đổi kết quả. Đổi ngưỡng giây:
+`AW_TEST_SLOW_MIN`.
+
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng
 đúng chuỗi đó, không có `v`.
 

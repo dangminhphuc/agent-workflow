@@ -74,9 +74,10 @@ case "${1:-}" in
       END { if (trong) xuat() }
     ' "$3")
     # Ghi lại phần của việc này (review chạy lại thì thay, không nhân đôi).
-    { [ -f "$JD/findings.tsv" ] && awk -F'\t' -v v="$v" '$2 != v' "$JD/findings.tsv"
-      [ -n "$moi" ] && printf '%s\n' "$moi"; } > "$JD/findings.tsv.$$" 2>/dev/null &&
-      mv "$JD/findings.tsv.$$" "$JD/findings.tsv" 2>/dev/null
+    # Khối phải trả 0 khi không có finding mới, nếu không mv bị bỏ qua (dùng if, không dùng &&).
+    { if [ -f "$JD/findings.tsv" ]; then awk -F'\t' -v v="$v" '$2 != v' "$JD/findings.tsv"; fi
+      if [ -n "$moi" ]; then printf '%s\n' "$moi"; fi; } > "$JD/findings.tsv.$$" 2>/dev/null &&
+      mv "$JD/findings.tsv.$$" "$JD/findings.tsv" 2>/dev/null || rm -f "$JD/findings.tsv.$$"
     # Gợi ý: loại của việc này đã gặp ở >= NGUONG_LAP việc.
     for c in $(printf '%s\n' "$moi" | cut -f4 | grep -v '^-$' | sort -u); do
       n=$(awk -F'\t' -v c="$c" '$4 == c { print $2 }' "$JD/findings.tsv" | sort -u | wc -l | tr -d ' ')

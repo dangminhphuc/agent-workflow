@@ -24,7 +24,8 @@ Mọi mã theo cùng một dạng: `<TIỀN TỐ>-<SỐ>`.
 - **Tiền tố** là ba chữ in hoa viết tắt thuật ngữ tiếng Anh (`REQ` = requirement, `DEC` = decision…),
   để mã đọc được, grep được và không lẫn với chữ thường trong câu.
 - **Số** có đúng 3 chữ số, có số 0 đứng đầu (`REQ-001`, `DEC-001`, `TSK-012`), đánh liên tiếp trong
-  một artifact. Anchor là mã viết thường: `#req-001`, `#dec-001`.
+  một artifact. Anchor là mã viết thường: `#req-001`, `#dec-001`. Heading có mã không đủ hoặc thừa
+  chữ số (`REQ-1`, `DEC-0001`) bị `aw check` của phase viết ra mã chặn; đánh số liên tiếp thì chưa kiểm.
 - **Phạm vi**: mã trong job dir (`REQ`, `DEC`, `FND`, `TSK`, `RFR`) chỉ có nghĩa trong một `job`;
   `REQ-001` của hai job là hai thứ khác nhau. Mã của `durable knowledge` dùng chung cả `target repo`
   nên giữ dạng riêng: `BR-<MIỀN>-NNN` có thêm miền, `ADR-NNNN` theo quy ước ADR thông dụng.
