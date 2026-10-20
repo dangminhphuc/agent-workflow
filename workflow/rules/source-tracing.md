@@ -51,6 +51,7 @@ Answering an open question: write `Answer:`, set `Status: answered`, **and** cha
 
 - A REQ's region ends at the next `##`/`###` heading: a `Source:` or criterion under `### Ghi chú` does not count for the REQ above (split a REQ with `####`).
 - An acceptance criterion still `<...>` or inside an HTML comment does not count.
+- A source (`[JIRA]` key, `[CONFLUENCE]` URL, `[FILE]` path) not in `intake.md` `## Input` gets a warning: a real input → add it to intake; otherwise use a source you were given.
 - `open-questions.md` and the spec disagree: `open` ↔ REQ still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and the REQ label was changed.
 - `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` left empty — write "Không có…" / "Không phát hiện mâu thuẫn." instead.
 - `Quote:` not character-for-character: added quotation marks, fixed typos, dropped markdown (`**`, links). Whitespace and line breaks do not count.

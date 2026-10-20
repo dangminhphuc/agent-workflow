@@ -128,6 +128,12 @@ vào (kể cả đổi tên từ/đến) thì `review.md` phải có dòng `- Se
 — một NGƯỜI rà bảo mật đã đọc Lens 4 và diff; thiếu là `aw check review` chặn.
 Trống = không bật luật này.
 
+### `high_risk_keywords`
+Từ khoá báo hiệu việc rủi ro cao, cách nhau dấu phẩy, vd `thanh toán, hoàn tiền, migration`.
+`spec.md` ghi `Risk: normal` mà có từ khoá (không phân biệt hoa thường với chữ không dấu,
+không tính trong comment HTML) thì `aw check spec` **cảnh báo**, không chặn — từ khoá hay
+báo nhầm; người duyệt quyết `Risk`. Trống = không bật.
+
 ## Intake input
 
 ### `jira_key_regex`

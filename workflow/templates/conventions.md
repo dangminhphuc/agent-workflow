@@ -53,6 +53,8 @@ skipped_test_regex:
 # ── Security ──────────────────────────────────────────────────────
 # [optional] glob code nhạy cảm, vd src/auth/* — đụng vào cần NGƯỜI rà bảo mật
 sensitive_code:
+# [optional] từ khoá rủi ro cao, cách nhau dấu phẩy, vd thanh toán, migration — spec "Risk: normal" chứa từ khoá thì cảnh báo
+high_risk_keywords:
 
 # ── Intake input ──────────────────────────────────────────────────
 # [default] regex ERE mã Jira, không dùng {n}
