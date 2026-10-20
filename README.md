@@ -372,6 +372,9 @@ song, phần chậm nhất quyết định thời gian của cả bộ test. C�
 Version `YYYY.M.N`: năm, tháng, `N` = số thứ tự bản trong tháng (không số 0 đứng đầu). Tag trùng
 đúng chuỗi đó, không có `v`.
 
+0. Mọi thay đổi bắt đầu bằng worktree từ `origin/main` (`git fetch origin && git worktree add <đường-dẫn>
+   -b <branch> origin/main`) và kết thúc bằng PR vào `main` — không sửa, commit hay push trực tiếp trên
+   `main`. Trong Claude Code, hook `.claude/hooks/block-main.sh` chặn việc đó.
 1. Mỗi PR ghi thay đổi vào `## [Chưa phát hành]` của `CHANGELOG.md` và cập nhật tài liệu liên quan
    (`AGENTS.md` § Human docs).
 2. Trong PR muốn phát hành: `sh tools/prepare-release.sh [YYYY.M.N]` — ghi version vào

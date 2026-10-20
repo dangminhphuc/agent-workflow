@@ -4,6 +4,11 @@ This repo is the **engine** (wrapper `aw`, checkers, phase definitions, adapters
 that runs the workflow — artifacts (`.agent-workflow/`) exist only in target repos.
 Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. Terms: `docs/thuat-ngu.md`.
 
+**Never change `main` directly.** Every change — code, docs, typo, CHANGELOG — starts with
+`git fetch origin && git worktree add <path> -b <branch> origin/main` and ends with a PR into
+`main`; the human merges. In Claude Code `.claude/hooks/block-main.sh` blocks edit/commit/push on
+`main`; other agents follow this line unenforced.
+
 ## Map
 
 - `workflow.yaml` — source of truth: phases, utility commands, rules, adapters (with status).
@@ -15,6 +20,7 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 - `tools/check-*.sh` machine checkers, registered in `tools/lib/commands.sh`.
 - `adapters/lib/common.sh` (`ad_sinh`) generates everything; `adapters/<id>/build.sh` only declares
   hooks + format spec (`adapters/README.md`).
+- `.claude/` dev setup for this repo only (hook above; test `tools/tests/19-block-main-hook.sh`).
 
 ## Language
 
@@ -72,11 +78,10 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
   prior decisions first.
 - Behavior or rule changes: propose the approach (files touched, block vs warn,
   what the test proves) and wait for the human's OK before coding.
-- Work in a git worktree on a new branch based on fresh `origin/main`; never edit
-  `main` directly. Tests first, then code (§ Verify).
+- Worktree from fresh `origin/main` first (top of this file). Tests first, then code (§ Verify).
 - Stay in scope. Related ideas → propose; if accepted, add to `docs/viec-can-lam.md`,
   don't implement.
-- Finish with a PR: what changed, why, which tests cover it. The human merges.
+- Finish with a PR into `main`: what changed, why, which tests cover it.
 
 ## Verify
 

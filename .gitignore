@@ -1,2 +1,5 @@
 # Thư mục thử nghiệm khi chạy adapter thủ công
 dist/
+# Claude Code: worktree tạo trong repo và cấu hình riêng từng máy
+.claude/worktrees/
+.claude/settings.local.json

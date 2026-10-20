@@ -40,6 +40,17 @@ ngầm giữa các bản.
   nhật ký. Không cần làm gì; lần chạy review kế tiếp của việc đó sẽ ghi đè finding cũ. File tạm đã
   sót có thể xoá tay.
 
+### Nội bộ
+- **Repo engine: mọi thay đổi đi qua worktree từ `origin/main` rồi PR vào `main`, kể cả sửa tài liệu
+  hay lỗi chính tả.** Luật đưa lên đầu `AGENTS.md`. Với Claude Code, hook `.claude/hooks/block-main.sh`
+  (khai trong `.claude/settings.json`) chặn agent sửa file, commit, merge, push trên checkout đang ở
+  `main`, và chặn push thẳng vào `main` từ bất cứ đâu; worktree nhánh khác, repo khác, file ngoài git
+  vẫn cho qua. Hook không bắt lệnh shell tự ghi file (`sed -i`, `>`) và không áp cho agent khác
+  (Cursor…) — với các trường hợp đó luật chữ là chính. Người dùng `aw` không bị ảnh hưởng; người
+  phát triển engine cần mở phiên Claude Code từ repo đã có commit này để hook có hiệu lực.
+  `.claude/worktrees/` và `.claude/settings.local.json` được thêm vào `.gitignore`. Test:
+  `tools/tests/19-block-main-hook.sh`.
+
 ## [2026.10.30]
 
 ### Thay đổi
