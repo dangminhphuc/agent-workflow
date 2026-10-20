@@ -10,9 +10,10 @@ chữ tiếng Việt của artifact — không tự dịch; câu quanh nó vẫn
 trong ngoặc *(trước: …)* là tên tiếng Việt cũ, để tra nếu gặp ở tài liệu cũ.
 
 Artifact còn từ dịch cũ (cột `Not` của `terms.md`: "điểm mù", "lỗi thời", "ô duyệt"…) thì
-`aw check implement` cảnh báo, `aw check review` chặn. Không kiểm `intake.md`,
-`refactor-requests.md`, `*-results.md` và dòng trích `>` — chỗ đó là nguyên văn lời người hoặc
-do máy ghi. Lời agent nói trong chat thì không máy nào kiểm được.
+`aw check implement` và `aw check review` cảnh báo; riêng `review.md` thì `aw check review` chặn.
+Không kiểm `intake.md`, `refactor-requests.md`, `*-results.md` và dòng trích `>` — chỗ đó là
+nguyên văn lời người hoặc do máy ghi. Cũng không kiểm chữ trong code span, `"…"`, `“…”` và fenced
+code block, nên viết được `"ô duyệt" là từ dịch` khi mô tả lỗi. Lời agent nói trong chat thì không máy nào kiểm được.
 
 Tên trường, heading trong artifact giữ tiếng Anh vì checker đọc đúng chữ đó. Nhãn `aw` in ra
 (`Kết quả`, `ĐẠT`, `DỪNG`, `KẸT`…) giữ tiếng Việt vì checker và agent khớp đúng chữ.

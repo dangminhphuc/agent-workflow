@@ -111,7 +111,7 @@ while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KT
 $ktl
 KT
 
-cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_tu_dich "$DIR"; } )
+cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
 # bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.
 if [ "$(kc_loai "$DIR")" = "bugfix" ]; then
@@ -126,6 +126,18 @@ if [ -n "$cb" ]; then
 $cb
 CB
 fi
+
+# Từ dịch: chỉ chặn ở review.md — file khác review không được sửa, phải quay về phase trước.
+td=$(kc_tu_dich "$DIR")
+while IFS= read -r l; do
+  case "$l" in
+    "") ;;
+    "review.md dòng "*) loi_truoc "$l" ;;
+    *) echo "  [CẢNH BÁO] $l" ;;
+  esac
+done <<TD
+$td
+TD
 
 # Mục lục và link của MỌI artifact: link sang artifact khác có thể gãy khi file đích đổi heading sau đó.
 tl=$(toc_loi "$DIR" $TOC_ART)

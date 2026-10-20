@@ -142,7 +142,8 @@ chặn), `✓` đạt, `·` thông tin.
 | Loại kiểm | Ví dụ | Hành vi |
 |---|---|---|
 | Kiểm output của chính phase (chính xác) | REQ có nguồn, mọi REQ có task, test xanh | **Chặn** ngay |
-| Cross-check giữa phase (hay báo nhầm) | artifact stale, test ↔ REQ, file ngoài phạm vi, từ dịch thay cho thuật ngữ gốc ([`thuat-ngu.md`](thuat-ngu.md)) | **Cảnh báo** ở implement, **chặn** ở review |
+| Cross-check giữa phase (hay báo nhầm) | artifact stale, test ↔ REQ, file ngoài phạm vi | **Cảnh báo** ở implement, **chặn** ở review |
+| Văn phong (hay báo nhầm, review không sửa được file phase trước) | từ dịch thay cho thuật ngữ gốc ([`thuat-ngu.md`](thuat-ngu.md)) | **Cảnh báo** ở implement và review; review **chặn** nếu nằm trong `review.md` |
 
 Vì vậy: thấy `!` ở implement thì sửa luôn — để tới review là bị chặn.
 
@@ -625,7 +626,8 @@ aw check implement <dir>    chạy toàn bộ test + quét bảo mật, ghi *-re
 **Máy chặn khi:** test hoặc quét đỏ; chưa khai `TEST_CMD`/`SECURITY_CMDS`; task `[x]` thiếu bằng chứng;
 task còn `[ ]`/`[~]`; dấu xung đột merge. **Cảnh báo** (review sẽ chặn): REQ chưa có test `covers:`
 lẫn chưa khai thủ công, file ngoài `Expected files` không ghi `Unplanned`, test bị tắt mới thêm,
-artifact stale, tài liệu module/ADR/luật bị đụng phạm vi, artifact còn từ dịch cũ ("điểm mù", "lỗi thời"…).
+artifact stale, tài liệu module/ADR/luật bị đụng phạm vi. **Chỉ cảnh báo** (cả ở review): artifact còn từ dịch cũ
+("điểm mù", "lỗi thời"…).
 
 ### Phase 05 — `/aw-review`: rà soát độc lập
 
@@ -660,9 +662,10 @@ quyết. REQ đứng trên giả định chưa xác nhận → `pending`, không
 4. Base bất thường (xếp chồng trên branch khác) → xác nhận là cố ý.
 5. Máy in `[GỢI Ý]` (loại lỗi lặp ở ≥ 2 việc) → cân nhắc biến thành luật máy (lint, test).
 
-**Máy chặn khi:** thiếu REQ ở Lens 1; còn bất kỳ cảnh báo nào từ implement; kết quả test/quét không
-còn mới so với code; số Blocker không khớp; Lens 4 thiếu dòng; thiếu `Security reviewer` khi cần;
-job type lệch tiền tố branch; còn open question `review-blocking` chưa trả lời.
+**Máy chặn khi:** thiếu REQ ở Lens 1; còn cảnh báo nào từ implement (trừ từ dịch — chỉ chặn trong
+`review.md`); kết quả test/quét không còn mới so với code; số Blocker không khớp; Lens 4 thiếu dòng;
+thiếu `Security reviewer` khi cần; job type lệch tiền tố branch; còn open question `review-blocking`
+chưa trả lời.
 
 ### Phase 06 — `/aw-ship`: gửi MR và dọn (tuỳ chọn)
 

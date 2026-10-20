@@ -786,8 +786,9 @@ kc_chore_sca() {
 
 # kc_tu_dich <thư-mục-feature> — artifact dùng từ dịch thay cho thuật ngữ gốc. Danh sách: cột
 # "Not" của workflow/rules/terms.md. Bỏ qua chỗ chứa lời người (intake.md, refactor-requests.md,
-# dòng trích ">") và file máy ghi (*-results.md). Không phân biệt hoa thường: tolower chỉ đổi
-# ASCII nên Đ, Ô (chữ đầu các từ dịch) đổi tay.
+# dòng trích ">") và file máy ghi (*-results.md). Bỏ cả chỗ nhắc lại chính từ đó (code span,
+# "…", “…”, fenced code block): người rà soát phải viết được lỗi mà không bị bắt. Không phân biệt
+# hoa thường: tolower chỉ đổi ASCII nên Đ, Ô (chữ đầu các từ dịch) đổi tay.
 kc_tu_dich() {
   _td_ds="${AW_ENGINE:-$HERE/..}/workflow/rules/terms.md"
   [ -f "$_td_ds" ] || return 0
@@ -805,7 +806,10 @@ kc_tu_dich() {
       next
     }
     {
-      s = $0; if (s ~ /^[ \t]*>/) next
+      if (FILENAME != tep) { tep = FILENAME; rao = 0 }
+      s = $0; if (s ~ /^[ \t]*(```|~~~)/) { rao = !rao; next }
+      if (rao || s ~ /^[ \t]*>/) next
+      gsub(/`[^`]*`/, "", s); gsub(/“|”/, "\"", s); gsub(/"[^"]*"/, "", s)
       gsub(/Đ/, "đ", s); gsub(/Ô/, "ô", s); s = tolower(s)
       f = FILENAME; sub(/.*\//, "", f)
       for (p in cu) if (!((f, p) in da) && index(s, p)) {
