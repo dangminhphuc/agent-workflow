@@ -43,6 +43,7 @@ viet_spec; ghi_based_on
 printf 'Ghi chú: REQ-002 còn một Điểm mù.\n' > "$F/ghi-chu.md"
 ky_vong 0 "từ dịch trong artifact chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
 dung "…nhưng có in cảnh báo từ dịch (không phân biệt hoa thường)" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*ghi-chu.md dòng 1: \"điểm mù\" là từ dịch — viết \`open question\`'"
+dung "…và nói rõ review cũng chỉ cảnh báo từ dịch" sh -c "sh '$CHK' '$F' | grep -q 'Từ dịch chỉ cảnh báo, cả ở /aw-review'"
 rm -f "$F/ghi-chu.md"
 dung "…không có từ dịch thì không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'là từ dịch'"
 

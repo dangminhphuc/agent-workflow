@@ -170,7 +170,7 @@ EOF
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; kc_tu_dich "$DIR"; } )
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""
@@ -178,6 +178,13 @@ if [ -n "$cb" ]; then
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Mỗi cảnh báo đã ghi cách sửa — sửa luôn, đừng để tới review."
+fi
+td=$(kc_tu_dich "$DIR")
+if [ -n "$td" ]; then
+  echo ""
+  n_cb=$((n_cb + $(printf '%s\n' "$td" | wc -l | tr -d ' ')))
+  printf '%s\n' "$td" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  echo "  Từ dịch chỉ cảnh báo, cả ở /aw-review — sửa ngay ở artifact đang viết."
 fi
 
 # Code nhạy cảm: không phải vi phạm — báo sớm để kịp hẹn người rà bảo mật.

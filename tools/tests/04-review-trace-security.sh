@@ -12,16 +12,30 @@ sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
 ky_vong 0 "rà soát đủ và đúng thì cho qua" sh "$CHK" "$F"
 
-# Từ dịch thay cho thuật ngữ gốc (cột Not của workflow/rules/terms.md): review chặn
+# Từ dịch (cột Not của workflow/rules/terms.md): file của phase trước chỉ cảnh báo — review không
+# được sửa nó; review.md do chính review viết thì chặn.
 printf 'Ghi chú: spec bị lỗi thời.\n' > "$F/ghi-chu.md"
-ky_vong 1 "CỔNG CUỐI: chặn từ dịch trong artifact" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'ghi-chu.md dòng 1: \"lỗi thời\" là từ dịch — viết \`stale\`'"
-printf '> PO: "spec bị lỗi thời"\n' > "$F/ghi-chu.md"
-ky_vong 0 "…dòng trích lời người (>) thì cho qua" sh "$CHK" "$F"
+ky_vong 0 "từ dịch trong artifact của phase trước chỉ CẢNH BÁO ở review" sh "$CHK" "$F"
+dung "…nhưng có in cảnh báo nêu file, dòng, từ" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*ghi-chu.md dòng 1: \"lỗi thời\" là từ dịch — viết \`stale\`'"
+printf '> PO: spec bị lỗi thời\n' > "$F/ghi-chu.md"
+dung "…dòng trích lời người (>) thì không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'là từ dịch'"
+printf 'Code:\n```\nlỗi thời\n```\nSau rào.\n' > "$F/ghi-chu.md"
+dung "…trong fenced code block thì không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'là từ dịch'"
+printf '```\nx\n```\nspec bị lỗi thời\n' > "$F/ghi-chu.md"
+dung "…sau khi đóng rào thì lại bắt (dòng 4)" sh -c "sh '$CHK' '$F' | grep -q 'ghi-chu.md dòng 4: \"lỗi thời\"'"
 rm -f "$F/ghi-chu.md"
 printf 'Người viết: còn điểm mù\n' > "$F/refactor-requests.md"
-ky_vong 0 "…refactor-requests.md (nguyên văn lời người) thì cho qua" sh "$CHK" "$F"
+dung "…refactor-requests.md (nguyên văn lời người) thì không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'là từ dịch'"
 rm -f "$F/refactor-requests.md"
+cp "$F/review.md" "$F/review.md.bak"
+printf '\nGhi chú: tdd.md còn ô duyệt.\n' >> "$F/review.md"
+ky_vong 1 "CỔNG CUỐI: chặn từ dịch trong review.md (file review tự viết)" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'LỖI.*review.md dòng [0-9]*: \"ô duyệt\" là từ dịch — viết \`approval checkbox\`'"
+cp "$F/review.md.bak" "$F/review.md"
+printf '\nGhi chú: tdd.md dòng 15 viết "ô duyệt", “điểm mù” và `lỗi thời` là từ dịch.\n' >> "$F/review.md"
+ky_vong 0 "review.md trích từ dịch trong \"…\", “…”, \`…\` thì cho qua" sh "$CHK" "$F"
+dung "…và không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'là từ dịch'"
+mv "$F/review.md.bak" "$F/review.md"
 
 # Điểm mù: "không chặn" còn mở thì giao được (REQ chờ xác nhận); "chặn review" thì không
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on

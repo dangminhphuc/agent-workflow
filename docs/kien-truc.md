@@ -607,10 +607,12 @@ Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đ
   được chỗ agent nói tới, và mỗi agent lại dịch một kiểu. Danh sách chuẩn ở `rules/terms.md` (agent
   đọc qua `general.md` §5). Cột `Not` của nó ghi các từ dịch đã gặp. Lời trong chat thì không kiểm
   được. Trong artifact thì máy kiểm được, nhưng hay báo nhầm (một câu tiếng Việt bình thường có thể
-  trùng chữ) nên theo luật cross-check: implement cảnh báo, review chặn (`kc_tu_dich`). Không kiểm
-  `intake.md`, `refactor-requests.md`, dòng trích `>` (nguyên văn lời người, agent không được sửa)
-  và `*-results.md` (máy ghi). Chỉ ghi vào `Not` cụm đặc thù: từ chung như "việc", "yêu cầu",
-  "phát hiện" báo nhầm quá nhiều. `docs/thuat-ngu.md` giải thích cho người; test giữ hai file cùng
+  trùng chữ) nên chỉ cảnh báo, ở cả implement lẫn review (`kc_tu_dich`); riêng `review.md` thì review
+  chặn — file duy nhất nó được sửa. Chặn file của phase trước buộc quay về phase đó vì một lỗi văn
+  phong, công không tương xứng. Không kiểm `intake.md`, `refactor-requests.md`, dòng trích `>` (nguyên văn
+  lời người, agent không được sửa), `*-results.md` (máy ghi) và chỗ nhắc lại chính từ đó — code
+  span, `"…"`, `“…”`, fenced code block — để người rà soát trích được từ khi mô tả lỗi. Chỉ ghi vào
+  `Not` cụm đặc thù: từ chung như "việc", "yêu cầu", "phát hiện" báo nhầm quá nhiều. `docs/thuat-ngu.md` giải thích cho người; test giữ hai file cùng
   một bộ thuật ngữ.
 - Mỗi luật một chỗ: bảng mức `Blocking` ở `rules/source-tracing.md`; hợp đồng vào/ra do adapter dựng từ
   frontmatter, thân phase không lặp lại.
@@ -673,7 +675,7 @@ subagent `<id>-checker`.
 | Hash `based_on` | `tools/based-on.sh`, `file_hash` | `cksum` sau khi bỏ `\r` |
 | Cross-check | `tools/lib/cross-check.sh` | Một hàm; `implement` gọi là cảnh báo, `review` gọi là lỗi |
 | `Blocking` của open question | `kc_diem_mu_mo` | design (không có design: plan) chặn `blocking`; implement cảnh báo, review chặn cả `review-blocking` |
-| Từ dịch trong artifact | `kc_tu_dich` | Đọc cột `Not` của `workflow/rules/terms.md`; implement cảnh báo, review chặn |
+| Từ dịch trong artifact | `kc_tu_dich` | Đọc cột `Not` của `workflow/rules/terms.md`; cảnh báo ở implement và review; review chặn nếu nằm trong `review.md`. Bỏ qua code span, ngoặc kép, fenced code block |
 | Hàng đợi việc chờ người | `tools/pending.sh` | Chỉ đọc |
 | Entry check | Đầu mỗi `check-*.sh` | `review → plan → design → spec` |
 | Ghim version của việc | `kc_engine_dong`; `bin/aw-engine check`; `bin/aw` | |
