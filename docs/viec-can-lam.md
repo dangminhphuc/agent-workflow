@@ -268,7 +268,5 @@ quy trình — chỉ làm khi người chủ engine muốn.
     Chưa thấy cách máy kiểm đáng tin; có thể để người phán và ghi rõ là không làm.
 - **Test so ảnh chụp bảng trong docs với output `check-sdlc.sh`**: bảng ánh xạ / roadmap trong
   `kien-truc.md` và `interface-sdlc.md` § 6 hiện có thể lệch output mà không ai biết.
-- **Tách stage `implement` thành `task-planning` và `coding`**: phase `03-plan` và `04-implement` cùng
-  implement một stage, nên `task-plan` và `change` không có ranh giới stage. Đổi interface, cần đề xuất riêng.
-- **Đổi tên để bớt nhầm phase ↔ stage** (`plan` phase thuộc stage `implement`, stage `plan` là
-  `00-intake`): đổi tên stage hay phase đều chạm test, docs, lệnh sinh ra — đề xuất riêng.
+- **Đổi tên để bớt nhầm phase ↔ stage**: phase `03-plan` (thuộc stage `breakdown`) trùng chữ với stage
+  `plan` (`00-intake`). Đổi tên stage hay phase đều chạm test, docs, lệnh sinh ra — đề xuất riêng.

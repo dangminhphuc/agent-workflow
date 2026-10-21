@@ -17,7 +17,7 @@ interface trước, rồi mới sửa phase, checker, test.
 ```
 INTERFACE (sdlc/ — tiếng Anh, không biết tên file engine)
 │
-├── stage            sdlc/stages/NN-<stage>.md     plan → require → design → implement → verify → deploy → operate
+├── stage            sdlc/stages/NN-<stage>.md     plan → require → design → breakdown → implement → verify → deploy → operate
 │   ├── requires / provides   loại artifact trừu tượng (requirements, design, change…)
 │   ├── invariants            INV-NNN stage phải giữ
 │   └── capability   CAP-<stage>-NN   "làm đủ stage này là gì" — trạng thái đích, đã làm hay chưa
@@ -43,7 +43,7 @@ nói "engine làm cái đó ở đâu" thì nằm ở phase hoặc `workflow.yam
 
 ## 2. Đọc một file stage
 
-Ví dụ rút gọn `sdlc/stages/05-deploy.md`:
+Ví dụ rút gọn `sdlc/stages/06-deploy.md`:
 
 ```markdown
 ---
@@ -208,7 +208,8 @@ Stage → phase (trạng thái suy ra từ capabilities: của phase):
   plan       partial      intake
   require    implemented  spec
   design     implemented  design
-  implement  implemented  plan, implement
+  breakdown  implemented  plan
+  implement  implemented  implement
   verify     partial      review
   deploy     partial      ship
   operate    gap          —

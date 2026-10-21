@@ -11,11 +11,11 @@ inputs:
   - open-questions.md
 outputs:
   - plan.md
-implements: implement
+implements: breakdown
 provides:
   - task-plan: plan.md
 capabilities:
-  - CAP-implement-01
+  - CAP-breakdown-01
 exit_machine:
   - aw check plan
 exit_human: []
