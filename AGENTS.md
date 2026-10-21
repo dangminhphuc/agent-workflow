@@ -12,7 +12,7 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 ## Map
 
 - `workflow.yaml` — source of truth: phases, utility commands, rules, adapters (with status),
-  `sdlc:` (stages the engine implements only partly or not at all).
+  `sdlc:` (a note per stage the engine implements only partly or not at all; status is derived).
 - `workflow/phases/*.md` — frontmatter = contract (adapters build I/O from it), body = agent
   instructions. Field list: `docs/kien-truc.md` § Định dạng file phase.
 - `workflow/checkers/` LLM checkers (block only) · `workflow/rules/` runtime rules ·
@@ -20,10 +20,12 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 - `bin/aw` global wrapper (picks version, downloads, checks sha256); `bin/aw-engine` dispatches to `tools/*.sh`.
 - `tools/check-*.sh` machine checkers, registered in `tools/lib/commands.sh` — except
   `check-release.sh` and `check-sdlc.sh`, which check this repo, not a job dir.
-- `sdlc/` SDLC interface the engine implements: `stages/NN-<stage>.md` (contract per stage),
-  `profiles/<job-type>.md` (what each job type skips or adds),
-  `invariants.md` (cross-stage rules, each pointing to a checker + test). Phases declare
-  `implements:` + `provides:`; `tools/check-sdlc.sh` checks the mapping (`docs/kien-truc.md` § Interface SDLC).
+- `sdlc/` SDLC interface — the source of every engine change: `stages/NN-<stage>.md` (contract
+  per stage + capabilities `CAP-<stage>-NN`: the target state, done or not), `profiles/<job-type>.md`
+  (what each job type skips or adds), `invariants.md` (cross-stage rules, each pointing to a checker
+  + test). Phases declare `implements:` + `provides:` + `capabilities:`; `tools/check-sdlc.sh` checks
+  the mapping, derives each stage's status and prints the missing capabilities. How to read and
+  change it: `docs/interface-sdlc.md`; rationale: `docs/kien-truc.md` § Interface SDLC.
 - `adapters/lib/common.sh` (`ad_sinh`) generates everything; `adapters/<id>/build.sh` only declares
   hooks + format spec (`adapters/README.md`).
 - `.claude/` dev setup for this repo only (hook above; test `tools/tests/19-block-main-hook.sh`).
@@ -60,9 +62,14 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 
 - Phase: `workflow/phases/NN-<id>.md` + `phases:` in `workflow.yaml`; `exit_machine` →
   `tools/check-<id>.sh` + `tools/lib/commands.sh`; new artifact → template; tests;
-  `implements:` + `provides:` in frontmatter (stage it implements); `sh tools/check-sdlc.sh` passes.
-- SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `sdlc:` in `workflow.yaml`
-  (partial / gap with a note) + `tools/tests/20-sdlc-conformance.sh`.
+  `implements:` + `provides:` + `capabilities:` in frontmatter; `sh tools/check-sdlc.sh` passes.
+- SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `tools/tests/20-sdlc-conformance.sh`;
+  a new stage declares ≥1 capability under `## Capabilities`.
+- Implement a missing capability: its id in the phase's `capabilities:` + fix or drop the stage's
+  `note` in `sdlc:` of `workflow.yaml` + tests of the behaviour; `sh tools/check-sdlc.sh` passes.
+- Add a capability: `sdlc/stages/NN-<stage>.md`; the stage may become partial → add its `note`.
+- Weaken the interface (drop or relax a capability or invariant): ids + reason under `### Bỏ` /
+  `### Thay đổi` in `changes/<branch>.md`, so the reviewer sees it.
 - Job type (`LOAI_HOP_LE`): `sdlc/profiles/<job-type>.md` (stages it skips, artifacts and invariants it
   adds) + `tools/tests/21-sdlc-profiles.sh`; `sh tools/check-sdlc.sh` passes.
 - Utility command: `workflow/<id>.md` + `commands:` in `workflow.yaml`; never `implements:` (not an SDLC stage).
@@ -85,17 +92,21 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
 
 ## Making a change
 
+- **Locate in the interface first** (`docs/interface-sdlc.md`): name the `CAP-…` / `INV-…` the change
+  serves. None fits → change the interface (capability or invariant) in the same PR. Changes outside
+  any stage (wrapper, adapters, test infra, docs) say "no interface change: <reason>".
 - Restate the request in your own words; ask before editing if scope, strictness
   (block/warn), or user-visible behavior is unclear. Check `docs/kien-truc.md` for
   prior decisions first.
-- Behavior or rule changes: propose the approach (files touched, block vs warn,
+- Behavior or rule changes: propose the approach (`CAP-…` / `INV-…` ids, files touched, block vs warn,
   what the test proves) and wait for the human's OK before coding.
 - Worktree from fresh `origin/main` first (top of this file). Tests first, then code (§ Verify).
 - Stay in scope. Related ideas → propose; if accepted, add to `docs/viec-can-lam.md`,
   don't implement.
 - Before every push to a PR branch: `git fetch origin && git merge origin/main`, resolve, rerun
   `sh tools/run-tests.sh`. Never rebase or force-push a pushed branch.
-- Finish with a PR into `main`: what changed, why, which tests cover it.
+- Finish with a PR into `main`: what changed, why, which tests cover it, and a line
+  "Interface: CAP-…, INV-…" or "no interface change: <reason>" (convention; not machine-checked).
 - After a PR merges, check the other open PRs for conflicts with the new `main`; resolve each by
   merging `origin/main` into its branch (same rules as above).
 

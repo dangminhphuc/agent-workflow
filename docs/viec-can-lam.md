@@ -243,11 +243,20 @@ quy trình — chỉ làm khi người chủ engine muốn.
 - **Tách version / repo của interface** khi có implementation thứ hai (engine khác, hay quy trình làm
   tay khai tuân thủ). Lúc đó `sdlc/` có version riêng và engine khai version interface nó tuân thủ;
   hiện chung repo, chung version vì chỉ có một implementation (`docs/kien-truc.md` § Interface SDLC).
-- **Lấp các stage `partial`**: `plan` (roadmap, ước lượng, ưu tiên giữa các việc), `verify` (e2e, kiểm
-  tải, UAT), `deploy` (release, tag, rollback — xem cả § Những chỗ thiết kế này yếu mục 1). Mỗi mục là
-  đề xuất riêng; làm xong thì sửa khối `sdlc:` của `workflow.yaml`.
-- **Intake nhận incident / postmortem**: nối `operate` (đang `gap`) về `plan` — sự cố, postmortem thành
-  `input` của một job mới, có `source label` riêng. Cần đề xuất cách ghi nguồn trước khi code.
+- **Lấp các capability còn thiếu.** Danh sách không giữ ở đây nữa: `sh tools/check-sdlc.sh` in bảng
+  "Capability còn thiếu" (giải thích từng dòng: `docs/interface-sdlc.md` § 6). Mỗi capability là một đề
+  xuất riêng, theo công thức `docs/interface-sdlc.md` § 4.2. Với `CAP-deploy-02`/`CAP-deploy-03` xem cả
+  § Những chỗ thiết kế này yếu mục 1 của `kien-truc.md`. `CAP-operate-02` (sự cố → việc mới) là chỗ
+  engine làm được: intake nhận incident / postmortem làm `input` của job mới, có `source label` riêng —
+  cần đề xuất cách ghi nguồn trước khi code.
+- **Bước A — gắn mọi luật checker vào CAP / INV.** Khoảng 200 chỗ chặn/cảnh báo trong
+  `tools/check-*.sh` và mọi `Category` của `workflow/checkers/*.md` mang id `CAP-…` hoặc `INV-…`;
+  `check-sdlc.sh` chặn luật không id (mồ côi) và id không có. Capability `Judged by: machine` có phase nhận
+  mà không luật nào gắn id → chặn. Suy "diff chạm CAP/INV nào" từ file thay đổi, thay dòng "Interface: …"
+  khai tay trong PR. Cho phép tạm danh sách luật "chưa phân loại" rồi rút dần. Cần spec riêng (quyết định
+  ở `kien-truc.md` § Interface SDLC).
+- **Test so ảnh chụp bảng trong docs với output `check-sdlc.sh`**: bảng ánh xạ / roadmap trong
+  `kien-truc.md` và `interface-sdlc.md` § 6 hiện có thể lệch output mà không ai biết.
 - **Map nốt artifact thành loại của interface**: `open-questions.md` đã là `open-questions`, nhưng
   `task-results.md`, `security-results.md` chưa thuộc loại nào (stage `verify` đọc chúng như bằng chứng).
   Cần chọn tên loại và stage cung cấp; nếu chỉ một job type có thì đặt ở profile.

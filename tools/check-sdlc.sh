@@ -7,16 +7,20 @@
 # (docs/kien-truc.md § Interface SDLC). Chặn:
 #   - File stage: id lệch tên file, thiếu purpose / provides, exit không phải machine | human | both,
 #     requires không do stage trước nó provides, invariant không có trong sdlc/invariants.md,
-#     skippable không phải true | false.
+#     skippable không phải true | false. Capability (thân file, "### CAP-<stage>-NN — <tên>"):
+#     không có cái nào, heading sai dạng hoặc mang stage khác (kể cả #### / Cap- / heading lạ trong ## Capabilities), id trùng, thiếu "- Rule:" /
+#     "- Judged by:", Judged by không phải machine | agent | human.
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
 #     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
-#   - Khối sdlc: của workflow.yaml: stage không có, status lạ, partial / gap thiếu note.
+#   - Khối sdlc: của workflow.yaml: stage không có, còn khoá status (trạng thái do máy suy ra).
 #   - Phase: thiếu implements hoặc implements stage không có; provides sai dạng, file không nằm
-#     trong outputs, loại mà stage không khai và không profile nào thêm; thứ tự phase lệch thứ tự stage.
-#   - Stage: không phase nào implement mà không khai gap; gap mà có phase implement; partial mà
-#     không phase nào implement; provides của các phase không phủ provides của stage; exit
-#     human | both mà không phase nào có exit_human, machine | both mà không phase nào có exit_machine.
-#   - Utility command khai implements (utility command không ánh xạ vào stage).
+#     trong outputs, loại mà stage không khai và không profile nào thêm; thứ tự phase lệch thứ tự stage;
+#     capabilities: id không có, thuộc stage khác stage phase implements, hoặc không nhận cái nào.
+#   - Stage: trạng thái suy ra từ capability được phase nhận (hết = implemented, một phần = partial,
+#     không = gap); partial / gap thiếu note, implemented còn note; provides của các phase không phủ
+#     provides của stage; exit human | both mà không phase nào có exit_human, machine | both mà không
+#     phase nào có exit_machine.
+#   - Utility command khai implements hoặc capabilities (utility command không ánh xạ vào stage).
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -24,7 +28,7 @@
 #     engine), stage khác luôn chạy. adds_provides: sai dạng, stage không có hoặc có thể không chạy,
 #     không phase nào của stage map loại đó ra file. adds_requires: sai dạng, stage không có hoặc bị
 #     bỏ, không stage nào trước nó luôn chạy và provides loại đó. adds_invariants không có.
-#   In ma trận job type × stage và loại có thể vắng theo profile (requires mà mọi stage cung cấp đều
+#   In bảng ánh xạ stage → phase, bảng capability còn thiếu (roadmap), ma trận job type × stage và loại có thể vắng theo profile (requires mà mọi stage cung cấp đều
 #   bỏ được / bị bỏ — khai qua skippable / skipped, không ngầm định).
 #
 # Không đăng ký trong tools/lib/commands.sh: bảng đó cho `aw check` trên job dir của target
@@ -97,7 +101,7 @@ for inv in $(awk -F'|' '$2 == "id" { print $1 }' "$W/inv"); do
 done
 
 # ---- stage: theo thứ tự NN của tên file
-: > "$W/stages"; : > "$W/prov"; i=0
+: > "$W/stages"; : > "$W/prov"; : > "$W/cap"; i=0
 for f in "$E"/sdlc/stages/[0-9]*.md; do
   [ -f "$f" ] || continue
   i=$((i + 1)); ten=${f##*/}; ten=${ten%.md}; ten=${ten#*-}
@@ -131,9 +135,52 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
     *) loi "stage $id: skippable \"$sk\" — chỉ nhận true | false."; sk=true ;;
   esac
   echo "$i|$id|$ex|$sk" >> "$W/stages"
+  # capability: "### CAP-<stage>-NN — <tên>" + "- Rule:" + "- Judged by:", khối hết ở heading kế tiếp
+  md_body "$f" | awk -v s="$id" '
+    function dong() {
+      if (cur == "") return
+      if (!rule) print "E|" cur ": thiếu \"- Rule:\" — thêm một câu nói điều phải đúng."
+      if (!coj) print "E|" cur ": thiếu \"- Judged by:\" — thêm machine | agent | human."
+      else if (jd != "machine" && jd != "agent" && jd != "human")
+        print "E|" cur ": Judged by \"" jd "\" — chỉ nhận machine | agent | human."
+      print "C|" cur "|" jd "|" ten; cur = ""
+    }
+    { sub(/\r$/, "") }
+    /^## Capabilities[ \t]*$/ { dong(); trong = 1; next }
+    /^##? / { dong(); trong = 0; next }
+    /^#/ {
+      dong()
+      # heading khác trong ## Capabilities, hay heading trông như capability (####, Cap-): báo, không lờ đi
+      if ($0 !~ /^### CAP/) {
+        if (trong || toupper($0) ~ /^#+ *CAP-/)
+          print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."
+        next
+      }
+      c = $0; sub(/^### /, "", c); sub(/ — .*$/, "", c); st = c; sub(/^CAP-/, "", st); sub(/-[0-9][0-9]$/, "", st)
+      if ($0 !~ /^### CAP-[a-z]+-[0-9][0-9] — ./ || st != s) {
+        print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."; next
+      }
+      if (c in da_co) { print "E|stage " s ": " c " trùng — mỗi id chỉ khai một lần."; next }
+      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; next
+    }
+    cur != "" && /^- Rule:/ { rule = 1 }
+    cur != "" && /^- Judged by:/ { coj = 1; jd = $0; sub(/^- Judged by:[ \t]*/, "", jd); sub(/[ \t]+$/, "", jd) }
+    END { dong() }
+  ' > "$W/c1"
+  grep -q '^C|' "$W/c1" \
+    || loi "stage $id: không có capability — thêm \"## Capabilities\" với ít nhất một \"### CAP-$id-NN — <tên>\"."
+  while IFS= read -r l; do
+    case "$l" in
+      E\|*) loi "${l#E|}" ;;
+      C\|*) echo "$id|${l#C|}" >> "$W/cap" ;;
+    esac
+  done < "$W/c1"
 done
 stage_co() { awk -F'|' -v s="$1" '$2 == s' "$W/stages" | grep -q .; }
 stage_so() { awk -F'|' -v s="$1" '$2 == s { print $1 }' "$W/stages"; }
+# cap_co <CAP-id> -> 0 nếu capability có trong sdlc/stages/; cap_stage <CAP-id> -> stage của nó
+cap_co() { awk -F'|' -v c="$1" '$2 == c' "$W/cap" | grep -q .; }
+cap_stage() { awk -F'|' -v c="$1" '$2 == c { print $1; exit }' "$W/cap"; }
 
 # ---- loại artifact profile thêm (adds_provides của sdlc/profiles/*.md): phase được map chúng ra file
 : > "$W/padd"
@@ -144,19 +191,23 @@ done
 
 # ---- khối sdlc: của workflow.yaml
 wf_sdlc "$E/workflow.yaml" > "$W/khai"
-while IFS='|' read -r s st note; do
+# stage còn dòng status (kể cả không giá trị — wf_sdlc không phân biệt được với không có dòng)
+awk '{ sub(/\r$/, "") } /^[ \t]*#/ { next } /^sdlc:[ \t]*$/ { ins = 1; next } ins && /^[A-Za-z]/ { ins = 0 }
+  ins && /^[ \t]*-[ \t]+stage:/ { s = $0; sub(/^[ \t]*-[ \t]+stage:[ \t]*/, "", s) }
+  ins && /^[ \t]+status:/ { print s }' "$E/workflow.yaml" > "$W/con-status"
+while IFS='|' read -r s _st _note; do
   [ -n "$s" ] || continue
   if ! stage_co "$s"; then loi "khối sdlc: khai stage \"$s\" không có trong sdlc/stages/."; continue; fi
-  case "$st" in
-    implemented) ;;
-    partial|gap) [ -n "$note" ] || loi "stage $s: status $st thiếu note (nói phần engine không làm)." ;;
-    *) loi "stage $s: status \"$st\" — chỉ nhận implemented | partial | gap." ;;
-  esac
+  ! co "$W/con-status" "$s" \
+    || loi "khối sdlc: stage $s còn khoá status — xoá dòng status; trạng thái do máy suy ra từ capabilities: của phase."
 done < "$W/khai"
-trang_thai() { _tt=$(awk -F'|' -v s="$1" '$1 == s { print $2; exit }' "$W/khai"); echo "${_tt:-implemented}"; }
+# note_cua <stage> -> note của stage trong khối sdlc: (nguyên văn, kể cả dấu |)
+note_cua() { awk -v s="$1" 'index($0, s "|") == 1 { sub(/^[^|]*\|[^|]*\|/, ""); print; exit }' "$W/khai"; }
+# co_note <stage> -> 0 nếu khối sdlc: có note cho stage đó
+co_note() { [ -n "$(note_cua "$1")" ]; }
 
 # ---- phase: implements + provides, theo thứ tự trong workflow.yaml
-: > "$W/phases"; : > "$W/pprov"; truoc=""; truoc_so=0
+: > "$W/phases"; : > "$W/pprov"; : > "$W/nhan"; truoc=""; truoc_so=0
 wf_phases "$E/workflow.yaml" > "$W/wf"
 while IFS='|' read -r pid pfile preq _when; do
   [ -n "$pid" ] || continue
@@ -185,23 +236,41 @@ while IFS='|' read -r pid pfile preq _when; do
       || loi "phase $pid: provides \"$t\" — stage $s không khai loại đó, không profile nào thêm."
     echo "$s|$t" >> "$W/pprov"
   done < "$W/pp"
+  for c in $(fm_list "$src" capabilities); do
+    if ! cap_co "$c"; then
+      loi "phase $pid: capabilities \"$c\" — không có capability đó; sửa id hoặc thêm vào sdlc/stages/."; continue
+    fi
+    cs=$(cap_stage "$c")
+    if [ "$cs" != "$s" ]; then
+      loi "phase $pid: capabilities \"$c\" thuộc stage $cs, phase implements $s — chuyển id sang phase của stage $cs."; continue
+    fi
+    echo "$pid|$s|$c" >> "$W/nhan"
+  done
+  awk -F'|' -v p="$pid" '$1 == p' "$W/nhan" | grep -q . \
+    || loi "phase $pid: implements $s nhưng không nhận capability nào — thêm id vào capabilities: (xem sdlc/stages/)."
 done < "$W/wf"
 
+# trang_thai <stage> -> implemented | partial | gap, suy ra: capability của stage được phase nhận hết / một phần / không
+trang_thai() {
+  awk -F'|' -v s="$1" 'FILENAME == ARGV[1] { if ($1 == s) n++; next }
+    $2 == s && !($3 in da) { da[$3] = 1; m++ }
+    END { print (m + 0 == 0) ? "gap" : (m == n) ? "implemented" : "partial" }' "$W/cap" "$W/nhan"
+}
+
 # ---- stage ↔ phase
-echo "Stage → phase (trạng thái khai trong workflow.yaml):"
+echo "Stage → phase (trạng thái suy ra từ capabilities: của phase):"
+: > "$W/thieu"
 while IFS='|' read -r _so s ex _sk; do
   st=$(trang_thai "$s")
   ph=$(awk -F'|' -v s="$s" '$2 == s { printf "%s%s", (n++ ? ", " : ""), $1 }' "$W/phases")
   printf '  %-10s %-12s %s\n' "$s" "$st" "${ph:-—}"
-  if [ "$st" = gap ]; then
-    [ -z "$ph" ] || loi "stage $s: khai gap nhưng phase $ph implement nó."
-    continue
+  if [ "$st" = implemented ]; then
+    ! co_note "$s" || loi "stage $s: suy ra implemented nhưng khối sdlc: còn note — xoá mục stage $s khỏi khối sdlc:."
+  else
+    co_note "$s" || loi "stage $s: suy ra $st nhưng khối sdlc: không có note — thêm note nói phần thiếu và lý do."
+    echo "$s|$st" >> "$W/thieu"
   fi
-  if [ -z "$ph" ]; then
-    if [ "$st" = partial ]; then loi "stage $s: khai partial nhưng không phase nào implement."
-    else loi "stage $s: không phase nào implement và không khai gap (khối sdlc: của workflow.yaml)."; fi
-    continue
-  fi
+  [ "$st" != gap ] || continue
   awk -F'|' -v s="$s" '$1 == s { print $2 }' "$W/prov" > "$W/sp"
   while IFS= read -r t; do
     co "$W/pprov" "$s|$t" || loi "stage $s: không phase nào provides \"$t\"."
@@ -215,6 +284,14 @@ while IFS='|' read -r _so s ex _sk; do
       || loi "stage $s: exit $ex nhưng không phase nào có exit_machine." ;;
   esac
 done < "$W/stages"
+if [ -s "$W/thieu" ]; then
+  echo "Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):"
+  while IFS='|' read -r s st; do
+    echo "  $s ($st): $(note_cua "$s")"
+    awk -F'|' -v s="$s" 'FILENAME == ARGV[1] { if ($2 == s) da[$3] = 1; next }
+      $1 == s && !($2 in da) { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/nhan" "$W/cap"
+  done < "$W/thieu"
+fi
 
 # ---- profile theo job type (sdlc/profiles/<job-type>.md)
 # Danh sách job type: LOAI_HOP_LE, nguồn check-intake.sh kiểm "Type" — không giữ bản thứ hai.
@@ -234,8 +311,8 @@ bo_design() {
 }
 # kieu <stage> -> tuy | bo | rỗng (luôn chạy) theo profile đang xét ($PK: " <stage>=<kiểu> …")
 kieu() { case "$PK" in *" $1=tuy "*) echo tuy ;; *" $1=bo "*) echo bo ;; esac; }
-# la_gap <stage> -> 0 nếu khối sdlc: khai gap
-GAP=" $(awk -F'|' '$2 == "gap" { printf "%s ", $1 }' "$W/khai")"
+# la_gap <stage> -> 0 nếu stage suy ra gap (không phase nào implement nó)
+GAP=" $(awk -F"|" '$2 == "gap" { printf "%s ", $1 }' "$W/thieu")"
 la_gap() { case "$GAP" in *" $1 "*) return 0 ;; esac; return 1; }
 # luon_co <stage> <loại> -> 0 nếu một stage đứng trước, luôn chạy với profile đang xét, provides
 # loại đó ($W/pq: provides của stage + adds_provides của profile; $W/luon: "số|stage" luôn chạy)
@@ -368,6 +445,8 @@ while IFS='|' read -r cid cfile; do
   [ -n "$cid" ] && [ -f "$E/$cfile" ] || continue
   [ -z "$(fm_scalar "$E/$cfile" implements)" ] \
     || loi "utility command $cid: khai implements — utility command không ánh xạ vào stage SDLC."
+  [ -z "$(fm_list "$E/$cfile" capabilities)" ] \
+    || loi "utility command $cid: khai capabilities — xoá khoá; utility command không ánh xạ vào stage SDLC."
 done < "$W/cmd"
 
 [ "$n_loi" = 0 ] || exit 1

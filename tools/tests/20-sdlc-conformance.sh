@@ -31,29 +31,44 @@ ky_vong 0 "bản chép chưa sửa → ĐẠT" sh "$SC" "$E"
 dung "…in ánh xạ stage → phase" sh -c "sh '$SC' '$E' 2>/dev/null | grep -q 'implement.*implemented.*plan, implement'"
 ky_vong 2 "thư mục không phải engine → SAI THAM SỐ" sh "$SC" "$TMP/khong-co"
 ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$SC" "$E" "$E"
+dung "…bảng ánh xạ in trạng thái suy ra" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^  verify +partial +review'"
+sh "$SC" "$ROOT" > "$TMP/sdlc-ra" 2>/dev/null
+dung "…trạng thái suy ra đúng cả 7 stage" bang "$(awk '/^Stage → phase/ { p = 1; next } /^[^ ]/ { p = 0 } p { printf "%s=%s ", $1, $2 }' "$TMP/sdlc-ra")" \
+  "plan=partial require=implemented design=implemented implement=implemented verify=partial deploy=partial operate=gap "
+dung "…roadmap liệt kê đúng các capability chưa phase nào nhận" bang "$(awk '/^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
+  "CAP-plan-03 CAP-plan-04 CAP-verify-03 CAP-verify-04 CAP-verify-05 CAP-deploy-02 CAP-deploy-03 CAP-operate-01 CAP-operate-02 "
+dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-02 +machine +'"
+dung "…roadmap không liệt kê capability đã nhận" sh -c "! sh '$SC' '$ROOT' 2>/dev/null | grep -q '^    CAP-deploy-01 '"
 dung "check-sdlc không đăng ký trong aw check (chỉ dùng cho repo engine)" sh -c ". '$T/lib/commands.sh'; ! bl_checker sdlc"
 
 # ---------------------------------------------------------------- trạng thái stage
 nhom "check-sdlc.sh: trạng thái stage (khối sdlc: của workflow.yaml)"
-moi; thay "$E/workflow.yaml" '  - stage: operate
-    status: gap' '  - stage: deploy
-    status: partial
-    note: x'
-vi_pham "stage không phase nào implement, không khai gap → chặn" "stage operate: không phase nào implement và không khai gap"
-moi; awk '!/note: Chỉ nhận việc đã có/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "partial thiếu note → chặn" "stage plan: status partial thiếu note"
-moi; awk '!/note: CI\/CD/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "gap thiếu note → chặn" "stage operate: status gap thiếu note"
 moi; thay "$E/workflow.yaml" '  - stage: deploy
-    status: partial' '  - stage: deploy
-    status: gap'
-vi_pham "gap mà có phase implement → chặn" "stage deploy: khai gap nhưng phase ship implement nó"
-moi; thay "$E/workflow.yaml" '  - stage: operate
-    status: gap' '  - stage: operate
-    status: partial'
-vi_pham "partial mà không phase nào implement → chặn" "stage operate: khai partial nhưng không phase nào implement"
-moi; thay "$E/workflow.yaml" '    status: gap' '    status: done'
-vi_pham "status lạ → chặn" "stage operate: status \"done\" — chỉ nhận implemented | partial | gap"
+    note:' '  - stage: deploy
+    status: partial
+    note:'
+vi_pham "khối sdlc: còn khoá status → chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
+moi; thay "$E/workflow.yaml" '  - stage: deploy
+    note:' '  - stage: deploy
+    status:
+    note:'
+vi_pham "khối sdlc: khoá status không giá trị → vẫn chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
+moi; thay "$E/workflow.yaml" 'note: Dừng ở MR/PR' 'note: A | B — Dừng ở MR/PR'
+dung "…note có dấu | → roadmap in nguyên note" sh -c "sh '$SC' '$E' 2>/dev/null | grep -q '^  deploy (partial): A | B — Dừng ở MR/PR'"
+moi; awk '!/note: Dừng ở MR\/PR/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
+vi_pham "suy ra partial mà thiếu note → chặn" "stage deploy: suy ra partial nhưng khối sdlc: không có note"
+moi; awk '!/note: CI\/CD/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
+vi_pham "suy ra gap mà thiếu note → chặn" "stage operate: suy ra gap nhưng khối sdlc: không có note"
+moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-01
+  - CAP-deploy-02
+  - CAP-deploy-03'
+vi_pham "nhận đủ capability mà còn note → chặn" "stage deploy: suy ra implemented nhưng khối sdlc: còn note"
+# chiều ngược: nhận đủ + xoá mục khối sdlc: → ĐẠT, stage thành implemented
+awk '/^  - stage: deploy$/ { bo = 1; next } bo && /^    / { next } { bo = 0; print }' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
+ky_vong 0 "nhận đủ capability + xoá note → ĐẠT" sh "$SC" "$E"
+dung "…stage deploy thành implemented" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  deploy +implemented +ship'"
+moi; awk '/^capabilities:$/ { print "capabilities: []"; next } !/^  - CAP-/' "$E/workflow/phases/06-ship.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/06-ship.md"
+vi_pham "phase implements mà không nhận capability nào → chặn" "phase ship: implements deploy nhưng không nhận capability nào"
 moi; thay "$E/workflow.yaml" '  - stage: operate' '  - stage: monitor'
 vi_pham "khối sdlc: khai stage không có → chặn" "khối sdlc: khai stage \"monitor\" không có trong sdlc/stages/"
 
@@ -84,6 +99,18 @@ vi_pham "thứ tự phase lệch thứ tự stage → chặn" "phase intake (sta
 moi; thay "$E/workflow/clarify.md" 'id: clarify' 'id: clarify
 implements: require'
 vi_pham "utility command khai implements → chặn" "utility command clarify: khai implements"
+moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-09'
+vi_pham "phase nhận capability không tồn tại → chặn" "phase ship: capabilities \"CAP-deploy-09\" — không có capability đó"
+moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-01
+  - CAP-verify-03'
+vi_pham "phase nhận capability của stage khác → chặn" "phase ship: capabilities \"CAP-verify-03\" thuộc stage verify, phase implements deploy"
+moi; thay "$E/workflow/phases/04-implement.md" 'capabilities:' 'capabilities:
+  - CAP-implement-01'
+ky_vong 0 "hai phase cùng nhận một capability → ĐẠT" sh "$SC" "$E"
+moi; thay "$E/workflow/clarify.md" 'id: clarify' 'id: clarify
+capabilities:
+  - CAP-require-01'
+vi_pham "utility command khai capabilities → chặn" "utility command clarify: khai capabilities"
 
 # ---------------------------------------------------------------- điều kiện ra của stage
 nhom "check-sdlc.sh: exit của stage ↔ exit_machine / exit_human của phase"
@@ -103,6 +130,34 @@ moi; thay "$E/sdlc/stages/01-require.md" 'id: require' 'id: requirement'
 vi_pham "id lệch tên file → chặn" "sdlc/stages/01-require.md: id \"requirement\" lệch tên file"
 moi; thay "$E/sdlc/stages/00-plan.md" 'purpose: ' 'purpose_x: '
 vi_pham "thiếu purpose → chặn" "stage plan: thiếu purpose"
+
+# ---------------------------------------------------------------- capability trong file stage
+nhom "check-sdlc.sh: capability trong file stage"
+moi; awk '/^## Capabilities/ { exit } { print }' "$E/sdlc/stages/06-operate.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-operate.md"
+vi_pham "stage không có capability → chặn" "stage operate: không có capability"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-01 — ' '### CAP-deploy-01 - '
+vi_pham "heading capability gõ - thay vì — → chặn" "stage deploy: heading capability \"### CAP-deploy-01 - "
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-01 — ' '### CAP-verify-01 — '
+vi_pham "id capability mang stage khác → chặn" "stage deploy: heading capability \"### CAP-verify-01"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-02 — ' '### CAP-deploy-01 — '
+vi_pham "id capability trùng → chặn" "stage deploy: CAP-deploy-01 trùng"
+moi; awk '!(/^- Rule:/ && ++n == 1)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+vi_pham "capability thiếu Rule → chặn" "CAP-deploy-01: thiếu \"- Rule:\""
+moi; awk '!(/^- Judged by:/ && ++n == 1)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+vi_pham "capability thiếu Judged by → chặn" "CAP-deploy-01: thiếu \"- Judged by:\""
+moi; thay "$E/sdlc/stages/05-deploy.md" '- Judged by: human' '- Judged by: robot'
+vi_pham "Judged by lạ → chặn" "Judged by \"robot\" — chỉ nhận machine | agent | human"
+# capability CUỐI file mất Rule; Rule lạc dưới heading sau nó không được tính cho nó
+moi; awk '!(/^- Rule:/ && ++n == 3)' "$E/sdlc/stages/05-deploy.md" > "$E/s" && printf '\n## Notes\n\n- Rule: lạc chỗ\n' >> "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+vi_pham "Rule nằm dưới heading khác không tính → chặn" "CAP-deploy-03: thiếu \"- Rule:\""
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-03 — ' '#### CAP-deploy-03 — '
+vi_pham "capability với heading #### → chặn, không lờ đi" "stage deploy: heading capability \"#### CAP-deploy-03"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-03 — ' '### Cap-deploy-03 — '
+vi_pham "capability viết thường Cap- → chặn, không lờ đi" "stage deploy: heading capability \"### Cap-deploy-03"
+moi; thay "$E/sdlc/stages/05-deploy.md" '### CAP-deploy-03 — ' '### Rollback — '
+vi_pham "heading lạ trong ## Capabilities → chặn" "stage deploy: heading capability \"### Rollback"
+moi; sed 's/$/\r/' "$E/sdlc/stages/05-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/05-deploy.md"
+ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
 
 # ---------------------------------------------------------------- invariant
 nhom "check-sdlc.sh: invariant trỏ tới checker + test có thật"

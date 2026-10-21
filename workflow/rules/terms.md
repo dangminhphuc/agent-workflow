@@ -18,8 +18,9 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `ADR` | Approved DEC-xxx promoted to `docs/adr/` of the target repo | |
 | `phase` | One workflow step (`00-intake` … `06-ship`), run by `/aw-<phase>` | |
 | `stage` | One step of the SDLC interface (`sdlc/stages/`: plan … operate); a phase `implements:` one | |
-| `stage status` | How fully the engine implements a stage: `implemented \| partial \| gap` (`sdlc:` in `workflow.yaml`) | |
+| `stage status` | How fully the engine implements a stage: `implemented \| partial \| gap`, derived from the capabilities its phases claim (`tools/check-sdlc.sh`) | |
 | `invariant` | Cross-stage rule `INV-NNN` in `sdlc/invariants.md`, enforced by a machine checker | |
+| `capability` | What a stage must do when complete: `CAP-<stage>-NN` in `sdlc/stages/`; a phase claims it in `capabilities:` | |
 | `profile` | What a job type changes in the SDLC interface: stages skipped, artifacts and invariants added (`sdlc/profiles/<job-type>.md`) | |
 | `utility command` | Non-phase command: `/aw-clarify`, `/aw-import`, `/aw-bootstrap` | lệnh tiện ích |
 | `job` | One unit of work through the workflow: one branch, one worktree, one job dir | |

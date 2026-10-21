@@ -12,6 +12,9 @@ outputs:
 implements: plan
 provides:
   - work-item: intake.md
+capabilities:
+  - CAP-plan-01
+  - CAP-plan-02
 exit_machine:
   - aw check intake
 exit_human:

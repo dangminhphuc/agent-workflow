@@ -14,6 +14,8 @@ outputs:
 implements: implement
 provides:
   - task-plan: plan.md
+capabilities:
+  - CAP-implement-01
 exit_machine:
   - aw check plan
 exit_human: []

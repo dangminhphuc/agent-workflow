@@ -634,18 +634,27 @@ không trả lời được "engine bỏ sót bước nào của SDLC" — chỗ
 nằm trong đầu người viết. `sdlc/` tách hai thứ đó: **interface** là danh sách stage có đặc tả, engine
 là một **implementation** khai nó làm stage nào, tới đâu — và máy kiểm lời khai đó.
 
+Interface là **kim chỉ nam** của engine, không chỉ bản mô tả: mọi thay đổi engine bắt đầu bằng
+`CAP-…` / `INV-…` nó phục vụ, và interface mô tả cả phần engine chưa làm để chỉ ra việc tiếp theo.
+Cách đọc và công thức cho từng loại thay đổi: [`interface-sdlc.md`](interface-sdlc.md).
+
 - `sdlc/stages/NN-<stage>.md`: frontmatter (`id`, `purpose`, `requires`, `provides`, `exit`,
   `invariants`) là hợp đồng, thân tiếng Anh ngắn. `requires`/`provides` là **loại artifact trừu
   tượng** (`requirements`, `design`, `change`…), không phải tên file: interface không biết `spec.md`.
   `exit`: `machine | human | both`.
+- **Capability** trong thân file stage (`## Capabilities`): `### CAP-<stage>-NN — <tên>` + `- Rule:`
+  (điều phải đúng) + `- Judged by: machine | agent | human` (ai phán đạt). Tập capability của một stage
+  là **trạng thái đích** — "làm đủ stage này là gì" — kể cả phần engine chưa làm.
 - `sdlc/invariants.md`: luật xuyên stage `INV-NNN` (trace REQ → task, DEC → task, REQ → test,
   REQ → verdict review, chỉ dùng output đã duyệt, không dùng output stale). Mỗi luật trỏ tới checker
   giữ nó (`Enforced by:`) và test chứng minh checker chặn (`Tested by:`) — invariant không có checker
   là lời hứa, không phải luật.
 - Phase khai `implements: <stage>` và `provides: - <loại>: <file>` (file phải nằm trong `outputs`).
-  Đây là **nguồn duy nhất** của ánh xạ loại → file; stage không nhắc tên file nào.
-- Khối `sdlc:` của `workflow.yaml` chỉ khai stage **không** làm đủ: `partial` hay `gap`, kèm `note`
-  bắt buộc nói phần thiếu. Stage không có mặt = `implemented`. Trạng thái nằm ở manifest (phía
+  Đây là **nguồn duy nhất** của ánh xạ loại → file; stage không nhắc tên file nào. Phase khai thêm
+  `capabilities:` — các `CAP-…` của stage đó mà nó làm.
+- **Trạng thái stage do máy suy ra**: mọi capability có phase nhận = `implemented`, một phần =
+  `partial`, không cái nào = `gap`. Khối `sdlc:` của `workflow.yaml` chỉ còn `note` (bắt buộc với
+  `partial`/`gap`, cấm với `implemented`) nói phần thiếu và lý do. Note nằm ở manifest (phía
   implementation), không ở file stage: interface không biết ai implement nó.
 - `sdlc/profiles/<job-type>.md`: **profile** — một file cho mỗi `job type`, khai cái loại việc đó đổi
   so với luồng đầy đủ: `skippable` (stage có thể không chạy), `skipped` (stage luôn không chạy),
@@ -653,17 +662,18 @@ là một **implementation** khai nó làm stage nào, tới đâu — và máy 
   `adds_invariants`. Thân tiếng Anh ngắn, mô tả artifact thêm như thân file stage. Stage khai
   `skippable: false` (`plan`, `require`, `implement`, `verify`) thì không profile nào được bỏ.
 
-Ánh xạ hiện tại (`sh tools/check-sdlc.sh` in lại bảng này):
+Ánh xạ hiện tại (`sh tools/check-sdlc.sh` in lại bảng này, kèm bảng capability còn thiếu — giải
+thích từng dòng ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại)):
 
-| Stage | Phase | `stage status` | Phần thiếu |
+| Stage | Phase | `stage status` (suy ra) | Capability còn thiếu |
 |---|---|---|---|
-| `plan` | `00-intake` | `partial` | Chỉ nhận việc đã có; không roadmap, ước lượng, ưu tiên |
+| `plan` | `00-intake` | `partial` | `CAP-plan-03` ưu tiên, `CAP-plan-04` ước lượng |
 | `require` | `01-spec` | `implemented` | |
 | `design` | `02-design` | `implemented` | |
 | `implement` | `03-plan`, `04-implement` | `implemented` | |
-| `verify` | `05-review` | `partial` | Không e2e, kiểm tải, UAT |
-| `deploy` | `06-ship` | `partial` | Dừng ở merge; không release, rollback |
-| `operate` | — | `gap` | CI/CD và observability bên ngoài |
+| `verify` | `05-review` | `partial` | `CAP-verify-03` e2e, `CAP-verify-04` kiểm tải, `CAP-verify-05` UAT |
+| `deploy` | `06-ship` | `partial` | `CAP-deploy-02` release/triển khai, `CAP-deploy-03` rollback |
+| `operate` | — | `gap` | `CAP-operate-01` quan sát production, `CAP-operate-02` sự cố → việc mới |
 
 Tên stage trùng tên vài phase (`plan`, `design`, `implement`) nhưng không cùng nghĩa: stage `plan` là
 chọn việc nào vào quy trình (`00-intake`), phase `03-plan` thuộc stage `implement`. Nói "stage `plan`"
@@ -671,15 +681,48 @@ hay "phase `plan`", không nói trống.
 
 **Quyết định:**
 
-- **Không làm thì khai `gap`, không im lặng.** Stage không phase nào implement mà không khai → checker
-  chặn. `partial`/`gap` thiếu note → chặn. Mục đích là chỗ thiếu luôn có chữ, có lý do.
-- **Chỉ kiểm cấu trúc.** `tools/check-sdlc.sh` chặn những gì đọc được từ file: stage có phase hay
-  khai `gap`, `provides` của các phase phủ `provides` của stage, `exit` của stage có `exit_machine` /
+- **Không làm thì có chữ, không im lặng.** Stage chưa đủ (`partial`/`gap` suy ra) mà thiếu note →
+  chặn. Mục đích là chỗ thiếu luôn có chữ, có lý do — và giờ có cả **id**: phần thiếu là danh sách
+  capability thật, không phải một câu tự do.
+- **Interface đi trước implementation.** Mọi thay đổi engine nêu `CAP-…` / `INV-…` nó phục vụ; không id
+  nào khớp → sửa interface trong cùng PR (`AGENTS.md` § Making a change). Không có bước này, ~200 chỗ
+  chặn/cảnh báo trong `tools/check-*.sh` lớn lên mà interface không biết — interface thành bản mô tả
+  lạc hậu thay vì nguồn gốc.
+- **Capability, không chỉ invariant.** Invariant là luật xuyên stage, ít và quan trọng; phần lớn luật
+  là "stage này làm đủ thì có X". Ép chúng vào invariant làm `invariants.md` phình và sai nghĩa;
+  capability là tầng dưới stage để chứa chúng, và là chỗ để sau này gắn từng luật checker (bước A —
+  `docs/viec-can-lam.md`).
+- **Id `CAP-<stage>-NN`**, không đánh số toàn cục như `INV-NNN`: đọc id là biết thuộc stage nào. Đổi
+  stage thì đổi id — chấp nhận, vì hiếm.
+- **`Judged by: machine | agent | human`** nói ai phán capability đạt. Capability `human` thì engine
+  chỉ tạo chỗ cho người quyết; capability `machine` thì sau bước A phải có luật checker gắn id.
+- **Trạng thái suy ra, không khai tay.** Khoá `status` cũ có thể lệch với thực tế mà không ai biết;
+  suy ra từ `capabilities:` thì chỉ có một nguồn. Còn khoá `status` → chặn, bảo xoá (không âm thầm bỏ
+  qua). `implemented` mà còn note → chặn: note thừa sớm muộn nói sai.
+- **Phase `implements` mà không nhận capability nào → chặn** (không cảnh báo — `check-sdlc.sh` không có
+  cảnh báo). Nhờ vậy `gap` suy ra ⇔ không phase nào chạy stage, giữ luật cũ "gap mà có phase implement
+  → chặn" và nghĩa "engine không chạy stage này" mà ma trận profile dùng.
+- **Không có trạng thái `out-of-scope`.** Engine quyết không làm một capability (vd quan sát production
+  thuộc hệ thống ngoài) thì stage vẫn `partial`/`gap` và note nói lý do. Thêm `out-of-scope` là hai cách
+  nói cùng một điều.
+- **Hạ chuẩn interface không có cổng duyệt riêng.** Bỏ hay nới capability / invariant là thay đổi luật,
+  nên đã phải chờ người OK (`AGENTS.md`). Thứ thiếu là **khả kiến**: id + lý do ghi dưới `### Bỏ` /
+  `### Thay đổi` của `changes/<branch>.md`, để người duyệt thấy mà không phải đọc diff `sdlc/`.
+- **Máy không kiểm dòng "Interface: …" trong mô tả PR.** Lời khai tay mà máy không đối chiếu được với
+  diff thành nghi thức. Bước A suy "diff chạm CAP/INV nào" từ file thay đổi; tới lúc đó người duyệt PR
+  là người bắt. Cũng không bắt commit sửa interface đi trước commit code: không máy nào kiểm được,
+  squash làm mất thứ tự — "cùng PR" là đủ.
+- **Ảnh chụp bảng trong tài liệu có thể lệch output.** Bảng ở trên và ở `interface-sdlc.md` § 6 là ảnh
+  chụp; output `sh tools/check-sdlc.sh` là nguồn. Test so ảnh chụp với output nằm ở `docs/viec-can-lam.md`.
+- **Chỉ kiểm cấu trúc.** `tools/check-sdlc.sh` chặn những gì đọc được từ file: dạng capability, phase
+  nhận capability có thật của đúng stage, note khớp trạng thái suy ra, `provides` của các phase phủ
+  `provides` của stage, `exit` của stage có `exit_machine` /
   `exit_human` tương ứng ở phase, thứ tự phase theo thứ tự stage, `requires` do stage trước cung cấp,
   invariant có checker + test có thật, utility command không khai `implements`. Danh sách đầy đủ ở đầu
   script. Không kiểm phase làm stage **tốt** tới đâu — xem § Những chỗ thiết kế này yếu.
 - **Utility command không ánh xạ vào stage** (`clarify`, `approvals`, `import`, `bootstrap`,
-  `refactor`): chúng phục vụ phase, không tự tạo artifact của stage nào; khai `implements` → chặn.
+  `refactor`): chúng phục vụ phase, không tự tạo artifact của stage nào; khai `implements` hay
+  `capabilities` → chặn.
 - **Interface chung repo, chung version với engine.** Chưa có implementation thứ hai thì tách repo chỉ
   thêm việc đồng bộ. Khi có, tách ra và cho engine khai version interface nó tuân thủ
   (`docs/viec-can-lam.md`).
@@ -688,7 +731,7 @@ hay "phase `plan`", không nói trống.
   `tools/tests/20-sdlc-conformance.sh` (profile: `21-sdlc-profiles.sh`) chạy nó trên engine hiện tại
   (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
 - Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
-  `provides` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map
+  `provides` / `capabilities` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map
   `repro.md`/`perf.md` thành loại artifact buộc `04-implement` liệt kê hai file đó trong `outputs` (chúng
   vốn do `aw check repro` / `aw check perf` ghi trong phase này), nên dòng "Writes" của `/aw-implement`
   có thêm hai file — luật không đổi.
@@ -798,9 +841,9 @@ kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu h�
 1. `workflow/phases/NN-<id>.md` với frontmatter đầy đủ; thêm vào `phases:` của `workflow.yaml`.
 2. Có `exit_machine` → script trong `tools/`, thêm tên vào `tools/lib/commands.sh`.
 3. Artifact mới → mẫu trong `workflow/templates/`.
-4. `implements: <stage>` và `provides:` trong frontmatter (§ Interface SDLC). Phase làm stage đang
-   khai `gap` → sửa khối `sdlc:` của `workflow.yaml` (`partial` kèm note, hoặc bỏ mục nếu làm đủ).
-   `sh tools/check-sdlc.sh` phải ĐẠT.
+4. `implements: <stage>`, `provides:` và `capabilities:` (ít nhất một `CAP-…` của stage đó) trong
+   frontmatter (§ Interface SDLC). Stage đổi trạng thái suy ra → sửa `note` của nó trong khối `sdlc:`
+   của `workflow.yaml` (thêm khi `partial`/`gap`, xoá khi `implemented`). `sh tools/check-sdlc.sh` phải ĐẠT.
 5. Ca kiểm trong phần cùng chủ đề ở `tools/tests/` (chạy bằng `tools/run-tests.sh`).
 6. Thử: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code` (VERSION khớp target repo).
 
@@ -878,9 +921,10 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     trong `src/` cũng đòi verdict cho `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen
     tay ghi `pass` không đọc.
 22. **Tuân thủ interface SDLC ≠ chất lượng.** `check-sdlc.sh` chỉ kiểm lời khai có nhất quán: stage
-    có phase, loại artifact có file, invariant có checker + test. Nó không biết phase làm stage đó
-    tốt không, `note` của `partial` có nói đủ phần thiếu không, hay `Tested by:` có thật sự thử
-    invariant đó. Khai `implemented` cho một stage làm hời hợt vẫn ĐẠT — người đọc lời khai, không
-    phải máy. Profile cũng vậy: checker biết engine *cho phép* bỏ design với bugfix, không biết
+    có phase, loại artifact có file, invariant có checker + test, capability có phase nhận. Nó không
+    biết phase làm capability đó tốt không, `note` của `partial` có nói đủ phần thiếu không, hay
+    `Tested by:` có thật sự thử invariant đó. Nhận một capability mà làm hời hợt vẫn ĐẠT — người đọc
+    lời khai, không phải máy (bước A gắn luật checker vào capability mới thu hẹp được chỗ này).
+    Profile cũng vậy: checker biết engine *cho phép* bỏ design với bugfix, không biết
     việc bỏ đó có hợp lý không; invariant theo loại chỉ ghi phần máy giữ ("test đỏ"), phần người
     phán ("đỏ vì đúng bug", "không đổi assertion") vẫn chỉ nằm ở review.

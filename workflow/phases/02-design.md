@@ -14,6 +14,10 @@ outputs:
 implements: design
 provides:
   - design: tdd.md
+capabilities:
+  - CAP-design-01
+  - CAP-design-02
+  - CAP-design-03
 exit_machine:
   - aw check design
 exit_human:
