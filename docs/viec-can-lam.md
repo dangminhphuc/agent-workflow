@@ -255,11 +255,19 @@ quy trình — chỉ làm khi người chủ engine muốn.
   mà không luật nào gắn id → chặn. Suy "diff chạm CAP/INV nào" từ file thay đổi, thay dòng "Interface: …"
   khai tay trong PR. Cho phép tạm danh sách luật "chưa phân loại" rồi rút dần. Cần spec riêng (quyết định
   ở `kien-truc.md` § Interface SDLC).
+- **Ba luật theo job type còn do người phán — cho máy giữ rồi mới thành invariant.** Việc của engine
+  (checker), không phải interface: interface chỉ thêm invariant khi máy đã giữ luật (`interface-sdlc.md`
+  § 4.1). Mỗi mục là đổi luật — đề xuất, chờ người OK:
+  - bugfix "test tái hiện đỏ **vì đúng bug**": máy chỉ biết test đỏ (`aw check repro`, INV-007). Hướng
+    khả thi: đòi đúng test đã đỏ trong `repro.md` phải xanh sau khi sửa (lỗi biên dịch không tự xanh nhờ
+    bản sửa). Kiểm trước xem engine đã có luật "đỏ → xanh" chưa.
+  - refactor/perf "không đổi assertion test cũ": máy chỉ chặn xoá test cũ và sửa không khai (INV-009).
+    Hướng khả thi: so diff file test cũ với mẫu dòng assertion khai trong `conventions.md` (như mẫu bỏ
+    qua test). Mẫu theo ngôn ngữ dễ báo nhầm → cảnh báo ở implement, chặn ở review.
+  - refactor "không thêm hành vi" ở mức code: chỉ giữ ở mức spec (REQ `preserve`/`structural`, INV-008).
+    Chưa thấy cách máy kiểm đáng tin; có thể để người phán và ghi rõ là không làm.
 - **Test so ảnh chụp bảng trong docs với output `check-sdlc.sh`**: bảng ánh xạ / roadmap trong
   `kien-truc.md` và `interface-sdlc.md` § 6 hiện có thể lệch output mà không ai biết.
-- **Map nốt artifact thành loại của interface**: `open-questions.md` đã là `open-questions`, nhưng
-  `task-results.md`, `security-results.md` chưa thuộc loại nào (stage `verify` đọc chúng như bằng chứng).
-  Cần chọn tên loại và stage cung cấp; nếu chỉ một job type có thì đặt ở profile.
 - **Tách stage `implement` thành `task-planning` và `coding`**: phase `03-plan` và `04-implement` cùng
   implement một stage, nên `task-plan` và `change` không có ranh giới stage. Đổi interface, cần đề xuất riêng.
 - **Đổi tên để bớt nhầm phase ↔ stage** (`plan` phase thuộc stage `implement`, stage `plan` là

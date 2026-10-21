@@ -8,6 +8,8 @@ provides:
   - task-plan
   - change
   - test-evidence
+  - task-evidence
+  - security-evidence
 exit: machine
 skippable: false
 invariants:
@@ -21,6 +23,8 @@ invariants:
 - `task-plan`: ordered tasks, each covering requirements and based on approved decisions.
 - `change`: the code change.
 - `test-evidence`: test results recorded by the machine, bound to the code they ran on.
+- `task-evidence`: per task, the result of its verification step, recorded by the machine.
+- `security-evidence`: security scan results recorded by the machine, bound to the code they ran on.
 - Exit: machine checks only — this stage executes what the human already approved.
 
 ## Capabilities

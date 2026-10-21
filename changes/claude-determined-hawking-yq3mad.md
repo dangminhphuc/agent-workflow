@@ -23,3 +23,8 @@
   hưởng:** dòng "Writes" của lệnh `/aw-implement` adapter sinh ra có thêm hai file đó; luật và hành vi
   của `aw` không đổi. Người sửa engine: thêm job type mới thì thêm profile (`AGENTS.md` § Change
   together).
+- **Hai loại artifact mới của stage `implement`: `task-evidence` và `security-evidence`.** Phase
+  `04-implement` map chúng ra `task-results.md` (`aw task done`) và `security-results.md` (`aw check
+  implement`); stage `verify` khai `requires` cả hai. Vì sao: review vốn chặn khi thiếu hai file này với
+  mọi job type, nhưng interface không biết verify cần bằng chứng từng task và bằng chứng quét bảo mật.
+  **Ai bị ảnh hưởng:** không ai — chỉ đổi mô tả interface, lệnh adapter sinh ra giữ nguyên.

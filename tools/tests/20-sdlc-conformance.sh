@@ -80,6 +80,12 @@ moi; thay "$E/workflow/phases/05-review.md" 'implements: verify' 'implements: te
 vi_pham "phase implements stage không có → chặn" "phase review: implements \"test\" — không có stage đó"
 moi; awk '!/^  - requirements: spec.md$/' "$E/workflow/phases/01-spec.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/01-spec.md"
 vi_pham "provides của phase không phủ provides của stage → chặn" "stage require: không phase nào provides \"requirements\""
+moi; awk '!/^  - security-evidence: security-results.md$/' "$E/workflow/phases/04-implement.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/04-implement.md"
+vi_pham "bằng chứng quét bảo mật không phase nào map ra file → chặn" "stage implement: không phase nào provides \"security-evidence\""
+moi; awk '!/^  - task-evidence: task-results.md$/' "$E/workflow/phases/04-implement.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/04-implement.md"
+vi_pham "bằng chứng từng task không phase nào map ra file → chặn" "stage implement: không phase nào provides \"task-evidence\""
+moi; awk '!/^  - security-evidence$/' "$E/sdlc/stages/03-implement.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/03-implement.md"
+vi_pham "verify cần bằng chứng quét bảo mật mà không stage trước nào cung cấp → chặn" "stage verify: requires \"security-evidence\" — không stage nào trước nó provides"
 moi; thay "$E/workflow/phases/01-spec.md" '  - requirements: spec.md' '  - requirements: spec.md
   - backlog: spec.md'
 vi_pham "phase map loại stage không khai → chặn" "phase spec: provides \"backlog\" — stage require không khai loại đó"
