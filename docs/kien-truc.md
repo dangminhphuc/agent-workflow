@@ -715,7 +715,8 @@ hay "phase `plan`", không nói trống.
 - **Ảnh chụp bảng trong tài liệu có thể lệch output.** Bảng ở trên và ở `interface-sdlc.md` § 6 là ảnh
   chụp; output `sh tools/check-sdlc.sh` là nguồn. Test so ảnh chụp với output nằm ở `docs/viec-can-lam.md`.
 - **Chỉ kiểm cấu trúc.** `tools/check-sdlc.sh` chặn những gì đọc được từ file: dạng capability, phase
-  nhận capability có thật của đúng stage, note khớp trạng thái suy ra, `provides` của các phase phủ `provides` của stage, `exit` của stage có `exit_machine` /
+  nhận capability có thật của đúng stage, note khớp trạng thái suy ra, `provides` của các phase phủ
+  `provides` của stage, `exit` của stage có `exit_machine` /
   `exit_human` tương ứng ở phase, thứ tự phase theo thứ tự stage, `requires` do stage trước cung cấp,
   invariant có checker + test có thật, utility command không khai `implements`. Danh sách đầy đủ ở đầu
   script. Không kiểm phase làm stage **tốt** tới đâu — xem § Những chỗ thiết kế này yếu.

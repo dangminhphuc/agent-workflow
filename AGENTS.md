@@ -63,7 +63,8 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 - Phase: `workflow/phases/NN-<id>.md` + `phases:` in `workflow.yaml`; `exit_machine` →
   `tools/check-<id>.sh` + `tools/lib/commands.sh`; new artifact → template; tests;
   `implements:` + `provides:` + `capabilities:` in frontmatter; `sh tools/check-sdlc.sh` passes.
-- SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `tools/tests/20-sdlc-conformance.sh`.
+- SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `tools/tests/20-sdlc-conformance.sh`;
+  a new stage declares ≥1 capability under `## Capabilities`.
 - Implement a missing capability: its id in the phase's `capabilities:` + fix or drop the stage's
   `note` in `sdlc:` of `workflow.yaml` + tests of the behaviour; `sh tools/check-sdlc.sh` passes.
 - Add a capability: `sdlc/stages/NN-<stage>.md`; the stage may become partial → add its `note`.

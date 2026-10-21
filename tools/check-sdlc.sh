@@ -191,14 +191,20 @@ done
 
 # ---- khối sdlc: của workflow.yaml
 wf_sdlc "$E/workflow.yaml" > "$W/khai"
-while IFS='|' read -r s st note; do
+# stage còn dòng status (kể cả không giá trị — wf_sdlc không phân biệt được với không có dòng)
+awk '{ sub(/\r$/, "") } /^[ \t]*#/ { next } /^sdlc:[ \t]*$/ { ins = 1; next } ins && /^[A-Za-z]/ { ins = 0 }
+  ins && /^[ \t]*-[ \t]+stage:/ { s = $0; sub(/^[ \t]*-[ \t]+stage:[ \t]*/, "", s) }
+  ins && /^[ \t]+status:/ { print s }' "$E/workflow.yaml" > "$W/con-status"
+while IFS='|' read -r s _st _note; do
   [ -n "$s" ] || continue
   if ! stage_co "$s"; then loi "khối sdlc: khai stage \"$s\" không có trong sdlc/stages/."; continue; fi
-  [ -z "$st" ] \
+  ! co "$W/con-status" "$s" \
     || loi "khối sdlc: stage $s còn khoá status — xoá dòng status; trạng thái do máy suy ra từ capabilities: của phase."
 done < "$W/khai"
+# note_cua <stage> -> note của stage trong khối sdlc: (nguyên văn, kể cả dấu |)
+note_cua() { awk -v s="$1" 'index($0, s "|") == 1 { sub(/^[^|]*\|[^|]*\|/, ""); print; exit }' "$W/khai"; }
 # co_note <stage> -> 0 nếu khối sdlc: có note cho stage đó
-co_note() { awk -F'|' -v s="$1" '$1 == s && $3 != "" { co = 1 } END { exit !co }' "$W/khai"; }
+co_note() { [ -n "$(note_cua "$1")" ]; }
 
 # ---- phase: implements + provides, theo thứ tự trong workflow.yaml
 : > "$W/phases"; : > "$W/pprov"; : > "$W/nhan"; truoc=""; truoc_so=0
@@ -281,7 +287,7 @@ done < "$W/stages"
 if [ -s "$W/thieu" ]; then
   echo "Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):"
   while IFS='|' read -r s st; do
-    echo "  $s ($st): $(awk -F'|' -v s="$s" '$1 == s { print $3; exit }' "$W/khai")"
+    echo "  $s ($st): $(note_cua "$s")"
     awk -F'|' -v s="$s" 'FILENAME == ARGV[1] { if ($2 == s) da[$3] = 1; next }
       $1 == s && !($2 in da) { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/nhan" "$W/cap"
   done < "$W/thieu"

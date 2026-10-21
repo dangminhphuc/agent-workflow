@@ -48,6 +48,13 @@ moi; thay "$E/workflow.yaml" '  - stage: deploy
     status: partial
     note:'
 vi_pham "khối sdlc: còn khoá status → chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
+moi; thay "$E/workflow.yaml" '  - stage: deploy
+    note:' '  - stage: deploy
+    status:
+    note:'
+vi_pham "khối sdlc: khoá status không giá trị → vẫn chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
+moi; thay "$E/workflow.yaml" 'note: Dừng ở MR/PR' 'note: A | B — Dừng ở MR/PR'
+dung "…note có dấu | → roadmap in nguyên note" sh -c "sh '$SC' '$E' 2>/dev/null | grep -q '^  deploy (partial): A | B — Dừng ở MR/PR'"
 moi; awk '!/note: Dừng ở MR\/PR/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
 vi_pham "suy ra partial mà thiếu note → chặn" "stage deploy: suy ra partial nhưng khối sdlc: không có note"
 moi; awk '!/note: CI\/CD/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"

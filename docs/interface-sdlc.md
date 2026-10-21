@@ -176,7 +176,8 @@ Chạy `sh tools/check-sdlc.sh`. Output có ba bảng và các dòng `[LỖI]`:
 1. **Stage → phase**: stage, trạng thái **suy ra**, phase implement nó.
 2. **Capability còn thiếu (roadmap)**: mỗi stage chưa `implemented`, kèm note, rồi từng capability
    chưa phase nào nhận: id, `Judged by`, tên.
-3. **Job type × stage**: profile chạy / bỏ stage nào.
+3. **Job type × stage**: profile chạy / bỏ stage nào; dưới bảng có thể có dòng
+   `<job type>: có thể vắng: <stage>` — stage mà job type đó được phép bỏ qua.
 
 Lỗi liên quan capability và trạng thái, và cách sửa:
 
