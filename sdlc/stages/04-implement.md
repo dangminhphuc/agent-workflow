@@ -29,10 +29,12 @@ invariants:
 ### CAP-implement-02 — Tests are run by the machine; results are bound to the code they ran on
 - Rule: test results are recorded by the machine, not reported by the agent, and name the code version they ran on.
 - Judged by: machine
+- Artifact: test-evidence
 
 ### CAP-implement-03 — The change is scanned for security issues before it leaves the stage
 - Rule: the machine scans the change for security issues and the stage cannot exit while the scan fails.
 - Judged by: machine
+- Artifact: security-evidence
 
 ### CAP-implement-04 — Every changed file is planned or declared as unplanned
 - Rule: each file the change touches is listed in some task's files or declared unplanned with a reason; the build stage warns, verification blocks.

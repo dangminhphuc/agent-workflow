@@ -706,6 +706,11 @@ hay "phase `plan`", không nói trống.
 - **Không có trạng thái `out-of-scope`.** Engine quyết không làm một capability (vd quan sát production
   thuộc hệ thống ngoài) thì stage vẫn `partial`/`gap` và note nói lý do. Thêm `out-of-scope` là hai cách
   nói cùng một điều.
+- **Capability khai `Artifact`, bắt buộc.** Mỗi capability ghi loại artifact (trong `provides` của
+  stage) nó bảo đảm, và mỗi loại `provides` phải có capability trỏ tới — máy chặn. Không có luật này,
+  stage viết ít capability rẻ thành `implemented` (trước đây `implement` không capability nào nói tới
+  `task-evidence`). Không áp cho `adds_provides` của profile: các loại đó đã có invariant máy giữ,
+  nêu tên ca test (INV-007, INV-010) — capability thêm là nói lại một điều.
 - **Hạ chuẩn interface không có cổng duyệt riêng.** Bỏ hay nới capability / invariant là thay đổi luật,
   nên đã phải chờ người OK (`AGENTS.md`). Thứ thiếu là **khả kiến**: id + lý do ghi dưới `### Bỏ` /
   `### Thay đổi` của `changes/<branch>.md`, để người duyệt thấy mà không phải đọc diff `sdlc/`.

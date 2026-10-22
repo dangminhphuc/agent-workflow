@@ -68,10 +68,12 @@ invariants: []
 ### CAP-deploy-01 — Change is delivered as a reviewed MR/PR that only a human merges
 - Rule: the change reaches its target branch through a merge request that the human reviews and merges; the agent never merges.
 - Judged by: human
+- Artifact: delivery
 
 ### CAP-deploy-02 — Change is released or deployed to its target environment
 - Rule: …
 - Judged by: machine
+- Artifact: delivery
 ```
 
 | Trường | Nghĩa |
@@ -85,6 +87,7 @@ invariants: []
 | `### CAP-<stage>-NN — <tên>` | Một capability: một điều phải đúng khi stage làm **đủ** |
 | `- Rule:` | Điều phải đúng, một câu tiếng Anh, không tên file engine |
 | `- Judged by:` | **Ai** phán capability đạt: `machine` (checker máy), `agent` (LLM checker, agent review độc lập), `human` (người) |
+| `- Artifact:` | Loại artifact (trong `provides` của stage) capability bảo đảm; một hoặc nhiều, cách nhau dấu phẩy, viết trơn; **bắt buộc** |
 
 `Judged by` không phải trang trí: capability `machine` mà engine nhận làm thì sau này (bước A — xem
 `docs/viec-can-lam.md`) phải có luật checker gắn id của nó. Capability `human` nghĩa là engine chỉ có
@@ -111,6 +114,9 @@ Hệ quả cần nhớ:
 - Thêm capability mới vào một stage đang `implemented` → stage thành `partial` ngay → phải thêm note.
 - Phase nhận nốt capability cuối của stage → stage thành `implemented` → phải xoá note.
 - Khối `sdlc:` không còn khoá `status`; còn sót thì `check-sdlc.sh` chặn và bảo xoá.
+- Mỗi loại trong `provides` của stage phải có ít nhất một capability khai `- Artifact:` loại đó, nên
+  stage không thể `implemented` chỉ vì viết ít capability. Luật không áp cho `adds_provides` của
+  profile: các loại đó đã có invariant máy giữ.
 
 ## 4. Công thức theo loại thay đổi
 
@@ -138,7 +144,7 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
 
 ### 4.3 Thêm capability mới vào interface
 
-1. Viết khối `### CAP-<stage>-NN — <tên>` + `- Rule:` + `- Judged by:` vào file stage, `NN` là số kế tiếp.
+1. Viết khối `### CAP-<stage>-NN — <tên>` + `- Rule:` + `- Judged by:` + `- Artifact:` vào file stage, `NN` là số kế tiếp.
 2. Engine chưa làm → stage thành `partial` (hoặc vẫn `gap`) → thêm/sửa `note` trong khối `sdlc:`.
 3. Engine đã làm sẵn → thêm id vào `capabilities:` của phase luôn.
 4. `changes/<branch>.md`: mục `Nội bộ` (interface đổi, người dùng `aw` không thấy).
@@ -188,6 +194,9 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `stage X: CAP-X-NN trùng` | Hai khối cùng id | Đổi số của một khối |
 | `CAP-…: thiếu "- Rule:"` / `thiếu "- Judged by:"` | Khối capability thiếu dòng (dòng nằm dưới heading khác không tính) | Thêm dòng ngay dưới heading capability |
 | `CAP-…: Judged by "…"` | Giá trị lạ | Chỉ `machine`, `agent`, `human` |
+| `CAP-…: thiếu "- Artifact:"` | Khối capability không có dòng `- Artifact:`, hoặc dòng rỗng | Thêm loại artifact capability bảo đảm, lấy trong `provides` của stage |
+| `CAP-…: Artifact "…" không có trong provides` | Gõ sai tên loại, hoặc capability thuộc stage khác | Sửa tên loại, hoặc chuyển capability sang stage `provides` loại đó |
+| `stage X: provides "…" — không capability nào khai` | Một loại stage tạo ra mà không capability nào nói tới | Thêm capability cho loại đó, hoặc gắn loại vào `- Artifact:` của capability có sẵn |
 | `phase P: capabilities "…" — không có capability đó` | Gõ sai id, hoặc capability chưa có trong file stage | Sửa id, hoặc thêm capability (4.3) |
 | `phase P: capabilities "…" thuộc stage S, phase implements T` | Phase nhận capability của stage khác | Chuyển id sang phase của stage S |
 | `phase P: implements T nhưng không nhận capability nào` | Phase chạy stage mà không nói làm gì của stage | Thêm id vào `capabilities:` |

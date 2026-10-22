@@ -72,6 +72,20 @@ moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-03 — ' '### Cap-deploy
 vi_pham "capability viết thường Cap- → chặn, không lờ đi" "stage deploy: heading capability \"### Cap-deploy-03"
 moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-03 — ' '### Rollback — '
 vi_pham "heading lạ trong ## Capabilities → chặn" "stage deploy: heading capability \"### Rollback"
+# Artifact: loại capability bảo đảm, phải nằm trong provides của stage; mỗi provides có capability trỏ tới.
+# 06-deploy.md có ba dòng "- Artifact: delivery" nên sửa theo thứ tự (++n), không dùng thay.
+moi; awk '!(/^- Artifact:/ && ++n == 1)' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
+vi_pham "capability thiếu Artifact → chặn" "CAP-deploy-01: thiếu \"- Artifact:\" — thêm loại artifact capability này bảo đảm, lấy trong provides của stage deploy: delivery."
+moi; awk '{ if (/^- Artifact:/ && ++n == 1) print "- Artifact:"; else print }' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
+vi_pham "Artifact rỗng → chặn" "CAP-deploy-01: thiếu \"- Artifact:\""
+moi; awk '{ if (/^- Artifact:/ && ++n == 1) print "- Artifact: deliveryx"; else print }' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
+vi_pham "Artifact không có trong provides → chặn" "CAP-deploy-01: Artifact \"deliveryx\" không có trong provides của stage deploy (delivery)"
+moi; thay "$E/sdlc/stages/04-implement.md" '- Artifact: task-evidence' '- Artifact: change'
+vi_pham "provides không capability nào trỏ tới → chặn" "stage implement: provides \"task-evidence\" — không capability nào khai \"Artifact: task-evidence\""
+moi; awk '!(/^- Artifact:/ && ++n == 3)' "$E/sdlc/stages/06-deploy.md" > "$E/s" && printf '\n## Notes\n\n- Artifact: delivery\n' >> "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
+vi_pham "Artifact nằm dưới heading khác không tính → chặn" "CAP-deploy-03: thiếu \"- Artifact:\""
+moi; thay "$E/sdlc/stages/01-require.md" '- Artifact: open-questions' '- Artifact:  requirements ,open-questions '
+ky_vong 0 "Artifact nhiều giá trị, có khoảng trắng → ĐẠT" sh "$SC" "$E"
 moi; sed 's/$/\r/' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
 ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
 

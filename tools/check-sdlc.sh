@@ -9,7 +9,8 @@
 #     requires không do stage trước nó provides, invariant không có trong sdlc/invariants.md,
 #     skippable không phải true | false. Capability (thân file, "### CAP-<stage>-NN — <tên>"):
 #     không có cái nào, heading sai dạng hoặc mang stage khác (kể cả #### / Cap- / heading lạ trong ## Capabilities), id trùng, thiếu "- Rule:" /
-#     "- Judged by:", Judged by không phải machine | agent | human.
+#     "- Judged by:", Judged by không phải machine | agent | human; thiếu "- Artifact:" hoặc Artifact
+#     không có trong provides của stage; loại trong provides không capability nào khai Artifact.
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
 #     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
 #   - Khối sdlc: của workflow.yaml: stage không có, còn khoá status (trạng thái do máy suy ra).
@@ -101,7 +102,7 @@ for inv in $(awk -F'|' '$2 == "id" { print $1 }' "$W/inv"); do
 done
 
 # ---- stage: theo thứ tự NN của tên file
-: > "$W/stages"; : > "$W/prov"; : > "$W/cap"; i=0
+: > "$W/stages"; : > "$W/prov"; : > "$W/cap"; : > "$W/capart"; i=0
 for f in "$E"/sdlc/stages/[0-9]*.md; do
   [ -f "$f" ] || continue
   i=$((i + 1)); ten=${f##*/}; ten=${ten%.md}; ten=${ten#*-}
@@ -135,14 +136,28 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
     *) loi "stage $id: skippable \"$sk\" — chỉ nhận true | false."; sk=true ;;
   esac
   echo "$i|$id|$ex|$sk" >> "$W/stages"
-  # capability: "### CAP-<stage>-NN — <tên>" + "- Rule:" + "- Judged by:", khối hết ở heading kế tiếp
-  md_body "$f" | awk -v s="$id" '
-    function dong() {
+  # capability: "### CAP-<stage>-NN — <tên>" + "- Rule:" + "- Judged by:" + "- Artifact:", khối hết ở heading kế tiếp
+  md_body "$f" | awk -v s="$id" -v pv="$(awk 'NF' "$W/p" | tr '\n' ',')" '
+    BEGIN {
+      n = split(pv, a, ",")
+      for (k = 1; k <= n; k++) if (a[k] != "") { prov[a[k]] = 1; ds = ds (ds == "" ? "" : ", ") a[k] }
+    }
+    function dong(   m, k, t, x, co) {
       if (cur == "") return
       if (!rule) print "E|" cur ": thiếu \"- Rule:\" — thêm một câu nói điều phải đúng."
       if (!coj) print "E|" cur ": thiếu \"- Judged by:\" — thêm machine | agent | human."
       else if (jd != "machine" && jd != "agent" && jd != "human")
         print "E|" cur ": Judged by \"" jd "\" — chỉ nhận machine | agent | human."
+      # Artifact: một hoặc nhiều loại, cách nhau dấu phẩy, phải nằm trong provides của stage
+      co = 0; m = split(av, x, ",")
+      for (k = 1; k <= m; k++) {
+        t = x[k]; gsub(/^[ \t]+|[ \t]+$/, "", t)
+        if (t == "") continue
+        co = 1
+        if (t in prov) print "A|" t
+        else print "E|" cur ": Artifact \"" t "\" không có trong provides của stage " s " (" ds ") — sửa tên loại, hoặc chuyển capability sang stage provides loại đó."
+      }
+      if (!co) print "E|" cur ": thiếu \"- Artifact:\" — thêm loại artifact capability này bảo đảm, lấy trong provides của stage " s ": " ds "."
       print "C|" cur "|" jd "|" ten; cur = ""
     }
     { sub(/\r$/, "") }
@@ -161,10 +176,11 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
         print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."; next
       }
       if (c in da_co) { print "E|stage " s ": " c " trùng — mỗi id chỉ khai một lần."; next }
-      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; next
+      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; av = ""; next
     }
     cur != "" && /^- Rule:/ { rule = 1 }
     cur != "" && /^- Judged by:/ { coj = 1; jd = $0; sub(/^- Judged by:[ \t]*/, "", jd); sub(/[ \t]+$/, "", jd) }
+    cur != "" && /^- Artifact:/ { av = $0; sub(/^- Artifact:/, "", av) }
     END { dong() }
   ' > "$W/c1"
   grep -q '^C|' "$W/c1" \
@@ -173,9 +189,16 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
     case "$l" in
       E\|*) loi "${l#E|}" ;;
       C\|*) echo "$id|${l#C|}" >> "$W/cap" ;;
+      A\|*) echo "$id|${l#A|}" >> "$W/capart" ;;
     esac
   done < "$W/c1"
 done
+# mỗi loại provides của stage có ít nhất một capability khai Artifact loại đó (adds_provides của profile: không)
+while IFS='|' read -r s t; do
+  [ -n "$t" ] || continue
+  grep -qxF "$s|$t" "$W/capart" \
+    || loi "stage $s: provides \"$t\" — không capability nào khai \"Artifact: $t\"; thêm hoặc gắn một capability."
+done < "$W/prov"
 stage_co() { awk -F'|' -v s="$1" '$2 == s' "$W/stages" | grep -q .; }
 stage_so() { awk -F'|' -v s="$1" '$2 == s { print $1 }' "$W/stages"; }
 # cap_co <CAP-id> -> 0 nếu capability có trong sdlc/stages/; cap_stage <CAP-id> -> stage của nó
