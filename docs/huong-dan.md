@@ -205,7 +205,7 @@ rồi quen tay bỏ luôn với việc lớn — khi phân vân, dùng `aw`.
 **Đo để quyết đường tắt sau này.** Engine chưa có đường tắt cho việc nhỏ (gộp phase cho `chore` hay một
 loại việc mới) vì chưa có số liệu. Mỗi người chạy `aw journal export <file>` định kỳ; gom bằng
 `aw journal report <file>…` để biết bao nhiêu việc là `chore` / diff nhỏ và checker chặn ở đâu
-(`docs/viec-can-lam.md` mục 4).
+([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP10).
 
 ---
 

@@ -691,7 +691,7 @@ hay "phase `plan`", không nói trống.
 - **Capability, không chỉ invariant.** Invariant là luật xuyên stage, ít và quan trọng; phần lớn luật
   là "stage này làm đủ thì có X". Ép chúng vào invariant làm `invariants.md` phình và sai nghĩa;
   capability là tầng dưới stage để chứa chúng, và là chỗ để sau này gắn từng luật checker (bước A —
-  `docs/viec-can-lam.md`).
+  [roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP19).
 - **Id `CAP-<stage>-NN`**, không đánh số toàn cục như `INV-NNN`: đọc id là biết thuộc stage nào. Đổi
   stage thì đổi id — chấp nhận, vì hiếm.
 - **`Judged by: machine | agent | human`** nói ai phán capability đạt. Capability `human` thì engine
@@ -717,7 +717,7 @@ hay "phase `plan`", không nói trống.
   mà phase nhận thì phải có ít nhất một chỗ code khai `# giữ: CAP-…` — nếu không, lời khai "engine làm
   capability này" không trỏ tới đâu. Chú thích shell (không phải bảng riêng) vì nằm ngay cạnh luật, đổi luật
   thì thấy. Chưa chặn luật mồ côi: ~200 chỗ chặn/cảnh báo chưa có id, gắn hết một lần là PR rất lớn —
-  để đợt 2 (`docs/viec-can-lam.md`).
+  để đợt 2 ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP19).
 - **Đợt 2: luật mới phải gắn id — danh sách đếm, chỉ được giảm.** Luật cũ chưa gắn quá nhiều (~220 chỗ) để gắn
   hết một lần mà không gắn sai; chặn ngay thì mọi PR đỏ. `tools/unclassified-rules.txt` ghi số chỗ luật chưa
   gắn của từng file: vượt = luật mới không id (chặn), thấp hơn = quên hạ (chặn) — danh sách chỉ đi xuống.
@@ -725,7 +725,8 @@ hay "phase `plan`", không nói trống.
   `DỪNG:`/`CẢNH BÁO:` của `task.sh`) và mỗi `# giữ:` phủ đúng một chỗ ngay dưới: bản đầu cho phủ tới dòng trống,
   nhưng thế là nới ngầm các chú thích cũ (một tag thành phủ cả chục luật khác capability). Đo bằng mẫu không
   chính xác từng luật (dòng chuyển tiếp cảnh báo của thư viện cũng tính), nhưng ổn định và tự kiểm được. Hàm
-  thư viện (`tools/lib/`) chưa đếm — ranh giới luật ở đó không đo được bằng mẫu dòng; để đợt 3.
+  thư viện (`tools/lib/`) chưa đếm — ranh giới luật ở đó không đo được bằng mẫu dòng; để phần còn lại của
+  SP19 ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md)).
 - **Hạ chuẩn interface không có cổng duyệt riêng.** Bỏ hay nới capability / invariant là thay đổi luật,
   nên đã phải chờ người OK (`AGENTS.md`). Thứ thiếu là **khả kiến**: id + lý do ghi dưới `### Bỏ` /
   `### Thay đổi` của `changes/<branch>.md`, để người duyệt thấy mà không phải đọc diff `sdlc/`.
@@ -754,13 +755,13 @@ hay "phase `plan`", không nói trống.
   stage một phase, và đổi chỗ bị chặn. Engine lúc chạy không đổi (`check-implement` vốn đòi `plan.md` qua
   `check-plan`). Tên một từ vì id capability là `CAP-[a-z]+-NN`. `CAP-implement-01` chuyển thành
   `CAP-breakdown-01` (id mang tên stage); `CAP-implement-02`, `-03` giữ id, không đánh số lại. Làm
-  trước "Bước A" (`docs/viec-can-lam.md`) để luật của `check-plan.sh` mang id `CAP-breakdown-*` ngay.
+  trước "Bước A" ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP12, SP19) để luật của `check-plan.sh` mang id `CAP-breakdown-*` ngay.
 - **Utility command không ánh xạ vào stage** (`clarify`, `approvals`, `import`, `bootstrap`,
   `refactor`): chúng phục vụ phase, không tự tạo artifact của stage nào; khai `implements` hay
   `capabilities` → chặn.
 - **Interface chung repo, chung version với engine.** Chưa có implementation thứ hai thì tách repo chỉ
   thêm việc đồng bộ. Khi có, tách ra và cho engine khai version interface nó tuân thủ
-  (`docs/viec-can-lam.md`).
+  ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md) § Không làm).
 - **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
   target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
   `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`, `23-sdlc-syntax.sh`, `24-sdlc-stage-status.sh`, `25-sdlc-capabilities.sh`) chạy nó

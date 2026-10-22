@@ -3,6 +3,7 @@
 This repo is the **engine** (wrapper `aw`, checkers, phase definitions, adapters), not a project
 that runs the workflow — artifacts (`.agent-workflow/`) exist only in target repos.
 Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. Terms: `docs/thuat-ngu.md`.
+Open work: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` (the only todo list; specs/plans beside it in `docs/superpowers/`).
 
 **Never change `main` directly.** Every change — code, docs, typo, CHANGELOG — starts with
 `git fetch origin && git worktree add <path> -b <branch> origin/main` and ends with a PR into
@@ -94,7 +95,7 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
   `changes/README.md`; `tools/prepare-release.sh` gathers fragments into `CHANGELOG.md`.
 - **Living docs**: update every doc the change makes wrong or incomplete — usage: README /
   `docs/huong-dan.md`; rationale: `docs/kien-truc.md`; new term: `docs/thuat-ngu.md`; open work:
-  `docs/viec-can-lam.md`. Nothing to update → say so in the PR description.
+  roadmap (`docs/superpowers/2026-10-22-roadmap-cai-thien.md`). Nothing to update → say so in the PR description.
 
 ## Making a change
 
@@ -107,8 +108,8 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
 - Behavior or rule changes: propose the approach (`CAP-…` / `INV-…` ids, files touched, block vs warn,
   what the test proves) and wait for the human's OK before coding.
 - Worktree from fresh `origin/main` first (top of this file). Tests first, then code (§ Verify).
-- Stay in scope. Related ideas → propose; if accepted, add to `docs/viec-can-lam.md`,
-  don't implement.
+- Stay in scope. Related ideas → propose; if accepted, add a sub-project to the roadmap
+  (its § Cách dùng), don't implement.
 - Before every push to a PR branch: `git fetch origin && git merge origin/main`, resolve, rerun
   `sh tools/run-tests.sh`. Never rebase or force-push a pushed branch.
 - Finish with a PR into `main`: what changed, why, which tests cover it, and a line
