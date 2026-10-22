@@ -47,7 +47,7 @@
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP13 | Checker LLM cho spec | 5 | chờ | — | Đọc lại nguồn hay chỉ `Quote`; chặn ở đâu | | | |
 | SP14 | Bugfix: test tái hiện xanh sau khi sửa | 5 | chờ | — | Chặn hay cảnh báo | | | |
-| SP15 | `out_of_scope` cho capability `plan`/`verify` engine không định làm | 5 | xong | — | — | | | |
+| SP15 | `out_of_scope` cho capability `plan`/`verify` engine không định làm | 5 | xong | — | — | | | [#85](https://github.com/dangminhphuc/agent-workflow/pull/85) |
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | chờ | — | Cách ghi nguồn | | | |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
