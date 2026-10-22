@@ -946,6 +946,8 @@ Agent làm sai mà không checker nào bắt → ghi lại để team biết har
 ```sh
 aw journal add <task|context|env|verify|state|model> "<sai gì, ở đâu, harness thiếu gì>"
 aw journal          # tổng hợp: checker trượt ở đâu, loại lỗi lặp lại
+aw journal export <file>                    # xuất nhật ký máy này ra một TSV (nguồn, máy, cột gốc) để gom
+aw journal report <file> [<file>…]          # tổng hợp trên các file export của nhiều máy
 ```
 
 Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành luật máy. Máy không tự thêm luật.
@@ -990,7 +992,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw adr check` · `aw rule check` | kiểm ADR · luật nghiệp vụ |
 | `aw rules <phase>` · `aw uses <phase>` | xem luật/skill khai cho phase |
 | `aw adapter build [a,b] [--force]` | sinh lại lệnh cho agent |
-| `aw journal` · `aw journal add <lớp> "…"` | harness journal |
+| `aw journal` · `aw journal add <lớp> "…"` · `aw journal export <file>` · `aw journal report <file>…` | harness journal; export / report trên file để gom nhiều máy |
 
 `<dir>` là thư mục artifact của việc: `docs/sdlc/<tên-branch>`.
 

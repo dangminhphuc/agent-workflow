@@ -933,7 +933,7 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `TEST_CMD`.
 13. **File máy ghi giả được** (`task-results.md`, `test-results.md`): chặn việc *quên*, không chặn
     gian lận có chủ ý; review clean context là lớp sau.
-14. **harness journal chỉ ở từng máy**; `Category` tự do có thể đếm hụt.
+14. **harness journal chỉ ở từng máy** (gom tay: `aw journal export` rồi `aw journal report <file>…`); `Category` tự do có thể đếm hụt.
 15. **Việc không thấy quy ước mới của chính nó** — đúng ý đồ, nhưng việc sửa `conventions.md` để
     hợp lệ hoá thay đổi của mình (vd thêm `production_code`) sẽ bị chấm theo luật cũ tới khi merge.
 16. **Quy ước chưa commit ở main checkout** có hiệu lực ngay cho mọi việc rẽ từ base chưa có file;

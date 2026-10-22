@@ -1,4 +1,7 @@
 ### Thêm
+- **`aw journal export <file>` và `aw journal report <file>…`.** Nhật ký harness nằm ở bản clone từng máy; giờ
+  xuất được ra một TSV (cột nguồn, máy, rồi cột gốc) và tổng hợp trên nhiều file export — gom số liệu khi chạy
+  thử trên nhiều máy / nhiều người. Dòng sai dạng bị bỏ qua và báo số dòng.
 - **Vòng review → sửa có đường đi rõ.** Finding `Blocker` / `Should fix` của `review.md` mang mã `RVW-NNN`;
   `/aw-plan` chạy lại sau review ở chế độ **bổ sung**: chỉ thêm task, task sửa ghi `Fixes: RVW-NNN` (hoặc
   `Fixes: <URL bình luận MR>`) thay `Covers:`. `aw check plan` kiểm `Fixes` trỏ mã có thật. `Blocker` vẫn
