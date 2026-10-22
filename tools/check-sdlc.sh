@@ -60,6 +60,18 @@ loi() { echo "  [LỖI] $*"; n_loi=$((n_loi + 1)); }
 # co <file> <dòng> -> 0 nếu file có đúng dòng đó
 co() { [ -f "$1" ] && grep -qxF -- "$2" "$1"; }
 
+# ---- tập con YAML: dòng ngoài tập con fm_* / wf_* đọc được thì báo ngay, không để trả rỗng
+yaml_bao() { # <đường-dẫn tương đối trong engine> fm|wf
+  yaml_kiem "$E/$1" "$2" | while IFS= read -r l; do echo "$1: $l"; done
+}
+{
+  yaml_bao workflow.yaml wf
+  for f in "$E"/workflow/phases/*.md "$E"/workflow/*.md "$E"/sdlc/stages/*.md "$E"/sdlc/profiles/*.md; do
+    [ -f "$f" ] && yaml_bao "${f#"$E"/}" fm
+  done
+} > "$W/yaml"
+while IFS= read -r l; do loi "$l"; done < "$W/yaml"
+
 # ---- invariant: "### INV-NNN — …" + "- Enforced by:" / "- Tested by:" với đường dẫn trong `…`
 INV="$E/sdlc/invariants.md"
 : > "$W/inv"

@@ -852,6 +852,12 @@ subagent `<id>-checker`.
 khối nhiều dòng, flow không rỗng, chú thích cuối dòng, anchor. Đánh đổi có chủ ý: trình đọc đầy đủ
 kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu hình của engine.
 
+`yaml_kiem` (`md.sh`) báo mọi dòng ngoài tập con kèm số dòng — tab, `k:v`, thụt sâu, khối `|`/`>`,
+`{…}`, danh sách `[a, b]` — và `tools/check-sdlc.sh` chặn trên `workflow.yaml`, phase, utility
+command, file stage, profile. Lý do: trình đọc tập con trả rỗng khi gặp dòng lạ, nên sai cú pháp
+trước đây chỉ lộ ra ở một luật khác, xa chỗ sai. Chuỗi có ngoặc vuông không dấu phẩy
+(`argument_hint: [--global]`) là giá trị hợp lệ, không bị chặn.
+
 ## Cách thêm một phase
 
 1. `workflow/phases/NN-<id>.md` với frontmatter đầy đủ; thêm vào `phases:` của `workflow.yaml`.
@@ -903,7 +909,8 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
    được có thật trong nguồn — nhưng REQ diễn giải đúng câu trích hay không vẫn là việc của người.
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
-6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng, lỗi lộ muộn.
+6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng. File của engine đã được `check-sdlc.sh` kiểm
+   (`yaml_kiem`); YAML trong repo đích (frontmatter artifact) thì chưa.
 7. **Máy không biết ai tick.** Hook chỉ có khi repo cài và agent có hook; không có hook thì agent tự
    tick vẫn lọt (artifact ngoài git, không có `git blame`). Hook không bắt dấu giả agent tự tính, và
    bỏ nhầm tick nếu người tick đúng lúc lệnh agent đang chạy. Nội dung đổi **trước** lần ghi dấu

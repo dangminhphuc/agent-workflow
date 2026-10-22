@@ -27,6 +27,33 @@ fm_scalar() {
   ' "$1"
 }
 
+# yaml_kiem <file> fm|wf -> "dòng N: <lý do>" cho mỗi dòng ngoài tập con YAML mà fm_* / wf_* đọc
+# được (đọc sai thì trả rỗng — lỗi lộ muộn). fm: frontmatter giữa hai dòng "---" (k: v, k:, k: [],
+# "  - mục"); wf: cả file workflow.yaml, thêm danh sách map một cấp ("  - k: v" rồi "    k: v").
+# Dòng trống và chú thích (# ở bất kỳ mức thụt nào) luôn được phép.
+yaml_kiem() {
+  awk -v mode="$2" '
+    { sub(/\r$/, "") }
+    mode == "fm" && NR == 1 { if ($0 == "---") { fm = 1; next } else exit }
+    mode == "fm" && $0 == "---" { exit }
+    mode == "fm" && fm != 1 { next }
+    /^[ \t]*$/ || /^[ \t]*#/ { next }
+    /^[ \t]*\t/ { print "dòng " NR ": thụt lề bằng tab — dùng dấu cách"; next }
+    {
+      v = $0; sub(/^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:/, "", v); sub(/^ /, "", v)
+      co_khoa = ($0 ~ /^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:/)
+    }
+    co_khoa && (v ~ /^[|>][-+]?$/) { print "dòng " NR ": giá trị khối | / > không được hỗ trợ — viết một dòng"; next }
+    co_khoa && (v ~ /^[{]/ || v ~ /^[[].*,.*[]]$/) { print "dòng " NR ": dạng {…} hoặc danh sách [a, b] không được hỗ trợ — viết từng mục \"  - mục\" (rỗng: [])"; next }
+    /^[A-Za-z_][A-Za-z0-9_]*:([ ].*)?$/ { next }
+    /^  - ./ && mode == "fm" { next }
+    mode == "wf" && (/^  - [A-Za-z_][A-Za-z0-9_]*: ./ || /^  - ./ || /^    [A-Za-z_][A-Za-z0-9_]*:([ ].*)?$/) { next }
+    /^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:[^ ]/ { print "dòng " NR ": thiếu dấu cách sau \":\""; next }
+    /^   / || (mode == "fm" && /^  [^-]/) { print "dòng " NR ": thụt sâu hơn tập con cho phép"; next }
+    { print "dòng " NR ": dòng không thuộc tập con YAML (k: v, k:, k: [], \"  - mục\")" }
+  ' "$1"
+}
+
 # fm_list <file> <khoá> -> in từng mục một dòng
 fm_list() {
   awk -v key="$2" '
