@@ -37,7 +37,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 |---|---|---|---|---|
 | `requirement` *(trước: yêu cầu)* | `REQ-NNN` | Một điều sản phẩm phải làm, có đúng một `source label`, tiêu chí chấp nhận quan sát được, `Priority: must \| should` | `spec.md` (`### REQ-NNN`) | agent viết, người duyệt cả spec |
 | `decision` *(trước: quyết định kỹ thuật)* | `DEC-NNN` | Lựa chọn mà người khác có thể chọn khác — ≥ 2 phương án, đánh đổi, lựa chọn, vì sao khó đảo ngược. Mỗi DEC một `approval checkbox` | `tdd.md` (`### DEC-NNN`) | agent (`Mode 1`) hoặc người phác trước (`Mode 2`) |
-| `finding` *(trước: phát hiện)* | `FND-NNN` | Kết quả của `LLM checker` về thiết kế: `Severity: block \| warn` | `design-findings.md` | `LLM checker` |
+| `finding` *(trước: phát hiện)* | `FND-NNN` | Kết quả của `LLM checker`: `Severity: block \| warn` | `spec-findings.md`, `design-findings.md` | `LLM checker` |
 | `task` | `TSK-NNN` | Bước của kế hoạch: `Covers` REQ nào, `Based on` DEC nào, `Expected files`, `Verify` | `plan.md` | agent; `Status` do máy giữ |
 | `review finding` | `RVW-NNN` | Finding `Blocker` / `Should fix` của review độc lập; task sửa nó ghi `Fixes: RVW-NNN` (plan bổ sung) | `review.md` | agent review |
 | `refactor request` | `RFR-NNN` | Yêu cầu refactor của người, mới ghi nhận, chưa làm | `refactor-requests.md` | `/aw-refactor` |

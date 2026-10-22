@@ -28,7 +28,7 @@ repo, thân phase) **giống hệt** bản Claude Code — `tools/run-tests.sh` 
 | `workflow/phases/<id>.md` | `.cursor/commands/aw-<id>.md` — lệnh `/aw-intake`, `/aw-spec`, `/aw-design`, `/aw-plan`, `/aw-implement`, `/aw-review`, `/aw-ship` |
 | `commands:` trong `workflow.yaml` | `.cursor/commands/aw-<id>.md` — `/aw-import`, `/aw-clarify`, `/aw-bootstrap` |
 | Phase có `requires_fresh_agent: true` | `.cursor/agents/independent-reviewer.md` — subagent ngữ cảnh riêng |
-| `llm_checker:` của phase | `.cursor/agents/<id>-checker.md` — subagent LLM checker (`design-checker`) |
+| `llm_checker:` của phase | `.cursor/agents/<id>-checker.md` — subagent LLM checker (`spec-checker`, `design-checker`) |
 | `workflow.yaml` + tóm tắt luật | `.cursor/skills/agent-workflow/SKILL.md` |
 | Khoá `uses_<phase>` của `conventions.md` (lúc chạy) | Bước "Repo skills & subagents": `aw uses <phase>`; skill: dùng tool gọi skill nếu có, không thì đọc file (POC `cursor-agent` 2026-10: không có tool đó); subagent: giao việc |
 
@@ -78,6 +78,8 @@ Lệnh `/…` trong `.cursor/commands/`. Skill `agent-workflow` được Cursor 
 
 ### 5. LLM checker
 
+`/aw-spec` bảo agent gọi subagent `spec-checker` sau khi viết `spec.md`.
+`aw check spec` fail nếu chưa có `spec-findings.md`.
 `/aw-design` bảo agent gọi subagent `design-checker` sau khi viết `tdd.md`.
 `aw check design` fail nếu chưa có `design-findings.md` — quên gọi cũng không lọt.
 

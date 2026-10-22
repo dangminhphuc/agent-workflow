@@ -6,8 +6,8 @@
 #
 # Nguồn (mỗi nguồn giữ file riêng — không gộp, xem docs/kien-truc.md):
 #   - open-questions.md    điểm mù còn `open`              → người TRẢ LỜI
-#   - *-findings.md       phát hiện checker LLM `chưa`  → người PHÂN XỬ
-#                          (hiện có design-findings.md; checker mới chỉ cần
+#   - *-findings.md       phát hiện checker LLM còn open  → người PHÂN XỬ
+#                          (spec-findings.md, design-findings.md; checker mới chỉ cần
 #                          ghi đúng mẫu là tự được gom)
 #
 # Thứ tự nhóm (nhóm chặn phase sớm hơn đứng trước):
@@ -134,8 +134,9 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
     # Phase nào chặn "ngay": phase kế tiếp, hoặc mọi phase sau khi đã qua phase bị chặn
     # (checker mỗi phase chạy lại checker phase trước).
     thu["spec"] = 1; thu["design"] = 2; thu["plan"] = 3; thu["implement"] = 4; thu["review"] = 5
-    # File phát hiện → phase mà phát hiện Chặn của nó chặn. Checker mới: thêm một dòng.
+    # File phát hiện → phase mà phát hiện block của nó chặn. Checker mới: thêm một dòng.
     ph_chan["design-findings.md"] = "plan"
+    ph_chan["spec-findings.md"] = "design"
 
     for (i = 1; i <= n; i++) {
       q = ds[i]

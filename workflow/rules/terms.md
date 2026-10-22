@@ -11,7 +11,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 |---|---|---|
 | `requirement` | One thing the product must do: `REQ-NNN` in `spec.md` | |
 | `decision` | Technical choice with ≥ 2 options: `DEC-NNN` in `tdd.md`, one approval each | |
-| `finding` | LLM checker result on the design: `FND-NNN` in `design-findings.md` | |
+| `finding` | LLM checker result: `FND-NNN` in `spec-findings.md` or `design-findings.md` | |
 | `task` | Plan step: `TSK-NNN` in `plan.md` | |
 | `review finding` | Review `Blocker` / `Should fix` item: `RVW-NNN` in `review.md`; a fix task names it in `Fixes:` | |
 | `refactor request` | Human's refactoring wish, recorded only: `RFR-NNN` in `refactor-requests.md` | |

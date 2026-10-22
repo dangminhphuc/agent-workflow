@@ -45,7 +45,7 @@
 | SP10 | Đường tắt cho việc nhỏ | 4 | một phần | số liệu SP9 | A xong (#81); B / C chờ số liệu SP9 | [spec](specs/2026-10-22-dot-2-design.md) § B | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81) |
 | SP11 | Gỡ adapter `planned` | 4 | xong | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
-| SP13 | Checker LLM cho spec | 5 | chờ | — | Đọc lại nguồn hay chỉ `Quote`; chặn ở đâu | | | |
+| SP13 | Checker LLM cho spec | 5 | xong | — | Bản đầu chỉ so `Quote` và lời `[HUMAN]` | | | |
 | SP14 | Bugfix: test tái hiện xanh sau khi sửa | 5 | chờ | — | Chặn hay cảnh báo | | | |
 | SP15 | `out_of_scope` cho capability `plan`/`verify`/`deploy` engine không định làm | 5 | chờ | — | Chốt danh sách id | | | |
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | chờ | — | Cách ghi nguồn | | | |
@@ -87,63 +87,6 @@ bugfix/refactor bỏ design khi `Design: skip`. Sửa typo trong tài liệu, bu
 
 **Nghiêng về:** A trước (lấy số liệu SP9), rồi B nếu `chore` chiếm phần lớn. C đổi triết lý quy trình —
 chỉ làm khi người chủ engine muốn.
-
-### SP13 — Checker LLM cho spec: REQ có đọc đúng câu trích không
-
-**Vấn đề.** `aw check spec` chỉ kiểm hình thức: câu trích `[FILE]` có thật trong nguồn
-(`tools/lib/quote.sh`), REQ có nhãn nguồn, có tiêu chí. Nó không biết `Description` và các `- [ ]` có nói
-**đúng, đủ, không thừa** so với `Quote` không. Phase design có checker LLM (`workflow/checkers/design.md`),
-phase spec thì không.
-
-**Hạ tầng đã có.**
-- Frontmatter `llm_checker:` → adapter sinh subagent `<tên>-checker` và chèn lời dặn gọi nó
-  (`adapters/lib/common.sh`: `ten_agent_checker`). Thêm checker = thêm file + một dòng frontmatter.
-- Đọc finding dùng chung: `tools/lib/findings.sh` (`Severity`, `Category`, `Location`, `Problem`,
-  `Resolution`).
-- `tools/pending.sh` khoá finding theo `file:FND-NNN` — hai checker trùng số `FND` không lẫn.
-
-**Chỗ còn gắn cứng `design-findings.md`** (tổng quát hoá hoặc thêm nhánh): `tools/check-design.sh`,
-`tools/approval.sh` (chỉ hiện finding cho DEC), `tools/pending.sh` (bảng `ph_chan` tĩnh, mà phase bị chặn
-bởi finding của spec là `design` **hoặc** `plan` khi `Design: skip`/`chore`), `tools/lib/toc.sh`
-(`TOC_ART`), `adapters/cursor/README.md`.
-
-**Hướng (đề xuất).**
-1. `workflow/checkers/spec.md`, đọc `intake.md`, `spec.md`, `open-questions.md`, ghi `spec-findings.md`.
-   Cùng luật với checker design: chỉ được chặn, không được duyệt; ngữ cảnh trắng; chạy lại thì ghi đè;
-   không có gì vẫn ghi file với một dòng `No blocking findings.`.
-2. Bảng `Category`:
-
-   | `Category` | Nghĩa | `Severity` |
-   |---|---|---|
-   | `quote-misread` | `Description`/tiêu chí nói điều `Quote` không nói, hoặc ngược với `Quote` | `block` |
-   | `added-scope` | Tiêu chí, giới hạn, số liệu không có trong `Quote` hay nguồn nào | `block` |
-   | `dropped-condition` | `Quote` có điều kiện / ngoại lệ / giới hạn mà tiêu chí bỏ mất | `block` |
-   | `unflagged-ambiguity` | `Quote` đọc được nhiều cách, REQ chọn một mà không có `[OPEN-QUESTION]` | `block` |
-   | `unsourced-priority` | `should` mà câu nguồn không nói "nice to have", "phase 2"… | `block` |
-   | `inferred-business-decision` | `[INFERRED]` trên quyết định nghiệp vụ | `block` |
-   | `merged-requirements` | Một REQ gộp hai yêu cầu kiểm chứng độc lập | `warn` |
-   | `unobservable-criterion` | Tiêu chí không quan sát được từ ngoài ("phải nhanh") | `warn` |
-   | `nfr-unasked` | Việc đụng nhóm NFR (`01-spec.md` bước 5) mà không có REQ hay open question | `warn` |
-   | `risk-understated` | Đụng tiền/kế toán, schema lõi, tích hợp mới mà `Risk: normal` | `warn` |
-
-3. `aw check spec` chặn khi chưa có `spec-findings.md` hoặc còn `block` chưa `fixed`/`rejected: <lý do>`
-   — giống `check-design`. Người phân xử qua `/aw-clarify` trước khi tick "Approved by human";
-   `aw approvals` hiện finding của spec cạnh ô duyệt spec.
-4. Tương thích: việc đã ghim engine cũ không bị ảnh hưởng; việc mới phải có `spec-findings.md`
-   (`changes/` mục `Thay đổi`).
-5. Chi phí: thêm một subagent mỗi lần `/aw-spec` — chấp nhận được vì spec chạy ít lần và sai ở đây đắt nhất.
-
-**Cần quyết.** Đọc lại nguồn? Đọc lại `[FILE]` thì rẻ; `[JIRA]`/`[CONFLUENCE]` cần MCP và tốn ngữ cảnh.
-Đề xuất bản đầu chỉ so `spec.md` với `Quote` và lời `[HUMAN]` trong `intake.md` (đủ cho 6 loại `block`);
-`missed-requirement` (câu nguồn có "phải/must" mà không REQ nào trích) để bản sau.
-
-**Test.** `02-spec-design-plan.sh` (thiếu file, `block` `open`, `rejected:` không lý do → chặn; `fixed`,
-`rejected: <lý do>`, chỉ `warn` → ĐẠT); `11-design-skip-refactor.sh` (`Design: skip` → finding spec chặn
-`plan`); `08-adapters.sh` (subagent `spec-checker`, `AW_COMPARE=1`); `01-fixture-engine-toc.sh`
-(`aw toc` nhận `spec-findings.md`).
-
-**Tài liệu.** `01-spec.md`, `docs/kien-truc.md` § LLM checker + điểm yếu 3, `docs/huong-dan.md` § Phase 01
-+ § 4 Bản đồ artifact, `adapters/cursor/README.md`.
 
 ### SP14 — Bugfix: test tái hiện xanh sau khi sửa
 

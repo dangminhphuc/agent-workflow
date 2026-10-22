@@ -195,6 +195,11 @@ EOF
 - **Status:** `open`   <!-- open | answered -->
 EOF
   toc_f spec.md open-questions.md
+  cat > "$F/spec-findings.md" <<'EOF'
+# Phát hiện
+
+No blocking findings.
+EOF
 }
 
 viet_tdd() {
