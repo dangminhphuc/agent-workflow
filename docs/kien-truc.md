@@ -718,6 +718,12 @@ hay "phase `plan`", không nói trống.
   capability này" không trỏ tới đâu. Chú thích shell (không phải bảng riêng) vì nằm ngay cạnh luật, đổi luật
   thì thấy. Chưa chặn luật mồ côi: ~200 chỗ chặn/cảnh báo chưa có id, gắn hết một lần là PR rất lớn —
   để đợt 2 (`docs/viec-can-lam.md`).
+- **Đợt 2: luật mới phải gắn id — danh sách đếm, chỉ được giảm.** Luật cũ chưa gắn quá nhiều (~150 chỗ) để gắn
+  hết một lần mà không gắn sai; chặn ngay thì mọi PR đỏ. `tools/unclassified-rules.txt` ghi số chỗ luật chưa
+  gắn của từng file: vượt = luật mới không id (chặn), thấp hơn = quên hạ (chặn) — danh sách chỉ đi xuống.
+  "Chỗ luật" đo bằng mẫu đơn giản (`loi`/`loi_truoc`/`[CẢNH BÁO]`) và `# giữ:` phủ tới dòng trống: không
+  chính xác từng luật, nhưng ổn định và tự kiểm được. Hàm thư viện (`tools/lib/`) chưa đếm — ranh giới luật
+  ở đó không đo được bằng mẫu dòng; để đợt 3.
 - **Hạ chuẩn interface không có cổng duyệt riêng.** Bỏ hay nới capability / invariant là thay đổi luật,
   nên đã phải chờ người OK (`AGENTS.md`). Thứ thiếu là **khả kiến**: id + lý do ghi dưới `### Bỏ` /
   `### Thay đổi` của `changes/<branch>.md`, để người duyệt thấy mà không phải đọc diff `sdlc/`.

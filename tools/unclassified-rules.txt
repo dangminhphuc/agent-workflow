@@ -1,0 +1,9 @@
+tools/check-conventions.sh 16
+tools/check-design.sh 15
+tools/check-implement.sh 15
+tools/check-intake.sh 10
+tools/check-plan.sh 14
+tools/check-review.sh 37
+tools/check-security.sh 3
+tools/check-ship.sh 10
+tools/check-spec.sh 33

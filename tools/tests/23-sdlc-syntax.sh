@@ -75,4 +75,23 @@ vi_pham "capability machine được nhận mà không luật nào khai → ch�
 moi; for f in "$E"/tools/*.sh "$E"/tools/lib/*.sh; do sed 's/CAP-deploy-01//g' "$f" > "$f.x" && mv "$f.x" "$f"; done
 ky_vong 0 "capability human (CAP-deploy-01) không cần # giữ: → ĐẠT" sh "$SC" "$E"
 
+# Đợt 2: luật mới phải gắn "# giữ:"; luật cũ chưa gắn được đếm trong tools/unclassified-rules.txt, chỉ được giảm
+nhom "check-sdlc.sh: luật checker chưa phân loại (tools/unclassified-rules.txt)"
+DS="$E/tools/unclassified-rules.txt"
+moi; printf '\nloi "luật mới chưa gắn id"\n' >> "$E/tools/check-plan.sh"
+vi_pham "luật mới không gắn # giữ: → chặn" "tools/check-plan.sh: "
+dung "…nêu số chưa gắn và số cho phép" grep -q 'luật chưa gắn "# giữ:" (cho phép [0-9]* trong tools/unclassified-rules.txt)' "$TMP/ra"
+moi; printf '\n# giữ: CAP-breakdown-01\nloi "luật mới đã gắn id"\n' >> "$E/tools/check-plan.sh"
+ky_vong 0 "luật mới có # giữ: ngay trên → ĐẠT" sh "$SC" "$E"
+moi; awk '/SECURITY_CMDS: dòng/ && !d { print "    # giữ: CAP-implement-03"; d = 1 } { print }' "$E/tools/check-security.sh" > "$E/x" && mv "$E/x" "$E/tools/check-security.sh"
+vi_pham "gắn thêm id mà quên hạ số cho phép → chặn" "tools/unclassified-rules.txt: tools/check-security.sh cho phép"
+moi; awk '$1 != "tools/check-ship.sh"' "$DS" > "$E/x" && mv "$E/x" "$DS"
+vi_pham "file có luật chưa gắn mà không có trong danh sách → chặn" "tools/check-ship.sh: "
+moi; printf 'tools/check-khong-co.sh 3\n' >> "$DS"
+vi_pham "danh sách trỏ file không có → chặn" "tools/unclassified-rules.txt: tools/check-khong-co.sh không có"
+moi; printf 'tools/check-plan.sh nhieu\n' >> "$DS"
+vi_pham "dòng danh sách sai dạng → chặn" "tools/unclassified-rules.txt: dòng \"tools/check-plan.sh nhieu\" sai dạng"
+moi
+dung "--dem-luat in danh sách đúng dạng, khớp file đang dùng" sh -c "sh '$SC' --dem-luat '$E' | diff - '$DS' >&2"
+
 ket_thuc

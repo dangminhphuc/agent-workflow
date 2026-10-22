@@ -77,3 +77,9 @@
 - **Glob `[abc]`, `[!a]`** khớp như `case` của shell ở mọi hàm khớp mới (đếm glob rộng, cảnh báo chuyển tiếp).
 - **`aw journal report`** không đếm hai lần một file truyền trùng; file / thư mục tạm không còn tên đoán trước
   được (cảnh báo chuyển tiếp không dùng file tạm; report dùng `mktemp -d`).
+
+### Nội bộ
+- **Luật checker mới phải gắn `# giữ: CAP-…/INV-…` (bước A, đợt 2).** `tools/unclassified-rules.txt` đếm số chỗ
+  luật (`loi` / `loi_truoc` / `[CẢNH BÁO]`) chưa gắn id của từng `tools/check-*.sh` và `tools/task.sh` (153 chỗ
+  lúc bắt đầu); `check-sdlc.sh` chặn khi vượt (luật mới không id) và khi thấp hơn mà chưa hạ — danh sách chỉ
+  giảm. `sh tools/check-sdlc.sh --dem-luat` in số đúng.
