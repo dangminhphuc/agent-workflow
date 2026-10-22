@@ -487,8 +487,10 @@ la_gap() { case "$GAP" in *" $1 "*) return 0 ;; esac; return 1; }
 # luon_co <stage> <loại> -> 0 nếu một stage đứng trước, luôn chạy với profile đang xét, provides
 # loại đó ($W/pq: provides của stage + adds_provides của profile; $W/luon: "số|stage" luôn chạy)
 luon_co() {
-  awk -F'|' -v n="$(stage_so "$1")" -v t="$2" 'FILENAME == ARGV[1] { so[$2] = $1; next }
-    $2 == t && ($1 in so) && so[$1] + 0 < n + 0 { co = 1; exit } END { exit !co }' "$W/luon" "$W/pq"
+  case "$LUON_MIN" in
+    *" $2="*) _lm=${LUON_MIN#*" $2="}; _lm=${_lm%% *}; [ "$_lm" -lt "$(stage_so "$1")" ] ;;
+    *) return 1 ;;
+  esac
 }
 : > "$W/mtran"; : > "$W/vang"
 for f in "$E"/sdlc/profiles/*.md; do
@@ -569,6 +571,8 @@ for f in "$E"/sdlc/profiles/*.md; do
     co "$W/pprov" "$s|$t" || loi "profile $id: adds_provides \"$m\" — không phase nào của stage $s map loại đó ra file."
   done < "$W/l"
   cat "$W/prov" "$W/pt" > "$W/pq"
+  # luon_co tra chuỗi: mỗi loại → thứ tự nhỏ nhất của stage luôn chạy (với profile này) cung cấp nó; tính một lần
+  LUON_MIN=" $(awk -F'|' 'FILENAME == ARGV[1] { so[$2] = $1; next } ($1 in so) { if (!($2 in m) || so[$1] + 0 < m[$2]) m[$2] = so[$1] + 0 } END { for (t in m) printf "%s=%s ", t, m[t] }' "$W/luon" "$W/pq")"
   fm_list "$f" adds_requires > "$W/l"
   while IFS= read -r m; do
     [ -n "$m" ] || continue

@@ -57,8 +57,7 @@ cksum "$F/spec.md" "$F/open-questions.md" > "$TMP/toc.ck"
 ky_vong 0 "aw toc chạy lại trên artifact đã khớp → ĐÃ KHỚP" sh "$TOC" "$F"
 dung "…không ghi lại file (artifact phía sau không lỗi thời)" sh -c "cksum '$F/spec.md' '$F/open-questions.md' | cmp -s - '$TMP/toc.ck'"
 awk '/^## Contents$/ { bo = 1; next } bo && /^## / { bo = 0 } !bo' "$F/spec.md" > "$TMP/s.md" && mv "$TMP/s.md" "$F/spec.md"
-ky_vong 1 "chặn artifact có heading mà thiếu ## Contents" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: thiếu mục \"## Contents\"'"
+ky_vong_ly_do 1 "chặn artifact có heading mà thiếu ## Contents" "…đúng lý do" 'spec.md: thiếu mục "## Contents"' sh "$CHK" "$F"
 toc_f spec.md
 ky_vong 0 "aw toc thêm lại mục lục → ĐẠT" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'
@@ -74,8 +73,7 @@ viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Out of scope
 toc_f spec.md
 dung "heading trùng tên → anchor thứ hai có hậu tố -1 (như GitHub)" grep -qxF -- '- [Out of scope](#out-of-scope-1)' "$F/spec.md"
 viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md#req-009)'
-ky_vong 1 "chặn link tới mục không có của artifact khác" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'link \"open-questions.md#req-009\" không trỏ tới mục nào'"
+ky_vong_ly_do 1 "chặn link tới mục không có của artifact khác" "…đúng lý do" 'link "open-questions.md#req-009" không trỏ tới mục nào' sh "$CHK" "$F"
 ky_vong 1 "aw toc báo CÒN LINK SAI khi link không mở rộng được" sh "$TOC" "$F" spec.md
 viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md)'
 ky_vong 1 "chặn link tới artifact mà không trỏ tới mục" sh "$CHK" "$F"

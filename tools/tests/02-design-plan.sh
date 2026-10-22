@@ -232,20 +232,17 @@ viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md
 viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
 ky_vong 0 "task chỉ có Fixes: RVW có trong review.md → ĐẠT" sh "$CHK" "$F"
 viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-009`' '[ ]'
-ky_vong 1 "Fixes: RVW không có trong review.md → chặn" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: \"Fixes: RVW-009\" nhưng review.md không có finding mã đó'"
+ky_vong_ly_do 1 "Fixes: RVW không có trong review.md → chặn" "…đúng lý do" 'TSK-003: "Fixes: RVW-009" nhưng review.md không có finding mã đó' sh "$CHK" "$F"
 viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-009`' '[x]'
 dung "Fixes trên task [x] (review đã ghi lại) → không kiểm mã" sh -c "! sh '$CHK' '$F' | grep -q 'RVW-009'"
 viet_plan; ghi_based_on; them_task_sua '- Depends on: none' '[ ]'
-ky_vong 1 "task không Covers, không Fixes → chặn" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: thiếu \"Covers:\" hoặc \"Fixes:\" — task phải phủ một REQ hoặc sửa một finding review'"
+ky_vong_ly_do 1 "task không Covers, không Fixes → chặn" "…đúng lý do" 'TSK-003: thiếu "Covers:" hoặc "Fixes:" — task phải phủ một REQ hoặc sửa một finding review' sh "$CHK" "$F"
 viet_plan; ghi_based_on; them_task_sua '- Fixes: https://gitlab.vd/nhom/repo/-/merge_requests/1#note_2' '[ ]'
 ky_vong 0 "Fixes: URL bình luận MR → ĐẠT" sh "$CHK" "$F"
 viet_plan; ghi_based_on; them_task_sua '- **Fixes:** `RVW-001`' '[ ]'
 ky_vong 0 "Fixes dạng in đậm (- **Fixes:**) → ĐẠT" sh "$CHK" "$F"
 viet_plan; ghi_based_on; them_task_sua '- Fixes: abc' '[ ]'
-ky_vong 1 "Fixes: giá trị lạ → chặn" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: \"Fixes:\" \"abc\" — chỉ nhận RVW-NNN hoặc URL bình luận MR'"
+ky_vong_ly_do 1 "Fixes: giá trị lạ → chặn" "…đúng lý do" 'TSK-003: "Fixes:" "abc" — chỉ nhận RVW-NNN hoặc URL bình luận MR' sh "$CHK" "$F"
 # Trọn vòng: review có RVW-001 → plan bổ sung task Fixes → aw task next trả task mới → review chặn tới khi xong
 viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md
 viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
