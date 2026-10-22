@@ -86,6 +86,16 @@ moi; awk '!(/^- Artifact:/ && ++n == 3)' "$E/sdlc/stages/06-deploy.md" > "$E/s" 
 vi_pham "Artifact nằm dưới heading khác không tính → chặn" "CAP-deploy-03: thiếu \"- Artifact:\""
 moi; thay "$E/sdlc/stages/01-require.md" '- Artifact: open-questions' '- Artifact:  requirements ,open-questions '
 ky_vong 0 "Artifact nhiều giá trị, có khoảng trắng → ĐẠT" sh "$SC" "$E"
+# dòng Artifact thứ hai không được âm thầm đè dòng đầu (giá trị gõ sai sẽ bị giấu)
+moi; awk '{ print } /^- Artifact:/ && ++n == 1 { print "- Artifact: bogus" }' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
+vi_pham "capability khai Artifact hai dòng → chặn" "CAP-deploy-01: khai \"- Artifact:\" nhiều dòng — gộp vào một dòng, cách nhau dấu phẩy."
+moi; thay "$E/sdlc/stages/06-deploy.md" '  - delivery' '  - delivery  '
+ky_vong 0 "mục provides có khoảng trắng cuối dòng → vẫn ĐẠT" sh "$SC" "$E"
+# stage thiếu provides: chỉ báo "thiếu provides", không thêm một lỗi Artifact cho mỗi capability
+moi; thay "$E/sdlc/stages/07-operate.md" 'provides:
+  - operational-feedback' 'provides: []'
+vi_pham "stage thiếu provides → chặn" "stage operate: thiếu provides"
+dung "…không kèm lỗi Artifact cho từng capability" sh -c "! grep -q 'provides của stage operate' '$TMP/ra'"
 moi; sed 's/$/\r/' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
 ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
 

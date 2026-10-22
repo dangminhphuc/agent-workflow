@@ -194,6 +194,7 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `stage X: CAP-X-NN trùng` | Hai khối cùng id | Đổi số của một khối |
 | `CAP-…: thiếu "- Rule:"` / `thiếu "- Judged by:"` | Khối capability thiếu dòng (dòng nằm dưới heading khác không tính) | Thêm dòng ngay dưới heading capability |
 | `CAP-…: Judged by "…"` | Giá trị lạ | Chỉ `machine`, `agent`, `human` |
+| `CAP-…: khai "- Artifact:" nhiều dòng` | Hai dòng `- Artifact:` trong một capability — dòng sau đè dòng trước | Gộp vào một dòng, cách nhau dấu phẩy |
 | `CAP-…: thiếu "- Artifact:"` | Khối capability không có dòng `- Artifact:`, hoặc dòng rỗng | Thêm loại artifact capability bảo đảm, lấy trong `provides` của stage |
 | `CAP-…: Artifact "…" không có trong provides` | Gõ sai tên loại, hoặc capability thuộc stage khác | Sửa tên loại, hoặc chuyển capability sang stage `provides` loại đó |
 | `stage X: provides "…" — không capability nào khai` | Một loại stage tạo ra mà không capability nào nói tới | Thêm capability cho loại đó, hoặc gắn loại vào `- Artifact:` của capability có sẵn |

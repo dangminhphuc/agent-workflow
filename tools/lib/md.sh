@@ -35,7 +35,7 @@ fm_list() {
     fm==1 && $0=="---" { exit }
     fm!=1 { next }
     inlist==1 {
-      if ($0 ~ /^[ \t]+-[ \t]+/) { v=$0; sub(/^[ \t]+-[ \t]+/, "", v); print v; next }
+      if ($0 ~ /^[ \t]+-[ \t]+/) { v=$0; sub(/^[ \t]+-[ \t]+/, "", v); sub(/[ \t]+$/, "", v); print v; next }
       inlist=0
     }
     $0 ~ "^" key ":[ \t]*$" { inlist=1; next }

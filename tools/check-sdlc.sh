@@ -10,7 +10,8 @@
 #     skippable không phải true | false. Capability (thân file, "### CAP-<stage>-NN — <tên>"):
 #     không có cái nào, heading sai dạng hoặc mang stage khác (kể cả #### / Cap- / heading lạ trong ## Capabilities), id trùng, thiếu "- Rule:" /
 #     "- Judged by:", Judged by không phải machine | agent | human; thiếu "- Artifact:" hoặc Artifact
-#     không có trong provides của stage; loại trong provides không capability nào khai Artifact.
+#     không có trong provides của stage, hoặc khai nhiều dòng; loại trong provides không capability nào
+#     khai Artifact (stage thiếu provides: chỉ báo thiếu provides).
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
 #     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
 #   - Khối sdlc: của workflow.yaml: stage không có, còn khoá status (trạng thái do máy suy ra).
@@ -148,7 +149,10 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
       if (!coj) print "E|" cur ": thiếu \"- Judged by:\" — thêm machine | agent | human."
       else if (jd != "machine" && jd != "agent" && jd != "human")
         print "E|" cur ": Judged by \"" jd "\" — chỉ nhận machine | agent | human."
-      # Artifact: một hoặc nhiều loại, cách nhau dấu phẩy, phải nằm trong provides của stage
+      # Artifact: một hoặc nhiều loại, cách nhau dấu phẩy, phải nằm trong provides của stage.
+      # Stage thiếu provides đã bị báo riêng — không thêm một lỗi cho mỗi capability.
+      if (ds == "") { print "C|" cur "|" jd "|" ten; cur = ""; return }
+      if (na > 1) print "E|" cur ": khai \"- Artifact:\" nhiều dòng — gộp vào một dòng, cách nhau dấu phẩy."
       co = 0; m = split(av, x, ",")
       for (k = 1; k <= m; k++) {
         t = x[k]; gsub(/^[ \t]+|[ \t]+$/, "", t)
@@ -176,11 +180,11 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
         print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."; next
       }
       if (c in da_co) { print "E|stage " s ": " c " trùng — mỗi id chỉ khai một lần."; next }
-      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; av = ""; next
+      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; av = ""; na = 0; next
     }
     cur != "" && /^- Rule:/ { rule = 1 }
     cur != "" && /^- Judged by:/ { coj = 1; jd = $0; sub(/^- Judged by:[ \t]*/, "", jd); sub(/[ \t]+$/, "", jd) }
-    cur != "" && /^- Artifact:/ { av = $0; sub(/^- Artifact:/, "", av) }
+    cur != "" && /^- Artifact:/ { na++; av = $0; sub(/^- Artifact:/, "", av) }
     END { dong() }
   ' > "$W/c1"
   grep -q '^C|' "$W/c1" \

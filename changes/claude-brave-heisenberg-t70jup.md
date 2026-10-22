@@ -8,5 +8,7 @@
   theo từng task, mẫu file hẹp — chưa làm), `CAP-implement-06` (task chỉ xong khi máy ghi bước kiểm đạt).
   Stage `implement` thành `partial`. Người dùng `aw` không thấy gì khác.
 - **Interface SDLC: capability khai `Artifact`.** Mỗi capability ghi loại artifact nó bảo đảm
-  (`- Artifact:`); `tools/check-sdlc.sh` chặn khi thiếu, khi loại không thuộc `provides` của stage, và
-  khi một loại `provides` của stage không capability nào trỏ tới.
+  (`- Artifact:`); `tools/check-sdlc.sh` chặn khi thiếu, khi loại không thuộc `provides` của stage,
+  khi khai nhiều dòng, và khi một loại `provides` của stage không capability nào trỏ tới.
+- **Frontmatter: mục danh sách bỏ khoảng trắng cuối dòng.** `fm_list` (`tools/lib/md.sh`) cắt khoảng
+  trắng thừa sau mỗi mục, nên `  - delivery  ` không còn lệch tên với `delivery` ở các checker so tên loại.

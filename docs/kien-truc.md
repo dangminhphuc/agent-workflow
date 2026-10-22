@@ -643,7 +643,8 @@ Cách đọc và công thức cho từng loại thay đổi: [`interface-sdlc.md
   tượng** (`requirements`, `design`, `change`…), không phải tên file: interface không biết `spec.md`.
   `exit`: `machine | human | both`.
 - **Capability** trong thân file stage (`## Capabilities`): `### CAP-<stage>-NN — <tên>` + `- Rule:`
-  (điều phải đúng) + `- Judged by: machine | agent | human` (ai phán đạt). Tập capability của một stage
+  (điều phải đúng) + `- Judged by: machine | agent | human` (ai phán đạt) + `- Artifact:` (loại
+  artifact trong `provides` của stage mà capability bảo đảm). Tập capability của một stage
   là **trạng thái đích** — "làm đủ stage này là gì" — kể cả phần engine chưa làm.
 - `sdlc/invariants.md`: luật xuyên stage `INV-NNN` (trace REQ → task, DEC → task, REQ → test,
   REQ → verdict review, chỉ dùng output đã duyệt, không dùng output stale). Mỗi luật trỏ tới checker

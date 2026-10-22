@@ -86,7 +86,7 @@ Engine đã làm (`tools/check-plan.sh` chặn `Expected files` / `Verify` trố
 
 ```markdown
 ### CAP-implement-04 — Every changed file is planned or declared as unplanned
-- Rule: each file the change touches is listed in some task's files or declared unplanned with a reason; the build stage warns, verification blocks.
+- Rule: each file the change touches is listed in some task's files or declared unplanned with a reason; the implement stage warns, the verify stage blocks.
 - Judged by: machine
 - Artifact: change
 
