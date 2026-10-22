@@ -33,3 +33,18 @@ invariants:
 ### CAP-implement-03 — The change is scanned for security issues before it leaves the stage
 - Rule: the machine scans the change for security issues and the stage cannot exit while the scan fails.
 - Judged by: machine
+
+### CAP-implement-04 — Every changed file is planned or declared as unplanned
+- Rule: each file the change touches is listed in some task's files or declared unplanned with a reason; the build stage warns, verification blocks.
+- Judged by: machine
+- Artifact: change
+
+### CAP-implement-05 — Each task changes only its own files, and file patterns are narrow enough to mean something
+- Rule: the files changed while a task is in progress match that task's own list or are declared unplanned for it; a file pattern that matches far more files than the task needs is flagged.
+- Judged by: machine
+- Artifact: change
+
+### CAP-implement-06 — A task is done only when its verification passes, recorded by the machine
+- Rule: a task is marked done only by the machine, after its verification step passes or a record of manual verification is given.
+- Judged by: machine
+- Artifact: task-evidence

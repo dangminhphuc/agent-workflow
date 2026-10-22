@@ -27,6 +27,8 @@ provides:
 capabilities:
   - CAP-implement-02
   - CAP-implement-03
+  - CAP-implement-04
+  - CAP-implement-06
 exit_machine:
   - aw check implement
 exit_human: []

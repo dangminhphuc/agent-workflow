@@ -24,3 +24,8 @@ invariants:
 ### CAP-breakdown-01 — Ordered tasks, each tracing to requirements and approved decisions
 - Rule: the work is split into ordered tasks; each task covers requirements and is based only on approved decisions.
 - Judged by: machine
+
+### CAP-breakdown-02 — Each task names the files it may change and how it is proven done
+- Rule: every task lists the files it may change and a verification step; neither may be empty or a placeholder.
+- Judged by: machine
+- Artifact: task-plan

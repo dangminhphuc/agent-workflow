@@ -82,6 +82,8 @@ phases:
 sdlc:
   - stage: plan
     note: Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
+  - stage: implement
+    note: Phạm vi diff chỉ kiểm theo cả việc, chưa theo từng task; glob rộng không bị cảnh báo
   - stage: verify
     note: Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; không có e2e, kiểm tải hay UAT
   - stage: deploy

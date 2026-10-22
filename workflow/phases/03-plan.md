@@ -16,6 +16,7 @@ provides:
   - task-plan: plan.md
 capabilities:
   - CAP-breakdown-01
+  - CAP-breakdown-02
 exit_machine:
   - aw check plan
 exit_human: []

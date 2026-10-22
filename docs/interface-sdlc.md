@@ -209,7 +209,7 @@ Stage → phase (trạng thái suy ra từ capabilities: của phase):
   require    implemented  spec
   design     implemented  design
   breakdown  implemented  plan
-  implement  implemented  implement
+  implement  partial      implement
   verify     partial      review
   deploy     partial      ship
   operate    gap          —
@@ -217,6 +217,8 @@ Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   plan (partial): Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
     CAP-plan-03  human    Work items are prioritised against each other
     CAP-plan-04  human    Work item carries an effort estimate
+  implement (partial): Phạm vi diff chỉ kiểm theo cả việc, chưa theo từng task; glob rộng không bị cảnh báo
+    CAP-implement-05  machine  Each task changes only its own files, and file patterns are narrow enough to mean something
   verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; không có e2e, kiểm tải hay UAT
     CAP-verify-03  machine  End-to-end tests run against the integrated system
     CAP-verify-04  machine  Load and performance are tested beyond perf jobs
@@ -235,6 +237,10 @@ Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   loại việc, nguồn, base, và để người xác nhận. Chưa có: xếp ưu tiên giữa các việc (`CAP-plan-03`) và
   ước lượng công (`CAP-plan-04`). Cả hai đều `human`: engine chỉ có thể tạo chỗ ghi và kiểm đã ghi,
   quyết vẫn là người.
+- **`implement` — partial.** Phạm vi diff đã kiểm theo cả việc: file đổi phải nằm trong file của một
+  task hoặc được khai ngoài kế hoạch (`CAP-implement-04`). Chưa có: kiểm theo **từng task** — task chỉ
+  đổi file của chính nó — và cảnh báo mẫu file quá rộng như `src/*` (`CAP-implement-05`; dự án con SP3
+  trong `docs/superpowers/2026-10-22-roadmap-cai-thien.md`).
 - **`verify` — partial.** Có review độc lập theo từng REQ và người review bảo mật cho code nhạy cảm.
   Chưa có: e2e trên hệ thống đã ghép (`CAP-verify-03`), đo tải cho mọi thay đổi có thể ảnh hưởng hiệu
   năng chứ không chỉ việc loại perf (`CAP-verify-04`), và người yêu cầu nghiệm thu (UAT, `CAP-verify-05`).

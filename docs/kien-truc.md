@@ -671,7 +671,7 @@ thích từng dòng ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-h
 | `require` | `01-spec` | `implemented` | |
 | `design` | `02-design` | `implemented` | |
 | `breakdown` | `03-plan` | `implemented` | |
-| `implement` | `04-implement` | `implemented` | |
+| `implement` | `04-implement` | `partial` | `CAP-implement-05` phạm vi theo từng task, glob rộng |
 | `verify` | `05-review` | `partial` | `CAP-verify-03` e2e, `CAP-verify-04` kiểm tải, `CAP-verify-05` UAT |
 | `deploy` | `06-ship` | `partial` | `CAP-deploy-02` release/triển khai, `CAP-deploy-03` rollback |
 | `operate` | — | `gap` | `CAP-operate-01` quan sát production, `CAP-operate-02` sự cố → việc mới |
