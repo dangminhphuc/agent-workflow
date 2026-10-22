@@ -718,6 +718,15 @@ hay "phase `plan`", không nói trống.
   capability này" không trỏ tới đâu. Chú thích shell (không phải bảng riêng) vì nằm ngay cạnh luật, đổi luật
   thì thấy. Chưa chặn luật mồ côi: ~200 chỗ chặn/cảnh báo chưa có id, gắn hết một lần là PR rất lớn —
   để đợt 2 ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP19).
+- **Đợt 2: luật mới phải gắn id — danh sách đếm, chỉ được giảm.** Luật cũ chưa gắn quá nhiều (~220 chỗ) để gắn
+  hết một lần mà không gắn sai; chặn ngay thì mọi PR đỏ. `tools/unclassified-rules.txt` ghi số chỗ luật chưa
+  gắn của từng file: vượt = luật mới không id (chặn), thấp hơn = quên hạ (chặn) — danh sách chỉ đi xuống.
+  "Chỗ luật" đo bằng mẫu dòng (gọi `loi`/`loi_truoc`/`canh_bao`, dòng in `[LỖI]`/`[CẢNH BÁO]`, `TỪ CHỐI:`/
+  `DỪNG:`/`CẢNH BÁO:` của `task.sh`) và mỗi `# giữ:` phủ đúng một chỗ ngay dưới: bản đầu cho phủ tới dòng trống,
+  nhưng thế là nới ngầm các chú thích cũ (một tag thành phủ cả chục luật khác capability). Đo bằng mẫu không
+  chính xác từng luật (dòng chuyển tiếp cảnh báo của thư viện cũng tính), nhưng ổn định và tự kiểm được. Hàm
+  thư viện (`tools/lib/`) chưa đếm — ranh giới luật ở đó không đo được bằng mẫu dòng; để phần còn lại của
+  SP19 ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md)).
 - **Hạ chuẩn interface không có cổng duyệt riêng.** Bỏ hay nới capability / invariant là thay đổi luật,
   nên đã phải chờ người OK (`AGENTS.md`). Thứ thiếu là **khả kiến**: id + lý do ghi dưới `### Bỏ` /
   `### Thay đổi` của `changes/<branch>.md`, để người duyệt thấy mà không phải đọc diff `sdlc/`.

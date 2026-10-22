@@ -57,8 +57,7 @@ cksum "$F/spec.md" "$F/open-questions.md" > "$TMP/toc.ck"
 ky_vong 0 "aw toc chạy lại trên artifact đã khớp → ĐÃ KHỚP" sh "$TOC" "$F"
 dung "…không ghi lại file (artifact phía sau không lỗi thời)" sh -c "cksum '$F/spec.md' '$F/open-questions.md' | cmp -s - '$TMP/toc.ck'"
 awk '/^## Contents$/ { bo = 1; next } bo && /^## / { bo = 0 } !bo' "$F/spec.md" > "$TMP/s.md" && mv "$TMP/s.md" "$F/spec.md"
-ky_vong 1 "chặn artifact có heading mà thiếu ## Contents" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: thiếu mục \"## Contents\"'"
+ky_vong_ly_do 1 "chặn artifact có heading mà thiếu ## Contents" "…đúng lý do" 'spec.md: thiếu mục "## Contents"' sh "$CHK" "$F"
 toc_f spec.md
 ky_vong 0 "aw toc thêm lại mục lục → ĐẠT" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'
@@ -74,8 +73,7 @@ viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Out of scope
 toc_f spec.md
 dung "heading trùng tên → anchor thứ hai có hậu tố -1 (như GitHub)" grep -qxF -- '- [Out of scope](#out-of-scope-1)' "$F/spec.md"
 viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md#req-009)'
-ky_vong 1 "chặn link tới mục không có của artifact khác" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'link \"open-questions.md#req-009\" không trỏ tới mục nào'"
+ky_vong_ly_do 1 "chặn link tới mục không có của artifact khác" "…đúng lý do" 'link "open-questions.md#req-009" không trỏ tới mục nào' sh "$CHK" "$F"
 ky_vong 1 "aw toc báo CÒN LINK SAI khi link không mở rộng được" sh "$TOC" "$F" spec.md
 viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md)'
 ky_vong 1 "chặn link tới artifact mà không trỏ tới mục" sh "$CHK" "$F"
@@ -128,9 +126,22 @@ dung "src/** khớp src/a/b.ts" kd src/a/b.ts 'src/**'
 dung "src/** khớp src/a.ts" kd src/a.ts 'src/**'
 dung "**/x.md khớp a/b/x.md" kd a/b/x.md '**/x.md'
 dung "? không qua /" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong a/b 'a?b'\""
-dung "ký tự regex khớp nguyên văn: a.b+(c)[d].txt" kd 'a.b+(c)[d].txt' 'a.b+(c)[d].txt'
+dung "ký tự regex khớp nguyên văn (. + ( ) ), [d] là lớp ký tự: a.b+(c)d.txt" kd 'a.b+(c)d.txt' 'a.b+(c)[d].txt'
 dung "…dấu . không khớp ký tự bất kỳ" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong axb.txt 'a.b.txt'\""
 dung "nhiều mẫu: khớp mẫu thứ hai" kd src/a/b.ts 'docs/*' 'src/**'
+dung "[ab] là lớp ký tự: src/[ab].txt khớp src/b.txt" kd src/b.txt 'src/[ab].txt'
+dung "…không khớp src/c.txt" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong src/c.txt 'src/[ab].txt'\""
+dung "[!a] là phủ định" kd xb 'x[!a]'
+dung "[ không đóng khớp nguyên văn" kd 'a[b' 'a[b'
+dung "[!]a] như case: khớp b (không phải ] hay a)" kd b '[!]a]'
+dung "…không khớp a" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong a '[!]a]'\""
+dung "x[!] (không đóng) khớp nguyên văn, không làm hỏng awk" sh -c ". '$T/lib/md.sh'; set -f; khop_duong 'x[!]' 'x[!]' 2>&1 | grep -q . && exit 1; khop_duong 'x[!]' 'x[!]'"
+dung "[[:alpha:]]x như case: khớp ax, không lỗi awk" sh -c ". '$T/lib/md.sh'; set -f; [ -z \"\$(khop_duong ax '[[:alpha:]]x' 2>&1)\" ] && khop_duong ax '[[:alpha:]]x'"
+dung "…không khớp 1x" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong 1x '[[:alpha:]]x'\""
+# Không dùng file tạm: TMPDIR hỏng (là một file thường) vẫn cảnh báo chuyển tiếp
+mkdir -p "$R/src/sau"; printf 'x\n' > "$R/src/sau/c.txt"; printf x > "$TMP/la-file"
+dung "TMPDIR hỏng → cảnh báo chuyển tiếp vẫn chạy" sh -c "TMPDIR='$TMP/la-file' sh '$T/check-implement.sh' '$F' | grep -q 'nhờ \* vượt thư mục'"
+rm -rf "$R/src/sau"
 
 # Cảnh báo chuyển tiếp: file khớp mẫu của plan.md chỉ nhờ * vượt thư mục → cảnh báo, không chặn ở đâu
 nhom "glob plan.md: cảnh báo chuyển tiếp"

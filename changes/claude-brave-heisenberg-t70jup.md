@@ -1,4 +1,7 @@
 ### Thêm
+- **Hướng dẫn: "Khi nào không dùng `aw`"** (`docs/huong-dan.md` § 1.10) — việc nào làm PR thường (typo, bump
+  `patch`, cấu hình một dòng), dấu hiệu nên quay lại `aw`, và cách đo bằng `aw journal export` / `report` để
+  quyết đường tắt cho việc nhỏ sau này.
 - **`aw journal export <file>` và `aw journal report <file>…`.** Nhật ký harness nằm ở bản clone từng máy; giờ
   xuất được ra một TSV (cột nguồn, máy, rồi cột gốc) và tổng hợp trên nhiều file export — gom số liệu khi chạy
   thử trên nhiều máy / nhiều người. Dòng sai dạng bị bỏ qua và báo số dòng.
@@ -65,3 +68,26 @@
 - **Test:** helper `ky_vong_ly_do` chạy checker một lần cho cặp "mã thoát + lý do" (24 cặp đã chuyển);
   tách `22-sdlc-stage-files` → thêm `23-sdlc-syntax`, `25-sdlc-capabilities`; tách `20-sdlc-conformance` → thêm
   `24-sdlc-stage-status`.
+
+### Sửa
+- **Phạm vi diff:** hàng `Unplanned` chỉ lấy cột "Extra files" làm mẫu được phép (backtick ở cột "What came up"
+  không còn vô tình miễn file — plan cũ ghi mẫu ở cột khác thì chuyển sang cột "Extra files"); dòng `Base:`
+  thiếu sha thì cảnh báo glob rộng lùi về điểm rẽ nhánh thay vì bỏ qua.
+- **`aw task start` giữ bộ đếm đỏ liên tiếp** — sửa tay Status về `[ ]` rồi start lại không còn né được điều
+  kiện DỪNG (đúng như trước PR #79). Bộ đếm chỉ về 0 khi `aw task done` xanh; người đã xử lý xong muốn agent
+  thử tiếp thì xoá dòng `- Đỏ liên tiếp: N` của task trong `task-results.md` (`docs/huong-dan.md`).
+- **Mã `RVW`:** `aw check plan` đọc mã finding giống `aw check review` (tiêu đề Lens 3 có `[mức]` rồi mã, kể
+  cả `### 1. [Blocker] RVW-001 — …`); dòng `Task scope warnings` phải nhắc đúng mã task (`TSK-0021` không
+  tính là nhắc `TSK-002`).
+- **Glob `[abc]`, `[!a]`, `[[:alpha:]]`** khớp như `case` của shell ở mọi hàm khớp mới (đếm glob rộng, cảnh báo chuyển tiếp).
+- **`aw journal report`** không đếm hai lần một file truyền trùng; file / thư mục tạm không còn tên đoán trước
+  được (cảnh báo chuyển tiếp không dùng file tạm; report dùng `mktemp -d`).
+
+### Nội bộ
+- **Luật checker mới phải gắn `# giữ: CAP-…/INV-…` (bước A, đợt 2).** `tools/unclassified-rules.txt` đếm số chỗ
+  luật chưa gắn id của từng `tools/check-*.sh` và `tools/task.sh` (223 chỗ lúc bắt đầu) — gọi `loi` / `loi_truoc` /
+  `canh_bao`, dòng in `[LỖI]` / `[CẢNH BÁO]`, `TỪ CHỐI:` / `DỪNG:` / `CẢNH BÁO:`; mỗi `# giữ:` phủ đúng một chỗ
+  ngay dưới; `check-sdlc.sh` chặn khi vượt (luật mới không id) và khi thấp hơn mà chưa hạ — danh sách chỉ
+  giảm. `sh tools/check-sdlc.sh --dem-luat` in số đúng.
+- **Test nhanh hơn:** thêm 14 cặp "mã thoát + lý do" chạy checker một lần (`ky_vong_ly_do`, kể cả mẫu có
+  escape); `luon_co` của `check-sdlc.sh` tra chuỗi tính sẵn. Bộ test ~3 phút 45 giây (1760 ca).

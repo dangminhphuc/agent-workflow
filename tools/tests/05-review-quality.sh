@@ -37,8 +37,7 @@ ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
 # Mã finding: [Blocker] / [Should fix] mang RVW-NNN để task sửa (Fixes:) trỏ về được; [Nit] không bắt
 viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/RVW-001 — //')"
 toc_f review.md
-ky_vong 1 "chặn [Should fix] thiếu mã RVW" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 \[Should fix\] \"trùng hàm\": thiếu mã — tiêu đề dạng \"### \[mức\] RVW-NNN — <tiêu đề>\"'"
+ky_vong_ly_do 1 "chặn [Should fix] thiếu mã RVW" "…đúng lý do" 'Lens 3 \[Should fix\] "trùng hàm": thiếu mã — tiêu đề dạng "### \[mức\] RVW-NNN — <tiêu đề>"' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "$L3_SF
 
 $L3_SF"
@@ -46,8 +45,7 @@ toc_f review.md
 ky_vong_ly_do 1 "chặn hai finding cùng mã" "…đúng lý do" 'Lens 3: RVW-001 trùng — mỗi finding một mã' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Location: `src/a.txt:1`'
-ky_vong 1 "chặn [Should fix] thiếu Category" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu dòng \"- Category: <loại>\"'"
+ky_vong_ly_do 1 "chặn [Should fix] thiếu Category" "…đúng lý do" 'thiếu dòng "- Category: <loại>"' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/duplicate-code/Trùng Code/')"
 ky_vong 1 "chặn Category không phải kebab-case" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên
@@ -59,8 +57,7 @@ L3_B='### [Blocker] RVW-001 — mất dữ liệu
 - Location: `src/a.txt:1`
 - Problem: ghi đè'
 viet_review; thay "$F/review.md" '- None' "$L3_B"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
-ky_vong 1 "chặn [Blocker] thiếu Failure scenario" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu \"- Failure scenario:\"'"
+ky_vong_ly_do 1 "chặn [Blocker] thiếu Failure scenario" "…đúng lý do" 'thiếu "- Failure scenario:"' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "$L3_B
 - Failure scenario: <đầu vào cụ thể → kết quả sai>"; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: 1'
 ky_vong 1 "chặn Failure scenario giữ chỗ của mẫu" sh "$CHK" "$F"
@@ -108,9 +105,12 @@ ky_vong 0 "dòng Lens 4 nhắc REQ-002 không ghi đè kết luận pending củ
 viet_review
 cp "$F/task-results.md" "$TMP/kq-pv.bak"
 awk '{ print } /^## TSK-002/ { print ""; print "- Scope warning: `src/a.txt`" }' "$TMP/kq-pv.bak" > "$F/task-results.md"
-ky_vong 1 "task có Scope warning mà Lens 2 không giải trình → chặn" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 2: TSK-002 có cảnh báo phạm vi trong task-results.md — giải trình ở \"Task scope warnings\"'"
+ky_vong_ly_do 1 "task có Scope warning mà Lens 2 không giải trình → chặn" "…đúng lý do" 'Lens 2: TSK-002 có cảnh báo phạm vi trong task-results.md — giải trình ở "Task scope warnings"' sh "$CHK" "$F"
 printf '\n## Lens 2 — Design and scope\n\n- Task scope warnings: TSK-002 sửa src/a.txt của TSK-001 vì bug phát hiện khi làm, đã khai Unplanned\n' >> "$F/review.md"; toc_f review.md; ghi_tree_review
 ky_vong 0 "Lens 2 nhắc tên task trong Task scope warnings → ĐẠT" sh "$CHK" "$F"
+cp "$TMP/kq-pv.bak" "$TMP/kq-pv2.bak"
+awk '{ print } /^## TSK-002/ { print ""; print "- Scope warning: `src/a.txt`" }' "$TMP/kq-pv2.bak" > "$F/task-results.md"
+thay "$F/review.md" '- Task scope warnings: TSK-002 sửa' '- Task scope warnings: TSK-0021 sửa'; ghi_tree_review
+ky_vong 1 "Task scope warnings nhắc TSK-0021 không tính là nhắc TSK-002 → chặn" sh "$CHK" "$F"
 cp "$TMP/kq-pv.bak" "$F/task-results.md"; viet_review
 ket_thuc

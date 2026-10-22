@@ -28,6 +28,9 @@
 #   - out_of_scope: (workflow.yaml) id không có, đã được phase nhận, thiếu lý do, khai hai lần.
 #   - "# giữ: CAP-…/INV-…" (tools/check-*.sh, tools/lib/*.sh, tools/task.sh) trỏ id không có; capability
 #     Judged by machine được phase nhận mà không luật nào khai "# giữ:" nó.
+#   - Luật chưa phân loại: số chỗ loi / loi_truoc / [CẢNH BÁO] chưa "# giữ:" phủ của mỗi tools/check-*.sh
+#     (trừ check-sdlc, check-release) và tools/task.sh phải bằng số trong tools/unclassified-rules.txt.
+#     --dem-luat: in danh sách đó (không kiểm gì khác).
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -51,10 +54,38 @@ kq_khai check-sdlc.sh \
   "2=SAI THAM SỐ — thừa tham số, hoặc không phải thư mục engine (thiếu workflow.yaml, sdlc/stages/)"
 . "$ROOT/tools/lib/md.sh"
 
-[ $# -le 1 ] || { echo "Dùng: sh tools/check-sdlc.sh [<engine-root>]" >&2; exit 2; }
+DEM=""; if [ "${1:-}" = --dem-luat ]; then DEM=1; shift; fi
+[ $# -le 1 ] || { echo "Dùng: sh tools/check-sdlc.sh [--dem-luat] [<engine-root>]" >&2; exit 2; }
 E="${1:-$ROOT}"
 if [ ! -f "$E/workflow.yaml" ] || [ ! -d "$E/sdlc/stages" ]; then
   echo "LỖI: \"$E\" thiếu workflow.yaml hoặc sdlc/stages/." >&2; exit 2
+fi
+
+# ---- luật checker chưa phân loại (bước A, đợt 2). Chỗ luật: dòng gọi loi / loi_truoc hoặc in [CẢNH BÁO]
+# trong tools/check-*.sh (trừ check-sdlc.sh, check-release.sh — kiểm chính engine) và tools/task.sh.
+# Một dòng "# giữ: …" phủ các chỗ luật sau nó tới dòng trống kế tiếp. Hàm thư viện (tools/lib/): đợt 3.
+DS_LUAT="tools/unclassified-rules.txt"
+tep_luat() { for _tl in "$E"/tools/check-*.sh "$E"/tools/task.sh; do
+  case "${_tl##*/}" in check-sdlc.sh|check-release.sh) continue ;; esac
+  [ -f "$_tl" ] && printf '%s\n' "${_tl#"$E"/}"; done; }
+# dem_luat <file> -> số chỗ luật (loi/loi_truoc/canh_bao, dòng in [LỖI]/[CẢNH BÁO], TỪ CHỐI:/DỪNG:/CẢNH BÁO:)
+# chưa được "# giữ:" phủ. Một "# giữ:" phủ đúng một chỗ luật đầu tiên bên dưới, trước dòng trống kế tiếp.
+dem_luat() {
+  awk '{ sub(/\r$/, "") }
+    /^[ \t]*$/ { phu = 0; next }
+    /^[ \t]*# giữ:/ { phu = 1; next }
+    /^[ \t]*#/ { next }
+    /^[ \t]*(function[ \t]+)?(loi|loi_truoc|canh_bao)[ \t]*\(/ && /\{/ && !/(loi|loi_truoc|canh_bao)[ \t]*\([^)]*"/ { next }
+    /BEGIN[ \t]*\{[ \t]*n_loi[ \t]*=[ \t]*loi_truoc/ { next }
+    $0 ~ /(^|[^A-Za-z0-9_])(loi|loi_truoc|canh_bao)[ (]/ || index($0, "[LỖI]") || index($0, "[CẢNH BÁO]") ||
+    /(TỪ CHỐI|DỪNG|CẢNH BÁO):/ { if (phu) phu = 0; else n++ }
+    END { print n + 0 }' "$1"
+}
+if [ -n "$DEM" ]; then
+  # chỉ in danh sách (dùng để tạo / cập nhật tools/unclassified-rules.txt) — không in khối Kết quả
+  trap - EXIT
+  tep_luat | while IFS= read -r _f; do _n=$(dem_luat "$E/$_f"); if [ "$_n" -gt 0 ]; then printf '%s %s\n' "$_f" "$_n"; fi; done
+  exit 0
 fi
 W="${TMPDIR:-/tmp}/aw-check-sdlc.$$"
 mkdir -p "$W"
@@ -351,6 +382,33 @@ while IFS= read -r c; do
     loi "$c: Judged by machine, phase $ph nhận, nhưng không luật checker nào khai \"# giữ: $c\" — thêm chú thích ngay trên khối chặn / cảnh báo giữ nó."
 done < "$W/may"
 
+# ---- luật chưa phân loại: số chỗ luật chưa "# giữ:" của mỗi file phải đúng bằng số trong $DS_LUAT —
+# nhiều hơn = luật mới không gắn id; ít hơn = đã gắn thêm mà chưa hạ danh sách (danh sách chỉ được giảm).
+: > "$W/dsl"
+tep_luat > "$W/tepl"
+if [ -f "$E/$DS_LUAT" ]; then
+  while IFS= read -r l; do
+    l=$(printf '%s' "$l" | tr -d '\r')
+    case "$l" in ""|"#"*) continue ;; esac
+    set -f; set -- $l; set +f
+    f=$1; so=$2; [ $# -eq 2 ] || so=""
+    case "$so" in ""|*[!0-9]*) loi "$DS_LUAT: dòng \"$l\" sai dạng — cần \"<file> <số>\"."; continue ;; esac
+    [ -f "$E/$f" ] || { loi "$DS_LUAT: $f không có."; continue; }
+    grep -qxF "$f" "$W/tepl" || { loi "$DS_LUAT: $f không phải file được đếm (tools/check-*.sh trừ check-sdlc/check-release, tools/task.sh)."; continue; }
+    awk -v f="$f" '$1 == f { c = 1 } END { exit !c }' "$W/dsl" && { loi "$DS_LUAT: $f lặp — mỗi file một dòng."; continue; }
+    echo "$f $so" >> "$W/dsl"
+  done < "$E/$DS_LUAT"
+fi
+while IFS= read -r f; do
+  n=$(dem_luat "$E/$f")
+  m=$(awk -v f="$f" '$1 == f { print $2; exit }' "$W/dsl"); m=${m:-0}
+  if [ "$n" -gt "$m" ]; then
+    loi "$f: $n luật chưa gắn \"# giữ:\" (cho phép $m trong $DS_LUAT) — gắn CAP-…/INV-… cho luật mới; không id nào hợp thì thêm capability / invariant."
+  elif [ "$n" -lt "$m" ]; then
+    loi "$DS_LUAT: $f cho phép $m nhưng chỉ còn $n luật chưa gắn — hạ xuống $n (chạy sh tools/check-sdlc.sh --dem-luat)."
+  fi
+done < "$W/tepl"
+
 # trang_thai <stage> -> implemented | partial | gap, suy ra: capability của stage được phase nhận hết / một phần / không
 trang_thai() {
   awk -F'|' -v s="$1" 'FILENAME == ARGV[1] { if ($1 == s) n++; next }
@@ -434,8 +492,10 @@ la_gap() { case "$GAP" in *" $1 "*) return 0 ;; esac; return 1; }
 # luon_co <stage> <loại> -> 0 nếu một stage đứng trước, luôn chạy với profile đang xét, provides
 # loại đó ($W/pq: provides của stage + adds_provides của profile; $W/luon: "số|stage" luôn chạy)
 luon_co() {
-  awk -F'|' -v n="$(stage_so "$1")" -v t="$2" 'FILENAME == ARGV[1] { so[$2] = $1; next }
-    $2 == t && ($1 in so) && so[$1] + 0 < n + 0 { co = 1; exit } END { exit !co }' "$W/luon" "$W/pq"
+  case "$LUON_MIN" in
+    *" $2="*) _lm=${LUON_MIN#*" $2="}; _lm=${_lm%% *}; [ "$_lm" -lt "$(stage_so "$1")" ] ;;
+    *) return 1 ;;
+  esac
 }
 : > "$W/mtran"; : > "$W/vang"
 for f in "$E"/sdlc/profiles/*.md; do
@@ -516,6 +576,8 @@ for f in "$E"/sdlc/profiles/*.md; do
     co "$W/pprov" "$s|$t" || loi "profile $id: adds_provides \"$m\" — không phase nào của stage $s map loại đó ra file."
   done < "$W/l"
   cat "$W/prov" "$W/pt" > "$W/pq"
+  # luon_co tra chuỗi: mỗi loại → thứ tự nhỏ nhất của stage luôn chạy (với profile này) cung cấp nó; tính một lần
+  LUON_MIN=" $(awk -F'|' 'FILENAME == ARGV[1] { so[$2] = $1; next } ($1 in so) { if (!($2 in m) || so[$1] + 0 < m[$2]) m[$2] = so[$1] + 0 } END { for (t in m) printf "%s=%s ", t, m[t] }' "$W/luon" "$W/pq")"
   fm_list "$f" adds_requires > "$W/l"
   while IFS= read -r m; do
     [ -n "$m" ] || continue

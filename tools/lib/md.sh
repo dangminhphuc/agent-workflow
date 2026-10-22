@@ -166,7 +166,7 @@ file_hash() {
 # Ghép vào chương trình awk: awk "$MAU_ERE_AWK"' …dùng mau_ere(…)… '.
 # shellcheck disable=SC2016
 MAU_ERE_AWK='
-function mau_ere(p, moi,   r, i, ch, n) {
+function mau_ere(p, moi,   r, i, ch, n, k, lop) {
   r = ""; n = length(p)
   for (i = 1; i <= n; i++) {
     ch = substr(p, i, 1)
@@ -174,10 +174,32 @@ function mau_ere(p, moi,   r, i, ch, n) {
       if (moi && substr(p, i + 1, 1) == "*") { r = r ".*"; i++ }
       else r = r (moi ? "[^/]*" : ".*")
     } else if (ch == "?") r = r (moi ? "[^/]" : ".")
+    else if (ch == "[" && (k = dong_lop(p, i)) > 0) {
+      # lớp ký tự như case của shell: [abc], [!a] (phủ định), [[:alpha:]]; "]" ngay sau "[" hoặc
+      # "[!" là ký tự thường; lớp chưa đóng hoặc chứa "[" lạ -> "[" nguyên văn (dong_lop)
+      lop = substr(p, i + 1, k - i - 1); i = k
+      if (substr(lop, 1, 1) == "!") lop = "^" substr(lop, 2)
+      gsub(/\\/, "\\\\", lop)
+      r = r "[" lop "]"
+    }
     else if (index("\\.^$+(){}[]|", ch)) r = r "\\" ch
     else r = r ch
   }
   return "^" r "$"
+}
+# dong_lop(p, i) -> vị trí "]" đóng lớp mở ở p[i] ("["), 0 nếu lớp không hợp lệ
+function dong_lop(p, i,   j, n, e) {
+  n = length(p); j = i + 1
+  if (substr(p, j, 1) == "!") j++
+  if (substr(p, j, 1) == "]") j++
+  for (; j <= n; j++) {
+    if (substr(p, j, 2) == "[:") {
+      if (!(e = index(substr(p, j + 2), ":]"))) return 0
+      j += e + 2
+    } else if (substr(p, j, 1) == "]") return j
+    else if (substr(p, j, 1) == "[") return 0
+  }
+  return 0
 }'
 
 # khop_duong <đường-dẫn> <mẫu...> -> 0 nếu khớp một mẫu theo nghĩa MỚI của glob trong plan.md:

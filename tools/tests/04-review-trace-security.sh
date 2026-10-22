@@ -29,8 +29,7 @@ dung "…refactor-requests.md (nguyên văn lời người) thì không cảnh b
 rm -f "$F/refactor-requests.md"
 cp "$F/review.md" "$F/review.md.bak"
 printf '\nGhi chú: tdd.md còn ô duyệt.\n' >> "$F/review.md"
-ky_vong 1 "CỔNG CUỐI: chặn từ dịch trong review.md (file review tự viết)" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'LỖI.*review.md dòng [0-9]*: \"ô duyệt\" là từ dịch — viết \`approval checkbox\`'"
+ky_vong_ly_do 1 "CỔNG CUỐI: chặn từ dịch trong review.md (file review tự viết)" "…đúng lý do" 'LỖI.*review.md dòng [0-9]*: "ô duyệt" là từ dịch — viết `approval checkbox`' sh "$CHK" "$F"
 cp "$F/review.md.bak" "$F/review.md"
 printf '\nGhi chú: tdd.md dòng 15 viết "ô duyệt", “điểm mù” và `lỗi thời` là từ dịch.\n' >> "$F/review.md"
 ky_vong 0 "review.md trích từ dịch trong \"…\", “…”, \`…\` thì cho qua" sh "$CHK" "$F"
@@ -61,12 +60,10 @@ viet_review
 
 # ---- Lens 4 — Security
 printf '| ID | Verdict |\n|---|---|\n| REQ-001 | pass |\n| REQ-002 | pending |\n' > "$F/review.md"
-ky_vong 1 "chặn khi thiếu mục Lens 4 — Security" sh "$CHK" "$F"
-dung "…đúng lý do: thiếu mục Lens 4" sh -c "sh '$CHK' '$F' | grep -q 'thiếu mục \"## Lens 4 — Security\"'"
+ky_vong_ly_do 1 "chặn khi thiếu mục Lens 4 — Security" "…đúng lý do: thiếu mục Lens 4" 'thiếu mục "## Lens 4 — Security"' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '| Crypto | not applicable | không dùng crypto |
 ' ''
-ky_vong 1 "chặn khi thiếu một hạng mục bảo mật" sh "$CHK" "$F"
-dung "…đúng lý do: hạng mục Crypto" sh -c "sh '$CHK' '$F' | grep -q 'Lens 4 \"Crypto\": không có dòng kết luận'"
+ky_vong_ly_do 1 "chặn khi thiếu một hạng mục bảo mật" "…đúng lý do: hạng mục Crypto" 'Lens 4 "Crypto": không có dòng kết luận' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '| Crypto | not applicable |' '| Cryptography | not applicable |'
 ky_vong 1 "chặn khi đổi tên hạng mục (tên cố định)" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '| Secrets / config | pass |' '| Secrets / config | ổn |'

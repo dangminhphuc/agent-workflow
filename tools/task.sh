@@ -148,7 +148,10 @@ if [ "$LENH" = start ]; then
   # Commit lúc bắt đầu: done so file đổi từ đây với Expected files của riêng task (cảnh báo phạm vi).
   sha=$(git -C "$DIR" rev-parse HEAD 2>/dev/null)
   if [ -n "$sha" ]; then
-    { kq_khong_muc; echo ""; echo "## $TASK"; echo ""; echo "- Started at: $sha"; } > "$KQ.moi" && mv "$KQ.moi" "$KQ"
+    # Giữ bộ đếm đỏ liên tiếp: start lại (sửa tay Status, reopen) không được né điều kiện DỪNG.
+    do_cu=$(do_lien_tiep "$TASK")
+    { kq_khong_muc; echo ""; echo "## $TASK"; echo ""; echo "- Started at: $sha"
+      if [ "$do_cu" -gt 0 ] 2>/dev/null; then echo "- Đỏ liên tiếp: $do_cu"; fi; } > "$KQ.moi" && mv "$KQ.moi" "$KQ"
   fi
   echo "$TASK: [ ] → [~]"
   exit 0

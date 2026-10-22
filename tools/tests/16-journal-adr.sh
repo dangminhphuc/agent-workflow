@@ -43,6 +43,7 @@ sed 's/	may-a	/	may-b	/' "$TMP/nk-a.tsv" > "$TMP/nk-b.tsv"
 n1=$(sh "$NK" report "$TMP/nk-a.tsv" | awk '$1 == "plan" { print $2; exit }')
 [ -n "$n1" ] || ca_hong "nhật ký fixture không có lần chạy check plan — ca cộng dồn không kiểm được gì"
 dung "hai máy: số lần chạy cộng dồn" bang "$(sh "$NK" report "$TMP/nk-a.tsv" "$TMP/nk-b.tsv" | awk '$1 == "plan" { print $2; exit }')" "$((n1 * 2))"
+dung "report cùng một file export hai lần → đếm một lần" bang "$(sh "$NK" report "$TMP/nk-a.tsv" "$TMP/nk-a.tsv" | awk '$1 == "plan" { print $2; exit }')" "$n1"
 printf 'rác\n' >> "$TMP/nk-b.tsv"
 dung "dòng sai dạng → bỏ qua, báo số dòng bỏ" sh -c "sh '$NK' report '$TMP/nk-a.tsv' '$TMP/nk-b.tsv' | grep -q 'bỏ 1 dòng sai dạng'"
 ky_vong 2 "export thiếu file đích → SAI THAM SỐ" sh "$NK" export

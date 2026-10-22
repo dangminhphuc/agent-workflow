@@ -184,6 +184,13 @@ dung "…đỏ liên tiếp: 1" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/tas
 ky_vong 1 "đỏ lần 2" sh "$TK" done "$F" TSK-002
 ky_vong 6 "đỏ lần 3 = MAX_RED_RUNS mặc định → DỪNG" sh "$TK" done "$F" TSK-002
 ky_vong 6 "next cũng DỪNG ở task đó" sh "$TK" next "$F"
+# Bộ đếm đỏ liên tiếp không về 0 chỉ vì start lại (sửa tay Status [ ] rồi start không né được DỪNG)
+thay "$F/plan.md" '- Verify: `echo VERIFY-DO; false` → xanh
+- Status: `[~]`' '- Verify: `echo VERIFY-DO; false` → xanh
+- Status: `[ ]`'
+sh "$TK" start "$F" TSK-002 >/dev/null 2>&1
+dung "start lại sau DỪNG giữ bộ đếm đỏ liên tiếp" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'")" "3"
+ky_vong 6 "…done đỏ lần nữa vẫn DỪNG" sh "$TK" done "$F" TSK-002
 printf 'MAX_RED_RUNS=5\n' >> "$CFG/config.sh"
 ky_vong 0 "MAX_RED_RUNS=5 → next còn cho làm" sh "$TK" next "$F"
 cp "$TMP/ch-ss.bak" "$CFG/config.sh"
@@ -238,6 +245,14 @@ printf 'x\n' > "$R/src/sau-x.txt"
 dung "chạy lại done trên task [x] → không cảnh báo file của task sau" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'src/sau-x.txt'"
 dung "…và không ghi Scope warning mới cho file đó" sh -c "! grep -q 'Scope warning: .src/sau-x.txt' '$F/task-results.md'"
 rm -f "$R/src/sau-x.txt"
+# Unplanned: chỉ cột "Extra files" là mẫu được phép — backtick ở cột "What came up" không miễn
+printf 'x\n' > "$R/src/cot-pv.txt"
+thay "$F/plan.md" '|---|---|---|---|' '|---|---|---|---|
+| TSK-002 | lỡ sửa `src/cot-pv.txt` | | giữ |'
+awk '/^### TSK-002/ { t = 1 } t && /^- Status:/ { $0 = "- Status: `[ ]`"; t = 0 } { print }' "$F/plan.md" > "$TMP/p" && mv "$TMP/p" "$F/plan.md"
+sh "$TK" start "$F" TSK-002 >/dev/null 2>&1
+dung "Unplanned: backtick ở cột What came up không miễn file" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi \`src/cot-pv.txt\`'"
+rm -f "$R/src/cot-pv.txt"
 rm -f "$R/src/khac-pv.txt"
 awk '!/^- Started at:/' "$F/task-results.md" > "$TMP/kq" && mv "$TMP/kq" "$F/task-results.md"
 printf 'x\n' > "$R/src/khac-pv.txt"

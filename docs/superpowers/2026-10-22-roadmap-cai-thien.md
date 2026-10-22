@@ -42,7 +42,7 @@
 | SP7 | Parser YAML báo lỗi | 3 | xong | — | — | [spec](specs/2026-10-22-sp6-7-toc-do-yaml-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP8 | Glob `**` (bước 1: chuyển tiếp) | 3 | xong | SP3 | Chốt: đổi có chuyển tiếp, chỉ glob của plan.md | [spec](specs/2026-10-22-sp8-glob-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP9 | Chạy thật + gom nhật ký | 4 | một phần | SP3, SP4 | Chạy thật: người làm | [spec](specs/2026-10-22-sp9-11-12-design.md) (chỉ công cụ) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) (công cụ) |
-| SP10 | Đường tắt cho việc nhỏ | 4 | chặn | số liệu SP9 | A / B / C — chờ số liệu SP9 | | | |
+| SP10 | Đường tắt cho việc nhỏ | 4 | một phần | số liệu SP9 | A xong (#81); B / C chờ số liệu SP9 | [spec](specs/2026-10-22-dot-2-design.md) § B | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81) |
 | SP11 | Gỡ adapter `planned` | 4 | xong | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP13 | Checker LLM cho spec | 5 | chờ | — | Đọc lại nguồn hay chỉ `Quote`; chặn ở đâu | | | |
@@ -51,7 +51,7 @@
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | chờ | — | Cách ghi nguồn | | | |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
-| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | chờ | SP13 | Chia mấy PR | | | |
+| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | SP13 | Chặn luật mới không id xong (#81); còn: gắn luật cũ, `Category`, `tools/lib/`, suy từ diff — chia mấy PR | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81) (một phần) |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -82,6 +82,8 @@ bugfix/refactor bỏ design khi `Design: skip`. Sửa typo trong tài liệu, bu
 - **C. Loại mới có giới hạn cứng** (vd diff ≤ N dòng, không đụng `production_code`, không đụng
   `sensitive_code`): bỏ spec, chỉ còn intake → implement → review. Máy kiểm được giới hạn, nhưng thêm
   một job type làm phân loại ở intake khó hơn.
+
+**Đã làm (#81):** A — `docs/huong-dan.md` § 1.10 "Khi nào không dùng `aw`". B / C chờ số liệu SP9.
 
 **Nghiêng về:** A trước (lấy số liệu SP9), rồi B nếu `chore` chiếm phần lớn. C đổi triết lý quy trình —
 chỉ làm khi người chủ engine muốn.
@@ -206,8 +208,11 @@ báo chuyển tiếp. Glob của `conventions.md` giữ nghĩa cũ (spec SP8).
 `machine` được nhận mà không luật nào khai. Còn ~200 chỗ chặn/cảnh báo chưa có id, `Category` của
 `workflow/checkers/*.md` chưa gắn, luật mồ côi chưa bị chặn, dòng "Interface: …" trong PR vẫn khai tay.
 
-**Hướng.** Gắn id cho chỗ còn lại và mọi `Category`; chặn luật mồ côi (cho phép danh sách "chưa phân
-loại" rồi rút dần); suy "diff chạm CAP/INV nào" từ file thay đổi.
+**Đã làm (#81):** luật mới phải gắn `# giữ:` — `tools/unclassified-rules.txt` đếm chỗ luật chưa gắn
+của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đúng một chỗ luật ngay dưới.
+
+**Hướng (phần còn lại).** Gắn id cho chỗ còn lại (hạ dần danh sách) và mọi `Category`; đếm cả luật trong
+`tools/lib/`; suy "diff chạm CAP/INV nào" từ file thay đổi.
 
 **Cần quyết.** Chia mấy PR. Làm sau SP13 để `Category` của checker spec mang id ngay.
 
@@ -215,12 +220,12 @@ loại" rồi rút dần); suy "diff chạm CAP/INV nào" từ file thay đổi.
 
 Đụng phần nào thì làm phần đó, không cần spec:
 
-- **Còn ~44 cặp "…đúng lý do" chạy checker hai lần** — mẫu grep có `\"`, `$`, `\\` nên không chuyển tự
+- **Còn ~30 cặp "…đúng lý do" chạy checker hai lần** — mẫu grep có `\"`, `$`, `\\` nên không chuyển tự
   động được; chuyển tay sang `ky_vong_ly_do` (`tools/tests/lib.sh`).
-- **`check-sdlc.sh` ~2 giây mỗi lần, ~650 lần gọi `awk`** (phần lớn ở ma trận profile: `luon_co`, `la_gap`,
-  `kieu`). Gom dữ liệu profile vào biến shell một lần như `SO_STAGE`.
-- Bộ test sau SP6: ~4 phút 30 giây thực trên 4 luồng; mục tiêu dưới 3 phút chưa đạt — phần dài nhất
-  `22-sdlc-stage-files`.
+- **`check-sdlc.sh` ~2 giây mỗi lần** (phần lớn ở ma trận profile: `la_gap`, `kieu`; `luon_co` đã tra chuỗi tính
+  sẵn ở #81). Gom phần còn lại vào biến shell một lần như `SO_STAGE`.
+- Bộ test sau #81: ~3 phút 45 giây thực trên 4 luồng (1774 ca); mục tiêu dưới 3 phút chưa đạt — phần dài
+  nhất `23-sdlc-syntax`, `21-sdlc-profiles`.
 
 ## Không làm
 

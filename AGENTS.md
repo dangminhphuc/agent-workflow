@@ -58,8 +58,9 @@ Open work: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` (the only todo lis
 - One rule, one place. Phase files never restate the I/O contract or what the checker checks.
   Rationale goes in `docs/kien-truc.md`.
 - New rule: precise → block; cross-phase or false-positive-prone → warn in implement, block in review.
-- A new block/warn rule gets a comment `# giữ: CAP-…[, INV-…]` above it naming what it keeps; `sh tools/check-sdlc.sh`
-  blocks a claimed `machine` capability no rule names, and unknown ids (older rules are tagged gradually).
+- A new block/warn rule gets a comment `# giữ: CAP-…[, INV-…]` above it (covers the one rule right below it); `sh tools/check-sdlc.sh`
+  blocks unknown ids, a claimed `machine` capability no rule names, and untagged rules beyond the counts in
+  `tools/unclassified-rules.txt` (older rules; tag one → lower its count: `sh tools/check-sdlc.sh --dem-luat`).
 
 ## Change together
 

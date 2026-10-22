@@ -115,7 +115,8 @@ fi
 
 # Mã finding của review.md hiện tại — task "Fixes: RVW-NNN" (plan bổ sung sau review) phải trỏ về một mã có thật.
 RVW=""
-[ -f "$DIR/review.md" ] && RVW=$(awk '{ sub(/\r$/, "") } /^###[ \t]+\[(Blocker|Should fix|Nit)\][ \t]+RVW-[0-9]+/ { match($0, /RVW-[0-9]+/); printf " %s", substr($0, RSTART, RLENGTH) }' "$DIR/review.md")
+[ -f "$DIR/review.md" ] && RVW=$(awk '{ sub(/\r$/, "") } /^##[ \t]+Lens 3/ { l3 = 1; next } /^##[ \t]/ && !/^###/ { l3 = 0 }
+  l3 && /^###[ \t]/ && match($0, /\[(Blocker|Should fix|Nit)\][ \t]*RVW-[0-9]+/) { s = substr($0, RSTART, RLENGTH); match(s, /RVW-[0-9]+/); printf " %s", substr(s, RSTART, RLENGTH) }' "$DIR/review.md")
 
 awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }

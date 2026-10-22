@@ -18,8 +18,7 @@ viet_mr; thay "$F/merge-request.md" '## Out of Scope
 None
 
 ' ''
-ky_vong 1 "xoá mất một mục của mẫu → chặn (không áp dụng thì ghi None)" sh "$SHC" "$F"
-dung "…đúng lý do" sh -c "sh '$SHC' '$F' | grep -q 'Thiếu mục \"## Out of Scope\"'"
+ky_vong_ly_do 1 "xoá mất một mục của mẫu → chặn (không áp dụng thì ghi None)" "…đúng lý do" 'Thiếu mục "## Out of Scope"' sh "$SHC" "$F"
 viet_mr; thay "$F/merge-request.md" '- **Added:** test/a.test.js — có a và b
 - **Commands:** `npm test` → xanh' '<!-- chưa viết -->'
 ky_vong 1 "Testing chỉ có comment → chặn (mục bắt buộc trống)" sh "$SHC" "$F"
