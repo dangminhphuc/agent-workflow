@@ -90,7 +90,7 @@ invariants: []
 | `- Artifact:` | Loại artifact (trong `provides` của stage) capability bảo đảm; một hoặc nhiều, cách nhau dấu phẩy, viết trơn; **bắt buộc** |
 
 `Judged by` không phải trang trí: capability `machine` mà engine nhận làm thì sau này (bước A — xem
-`docs/viec-can-lam.md`) phải có luật checker gắn id của nó. Capability `human` nghĩa là engine chỉ có
+[roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP19) phải có luật checker gắn id của nó. Capability `human` nghĩa là engine chỉ có
 thể tạo chỗ cho người quyết, không thay người.
 
 Capability **chưa làm vẫn nằm trong file stage**. Đó là cách interface định hướng: đọc file stage là
@@ -279,7 +279,7 @@ Job type × stage (chạy · tuỳ = có thể bỏ · bỏ · gap = engine khô
   người xác nhận trước khi release (`CAP-deploy-03`). **Không làm**: release / triển khai
   (`CAP-deploy-02`) — pipeline của repo đích.
 - **`operate` — gap.** Sự cố chưa quay lại thành việc mới (`CAP-operate-02`) — việc engine có thể làm
-  (`docs/viec-can-lam.md` § Interface SDLC). **Không làm**: quan sát production (`CAP-operate-01`) —
+  ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP16). **Không làm**: quan sát production (`CAP-operate-01`) —
   hệ thống observability bên ngoài.
 
 Muốn làm một dòng trong bảng: theo công thức 4.2. Muốn đưa một capability vào hay ra khỏi khối

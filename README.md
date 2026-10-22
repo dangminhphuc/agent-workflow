@@ -15,6 +15,7 @@ Adapter hiện có: **Claude Code**, **Cursor**. Agent khác (Codex, Copilot…)
 | Luật từng phase (nguồn sự thật) | [`workflow/phases/`](workflow/phases), [`workflow/rules/`](workflow/rules) |
 | Vì sao thiết kế như vậy, điểm yếu | [`docs/kien-truc.md`](docs/kien-truc.md) |
 | Sửa engine: interface SDLC (stage, capability, invariant), công thức cho từng loại thay đổi, roadmap | [`docs/interface-sdlc.md`](docs/interface-sdlc.md) |
+| Việc còn làm của engine (dự án con, spec, plan theo luồng Superpowers) | [`docs/superpowers/2026-10-22-roadmap-cai-thien.md`](docs/superpowers/2026-10-22-roadmap-cai-thien.md) |
 | Adapter | [`adapters/README.md`](adapters/README.md) |
 | Phát triển chính repo này (cho agent) | [`AGENTS.md`](AGENTS.md) |
 
