@@ -38,7 +38,7 @@ thay "$F/spec.md" '- Source: `[FILE]` docs/brd.md § Hoàn tiền
 - Quote:
   > khách mở y thấy a'
 duyet_lai "$F/spec.md"; rm -f "$R/docs/brd.md"
-dung "…đúng lý do: spec khai Design: skip" sh -c "sh '$T/check-design.sh' '$F' | grep -q 'Design: skip'"
+ky_vong_ly_do 1 "Design: skip: check-design chặn" "…đúng lý do: spec khai Design: skip" 'Design: skip' sh "$T/check-design.sh" "$F"
 ky_vong 2 "Design: skip: aw approval design → SAI THAM SỐ" sh "$T/approval.sh" design "$F"
 ky_vong 0 "Design: skip: aw approval plan hỏi duyệt SPEC, spec đã duyệt → ĐÃ DUYỆT" sh "$T/approval.sh" plan "$F"
 thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
@@ -78,8 +78,7 @@ ky_vong 2 "…check-plan vẫn đòi tdd.md → THIẾU ĐẦU VÀO" sh "$T/chec
 
 tao_fixture feature feat_nho
 bo_design
-ky_vong 1 "feature không được Design: skip" sh "$T/check-spec.sh" "$F"
-dung "…đúng lý do" sh -c "sh '$T/check-spec.sh' '$F' | grep -q 'chỉ dành cho bugfix/refactor'"
+ky_vong_ly_do 1 "feature không được Design: skip" "…đúng lý do" 'chỉ dành cho bugfix/refactor' sh "$T/check-spec.sh" "$F"
 
 tao_fixture chore chore_nho
 thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `normal`

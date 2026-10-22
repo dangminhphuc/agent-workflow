@@ -58,8 +58,7 @@ viet_intake
 sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
 ky_vong 0 "spec ghi based_on intake.md vẫn qua check-spec" sh "$T/check-spec.sh" "$F"
 printf -- '- `[JIRA]` ABC-2\n' >> "$F/intake.md"
-ky_vong 1 "gộp thêm input sau khi có spec → review chặn (spec lỗi thời)" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do: spec.md lỗi thời vì intake.md" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'spec.md: stale — intake.md'"
+ky_vong_ly_do 1 "gộp thêm input sau khi có spec → review chặn (spec lỗi thời)" "…đúng lý do: spec.md lỗi thời vì intake.md" 'spec.md: stale — intake.md' sh "$T/check-review.sh" "$F"
 viet_intake; viet_spec
 
 thay "$F/intake.md" '`feature`' '`chore`'
@@ -89,8 +88,7 @@ viet_intake
 g checkout -q -b moi-hon main
 printf 'x\n' > "$R/docs/cua-nguoi-khac.txt"; g add docs/cua-nguoi-khac.txt; g commit -q -m "cua nguoi khac"
 g checkout -q feat_x; g merge -q --no-edit moi-hon
-ky_vong 1 "base ghi main mà branch tạo từ bản mới hơn → review thấy file của người khác" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do: file của người khác bị tính ngoài phạm vi" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'docs/cua-nguoi-khac.txt: thay đổi ngoài phạm vi'"
+ky_vong_ly_do 1 "base ghi main mà branch tạo từ bản mới hơn → review thấy file của người khác" "…đúng lý do: file của người khác bị tính ngoài phạm vi" 'docs/cua-nguoi-khac.txt: thay đổi ngoài phạm vi' sh "$T/check-review.sh" "$F"
 SHA_MH=$(git -C "$R" rev-parse --short moi-hon)
 thay "$F/intake.md" "\`main\` @ \`$SHA_MAIN\`" "\`moi-hon\` @ \`$SHA_MH\`"
 ghi_based_on
@@ -129,7 +127,6 @@ viet_review
 # test xanh tren code chua sua -> khong tai hien duoc
 g stash -q
 printf 'TEST_CMD="true"\n%s\n' "$BM_XANH" > "$CFG/config.sh"
-ky_vong 1 "check-repro chặn khi test XANH trên code chưa sửa" sh "$T/check-repro.sh" "$F"
-dung "…đúng lý do: test xanh, không phải vì đã sửa code" sh -c "sh '$T/check-repro.sh' '$F' | grep -q 'XANH'"
+ky_vong_ly_do 1 "check-repro chặn khi test XANH trên code chưa sửa" "…đúng lý do: test xanh, không phải vì đã sửa code" 'XANH' sh "$T/check-repro.sh" "$F"
 
 ket_thuc

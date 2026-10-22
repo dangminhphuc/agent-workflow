@@ -220,12 +220,15 @@ của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đ�
 
 Đụng phần nào thì làm phần đó, không cần spec:
 
-- **Còn ~30 cặp "…đúng lý do" chạy checker hai lần** — mẫu grep có `\"`, `$`, `\\` nên không chuyển tự
-  động được; chuyển tay sang `ky_vong_ly_do` (`tools/tests/lib.sh`).
-- **`check-sdlc.sh` ~2 giây mỗi lần** (phần lớn ở ma trận profile: `la_gap`, `kieu`; `luon_co` đã tra chuỗi tính
-  sẵn ở #81). Gom phần còn lại vào biến shell một lần như `SO_STAGE`.
-- Bộ test sau #81: ~3 phút 45 giây thực trên 4 luồng (1774 ca); mục tiêu dưới 3 phút chưa đạt — phần dài
-  nhất `23-sdlc-syntax`, `21-sdlc-profiles`.
+- **2 cặp "…đúng lý do" còn kiểm hai thông báo** — `ky_vong_ly_do` chỉ nhận một mẫu. Mục lục vừa thiếu mục
+  mới vừa thừa link cũ (`01-fixture-engine-toc.sh`, chạy checker hai lần) và cả hai file kết quả lỗi thời
+  (`06-review-freshness.sh`, chạy một lần). Các cặp một thông báo đã chuyển.
+- **`check-sdlc.sh` ~1,6 giây mỗi lần** (trước ~2 giây). `cap_co`, `cap_stage`, id invariant, phase theo
+  stage, `skippable: false` và requires của stage tra chuỗi tính một lần. Phần còn lại là đọc frontmatter
+  từng file và quét `# giữ:`.
+- Bộ test trên máy này: 1775 ca, mọi ca đạt, khoảng 5 phút trên 6 luồng. Mục tiêu dưới 3 phút chưa đạt.
+  Phần dài nhất `21-sdlc-profiles` (103 giây), rồi `05-review-quality`, `08-adapters`, `23-sdlc-syntax` —
+  chưa tới ngưỡng cảnh báo nên tách. Số 3 phút 45 giây sau #81 đo trên 4 luồng, máy khác, không so trực tiếp.
 
 ## Không làm
 
