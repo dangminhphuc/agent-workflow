@@ -192,7 +192,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
 
   # Plan bổ sung sau review: task sửa finding thay "Covers" bằng "Fixes: RVW-NNN" hoặc URL bình luận MR.
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Fixes\**:/ {
-    v = $0; sub(/^[^:]*:/, "", v); gsub(/[`,]/, " ", v); n = split(v, gt_fx, /[ \t]+/)
+    v = $0; sub(/^[^:]*:/, "", v); gsub(/[`,*]/, " ", v); n = split(v, gt_fx, /[ \t]+/)
     for (i = 1; i <= n; i++) {
       x = gt_fx[i]; if (x == "") continue
       if (x ~ /^RVW-[0-9]+$/) { fx[cur] = fx[cur] " " x; co_sua[cur] = 1 }

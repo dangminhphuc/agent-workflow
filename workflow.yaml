@@ -83,7 +83,7 @@ sdlc:
   - stage: plan
     note: Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
   - stage: verify
-    note: Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; không có e2e, kiểm tải hay UAT
+    note: Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; chưa có UAT (e2e, kiểm tải: out_of_scope)
   - stage: deploy
     note: Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
   - stage: operate

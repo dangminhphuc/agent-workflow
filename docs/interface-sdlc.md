@@ -239,7 +239,7 @@ Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   plan (partial): Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
     CAP-plan-03  human    Work items are prioritised against each other
     CAP-plan-04  human    Work item carries an effort estimate
-  verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; không có e2e, kiểm tải hay UAT
+  verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; chưa có UAT (e2e, kiểm tải: out_of_scope)
     CAP-verify-05  human    Stakeholders accept the change (UAT)
   deploy (partial): Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
     CAP-deploy-03  human    Rollback path is recorded before delivery

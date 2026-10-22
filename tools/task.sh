@@ -211,8 +211,18 @@ if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
 
 # Phạm vi theo task: chỉ khi task bắt đầu ở bản có "Started at" và Verify xanh.
 bat_dau=$(tk_bc "$KQ" "$TASK" "Started at")
-pham_vi=""
-if [ "$ma" -eq 0 ] && [ -n "$bat_dau" ]; then pham_vi=$(tk_pham_vi "$DIR" "$TASK" "$bat_dau"); fi
+pham_vi=""; pv_cu=""
+# Task [x] chạy lại (làm mới bằng chứng): diff từ "Started at" đã gồm file của task SAU — chỉ giữ file
+# đã bị cảnh báo lần trước mà vẫn chưa được giải trình (khai Unplanned thì hết), không gán thêm file mới.
+if [ "$ma" -eq 0 ] && [ -n "$bat_dau" ]; then
+  pham_vi=$(tk_pham_vi "$DIR" "$TASK" "$bat_dau")
+  if [ "$st" = x ]; then
+    pv_cu=$(awk -v t="$TASK" '{ sub(/\r$/, "") } /^##[ \t]/ { vao = ($0 ~ ("^##[ \t]+" t "([ \t]|$)")); next }
+      vao && /^- Scope warning:/ { s = $0; sub(/^- Scope warning:[ \t]*`?/, "", s); sub(/`[ \t]*$/, "", s); print s }' "$KQ" 2>/dev/null)
+    pham_vi=$(printf '%s\n' "$pham_vi" | while IFS= read -r _f; do
+      [ -n "$_f" ] && printf '%s\n' "$pv_cu" | grep -qxF -- "$_f" && printf '%s\n' "$_f"; done)
+  fi
+fi
 
 # Ghi lại mục của task (bỏ mục cũ cùng mã).
 {

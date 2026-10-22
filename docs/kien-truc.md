@@ -864,8 +864,9 @@ kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu h�
 `yaml_kiem` (`md.sh`) báo mọi dòng ngoài tập con kèm số dòng — tab, `k:v`, thụt sâu, khối `|`/`>`,
 `{…}`, danh sách `[a, b]` — và `tools/check-sdlc.sh` chặn trên `workflow.yaml`, phase, utility
 command, file stage, profile. Lý do: trình đọc tập con trả rỗng khi gặp dòng lạ, nên sai cú pháp
-trước đây chỉ lộ ra ở một luật khác, xa chỗ sai. Chuỗi có ngoặc vuông không dấu phẩy
-(`argument_hint: [--global]`) là giá trị hợp lệ, không bị chặn.
+trước đây chỉ lộ ra ở một luật khác, xa chỗ sai. Mọi giá trị `[…]` khác `[]` bị chặn (kể cả một mục như
+`[plan]`: `fm_list` đọc thành rỗng); ngoại lệ duy nhất là `argument_hint: [--global]` — chuỗi gợi ý tham
+số, đọc bằng `fm_scalar`.
 
 ## Cách thêm một phase
 

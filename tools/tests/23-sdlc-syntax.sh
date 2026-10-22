@@ -60,6 +60,8 @@ moi; thay "$E/workflow.yaml" '  - id: cursor' '  # chú thích thụt lề
 
   - id: cursor'
 ky_vong 0 "workflow.yaml: chú thích thụt lề, dòng trống trong danh sách → ĐẠT" sh "$SC" "$E"
+moi; thay "$E/workflow/phases/03-plan.md" 'implements: breakdown' 'implements: [breakdown]'
+vi_pham "frontmatter: danh sách một mục [x] → chặn (fm_list đọc thành rỗng)" "workflow/phases/03-plan.md: dòng $(so_dong "$E/workflow/phases/03-plan.md" 'implements: [breakdown]'): dạng {…} hoặc danh sách [a, b] không được hỗ trợ"
 
 
 # Capability machine có phase nhận phải có luật checker khai "# giữ: CAP-…" (bước A, đợt 1)

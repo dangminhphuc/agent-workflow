@@ -25,8 +25,8 @@
   trỏ tới roadmap. Không đổi hành vi `aw`.
 - **Interface SDLC: capability phạm vi.** Thêm `CAP-breakdown-02` (task nêu file được đổi và cách kiểm),
   `CAP-implement-04` (file đổi nằm trong kế hoạch hoặc khai ngoài kế hoạch), `CAP-implement-05` (phạm vi
-  theo từng task, mẫu file hẹp — chưa làm), `CAP-implement-06` (task chỉ xong khi máy ghi bước kiểm đạt).
-  Stage `implement` thành `partial`. Người dùng `aw` không thấy gì khác.
+  theo từng task, mẫu file hẹp), `CAP-implement-06` (task chỉ xong khi máy ghi bước kiểm đạt). Cả bốn đều có
+  phase nhận; stage `implement` vẫn `implemented`. Người dùng `aw` không thấy gì khác.
 - **Interface SDLC: capability khai `Artifact`.** Mỗi capability ghi loại artifact nó bảo đảm
   (`- Artifact:`); `tools/check-sdlc.sh` chặn khi thiếu, khi loại không thuộc `provides` của stage,
   khi khai nhiều dòng, và khi một loại `provides` của stage không capability nào trỏ tới.

@@ -30,7 +30,8 @@ fm_scalar() {
 # yaml_kiem <file> fm|wf -> "dòng N: <lý do>" cho mỗi dòng ngoài tập con YAML mà fm_* / wf_* đọc
 # được (đọc sai thì trả rỗng — lỗi lộ muộn). fm: frontmatter giữa hai dòng "---" (k: v, k:, k: [],
 # "  - mục"); wf: cả file workflow.yaml, thêm danh sách map một cấp ("  - k: v" rồi "    k: v").
-# Dòng trống và chú thích (# ở bất kỳ mức thụt nào) luôn được phép.
+# Dòng trống và chú thích (# ở bất kỳ mức thụt nào) luôn được phép. Giá trị [...] khác [] bị chặn (fm_list đọc
+# thành rỗng), trừ argument_hint — chuỗi gợi ý tham số như [--global], đọc bằng fm_scalar.
 yaml_kiem() {
   awk -v mode="$2" '
     { sub(/\r$/, "") }
@@ -42,9 +43,10 @@ yaml_kiem() {
     {
       v = $0; sub(/^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:/, "", v); sub(/^ /, "", v)
       co_khoa = ($0 ~ /^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:/)
+      k = $0; sub(/^[ ]*(- )?/, "", k); sub(/:.*/, "", k)
     }
     co_khoa && (v ~ /^[|>][-+]?$/) { print "dòng " NR ": giá trị khối | / > không được hỗ trợ — viết một dòng"; next }
-    co_khoa && (v ~ /^[{]/ || v ~ /^[[].*,.*[]]$/) { print "dòng " NR ": dạng {…} hoặc danh sách [a, b] không được hỗ trợ — viết từng mục \"  - mục\" (rỗng: [])"; next }
+    co_khoa && (v ~ /^[{]/ || (v ~ /^[[].*[]]$/ && v != "[]" && k != "argument_hint")) { print "dòng " NR ": dạng {…} hoặc danh sách [a, b] không được hỗ trợ — viết từng mục \"  - mục\" (rỗng: [])"; next }
     /^[A-Za-z_][A-Za-z0-9_]*:([ ].*)?$/ { next }
     /^  - ./ && mode == "fm" { next }
     mode == "wf" && (/^  - [A-Za-z_][A-Za-z0-9_]*: ./ || /^  - ./ || /^    [A-Za-z_][A-Za-z0-9_]*:([ ].*)?$/) { next }

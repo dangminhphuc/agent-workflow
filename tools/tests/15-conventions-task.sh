@@ -233,6 +233,11 @@ dung "Unplanned của task KHÁC không miễn → vẫn cảnh báo" sh -c "sh 
 thay "$F/plan.md" '| TSK-001 | lạc |' '| TSK-002 | lạc |'
 dung "file khai ở Unplanned đúng task → hết cảnh báo cho file đó" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi \`src/khac-pv.txt\`'"
 dung "…và không còn Scope warning cho file đó" sh -c "! grep -q 'Scope warning: .src/khac-pv.txt' '$F/task-results.md'"
+# Chạy lại done trên task [x] (làm mới bằng chứng) không được gán file của task SAU cho task này
+printf 'x\n' > "$R/src/sau-x.txt"
+dung "chạy lại done trên task [x] → không cảnh báo file của task sau" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'src/sau-x.txt'"
+dung "…và không ghi Scope warning mới cho file đó" sh -c "! grep -q 'Scope warning: .src/sau-x.txt' '$F/task-results.md'"
+rm -f "$R/src/sau-x.txt"
 rm -f "$R/src/khac-pv.txt"
 awk '!/^- Started at:/' "$F/task-results.md" > "$TMP/kq" && mv "$TMP/kq" "$F/task-results.md"
 printf 'x\n' > "$R/src/khac-pv.txt"
