@@ -166,7 +166,7 @@ file_hash() {
 # Ghép vào chương trình awk: awk "$MAU_ERE_AWK"' …dùng mau_ere(…)… '.
 # shellcheck disable=SC2016
 MAU_ERE_AWK='
-function mau_ere(p, moi,   r, i, ch, n) {
+function mau_ere(p, moi,   r, i, ch, n, k, lop) {
   r = ""; n = length(p)
   for (i = 1; i <= n; i++) {
     ch = substr(p, i, 1)
@@ -174,6 +174,13 @@ function mau_ere(p, moi,   r, i, ch, n) {
       if (moi && substr(p, i + 1, 1) == "*") { r = r ".*"; i++ }
       else r = r (moi ? "[^/]*" : ".*")
     } else if (ch == "?") r = r (moi ? "[^/]" : ".")
+    else if (ch == "[" && (k = index(substr(p, i + 2), "]")) > 0) {
+      # lớp ký tự như case của shell: [abc], [!a] (phủ định); "]" ngay sau "[" là ký tự thường
+      lop = substr(p, i + 1, k); i += k + 1
+      if (substr(lop, 1, 1) == "!") lop = "^" substr(lop, 2)
+      gsub(/\\/, "\\\\", lop)
+      r = r "[" lop "]"
+    }
     else if (index("\\.^$+(){}[]|", ch)) r = r "\\" ch
     else r = r ch
   }

@@ -65,3 +65,15 @@
 - **Test:** helper `ky_vong_ly_do` chạy checker một lần cho cặp "mã thoát + lý do" (24 cặp đã chuyển);
   tách `22-sdlc-stage-files` → thêm `23-sdlc-syntax`, `25-sdlc-capabilities`; tách `20-sdlc-conformance` → thêm
   `24-sdlc-stage-status`.
+
+### Sửa
+- **Phạm vi diff:** hàng `Unplanned` chỉ lấy cột "Extra files" làm mẫu được phép (backtick ở cột "What came up"
+  không còn vô tình miễn file); dòng `Base:` thiếu sha thì cảnh báo glob rộng lùi về điểm rẽ nhánh thay vì bỏ qua.
+- **`aw task start` giữ bộ đếm đỏ liên tiếp** — sửa tay Status về `[ ]` rồi start lại không còn né được điều
+  kiện DỪNG (đúng như trước PR #79).
+- **Mã `RVW`:** `aw check plan` đọc mã finding giống `aw check review` (tiêu đề Lens 3 có `[mức]` rồi mã, kể
+  cả `### 1. [Blocker] RVW-001 — …`); dòng `Task scope warnings` phải nhắc đúng mã task (`TSK-0021` không
+  tính là nhắc `TSK-002`).
+- **Glob `[abc]`, `[!a]`** khớp như `case` của shell ở mọi hàm khớp mới (đếm glob rộng, cảnh báo chuyển tiếp).
+- **`aw journal report`** không đếm hai lần một file truyền trùng; file / thư mục tạm không còn tên đoán trước
+  được (cảnh báo chuyển tiếp không dùng file tạm; report dùng `mktemp -d`).

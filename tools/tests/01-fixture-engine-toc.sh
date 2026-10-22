@@ -128,9 +128,17 @@ dung "src/** khớp src/a/b.ts" kd src/a/b.ts 'src/**'
 dung "src/** khớp src/a.ts" kd src/a.ts 'src/**'
 dung "**/x.md khớp a/b/x.md" kd a/b/x.md '**/x.md'
 dung "? không qua /" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong a/b 'a?b'\""
-dung "ký tự regex khớp nguyên văn: a.b+(c)[d].txt" kd 'a.b+(c)[d].txt' 'a.b+(c)[d].txt'
+dung "ký tự regex khớp nguyên văn (. + ( ) ), [d] là lớp ký tự: a.b+(c)d.txt" kd 'a.b+(c)d.txt' 'a.b+(c)[d].txt'
 dung "…dấu . không khớp ký tự bất kỳ" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong axb.txt 'a.b.txt'\""
 dung "nhiều mẫu: khớp mẫu thứ hai" kd src/a/b.ts 'docs/*' 'src/**'
+dung "[ab] là lớp ký tự: src/[ab].txt khớp src/b.txt" kd src/b.txt 'src/[ab].txt'
+dung "…không khớp src/c.txt" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong src/c.txt 'src/[ab].txt'\""
+dung "[!a] là phủ định" kd xb 'x[!a]'
+dung "[ không đóng khớp nguyên văn" kd 'a[b' 'a[b'
+# Không dùng file tạm: TMPDIR hỏng (là một file thường) vẫn cảnh báo chuyển tiếp
+mkdir -p "$R/src/sau"; printf 'x\n' > "$R/src/sau/c.txt"; printf x > "$TMP/la-file"
+dung "TMPDIR hỏng → cảnh báo chuyển tiếp vẫn chạy" sh -c "TMPDIR='$TMP/la-file' sh '$T/check-implement.sh' '$F' | grep -q 'nhờ \* vượt thư mục'"
+rm -rf "$R/src/sau"
 
 # Cảnh báo chuyển tiếp: file khớp mẫu của plan.md chỉ nhờ * vượt thư mục → cảnh báo, không chặn ở đâu
 nhom "glob plan.md: cảnh báo chuyển tiếp"

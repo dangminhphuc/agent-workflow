@@ -123,6 +123,8 @@ kc_pham_vi() {
     /^##[ \t]/           { ps=0 }
     ps==1 || /^[ \t]*-[ \t]*\**Expected files\**:/ {
       s=$0
+      # hàng bảng Unplanned: chỉ cột "Extra files" là mẫu được phép (backtick ở cột khác là lời kể)
+      if (ps==1 && $0 ~ /^\|/) { split($0, c, "|"); s=c[4] }
       while (match(s, /`[^`]+`/)) { print substr(s, RSTART+1, RLENGTH-2); s=substr(s, RSTART+RLENGTH) }
     }
   ' "$_d/plan.md")
@@ -149,32 +151,33 @@ kc_glob_chuyen_tiep() {
   [ -f "$1/plan.md" ] || return 0
   _gc_top=$(git_top "$1") || return 0
   _gc_mb=$(kc_mb "$1") || return 0
-  awk '
-    function bt(s) { while (match(s, /`[^`]+`/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) } }
-    { sub(/\r$/, "") }
-    /^##[ \t]+Unplanned/ { un = 1; next }
-    /^##[ \t]/ && !/^###/ { un = 0 }
-    un || /^[ \t]*-[ \t]*\**Expected files\**:/ { bt($0) }
-  ' "$1/plan.md" > "${TMPDIR:-/tmp}/aw-gc.$$"
   { git -C "$_gc_top" diff --name-only "$_gc_mb"; git -C "$_gc_top" ls-files --others --exclude-standard; } \
     | sort -u | while IFS= read -r _gc_f; do
       [ -n "$_gc_f" ] || continue
       tm_bo "$_gc_f" && continue
       printf '%s\n' "$_gc_f"
     done | awk "$MAU_ERE_AWK"'
-    FILENAME == ARGV[1] { if ($0 != "") { m++; mau[m] = $0; cu[m] = mau_ere($0, 0); moi[m] = mau_ere($0, 1) } next }
+    function them(s) { while (match(s, /`[^`]+`/)) { m++; mau[m] = substr(s, RSTART + 1, RLENGTH - 2); cu[m] = mau_ere(mau[m], 0); moi[m] = mau_ere(mau[m], 1); s = substr(s, RSTART + RLENGTH) } }
+    # plan.md (đọc trước, không qua file tạm): mẫu ở "Expected files" và cột "Extra files" của "Unplanned"
+    FILENAME == ARGV[1] {
+      sub(/\r$/, "")
+      if ($0 ~ /^##[ \t]+Unplanned/) { un = 1; next }
+      if ($0 ~ /^##[ \t]/ && $0 !~ /^###/) un = 0
+      if (un && $0 ~ /^\|/) { split($0, c, "|"); them(c[4]) }
+      else if (un || $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/) them($0)
+      next
+    }
     {
       khop_moi = 0; dau = 0
       for (i = 1; i <= m; i++) { if ($0 ~ moi[i]) { khop_moi = 1; break } if (!dau && $0 ~ cu[i]) dau = i }
       if (khop_moi || !dau) next
       p = mau[dau]; g = ""
       for (j = 1; j <= length(p); j++) {
-        c = substr(p, j, 1)
-        if (c == "*" && substr(p, j + 1, 1) == "*") { g = g "**"; j++ } else if (c == "*") g = g "**"; else g = g c
+        ch = substr(p, j, 1)
+        if (ch == "*" && substr(p, j + 1, 1) == "*") { g = g "**"; j++ } else if (ch == "*") g = g "**"; else g = g ch
       }
       printf "`%s` chỉ khớp `%s` nhờ * vượt thư mục — bản sau * không qua /; viết `%s`\n", $0, p, g
-    }' "${TMPDIR:-/tmp}/aw-gc.$$" -
-  rm -f "${TMPDIR:-/tmp}/aw-gc.$$"
+    }' "$1/plan.md" -
 }
 
 # kc_glob_rong <thư-mục-feature>
@@ -188,6 +191,8 @@ kc_glob_rong() {
   case "$_gr_n" in *[!0-9]*) return 0 ;; esac
   [ "$_gr_n" -gt 0 ] || return 0
   _gr_sha=$(intake_base_dong "$1" | awk '{ print $2 }')
+  # Base: chỉ có ref (thiếu sha) → lùi về điểm rẽ nhánh (kc_mb), không bỏ qua im lặng
+  [ -n "$_gr_sha" ] || _gr_sha=$(kc_mb "$1") || return 0
   [ -n "$_gr_sha" ] || return 0
   _gr_top=$(git_top "$1") || return 0
   git -C "$_gr_top" cat-file -e "$_gr_sha^{commit}" 2>/dev/null || return 0

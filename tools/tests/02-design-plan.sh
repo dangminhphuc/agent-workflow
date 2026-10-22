@@ -211,6 +211,13 @@ dung "glob khớp 0 file (task tạo file mới) → không cảnh báo" sh -c "
 cp "$TMP/conv-glob.bak" "$CFG/conventions.md"
 viet_plan; ghi_based_on
 dung "mẫu hẹp, ngưỡng mặc định → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+# Base: chỉ có ref (thiếu sha) → vẫn đếm glob rộng trên merge-base
+cp "$CFG/conventions.md" "$TMP/conv-glob2.bak"; cp "$F/intake.md" "$TMP/intake-glob.bak"
+thay "$CFG/conventions.md" 'scope_glob_max_files: 30' 'scope_glob_max_files: 1'
+sed 's/^\(- \*\*Base:\*\* `main`\).*/\1/' "$TMP/intake-glob.bak" > "$F/intake.md"
+thay "$F/plan.md" '- Expected files: `src/*` `test/*`' '- Expected files: `*`'
+dung "Base thiếu sha → vẫn cảnh báo glob rộng" sh -c "sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+cp "$TMP/conv-glob2.bak" "$CFG/conventions.md"; cp "$TMP/intake-glob.bak" "$F/intake.md"; viet_plan; ghi_based_on
 
 # Plan bổ sung sau review: task sửa finding trỏ về mã RVW (hoặc URL bình luận MR) bằng "Fixes:"
 # them_task_sua <dòng Fixes / Covers> <Status> — thêm TSK-003 trước "## Deferred"
@@ -247,6 +254,10 @@ dung "…aw task next trả task sửa mới" bang "$(sh "$T/task.sh" next "$F" 
 ghi_tree_review
 ky_vong 1 "…review chặn khi task sửa chưa xong" sh "$T/check-review.sh" "$F"
 dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'TSK-003 chưa làm'"
+# Cùng một cách đọc mã RVW với check-review: [mức] có thể đứng sau chữ khác trong tiêu đề Lens 3
+viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/^### \[Should fix\]/### 1. [Should fix]/')"; toc_f review.md
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
+ky_vong 0 "Fixes trỏ finding có tiêu đề '### 1. [Should fix] RVW-001 — …' → ĐẠT" sh "$CHK" "$F"
 viet_plan; ghi_based_on; viet_review
 
 ket_thuc

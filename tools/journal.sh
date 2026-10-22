@@ -142,7 +142,13 @@ NGUON=$JD; bo=0
 if [ $# -gt 0 ]; then
   # Report trên file export: tách lại thành bốn nguồn trong thư mục tạm rồi tổng hợp như thường.
   for f in "$@"; do [ -f "$f" ] || { echo "LỖI: không có file \"$f\"." >&2; exit 2; }; done
-  JD="${TMPDIR:-/tmp}/aw-journal.$$"; mkdir -p "$JD" || exit 2
+  # Bỏ file trùng đường dẫn (truyền hai lần thì đếm một lần).
+  da="|"; n=$#
+  while [ "$n" -gt 0 ]; do
+    f=$1; shift; n=$((n - 1))
+    case "$da" in *"|$f|"*) ;; *) da="$da$f|"; set -- "$@" "$f" ;; esac
+  done
+  JD=$(mktemp -d "${TMPDIR:-/tmp}/aw-journal.XXXXXX" 2>/dev/null) || { JD="${TMPDIR:-/tmp}/aw-journal.$$"; mkdir "$JD" || exit 2; }
   kq_don 'rm -rf "$JD"'
   bo=$(awk -F'\t' -v d="$JD" '
     BEGIN { cot["checks"] = 5; cot["failures"] = 4; cot["approvals"] = 5; cot["findings"] = 5 }

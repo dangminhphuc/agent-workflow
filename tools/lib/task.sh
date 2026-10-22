@@ -180,7 +180,7 @@ tk_mau_task() {
     /^##[ \t]+Unplanned/ { un = 1; vao = 0; next }
     /^##[ \t]/ { un = 0; vao = 0; next }
     vao && /^[ \t]*-[ \t]*\**Expected files\**:/ { bt($0) }
-    un && /^\|/ { split($0, c, "|"); x = c[2]; gsub(/[ \t`*]/, "", x); if (x == t) bt($0) }
+    un && /^\|/ { split($0, c, "|"); x = c[2]; gsub(/[ \t`*]/, "", x); if (x == t) bt(c[4]) }  # chỉ cột "Extra files"
   ' "$1"
 }
 
@@ -219,5 +219,6 @@ tk_pham_vi_chua_giai_trinh() {
        }
        { sub(/\r$/, "") }
        /^[ \t]*-[ \t]*\**Task scope warnings\**:/ { gt = gt " " $0 }
-       END { for (i = 1; i <= n; i++) if (index(gt, ds[i]) == 0) print ds[i] }' "$1/task-results.md" "$2"
+       # mã đủ chữ số: TSK-0021 không tính là nhắc TSK-002
+       END { for (i = 1; i <= n; i++) if (gt !~ ("(^|[^0-9A-Za-z-])" ds[i] "([^0-9]|$)")) print ds[i] }' "$1/task-results.md" "$2"
 }
