@@ -47,7 +47,7 @@
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP13 | Checker LLM cho spec | 5 | chờ | — | Đọc lại nguồn hay chỉ `Quote`; chặn ở đâu | | | |
 | SP14 | Bugfix: test tái hiện xanh sau khi sửa | 5 | chờ | — | Chặn hay cảnh báo | | | |
-| SP15 | `out_of_scope` cho capability `plan`/`verify`/`deploy` engine không định làm | 5 | chờ | — | Chốt danh sách id | | | |
+| SP15 | `out_of_scope` cho capability `plan`/`verify` engine không định làm | 5 | xong | — | — | | | |
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | chờ | — | Cách ghi nguồn | | | |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
@@ -158,19 +158,6 @@ test đỏ không; `test-results.md` xanh toàn bộ đã ngầm đòi điều n
 **Cần quyết.** Chặn hay cảnh báo (nhận diện tên test theo ngôn ngữ dễ báo nhầm → cảnh báo ở implement,
 chặn ở review). Máy giữ được thì thêm invariant hoặc nới INV-007 (`interface-sdlc.md` § 4.1).
 
-### SP15 — `out_of_scope` cho capability engine không định làm
-
-**Vấn đề.** `check-sdlc.sh` còn in là "còn thiếu" những capability nằm ngoài hướng engine: engine chỉ nhận
-việc đã có, không ưu tiên hay ước lượng giữa các việc (`CAP-plan-03`, `CAP-plan-04`); UAT
-(`CAP-verify-05`) và đường rollback (`CAP-deploy-03`) thuộc quy trình của repo đích. Bảng "còn thiếu"
-lẫn việc sẽ làm với việc không làm.
-
-**Hướng.** Khai từng id trong `out_of_scope:` của `workflow.yaml` kèm lý do (cơ chế SP5). Làm yếu
-interface → id + lý do dưới `### Bỏ` của `changes/<branch>.md`.
-
-**Cần quyết.** Danh sách id. `CAP-deploy-03` có thể giữ: engine ghi được đường rollback trong
-`merge-request.md` như một mục người điền.
-
 ### SP16 — `CAP-operate-02`: sự cố → việc mới
 
 **Vấn đề.** Stage `operate` là `gap`. Phần engine làm được: intake nhận incident / postmortem làm `input`
@@ -236,6 +223,7 @@ của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đ�
 |---|---|---|
 | Tách version / repo của interface SDLC | Chỉ có một implementation; tách chỉ thêm việc đồng bộ (`kien-truc.md` § Interface SDLC) | Có implementation thứ hai |
 | Release, triển khai, quan sát production (`CAP-deploy-02`, `CAP-operate-01`) | Pipeline và observability của repo đích; đã khai `out_of_scope` (SP5) | — |
+| Xếp ưu tiên, ước lượng, nghiệm thu (`CAP-plan-03`, `CAP-plan-04`, `CAP-verify-05`) | Việc của người hoặc của repo đích; đã khai `out_of_scope` (SP15). `CAP-deploy-03` giữ trên roadmap: engine ghi được đường rollback | — |
 | Refactor "không thêm hành vi" ở mức code | Chưa có cách máy kiểm đáng tin; giữ ở mức spec (REQ `preserve`/`structural`, INV-008) và để review/người phán | Có cách kiểm không báo nhầm |
 | Đổi tên phase `03-plan` (stage `breakdown`) ↔ stage `plan` | Chạm test, docs, lệnh sinh ra; `docs/thuat-ngu.md` (mục `stage`) đã giải thích | Người dùng nhầm thật |
 | Adapter thứ ba (`codex`, `copilot`) | SP11 đã gỡ `planned`; thêm khi có người dùng thật cần (`adapters/README.md`) | Có người dùng |

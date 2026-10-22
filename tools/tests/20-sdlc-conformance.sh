@@ -36,9 +36,9 @@ sh "$SC" "$ROOT" > "$TMP/sdlc-ra" 2>/dev/null
 dung "…trạng thái suy ra đúng cả 8 stage" bang "$(awk '/^Stage → phase/ { p = 1; next } /^[^ ]/ { p = 0 } p { printf "%s=%s ", $1, $2 }' "$TMP/sdlc-ra")" \
   "plan=partial require=implemented design=implemented breakdown=implemented implement=implemented verify=partial deploy=partial operate=gap "
 dung "…roadmap liệt kê đúng các capability chưa phase nào nhận (trừ out-of-scope)" bang "$(awk '/^Capability còn thiếu/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
-  "CAP-plan-03 CAP-plan-04 CAP-verify-05 CAP-deploy-03 CAP-operate-02 "
+  "CAP-deploy-03 CAP-operate-02 "
 dung "…khối Không làm liệt kê đúng capability out-of-scope" bang "$(awk '/^Không làm/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
-  "CAP-verify-03 CAP-verify-04 CAP-deploy-02 CAP-operate-01 "
+  "CAP-plan-03 CAP-plan-04 CAP-verify-03 CAP-verify-04 CAP-verify-05 CAP-deploy-02 CAP-operate-01 "
 dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-03 +human +'"
 dung "…roadmap không liệt kê capability đã nhận" sh -c "! sh '$SC' '$ROOT' 2>/dev/null | grep -q '^    CAP-deploy-01 '"
 dung "check-sdlc không đăng ký trong aw check (chỉ dùng cho repo engine)" sh -c ". '$T/lib/commands.sh'; ! bl_checker sdlc"
