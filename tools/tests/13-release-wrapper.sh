@@ -102,8 +102,7 @@ git -C "$PH" checkout -q -- .
 manh x 'chữ ngoài mục\n### Thêm\n- x\n'
 ky_vong 5 "chuẩn bị: mảnh có chữ trước mục đầu tiên → MẢNH CHANGELOG LỖI" sh "$PH/tools/prepare-release.sh" 2099.9.5
 dung "…không đổi file nào, mảnh còn nguyên" sh -c "grep -qx 2099.9.1 '$PH/VERSION' && [ -f '$PH/changes/x.md' ] && grep -q 'Chưa phát hành' '$PH/CHANGELOG.md'"
-ky_vong 1 "kiểm phát hành (PR): mảnh sai dạng → KHÔNG ĐẠT" sh "$PH/tools/check-release.sh" main
-dung "…đúng lý do" sh -c "sh '$PH/tools/check-release.sh' | grep -qF 'changes/x.md: dòng 1: nội dung nằm ngoài mục'"
+ky_vong_ly_do 1 "kiểm phát hành (PR): mảnh sai dạng → KHÔNG ĐẠT" "…đúng lý do" 'changes/x.md: dòng 1: nội dung nằm ngoài mục' sh "$PH/tools/check-release.sh" main
 manh x '### Thêm\n- x\n## [2099.9.9]\n'
 ky_vong 1 "kiểm phát hành: mảnh có heading ## → KHÔNG ĐẠT" sh "$PH/tools/check-release.sh"
 manh x '### Thêm\n\n### Sửa\n- x\n'

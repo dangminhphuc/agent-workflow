@@ -40,8 +40,7 @@ ky_vong_ly_do 1 "chặn mã DEC sai dạng" "…đúng lý do" 'DEC-1 sai dạng
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
 ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
 viet_spec; viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`blocking`'
-ky_vong 1 "chặn điểm mù \"chặn\" còn mở" sh "$CHK" "$F"
-dung "…đúng lý do: REQ-002 mức chặn" sh -c "sh '$CHK' '$F' | grep -q 'REQ-002: open question mức \"blocking\"'"
+ky_vong_ly_do 1 "chặn điểm mù \"chặn\" còn mở" "…đúng lý do: REQ-002 mức chặn" 'REQ-002: open question mức "blocking"' sh "$CHK" "$F"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '`[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)
@@ -249,8 +248,7 @@ viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
 ky_vong 0 "trọn vòng: plan bổ sung ĐẠT" sh "$CHK" "$F"
 dung "…aw task next trả task sửa mới" bang "$(sh "$T/task.sh" next "$F" 2>/dev/null)" "TSK-003"
 ghi_tree_review
-ky_vong 1 "…review chặn khi task sửa chưa xong" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'TSK-003 chưa làm'"
+ky_vong_ly_do 1 "…review chặn khi task sửa chưa xong" "…đúng lý do" 'TSK-003 chưa làm' sh "$T/check-review.sh" "$F"
 # Cùng một cách đọc mã RVW với check-review: [mức] có thể đứng sau chữ khác trong tiêu đề Lens 3
 viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/^### \[Should fix\]/### 1. [Should fix]/')"; toc_f review.md
 viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'

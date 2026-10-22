@@ -38,8 +38,7 @@ mv "$F/review.md.bak" "$F/review.md"
 
 # Điểm mù: "không chặn" còn mở thì giao được (REQ chờ xác nhận); "chặn review" thì không
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
-ky_vong 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" sh "$CHK" "$F"
-dung "…đúng lý do: điểm mù REQ-002" sh -c "sh '$CHK' '$F' | grep -q 'REQ-002: open question mức \"review-blocking\"'"
+ky_vong_ly_do 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" "…đúng lý do: điểm mù REQ-002" 'REQ-002: open question mức "review-blocking"' sh "$CHK" "$F"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
 thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '`[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)

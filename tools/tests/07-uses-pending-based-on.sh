@@ -48,11 +48,12 @@ g add -f .claude/agents/db-migrator.md
 dung "…có cả hai bản thì .claude/ trước" sh -c "sh '$US' implement 2>/dev/null | grep -qx 'agent:db-migrator .claude/agents/db-migrator.md'"
 
 khai_us implement 'skill:khong-co'
-for p in spec design plan implement; do
+for p in spec design plan; do
   khai_us "$p" 'skill:khong-co'
   ky_vong 1 "$p: skill khai mà không có trong repo → aw check $p chặn" sh "$T/check-$p.sh" "$F"
 done
-dung "…đúng lý do" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'uses \"skill:khong-co\": không có .claude/skills/khong-co/SKILL.md'"
+khai_us implement 'skill:khong-co'
+ky_vong_ly_do 1 "implement: skill khai mà không có trong repo → aw check implement chặn" "…đúng lý do" 'uses "skill:khong-co": không có .claude/skills/khong-co/SKILL.md' sh "$T/check-implement.sh" "$F"
 ky_vong 1 "…aw uses implement ra KHAI SAI" sh "$US" implement
 ky_vong 0 "…phase không khai thì không bị ảnh hưởng" sh "$T/check-spec.sh" "$F"
 ky_vong 1 "…review chặn (cổng cuối kiểm mọi khoá)" sh "$T/check-review.sh" "$F"
@@ -67,8 +68,7 @@ rm -rf "$R/.claude/skills/chua-commit"
 
 skill_moi chi-nguoi 'disable-model-invocation: true'
 khai_us implement 'skill:chi-nguoi'
-ky_vong 1 "skill disable-model-invocation: true → chặn (agent không gọi được)" sh "$US" implement
-dung "…đúng lý do" sh -c "sh '$US' implement 2>&1 | grep -q 'disable-model-invocation: true — agent không gọi được'"
+ky_vong_ly_do 1 "skill disable-model-invocation: true → chặn (agent không gọi được)" "…đúng lý do" 'disable-model-invocation: true — agent không gọi được' sh "$US" implement
 skill_moi chi-nguoi 'disable-model-invocation: false'
 ky_vong 0 "…false thì cho qua" sh "$US" implement
 printf -- '---\nname: chi-nguoi\ndescription: x\n---\ndisable-model-invocation: true\n' > "$R/.claude/skills/chi-nguoi/SKILL.md"
@@ -84,8 +84,7 @@ dung "…tên plugin: bảo chép vào repo" sh -c "sh '$US' implement 2>&1 | gr
 cp "$TMP/conv-qt.bak" "$CONV"
 thay "$CONV" 'uses_review:' 'uses_review:
 uses_implment: skill:go-senior'
-ky_vong 1 "khoá gõ nhầm (uses_implment) → aw uses chặn" sh "$US" implement
-dung "…đúng lý do" sh -c "sh '$US' implement 2>&1 | grep -q 'uses_implment.*không ứng với phase.*uses_implement'"
+ky_vong_ly_do 1 "khoá gõ nhầm (uses_implment) → aw uses chặn" "…đúng lý do" 'uses_implment.*không ứng với phase.*uses_implement' sh "$US" implement
 ky_vong 1 "…aw rules cũng chặn (cùng conventions.md)" sh "$QT" implement
 
 # Gỡ file thêm trong khối này khỏi index: chúng lọt vào diff của việc, review sẽ chặn vì lý do khác.
@@ -95,8 +94,7 @@ sh "$T/check-implement.sh" "$F" >/dev/null 2>&1   # làm mới test-results.md t
 # Review: mỗi skill / subagent đã khai một kết luận, như file quy tắc
 khai_us implement 'skill:go-senior'
 viet_review
-ky_vong 1 "review.md thiếu kết luận cho skill đã khai → chặn" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'thiếu mục \"## Repo rules\"'"
+ky_vong_ly_do 1 "review.md thiếu kết luận cho skill đã khai → chặn" "…đúng lý do" 'thiếu mục "## Repo rules"' sh "$T/check-review.sh" "$F"
 viet_review; them_muc_qt '| `.claude/skills/go-senior/SKILL.md` | pass | |'
 ky_vong 0 "có kết luận cho SKILL.md → cho qua" sh "$T/check-review.sh" "$F"
 khai_us review 'skill:go-senior'

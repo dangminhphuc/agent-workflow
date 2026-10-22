@@ -75,8 +75,7 @@ ky_vong_ly_do 1 "chặn mã REQ sai dạng trong open-questions.md" "…đúng l
 
 # Mã luôn ở "###" dưới một "##" của nhóm — dạng cũ "## REQ-NNN" trong open-questions.md bị chặn
 viet_spec; thay "$F/open-questions.md" "### REQ-002" "## REQ-002"; toc_f open-questions.md
-ky_vong 1 "chặn mục open question ở cấp cũ \"## REQ-NNN\"" sh "$CHK" "$F"
-dung "…đúng lý do, chỉ cách đổi" sh -c "sh '$CHK' '$F' | grep -qF 'open-questions.md: \"## REQ-002\" là cấp heading cũ — đổi thành \"### REQ-002\" dưới \"## Questions\"'"
+ky_vong_ly_do 1 "chặn mục open question ở cấp cũ \"## REQ-NNN\"" "…đúng lý do, chỉ cách đổi" 'open-questions.md: "## REQ-002" là cấp heading cũ — đổi thành "### REQ-002" dưới "## Questions"' sh "$CHK" "$F"
 
 # refactor-requests.md (/aw-refactor): "### RFR-NNN", đúng 3 chữ số, không trùng
 viet_spec
@@ -84,15 +83,12 @@ rfr() { printf '# Refactor requests — feat_x\n\n## Requests\n\n%s\n- **Summary
 rfr '### RFR-001 — gộp hàm'
 ky_vong 0 "refactor-requests.md \"### RFR-001\" → cho qua" sh "$CHK" "$F"
 rfr '## RFR-001 — gộp hàm'
-ky_vong 1 "chặn RFR ở cấp cũ \"## RFR-NNN\"" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'refactor-requests.md: \"## RFR-001\" là cấp heading cũ — đổi thành \"### RFR-001\" dưới \"## Requests\"'"
+ky_vong_ly_do 1 "chặn RFR ở cấp cũ \"## RFR-NNN\"" "…đúng lý do" 'refactor-requests.md: "## RFR-001" là cấp heading cũ — đổi thành "### RFR-001" dưới "## Requests"' sh "$CHK" "$F"
 rfr '### RFR-01 — gộp hàm'
-ky_vong 1 "chặn mã RFR sai dạng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'Mã RFR-01 sai dạng trong refactor-requests.md: phải đúng 3 chữ số (RFR-001)'"
+ky_vong_ly_do 1 "chặn mã RFR sai dạng" "…đúng lý do" 'Mã RFR-01 sai dạng trong refactor-requests.md: phải đúng 3 chữ số (RFR-001)' sh "$CHK" "$F"
 rfr '### RFR-001 — a
 ### RFR-001 — b'
-ky_vong 1 "chặn mã RFR trùng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'Mã RFR-001 xuất hiện nhiều lần trong refactor-requests.md'"
+ky_vong_ly_do 1 "chặn mã RFR trùng" "…đúng lý do" 'Mã RFR-001 xuất hiện nhiều lần trong refactor-requests.md' sh "$CHK" "$F"
 rm -f "$F/refactor-requests.md"
 
 viet_spec; rm -f "$F/open-questions.md"
@@ -105,8 +101,7 @@ viet_spec; thay "$F/spec.md" '### REQ-001 — a
 
 ### Ghi chú
 - Source: `[JIRA]` ABC-1'
-ky_vong 1 "chặn REQ không có Nguồn dù \"### phụ\" bên dưới có Nguồn" sh "$CHK" "$F"
-dung "…đúng lý do: REQ-001 thiếu Nguồn" sh -c "sh '$CHK' '$F' | grep -q 'REQ-001: thiếu dòng'"
+ky_vong_ly_do 1 "chặn REQ không có Nguồn dù \"### phụ\" bên dưới có Nguồn" "…đúng lý do: REQ-001 thiếu Nguồn" 'REQ-001: thiếu dòng' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '### REQ-002' '### Ghi chú
 - Source: `[JIRA]` ABC-9
 
@@ -129,8 +124,7 @@ ky_vong 1 "chặn spec thiếu ô duyệt" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [x] Approved by human'
 ky_vong 1 "chặn ô duyệt spec sai dạng" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- **Status:** `approved`'
-ky_vong 1 "chặn dạng cũ \"Status:\"" sh "$CHK" "$F"
-dung "…đúng lý do: dạng cũ" sh -c "sh '$CHK' '$F' | grep -q 'dạng cũ'"
+ky_vong_ly_do 1 "chặn dạng cũ \"Status:\"" "…đúng lý do: dạng cũ" 'dạng cũ' sh "$CHK" "$F"
 viet_spec; printf '\n- [x] **Approved by human** — đã đọc\n' >> "$F/spec.md"
 ky_vong 1 "chặn ô duyệt spec nằm ngoài phần đầu file" sh "$CHK" "$F"
 viet_spec; printf '\n```\n- [x] **Approved by human** — đã đọc\n```\n<!--\n- [x] **Approved by human** — đã đọc\n-->\n' >> "$F/spec.md"
@@ -207,8 +201,7 @@ rm -f "$R/docs/a.md"
 viet_spec; thay "$F/spec.md" '- Quote:
   > khách mở y thấy a
 ' ''
-ky_vong 1 "chặn REQ nguồn [JIRA] thiếu Quote" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'REQ-001: nguồn [JIRA] thiếu câu trích'"
+ky_vong_ly_do 1 "chặn REQ nguồn [JIRA] thiếu Quote" "…đúng lý do" 'REQ-001: nguồn \[JIRA\] thiếu câu trích' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '  > khách mở y thấy a' '  > <chép nguyên văn câu nguồn>'
 ky_vong 1 "chặn Quote còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Quote:
@@ -223,15 +216,13 @@ ky_vong 0 "[INFERRED] không cần Quote" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
 - Quote:
   > khách mở y thấy a' '- Source: `[INFERRED]`'
-ky_vong 1 "chặn [INFERRED] không ghi lý do" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'REQ-001: nguồn [INFERRED] không ghi lý do'"
+ky_vong_ly_do 1 "chặn [INFERRED] không ghi lý do" "…đúng lý do" 'REQ-001: nguồn \[INFERRED\] không ghi lý do' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
 - Quote:
   > khách mở y thấy a' '- Source: `[INFERRED]` <lý do + REQ phục vụ>'
 ky_vong 1 "chặn [INFERRED] lý do còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` https://jira.x/browse'
-ky_vong 1 "chặn [JIRA] không có mã issue" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'REQ-001: nguồn [JIRA] không có mã issue khớp jira_key_regex'"
+ky_vong_ly_do 1 "chặn [JIRA] không có mã issue" "…đúng lý do" 'REQ-001: nguồn \[JIRA\] không có mã issue khớp jira_key_regex' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` [ABC-1](https://jira.x/browse/ABC-1)'
 ky_vong 0 "[JIRA] mã trong link → cho qua" sh "$CHK" "$F"
 dung "…mã có trong Input → không cảnh báo nguồn ngoài intake" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
@@ -268,8 +259,7 @@ dung "…câu đúng thì không bị nêu" sh -c "! sh '$CHK' '$F' | grep -qF '
 quote_file '  > "Khách được hoàn tiền trong vòng 30 ngày kể từ ngày thanh toán."'
 ky_vong 1 "[FILE]: tự thêm ngoặc kép → không còn nguyên văn, chặn" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/khong-co.md § X'
-ky_vong 1 "[FILE]: file nguồn không có → chặn" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -qF 'REQ-001: không tìm thấy file nguồn docs/khong-co.md'"
+ky_vong_ly_do 1 "[FILE]: file nguồn không có → chặn" "…đúng lý do" 'REQ-001: không tìm thấy file nguồn docs/khong-co.md' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [intake.md § Input](intake.md#input)'
 thay "$F/spec.md" '  > khách mở y thấy a' '  > cần làm x cho màn hình y'
 ky_vong 0 "[FILE] lời người trong intake.md: câu trích có trong intake → cho qua" sh "$CHK" "$F"

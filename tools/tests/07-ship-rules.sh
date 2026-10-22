@@ -57,19 +57,19 @@ khai_qt spec 'docs/quy-tac-2.md docs/quy-tac.md'
 thay "$CONV" 'rules_implement:' 'rules_implement: docs/quy-tac.md'
 dung "review = hợp mọi khoá, bỏ trùng, giữ thứ tự" bang "$(sh "$QT" review 2>/dev/null | tr '\n' ' ')" "docs/quy-tac-2.md docs/quy-tac.md "
 
-for p in spec:spec design:design plan:plan implement:implement; do
+for p in spec:spec design:design plan:plan; do
   khai_qt "${p%%:*}" 'docs/khong-co.md'
   ky_vong 1 "${p%%:*}: file quy tắc không có → aw check ${p%%:*} chặn" sh "$T/check-${p#*:}.sh" "$F"
 done
-dung "…đúng lý do" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'quy tắc repo \"docs/khong-co.md\": không có file'"
+khai_qt implement 'docs/khong-co.md'
+ky_vong_ly_do 1 "implement: file quy tắc không có → aw check implement chặn" "…đúng lý do" 'quy tắc repo "docs/khong-co.md": không có file' sh "$T/check-implement.sh" "$F"
 ky_vong 1 "…aw rules implement ra KHAI SAI" sh "$QT" implement
 ky_vong 0 "…phase không khai thì không bị ảnh hưởng" sh "$T/check-spec.sh" "$F"
 ky_vong 1 "…review chặn (cổng cuối kiểm mọi khoá)" sh "$T/check-review.sh" "$F"
 
 printf 'x\n' > "$R/docs/chua-commit.md"
 khai_qt implement 'docs/chua-commit.md'
-ky_vong 1 "file quy tắc chưa commit → chặn" sh "$QT" implement
-dung "…đúng lý do: chưa commit" sh -c "sh '$QT' implement 2>&1 | grep -q 'chưa commit'"
+ky_vong_ly_do 1 "file quy tắc chưa commit → chặn" "…đúng lý do: chưa commit" 'chưa commit' sh "$QT" implement
 rm -f "$R/docs/chua-commit.md"
 
 mkdir -p "$R/.claude/skills/x"; printf 'x\n' > "$R/.claude/skills/x/SKILL.md"
@@ -89,15 +89,13 @@ done
 cp "$TMP/conv-qt.bak" "$CONV"
 thay "$CONV" 'rules_review:' 'rules_review:
 rules_implment: docs/quy-tac.md'
-ky_vong 1 "khoá gõ nhầm (rules_implment) → aw rules chặn" sh "$QT" implement
-dung "…đúng lý do" sh -c "sh '$QT' implement 2>&1 | grep -q 'rules_implment.*không ứng với phase'"
+ky_vong_ly_do 1 "khoá gõ nhầm (rules_implment) → aw rules chặn" "…đúng lý do" 'rules_implment.*không ứng với phase' sh "$QT" implement
 ky_vong 1 "…review chặn" sh "$T/check-review.sh" "$F"
 
 # Review: mỗi file quy tắc một kết luận
 khai_qt implement 'docs/quy-tac.md'
 viet_review
-ky_vong 1 "review.md thiếu mục Quy tắc repo → chặn" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'thiếu mục \"## Repo rules\"'"
+ky_vong_ly_do 1 "review.md thiếu mục Quy tắc repo → chặn" "…đúng lý do" 'thiếu mục "## Repo rules"' sh "$T/check-review.sh" "$F"
 viet_review; them_muc_qt '| `docs/quy-tac.md` | pass | |'
 ky_vong 0 "có kết luận đạt → cho qua" sh "$T/check-review.sh" "$F"
 viet_review; them_muc_qt '| `docs/quy-tac.md` | ổn | |'
@@ -112,8 +110,7 @@ viet_review; them_muc_qt '| `docs/quy-tac.md` | not applicable | không đụng 
 ky_vong 0 "không áp dụng có lý do → cho qua" sh "$T/check-review.sh" "$F"
 khai_qt spec 'docs/quy-tac-2.md'
 thay "$CONV" 'rules_implement:' 'rules_implement: docs/quy-tac.md'
-ky_vong 1 "review thiếu dòng cho quy tắc của phase khác (spec) → chặn" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'docs/quy-tac-2.md\": không có verdict'"
+ky_vong_ly_do 1 "review thiếu dòng cho quy tắc của phase khác (spec) → chặn" "…đúng lý do" 'docs/quy-tac-2.md": không có verdict' sh "$T/check-review.sh" "$F"
 cp "$TMP/conv-qt.bak" "$CONV"; viet_review
 ky_vong 0 "bỏ hết khoá → review như cũ" sh "$T/check-review.sh" "$F"
 

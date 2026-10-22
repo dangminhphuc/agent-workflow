@@ -113,8 +113,7 @@ thay "$F/plan.md" '- Covers: `REQ-001`' '- Covers: `REQ-001`
 - Design: [tdd.md § Data model](tdd.md#data-model)'
 ky_vong 0 "plan có link Design tới mục có thật → ĐẠT" sh "$T/check-plan.sh" "$F"
 thay "$F/tdd.md" '## Data model' '## Data'
-ky_vong 1 "review chặn link sang mục không còn (heading đích đổi tên)" sh "$T/check-review.sh" "$F"
-dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'plan.md: link \"tdd.md#data-model\" không trỏ tới mục nào'"
+ky_vong_ly_do 1 "review chặn link sang mục không còn (heading đích đổi tên)" "…đúng lý do" 'plan.md: link "tdd.md#data-model" không trỏ tới mục nào' sh "$T/check-review.sh" "$F"
 tao_fixture
 
 # ---------------------------------------------------------------- glob của plan.md (khop_duong: ** qua /, * không)

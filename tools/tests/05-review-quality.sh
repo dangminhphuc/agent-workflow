@@ -10,8 +10,7 @@ CHK="$T/check-review.sh"
 # ---- Lens 3 — Quality, Conclusion, Reviewed tree
 viet_review; thay "$F/review.md" '- None
 ' ''
-ky_vong 1 "chặn Lens 3 không finding mà không ghi \"- None\"" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'không ghi \"- None\"'"
+ky_vong_ly_do 1 "chặn Lens 3 không finding mà không ghi \"- None\"" "…đúng lý do" 'không ghi "- None"' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '## Lens 3 — Quality' '## Ghi chú'
 ky_vong 1 "chặn khi thiếu mục Lens 3 — Quality" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' "$L3_SF"
