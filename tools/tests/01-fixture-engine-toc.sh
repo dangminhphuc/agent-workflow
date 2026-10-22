@@ -119,4 +119,25 @@ ky_vong 1 "review chặn link sang mục không còn (heading đích đổi tên
 dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'plan.md: link \"tdd.md#data-model\" không trỏ tới mục nào'"
 tao_fixture
 
+# ---------------------------------------------------------------- glob của plan.md (khop_duong: ** qua /, * không)
+nhom "khop_duong: nghĩa mới của glob trong plan.md"
+kd() { sh -c ". '$T/lib/md.sh'; set -f; khop_duong \"\$@\"" kd "$@"; }
+dung "src/* khớp src/a.ts" kd src/a.ts 'src/*'
+dung "src/* KHÔNG khớp src/a/b.ts" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong src/a/b.ts 'src/*'\""
+dung "src/** khớp src/a/b.ts" kd src/a/b.ts 'src/**'
+dung "src/** khớp src/a.ts" kd src/a.ts 'src/**'
+dung "**/x.md khớp a/b/x.md" kd a/b/x.md '**/x.md'
+dung "? không qua /" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong a/b 'a?b'\""
+dung "ký tự regex khớp nguyên văn: a.b+(c)[d].txt" kd 'a.b+(c)[d].txt' 'a.b+(c)[d].txt'
+dung "…dấu . không khớp ký tự bất kỳ" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong axb.txt 'a.b.txt'\""
+dung "nhiều mẫu: khớp mẫu thứ hai" kd src/a/b.ts 'docs/*' 'src/**'
+
+# Cảnh báo chuyển tiếp: file khớp mẫu của plan.md chỉ nhờ * vượt thư mục → cảnh báo, không chặn ở đâu
+nhom "glob plan.md: cảnh báo chuyển tiếp"
+mkdir -p "$R/src/sau"; printf 'x\n' > "$R/src/sau/c.txt"
+dung "implement in cảnh báo chuyển tiếp nêu file, mẫu, cách viết mới" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'CẢNH BÁO.*\`src/sau/c.txt\` chỉ khớp \`src/\*\` nhờ \* vượt thư mục — bản sau \* không qua /; viết \`src/\*\*\`'"
+thay "$F/plan.md" '`src/*` `test/*`' '`src/**` `test/*`'
+dung "viết src/** → hết cảnh báo chuyển tiếp" sh -c "! sh '$T/check-implement.sh' '$F' | grep -q 'nhờ \* vượt thư mục'"
+rm -rf "$R/src/sau"; tao_fixture
+
 ket_thuc

@@ -917,6 +917,8 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.
    Bù một phần: `aw check plan` cảnh báo mẫu `Expected files` khớp quá `scope_glob_max_files` file trên base.
+   Chuyển tiếp: `**` đã dùng được trong `plan.md`; file chỉ khớp nhờ `*` vượt thư mục bị cảnh báo. Bản sau `*`
+   của `plan.md` không qua `/` (glob của `conventions.md` giữ nghĩa cũ — file người viết, đổi sẽ hỏng âm thầm).
 10. **Artifact không đi theo PR** — reviewer chỉ thấy code. DEC-xxx người chọn nâng thì đi theo PR dưới
     dạng ADR; phần còn lại của `tdd.md` thì không.
 11. **Ghim sha256 là tin lần đầu (TOFU)**; repo cấu hình chung của team thu hẹp, không xoá rủi ro.

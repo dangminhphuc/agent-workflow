@@ -138,6 +138,42 @@ kc_pham_vi() {
   set +f
 }
 
+# kc_glob_chuyen_tiep <thư-mục-feature>
+# Giai đoạn chuyển tiếp của glob trong plan.md (Expected files, Unplanned): file đổi khớp một mẫu chỉ
+# nhờ * vượt thư mục (nghĩa cũ) mà không khớp theo nghĩa mới (** qua /, * không) — bản sau sẽ thành
+# ngoài phạm vi. Chỉ cảnh báo, kể cả ở review. Mỗi dòng một file.
+kc_glob_chuyen_tiep() {
+  [ -f "$1/plan.md" ] || return 0
+  _gc_top=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _gc_mb=$(kc_mb "$1") || return 0
+  awk '
+    function bt(s) { while (match(s, /`[^`]+`/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) } }
+    { sub(/\r$/, "") }
+    /^##[ \t]+Unplanned/ { un = 1; next }
+    /^##[ \t]/ && !/^###/ { un = 0 }
+    un || /^[ \t]*-[ \t]*\**Expected files\**:/ { bt($0) }
+  ' "$1/plan.md" > "${TMPDIR:-/tmp}/aw-gc.$$"
+  { git -C "$_gc_top" diff --name-only "$_gc_mb"; git -C "$_gc_top" ls-files --others --exclude-standard; } \
+    | sort -u | while IFS= read -r _gc_f; do
+      [ -n "$_gc_f" ] || continue
+      tm_bo "$_gc_f" && continue
+      printf '%s\n' "$_gc_f"
+    done | awk "$MAU_ERE_AWK"'
+    FILENAME == ARGV[1] { if ($0 != "") { m++; mau[m] = $0; cu[m] = mau_ere($0, 0); moi[m] = mau_ere($0, 1) } next }
+    {
+      khop_moi = 0; dau = 0
+      for (i = 1; i <= m; i++) { if ($0 ~ moi[i]) { khop_moi = 1; break } if (!dau && $0 ~ cu[i]) dau = i }
+      if (khop_moi || !dau) next
+      p = mau[dau]; g = ""
+      for (j = 1; j <= length(p); j++) {
+        c = substr(p, j, 1)
+        if (c == "*" && substr(p, j + 1, 1) == "*") { g = g "**"; j++ } else if (c == "*") g = g "**"; else g = g c
+      }
+      printf "`%s` chỉ khớp `%s` nhờ * vượt thư mục — bản sau * không qua /; viết `%s`\n", $0, p, g
+    }' "${TMPDIR:-/tmp}/aw-gc.$$" -
+  rm -f "${TMPDIR:-/tmp}/aw-gc.$$"
+}
+
 # kc_glob_rong <thư-mục-feature>
 # Mẫu "Expected files" của plan.md khớp nhiều file đã track trên commit Base hơn
 # scope_glob_max_files (mặc định 30; 0 = tắt) — mẫu quá rộng làm kiểm phạm vi vô nghĩa.

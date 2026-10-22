@@ -178,6 +178,17 @@ function mau_ere(p, moi,   r, i, ch, n) {
   return "^" r "$"
 }'
 
+# khop_duong <đường-dẫn> <mẫu...> -> 0 nếu khớp một mẫu theo nghĩa MỚI của glob trong plan.md:
+# ** khớp cả "/", * và ? không. Bản này mới chỉ dùng để cảnh báo chuyển tiếp (kc_glob_chuyen_tiep);
+# việc khớp phạm vi vẫn theo khop_glob — đổi ở bản sau (docs/viec-can-lam.md).
+khop_duong() {
+  _kd_s="$1"; shift
+  [ $# -gt 0 ] || return 1
+  printf '%s\n' "$@" | awk -v s="$_kd_s" "$MAU_ERE_AWK"'
+    $0 != "" && s ~ mau_ere($0, 1) { kq = 1; exit }
+    END { exit !kq }'
+}
+
 # khop_glob <chuỗi> <mẫu...> -> 0 nếu khớp một mẫu. Trong mẫu, * khớp cả "/".
 khop_glob() {
   # Tên biến riêng: sh không có biến cục bộ, dùng _s/_p ở đây sẽ ghi đè biến

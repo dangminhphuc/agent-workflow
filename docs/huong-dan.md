@@ -572,7 +572,7 @@ quay về `[ ]` khi chạy lại plan. Bạn duyệt lại riêng DEC đó.
 
 | Phần | Quyết định |
 |---|---|
-| `### TSK-NNN` | task: `Covers` (REQ), `Based on` (DEC-xxx), `Expected files` (**ranh giới diff của riêng task** — mẫu khớp quá `scope_glob_max_files` file trên base thì `aw check plan` cảnh báo), `Verify` (lệnh chứng minh xong), `Depends on`, `On assumption` |
+| `### TSK-NNN` | task: `Covers` (REQ), `Based on` (DEC-xxx), `Expected files` (**ranh giới diff của riêng task**; `**` khớp qua thư mục, `*` sắp chỉ trong một thư mục — mẫu khớp quá `scope_glob_max_files` file trên base thì `aw check plan` cảnh báo), `Verify` (lệnh chứng minh xong), `Depends on`, `On assumption` |
 | `Status` | `[ ]` / `[~]` / `[x]` — **chỉ máy đổi** (`aw task`) |
 | `## Deferred` | REQ hoãn + lý do (hoãn `must` → cảnh báo, báo bạn) |
 | `## Manual verification` | REQ không test tự động được + lý do |

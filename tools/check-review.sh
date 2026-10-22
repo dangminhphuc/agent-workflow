@@ -324,6 +324,8 @@ fi
 # Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.
 cb_base=$(kc_base_la "$DIR")
 [ -z "$cb_base" ] || echo "  [CẢNH BÁO] $cb_base"
+# Glob plan.md giai đoạn chuyển tiếp (* sắp không qua /): chỉ cảnh báo, không chặn.
+kc_glob_chuyen_tiep "$DIR" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l (chỉ cảnh báo)"; done
 
 awk -v loi_truoc="$n_truoc" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }

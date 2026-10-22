@@ -1,4 +1,8 @@
 ### Thêm
+- **Glob `**` trong `plan.md`.** `Expected files` / `Unplanned` dùng được `**` (khớp qua thư mục). Giai đoạn
+  chuyển tiếp: `*` vẫn khớp qua `/` nhưng `aw check implement` / `aw check review` cảnh báo (không chặn) file
+  chỉ khớp nhờ `*` vượt thư mục và gợi ý cách viết `**` — bản sau `*` của `plan.md` sẽ không qua `/`. Glob
+  của `conventions.md` không đổi.
 - **Kiểm phạm vi diff theo từng task.** `aw task start` ghi commit lúc bắt đầu; `aw task done` cảnh báo
   file task đổi mà không nằm trong `Expected files` của chính nó (hay hàng `Unplanned` có cột Task = task
   đó) và ghi `Scope warning` vào `task-results.md`. `/aw-review` chặn nếu dòng `Task scope warnings` ở

@@ -222,3 +222,11 @@ quy trình — chỉ làm khi người chủ engine muốn.
     Chưa thấy cách máy kiểm đáng tin; có thể để người phán và ghi rõ là không làm.
 - **Đổi tên để bớt nhầm phase ↔ stage**: phase `03-plan` (thuộc stage `breakdown`) trùng chữ với stage
   `plan` (`00-intake`). Đổi tên stage hay phase đều chạm test, docs, lệnh sinh ra — đề xuất riêng.
+
+## Glob của `plan.md` (sau giai đoạn chuyển tiếp)
+
+- **Bước 2: `*` của `plan.md` không qua `/`.** Bản hiện tại đã có `**` và cảnh báo file chỉ khớp nhờ `*`
+  vượt thư mục (`kc_glob_chuyen_tiep`). Bản sau: `kc_pham_vi`, `tk_pham_vi`, `kc_glob_rong` khớp bằng
+  `khop_duong` (nghĩa mới), bỏ cảnh báo chuyển tiếp. Cân nhắc cùng lúc phạm vi luật `BR-` (suy từ
+  `Expected files` lúc `aw rule promote`, khớp ở `tools/lib/knowledge.sh`): luật đã nâng mang mẫu nghĩa cũ —
+  cần cảnh báo hay chuyển đổi khi đọc. Glob của `conventions.md` giữ nghĩa cũ (spec SP8).

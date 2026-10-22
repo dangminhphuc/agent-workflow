@@ -169,6 +169,13 @@ $chan
 EOF
 fi
 
+# Glob plan.md giai đoạn chuyển tiếp (* sắp không qua /): chỉ cảnh báo, kể cả ở review.
+gct=$(kc_glob_chuyen_tiep "$DIR")
+if [ -n "$gct" ]; then
+  echo ""
+  printf '%s\n' "$gct" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l (chỉ cảnh báo)"; done
+fi
+
 # ---- 5b. Kiem cheo — chi canh bao ----
 cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
 n_cb=0
