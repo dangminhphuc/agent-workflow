@@ -25,6 +25,7 @@
 #     provides của stage; exit human | both mà không phase nào có exit_human, machine | both mà không
 #     phase nào có exit_machine.
 #   - Utility command khai implements hoặc capabilities (utility command không ánh xạ vào stage).
+#   - out_of_scope: (workflow.yaml) id không có, đã được phase nhận, thiếu lý do, khai hai lần.
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -303,6 +304,24 @@ while IFS='|' read -r pid pfile preq _when; do
     || loi "phase $pid: implements $s nhưng không nhận capability nào — thêm id vào capabilities: (xem sdlc/stages/)."
 done < "$W/wf"
 
+# ---- out_of_scope: capability engine quyết không làm (khoá cấp cao của workflow.yaml, "- CAP-id: lý do").
+# Không đổi trạng thái stage — chỉ tách khỏi roadmap những việc sẽ không bao giờ làm.
+awk '{ sub(/\r$/, "") } /^[ \t]*#/ { next } /^out_of_scope:[ \t]*$/ { o = 1; next } o && /^[A-Za-z]/ { o = 0 }
+  o && /^  - / { s = $0; sub(/^  - /, "", s); c = s; sub(/:.*$/, "", c); ly = ""
+    if (index(s, ":")) { ly = s; sub(/^[^:]*:[ \t]*/, "", ly); sub(/[ \t]+$/, "", ly) }
+    print c "|" ly }' "$E/workflow.yaml" > "$W/oos"
+: > "$W/oos-da"; : > "$W/oos-ok"
+while IFS='|' read -r c ly; do
+  [ -n "$c" ] || continue
+  if co "$W/oos-da" "$c"; then loi "out_of_scope: $c khai hai lần."; continue; fi
+  echo "$c" >> "$W/oos-da"
+  cap_co "$c" || { loi "out_of_scope: $c không có trong sdlc/stages/."; continue; }
+  ph=$(awk -F'|' -v c="$c" '$3 == c { print $1; exit }' "$W/nhan")
+  [ -z "$ph" ] || { loi "out_of_scope: $c vừa out-of-scope vừa được phase $ph nhận — chọn một."; continue; }
+  [ -n "$ly" ] || { loi "out_of_scope: $c thiếu lý do — ghi vì sao engine không làm."; continue; }
+  echo "$c|$ly" >> "$W/oos-ok"
+done < "$W/oos"
+
 # trang_thai <stage> -> implemented | partial | gap, suy ra: capability của stage được phase nhận hết / một phần / không
 trang_thai() {
   awk -F'|' -v s="$1" 'FILENAME == ARGV[1] { if ($1 == s) n++; next }
@@ -338,12 +357,28 @@ while IFS='|' read -r _so s ex _sk; do
   esac
 done < "$W/stages"
 if [ -s "$W/thieu" ]; then
+  # capability chưa phase nào nhận, tách: còn trên roadmap | out-of-scope (kèm lý do)
+  : > "$W/khong"
   echo "Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):"
   while IFS='|' read -r s st; do
-    echo "  $s ($st): $(note_cua "$s")"
     awk -F'|' -v s="$s" 'FILENAME == ARGV[1] { if ($2 == s) da[$3] = 1; next }
-      $1 == s && !($2 in da) { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/nhan" "$W/cap"
+      FILENAME == ARGV[2] { oos[$1] = $2; next }
+      $1 == s && !($2 in da) { if ($2 in oos) print "K|" $2 "|" $3 "|" oos[$2]; else print "R|" $2 "|" $3 "|" $4 }' \
+      "$W/nhan" "$W/oos-ok" "$W/cap" > "$W/ts"
+    if grep -q '^R|' "$W/ts"; then
+      echo "  $s ($st): $(note_cua "$s")"
+      awk -F'|' '$1 == "R" { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/ts"
+      in_note=1
+    else in_note=0; fi
+    if grep -q '^K|' "$W/ts"; then
+      if [ "$in_note" = 1 ]; then echo "  $s ($st)" >> "$W/khong"; else echo "  $s ($st): $(note_cua "$s")" >> "$W/khong"; fi
+      awk -F'|' '$1 == "K" { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/ts" >> "$W/khong"
+    fi
   done < "$W/thieu"
+  if [ -s "$W/khong" ]; then
+    echo "Không làm (out-of-scope — lý do trong workflow.yaml):"
+    cat "$W/khong"
+  fi
 fi
 
 # ---- profile theo job type (sdlc/profiles/<job-type>.md)

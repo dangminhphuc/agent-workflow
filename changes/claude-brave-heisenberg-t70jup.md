@@ -26,3 +26,6 @@
   file); `Rule:` của capability và invariant không còn cú pháp engine (máy chặn backtick, mã `REQ-`/
   `DEC-`…), cách engine hiện thực chuyển sang dòng `- Engine:`. Ba bảng của `check-sdlc.sh` chỉ còn một
   ảnh chụp (`docs/interface-sdlc.md` § 6), có test so với output.
+- **Capability out-of-scope.** Khoá `out_of_scope:` của `workflow.yaml` khai capability engine quyết không
+  làm kèm lý do (e2e, kiểm tải, triển khai, quan sát production); `check-sdlc.sh` in chúng ở khối "Không
+  làm" thay vì roadmap. Trạng thái stage không đổi.

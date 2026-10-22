@@ -91,6 +91,14 @@ sdlc:
   - stage: operate
     note: CI/CD và observability nằm ngoài engine; sự cố chưa quay lại thành việc mới
 
+# Capability engine quyết KHÔNG làm, kèm lý do (tools/check-sdlc.sh in riêng khỏi roadmap). Trạng thái
+# stage không đổi — chỗ thiếu vẫn hiện; chỉ tách việc sẽ làm khỏi việc không bao giờ làm. Dạng "- CAP-id: lý do".
+out_of_scope:
+  - CAP-verify-03: E2E trên hệ thống đã ghép là việc của CI/CD của repo đích, không của engine
+  - CAP-verify-04: Hạ tầng đo tải nằm ngoài engine; việc loại perf đã có số đo trước/sau do máy ghi
+  - CAP-deploy-02: Release và triển khai là pipeline của repo đích; engine dừng ở MR/PR người merge
+  - CAP-operate-01: Quan sát production thuộc hệ thống observability bên ngoài
+
 rules:
   - workflow/rules/general.md
   - workflow/rules/source-tracing.md

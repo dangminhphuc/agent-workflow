@@ -694,9 +694,12 @@ hay "phase `plan`", không nói trống.
 - **Phase `implements` mà không nhận capability nào → chặn** (không cảnh báo — `check-sdlc.sh` không có
   cảnh báo). Nhờ vậy `gap` suy ra ⇔ không phase nào chạy stage, giữ luật cũ "gap mà có phase implement
   → chặn" và nghĩa "engine không chạy stage này" mà ma trận profile dùng.
-- **Không có trạng thái `out-of-scope`.** Engine quyết không làm một capability (vd quan sát production
-  thuộc hệ thống ngoài) thì stage vẫn `partial`/`gap` và note nói lý do. Thêm `out-of-scope` là hai cách
-  nói cùng một điều.
+- **Capability `out-of-scope`, không phải trạng thái stage.** Engine khai capability nó quyết không làm ở
+  `out_of_scope:` của `workflow.yaml` (`- CAP-id: lý do`; phía implementation — interface không biết). Trạng
+  thái stage **không đổi** (vẫn `partial`/`gap`, vẫn cần note): không giấu chỗ thiếu. Chỉ roadmap đổi: việc
+  không bao giờ làm (quan sát production, triển khai…) tách sang khối "Không làm" kèm lý do, nên roadmap
+  chỉ còn việc thật. Trước đây quyết định là không có `out-of-scope` ("hai cách nói một điều"); đổi vì
+  roadmap trộn hai loại việc mất giá trị chỉ đường.
 - **Capability khai `Artifact`, bắt buộc.** Mỗi capability ghi loại artifact (trong `provides` của
   stage) nó bảo đảm, và mỗi loại `provides` phải có capability trỏ tới — máy chặn. Không có luật này,
   stage viết ít capability rẻ thành `implemented` (trước đây `implement` không capability nào nói tới

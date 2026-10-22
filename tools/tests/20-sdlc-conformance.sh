@@ -35,9 +35,11 @@ dung "…bảng ánh xạ in trạng thái suy ra" sh -c "sh '$SC' '$ROOT' 2>/de
 sh "$SC" "$ROOT" > "$TMP/sdlc-ra" 2>/dev/null
 dung "…trạng thái suy ra đúng cả 8 stage" bang "$(awk '/^Stage → phase/ { p = 1; next } /^[^ ]/ { p = 0 } p { printf "%s=%s ", $1, $2 }' "$TMP/sdlc-ra")" \
   "plan=partial require=implemented design=implemented breakdown=implemented implement=partial verify=partial deploy=partial operate=gap "
-dung "…roadmap liệt kê đúng các capability chưa phase nào nhận" bang "$(awk '/^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
-  "CAP-plan-03 CAP-plan-04 CAP-implement-05 CAP-verify-03 CAP-verify-04 CAP-verify-05 CAP-deploy-02 CAP-deploy-03 CAP-operate-01 CAP-operate-02 "
-dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-02 +machine +'"
+dung "…roadmap liệt kê đúng các capability chưa phase nào nhận (trừ out-of-scope)" bang "$(awk '/^Capability còn thiếu/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
+  "CAP-plan-03 CAP-plan-04 CAP-implement-05 CAP-verify-05 CAP-deploy-03 CAP-operate-02 "
+dung "…khối Không làm liệt kê đúng capability out-of-scope" bang "$(awk '/^Không làm/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
+  "CAP-verify-03 CAP-verify-04 CAP-deploy-02 CAP-operate-01 "
+dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-03 +human +'"
 dung "…roadmap không liệt kê capability đã nhận" sh -c "! sh '$SC' '$ROOT' 2>/dev/null | grep -q '^    CAP-deploy-01 '"
 dung "check-sdlc không đăng ký trong aw check (chỉ dùng cho repo engine)" sh -c ". '$T/lib/commands.sh'; ! bl_checker sdlc"
 # Ảnh chụp duy nhất của ba bảng (docs/interface-sdlc.md § 6) phải trùng output — không thì docs lệch âm thầm.
@@ -70,6 +72,7 @@ vi_pham "suy ra gap mà thiếu note → chặn" "stage operate: suy ra gap như
 moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-01
   - CAP-deploy-02
   - CAP-deploy-03'
+awk '!/^  - CAP-deploy-02:/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"  # nhận thì không còn out-of-scope
 vi_pham "nhận đủ capability mà còn note → chặn" "stage deploy: suy ra implemented nhưng khối sdlc: còn note"
 # chiều ngược: nhận đủ + xoá mục khối sdlc: → ĐẠT, stage thành implemented
 awk '/^  - stage: deploy$/ { bo = 1; next } bo && /^    / { next } { bo = 0; print }' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
@@ -79,6 +82,19 @@ moi; awk '/^capabilities:$/ { print "capabilities: []"; next } !/^  - CAP-/' "$E
 vi_pham "phase implements mà không nhận capability nào → chặn" "phase ship: implements deploy nhưng không nhận capability nào"
 moi; thay "$E/workflow.yaml" '  - stage: operate' '  - stage: monitor'
 vi_pham "khối sdlc: khai stage không có → chặn" "khối sdlc: khai stage \"monitor\" không có trong sdlc/stages/"
+# out_of_scope: capability engine quyết không làm, kèm lý do — không đổi trạng thái stage
+moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
+  - CAP-verify-99: không có'
+vi_pham "out_of_scope: id không có → chặn" "out_of_scope: CAP-verify-99 không có trong sdlc/stages/."
+moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
+  - CAP-deploy-01: thử'
+vi_pham "out_of_scope: id đã được phase nhận → chặn" "out_of_scope: CAP-deploy-01 vừa out-of-scope vừa được phase ship nhận — chọn một."
+moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
+  - CAP-verify-05:'
+vi_pham "out_of_scope: thiếu lý do → chặn" "out_of_scope: CAP-verify-05 thiếu lý do — ghi vì sao engine không làm."
+moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
+  - CAP-verify-03: lặp'
+vi_pham "out_of_scope: id khai hai lần → chặn" "out_of_scope: CAP-verify-03 khai hai lần."
 # implement thành implemented khi phase nhận nốt CAP-implement-05 (sau SP3): note phải bị đòi xoá
 moi; thay "$E/workflow/phases/04-implement.md" '  - CAP-implement-06' '  - CAP-implement-06
   - CAP-implement-05'
