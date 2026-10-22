@@ -31,6 +31,8 @@
 #   - Luật chưa phân loại: số chỗ loi / loi_truoc / [CẢNH BÁO] chưa "# giữ:" phủ của mỗi tools/check-*.sh
 #     (trừ check-sdlc, check-release) và tools/task.sh phải bằng số trong tools/unclassified-rules.txt.
 #     --dem-luat: in danh sách đó (không kiểm gì khác).
+#     --suy <file>…: in CAP/INV mà các dòng "# giữ:" trong những file đó khai (id từ diff),
+#     một id một dòng. Id không có → KHÔNG ĐẠT. Không tự gắn id.
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -54,7 +56,45 @@ kq_khai check-sdlc.sh \
   "2=SAI THAM SỐ — thừa tham số, hoặc không phải thư mục engine (thiếu workflow.yaml, sdlc/stages/)"
 . "$ROOT/tools/lib/md.sh"
 
-DEM=""; if [ "${1:-}" = --dem-luat ]; then DEM=1; shift; fi
+DEM=""; SUY=""
+case "${1:-}" in
+  --dem-luat) DEM=1; shift ;;
+  --suy) SUY=1; shift ;;
+esac
+if [ "$SUY" = 1 ]; then
+  trap - EXIT
+  [ $# -ge 1 ] || { echo "Dùng: sh tools/check-sdlc.sh --suy <file>..." >&2; exit 2; }
+  for _s in "$@"; do
+    [ -f "$_s" ] || { echo "LỖI: không có file $_s" >&2; exit 2; }
+  done
+  _co=$(awk '
+    FILENAME ~ /\/invariants\.md$/ && /^###[ \t]+INV-[0-9]+/ {
+      match($0, /INV-[0-9]+/); print substr($0, RSTART, RLENGTH); next
+    }
+    /^###[ \t]+CAP-/ { match($0, /CAP-[a-z0-9-]+/); print substr($0, RSTART, RLENGTH) }
+  ' "$ROOT"/sdlc/stages/*.md "$ROOT"/sdlc/invariants.md | tr '\n' ' ')
+  _co=" $_co "
+  _ids=$(awk '
+    /^[ \t]*# giữ:/ {
+      s = $0; sub(/^[ \t]*# giữ:[ \t]*/, "", s)
+      n = split(s, a, /[, \t]+/)
+      for (i = 1; i <= n; i++) if (a[i] != "") print a[i]
+    }
+  ' "$@" | sort -u)
+  _sai="${TMPDIR:-/tmp}/aw-suy.$$"
+  rm -f "$_sai"
+  if [ -n "$_ids" ]; then
+    printf '%s\n' "$_ids" | while IFS= read -r _id; do
+      case "$_co" in
+        *" $_id "*) printf '%s\n' "$_id" ;;
+        *) echo "LỖI: # giữ: $_id không có capability/invariant đó." >&2; echo x >> "$_sai" ;;
+      esac
+    done
+  fi
+  if [ -s "$_sai" ]; then rm -f "$_sai"; exit 1; fi
+  rm -f "$_sai"
+  exit 0
+fi
 [ $# -le 1 ] || { echo "Dùng: sh tools/check-sdlc.sh [--dem-luat] [<engine-root>]" >&2; exit 2; }
 E="${1:-$ROOT}"
 if [ ! -f "$E/workflow.yaml" ] || [ ! -d "$E/sdlc/stages" ]; then

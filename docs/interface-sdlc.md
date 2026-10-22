@@ -137,7 +137,8 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
    (trước dòng trống kế tiếp). "Chỗ luật" = gọi `loi` / `loi_truoc` / `canh_bao`, dòng in `[LỖI]` / `[CẢNH BÁO]`,
    hoặc `TỪ CHỐI:` / `DỪNG:` / `CẢNH BÁO:` (`tools/task.sh`). Luật mới không gắn thì chặn
    (số luật chưa gắn của file vượt `tools/unclassified-rules.txt`); gắn id cho luật cũ thì hạ số trong danh
-   sách (`sh tools/check-sdlc.sh --dem-luat` in số đúng).
+   sách (`sh tools/check-sdlc.sh --dem-luat` in số đúng). `sh tools/check-sdlc.sh --suy <file>…` in
+   các id `# giữ:` đã có trong những file đó (id đụng bởi diff) — không tự gắn id mới.
 4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và **ít nhất một ca** test
    chặn; `Rule:` viết trừu tượng (không backtick, không mã `REQ-`/`DEC-`…), cú pháp engine ghi ở `- Engine:`.
 5. `changes/<branch>.md`: mục `Thêm` / `Thay đổi` (người dùng `aw` thấy luật mới), nêu id.
