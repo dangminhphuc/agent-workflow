@@ -136,6 +136,7 @@ dy_hash() {
 #   S|<khoá>|<proposed | approved | reopened | changed-after-approval | missing-box>
 #   L|<thông báo>
 # "approved" gồm cả tick chưa có dấu duyệt (dy_dong_dau sẽ ghi).
+# giữ: CAP-require-03, CAP-design-03, INV-005
 dy_trang_thai() {
   dy_quet "$1" "$2" | while IFS='|' read -r _k _a _b _c _e _f; do
     case "$_k" in

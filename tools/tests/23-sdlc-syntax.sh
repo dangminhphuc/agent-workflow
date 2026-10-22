@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Interface SDLC: cú pháp — tập con YAML của file engine, Rule: trừu tượng, Tested by: nêu ca (tools/check-sdlc.sh).
+# Interface SDLC: cú pháp và chú thích — tập con YAML, Rule: trừu tượng, Tested by: nêu ca, "# giữ:" (tools/check-sdlc.sh).
 # Chạy riêng: sh tools/tests/23-sdlc-syntax.sh (AW_TEST_VERBOSE=1 in từng ca). Tách khỏi 22-sdlc-stage-files (chậm).
 
 . "$(dirname -- "$0")/lib.sh"
@@ -60,5 +60,17 @@ moi; thay "$E/workflow.yaml" '  - id: cursor' '  # chú thích thụt lề
 
   - id: cursor'
 ky_vong 0 "workflow.yaml: chú thích thụt lề, dòng trống trong danh sách → ĐẠT" sh "$SC" "$E"
+
+
+# Capability machine có phase nhận phải có luật checker khai "# giữ: CAP-…" (bước A, đợt 1)
+nhom "check-sdlc.sh: luật checker khai capability / invariant nó giữ (# giữ:)"
+moi; printf '# giữ: CAP-plan-99\n' >> "$E/tools/check-plan.sh"
+vi_pham "# giữ: trỏ id không có → chặn" "tools/check-plan.sh: \"# giữ: CAP-plan-99\" — không có capability / invariant đó"
+moi; printf '# giữ: INV-099\n' >> "$E/tools/check-plan.sh"
+vi_pham "# giữ: trỏ invariant không có → chặn" "tools/check-plan.sh: \"# giữ: INV-099\" — không có capability / invariant đó"
+moi; for f in "$E"/tools/*.sh "$E"/tools/lib/*.sh; do sed 's/CAP-plan-01//g' "$f" > "$f.x" && mv "$f.x" "$f"; done
+vi_pham "capability machine được nhận mà không luật nào khai → chặn" "CAP-plan-01: Judged by machine, phase intake nhận, nhưng không luật checker nào khai \"# giữ: CAP-plan-01\""
+moi; for f in "$E"/tools/*.sh "$E"/tools/lib/*.sh; do sed 's/CAP-deploy-01//g' "$f" > "$f.x" && mv "$f.x" "$f"; done
+ky_vong 0 "capability human (CAP-deploy-01) không cần # giữ: → ĐẠT" sh "$SC" "$E"
 
 ket_thuc

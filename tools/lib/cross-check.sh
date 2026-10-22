@@ -27,6 +27,7 @@ kc_cau_hinh() {
 
 # kc_loi_thoi <thư-mục-feature>
 # Artifact nào có based_on mà hash đầu vào đã đổi -> lỗi thời.
+# giữ: INV-006
 kc_loi_thoi() {
   for _a in "$1"/*.md; do
     [ -f "$_a" ] || continue
@@ -46,6 +47,7 @@ kc_loi_thoi() {
 
 # kc_test_yc <thư-mục-feature>
 # REQ nào chưa có test gắn tag, chưa ghi "Manual verification", chưa ở "Deferred".
+# giữ: INV-003
 kc_test_yc() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/spec.md" ] || return 0
@@ -104,6 +106,7 @@ kc_test_yc() {
 # kc_pham_vi <thư-mục-feature>
 # File thay đổi so với base của việc mà không nằm trong "Expected files" hay
 # "Unplanned" của plan.md, và không thuộc danh sách bỏ qua.
+# giữ: CAP-implement-04
 kc_pham_vi() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/plan.md" ] || return 0
@@ -178,6 +181,7 @@ kc_glob_chuyen_tiep() {
 # Mẫu "Expected files" của plan.md khớp nhiều file đã track trên commit Base hơn
 # scope_glob_max_files (mặc định 30; 0 = tắt) — mẫu quá rộng làm kiểm phạm vi vô nghĩa.
 # Mẫu khớp 0 file không báo (task tạo file mới). Mỗi dòng một cảnh báo.
+# giữ: CAP-implement-05
 kc_glob_rong() {
   [ -f "$1/plan.md" ] || return 0
   _gr_n=$(conv_get "$(kc_conventions "$1")" scope_glob_max_files); _gr_n=${_gr_n:-30}
@@ -393,6 +397,7 @@ kc_loai_branch() {
 }
 
 # kc_test_cu_xoa <thư-mục-feature> — refactor/perf: xoá test cũ = bỏ hành vi -> chặn
+# giữ: INV-009
 kc_test_cu_xoa() {
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     [ "$_s" = "D" ] || continue
@@ -413,6 +418,7 @@ kc_test_cu_sua() {
 }
 
 # kc_chore_production <thư-mục-feature> — chore đụng code production -> chặn
+# giữ: INV-011
 kc_chore_production() {
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     for _f in "$_p" $_q; do

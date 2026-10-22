@@ -131,7 +131,9 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
 
 1. Tìm capability hay invariant luật đó giữ (`sdlc/stages/`, `sdlc/invariants.md`).
 2. Không có cái nào nói điều luật đó kiểm → thêm capability (4.3) hoặc invariant trước.
-3. Viết test (đỏ) rồi code checker, như mọi luật (`AGENTS.md` § Verify).
+3. Viết test (đỏ) rồi code checker, như mọi luật (`AGENTS.md` § Verify). Ngay trên khối chặn / cảnh báo, ghi
+   chú thích `# giữ: CAP-… [, INV-…]` — capability `machine` được phase nhận mà không luật nào khai thì
+   `check-sdlc.sh` chặn; id không có cũng chặn.
 4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và **ít nhất một ca** test
    chặn; `Rule:` viết trừu tượng (không backtick, không mã `REQ-`/`DEC-`…), cú pháp engine ghi ở `- Engine:`.
 5. `changes/<branch>.md`: mục `Thêm` / `Thay đổi` (người dùng `aw` thấy luật mới), nêu id.
@@ -199,6 +201,8 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `CAP-…: Judged by "…"` | Giá trị lạ | Chỉ `machine`, `agent`, `human` |
 | `…: "Rule:" chứa cú pháp engine` | `Rule:` của capability / invariant có backtick hoặc mã `REQ-`, `DEC-`, `TSK-`, `RVW-`, `FND-`, `RFR-`, `BR-` | Viết điều phải đúng bằng lời; cú pháp engine chuyển sang `- Engine:` (invariant) |
 | `INV-…: "Tested by:" không nêu ca test nào` | Invariant chỉ trỏ file test | Thêm tên ca chặn (trong `"…"`) sau đường dẫn file |
+| `…: "# giữ: X" — không có capability / invariant đó` | Chú thích trong `tools/` trỏ id gõ sai hoặc đã bỏ | Sửa id hoặc xoá chú thích |
+| `CAP-…: Judged by machine, phase … nhận, nhưng không luật checker nào khai` | Capability máy phán mà không chỗ code nào nói mình giữ nó | Thêm `# giữ: CAP-…` ngay trên khối chặn / cảnh báo giữ nó |
 | `out_of_scope: CAP-… không có` / `vừa out-of-scope vừa được phase … nhận` / `thiếu lý do` / `khai hai lần` | Mục `out_of_scope:` của `workflow.yaml` sai | Sửa id; bỏ khỏi `out_of_scope:` hoặc khỏi `capabilities:` của phase; ghi lý do; xoá dòng trùng |
 | `CAP-…: khai "- Artifact:" nhiều dòng` | Hai dòng `- Artifact:` trong một capability — dòng sau đè dòng trước | Gộp vào một dòng, cách nhau dấu phẩy |
 | `CAP-…: thiếu "- Artifact:"` | Khối capability không có dòng `- Artifact:`, hoặc dòng rỗng | Thêm loại artifact capability bảo đảm, lấy trong `provides` của stage |

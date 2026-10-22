@@ -129,12 +129,11 @@ quy trình — chỉ làm khi người chủ engine muốn.
   § Những chỗ thiết kế này yếu mục 1 của `kien-truc.md`. `CAP-operate-02` (sự cố → việc mới) là chỗ
   engine làm được: intake nhận incident / postmortem làm `input` của job mới, có `source label` riêng —
   cần đề xuất cách ghi nguồn trước khi code.
-- **Bước A — gắn mọi luật checker vào CAP / INV.** Khoảng 200 chỗ chặn/cảnh báo trong
-  `tools/check-*.sh` và mọi `Category` của `workflow/checkers/*.md` mang id `CAP-…` hoặc `INV-…`;
-  `check-sdlc.sh` chặn luật không id (mồ côi) và id không có. Capability `Judged by: machine` có phase nhận
-  mà không luật nào gắn id → chặn. Suy "diff chạm CAP/INV nào" từ file thay đổi, thay dòng "Interface: …"
-  khai tay trong PR. Cho phép tạm danh sách luật "chưa phân loại" rồi rút dần. Cần spec riêng (quyết định
-  ở `kien-truc.md` § Interface SDLC).
+- **Bước A, đợt 2 — chiều xuôi.** Đợt 1 (SP12) đã có: chú thích `# giữ: CAP-…/INV-…` trên luật, `check-sdlc.sh`
+  chặn id không có và capability `machine` được nhận mà không luật nào khai (36 chỗ đã gắn). Còn: gắn id cho
+  ~200 chỗ chặn/cảnh báo còn lại và mọi `Category` của `workflow/checkers/*.md`; chặn luật mồ côi (cho phép
+  danh sách "chưa phân loại" rồi rút dần); suy "diff chạm CAP/INV nào" từ file thay đổi, thay dòng
+  "Interface: …" khai tay trong PR. Cần spec riêng.
 - **Ba luật theo job type còn do người phán — cho máy giữ rồi mới thành invariant.** Việc của engine
   (checker), không phải interface: interface chỉ thêm invariant khi máy đã giữ luật (`interface-sdlc.md`
   § 4.1). Mỗi mục là đổi luật — đề xuất, chờ người OK:

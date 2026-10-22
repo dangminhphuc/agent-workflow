@@ -118,6 +118,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
 
   END {
     if (vao) dong_cho()
+    # giữ: CAP-plan-01
     if (!co_loai)            loi("Thiếu dòng \"- **Type:**\" (feature | bugfix | refactor | perf | chore)")
     else if (!(loai in hl))  loi("\"Type: " loai "\" không hợp lệ. Chỉ chấp nhận: feature | bugfix | refactor | perf | chore")
     if (!co_mt || mt == "" || mt ~ /^<.*>$/) loi("Thiếu \"- **Goal:**\" (mục tiêu một câu)")

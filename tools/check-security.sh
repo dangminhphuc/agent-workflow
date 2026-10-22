@@ -43,6 +43,7 @@ loi() { n_loi=$((n_loi + 1)); echo "  [LỖI] $1"; }
 
 ds=$(kc_bm_dong "$SECURITY_CMDS")
 if [ -z "$ds" ]; then
+  # giữ: CAP-implement-03
   loi "Chưa khai báo SECURITY_CMDS trong $CAUHINH"
   echo ""
   echo "  Khai ĐÚNG lệnh, config và ngưỡng mà pipeline CI/CD chạy (secret scan, SAST, SCA),"

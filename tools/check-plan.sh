@@ -207,6 +207,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
     thu_ma($0, "DEC-[0-9]+")
     for (i = 1; i <= n_tim; i++) {
       d = ma_tim[i]
+      # giữ: INV-002
       if (!(d in co_d)) loi(cur ": \"Based on: " d "\" nhưng tdd.md không có " d)
       else dua_tren[d] = dua_tren[d] " " cur
     }
@@ -216,6 +217,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/ {
     v = $0; sub(/^[^:]*:[ \t]*/, "", v); v = trim(v)
     co_fdk_dong[cur] = 1
+    # giữ: CAP-breakdown-02
     if (v == "" || v ~ /<[^>]*>/) loi(cur ": \"Expected files\" trống hoặc còn chỗ giữ chỗ — implement dùng nó để kiểm phạm vi diff")
     next
   }
@@ -235,6 +237,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
     # DEC-xxx phải được người duyệt trước khi lập kế hoạch
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
+      # giữ: CAP-design-03, INV-005
       if (d_tt[d] != "approved")
         loi(d ": chưa được người duyệt (" (d_tt[d] == "" ? "không đọc được approval checkbox" : d_tt[d]) ")" \
             (d in dua_tren ? " — task bị ảnh hưởng:" dua_tren[d] " (đặt lại `[ ]`)" : ""))
@@ -242,6 +245,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
 
     for (i = 1; i <= n_task; i++) {
       t = dsach_task[i]
+      # giữ: CAP-breakdown-01, INV-001
       if (!(t in co_phu) && !(t in co_sua)) loi(t ": thiếu \"Covers:\" hoặc \"Fixes:\" — task phải phủ một REQ hoặc sửa một finding review")
       # Fixes trên task chưa xong phải trỏ về finding của review.md hiện tại (task [x]: review đã ghi lại, lịch sử ở git)
       if (!(t in xong)) { n_fx = split(fx[t], ds_fx, " "); for (j = 1; j <= n_fx; j++) if (ds_fx[j] != "" && index(rvw, " " ds_fx[j] " ") == 0) loi(t ": \"Fixes: " ds_fx[j] "\" nhưng review.md không có finding mã đó") }

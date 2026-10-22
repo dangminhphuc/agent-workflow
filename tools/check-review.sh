@@ -374,6 +374,7 @@ awk -v loi_truoc="$n_truoc" '
 
     for (i = 1; i <= n_yc; i++) {
       c = dsach[i]
+      # giữ: INV-004
       if (!(c in ket_luan)) {
         loi(c ": không có kết luận nào trong review.md. Bỏ sót một yêu cầu " \
             "nghĩa là phase rà soát chưa chạy xong.")

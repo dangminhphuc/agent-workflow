@@ -110,6 +110,7 @@ tk_bc() {
 
 # tk_thieu_bang_chung <thư-mục-feature> -> task [x] mà task-results.md không có
 # bằng chứng xanh khớp lệnh Verify hiện tại. Mỗi dòng một phát hiện.
+# giữ: CAP-implement-06
 tk_thieu_bang_chung() {
   _tk_kq="$1/task-results.md"
   tk_ds "$1/plan.md" | while IFS='|' read -r _t _s _d _v; do
@@ -186,6 +187,7 @@ tk_mau_task() {
 # tk_pham_vi <thư-mục-feature> <TSK-NNN> <commit lúc start> -> file đổi từ lúc task bắt đầu (đã commit,
 # working tree, chưa track) mà không khớp mẫu của riêng task, trừ ignored_files và artifact.
 # Mỗi dòng một file. Chỉ để cảnh báo: sửa file của task khác có thể chính đáng (ghi "Unplanned").
+# giữ: CAP-implement-05
 tk_pham_vi() {
   _pv_top=$(git_top "$1") || return 0
   git -C "$_pv_top" cat-file -e "$3^{commit}" 2>/dev/null || return 0

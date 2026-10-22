@@ -101,6 +101,7 @@ while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $tt
 EOF
 
+# giữ: CAP-implement-02
 # ---- 3. Chay that lenh kiem thu ----
 echo ""
 echo "Chạy lệnh kiểm thử: $TEST_CMD"

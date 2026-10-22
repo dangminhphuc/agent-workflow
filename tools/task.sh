@@ -251,6 +251,7 @@ if [ "$ma" -ne 0 ]; then
   fi
   exit 1
 fi
+# giữ: CAP-implement-06
 tk_dat "$PLAN" "$TASK" "x" || { echo "LỖI: không ghi được ô Status của $TASK." >&2; exit 1; }
 echo "$TASK: Verify XANH → [x]. Bằng chứng: $KQ"
 if [ -n "$pham_vi" ]; then

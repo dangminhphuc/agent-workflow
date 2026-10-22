@@ -713,6 +713,11 @@ hay "phase `plan`", không nói trống.
   stage viết ít capability rẻ thành `implemented` (trước đây `implement` không capability nào nói tới
   `task-evidence`). Không áp cho `adds_provides` của profile: các loại đó đã có invariant máy giữ,
   nêu tên ca test (INV-007, INV-010) — capability thêm là nói lại một điều.
+- **Luật checker khai capability nó giữ (`# giữ:`), đợt 1 chỉ chiều ngược.** Capability `Judged by: machine`
+  mà phase nhận thì phải có ít nhất một chỗ code khai `# giữ: CAP-…` — nếu không, lời khai "engine làm
+  capability này" không trỏ tới đâu. Chú thích shell (không phải bảng riêng) vì nằm ngay cạnh luật, đổi luật
+  thì thấy. Chưa chặn luật mồ côi: ~200 chỗ chặn/cảnh báo chưa có id, gắn hết một lần là PR rất lớn —
+  để đợt 2 (`docs/viec-can-lam.md`).
 - **Hạ chuẩn interface không có cổng duyệt riêng.** Bỏ hay nới capability / invariant là thay đổi luật,
   nên đã phải chờ người OK (`AGENTS.md`). Thứ thiếu là **khả kiến**: id + lý do ghi dưới `### Bỏ` /
   `### Thay đổi` của `changes/<branch>.md`, để người duyệt thấy mà không phải đọc diff `sdlc/`.
@@ -750,7 +755,7 @@ hay "phase `plan`", không nói trống.
   (`docs/viec-can-lam.md`).
 - **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
   target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
-  `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`, `23-sdlc-syntax.sh`, `24-sdlc-stage-status.sh`) chạy nó
+  `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`, `23-sdlc-syntax.sh`, `24-sdlc-stage-status.sh`, `25-sdlc-capabilities.sh`) chạy nó
   trên engine hiện tại (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
 - Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
   `provides` / `capabilities` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map

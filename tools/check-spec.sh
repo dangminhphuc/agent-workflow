@@ -169,6 +169,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       if (cur_oq !~ /^REQ-[0-9][0-9][0-9]$/) loi("Mã " cur_oq " sai dạng trong open-questions.md: phải đúng 3 chữ số (REQ-001)")
       co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
     }
+    # giữ: CAP-require-02
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Assumption\**:/) co_gia_dinh[cur_oq] = 1
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/) muc_ch[cur_oq] = gia_tri($0)
     if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*(Mức chặn|Mức ảnh hưởng)[^:]*:/) muc_cu[cur_oq] = gia_tri($0)
@@ -330,6 +331,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
 
     for (i = 1; i <= n; i++) {
       c = thu_tu[i]
+      # giữ: CAP-require-01
       if (so_nguon[c] == 0) {
         loi(c ": thiếu dòng \"Source:\". Yêu cầu không có nhãn = fail.")
         continue
@@ -437,6 +439,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
         c = thu_tu[i]; lt = loai_yc[c]
         if (lt == "")              { loi(c ": " loai " — thiếu \"Type:\" (" ds "). Không được có REQ hành vi mới."); continue }
         if (!(lt in hl_yc))        { loi(c ": \"Type: " lt "\" không hợp lệ cho " loai " (" ds ")"); continue }
+        # giữ: INV-008
         if (lt == "preserve" && !(c in bv)) loi(c ": REQ preserve phải có \"Protected by: `<file test>`\" — test có sẵn trên base của việc")
         if (lt == "performance" && !(c in co_mt)) loi(c ": REQ performance phải có \"Target:\" kèm số liệu")
         if (lt == "performance") n_hn++

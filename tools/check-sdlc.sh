@@ -26,6 +26,8 @@
 #     phase nào có exit_machine.
 #   - Utility command khai implements hoặc capabilities (utility command không ánh xạ vào stage).
 #   - out_of_scope: (workflow.yaml) id không có, đã được phase nhận, thiếu lý do, khai hai lần.
+#   - "# giữ: CAP-…/INV-…" (tools/check-*.sh, tools/lib/*.sh, tools/task.sh) trỏ id không có; capability
+#     Judged by machine được phase nhận mà không luật nào khai "# giữ:" nó.
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -326,6 +328,28 @@ while IFS='|' read -r c ly; do
   [ -n "$ly" ] || { loi "out_of_scope: $c thiếu lý do — ghi vì sao engine không làm."; continue; }
   echo "$c|$ly" >> "$W/oos-ok"
 done < "$W/oos"
+
+# ---- luật checker khai capability / invariant nó giữ: chú thích "# giữ: CAP-…[, INV-…]" ngay trên khối
+# chặn / cảnh báo, trong tools/check-*.sh, tools/lib/*.sh, tools/task.sh (bước A, đợt 1: chỉ chiều ngược —
+# capability machine được nhận phải có luật khai nó; luật chưa khai id thì chưa chặn).
+: > "$W/giu"
+for f in "$E"/tools/check-*.sh "$E"/tools/lib/*.sh "$E"/tools/task.sh; do
+  [ -f "$f" ] || continue
+  awk -v f="${f#"$E"/}" '{ sub(/\r$/, "") }
+    /^[ \t]*# giữ:/ { s = $0; while (match(s, /CAP-[a-z]+-[0-9][0-9]|INV-[0-9]+/)) { print f "|" substr(s, RSTART, RLENGTH); s = substr(s, RSTART + RLENGTH) } }' "$f" >> "$W/giu"
+done
+while IFS='|' read -r f id; do
+  case "$id" in
+    CAP-*) cap_co "$id" ;;
+    *) awk -F'|' -v i="$id" '$1 == i && $2 == "id"' "$W/inv" | grep -q . ;;
+  esac || loi "$f: \"# giữ: $id\" — không có capability / invariant đó (sdlc/stages/, sdlc/invariants.md)."
+done < "$W/giu"
+awk -F'|' '$3 == "machine" { print $2 }' "$W/cap" > "$W/may"
+while IFS= read -r c; do
+  ph=$(awk -F'|' -v c="$c" '$3 == c { print $1; exit }' "$W/nhan"); [ -n "$ph" ] || continue
+  awk -F'|' -v c="$c" '$2 == c' "$W/giu" | grep -q . ||
+    loi "$c: Judged by machine, phase $ph nhận, nhưng không luật checker nào khai \"# giữ: $c\" — thêm chú thích ngay trên khối chặn / cảnh báo giữ nó."
+done < "$W/may"
 
 # trang_thai <stage> -> implemented | partial | gap, suy ra: capability của stage được phase nhận hết / một phần / không
 trang_thai() {

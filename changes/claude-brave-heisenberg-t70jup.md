@@ -63,4 +63,5 @@
   `$(…)` sau dùng lại. Một lần `aw check review` trên fixture: 183 → 68 lần gọi git, 2,3 → 1,4 giây.
   `check-sdlc.sh` tra thứ tự stage trong shell thay vì một `awk` mỗi lần.
 - **Test:** helper `ky_vong_ly_do` chạy checker một lần cho cặp "mã thoát + lý do" (24 cặp đã chuyển);
-  tách `22-sdlc-stage-files` → thêm `23-sdlc-syntax`, tách `20-sdlc-conformance` → thêm `24-sdlc-stage-status`.
+  tách `22-sdlc-stage-files` → thêm `23-sdlc-syntax`, `25-sdlc-capabilities`; tách `20-sdlc-conformance` → thêm
+  `24-sdlc-stage-status`.
