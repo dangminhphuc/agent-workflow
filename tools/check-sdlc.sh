@@ -68,14 +68,17 @@ DS_LUAT="tools/unclassified-rules.txt"
 tep_luat() { for _tl in "$E"/tools/check-*.sh "$E"/tools/task.sh; do
   case "${_tl##*/}" in check-sdlc.sh|check-release.sh) continue ;; esac
   [ -f "$_tl" ] && printf '%s\n' "${_tl#"$E"/}"; done; }
-# dem_luat <file> -> số chỗ luật chưa được "# giữ:" phủ
+# dem_luat <file> -> số chỗ luật (loi/loi_truoc/canh_bao, dòng in [LỖI]/[CẢNH BÁO], TỪ CHỐI:/DỪNG:/CẢNH BÁO:)
+# chưa được "# giữ:" phủ. Một "# giữ:" phủ đúng một chỗ luật đầu tiên bên dưới, trước dòng trống kế tiếp.
 dem_luat() {
   awk '{ sub(/\r$/, "") }
     /^[ \t]*$/ { phu = 0; next }
     /^[ \t]*# giữ:/ { phu = 1; next }
     /^[ \t]*#/ { next }
-    /^[ \t]*(function[ \t]+)?(loi|loi_truoc)[ \t]*\(/ && /\{/ && !/(loi|loi_truoc)[ \t]*\([^)]*"/ { next }
-    !phu && ($0 ~ /(^|[^A-Za-z0-9_])(loi|loi_truoc)[ (]/ || index($0, "[CẢNH BÁO]")) { n++ }
+    /^[ \t]*(function[ \t]+)?(loi|loi_truoc|canh_bao)[ \t]*\(/ && /\{/ && !/(loi|loi_truoc|canh_bao)[ \t]*\([^)]*"/ { next }
+    /BEGIN[ \t]*\{[ \t]*n_loi[ \t]*=[ \t]*loi_truoc/ { next }
+    $0 ~ /(^|[^A-Za-z0-9_])(loi|loi_truoc|canh_bao)[ (]/ || index($0, "[LỖI]") || index($0, "[CẢNH BÁO]") ||
+    /(TỪ CHỐI|DỪNG|CẢNH BÁO):/ { if (phu) phu = 0; else n++ }
     END { print n + 0 }' "$1"
 }
 if [ -n "$DEM" ]; then
@@ -382,18 +385,20 @@ done < "$W/may"
 # ---- luật chưa phân loại: số chỗ luật chưa "# giữ:" của mỗi file phải đúng bằng số trong $DS_LUAT —
 # nhiều hơn = luật mới không gắn id; ít hơn = đã gắn thêm mà chưa hạ danh sách (danh sách chỉ được giảm).
 : > "$W/dsl"
+tep_luat > "$W/tepl"
 if [ -f "$E/$DS_LUAT" ]; then
   while IFS= read -r l; do
     l=$(printf '%s' "$l" | tr -d '\r')
     case "$l" in ""|"#"*) continue ;; esac
-    f=${l%% *}; so=${l#* }
-    case "$l" in *" "*) ;; *) so="" ;; esac
+    set -f; set -- $l; set +f
+    f=$1; so=$2; [ $# -eq 2 ] || so=""
     case "$so" in ""|*[!0-9]*) loi "$DS_LUAT: dòng \"$l\" sai dạng — cần \"<file> <số>\"."; continue ;; esac
     [ -f "$E/$f" ] || { loi "$DS_LUAT: $f không có."; continue; }
+    grep -qxF "$f" "$W/tepl" || { loi "$DS_LUAT: $f không phải file được đếm (tools/check-*.sh trừ check-sdlc/check-release, tools/task.sh)."; continue; }
+    awk -v f="$f" '$1 == f { c = 1 } END { exit !c }' "$W/dsl" && { loi "$DS_LUAT: $f lặp — mỗi file một dòng."; continue; }
     echo "$f $so" >> "$W/dsl"
   done < "$E/$DS_LUAT"
 fi
-tep_luat > "$W/tepl"
 while IFS= read -r f; do
   n=$(dem_luat "$E/$f")
   m=$(awk -v f="$f" '$1 == f { print $2; exit }' "$W/dsl"); m=${m:-0}

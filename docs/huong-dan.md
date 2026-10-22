@@ -639,6 +639,9 @@ aw check implement <dir>    chạy toàn bộ test + quét bảo mật, ghi *-re
 ```
 
 Đỏ liên tiếp `MAX_RED_RUNS` lần → máy báo **DỪNG**: agent ghi `Unplanned` và báo bạn thay vì thử mò.
+Bộ đếm chỉ về 0 khi `aw task done` xanh — sửa tay Status về `[ ]` rồi `aw task start` lại không xoá nó. Bạn đã
+xử lý xong (đổi hướng, sửa plan) và muốn agent thử tiếp: xoá dòng `- Đỏ liên tiếp: N` của task đó trong
+`task-results.md`.
 
 **Việc của bạn:**
 

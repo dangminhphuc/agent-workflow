@@ -133,7 +133,9 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
 2. Không có cái nào nói điều luật đó kiểm → thêm capability (4.3) hoặc invariant trước.
 3. Viết test (đỏ) rồi code checker, như mọi luật (`AGENTS.md` § Verify). Ngay trên khối chặn / cảnh báo, ghi
    chú thích `# giữ: CAP-… [, INV-…]` — capability `machine` được phase nhận mà không luật nào khai thì
-   `check-sdlc.sh` chặn; id không có cũng chặn. Chú thích phủ tới dòng trống kế tiếp. Luật mới không gắn thì chặn
+   `check-sdlc.sh` chặn; id không có cũng chặn. Mỗi chú thích phủ đúng một chỗ luật ngay dưới nó
+   (trước dòng trống kế tiếp). "Chỗ luật" = gọi `loi` / `loi_truoc` / `canh_bao`, dòng in `[LỖI]` / `[CẢNH BÁO]`,
+   hoặc `TỪ CHỐI:` / `DỪNG:` / `CẢNH BÁO:` (`tools/task.sh`). Luật mới không gắn thì chặn
    (số luật chưa gắn của file vượt `tools/unclassified-rules.txt`); gắn id cho luật cũ thì hạ số trong danh
    sách (`sh tools/check-sdlc.sh --dem-luat` in số đúng).
 4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và **ít nhất một ca** test
@@ -207,7 +209,7 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `CAP-…: Judged by machine, phase … nhận, nhưng không luật checker nào khai` | Capability máy phán mà không chỗ code nào nói mình giữ nó | Thêm `# giữ: CAP-…` ngay trên khối chặn / cảnh báo giữ nó |
 | `<file>: N luật chưa gắn "# giữ:" (cho phép M …)` | Có luật chặn / cảnh báo mới không mang id | Gắn `# giữ: CAP-…/INV-…` ngay trên (không id nào hợp → thêm capability / invariant) |
 | `tools/unclassified-rules.txt: <file> cho phép M nhưng chỉ còn N` | Đã gắn id cho luật cũ mà chưa hạ danh sách | Hạ số xuống N |
-| `tools/unclassified-rules.txt: dòng … sai dạng` / `… không có` | Dòng danh sách hỏng | Mỗi dòng `<file> <số>`, file có thật |
+| `tools/unclassified-rules.txt: dòng … sai dạng` / `… không có` / `… lặp` / `… không phải file được đếm` | Dòng danh sách hỏng | Mỗi file một dòng `<file> <số>`, file có thật và thuộc diện đếm |
 | `out_of_scope: CAP-… không có` / `vừa out-of-scope vừa được phase … nhận` / `thiếu lý do` / `khai hai lần` | Mục `out_of_scope:` của `workflow.yaml` sai | Sửa id; bỏ khỏi `out_of_scope:` hoặc khỏi `capabilities:` của phase; ghi lý do; xoá dòng trùng |
 | `CAP-…: khai "- Artifact:" nhiều dòng` | Hai dòng `- Artifact:` trong một capability — dòng sau đè dòng trước | Gộp vào một dòng, cách nhau dấu phẩy |
 | `CAP-…: thiếu "- Artifact:"` | Khối capability không có dòng `- Artifact:`, hoặc dòng rỗng | Thêm loại artifact capability bảo đảm, lấy trong `provides` của stage |
