@@ -58,7 +58,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `job` *(trước: việc)* | Một đơn vị công việc đi qua quy trình (một ticket, một bug…). Mỗi `job` có một branch, một `worktree`, một `job dir`, cùng tên |
 | `job type` *(trước: loại việc)* | `Type` trong `intake.md`: `feature \| bugfix \| refactor \| perf \| chore`, **đổi luật** của mọi phase sau. Xem [`huong-dan.md` §5](huong-dan.md#5-khác-nhau-theo-job-type) |
 | `input` | Nguồn duy nhất spec được đọc: mã Jira, URL Confluence, file, hoặc lời người. Liệt kê ở `## Input` của `intake.md` |
-| `source label` *(trước: nhãn nguồn)* | Mỗi REQ ghi nguồn: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định kỹ thuật hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói). Lời người trong `intake.md` mang nhãn `[HUMAN]` |
+| `source label` *(trước: nhãn nguồn)* | Mỗi REQ ghi nguồn: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định kỹ thuật hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói). Lời người trong `intake.md` mang nhãn `[HUMAN]`. Sự cố mang nhãn `[INCIDENT]` kèm định danh — không bắt buộc |
 | `Quote` *(câu trích)* | Câu nguồn chép **nguyên văn** dưới `Source:` của REQ (`[CONFLUENCE]` `[JIRA]` `[FILE]`), mỗi câu một dòng `> …`. Với `[FILE]` máy kiểm câu có thật trong file |
 | `open question` *(trước: điểm mù)* | Chỗ nguồn chưa nói mà agent phải giả định tạm. Ghi trong `open-questions.md` theo REQ: câu hỏi, hỏi ai, giả định, *If wrong, redo*, `Blocking` |
 | `Blocking` *(trước: mức chặn)* | Mức của một `open question`: `blocking` (chặn design), `review-blocking` (chạy tiếp, review chặn), `non-blocking` (không chặn, REQ ghi `pending`). Agent đề xuất, người duyệt |

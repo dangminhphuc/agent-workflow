@@ -87,7 +87,7 @@ sdlc:
   - stage: deploy
     note: Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
   - stage: operate
-    note: CI/CD và observability nằm ngoài engine; sự cố chưa quay lại thành việc mới
+    note: CI/CD và observability nằm ngoài engine; intake ghi được sự cố bằng [INCIDENT], không bắt buộc, và stage operate chưa có phase
 
 # Capability engine quyết KHÔNG làm, kèm lý do (tools/check-sdlc.sh in riêng khỏi roadmap). Trạng thái
 # stage không đổi — chỗ thiếu vẫn hiện; chỉ tách việc sẽ làm khỏi việc không bao giờ làm. Dạng "- CAP-id: lý do".

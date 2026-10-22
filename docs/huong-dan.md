@@ -421,7 +421,7 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 | `Base` | nhánh/commit việc rẽ ra | mọi checker so diff với base này |
 | `Engine` | version engine | mọi `aw check` của việc chạy đúng version này |
 | `Goal` | một câu mục tiêu | — |
-| `## Input` | danh sách nguồn duy nhất được đọc | mọi REQ sau này phải truy về đây |
+| `## Input` | danh sách nguồn duy nhất được đọc | mọi REQ sau này phải truy về đây. Sự cố: `[INCIDENT] <định danh>`, không bắt buộc |
 
 **Việc của bạn:**
 
@@ -432,7 +432,7 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 3. Xác nhận danh sách input, và lời bạn được chép **nguyên văn**.
 4. Chạy lệnh chuẩn bị máy in ra (`WORKTREE_SETUP_CMD`), rồi **mở phiên mới trong worktree**.
 
-**Máy chặn khi:** thiếu job type/input/`Base`/`Engine`; `[JIRA]` không khớp `jira_key_regex`.
+**Máy chặn khi:** thiếu job type/input/`Base`/`Engine`; `[JIRA]` không khớp `jira_key_regex`; `[INCIDENT]` thiếu định danh hoặc còn chỗ giữ chỗ.
 Job type lệch tiền tố branch → intake chỉ cảnh báo, **review chặn** (sửa loại hoặc `aw rename`).
 
 Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — chỉ nối thêm. Xoá input: sửa tay.

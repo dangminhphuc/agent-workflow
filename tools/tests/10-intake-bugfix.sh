@@ -54,6 +54,14 @@ thay "$F/intake.md" '`[JIRA]` ABC-1' '`[JIRA]` [ABC-1](https://x.atlassian.net/b
 ky_vong 0 "[JIRA] dạng link markdown có mã thì cho qua" sh "$CHK" "$F"
 viet_intake
 
+thay "$F/intake.md" '`[JIRA]` ABC-1' '`[INCIDENT]` INC-9'
+ky_vong 0 "[INCIDENT] có định danh thì cho qua" sh "$CHK" "$F"
+thay "$F/intake.md" '`[INCIDENT]` INC-9' '`[INCIDENT]`'
+ky_vong_ly_do 1 "chặn [INCIDENT] thiếu định danh" "…đúng lý do" '\[INCIDENT\] thiếu định danh' sh "$CHK" "$F"
+thay "$F/intake.md" '`[INCIDENT]`' '`[INCIDENT]` <mã sự cố>'
+ky_vong_ly_do 1 "chặn [INCIDENT] còn chỗ giữ chỗ" "…đúng lý do" 'chỗ giữ chỗ' sh "$CHK" "$F"
+viet_intake
+
 # spec ghi based_on intake.md: gop them input -> spec loi thoi, review chan
 sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
 ky_vong 0 "spec ghi based_on intake.md vẫn qua check-spec" sh "$T/check-spec.sh" "$F"
@@ -106,6 +114,7 @@ for c in intake spec design plan implement review; do
   ky_vong 0 "bugfix đầy đủ qua check-$c.sh" sh "$T/check-$c.sh" "$F"
 done
 dung "repro.md ghi output THẬT, mã thoát khác 0" sh -c "grep -q 'Mã thoát: \`1\`' '$F/repro.md'"
+ky_vong 0 "bugfix không có [INCIDENT] vẫn qua intake" sh "$CHK" "$F"
 
 ky_vong 1 "check-repro từ chối khi đã sửa code production" sh "$T/check-repro.sh" "$F"
 dung "…và giữ nguyên repro.md cũ" grep -q 'Mã thoát: `1`' "$F/repro.md"
