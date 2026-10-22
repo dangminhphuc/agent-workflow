@@ -100,12 +100,6 @@ adapters:
   - id: claude-code
     dir: adapters/claude-code
     status: active
-  - id: codex
-    dir: adapters/codex
-    status: planned
   - id: cursor
     dir: adapters/cursor
     status: active
-  - id: copilot
-    dir: adapters/copilot
-    status: planned

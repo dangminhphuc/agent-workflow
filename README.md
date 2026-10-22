@@ -6,7 +6,7 @@ Repo này là nguồn của **engine**, phát hành theo tag `YYYY.M.N` ([CHANGE
 Repo dự án chỉ chứa **quy ước** của mình (`docs/agent-workflow/conventions.md`, commit qua PR
 như mọi thay đổi khác). Còn lại không vào git: wrapper `aw` cài global, engine trong cache,
 cấu hình máy nằm trong `.git/` của bản clone, lệnh cho agent được sinh ra và bị exclude.
-Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa hiện thực).
+Adapter hiện có: **Claude Code**, **Cursor**. Agent khác (Codex, Copilot…) chưa có adapter — thêm khi có người dùng thật cần, theo `adapters/README.md`.
 
 | Đọc gì | Ở đâu |
 |---|---|

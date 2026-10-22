@@ -12,3 +12,8 @@
   khi khai nhiều dòng, và khi một loại `provides` của stage không capability nào trỏ tới.
 - **Frontmatter: mục danh sách bỏ khoảng trắng cuối dòng.** `fm_list` (`tools/lib/md.sh`) cắt khoảng
   trắng thừa sau mỗi mục, nên `  - delivery  ` không còn lệch tên với `delivery` ở các checker so tên loại.
+
+### Bỏ
+- **Hai adapter `planned` (`codex`, `copilot`) khỏi `workflow.yaml`.** Chưa có thư mục hay mã nào; mục
+  `planned` chỉ là lời hứa trong manifest. Thêm lại khi có người dùng thật cần, theo `adapters/README.md`
+  (ghi chú về Codex vẫn giữ ở đó). Người dùng `aw` không thấy gì khác.
