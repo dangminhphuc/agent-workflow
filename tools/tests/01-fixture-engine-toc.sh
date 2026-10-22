@@ -133,6 +133,11 @@ dung "[ab] là lớp ký tự: src/[ab].txt khớp src/b.txt" kd src/b.txt 'src/
 dung "…không khớp src/c.txt" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong src/c.txt 'src/[ab].txt'\""
 dung "[!a] là phủ định" kd xb 'x[!a]'
 dung "[ không đóng khớp nguyên văn" kd 'a[b' 'a[b'
+dung "[!]a] như case: khớp b (không phải ] hay a)" kd b '[!]a]'
+dung "…không khớp a" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong a '[!]a]'\""
+dung "x[!] (không đóng) khớp nguyên văn, không làm hỏng awk" sh -c ". '$T/lib/md.sh'; set -f; khop_duong 'x[!]' 'x[!]' 2>&1 | grep -q . && exit 1; khop_duong 'x[!]' 'x[!]'"
+dung "[[:alpha:]]x như case: khớp ax, không lỗi awk" sh -c ". '$T/lib/md.sh'; set -f; [ -z \"\$(khop_duong ax '[[:alpha:]]x' 2>&1)\" ] && khop_duong ax '[[:alpha:]]x'"
+dung "…không khớp 1x" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong 1x '[[:alpha:]]x'\""
 # Không dùng file tạm: TMPDIR hỏng (là một file thường) vẫn cảnh báo chuyển tiếp
 mkdir -p "$R/src/sau"; printf 'x\n' > "$R/src/sau/c.txt"; printf x > "$TMP/la-file"
 dung "TMPDIR hỏng → cảnh báo chuyển tiếp vẫn chạy" sh -c "TMPDIR='$TMP/la-file' sh '$T/check-implement.sh' '$F' | grep -q 'nhờ \* vượt thư mục'"
