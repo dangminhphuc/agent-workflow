@@ -141,7 +141,7 @@ luat_nguon() {
           echo "S|\`[HUMAN]\` $_lp (\`$_lv\`) (version: $_lpb)"
           echo "Q|\"$_lq\"" ;;
         *)
-          _lgr=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null)
+          _lgr=$(git_top "$1")
           _lpb=$(git -C "$_lgr" log -1 --format=%h -- "$_lp" 2>/dev/null)
           [ -n "$_lpb" ] || { echo "L|$2: nguồn [FILE] $_lp chưa commit trong repo — không có phiên bản"; return; }
           echo "S|\`[FILE]\` $_lcon (version: $_lpb)" ;;
@@ -193,7 +193,7 @@ luat_khoi_moi() {
 # luat_loi_spec <thư-mục-feature> -> lỗi trường "Promote:" của REQ (checker spec chặn)
 luat_loi_spec() {
   _lS="$1/spec.md"; [ -f "$_lS" ] || return 0
-  _lr=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || _lr=${AW_REPO:-.}
+  _lr=$(git_top "$1") || _lr=${AW_REPO:-.}
   _lc=$(qu_hieu_luc "${AW_REPO:-$_lr}"); _lv=$(basename "$1")
   luat_nang_ds "$_lS" | while IFS='|' read -r _ly _lid; do
     if ! printf '%s\n' "$_lid" | grep -qxE "$LUAT_RE_ID"; then
@@ -214,7 +214,7 @@ luat_loi_spec() {
 luat_loi_ke_hoach() {
   [ -f "$1/spec.md" ] && [ -f "$1/plan.md" ] || return 0
   _lN=$(luat_nang_ds "$1/spec.md"); [ -n "$_lN" ] || return 0
-  _lr=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || _lr=${AW_REPO:-.}
+  _lr=$(git_top "$1") || _lr=${AW_REPO:-.}
   _lc=$(qu_hieu_luc "${AW_REPO:-$_lr}"); _ltd=$(luat_thu_muc "$_lc")
   printf '%s\n' "$_lN" | while IFS='|' read -r _ly _lid; do
     _ldich=$(luat_dich "$_lid" "$_lc")
@@ -233,7 +233,7 @@ luat_loi_ke_hoach() {
 # luat_loi_viec <thư-mục-feature> -> REQ "Promote:" chưa có khối luật, hoặc khối lệch REQ đã duyệt
 luat_loi_viec() {
   [ -f "$1/spec.md" ] && [ -f "$1/plan.md" ] || return 0
-  _lr=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _lr=$(git_top "$1") || return 0
   _lc=$(qu_hieu_luc "${AW_REPO:-$_lr}")
   luat_nang_ds "$1/spec.md" | while IFS='|' read -r _ly _lid; do
     _lf=$(luat_ds "$_lr" "$_lc" | awk -F'|' -v id="$_lid" '$2 == id { print $1; exit }')

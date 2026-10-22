@@ -51,6 +51,7 @@ Go through **every** `REQ-NNN`: which code satisfies it, verdict `pass` / `fail`
 - Changes belonging to no task? Tasks `[x]` with no trace in the diff?
 - "Unplanned" items handled silently instead of reported?
 - Manually verified tasks (`task-results.md`): does the evidence really prove the task is done?
+- Every task with a `Scope warning` in `task-results.md`: one entry on the `Task scope warnings` line (why accepted, or which Unplanned row covers it) — the checker blocks a task left out.
 
 **Repo rules** (`aw rules review` — every `rules_*` file plus every `uses_*` skill / subagent file, all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved DEC-xxx that breaks a rule → `not applicable`, name the DEC.
 
@@ -83,7 +84,7 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 
 | Level | Meaning |
 |---|---|
-| `Blocker` | Spec violation, deviation from an approved decision, breaking bug, exploitable vulnerability, data loss/leak, undeclared breaking change (API/payload/schema/event changed but not in `tdd.md`/MR). Must not merge |
+| `Blocker` | Always fixed — no "accept" path. Spec violation, deviation from an approved decision, breaking bug, exploitable vulnerability, data loss/leak, undeclared breaking change (API/payload/schema/event changed but not in `tdd.md`/MR). Must not merge |
 | `Should fix` | Correct but a real quality problem |
 | `Nit` | Author decides |
 
@@ -99,7 +100,7 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 ## Forbidden
 
 - "Looks fine" reviews — not going through every `REQ-NNN` = not run.
-- **Editing code.** Fixes go back to `04-implement` as new tasks.
+- **Editing code.** Fixes go back through `/aw-plan` (Supplement: new tasks with `Fixes: RVW-NNN`), then `/aw-implement`.
 - Raising a style remark to `Blocker`; downgrading an exploitable vulnerability to `Should fix` as "unlikely".
 - `pass` for a REQ on an unconfirmed assumption.
 - Filling in `Security reviewer` — not even with the name of the person chatting with you.

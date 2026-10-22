@@ -27,6 +27,7 @@ kc_cau_hinh() {
 
 # kc_loi_thoi <thư-mục-feature>
 # Artifact nào có based_on mà hash đầu vào đã đổi -> lỗi thời.
+# giữ: INV-006
 kc_loi_thoi() {
   for _a in "$1"/*.md; do
     [ -f "$_a" ] || continue
@@ -46,10 +47,11 @@ kc_loi_thoi() {
 
 # kc_test_yc <thư-mục-feature>
 # REQ nào chưa có test gắn tag, chưa ghi "Manual verification", chưa ở "Deferred".
+# giữ: INV-003
 kc_test_yc() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/spec.md" ] || return 0
-  _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
+  _top=$(git_top "$_d") || {
     echo "Không kiểm được test ↔ REQ: thư mục không nằm trong git repo"; return 0; }
   _mau=$(conv_get "$_conv" test_files)
   _tag=$(conv_get "$_conv" covers_tag); [ -n "$_tag" ] || _tag="covers:"
@@ -104,10 +106,11 @@ kc_test_yc() {
 # kc_pham_vi <thư-mục-feature>
 # File thay đổi so với base của việc mà không nằm trong "Expected files" hay
 # "Unplanned" của plan.md, và không thuộc danh sách bỏ qua.
+# giữ: CAP-implement-04
 kc_pham_vi() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/plan.md" ] || return 0
-  _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
+  _top=$(git_top "$_d") || {
     echo "Không kiểm được phạm vi diff: thư mục không nằm trong git repo"; return 0; }
   _mb=$(kc_mb "$_d") || {
     echo "Không kiểm được phạm vi diff: không tìm thấy base \"$(kc_base "$_d")\" (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)"; return 0; }
@@ -136,6 +139,72 @@ kc_pham_vi() {
       echo "$_f: thay đổi ngoài phạm vi — không có trong \"Expected files\" hay \"Unplanned\" của plan.md — hoàn tác, hoặc ghi file (trong backtick) vào \"Unplanned\" kèm lý do"
     done
   set +f
+}
+
+# kc_glob_chuyen_tiep <thư-mục-feature>
+# Giai đoạn chuyển tiếp của glob trong plan.md (Expected files, Unplanned): file đổi khớp một mẫu chỉ
+# nhờ * vượt thư mục (nghĩa cũ) mà không khớp theo nghĩa mới (** qua /, * không) — bản sau sẽ thành
+# ngoài phạm vi. Chỉ cảnh báo, kể cả ở review. Mỗi dòng một file.
+kc_glob_chuyen_tiep() {
+  [ -f "$1/plan.md" ] || return 0
+  _gc_top=$(git_top "$1") || return 0
+  _gc_mb=$(kc_mb "$1") || return 0
+  awk '
+    function bt(s) { while (match(s, /`[^`]+`/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) } }
+    { sub(/\r$/, "") }
+    /^##[ \t]+Unplanned/ { un = 1; next }
+    /^##[ \t]/ && !/^###/ { un = 0 }
+    un || /^[ \t]*-[ \t]*\**Expected files\**:/ { bt($0) }
+  ' "$1/plan.md" > "${TMPDIR:-/tmp}/aw-gc.$$"
+  { git -C "$_gc_top" diff --name-only "$_gc_mb"; git -C "$_gc_top" ls-files --others --exclude-standard; } \
+    | sort -u | while IFS= read -r _gc_f; do
+      [ -n "$_gc_f" ] || continue
+      tm_bo "$_gc_f" && continue
+      printf '%s\n' "$_gc_f"
+    done | awk "$MAU_ERE_AWK"'
+    FILENAME == ARGV[1] { if ($0 != "") { m++; mau[m] = $0; cu[m] = mau_ere($0, 0); moi[m] = mau_ere($0, 1) } next }
+    {
+      khop_moi = 0; dau = 0
+      for (i = 1; i <= m; i++) { if ($0 ~ moi[i]) { khop_moi = 1; break } if (!dau && $0 ~ cu[i]) dau = i }
+      if (khop_moi || !dau) next
+      p = mau[dau]; g = ""
+      for (j = 1; j <= length(p); j++) {
+        c = substr(p, j, 1)
+        if (c == "*" && substr(p, j + 1, 1) == "*") { g = g "**"; j++ } else if (c == "*") g = g "**"; else g = g c
+      }
+      printf "`%s` chỉ khớp `%s` nhờ * vượt thư mục — bản sau * không qua /; viết `%s`\n", $0, p, g
+    }' "${TMPDIR:-/tmp}/aw-gc.$$" -
+  rm -f "${TMPDIR:-/tmp}/aw-gc.$$"
+}
+
+# kc_glob_rong <thư-mục-feature>
+# Mẫu "Expected files" của plan.md khớp nhiều file đã track trên commit Base hơn
+# scope_glob_max_files (mặc định 30; 0 = tắt) — mẫu quá rộng làm kiểm phạm vi vô nghĩa.
+# Mẫu khớp 0 file không báo (task tạo file mới). Mỗi dòng một cảnh báo.
+# giữ: CAP-implement-05
+kc_glob_rong() {
+  [ -f "$1/plan.md" ] || return 0
+  _gr_n=$(conv_get "$(kc_conventions "$1")" scope_glob_max_files); _gr_n=${_gr_n:-30}
+  case "$_gr_n" in *[!0-9]*) return 0 ;; esac
+  [ "$_gr_n" -gt 0 ] || return 0
+  _gr_sha=$(intake_base_dong "$1" | awk '{ print $2 }')
+  [ -n "$_gr_sha" ] || return 0
+  _gr_top=$(git_top "$1") || return 0
+  git -C "$_gr_top" cat-file -e "$_gr_sha^{commit}" 2>/dev/null || return 0
+  git -C "$_gr_top" ls-tree -r --name-only "$_gr_sha" | awk -v n="$_gr_n" "$MAU_ERE_AWK"'
+    FILENAME == ARGV[1] {
+      sub(/\r$/, "")
+      if ($0 ~ /^###[ \t]/) { t = ""; if (match($0, /TSK-[0-9]+/)) t = substr($0, RSTART, RLENGTH); next }
+      if ($0 ~ /^##[ \t]/) { t = ""; next }
+      if (t != "" && $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/) {
+        s = $0
+        while (match(s, /`[^`]+`/)) { m++; tk[m] = t; mau[m] = substr(s, RSTART + 1, RLENGTH - 2); re[m] = mau_ere(mau[m], 0); s = substr(s, RSTART + RLENGTH) }
+      }
+      next
+    }
+    { for (i = 1; i <= m; i++) if ($0 ~ re[i]) dem[i]++ }
+    END { for (i = 1; i <= m; i++) if (dem[i] + 0 > n + 0) printf "%s: `%s` khớp %d file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: %d)\n", tk[i], mau[i], dem[i], n }
+  ' "$1/plan.md" -
 }
 
 # ------------------------------------------------------------------ theo loại việc
@@ -220,7 +289,7 @@ kc_loi_duyet() {
     }'
 }
 
-kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
+kc_top() { git_top "$1"; }
 
 # kc_engine_dong <thư-mục-feature> -> version ghi ở dòng "Engine:" của intake.md
 # (bỏ backtick, comment; không có dòng thì không in gì). Mọi `aw check` của việc
@@ -328,6 +397,7 @@ kc_loai_branch() {
 }
 
 # kc_test_cu_xoa <thư-mục-feature> — refactor/perf: xoá test cũ = bỏ hành vi -> chặn
+# giữ: INV-009
 kc_test_cu_xoa() {
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     [ "$_s" = "D" ] || continue
@@ -348,6 +418,7 @@ kc_test_cu_sua() {
 }
 
 # kc_chore_production <thư-mục-feature> — chore đụng code production -> chặn
+# giữ: INV-011
 kc_chore_production() {
   kc_doi "$1" | while IFS="$(printf '\t')" read -r _s _p _q; do
     for _f in "$_p" $_q; do

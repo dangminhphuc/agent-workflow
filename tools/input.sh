@@ -42,7 +42,7 @@ kq_khai input.sh \
 . "$HERE/lib/env.sh"
 mt_dat "$HERE"
 CONV="$MT_CONV"
-TOP=$(git -C "$MT_REPO" rev-parse --show-toplevel 2>/dev/null) || TOP="$MT_REPO"
+TOP=$(git_top "$MT_REPO") || TOP="$MT_REPO"
 
 TRU=""
 if [ "${1:-}" = "--skip" ]; then

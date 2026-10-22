@@ -27,6 +27,7 @@ kq_khai check-ship.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 MR="$DIR/merge-request.md"
 REVIEW="$DIR/review.md"
 

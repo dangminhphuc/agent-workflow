@@ -6,7 +6,7 @@ Repo này là nguồn của **engine**, phát hành theo tag `YYYY.M.N` ([CHANGE
 Repo dự án chỉ chứa **quy ước** của mình (`docs/agent-workflow/conventions.md`, commit qua PR
 như mọi thay đổi khác). Còn lại không vào git: wrapper `aw` cài global, engine trong cache,
 cấu hình máy nằm trong `.git/` của bản clone, lệnh cho agent được sinh ra và bị exclude.
-Adapter hiện có: **Claude Code**, **Cursor** (Codex, Copilot: có khe, chưa hiện thực).
+Adapter hiện có: **Claude Code**, **Cursor**. Agent khác (Codex, Copilot…) chưa có adapter — thêm khi có người dùng thật cần, theo `adapters/README.md`.
 
 | Đọc gì | Ở đâu |
 |---|---|
@@ -310,7 +310,7 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 | `aw check <tên> <thư-mục-feature>` | Machine checker: `intake spec design plan implement review repro perf security ship` |
 | `aw task next\|start\|done <thư-mục-feature> [TSK-NNN]` | Trạng thái task do máy giữ |
 | `aw task reopen <thư-mục-feature> <REQ-NNN\|DEC-NNN>` | REQ vừa đổi / DEC-xxx mở lại: chỉ task phủ nó về `[ ]` |
-| `aw journal` · `aw journal add <lớp> "<mô tả>"` | harness journal: checker trượt ở đâu, loại lỗi lặp lại |
+| `aw journal` · `aw journal add <lớp> "<mô tả>"` · `aw journal export <file>` · `aw journal report <file>…` | harness journal: checker trượt ở đâu, loại lỗi lặp lại; export / report trên file để gom nhiều máy |
 | `aw worktree new\|status\|remove …` | Đề xuất / tạo / dọn worktree |
 | `aw ship targets\|create\|status\|sweep …` | Gửi MR/PR, theo dõi, dọn việc đã merge |
 | `aw adapter build [a[,b]] [--out <dir>] [--force]` | Sinh lại adapter |

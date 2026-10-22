@@ -27,6 +27,35 @@ fm_scalar() {
   ' "$1"
 }
 
+# yaml_kiem <file> fm|wf -> "dòng N: <lý do>" cho mỗi dòng ngoài tập con YAML mà fm_* / wf_* đọc
+# được (đọc sai thì trả rỗng — lỗi lộ muộn). fm: frontmatter giữa hai dòng "---" (k: v, k:, k: [],
+# "  - mục"); wf: cả file workflow.yaml, thêm danh sách map một cấp ("  - k: v" rồi "    k: v").
+# Dòng trống và chú thích (# ở bất kỳ mức thụt nào) luôn được phép. Giá trị [...] khác [] bị chặn (fm_list đọc
+# thành rỗng), trừ argument_hint — chuỗi gợi ý tham số như [--global], đọc bằng fm_scalar.
+yaml_kiem() {
+  awk -v mode="$2" '
+    { sub(/\r$/, "") }
+    mode == "fm" && NR == 1 { if ($0 == "---") { fm = 1; next } else exit }
+    mode == "fm" && $0 == "---" { exit }
+    mode == "fm" && fm != 1 { next }
+    /^[ \t]*$/ || /^[ \t]*#/ { next }
+    /^[ \t]*\t/ { print "dòng " NR ": thụt lề bằng tab — dùng dấu cách"; next }
+    {
+      v = $0; sub(/^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:/, "", v); sub(/^ /, "", v)
+      co_khoa = ($0 ~ /^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:/)
+      k = $0; sub(/^[ ]*(- )?/, "", k); sub(/:.*/, "", k)
+    }
+    co_khoa && (v ~ /^[|>][-+]?$/) { print "dòng " NR ": giá trị khối | / > không được hỗ trợ — viết một dòng"; next }
+    co_khoa && (v ~ /^[{]/ || (v ~ /^[[].*[]]$/ && v != "[]" && k != "argument_hint")) { print "dòng " NR ": dạng {…} hoặc danh sách [a, b] không được hỗ trợ — viết từng mục \"  - mục\" (rỗng: [])"; next }
+    /^[A-Za-z_][A-Za-z0-9_]*:([ ].*)?$/ { next }
+    /^  - ./ && mode == "fm" { next }
+    mode == "wf" && (/^  - [A-Za-z_][A-Za-z0-9_]*: ./ || /^  - ./ || /^    [A-Za-z_][A-Za-z0-9_]*:([ ].*)?$/) { next }
+    /^[ ]*(- )?[A-Za-z_][A-Za-z0-9_]*:[^ ]/ { print "dòng " NR ": thiếu dấu cách sau \":\""; next }
+    /^   / || (mode == "fm" && /^  [^-]/) { print "dòng " NR ": thụt sâu hơn tập con cho phép"; next }
+    { print "dòng " NR ": dòng không thuộc tập con YAML (k: v, k:, k: [], \"  - mục\")" }
+  ' "$1"
+}
+
 # fm_list <file> <khoá> -> in từng mục một dòng
 fm_list() {
   awk -v key="$2" '
@@ -35,7 +64,7 @@ fm_list() {
     fm==1 && $0=="---" { exit }
     fm!=1 { next }
     inlist==1 {
-      if ($0 ~ /^[ \t]+-[ \t]+/) { v=$0; sub(/^[ \t]+-[ \t]+/, "", v); print v; next }
+      if ($0 ~ /^[ \t]+-[ \t]+/) { v=$0; sub(/^[ \t]+-[ \t]+/, "", v); sub(/[ \t]+$/, "", v); print v; next }
       inlist=0
     }
     $0 ~ "^" key ":[ \t]*$" { inlist=1; next }
@@ -132,6 +161,36 @@ file_hash() {
   tr -d '\r' < "$1" | sed 's/ *<!-- approval-hash: [0-9a-f]* -->//' | cksum | awk '{ print $1 }'
 }
 
+# MAU_ERE_AWK — hàm awk mau_ere(<mẫu>, <moi>) -> ERE khớp cả chuỗi. moi=0: nghĩa của khop_glob
+# (* và ? khớp cả "/"); moi=1: ** khớp cả "/", * và ? không. Ký tự khác khớp nguyên văn.
+# Ghép vào chương trình awk: awk "$MAU_ERE_AWK"' …dùng mau_ere(…)… '.
+# shellcheck disable=SC2016
+MAU_ERE_AWK='
+function mau_ere(p, moi,   r, i, ch, n) {
+  r = ""; n = length(p)
+  for (i = 1; i <= n; i++) {
+    ch = substr(p, i, 1)
+    if (ch == "*") {
+      if (moi && substr(p, i + 1, 1) == "*") { r = r ".*"; i++ }
+      else r = r (moi ? "[^/]*" : ".*")
+    } else if (ch == "?") r = r (moi ? "[^/]" : ".")
+    else if (index("\\.^$+(){}[]|", ch)) r = r "\\" ch
+    else r = r ch
+  }
+  return "^" r "$"
+}'
+
+# khop_duong <đường-dẫn> <mẫu...> -> 0 nếu khớp một mẫu theo nghĩa MỚI của glob trong plan.md:
+# ** khớp cả "/", * và ? không. Bản này mới chỉ dùng để cảnh báo chuyển tiếp (kc_glob_chuyen_tiep);
+# việc khớp phạm vi vẫn theo khop_glob — đổi ở bản sau (docs/viec-can-lam.md).
+khop_duong() {
+  _kd_s="$1"; shift
+  [ $# -gt 0 ] || return 1
+  printf '%s\n' "$@" | awk -v s="$_kd_s" "$MAU_ERE_AWK"'
+    $0 != "" && s ~ mau_ere($0, 1) { kq = 1; exit }
+    END { exit !kq }'
+}
+
 # khop_glob <chuỗi> <mẫu...> -> 0 nếu khớp một mẫu. Trong mẫu, * khớp cả "/".
 khop_glob() {
   # Tên biến riêng: sh không có biến cục bộ, dùng _s/_p ở đây sẽ ghi đè biến
@@ -182,6 +241,22 @@ tm_bo() {
   return 1
 }
 
+# ---- git rev-parse có nhớ ----
+# Một lần aw check gọi rev-parse cho cùng vài thư mục hàng trăm lần. Nhớ theo thư mục hỏi trong biến
+# shell: subshell $(…) kế thừa biến, nên nhớ ở shell chính (nho_san) là mọi lời gọi sau dùng lại.
+# Khoá là chính thư mục hỏi — không bao giờ trả kết quả của thư mục / repo khác.
+# git_top <dir> -> gốc worktree; git_common <dir> -> thư mục git chung (như git in ra). Lỗi: mã 1.
+git_top() {
+  case "${_GT_NHO:-}" in *"<$1>="*) _gt=${_GT_NHO#*"<$1>="}; printf '%s\n' "${_gt%%>*}"; return 0 ;; esac
+  _gt=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+  _GT_NHO="${_GT_NHO:-}<$1>=$_gt>"; printf '%s\n' "$_gt"
+}
+git_common() {
+  case "${_GC_NHO:-}" in *"<$1>="*) _gcm=${_GC_NHO#*"<$1>="}; printf '%s\n' "${_gcm%%>*}"; return 0 ;; esac
+  _gcm=$(git -C "$1" rev-parse --git-common-dir 2>/dev/null) || return 1
+  _GC_NHO="${_GC_NHO:-}<$1>=$_gcm>"; printf '%s\n' "$_gcm"
+}
+
 # ---- conventions.md hiệu lực ----
 # Quy ước của repo đích nằm trong git (QU_DUONG_DAN); bản của bản clone
 # ($AW_CONFIG/conventions.md) chỉ được ghi đè các khoá QU_KHOA_MAY. Repo chưa
@@ -191,7 +266,7 @@ QU_KHOA_MAY="worktree_dir"
 
 # qu_goc <repo> -> gốc của checkout chính
 qu_goc() {
-  _qc=$(git -C "$1" rev-parse --git-common-dir 2>/dev/null) || return 1
+  _qc=$(git_common "$1") || return 1
   case "$_qc" in /*) ;; *) _qc="$1/$_qc" ;; esac
   dirname "$(CDPATH= cd -- "$_qc" 2>/dev/null && pwd -P)"
 }
@@ -201,7 +276,7 @@ qu_goc() {
 # thì không in gì.
 qu_diem_re() {
   _qg=$(qu_goc "$1") || return 0
-  _qt=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _qt=$(git_top "$1") || return 0
   [ "$(CDPATH= cd -- "$_qt" && pwd -P)" != "$_qg" ] || return 0
   _qb=$(git -C "$1" rev-parse --abbrev-ref HEAD 2>/dev/null)
   _qf="$_qt/$(tm_viec "$_qt" "$(printf '%s' "$_qb" | tr '/' '_')")"
@@ -240,7 +315,7 @@ qu_hieu_luc() {
   _QU_REPO=$1; QU_MAY=""; QU_CHINH=""; QU_NGUON=""
   _qm="$AW_CONFIG/conventions.md"; _qd="$AW_CONFIG/quy-uoc-hieu-luc"
   # Khoá theo gốc worktree git in ra: AW_REPO và --out có thể khác nhau qua symlink.
-  _qk=$(printf '%s' "$(git -C "$1" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$1")" | cksum | awk '{ print $1 }')
+  _qk=$(printf '%s' "$(git_top "$1" || printf '%s' "$1")" | cksum | awk '{ print $1 }')
   _qe=$(qu_diem_re "$1")
   if [ -n "$_qe" ] && git -C "$1" cat-file -e "$_qe:$QU_DUONG_DAN" 2>/dev/null &&
      mkdir -p "$_qd" 2>/dev/null && _qtmp=$(qu_tam "$_qd") &&
@@ -288,4 +363,16 @@ qu_hieu_luc() {
   fi
   mv "$_qtmp" "$_qd/$_qk.md"
   QU_HL="$_qd/$_qk.md"; printf '%s\n' "$QU_HL"
+}
+
+# nho_san <thư-mục-feature> — gọi ở shell chính của script, trước các lời gọi $(…): nhớ gốc repo, thư mục
+# git chung và conventions.md hiệu lực (qu_hieu_luc) để mọi subshell dùng lại thay vì gọi git lại.
+nho_san() {
+  git_top "$1" >/dev/null 2>&1 || return 0
+  git_common "$1" >/dev/null 2>&1
+  _ns_top=$(git_top "$1")
+  git_top "$_ns_top" >/dev/null 2>&1; git_common "$_ns_top" >/dev/null 2>&1
+  if [ -n "${AW_CONFIG:-}" ] && command -v qu_hieu_luc >/dev/null 2>&1; then
+    qu_hieu_luc "${AW_REPO:-$_ns_top}" >/dev/null 2>&1 || :
+  fi
 }

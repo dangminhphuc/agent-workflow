@@ -67,6 +67,7 @@ case "${1:-}" in
         xuat()
         if (match($0, /\[(Blocker|Should fix)\]/)) {
           muc = substr($0, RSTART + 1, RLENGTH - 2); ten = trim(substr($0, RSTART + RLENGTH)); gsub(/\t/, " ", ten); cat = ""
+          if (match(ten, /^RVW-[0-9]+/)) { ten = trim(substr(ten, RLENGTH + 1)); sub(/^—[ \t]*/, "", ten) }  # mã chỉ có nghĩa trong một việc
         }
         next
       }
@@ -117,10 +118,42 @@ if [ "${1:-}" = add ]; then
   exit 0
 fi
 
-# ---------------------------------------------------------------- report
-case "${1:-report}" in report) ;; *) echo "Dùng: aw journal [report] | aw journal add <layer> \"<mô tả>\"" >&2; exit 2 ;; esac
+# ---------------------------------------------------------------- export
+# Một TSV gồm mọi dòng của bốn nguồn, thêm hai cột đầu: nguồn, máy — gom nhật ký nhiều máy để
+# `aw journal report <file…>` tổng hợp (nhật ký nằm ở bản clone từng máy, không commit).
+if [ "${1:-}" = export ]; then
+  [ $# -eq 2 ] && [ -n "$2" ] || { echo "Dùng: aw journal export <file>" >&2; exit 2; }
+  [ -d "$(dirname -- "$2")" ] || { echo "LỖI: thư mục của \"$2\" không có." >&2; exit 2; }
+  may=$(bay "${AW_JOURNAL_MACHINE:-$(uname -n 2>/dev/null || echo may)}")
+  {
+    for s in checks failures approvals findings; do
+      if [ -f "$JD/$s.tsv" ]; then awk -v s="$s" -v m="$may" '{ print s "\t" m "\t" $0 }' "$JD/$s.tsv"; fi
+    done
+  } > "$2" || exit 2
+  echo "Đã xuất $(wc -l < "$2" | tr -d ' ') dòng nhật ký (máy $may) vào $2"
+  exit 0
+fi
 
-echo "harness journal — $JD"
+# ---------------------------------------------------------------- report
+case "${1:-report}" in report) ;; *) echo "Dùng: aw journal [report [<file export>…]] | aw journal add <layer> \"<mô tả>\" | aw journal export <file>" >&2; exit 2 ;; esac
+[ $# -gt 0 ] && shift
+
+NGUON=$JD; bo=0
+if [ $# -gt 0 ]; then
+  # Report trên file export: tách lại thành bốn nguồn trong thư mục tạm rồi tổng hợp như thường.
+  for f in "$@"; do [ -f "$f" ] || { echo "LỖI: không có file \"$f\"." >&2; exit 2; }; done
+  JD="${TMPDIR:-/tmp}/aw-journal.$$"; mkdir -p "$JD" || exit 2
+  kq_don 'rm -rf "$JD"'
+  bo=$(awk -F'\t' -v d="$JD" '
+    BEGIN { cot["checks"] = 5; cot["failures"] = 4; cot["approvals"] = 5; cot["findings"] = 5 }
+    ($1 in cot) && NF == cot[$1] + 2 { s = $1; sub(/^[^\t]*\t[^\t]*\t/, ""); print > (d "/" s ".tsv"); next }
+    { bo++ }
+    END { print bo + 0 }' "$@")
+  NGUON="gộp $# file export"
+fi
+
+echo "harness journal — $NGUON"
+if [ "$bo" -gt 0 ]; then echo "  (bỏ $bo dòng sai dạng)"; fi
 
 echo ""
 echo "Checker (aw check)"

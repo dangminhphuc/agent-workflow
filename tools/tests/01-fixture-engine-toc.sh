@@ -119,4 +119,34 @@ ky_vong 1 "review chặn link sang mục không còn (heading đích đổi tên
 dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'plan.md: link \"tdd.md#data-model\" không trỏ tới mục nào'"
 tao_fixture
 
+# ---------------------------------------------------------------- glob của plan.md (khop_duong: ** qua /, * không)
+nhom "khop_duong: nghĩa mới của glob trong plan.md"
+kd() { sh -c ". '$T/lib/md.sh'; set -f; khop_duong \"\$@\"" kd "$@"; }
+dung "src/* khớp src/a.ts" kd src/a.ts 'src/*'
+dung "src/* KHÔNG khớp src/a/b.ts" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong src/a/b.ts 'src/*'\""
+dung "src/** khớp src/a/b.ts" kd src/a/b.ts 'src/**'
+dung "src/** khớp src/a.ts" kd src/a.ts 'src/**'
+dung "**/x.md khớp a/b/x.md" kd a/b/x.md '**/x.md'
+dung "? không qua /" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong a/b 'a?b'\""
+dung "ký tự regex khớp nguyên văn: a.b+(c)[d].txt" kd 'a.b+(c)[d].txt' 'a.b+(c)[d].txt'
+dung "…dấu . không khớp ký tự bất kỳ" sh -c "! sh -c \". '$T/lib/md.sh'; set -f; khop_duong axb.txt 'a.b.txt'\""
+dung "nhiều mẫu: khớp mẫu thứ hai" kd src/a/b.ts 'docs/*' 'src/**'
+
+# Cảnh báo chuyển tiếp: file khớp mẫu của plan.md chỉ nhờ * vượt thư mục → cảnh báo, không chặn ở đâu
+nhom "glob plan.md: cảnh báo chuyển tiếp"
+mkdir -p "$R/src/sau"; printf 'x\n' > "$R/src/sau/c.txt"
+dung "implement in cảnh báo chuyển tiếp nêu file, mẫu, cách viết mới" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'CẢNH BÁO.*\`src/sau/c.txt\` chỉ khớp \`src/\*\` nhờ \* vượt thư mục — bản sau \* không qua /; viết \`src/\*\*\`'"
+thay "$F/plan.md" '`src/*` `test/*`' '`src/**` `test/*`'
+dung "viết src/** → hết cảnh báo chuyển tiếp" sh -c "! sh '$T/check-implement.sh' '$F' | grep -q 'nhờ \* vượt thư mục'"
+rm -rf "$R/src/sau"; tao_fixture
+
+# ---------------------------------------------------------------- git_top / git_common có nhớ (tốc độ)
+nhom "git_top / git_common: nhớ theo thư mục, không trả nhầm repo khác"
+R2="$TMP/repo-khac"; mkdir -p "$R2"; git -C "$R2" init -q
+dung "git_top: thư mục trong repo → gốc repo" bang "$(sh -c ". '$T/lib/md.sh'; git_top '$F'")" "$(git -C "$F" rev-parse --show-toplevel)"
+dung "git_top: gọi lần hai (đã nhớ) vẫn đúng, repo khác không bị trả nhầm" bang "$(sh -c ". '$T/lib/md.sh'; git_top '$F' >/dev/null; git_top '$F' >/dev/null; git_top '$R2'")" "$(git -C "$R2" rev-parse --show-toplevel)"
+dung "git_top: nhớ ở shell chính thì subshell \$(…) dùng lại, không gọi git" sh -c ". '$T/lib/md.sh'; git_top '$F' >/dev/null; git() { echo GOI-GIT; }; [ \"\$(git_top '$F')\" != GOI-GIT ]"
+dung "git_common: đúng thư mục git chung" bang "$(sh -c ". '$T/lib/md.sh'; cd '$F' && cd \"\$(git_common '$F')\" && pwd")" "$(cd "$F" && cd "$(git rev-parse --git-common-dir)" && pwd)"
+dung "git_top: ngoài repo → mã khác 0" sh -c "! sh -c \". '$T/lib/md.sh'; git_top /\""
+
 ket_thuc

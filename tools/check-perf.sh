@@ -22,11 +22,13 @@ kq_khai check-perf.sh \
 . "$HERE/lib/cross-check.sh"
 
 DIR="${1:-}"; PHA="${2:-}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 case "$PHA" in
   --before) TEN="Trước" ;;
   --after)  TEN="Sau" ;;
   *) echo "Dùng: aw check perf <thư-mục-feature> --before|--after" >&2; exit 2 ;;
 esac
+# giữ: INV-010
 OUT="$DIR/perf.md"
 CAUHINH=$(kc_cau_hinh "$DIR")
 

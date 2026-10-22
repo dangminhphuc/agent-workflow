@@ -16,13 +16,13 @@ wt_tuyet_doi() {
 # wt_la_chinh <thư-mục> -> 0 nếu thư mục nằm trong checkout CHÍNH (không phải worktree con)
 wt_la_chinh() {
   _wd=$(git -C "$1" rev-parse --git-dir 2>/dev/null) || return 1
-  _wc=$(git -C "$1" rev-parse --git-common-dir 2>/dev/null) || return 1
+  _wc=$(git_common "$1") || return 1
   [ "$(wt_tuyet_doi "$1" "$_wd")" = "$(wt_tuyet_doi "$1" "$_wc")" ]
 }
 
 # wt_chinh <thư-mục> -> gốc của checkout chính (dùng cho {repo}, và để chạy lệnh dọn)
 wt_chinh() {
-  _wc=$(git -C "$1" rev-parse --git-common-dir 2>/dev/null) || return 1
+  _wc=$(git_common "$1") || return 1
   dirname "$(wt_tuyet_doi "$1" "$_wc")"
 }
 

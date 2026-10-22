@@ -78,9 +78,8 @@ ky_vong 1 "chặn lý do còn chữ giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / config | finding | |'
 ky_vong 1 "chặn finding không có vị trí" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '| Secrets / config | pass | |' '| Secrets / config | finding | `src/a.txt:1` token cứng |'
-ky_vong 1 "chặn finding bảo mật mà Lens 3 không có finding nào" sh "$CHK" "$F"
-dung "…đúng lý do: thiếu finding ở Lens 3" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 không có finding nào'"
-thay "$F/review.md" '- None' '### [Should fix] token cứng
+ky_vong_ly_do 1 "chặn finding bảo mật mà Lens 3 không có finding nào" "…đúng lý do: thiếu finding ở Lens 3" 'Lens 3 không có finding nào' sh "$CHK" "$F"
+thay "$F/review.md" '- None' '### [Should fix] RVW-001 — token cứng
 - Category: hardcoded-secret
 - Location: `src/a.txt:1`
 - Problem: token trong code'

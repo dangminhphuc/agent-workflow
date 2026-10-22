@@ -29,11 +29,24 @@ dung "…có ba phần" sh -c "sh '$NK' 2>/dev/null | grep -q 'Thất bại theo
 viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md; ghi_tree_review
 ky_vong 0 "review ĐẠT ghi finding theo Category" sh "$T/check-review.sh" "$F"
 dung "…findings.tsv có duplicate-code" sh -c "awk -F'\t' '\$4 == \"duplicate-code\"' '$JD/findings.tsv' | grep -q ."
+dung "…tiêu đề trong nhật ký bỏ mã RVW (mã chỉ có nghĩa trong một việc)" sh -c "awk -F'\t' '\$4 == \"duplicate-code\" { print \$5 }' '$JD/findings.tsv' | grep -qx 'trùng hàm'"
 sh "$T/check-review.sh" "$F" >/dev/null 2>&1
 dung "review chạy lại không nhân đôi" bang "$(awk -F'\t' '$4 == "duplicate-code"' "$JD/findings.tsv" | wc -l | tr -d ' ')" "1"
 F2="$R/.agent-workflow/feat_y"; cp -R "$F" "$F2"
 dung "loại lặp ở việc thứ hai → GỢI Ý nâng thành luật" sh -c "sh '$T/check-review.sh' '$F2' | grep -q 'GỢI Ý.*duplicate-code.*2 việc'"
 dung "report đánh dấu loại lặp lại" sh -c "sh '$NK' 2>/dev/null | grep -q 'duplicate-code.*lặp lại'"
+# Gom nhật ký từ nhiều máy: export ra một TSV (nguồn, máy, cột gốc), report đọc lại được nhiều file
+ky_vong 0 "journal export <file>" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/nk-a.tsv"
+dung "…mỗi dòng: nguồn, máy, rồi cột gốc" sh -c "awk -F'\t' '\$1 == \"findings\" && \$2 == \"may-a\"' '$TMP/nk-a.tsv' | grep -q ."
+dung "report từ file export trùng report trực tiếp (trừ dòng đầu)" sh -c "sh '$NK' report | tail -n +2 > '$TMP/nk-r1'; sh '$NK' report '$TMP/nk-a.tsv' | tail -n +2 > '$TMP/nk-r2'; diff '$TMP/nk-r1' '$TMP/nk-r2' >&2"
+sed 's/	may-a	/	may-b	/' "$TMP/nk-a.tsv" > "$TMP/nk-b.tsv"
+n1=$(sh "$NK" report "$TMP/nk-a.tsv" | awk '$1 == "plan" { print $2; exit }')
+[ -n "$n1" ] || ca_hong "nhật ký fixture không có lần chạy check plan — ca cộng dồn không kiểm được gì"
+dung "hai máy: số lần chạy cộng dồn" bang "$(sh "$NK" report "$TMP/nk-a.tsv" "$TMP/nk-b.tsv" | awk '$1 == "plan" { print $2; exit }')" "$((n1 * 2))"
+printf 'rác\n' >> "$TMP/nk-b.tsv"
+dung "dòng sai dạng → bỏ qua, báo số dòng bỏ" sh -c "sh '$NK' report '$TMP/nk-a.tsv' '$TMP/nk-b.tsv' | grep -q 'bỏ 1 dòng sai dạng'"
+ky_vong 2 "export thiếu file đích → SAI THAM SỐ" sh "$NK" export
+ky_vong 2 "report từ file không có → SAI THAM SỐ" sh "$NK" report "$TMP/khong-co.tsv"
 rm -rf "$F2"; viet_review
 sh "$T/check-review.sh" "$F" >/dev/null 2>&1
 dung "review chạy lại hết finding → xoá finding cũ của việc" sh -c "! awk -F'\t' '\$2 == \"feat_x\"' '$JD/findings.tsv' | grep -q ."

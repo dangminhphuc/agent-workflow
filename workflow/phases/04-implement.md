@@ -27,6 +27,9 @@ provides:
 capabilities:
   - CAP-implement-02
   - CAP-implement-03
+  - CAP-implement-04
+  - CAP-implement-05
+  - CAP-implement-06
 exit_machine:
   - aw check implement
 exit_human: []
@@ -56,13 +59,13 @@ loop:
   aw task done <dir> T          (no command in Verify: --manual "<what you did, what you saw>")
       ĐỎ   → fix within T, rerun done
       DỪNG → record "Unplanned" (what you tried, the error), stop, tell the human
-      XONG → commit T
+      XONG → commit T (a scope warning = T changed a file outside its "Expected files": add an "Unplanned" row with Task = T, or revert)
 ```
 
 - **Doing T:** tag each test `covers: REQ-NNN`. A REQ not testable automatically → `plan.md` "Manual verification" + reason.
 - **Promote when the task covers it — never write by hand** (the machine compares with the approved item): DEC with `Promote: adr` → `aw adr promote <dir> DEC-NNN`; REQ with `Promote: BR-…` → `aw rule promote <dir> REQ-NNN`. Do it in the task that implements that DEC / REQ.
 - **Commit T** right after it goes `[x]`: stage by path only T's files, its "Unplanned" files and the ADR / rule files it promoted (never `git add -A`), message `TSK-NNN: <task title>` unless repo rules set a format. Nothing uncommitted may remain at the end — `/aw-ship` will not commit for you.
-- **`aw check implement`** writes results stamped with the code tree: code changed afterwards, even uncommitted → rerun. Scans only: `aw check security <dir>`. Fix every warning it prints now; `/aw-review` blocks on them. Same violation twice in a row → stop, tell the human.
+- **`aw check implement`** writes results stamped with the code tree: code changed afterwards, even uncommitted → rerun. Scans only: `aw check security <dir>`. Fix every warning it prints now; `/aw-review` blocks on them (except those marked "chỉ cảnh báo": glob transition). Same violation twice in a row → stop, tell the human.
 
 ## Unplanned
 

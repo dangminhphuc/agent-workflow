@@ -572,16 +572,21 @@ quay về `[ ]` khi chạy lại plan. Bạn duyệt lại riêng DEC đó.
 
 | Phần | Quyết định |
 |---|---|
-| `### TSK-NNN` | task: `Covers` (REQ), `Based on` (DEC-xxx), `Expected files` (**ranh giới diff**), `Verify` (lệnh chứng minh xong), `Depends on`, `On assumption` |
+| `### TSK-NNN` | task: `Covers` (REQ), `Based on` (DEC-xxx), `Expected files` (**ranh giới diff của riêng task**; `**` khớp qua thư mục, `*` sắp chỉ trong một thư mục — mẫu khớp quá `scope_glob_max_files` file trên base thì `aw check plan` cảnh báo), `Verify` (lệnh chứng minh xong), `Depends on`, `On assumption` |
 | `Status` | `[ ]` / `[~]` / `[x]` — **chỉ máy đổi** (`aw task`) |
 | `## Deferred` | REQ hoãn + lý do (hoãn `must` → cảnh báo, báo bạn) |
 | `## Manual verification` | REQ không test tự động được + lý do |
 | `## Modified existing tests` | (refactor/perf) test cũ sẽ sửa |
 | `## Dependency upgrades` | (chore) thư viện nâng, chỉ `patch \| minor` |
-| `## Unplanned` | implement ghi điều chưa lường, file ngoài phạm vi |
+| `## Unplanned` | implement ghi điều chưa lường, file ngoài phạm vi (cột Task: task nào đổi file đó) |
 
 **Việc của bạn:** không bắt buộc. Nên đọc lướt `Deferred` (nhất là `must` bị hoãn) và task
 `On assumption: yes`.
+
+**Chạy lại sau `/aw-review` (chế độ bổ sung):** review còn finding `Blocker` / `Should fix` (`RVW-NNN`)
+chưa có task sửa → `/aw-plan` chỉ **thêm** task cuối danh sách, dòng `Fixes: RVW-NNN` thay `Covers:` khi finding
+không gắn REQ. Task cũ giữ nguyên. `aw check plan` chặn task không `Covers` lẫn `Fixes`, và `Fixes` trỏ mã
+không có trong `review.md` (chỉ xét task chưa xong).
 
 **Máy chặn khi:** REQ không có task phủ mà không nằm trong `Deferred`; task thiếu trường. Bugfix: task
 đầu phải là viết test tái hiện. Perf: task đầu phải là đo trước.
@@ -606,9 +611,10 @@ Agent **không được sửa** các file `*-results.md`, `repro.md`, `perf.md` 
 ```
 aw ready <dir>              đầu phiên: test xanh trên base chưa? bước tiếp là gì?
 aw task next <dir>          task kế
-aw task start <dir> TSK-NNN    [ ] → [~]   (chỉ một task [~] một lúc)
+aw task start <dir> TSK-NNN    [ ] → [~]   (chỉ một task [~] một lúc; ghi commit lúc bắt đầu)
 aw task done <dir> TSK-NNN     chạy Verify; chỉ XANH mới [ ] → [x]
                             (TASK_FULL_TEST=1: chạy thêm toàn bộ test)
+                            (cảnh báo file đổi ngoài Expected files của chính task)
 aw task reopen <dir> REQ-NNN|DEC-NNN   REQ vừa đổi / DEC mở lại: task phủ nó về [ ]
 aw check implement <dir>    chạy toàn bộ test + quét bảo mật, ghi *-results.md
 ```
@@ -642,10 +648,10 @@ artifact stale, tài liệu module/ADR/luật bị đụng phạm vi. **Chỉ c�
 | `Reviewed tree` | kết luận gắn với đúng cây code nào (code đổi sau đó → phải review lại) |
 | `## Conclusion` | `Mergeable`, số `Blocker`, tóm tắt cho người đọc |
 | Lens 1 — Spec conformance | **mỗi** REQ: `pass \| partial \| fail \| pending` + bằng chứng `file:dòng` |
-| Lens 2 — Design and scope | lệch DEC-xxx, thay đổi ngoài task, task `[x]` không có dấu vết |
+| Lens 2 — Design and scope | lệch DEC-xxx, thay đổi ngoài task, task `[x]` không có dấu vết; mỗi task có cảnh báo phạm vi (`Scope warning`) phải giải trình ở `Task scope warnings` — thiếu là máy chặn |
 | `## Repo rules` | mỗi file `rules_*`/`uses_*` một verdict |
 | `## Durable knowledge` | mỗi ADR/tài liệu module/luật bị đụng phạm vi: `pass \| updated \| not applicable` |
-| Lens 3 — Quality | finding `[Blocker] / [Should fix] / [Nit]`, có vị trí, loại lỗi; Blocker có kịch bản lỗi |
+| Lens 3 — Quality | finding `[Blocker] / [Should fix]` có mã `RVW-NNN` (`[Nit]` không cần), có vị trí, loại lỗi; Blocker có kịch bản lỗi |
 | Lens 4 — Security | bảng **7 hạng mục cố định** (injection, authz, PII trong log, secrets, crypto, SSRF/path/deserialization, dependency mới) |
 | `Security reviewer` | (khi diff đụng `sensitive_code`) **tên người** đã rà bảo mật |
 
@@ -656,7 +662,8 @@ quyết. REQ đứng trên giả định chưa xác nhận → `pending`, không
 **Việc của bạn:**
 
 1. Đọc `Conclusion` và xác nhận kết luận.
-2. Quyết định xử lý từng `Blocker`: sửa → quay lại `/aw-implement` (task mới) rồi `/aw-review` lại.
+2. Mọi `Blocker` đều phải sửa (không có đường "chấp nhận"): chạy `/aw-plan` — chế độ **bổ sung** chỉ thêm task
+   `Fixes: RVW-NNN` cho từng finding, không đụng task cũ — rồi `/aw-implement`, rồi `/aw-review` lại.
 3. Diff đụng `sensitive_code` → **một người** đọc Lens 4 + diff và tự ghi `- Security reviewer: <tên>`.
    Agent không bao giờ điền dòng này.
 4. Base bất thường (xếp chồng trên branch khác) → xác nhận là cố ý.
@@ -680,7 +687,7 @@ chưa trả lời.
 4. `aw ship status` theo dõi; ghi `ship.md` (máy ghi, không sửa tay).
 5. **Bạn review và merge trên GitHub/GitLab.** Agent không bao giờ merge, approve, bật auto-merge.
 
-Reviewer yêu cầu sửa → `/aw-implement` (task mới) → `/aw-review` → `aw ship create … --target <cùng nhánh>`
+Reviewer yêu cầu sửa → `/aw-plan` (bổ sung task `Fixes: <URL bình luận>`) → `/aw-implement` → `/aw-review` → `aw ship create … --target <cùng nhánh>`
 (đẩy commit mới vào MR đang mở).
 
 **Ở main checkout (dọn việc đã merge):** chạy `/aw-ship` → `aw ship sweep` phân loại: *dọn được*
@@ -939,6 +946,8 @@ Agent làm sai mà không checker nào bắt → ghi lại để team biết har
 ```sh
 aw journal add <task|context|env|verify|state|model> "<sai gì, ở đâu, harness thiếu gì>"
 aw journal          # tổng hợp: checker trượt ở đâu, loại lỗi lặp lại
+aw journal export <file>                    # xuất nhật ký máy này ra một TSV (nguồn, máy, cột gốc) để gom
+aw journal report <file> [<file>…]          # tổng hợp trên các file export của nhiều máy
 ```
 
 Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành luật máy. Máy không tự thêm luật.
@@ -983,7 +992,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw adr check` · `aw rule check` | kiểm ADR · luật nghiệp vụ |
 | `aw rules <phase>` · `aw uses <phase>` | xem luật/skill khai cho phase |
 | `aw adapter build [a,b] [--force]` | sinh lại lệnh cho agent |
-| `aw journal` · `aw journal add <lớp> "…"` | harness journal |
+| `aw journal` · `aw journal add <lớp> "…"` · `aw journal export <file>` · `aw journal report <file>…` | harness journal; export / report trên file để gom nhiều máy |
 
 `<dir>` là thư mục artifact của việc: `docs/sdlc/<tên-branch>`.
 

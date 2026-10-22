@@ -37,6 +37,7 @@ kq_khai check-plan.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 SPEC="$DIR/spec.md"
 TDD="$DIR/tdd.md"
 PLAN="$DIR/plan.md"
@@ -112,7 +113,11 @@ $alk
 EOF
 fi
 
-awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
+# Mã finding của review.md hiện tại — task "Fixes: RVW-NNN" (plan bổ sung sau review) phải trỏ về một mã có thật.
+RVW=""
+[ -f "$DIR/review.md" ] && RVW=$(awk '{ sub(/\r$/, "") } /^###[ \t]+\[(Blocker|Should fix|Nit)\][ \t]+RVW-[0-9]+/ { match($0, /RVW-[0-9]+/); printf " %s", substr($0, RSTART, RLENGTH) }' "$DIR/review.md")
+
+awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
   function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); return trim(s) }
@@ -185,10 +190,24 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
     next
   }
 
+  # Plan bổ sung sau review: task sửa finding thay "Covers" bằng "Fixes: RVW-NNN" hoặc URL bình luận MR.
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Fixes\**:/ {
+    v = $0; sub(/^[^:]*:/, "", v); gsub(/[`,*]/, " ", v); n = split(v, gt_fx, /[ \t]+/)
+    for (i = 1; i <= n; i++) {
+      x = gt_fx[i]; if (x == "") continue
+      if (x ~ /^RVW-[0-9]+$/) { fx[cur] = fx[cur] " " x; co_sua[cur] = 1 }
+      else if (x ~ /^https?:\/\/./) co_sua[cur] = 1
+      else loi(cur ": \"Fixes:\" \"" x "\" — chỉ nhận RVW-NNN hoặc URL bình luận MR (http(s)://…)")
+    }
+    next
+  }
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Status\**:/ { if ($0 ~ /\[x\]/) xong[cur] = 1 }
+
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Based on\**:/ {
     thu_ma($0, "DEC-[0-9]+")
     for (i = 1; i <= n_tim; i++) {
       d = ma_tim[i]
+      # giữ: INV-002
       if (!(d in co_d)) loi(cur ": \"Based on: " d "\" nhưng tdd.md không có " d)
       else dua_tren[d] = dua_tren[d] " " cur
     }
@@ -198,6 +217,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/ {
     v = $0; sub(/^[^:]*:[ \t]*/, "", v); v = trim(v)
     co_fdk_dong[cur] = 1
+    # giữ: CAP-breakdown-02
     if (v == "" || v ~ /<[^>]*>/) loi(cur ": \"Expected files\" trống hoặc còn chỗ giữ chỗ — implement dùng nó để kiểm phạm vi diff")
     next
   }
@@ -217,6 +237,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
     # DEC-xxx phải được người duyệt trước khi lập kế hoạch
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
+      # giữ: CAP-design-03, INV-005
       if (d_tt[d] != "approved")
         loi(d ": chưa được người duyệt (" (d_tt[d] == "" ? "không đọc được approval checkbox" : d_tt[d]) ")" \
             (d in dua_tren ? " — task bị ảnh hưởng:" dua_tren[d] " (đặt lại `[ ]`)" : ""))
@@ -224,7 +245,10 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
 
     for (i = 1; i <= n_task; i++) {
       t = dsach_task[i]
-      if (!(t in co_phu))      loi(t ": thiếu dòng \"Covers:\" — task không ánh xạ được về yêu cầu nào")
+      # giữ: CAP-breakdown-01, INV-001
+      if (!(t in co_phu) && !(t in co_sua)) loi(t ": thiếu \"Covers:\" hoặc \"Fixes:\" — task phải phủ một REQ hoặc sửa một finding review")
+      # Fixes trên task chưa xong phải trỏ về finding của review.md hiện tại (task [x]: review đã ghi lại, lịch sử ở git)
+      if (!(t in xong)) { n_fx = split(fx[t], ds_fx, " "); for (j = 1; j <= n_fx; j++) if (ds_fx[j] != "" && index(rvw, " " ds_fx[j] " ") == 0) loi(t ": \"Fixes: " ds_fx[j] "\" nhưng review.md không có finding mã đó") }
       if (!(t in co_kc_dong))  loi(t ": thiếu dòng \"Verify:\"")
       if (!(t in co_fdk_dong)) loi(t ": thiếu dòng \"Expected files:\"")
     }
@@ -256,7 +280,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
 ' "$SPEC" "$TDD" "$PLAN"
 ma=$?
 
-cb=$(kc_loi_thoi "$DIR")
+cb=$( { kc_loi_thoi "$DIR"; kc_glob_rong "$DIR"; } )
 if [ -n "$cb" ]; then
   echo ""
   echo "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done

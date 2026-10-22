@@ -375,7 +375,7 @@ xếp checker mới: độ chính xác, chi phí nếu lọt, nơi sửa rẻ nh
 
 Trước đây mã mỗi loại một kiểu: `YC`/`PH` là chữ Việt viết tắt, `D`/`T` một chữ, phần số khi 2 khi
 3 chữ số. Người phải nhớ riêng từng loại, mã một chữ (`D`, `T`) lẫn với chữ thường trong câu và khó
-grep. Giờ mọi mã trong job dir là `<TIỀN TỐ>-NNN` (`REQ`, `DEC`, `FND`, `TSK`, `RFR`):
+grep. Giờ mọi mã trong job dir là `<TIỀN TỐ>-NNN` (`REQ`, `DEC`, `FND`, `TSK`, `RFR`, `RVW`):
 
 - **Ba chữ tiếng Anh**, viết tắt đúng thuật ngữ — cùng luật với tên trường trong artifact (tiếng
   Anh, checker khớp đúng chữ). Ba chữ đủ để thêm loại mới mà không đụng loại cũ; một chữ thì sớm hết.
@@ -544,6 +544,14 @@ làm `tdd.md` stale). LLM checker mới chỉ cần ghi `<id>-findings.md` đún
   và không phải tên agent; bỏ trống khoá = tắt luật.
 - **Category tự do (kebab-case)**: danh sách cố định hoặc quá thô hoặc dài tới mức chọn bừa;
   `aw journal` liệt kê tên đã có để dùng lại.
+- **Finding cần sửa có mã `RVW-NNN`; sửa đi qua `/aw-plan` bổ sung.** Trước đây finding không mã, nên task
+  sửa không trỏ về được; `aw check plan` buộc `Covers:` nên agent gán đại một REQ cho finding không gắn REQ,
+  làm sai ánh xạ REQ → task mà Lens 1 dựa vào; chạy lại `/aw-plan` có thể viết lại cả `plan.md`. Giờ
+  `Blocker`/`Should fix` mang mã (máy chặn thiếu/trùng), `/aw-plan` chỉ **thêm** task với `Fixes: RVW-NNN`
+  (hoặc URL bình luận MR), và INV-001 nới thành "phủ một REQ hoặc sửa một finding". Máy chỉ kiểm mã của
+  task chưa xong (review lại ghi đè `review.md`; lịch sử ở git); task `[x]` bị sửa nội dung thì Lens 2 bắt.
+  `Blocker` luôn phải sửa — không có đường "chấp nhận" (người không đồng ý thì hạ mức finding khi review
+  lại, kèm lý do).
 
 ## Cross-check, trạng thái sạch, nhật ký
 
@@ -643,7 +651,8 @@ Cách đọc và công thức cho từng loại thay đổi: [`interface-sdlc.md
   tượng** (`requirements`, `design`, `change`…), không phải tên file: interface không biết `spec.md`.
   `exit`: `machine | human | both`.
 - **Capability** trong thân file stage (`## Capabilities`): `### CAP-<stage>-NN — <tên>` + `- Rule:`
-  (điều phải đúng) + `- Judged by: machine | agent | human` (ai phán đạt). Tập capability của một stage
+  (điều phải đúng) + `- Judged by: machine | agent | human` (ai phán đạt) + `- Artifact:` (loại
+  artifact trong `provides` của stage mà capability bảo đảm). Tập capability của một stage
   là **trạng thái đích** — "làm đủ stage này là gì" — kể cả phần engine chưa làm.
 - `sdlc/invariants.md`: luật xuyên stage `INV-NNN` (trace REQ → task, DEC → task, REQ → test,
   REQ → verdict review, chỉ dùng output đã duyệt, không dùng output stale). Mỗi luật trỏ tới checker
@@ -662,19 +671,9 @@ Cách đọc và công thức cho từng loại thay đổi: [`interface-sdlc.md
   `adds_invariants`. Thân tiếng Anh ngắn, mô tả artifact thêm như thân file stage. Stage khai
   `skippable: false` (`plan`, `require`, `breakdown`, `implement`, `verify`) thì không profile nào được bỏ.
 
-Ánh xạ hiện tại (`sh tools/check-sdlc.sh` in lại bảng này, kèm bảng capability còn thiếu — giải
-thích từng dòng ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại)):
-
-| Stage | Phase | `stage status` (suy ra) | Capability còn thiếu |
-|---|---|---|---|
-| `plan` | `00-intake` | `partial` | `CAP-plan-03` ưu tiên, `CAP-plan-04` ước lượng |
-| `require` | `01-spec` | `implemented` | |
-| `design` | `02-design` | `implemented` | |
-| `breakdown` | `03-plan` | `implemented` | |
-| `implement` | `04-implement` | `implemented` | |
-| `verify` | `05-review` | `partial` | `CAP-verify-03` e2e, `CAP-verify-04` kiểm tải, `CAP-verify-05` UAT |
-| `deploy` | `06-ship` | `partial` | `CAP-deploy-02` release/triển khai, `CAP-deploy-03` rollback |
-| `operate` | — | `gap` | `CAP-operate-01` quan sát production, `CAP-operate-02` sự cố → việc mới |
+Ánh xạ stage → phase, trạng thái suy ra và capability còn thiếu: output `sh tools/check-sdlc.sh`, ảnh
+chụp (có test giữ khớp) và giải thích từng dòng ở
+[`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại).
 
 Tên stage trùng tên vài phase (`plan`, `design`, `implement`) nhưng không cùng nghĩa: stage `plan` là
 chọn việc nào vào quy trình (`00-intake`), phase `03-plan` thuộc stage `breakdown`. Nói "stage `plan`"
@@ -703,9 +702,22 @@ hay "phase `plan`", không nói trống.
 - **Phase `implements` mà không nhận capability nào → chặn** (không cảnh báo — `check-sdlc.sh` không có
   cảnh báo). Nhờ vậy `gap` suy ra ⇔ không phase nào chạy stage, giữ luật cũ "gap mà có phase implement
   → chặn" và nghĩa "engine không chạy stage này" mà ma trận profile dùng.
-- **Không có trạng thái `out-of-scope`.** Engine quyết không làm một capability (vd quan sát production
-  thuộc hệ thống ngoài) thì stage vẫn `partial`/`gap` và note nói lý do. Thêm `out-of-scope` là hai cách
-  nói cùng một điều.
+- **Capability `out-of-scope`, không phải trạng thái stage.** Engine khai capability nó quyết không làm ở
+  `out_of_scope:` của `workflow.yaml` (`- CAP-id: lý do`; phía implementation — interface không biết). Trạng
+  thái stage **không đổi** (vẫn `partial`/`gap`, vẫn cần note): không giấu chỗ thiếu. Chỉ roadmap đổi: việc
+  không bao giờ làm (quan sát production, triển khai…) tách sang khối "Không làm" kèm lý do, nên roadmap
+  chỉ còn việc thật. Trước đây quyết định là không có `out-of-scope` ("hai cách nói một điều"); đổi vì
+  roadmap trộn hai loại việc mất giá trị chỉ đường.
+- **Capability khai `Artifact`, bắt buộc.** Mỗi capability ghi loại artifact (trong `provides` của
+  stage) nó bảo đảm, và mỗi loại `provides` phải có capability trỏ tới — máy chặn. Không có luật này,
+  stage viết ít capability rẻ thành `implemented` (trước đây `implement` không capability nào nói tới
+  `task-evidence`). Không áp cho `adds_provides` của profile: các loại đó đã có invariant máy giữ,
+  nêu tên ca test (INV-007, INV-010) — capability thêm là nói lại một điều.
+- **Luật checker khai capability nó giữ (`# giữ:`), đợt 1 chỉ chiều ngược.** Capability `Judged by: machine`
+  mà phase nhận thì phải có ít nhất một chỗ code khai `# giữ: CAP-…` — nếu không, lời khai "engine làm
+  capability này" không trỏ tới đâu. Chú thích shell (không phải bảng riêng) vì nằm ngay cạnh luật, đổi luật
+  thì thấy. Chưa chặn luật mồ côi: ~200 chỗ chặn/cảnh báo chưa có id, gắn hết một lần là PR rất lớn —
+  để đợt 2 (`docs/viec-can-lam.md`).
 - **Hạ chuẩn interface không có cổng duyệt riêng.** Bỏ hay nới capability / invariant là thay đổi luật,
   nên đã phải chờ người OK (`AGENTS.md`). Thứ thiếu là **khả kiến**: id + lý do ghi dưới `### Bỏ` /
   `### Thay đổi` của `changes/<branch>.md`, để người duyệt thấy mà không phải đọc diff `sdlc/`.
@@ -713,8 +725,13 @@ hay "phase `plan`", không nói trống.
   diff thành nghi thức. Bước A suy "diff chạm CAP/INV nào" từ file thay đổi; tới lúc đó người duyệt PR
   là người bắt. Cũng không bắt commit sửa interface đi trước commit code: không máy nào kiểm được,
   squash làm mất thứ tự — "cùng PR" là đủ.
-- **Ảnh chụp bảng trong tài liệu có thể lệch output.** Bảng ở trên và ở `interface-sdlc.md` § 6 là ảnh
-  chụp; output `sh tools/check-sdlc.sh` là nguồn. Test so ảnh chụp với output nằm ở `docs/viec-can-lam.md`.
+- **Một ảnh chụp, có test.** Ba bảng của output `sh tools/check-sdlc.sh` chỉ chép ở `interface-sdlc.md`
+  § 6; `tools/tests/20-sdlc-conformance.sh` so khối đó với output, lệch là test hỏng. Trước đây hai ảnh
+  chụp (ở đây và § 6) lệch output mà không ai biết.
+- **`Rule:` trừu tượng, cú pháp engine ở `- Engine:`.** `Rule:` của capability và invariant không có
+  backtick hay mã `REQ-`/`DEC-`… (máy chặn): implementation thứ hai phải tuân thủ được mà không chép cú
+  pháp artifact của engine này. Cách engine này hiện thực nằm ở dòng `- Engine:` của invariant. Mọi
+  invariant nêu ít nhất một **ca** test chặn, không chỉ file — trước đây INV-001…006 chỉ trỏ file.
 - **Chỉ kiểm cấu trúc.** `tools/check-sdlc.sh` chặn những gì đọc được từ file: dạng capability, phase
   nhận capability có thật của đúng stage, note khớp trạng thái suy ra, `provides` của các phase phủ
   `provides` của stage, `exit` của stage có `exit_machine` /
@@ -738,7 +755,7 @@ hay "phase `plan`", không nói trống.
   (`docs/viec-can-lam.md`).
 - **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
   target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
-  `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`) chạy nó
+  `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`, `23-sdlc-syntax.sh`, `24-sdlc-stage-status.sh`, `25-sdlc-capabilities.sh`) chạy nó
   trên engine hiện tại (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
 - Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
   `provides` / `capabilities` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map
@@ -752,15 +769,13 @@ hay "phase `plan`", không nói trống.
 interface phải biểu diễn được nó; trước khi có profile, stage `implement` `requires: design` vô điều
 kiện dù chore không có design, và `repro.md`/`perf.md` không thuộc loại artifact nào.
 
-Ma trận hiện tại (`sh tools/check-sdlc.sh` in lại bảng này; `tuỳ` = có thể bỏ):
+Ma trận job type × stage: ảnh chụp ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại).
+Phần mỗi profile **thêm** (không có trong output nên không phải ảnh chụp):
 
-| Job type | `plan` | `require` | `design` | `breakdown` | `implement` | `verify` | `deploy` | `operate` | Thêm |
-|---|---|---|---|---|---|---|---|---|---|
-| `feature` | chạy | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | |
-| `bugfix` | chạy | chạy | tuỳ | chạy | chạy | chạy | tuỳ | gap | `reproduction-evidence` (`repro.md`), `INV-007` |
-| `refactor` | chạy | chạy | tuỳ | chạy | chạy | chạy | tuỳ | gap | `INV-008`, `INV-009` |
-| `perf` | chạy | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | `performance-evidence` (`perf.md`), `INV-008`…`INV-010` |
-| `chore` | chạy | chạy | bỏ | chạy | chạy | chạy | tuỳ | gap | `INV-011` |
+- `bugfix`: `reproduction-evidence` (`repro.md`), `INV-007`.
+- `refactor`: `INV-008`, `INV-009`.
+- `perf`: `performance-evidence` (`perf.md`), `INV-008`…`INV-010`.
+- `chore`: `INV-011`.
 
 **Quyết định:**
 
@@ -846,6 +861,13 @@ subagent `<id>-checker`.
 khối nhiều dòng, flow không rỗng, chú thích cuối dòng, anchor. Đánh đổi có chủ ý: trình đọc đầy đủ
 kéo theo Node/Python (máy dựng repo này không có). Chỉ áp cho cấu hình của engine.
 
+`yaml_kiem` (`md.sh`) báo mọi dòng ngoài tập con kèm số dòng — tab, `k:v`, thụt sâu, khối `|`/`>`,
+`{…}`, danh sách `[a, b]` — và `tools/check-sdlc.sh` chặn trên `workflow.yaml`, phase, utility
+command, file stage, profile. Lý do: trình đọc tập con trả rỗng khi gặp dòng lạ, nên sai cú pháp
+trước đây chỉ lộ ra ở một luật khác, xa chỗ sai. Mọi giá trị `[…]` khác `[]` bị chặn (kể cả một mục như
+`[plan]`: `fm_list` đọc thành rỗng); ngoại lệ duy nhất là `argument_hint: [--global]` — chuỗi gợi ý tham
+số, đọc bằng `fm_scalar`.
+
 ## Cách thêm một phase
 
 1. `workflow/phases/NN-<id>.md` với frontmatter đầy đủ; thêm vào `phases:` của `workflow.yaml`.
@@ -897,7 +919,8 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
    được có thật trong nguồn — nhưng REQ diễn giải đúng câu trích hay không vẫn là việc của người.
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
-6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng, lỗi lộ muộn.
+6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng. File của engine đã được `check-sdlc.sh` kiểm
+   (`yaml_kiem`); YAML trong repo đích (frontmatter artifact) thì chưa.
 7. **Máy không biết ai tick.** Hook chỉ có khi repo cài và agent có hook; không có hook thì agent tự
    tick vẫn lọt (artifact ngoài git, không có `git blame`). Hook không bắt dấu giả agent tự tính, và
    bỏ nhầm tick nếu người tick đúng lúc lệnh agent đang chạy. Nội dung đổi **trước** lần ghi dấu
@@ -907,13 +930,16 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 8. **`review` không chạy lại test hay quét** — biết kết quả cũ, không biết lệnh có đủ. Lệnh lệch
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.
+   Bù một phần: `aw check plan` cảnh báo mẫu `Expected files` khớp quá `scope_glob_max_files` file trên base.
+   Chuyển tiếp: `**` đã dùng được trong `plan.md`; file chỉ khớp nhờ `*` vượt thư mục bị cảnh báo. Bản sau `*`
+   của `plan.md` không qua `/` (glob của `conventions.md` giữ nghĩa cũ — file người viết, đổi sẽ hỏng âm thầm).
 10. **Artifact không đi theo PR** — reviewer chỉ thấy code. DEC-xxx người chọn nâng thì đi theo PR dưới
     dạng ADR; phần còn lại của `tdd.md` thì không.
 11. **Ghim sha256 là tin lần đầu (TOFU)**; repo cấu hình chung của team thu hẹp, không xoá rủi ro.
 12. **Tuân thủ quy tắc repo chỉ do người phán** — quy tắc viết được thành lệnh nên vào `TEST_CMD`.
 13. **File máy ghi giả được** (`task-results.md`, `test-results.md`): chặn việc *quên*, không chặn
     gian lận có chủ ý; review clean context là lớp sau.
-14. **harness journal chỉ ở từng máy**; `Category` tự do có thể đếm hụt.
+14. **harness journal chỉ ở từng máy** (gom tay: `aw journal export` rồi `aw journal report <file>…`); `Category` tự do có thể đếm hụt.
 15. **Việc không thấy quy ước mới của chính nó** — đúng ý đồ, nhưng việc sửa `conventions.md` để
     hợp lệ hoá thay đổi của mình (vd thêm `production_code`) sẽ bị chấm theo luật cũ tới khi merge.
 16. **Quy ước chưa commit ở main checkout** có hiệu lực ngay cho mọi việc rẽ từ base chưa có file;
@@ -927,9 +953,10 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     Tương tự, nguồn mới mâu thuẫn với luật `BR-` active chỉ agent spec và người phát hiện.
 20. **PRD đổi sau khi luật đã nâng**: máy không theo dõi Confluence/Jira; phiên bản ghi trong `Source`
     chỉ cho người so tay. Luật cũ vẫn `active` tới khi một việc thay nó.
-21. **Phạm vi thô**: glob `case` (`*` khớp cả `/`), tài liệu module phủ cả thư mục — sửa một file test
-    trong `src/` cũng đòi verdict cho `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen
-    tay ghi `pass` không đọc.
+21. **Phạm vi thô**: tài liệu module phủ cả thư mục — sửa một file test trong `src/` cũng đòi verdict cho
+    `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen tay ghi `pass` không đọc. Phạm vi
+    diff giờ kiểm cả theo từng task (`aw task done` cảnh báo, review đòi giải trình), nhưng mẫu do agent
+    tự viết ở plan — không cổng người.
 22. **Tuân thủ interface SDLC ≠ chất lượng.** `check-sdlc.sh` chỉ kiểm lời khai có nhất quán: stage
     có phase, loại artifact có file, invariant có checker + test, capability có phase nhận. Nó không
     biết phase làm capability đó tốt không, `note` của `partial` có nói đủ phần thiếu không, hay

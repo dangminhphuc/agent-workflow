@@ -45,6 +45,16 @@ ca_hong() {
 }
 
 # ky_vong <ma-mong-doi> <ten-ca> <lenh...>
+# ky_vong_ly_do <mã> <tên> <tên ca lý do> <mẫu grep> <lệnh…> — chạy lệnh MỘT lần: ca thứ nhất kiểm mã
+# thoát, ca thứ hai kiểm output có mẫu (grep thường). Thay cặp ky_vong + dung "…đúng lý do" chạy checker hai lần.
+ky_vong_ly_do() {
+  _mong="$1"; _ten="$2"; _ten2="$3"; _mau="$4"; shift 4
+  "$@" > "$TMP/kvld.out" 2>&1
+  _got=$?
+  if [ "$_got" = "$_mong" ]; then ca_dat "$_ten"; else ca_hong "$_ten — mã thoát $_got, mong đợi $_mong"; fi
+  if grep -q -- "$_mau" "$TMP/kvld.out"; then ca_dat "$_ten2"; else ca_hong "$_ten2"; fi
+}
+
 ky_vong() {
   _mong="$1"; _ten="$2"; shift 2
   "$@" >/dev/null 2>&1
@@ -457,7 +467,7 @@ EOF
 them_muc_qt() { printf '\n## Repo rules\n\n| File | Verdict | Location / reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; }
 
 # L3_SF — một finding [Should fix] hợp lệ của Lens 3
-L3_SF='### [Should fix] trùng hàm
+L3_SF='### [Should fix] RVW-001 — trùng hàm
 - Category: duplicate-code
 - Location: `src/a.txt:1`
 - Problem: có sẵn hàm tương tự'

@@ -68,10 +68,12 @@ invariants: []
 ### CAP-deploy-01 — Change is delivered as a reviewed MR/PR that only a human merges
 - Rule: the change reaches its target branch through a merge request that the human reviews and merges; the agent never merges.
 - Judged by: human
+- Artifact: delivery
 
 ### CAP-deploy-02 — Change is released or deployed to its target environment
 - Rule: …
 - Judged by: machine
+- Artifact: delivery
 ```
 
 | Trường | Nghĩa |
@@ -85,6 +87,7 @@ invariants: []
 | `### CAP-<stage>-NN — <tên>` | Một capability: một điều phải đúng khi stage làm **đủ** |
 | `- Rule:` | Điều phải đúng, một câu tiếng Anh, không tên file engine |
 | `- Judged by:` | **Ai** phán capability đạt: `machine` (checker máy), `agent` (LLM checker, agent review độc lập), `human` (người) |
+| `- Artifact:` | Loại artifact (trong `provides` của stage) capability bảo đảm; một hoặc nhiều, cách nhau dấu phẩy, viết trơn; **bắt buộc** |
 
 `Judged by` không phải trang trí: capability `machine` mà engine nhận làm thì sau này (bước A — xem
 `docs/viec-can-lam.md`) phải có luật checker gắn id của nó. Capability `human` nghĩa là engine chỉ có
@@ -111,6 +114,11 @@ Hệ quả cần nhớ:
 - Thêm capability mới vào một stage đang `implemented` → stage thành `partial` ngay → phải thêm note.
 - Phase nhận nốt capability cuối của stage → stage thành `implemented` → phải xoá note.
 - Khối `sdlc:` không còn khoá `status`; còn sót thì `check-sdlc.sh` chặn và bảo xoá.
+- Capability khai ở `out_of_scope:` của `workflow.yaml` (engine quyết không làm, kèm lý do) **vẫn tính là
+  thiếu**: stage không vì thế mà thành `implemented`. Nó chỉ chuyển từ bảng roadmap sang khối "Không làm".
+- Mỗi loại trong `provides` của stage phải có ít nhất một capability khai `- Artifact:` loại đó, nên
+  stage không thể `implemented` chỉ vì viết ít capability. Luật không áp cho `adds_provides` của
+  profile: các loại đó đã có invariant máy giữ.
 
 ## 4. Công thức theo loại thay đổi
 
@@ -123,8 +131,11 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
 
 1. Tìm capability hay invariant luật đó giữ (`sdlc/stages/`, `sdlc/invariants.md`).
 2. Không có cái nào nói điều luật đó kiểm → thêm capability (4.3) hoặc invariant trước.
-3. Viết test (đỏ) rồi code checker, như mọi luật (`AGENTS.md` § Verify).
-4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và ca test.
+3. Viết test (đỏ) rồi code checker, như mọi luật (`AGENTS.md` § Verify). Ngay trên khối chặn / cảnh báo, ghi
+   chú thích `# giữ: CAP-… [, INV-…]` — capability `machine` được phase nhận mà không luật nào khai thì
+   `check-sdlc.sh` chặn; id không có cũng chặn.
+4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và **ít nhất một ca** test
+   chặn; `Rule:` viết trừu tượng (không backtick, không mã `REQ-`/`DEC-`…), cú pháp engine ghi ở `- Engine:`.
 5. `changes/<branch>.md`: mục `Thêm` / `Thay đổi` (người dùng `aw` thấy luật mới), nêu id.
 
 ### 4.2 Làm một capability đang thiếu
@@ -138,7 +149,7 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
 
 ### 4.3 Thêm capability mới vào interface
 
-1. Viết khối `### CAP-<stage>-NN — <tên>` + `- Rule:` + `- Judged by:` vào file stage, `NN` là số kế tiếp.
+1. Viết khối `### CAP-<stage>-NN — <tên>` + `- Rule:` + `- Judged by:` + `- Artifact:` vào file stage, `NN` là số kế tiếp.
 2. Engine chưa làm → stage thành `partial` (hoặc vẫn `gap`) → thêm/sửa `note` trong khối `sdlc:`.
 3. Engine đã làm sẵn → thêm id vào `capabilities:` của phase luôn.
 4. `changes/<branch>.md`: mục `Nội bộ` (interface đổi, người dùng `aw` không thấy).
@@ -188,6 +199,15 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `stage X: CAP-X-NN trùng` | Hai khối cùng id | Đổi số của một khối |
 | `CAP-…: thiếu "- Rule:"` / `thiếu "- Judged by:"` | Khối capability thiếu dòng (dòng nằm dưới heading khác không tính) | Thêm dòng ngay dưới heading capability |
 | `CAP-…: Judged by "…"` | Giá trị lạ | Chỉ `machine`, `agent`, `human` |
+| `…: "Rule:" chứa cú pháp engine` | `Rule:` của capability / invariant có backtick hoặc mã `REQ-`, `DEC-`, `TSK-`, `RVW-`, `FND-`, `RFR-`, `BR-` | Viết điều phải đúng bằng lời; cú pháp engine chuyển sang `- Engine:` (invariant) |
+| `INV-…: "Tested by:" không nêu ca test nào` | Invariant chỉ trỏ file test | Thêm tên ca chặn (trong `"…"`) sau đường dẫn file |
+| `…: "# giữ: X" — không có capability / invariant đó` | Chú thích trong `tools/` trỏ id gõ sai hoặc đã bỏ | Sửa id hoặc xoá chú thích |
+| `CAP-…: Judged by machine, phase … nhận, nhưng không luật checker nào khai` | Capability máy phán mà không chỗ code nào nói mình giữ nó | Thêm `# giữ: CAP-…` ngay trên khối chặn / cảnh báo giữ nó |
+| `out_of_scope: CAP-… không có` / `vừa out-of-scope vừa được phase … nhận` / `thiếu lý do` / `khai hai lần` | Mục `out_of_scope:` của `workflow.yaml` sai | Sửa id; bỏ khỏi `out_of_scope:` hoặc khỏi `capabilities:` của phase; ghi lý do; xoá dòng trùng |
+| `CAP-…: khai "- Artifact:" nhiều dòng` | Hai dòng `- Artifact:` trong một capability — dòng sau đè dòng trước | Gộp vào một dòng, cách nhau dấu phẩy |
+| `CAP-…: thiếu "- Artifact:"` | Khối capability không có dòng `- Artifact:`, hoặc dòng rỗng | Thêm loại artifact capability bảo đảm, lấy trong `provides` của stage |
+| `CAP-…: Artifact "…" không có trong provides` | Gõ sai tên loại, hoặc capability thuộc stage khác | Sửa tên loại, hoặc chuyển capability sang stage `provides` loại đó |
+| `stage X: provides "…" — không capability nào khai` | Một loại stage tạo ra mà không capability nào nói tới | Thêm capability cho loại đó, hoặc gắn loại vào `- Artifact:` của capability có sẵn |
 | `phase P: capabilities "…" — không có capability đó` | Gõ sai id, hoặc capability chưa có trong file stage | Sửa id, hoặc thêm capability (4.3) |
 | `phase P: capabilities "…" thuộc stage S, phase implements T` | Phase nhận capability của stage khác | Chuyển id sang phase của stage S |
 | `phase P: implements T nhưng không nhận capability nào` | Phase chạy stage mà không nói làm gì của stage | Thêm id vào `capabilities:` |
@@ -201,7 +221,9 @@ Các lỗi khác (`provides`, `exit`, thứ tự phase, invariant, profile) li�
 
 ## 6. Roadmap hiện tại
 
-Ảnh chụp tại lúc viết — `sh tools/check-sdlc.sh` in lại bảng này, luôn tin output hơn ảnh chụp:
+Ảnh chụp ba bảng của `sh tools/check-sdlc.sh` — **ảnh chụp duy nhất** trong docs. Test
+`tools/tests/20-sdlc-conformance.sh` so khối dưới đây với output thật; lệch là test hỏng, nên engine đổi
+thì phải chép lại khối này:
 
 ```
 Stage → phase (trạng thái suy ra từ capabilities: của phase):
@@ -217,16 +239,30 @@ Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   plan (partial): Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
     CAP-plan-03  human    Work items are prioritised against each other
     CAP-plan-04  human    Work item carries an effort estimate
-  verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; không có e2e, kiểm tải hay UAT
-    CAP-verify-03  machine  End-to-end tests run against the integrated system
-    CAP-verify-04  machine  Load and performance are tested beyond perf jobs
+  verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; chưa có UAT (e2e, kiểm tải: out_of_scope)
     CAP-verify-05  human    Stakeholders accept the change (UAT)
   deploy (partial): Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
-    CAP-deploy-02  machine  Change is released or deployed to its target environment
     CAP-deploy-03  human    Rollback path is recorded before delivery
   operate (gap): CI/CD và observability nằm ngoài engine; sự cố chưa quay lại thành việc mới
-    CAP-operate-01  machine  The delivered change is observed in production
     CAP-operate-02  human    Incidents and production findings become new work items
+Không làm (out-of-scope — lý do trong workflow.yaml):
+  verify (partial)
+    CAP-verify-03  machine  E2E trên hệ thống đã ghép là việc của CI/CD của repo đích, không của engine
+    CAP-verify-04  machine  Hạ tầng đo tải nằm ngoài engine; việc loại perf đã có số đo trước/sau do máy ghi
+  deploy (partial)
+    CAP-deploy-02  machine  Release và triển khai là pipeline của repo đích; engine dừng ở MR/PR người merge
+  operate (gap)
+    CAP-operate-01  machine  Quan sát production thuộc hệ thống observability bên ngoài
+Job type × stage (chạy · tuỳ = có thể bỏ · bỏ · gap = engine không làm):
+             plan       require    design     breakdown  implement  verify     deploy     operate
+  bugfix     chạy       chạy       tuỳ        chạy       chạy       chạy       tuỳ        gap
+  chore      chạy       chạy       bỏ         chạy       chạy       chạy       tuỳ        gap
+  feature    chạy       chạy       chạy       chạy       chạy       chạy       tuỳ        gap
+  perf       chạy       chạy       chạy       chạy       chạy       chạy       tuỳ        gap
+  refactor   chạy       chạy       tuỳ        chạy       chạy       chạy       tuỳ        gap
+  bugfix: có thể vắng: design
+  chore: có thể vắng: design
+  refactor: có thể vắng: design
 ```
 
 Đọc bảng theo từng stage chưa đủ:
@@ -236,14 +272,16 @@ Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   ước lượng công (`CAP-plan-04`). Cả hai đều `human`: engine chỉ có thể tạo chỗ ghi và kiểm đã ghi,
   quyết vẫn là người.
 - **`verify` — partial.** Có review độc lập theo từng REQ và người review bảo mật cho code nhạy cảm.
-  Chưa có: e2e trên hệ thống đã ghép (`CAP-verify-03`), đo tải cho mọi thay đổi có thể ảnh hưởng hiệu
-  năng chứ không chỉ việc loại perf (`CAP-verify-04`), và người yêu cầu nghiệm thu (UAT, `CAP-verify-05`).
-- **`deploy` — partial.** Engine dừng ở MR/PR mà người merge. Chưa có: release / triển khai tới môi
-  trường đích có máy ghi lại (`CAP-deploy-02`) và đường rollback được ghi và người xác nhận trước khi
-  release (`CAP-deploy-03`).
-- **`operate` — gap.** Engine không làm gì sau khi giao: không quan sát production
-  (`CAP-operate-01`) và sự cố không quay lại thành việc mới (`CAP-operate-02`). Phần quan sát thường do
-  CI/CD và hệ thống observability bên ngoài làm; phần quay lại thành việc mới là việc engine có thể làm
-  (`docs/viec-can-lam.md` § Interface SDLC).
+  Chưa có: người yêu cầu nghiệm thu (UAT, `CAP-verify-05`). **Không làm** (out-of-scope): e2e trên hệ
+  thống đã ghép (`CAP-verify-03`) và đo tải cho mọi thay đổi (`CAP-verify-04`) — việc của CI/CD và
+  hạ tầng của repo đích.
+- **`deploy` — partial.** Engine dừng ở MR/PR mà người merge. Chưa có: đường rollback được ghi và
+  người xác nhận trước khi release (`CAP-deploy-03`). **Không làm**: release / triển khai
+  (`CAP-deploy-02`) — pipeline của repo đích.
+- **`operate` — gap.** Sự cố chưa quay lại thành việc mới (`CAP-operate-02`) — việc engine có thể làm
+  (`docs/viec-can-lam.md` § Interface SDLC). **Không làm**: quan sát production (`CAP-operate-01`) —
+  hệ thống observability bên ngoài.
 
-Muốn làm một dòng trong bảng: theo công thức 4.2.
+Muốn làm một dòng trong bảng: theo công thức 4.2. Muốn đưa một capability vào hay ra khỏi khối
+**Không làm**: sửa khoá `out_of_scope:` của `workflow.yaml` (`- CAP-id: lý do`) — trạng thái stage không
+đổi, chỉ roadmap đổi.

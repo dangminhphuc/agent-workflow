@@ -54,6 +54,7 @@ kq_khai check-implement.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 PLAN="$DIR/plan.md"
 KQ="$DIR/test-results.md"
 CAUHINH=$(kc_cau_hinh "$DIR")
@@ -100,6 +101,7 @@ while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $tt
 EOF
 
+# giữ: CAP-implement-02
 # ---- 3. Chay that lenh kiem thu ----
 echo ""
 echo "Chạy lệnh kiểm thử: $TEST_CMD"
@@ -167,6 +169,13 @@ if [ -n "$chan" ]; then
   while IFS= read -r l; do [ -n "$l" ] && loi "[$(kc_loai "$DIR")] $l"; done <<EOF
 $chan
 EOF
+fi
+
+# Glob plan.md giai đoạn chuyển tiếp (* sắp không qua /): chỉ cảnh báo, kể cả ở review.
+gct=$(kc_glob_chuyen_tiep "$DIR")
+if [ -n "$gct" ]; then
+  echo ""
+  printf '%s\n' "$gct" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l (chỉ cảnh báo)"; done
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----

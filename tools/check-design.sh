@@ -39,6 +39,7 @@ kq_khai check-design.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 SPEC="$DIR/spec.md"
 OQ="$DIR/open-questions.md"
 TDD="$DIR/tdd.md"
@@ -208,6 +209,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     # Ô duyệt (thiếu, sai dạng, đổi sau duyệt) đã báo ở trên — thư viện approval-tick.sh.
     for (i = 1; i <= n_d; i++) {
       d = ds_d[i]
+      # giữ: CAP-design-01
       if (!(d in d_tg))                               loi(d ": thiếu dòng \"Author:\" (human | agent)")
       else if (d_tg[d] != "human" && d_tg[d] != "agent") loi(d ": \"Author: " d_tg[d] "\" không hợp lệ. Chỉ chấp nhận: human | agent")
       if (d_tg[d] == "human") co_nguoi = 1

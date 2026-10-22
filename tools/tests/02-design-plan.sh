@@ -33,11 +33,9 @@ printf '### FND-001 — x\n- Severity: `block`\n- Resolution: fixed\n- Problem: 
 toc_f design-findings.md
 ky_vong 0 "tên trường chỉ khớp ở đầu dòng, không khớp trong nội dung" sh "$CHK" "$F"
 printf '### FND-01 — x\n- Severity: `warn`\n- Resolution: open\n' > "$F/design-findings.md"
-ky_vong 1 "chặn mã FND sai dạng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'FND-01 sai dạng'"
+ky_vong_ly_do 1 "chặn mã FND sai dạng" "…đúng lý do" 'FND-01 sai dạng' sh "$CHK" "$F"
 viet_tdd; thay "$F/tdd.md" "### DEC-001" "### DEC-1"; duyet_lai "$F/tdd.md"
-ky_vong 1 "chặn mã DEC sai dạng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'DEC-1 sai dạng'"
+ky_vong_ly_do 1 "chặn mã DEC sai dạng" "…đúng lý do" 'DEC-1 sai dạng' sh "$CHK" "$F"
 
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
 ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
@@ -53,8 +51,7 @@ ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
-ky_vong 1 "chặn vào design khi người chưa duyệt spec" sh "$CHK" "$F"
-dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'chưa được người duyệt'"
+ky_vong_ly_do 1 "chặn vào design khi người chưa duyệt spec" "…đúng lý do: spec chưa được người duyệt" 'chưa được người duyệt' sh "$CHK" "$F"
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
@@ -162,8 +159,7 @@ ky_vong 1 "chặn khi tdd.md không qua checker của design" sh "$CHK" "$F"
 viet_tdd; ghi_based_on
 
 viet_plan; thay "$F/plan.md" '### TSK-001' '### TSK-0001'
-ky_vong 1 "chặn mã TSK sai dạng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-0001 sai dạng'"
+ky_vong_ly_do 1 "chặn mã TSK sai dạng" "…đúng lý do" 'TSK-0001 sai dạng' sh "$CHK" "$F"
 
 viet_plan; thay "$F/plan.md" '- Covers: `REQ-002`' '- Covers: `REQ-001`'
 ky_vong 1 "chặn YÊU CẦU BỊ BỎ SÓT (chiều ngược)" sh "$CHK" "$F"
@@ -200,5 +196,57 @@ viet_plan; thay "$F/plan.md" '- Verify: `test -f src/a.txt` → có file
 ## Deferred'
 ky_vong 1 "chặn chỗ giữ chỗ chưa điền" sh "$CHK" "$F"
 viet_plan; ghi_based_on
+
+# Glob rộng ở Expected files: đếm file đã track trên commit Base khớp mẫu; vượt scope_glob_max_files → cảnh báo
+cp "$CFG/conventions.md" "$TMP/conv-glob.bak"
+thay "$CFG/conventions.md" 'scope_glob_max_files: 30' 'scope_glob_max_files: 1'
+thay "$F/plan.md" '- Expected files: `src/*` `test/*`' '- Expected files: `*`'
+ky_vong 0 "glob khớp nhiều file hơn ngưỡng → vẫn ĐẠT" sh "$CHK" "$F"
+dung "…kèm CẢNH BÁO nêu task, mẫu, số file" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*TSK-001: \`\*\` khớp [0-9]* file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: 1)'"
+thay "$CFG/conventions.md" 'scope_glob_max_files: 1' 'scope_glob_max_files: 0'
+dung "scope_glob_max_files: 0 → tắt cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+thay "$CFG/conventions.md" 'scope_glob_max_files: 0' 'scope_glob_max_files: 1'
+thay "$F/plan.md" '- Expected files: `*`' '- Expected files: `moi/*`'
+dung "glob khớp 0 file (task tạo file mới) → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+cp "$TMP/conv-glob.bak" "$CFG/conventions.md"
+viet_plan; ghi_based_on
+dung "mẫu hẹp, ngưỡng mặc định → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+
+# Plan bổ sung sau review: task sửa finding trỏ về mã RVW (hoặc URL bình luận MR) bằng "Fixes:"
+# them_task_sua <dòng Fixes / Covers> <Status> — thêm TSK-003 trước "## Deferred"
+them_task_sua() { thay "$F/plan.md" '## Deferred' "### TSK-003 — sửa finding review
+$1
+- Expected files: \`src/a.txt\`
+- Verify: \`true\` → xanh
+- Status: \`$2\`
+
+## Deferred"; toc_f plan.md; }
+viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
+ky_vong 0 "task chỉ có Fixes: RVW có trong review.md → ĐẠT" sh "$CHK" "$F"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-009`' '[ ]'
+ky_vong 1 "Fixes: RVW không có trong review.md → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: \"Fixes: RVW-009\" nhưng review.md không có finding mã đó'"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-009`' '[x]'
+dung "Fixes trên task [x] (review đã ghi lại) → không kiểm mã" sh -c "! sh '$CHK' '$F' | grep -q 'RVW-009'"
+viet_plan; ghi_based_on; them_task_sua '- Depends on: none' '[ ]'
+ky_vong 1 "task không Covers, không Fixes → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: thiếu \"Covers:\" hoặc \"Fixes:\" — task phải phủ một REQ hoặc sửa một finding review'"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: https://gitlab.vd/nhom/repo/-/merge_requests/1#note_2' '[ ]'
+ky_vong 0 "Fixes: URL bình luận MR → ĐẠT" sh "$CHK" "$F"
+viet_plan; ghi_based_on; them_task_sua '- **Fixes:** `RVW-001`' '[ ]'
+ky_vong 0 "Fixes dạng in đậm (- **Fixes:**) → ĐẠT" sh "$CHK" "$F"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: abc' '[ ]'
+ky_vong 1 "Fixes: giá trị lạ → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: \"Fixes:\" \"abc\" — chỉ nhận RVW-NNN hoặc URL bình luận MR'"
+# Trọn vòng: review có RVW-001 → plan bổ sung task Fixes → aw task next trả task mới → review chặn tới khi xong
+viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
+ky_vong 0 "trọn vòng: plan bổ sung ĐẠT" sh "$CHK" "$F"
+dung "…aw task next trả task sửa mới" bang "$(sh "$T/task.sh" next "$F" 2>/dev/null)" "TSK-003"
+ghi_tree_review
+ky_vong 1 "…review chặn khi task sửa chưa xong" sh "$T/check-review.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'TSK-003 chưa làm'"
+viet_plan; ghi_based_on; viet_review
 
 ket_thuc

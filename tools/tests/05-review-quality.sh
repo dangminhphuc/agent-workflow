@@ -20,21 +20,31 @@ ky_vong 0 "Lens 3 có finding đủ Location file:dòng thì cho qua" sh "$CHK" 
 viet_review; thay "$F/review.md" '- None' "- None
 $L3_SF"
 ky_vong 1 "chặn Lens 3 vừa \"- None\" vừa có finding" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Category: duplicate-code
 - Problem: có sẵn hàm tương tự'
 ky_vong 1 "chặn [Should fix] thiếu Location" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Category: duplicate-code
 - Location: `file:dòng`'
 ky_vong 1 "chặn Location giữ chỗ của mẫu (không phải file:dòng)" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — <tiêu đề>
 - Location: `src/a.txt:1`'
 ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
 toc_f review.md
 ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+# Mã finding: [Blocker] / [Should fix] mang RVW-NNN để task sửa (Fixes:) trỏ về được; [Nit] không bắt
+viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/RVW-001 — //')"
+toc_f review.md
+ky_vong 1 "chặn [Should fix] thiếu mã RVW" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 \[Should fix\] \"trùng hàm\": thiếu mã — tiêu đề dạng \"### \[mức\] RVW-NNN — <tiêu đề>\"'"
+viet_review; thay "$F/review.md" '- None' "$L3_SF
+
+$L3_SF"
+toc_f review.md
+ky_vong_ly_do 1 "chặn hai finding cùng mã" "…đúng lý do" 'Lens 3: RVW-001 trùng — mỗi finding một mã' sh "$CHK" "$F"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Location: `src/a.txt:1`'
 ky_vong 1 "chặn [Should fix] thiếu Category" sh "$CHK" "$F"
 dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu dòng \"- Category: <loại>\"'"
@@ -44,7 +54,7 @@ viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên
 - Category: Tên Tuỳ Ý'
 toc_f review.md
 ky_vong 0 "[Nit] không bắt Category" sh "$CHK" "$F"
-L3_B='### [Blocker] mất dữ liệu
+L3_B='### [Blocker] RVW-001 — mất dữ liệu
 - Category: data-loss
 - Location: `src/a.txt:1`
 - Problem: ghi đè'
@@ -59,8 +69,7 @@ viet_review; thay "$F/review.md" '- None' "$L3_B
 toc_f review.md
 ky_vong 0 "[Blocker] đủ trường, Conclusion khớp số → review đạt (ship mới chặn)" sh "$CHK" "$F"
 thay "$F/review.md" '- Blocker findings: 1' '- Blocker findings: 0'
-ky_vong 1 "chặn Conclusion ghi số Blocker lệch số mục" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Blocker findings: 0 nhưng Lens 3 có 1'"
+ky_vong_ly_do 1 "chặn Conclusion ghi số Blocker lệch số mục" "…đúng lý do" 'Blocker findings: 0 nhưng Lens 3 có 1' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: <n>'
 ky_vong 1 "chặn Conclusion còn giữ chỗ <n>" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- Blocker findings: 0
@@ -78,8 +87,7 @@ viet_review
 ky_vong 0 "không khai sensitive_code → không đòi Security reviewer" sh "$CHK" "$F"
 cp "$CFG/conventions.md" "$TMP/conv-nc.bak"
 thay "$CFG/conventions.md" 'sensitive_code:' 'sensitive_code: src/*'
-ky_vong 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" sh "$CHK" "$F"
-dung "…đúng lý do, nêu file nhạy cảm" sh -c "sh '$CHK' '$F' | grep -q 'code nhạy cảm (sensitive_code: src/a.txt)'"
+ky_vong_ly_do 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" "…đúng lý do, nêu file nhạy cảm" 'code nhạy cảm (sensitive_code: src/a.txt)' sh "$CHK" "$F"
 dung "…implement chỉ LƯU Ý, không chặn" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'LƯU Ý.*src/a.txt' && sh '$T/check-implement.sh' '$F' >/dev/null 2>&1"
 printf -- '- Security reviewer: <tên người>\n' >> "$F/review.md"
 ky_vong 1 "chặn Security reviewer còn giữ chỗ" sh "$CHK" "$F"
@@ -95,4 +103,14 @@ cp "$TMP/conv-nc.bak" "$CFG/conventions.md"
 # Bảng khác nhắc mã REQ ở cột lý do không được ghi đè kết luận của Lens 1
 viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp REQ-001 |' '| Authn / authz | pass | khớp REQ-002 |'
 ky_vong 0 "dòng Lens 4 nhắc REQ-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
+
+# Cảnh báo phạm vi theo task (task-results.md "Scope warning") phải được giải trình ở Lens 2
+viet_review
+cp "$F/task-results.md" "$TMP/kq-pv.bak"
+awk '{ print } /^## TSK-002/ { print ""; print "- Scope warning: `src/a.txt`" }' "$TMP/kq-pv.bak" > "$F/task-results.md"
+ky_vong 1 "task có Scope warning mà Lens 2 không giải trình → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 2: TSK-002 có cảnh báo phạm vi trong task-results.md — giải trình ở \"Task scope warnings\"'"
+printf '\n## Lens 2 — Design and scope\n\n- Task scope warnings: TSK-002 sửa src/a.txt của TSK-001 vì bug phát hiện khi làm, đã khai Unplanned\n' >> "$F/review.md"; toc_f review.md; ghi_tree_review
+ky_vong 0 "Lens 2 nhắc tên task trong Task scope warnings → ĐẠT" sh "$CHK" "$F"
+cp "$TMP/kq-pv.bak" "$F/task-results.md"; viet_review
 ket_thuc

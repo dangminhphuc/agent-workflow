@@ -93,7 +93,7 @@ The engine holds no token; it uses the first route that works: logged-in `gh`/`g
 
 `aw ship status <dir>` updates `ship.md`. Without `gh`/`glab` it infers from git (normal and clean squash merges; closed MRs or squash with conflict fixes → human checks on the web).
 
-- `CÒN MR ĐANG MỞ`: waiting for review. Review asks for changes → `/aw-implement` (new task) → `/aw-review` → `aw ship create … --target <same branch>`.
+- `CÒN MR ĐANG MỞ`: waiting for review. Review asks for changes → `/aw-plan` (Supplement: task with `Fixes: <comment URL>`) → `/aw-implement` → `/aw-review` → `aw ship create … --target <same branch>`.
 - `ĐÃ MERGE HẾT`: tell the human to run this command in a session on the **main checkout** to clean up.
 - `CÓ MR BỊ ĐÓNG KHÔNG MERGE`, `CHƯA RÕ`: report; the human decides.
 

@@ -22,11 +22,14 @@ invariants:
 ### CAP-design-01 — Every choice is a decision with options, trade-offs and the requirements it serves
 - Rule: every choice someone could make differently is a decision listing its options, trade-offs and the requirements it serves.
 - Judged by: machine
+- Artifact: design
 
 ### CAP-design-02 — An independent agent looks for hidden decisions and deviations
 - Rule: an agent that did not write the design searches it for choices not stated as decisions and for parts that contradict a decision.
 - Judged by: agent
+- Artifact: design
 
 ### CAP-design-03 — Human approves every decision; approval binds to its content
 - Rule: each decision is consumed only after the human approves it, and the approval no longer counts once its content changes.
 - Judged by: machine
+- Artifact: design

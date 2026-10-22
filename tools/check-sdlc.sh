@@ -9,9 +9,13 @@
 #     requires không do stage trước nó provides, invariant không có trong sdlc/invariants.md,
 #     skippable không phải true | false. Capability (thân file, "### CAP-<stage>-NN — <tên>"):
 #     không có cái nào, heading sai dạng hoặc mang stage khác (kể cả #### / Cap- / heading lạ trong ## Capabilities), id trùng, thiếu "- Rule:" /
-#     "- Judged by:", Judged by không phải machine | agent | human.
+#     "- Judged by:", Judged by không phải machine | agent | human; thiếu "- Artifact:" hoặc Artifact
+#     không có trong provides của stage, hoặc khai nhiều dòng; loại trong provides không capability nào
+#     khai Artifact (stage thiếu provides: chỉ báo thiếu provides).
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
-#     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
+#     (tools/tests/*.sh), hoặc trỏ tới file không có; không nêu ca test nào; ca test nêu tên ("…" sau
+#     file) không có trong file. "Rule:" (capability, invariant) có backtick hoặc mã REQ-/DEC-/… .
+#   - Tập con YAML (yaml_kiem): workflow.yaml, phase, utility command, file stage, profile.
 #   - Khối sdlc: của workflow.yaml: stage không có, còn khoá status (trạng thái do máy suy ra).
 #   - Phase: thiếu implements hoặc implements stage không có; provides sai dạng, file không nằm
 #     trong outputs, loại mà stage không khai và không profile nào thêm; thứ tự phase lệch thứ tự stage;
@@ -21,6 +25,9 @@
 #     provides của stage; exit human | both mà không phase nào có exit_human, machine | both mà không
 #     phase nào có exit_machine.
 #   - Utility command khai implements hoặc capabilities (utility command không ánh xạ vào stage).
+#   - out_of_scope: (workflow.yaml) id không có, đã được phase nhận, thiếu lý do, khai hai lần.
+#   - "# giữ: CAP-…/INV-…" (tools/check-*.sh, tools/lib/*.sh, tools/task.sh) trỏ id không có; capability
+#     Judged by machine được phase nhận mà không luật nào khai "# giữ:" nó.
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -58,6 +65,18 @@ loi() { echo "  [LỖI] $*"; n_loi=$((n_loi + 1)); }
 # co <file> <dòng> -> 0 nếu file có đúng dòng đó
 co() { [ -f "$1" ] && grep -qxF -- "$2" "$1"; }
 
+# ---- tập con YAML: dòng ngoài tập con fm_* / wf_* đọc được thì báo ngay, không để trả rỗng
+yaml_bao() { # <đường-dẫn tương đối trong engine> fm|wf
+  yaml_kiem "$E/$1" "$2" | while IFS= read -r l; do echo "$1: $l"; done
+}
+{
+  yaml_bao workflow.yaml wf
+  for f in "$E"/workflow/phases/*.md "$E"/workflow/*.md "$E"/sdlc/stages/*.md "$E"/sdlc/profiles/*.md; do
+    [ -f "$f" ] && yaml_bao "${f#"$E"/}" fm
+  done
+} > "$W/yaml"
+while IFS= read -r l; do loi "$l"; done < "$W/yaml"
+
 # ---- invariant: "### INV-NNN — …" + "- Enforced by:" / "- Tested by:" với đường dẫn trong `…`
 INV="$E/sdlc/invariants.md"
 : > "$W/inv"
@@ -66,6 +85,10 @@ if [ -f "$INV" ]; then
     { sub(/\r$/, "") }
     /^### INV-[0-9]+/ { match($0, /INV-[0-9]+/); cur = substr($0, RSTART, RLENGTH); print cur "|id|"; next }
     /^#/ { cur = ""; next }
+    # Rule: trừu tượng — cú pháp engine (backtick, mã REQ-/DEC-…) thuộc "- Engine:"
+    cur != "" && /^- Rule:/ { r = $0; sub(/^- Rule:[ \t]*/, "", r); f = ""
+      if (index(r, "`")) f = "`"; else if (match(r, /(REQ|DEC|TSK|RVW|FND|RFR|BR)-/)) f = substr(r, RSTART, RLENGTH)
+      if (f != "") print cur "|rule|" f; next }
     cur != "" && /^- (Enforced|Tested) by:/ {
       k = ($0 ~ /^- Enforced/) ? "enf" : "test"; s = $0; n = 0
       while (match(s, /`[^`]+`/)) {
@@ -85,7 +108,13 @@ for inv in $(awk -F'|' '$2 == "id" { print $1 }' "$W/inv"); do
     || loi "$inv: thiếu \"Enforced by:\" trỏ tới checker (tools/check-*.sh, tools/lib/*.sh)."
   awk -F'|' -v i="$inv" '$1 == i && $2 == "test" && $3 != ""' "$W/inv" | grep -q . \
     || loi "$inv: thiếu \"Tested by:\" trỏ tới test (tools/tests/*.sh)."
-  awk -F'|' -v i="$inv" '$1 == i && $2 != "case" && $3 != "" { print $2 "|" $3 }' "$W/inv" > "$W/inv1"
+  awk -F'|' -v i="$inv" '$1 == i && $2 == "case"' "$W/inv" | grep -q . \
+    || loi "$inv: \"Tested by:\" không nêu ca test nào — thêm tên ca (trong \"…\") sau đường dẫn file."
+  awk -F'|' -v i="$inv" '$1 == i && $2 == "rule" { print $3 }' "$W/inv" | while IFS= read -r f; do
+    echo "$inv: \"Rule:\" chứa cú pháp engine ($f) — viết trừu tượng, chuyển cú pháp sang \"- Engine:\"."
+  done > "$W/inv2"
+  while IFS= read -r l; do loi "$l"; done < "$W/inv2"
+  awk -F'|' -v i="$inv" '$1 == i && ($2 == "enf" || $2 == "test") && $3 != "" { print $2 "|" $3 }' "$W/inv" > "$W/inv1"
   while IFS='|' read -r k p; do
     case "$k|$p" in
       enf\|tools/check-*.sh|enf\|tools/lib/*.sh|test\|tools/tests/*.sh) ;;
@@ -101,7 +130,7 @@ for inv in $(awk -F'|' '$2 == "id" { print $1 }' "$W/inv"); do
 done
 
 # ---- stage: theo thứ tự NN của tên file
-: > "$W/stages"; : > "$W/prov"; : > "$W/cap"; i=0
+: > "$W/stages"; : > "$W/prov"; : > "$W/cap"; : > "$W/capart"; i=0
 for f in "$E"/sdlc/stages/[0-9]*.md; do
   [ -f "$f" ] || continue
   i=$((i + 1)); ten=${f##*/}; ten=${ten%.md}; ten=${ten#*-}
@@ -135,14 +164,31 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
     *) loi "stage $id: skippable \"$sk\" — chỉ nhận true | false."; sk=true ;;
   esac
   echo "$i|$id|$ex|$sk" >> "$W/stages"
-  # capability: "### CAP-<stage>-NN — <tên>" + "- Rule:" + "- Judged by:", khối hết ở heading kế tiếp
-  md_body "$f" | awk -v s="$id" '
-    function dong() {
+  # capability: "### CAP-<stage>-NN — <tên>" + "- Rule:" + "- Judged by:" + "- Artifact:", khối hết ở heading kế tiếp
+  md_body "$f" | awk -v s="$id" -v pv="$(awk 'NF' "$W/p" | tr '\n' ',')" '
+    BEGIN {
+      n = split(pv, a, ",")
+      for (k = 1; k <= n; k++) if (a[k] != "") { prov[a[k]] = 1; ds = ds (ds == "" ? "" : ", ") a[k] }
+    }
+    function dong(   m, k, t, x, co) {
       if (cur == "") return
       if (!rule) print "E|" cur ": thiếu \"- Rule:\" — thêm một câu nói điều phải đúng."
       if (!coj) print "E|" cur ": thiếu \"- Judged by:\" — thêm machine | agent | human."
       else if (jd != "machine" && jd != "agent" && jd != "human")
         print "E|" cur ": Judged by \"" jd "\" — chỉ nhận machine | agent | human."
+      # Artifact: một hoặc nhiều loại, cách nhau dấu phẩy, phải nằm trong provides của stage.
+      # Stage thiếu provides đã bị báo riêng — không thêm một lỗi cho mỗi capability.
+      if (ds == "") { print "C|" cur "|" jd "|" ten; cur = ""; return }
+      if (na > 1) print "E|" cur ": khai \"- Artifact:\" nhiều dòng — gộp vào một dòng, cách nhau dấu phẩy."
+      co = 0; m = split(av, x, ",")
+      for (k = 1; k <= m; k++) {
+        t = x[k]; gsub(/^[ \t]+|[ \t]+$/, "", t)
+        if (t == "") continue
+        co = 1
+        if (t in prov) print "A|" t
+        else print "E|" cur ": Artifact \"" t "\" không có trong provides của stage " s " (" ds ") — sửa tên loại, hoặc chuyển capability sang stage provides loại đó."
+      }
+      if (!co) print "E|" cur ": thiếu \"- Artifact:\" — thêm loại artifact capability này bảo đảm, lấy trong provides của stage " s ": " ds "."
       print "C|" cur "|" jd "|" ten; cur = ""
     }
     { sub(/\r$/, "") }
@@ -161,10 +207,13 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
         print "E|stage " s ": heading capability \"" $0 "\" sai dạng — cần \"### CAP-" s "-NN — <tên>\"."; next
       }
       if (c in da_co) { print "E|stage " s ": " c " trùng — mỗi id chỉ khai một lần."; next }
-      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; next
+      da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; av = ""; na = 0; next
     }
-    cur != "" && /^- Rule:/ { rule = 1 }
+    cur != "" && /^- Rule:/ { rule = 1; r = $0; sub(/^- Rule:[ \t]*/, "", r); f = ""
+      if (index(r, "`")) f = "`"; else if (match(r, /(REQ|DEC|TSK|RVW|FND|RFR|BR)-/)) f = substr(r, RSTART, RLENGTH)
+      if (f != "") print "E|" cur ": \"Rule:\" chứa cú pháp engine (" f ") — viết trừu tượng, chuyển cú pháp sang \"- Engine:\"." }
     cur != "" && /^- Judged by:/ { coj = 1; jd = $0; sub(/^- Judged by:[ \t]*/, "", jd); sub(/[ \t]+$/, "", jd) }
+    cur != "" && /^- Artifact:/ { na++; av = $0; sub(/^- Artifact:/, "", av) }
     END { dong() }
   ' > "$W/c1"
   grep -q '^C|' "$W/c1" \
@@ -173,11 +222,23 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
     case "$l" in
       E\|*) loi "${l#E|}" ;;
       C\|*) echo "$id|${l#C|}" >> "$W/cap" ;;
+      A\|*) echo "$id|${l#A|}" >> "$W/capart" ;;
     esac
   done < "$W/c1"
 done
-stage_co() { awk -F'|' -v s="$1" '$2 == s' "$W/stages" | grep -q .; }
-stage_so() { awk -F'|' -v s="$1" '$2 == s { print $1 }' "$W/stages"; }
+# mỗi loại provides của stage có ít nhất một capability khai Artifact loại đó (adds_provides của profile: không)
+while IFS='|' read -r s t; do
+  [ -n "$t" ] || continue
+  grep -qxF "$s|$t" "$W/capart" \
+    || loi "stage $s: provides \"$t\" — không capability nào khai \"Artifact: $t\"; thêm hoặc gắn một capability."
+done < "$W/prov"
+SO_STAGE=" $(awk -F'|' '{ printf "%s=%s ", $2, $1 }' "$W/stages")"  # stage_so tra ở shell chính, không awk mỗi lần
+stage_co() { case "$SO_STAGE" in *" $1="*) return 0 ;; esac; return 1; }
+# stage_so <stage> -> số thứ tự; tra chuỗi trong shell (gọi ~100 lần — mỗi lần một awk thì chậm)
+stage_so() {
+  [ -n "${SO_STAGE:-}" ] || SO_STAGE=" $(awk -F'|' '{ printf "%s=%s ", $2, $1 }' "$W/stages")"  # dự phòng; thường đã tính sẵn ở shell chính
+  case "$SO_STAGE" in *" $1="*) _so=${SO_STAGE#*" $1="}; printf '%s\n' "${_so%% *}" ;; esac
+}
 # cap_co <CAP-id> -> 0 nếu capability có trong sdlc/stages/; cap_stage <CAP-id> -> stage của nó
 cap_co() { awk -F'|' -v c="$1" '$2 == c' "$W/cap" | grep -q .; }
 cap_stage() { awk -F'|' -v c="$1" '$2 == c { print $1; exit }' "$W/cap"; }
@@ -250,6 +311,46 @@ while IFS='|' read -r pid pfile preq _when; do
     || loi "phase $pid: implements $s nhưng không nhận capability nào — thêm id vào capabilities: (xem sdlc/stages/)."
 done < "$W/wf"
 
+# ---- out_of_scope: capability engine quyết không làm (khoá cấp cao của workflow.yaml, "- CAP-id: lý do").
+# Không đổi trạng thái stage — chỉ tách khỏi roadmap những việc sẽ không bao giờ làm.
+awk '{ sub(/\r$/, "") } /^[ \t]*#/ { next } /^out_of_scope:[ \t]*$/ { o = 1; next } o && /^[A-Za-z]/ { o = 0 }
+  o && /^  - / { s = $0; sub(/^  - /, "", s); c = s; sub(/:.*$/, "", c); ly = ""
+    if (index(s, ":")) { ly = s; sub(/^[^:]*:[ \t]*/, "", ly); sub(/[ \t]+$/, "", ly) }
+    print c "|" ly }' "$E/workflow.yaml" > "$W/oos"
+: > "$W/oos-da"; : > "$W/oos-ok"
+while IFS='|' read -r c ly; do
+  [ -n "$c" ] || continue
+  if co "$W/oos-da" "$c"; then loi "out_of_scope: $c khai hai lần."; continue; fi
+  echo "$c" >> "$W/oos-da"
+  cap_co "$c" || { loi "out_of_scope: $c không có trong sdlc/stages/."; continue; }
+  ph=$(awk -F'|' -v c="$c" '$3 == c { print $1; exit }' "$W/nhan")
+  [ -z "$ph" ] || { loi "out_of_scope: $c vừa out-of-scope vừa được phase $ph nhận — chọn một."; continue; }
+  [ -n "$ly" ] || { loi "out_of_scope: $c thiếu lý do — ghi vì sao engine không làm."; continue; }
+  echo "$c|$ly" >> "$W/oos-ok"
+done < "$W/oos"
+
+# ---- luật checker khai capability / invariant nó giữ: chú thích "# giữ: CAP-…[, INV-…]" ngay trên khối
+# chặn / cảnh báo, trong tools/check-*.sh, tools/lib/*.sh, tools/task.sh (bước A, đợt 1: chỉ chiều ngược —
+# capability machine được nhận phải có luật khai nó; luật chưa khai id thì chưa chặn).
+: > "$W/giu"
+for f in "$E"/tools/check-*.sh "$E"/tools/lib/*.sh "$E"/tools/task.sh; do
+  [ -f "$f" ] || continue
+  awk -v f="${f#"$E"/}" '{ sub(/\r$/, "") }
+    /^[ \t]*# giữ:/ { s = $0; while (match(s, /CAP-[a-z]+-[0-9][0-9]|INV-[0-9]+/)) { print f "|" substr(s, RSTART, RLENGTH); s = substr(s, RSTART + RLENGTH) } }' "$f" >> "$W/giu"
+done
+while IFS='|' read -r f id; do
+  case "$id" in
+    CAP-*) cap_co "$id" ;;
+    *) awk -F'|' -v i="$id" '$1 == i && $2 == "id"' "$W/inv" | grep -q . ;;
+  esac || loi "$f: \"# giữ: $id\" — không có capability / invariant đó (sdlc/stages/, sdlc/invariants.md)."
+done < "$W/giu"
+awk -F'|' '$3 == "machine" { print $2 }' "$W/cap" > "$W/may"
+while IFS= read -r c; do
+  ph=$(awk -F'|' -v c="$c" '$3 == c { print $1; exit }' "$W/nhan"); [ -n "$ph" ] || continue
+  awk -F'|' -v c="$c" '$2 == c' "$W/giu" | grep -q . ||
+    loi "$c: Judged by machine, phase $ph nhận, nhưng không luật checker nào khai \"# giữ: $c\" — thêm chú thích ngay trên khối chặn / cảnh báo giữ nó."
+done < "$W/may"
+
 # trang_thai <stage> -> implemented | partial | gap, suy ra: capability của stage được phase nhận hết / một phần / không
 trang_thai() {
   awk -F'|' -v s="$1" 'FILENAME == ARGV[1] { if ($1 == s) n++; next }
@@ -285,12 +386,28 @@ while IFS='|' read -r _so s ex _sk; do
   esac
 done < "$W/stages"
 if [ -s "$W/thieu" ]; then
+  # capability chưa phase nào nhận, tách: còn trên roadmap | out-of-scope (kèm lý do)
+  : > "$W/khong"
   echo "Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):"
   while IFS='|' read -r s st; do
-    echo "  $s ($st): $(note_cua "$s")"
     awk -F'|' -v s="$s" 'FILENAME == ARGV[1] { if ($2 == s) da[$3] = 1; next }
-      $1 == s && !($2 in da) { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/nhan" "$W/cap"
+      FILENAME == ARGV[2] { oos[$1] = $2; next }
+      $1 == s && !($2 in da) { if ($2 in oos) print "K|" $2 "|" $3 "|" oos[$2]; else print "R|" $2 "|" $3 "|" $4 }' \
+      "$W/nhan" "$W/oos-ok" "$W/cap" > "$W/ts"
+    if grep -q '^R|' "$W/ts"; then
+      echo "  $s ($st): $(note_cua "$s")"
+      awk -F'|' '$1 == "R" { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/ts"
+      in_note=1
+    else in_note=0; fi
+    if grep -q '^K|' "$W/ts"; then
+      if [ "$in_note" = 1 ]; then echo "  $s ($st)" >> "$W/khong"; else echo "  $s ($st): $(note_cua "$s")" >> "$W/khong"; fi
+      awk -F'|' '$1 == "K" { printf "    %s  %-7s  %s\n", $2, $3, $4 }' "$W/ts" >> "$W/khong"
+    fi
   done < "$W/thieu"
+  if [ -s "$W/khong" ]; then
+    echo "Không làm (out-of-scope — lý do trong workflow.yaml):"
+    cat "$W/khong"
+  fi
 fi
 
 # ---- profile theo job type (sdlc/profiles/<job-type>.md)

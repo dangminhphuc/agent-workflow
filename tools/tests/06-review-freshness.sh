@@ -17,8 +17,7 @@ thay "$F/plan.md" '|---|---|---|---|
 | TSK-001 | cần README | `README.md` | đã ghi |
 '
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
-ky_vong 1 "chạy lại implement mà chưa rà lại → chặn Reviewed tree cũ" sh "$CHK" "$F"
-dung "…đúng lý do: code đổi sau khi rà soát" sh -c "sh '$CHK' '$F' | grep -q 'code đổi sau khi rà soát'"
+ky_vong_ly_do 1 "chạy lại implement mà chưa rà lại → chặn Reviewed tree cũ" "…đúng lý do: code đổi sau khi rà soát" 'code đổi sau khi rà soát' sh "$CHK" "$F"
 ghi_tree_review
 ky_vong 0 "ghi file vào Phát sinh (chạy lại implement, rà lại) thì cho qua" sh "$CHK" "$F"
 rm -f "$R/README.md"; viet_plan; ghi_based_on
@@ -39,15 +38,13 @@ sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 
 # Không test nào gắn tag: danh sách dòng tag rỗng không được làm kiểm chéo câm
 printf '// chua gan tag\n' > "$R/test/a.test.js"
-ky_vong 1 "CỔNG CUỐI: chặn khi CHƯA test nào gắn tag covers" sh "$CHK" "$F"
-dung "…đúng lý do: REQ chưa có test" sh -c "sh '$CHK' '$F' | grep -q 'REQ-002: chưa có test'"
+ky_vong_ly_do 1 "CỔNG CUỐI: chặn khi CHƯA test nào gắn tag covers" "…đúng lý do: REQ chưa có test" 'REQ-002: chưa có test' sh "$CHK" "$F"
 dung "…và implement có in cảnh báo REQ chưa có test" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'CẢNH BÁO.*REQ-001'"
 printf '// covers: REQ-001, REQ-002\n' > "$R/test/a.test.js"
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
 printf '\n<!-- sửa sau khi đã viết spec -->\n' >> "$F/intake.md"
-ky_vong 1 "CỔNG CUỐI: chặn spec lỗi thời khi intake.md đổi" sh "$CHK" "$F"
-dung "…đúng lý do: spec.md lỗi thời theo intake.md" sh -c "sh '$CHK' '$F' | grep -q 'spec.md: stale — intake.md'"
+ky_vong_ly_do 1 "CỔNG CUỐI: chặn spec lỗi thời khi intake.md đổi" "…đúng lý do: spec.md lỗi thời theo intake.md" 'spec.md: stale — intake.md' sh "$CHK" "$F"
 viet_intake
 
 printf '\n<!-- sửa sau khi đã có tdd -->\n' >> "$F/spec.md"

@@ -36,7 +36,7 @@
 #   aw conventions check                   kiểm conventions.md sau khi người sửa (khoá, giá trị, placeholder)
 #   aw ready <feature-dir> [--no-test]     worktree sẵn sàng chưa (test xanh trên base…), bước tiếp
 #   aw task start|done|next <feature-dir> [TSK-NNN] [--manual "<bằng chứng>"]   trạng thái task do máy giữ
-#   aw journal [report] | aw journal add <layer> "<mô tả>"   nhật ký thất bại của harness
+#   aw journal [report [<file export>…]] | aw journal add <layer> "<mô tả>" | aw journal export <file>   nhật ký thất bại của harness
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
 #   aw approvals [--global]               mọi ô duyệt chờ người, kèm link tới artifact (lệnh /aw-approvals gọi)

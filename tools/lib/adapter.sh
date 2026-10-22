@@ -59,7 +59,7 @@ al_exclude() {
 # aw adapter build đều gọi — adapter đổi đường dẫn sinh ra (vd skill đổi tên) thì
 # bản clone đã init từ trước vẫn không để lọt file sinh ra vào git status.
 al_ghi_exclude() {
-  _gc=$(git -C "$3" rev-parse --git-common-dir 2>/dev/null) || return 0
+  _gc=$(git_common "$3") || return 0
   case "$_gc" in /*) ;; *) _gc="$(CDPATH= cd -- "$3" && pwd)/$_gc" ;; esac
   _ex="$_gc/info/exclude"; mkdir -p "$_gc/info"
   _them=""

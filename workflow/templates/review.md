@@ -46,6 +46,7 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 - Changes outside any task: <...>
 - Tasks marked done with no trace in the diff: <...>
 - Unplanned items handled silently: <...>
+- Task scope warnings: <TSK-NNN: lý do chấp nhận / đã khai Unplanned — mỗi task có "Scope warning" trong task-results.md; không có: none>
 
 ## Repo rules
 
@@ -70,18 +71,19 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 ## Lens 3 — Quality
 
 <!-- Không có finding nào: xoá ba mục mẫu, ghi đúng một dòng "- None".
+     [Blocker] / [Should fix]: mã RVW-NNN sau mức (không trùng) — task sửa ở plan.md trỏ về bằng "Fixes:".
      [Blocker] / [Should fix]: Location dạng `file:dòng` (số dòng thật).
      [Blocker]: thêm Failure scenario — đầu vào cụ thể → kết quả sai.
      [Blocker] / [Should fix]: Category — loại lỗi kebab-case (vd missing-null-check,
      sql-injection). Dùng lại tên đã có trong `aw journal` để đếm được lặp lại. -->
 
-### [Blocker] <tiêu đề>
+### [Blocker] RVW-001 — <tiêu đề>
 - Category: <loại-lỗi>
 - Location: `file:dòng`
 - Problem: <...>
 - Failure scenario: <đầu vào cụ thể → kết quả sai>
 
-### [Should fix] <tiêu đề>
+### [Should fix] RVW-002 — <tiêu đề>
 - Category: <loại-lỗi>
 - Location: `file:dòng`
 - Problem: <...>

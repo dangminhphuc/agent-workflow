@@ -35,42 +35,21 @@ dung "…bảng ánh xạ in trạng thái suy ra" sh -c "sh '$SC' '$ROOT' 2>/de
 sh "$SC" "$ROOT" > "$TMP/sdlc-ra" 2>/dev/null
 dung "…trạng thái suy ra đúng cả 8 stage" bang "$(awk '/^Stage → phase/ { p = 1; next } /^[^ ]/ { p = 0 } p { printf "%s=%s ", $1, $2 }' "$TMP/sdlc-ra")" \
   "plan=partial require=implemented design=implemented breakdown=implemented implement=implemented verify=partial deploy=partial operate=gap "
-dung "…roadmap liệt kê đúng các capability chưa phase nào nhận" bang "$(awk '/^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
-  "CAP-plan-03 CAP-plan-04 CAP-verify-03 CAP-verify-04 CAP-verify-05 CAP-deploy-02 CAP-deploy-03 CAP-operate-01 CAP-operate-02 "
-dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-02 +machine +'"
+dung "…roadmap liệt kê đúng các capability chưa phase nào nhận (trừ out-of-scope)" bang "$(awk '/^Capability còn thiếu/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
+  "CAP-plan-03 CAP-plan-04 CAP-verify-05 CAP-deploy-03 CAP-operate-02 "
+dung "…khối Không làm liệt kê đúng capability out-of-scope" bang "$(awk '/^Không làm/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
+  "CAP-verify-03 CAP-verify-04 CAP-deploy-02 CAP-operate-01 "
+dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-03 +human +'"
 dung "…roadmap không liệt kê capability đã nhận" sh -c "! sh '$SC' '$ROOT' 2>/dev/null | grep -q '^    CAP-deploy-01 '"
 dung "check-sdlc không đăng ký trong aw check (chỉ dùng cho repo engine)" sh -c ". '$T/lib/commands.sh'; ! bl_checker sdlc"
-
-# ---------------------------------------------------------------- trạng thái stage
-nhom "check-sdlc.sh: trạng thái stage (khối sdlc: của workflow.yaml)"
-moi; thay "$E/workflow.yaml" '  - stage: deploy
-    note:' '  - stage: deploy
-    status: partial
-    note:'
-vi_pham "khối sdlc: còn khoá status → chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
-moi; thay "$E/workflow.yaml" '  - stage: deploy
-    note:' '  - stage: deploy
-    status:
-    note:'
-vi_pham "khối sdlc: khoá status không giá trị → vẫn chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
-moi; thay "$E/workflow.yaml" 'note: Dừng ở MR/PR' 'note: A | B — Dừng ở MR/PR'
-dung "…note có dấu | → roadmap in nguyên note" sh -c "sh '$SC' '$E' 2>/dev/null | grep -q '^  deploy (partial): A | B — Dừng ở MR/PR'"
-moi; awk '!/note: Dừng ở MR\/PR/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "suy ra partial mà thiếu note → chặn" "stage deploy: suy ra partial nhưng khối sdlc: không có note"
-moi; awk '!/note: CI\/CD/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "suy ra gap mà thiếu note → chặn" "stage operate: suy ra gap nhưng khối sdlc: không có note"
-moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-01
-  - CAP-deploy-02
-  - CAP-deploy-03'
-vi_pham "nhận đủ capability mà còn note → chặn" "stage deploy: suy ra implemented nhưng khối sdlc: còn note"
-# chiều ngược: nhận đủ + xoá mục khối sdlc: → ĐẠT, stage thành implemented
-awk '/^  - stage: deploy$/ { bo = 1; next } bo && /^    / { next } { bo = 0; print }' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-ky_vong 0 "nhận đủ capability + xoá note → ĐẠT" sh "$SC" "$E"
-dung "…stage deploy thành implemented" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  deploy +implemented +ship'"
-moi; awk '/^capabilities:$/ { print "capabilities: []"; next } !/^  - CAP-/' "$E/workflow/phases/06-ship.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/06-ship.md"
-vi_pham "phase implements mà không nhận capability nào → chặn" "phase ship: implements deploy nhưng không nhận capability nào"
-moi; thay "$E/workflow.yaml" '  - stage: operate' '  - stage: monitor'
-vi_pham "khối sdlc: khai stage không có → chặn" "khối sdlc: khai stage \"monitor\" không có trong sdlc/stages/"
+# Ảnh chụp duy nhất của ba bảng (docs/interface-sdlc.md § 6) phải trùng output — không thì docs lệch âm thầm.
+# anh_chup <file docs> -> khối ``` đầu tiên sau heading "## 6."
+anh_chup() { awk '/^## 6\./ { s = 1; next } s && /^```/ { if (t) exit; t = 1; next } t' "$1"; }
+sh "$SC" "$ROOT" 2>/dev/null | awk '/^Stage → phase/ { p = 1 } /^Engine tuân thủ/ { p = 0 } p' > "$TMP/sdlc-bang"
+anh_chup "$ROOT/docs/interface-sdlc.md" > "$TMP/sdlc-anh"
+dung "ảnh chụp ở docs/interface-sdlc.md § 6 trùng output check-sdlc.sh" sh -c "diff '$TMP/sdlc-anh' '$TMP/sdlc-bang' >&2"
+sed '1s/.*/Stage → phase (sửa tay)/' "$TMP/sdlc-anh" > "$TMP/sdlc-anh2"
+dung "…ảnh chụp lệch một dòng thì so sánh báo khác" sh -c "! cmp -s '$TMP/sdlc-anh2' '$TMP/sdlc-bang'"
 
 # ---------------------------------------------------------------- phase ↔ stage
 nhom "check-sdlc.sh: phase khai implements / provides"

@@ -13,6 +13,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `decision` | Technical choice with ≥ 2 options: `DEC-NNN` in `tdd.md`, one approval each | |
 | `finding` | LLM checker result on the design: `FND-NNN` in `design-findings.md` | |
 | `task` | Plan step: `TSK-NNN` in `plan.md` | |
+| `review finding` | Review `Blocker` / `Should fix` item: `RVW-NNN` in `review.md`; a fix task names it in `Fixes:` | |
 | `refactor request` | Human's refactoring wish, recorded only: `RFR-NNN` in `refactor-requests.md` | |
 | `business rule` | Approved REQ promoted to a product invariant: `BR-<DOMAIN>-NNN` | luật nghiệp vụ bền |
 | `ADR` | Approved DEC-xxx promoted to `docs/adr/` of the target repo | |

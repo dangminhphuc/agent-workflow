@@ -66,6 +66,7 @@ kq_khai check-review.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 SPEC="$DIR/spec.md"
 REVIEW="$DIR/review.md"
 KQ="$DIR/test-results.md"
@@ -110,6 +111,11 @@ ktl=$(kt_loi_review "$DIR" "$REVIEW")
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KT
 $ktl
 KT
+
+# Cảnh báo phạm vi theo task (aw task done ghi "Scope warning") phải được giải trình ở Lens 2.
+for t in $(tk_pham_vi_chua_giai_trinh "$DIR" "$REVIEW"); do
+  loi_truoc "Lens 2: $t có cảnh báo phạm vi trong task-results.md — giải trình ở \"Task scope warnings\" (lý do chấp nhận, hoặc đã khai Unplanned)"
+done
 
 cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
@@ -266,6 +272,12 @@ l3=$(awk '
     dong_muc()
     if (match($0, /\[(Blocker|Should fix|Nit)\]/)) {
       muc = substr($0, RSTART + 1, RLENGTH - 2); ten = trim(substr($0, RSTART + RLENGTH))
+      # Mã RVW-NNN: task sửa (plan.md "Fixes:") trỏ về đúng finding; [Nit] không bắt
+      ma = ""
+      if (match(ten, /^RVW-[0-9]+/)) { ma = substr(ten, 1, RLENGTH); ten = trim(substr(ten, RLENGTH + 1)); sub(/^—[ \t]*/, "", ten) }
+      if ((muc == "Blocker" || muc == "Should fix") && ma == "")
+        print "Lens 3 [" muc "] \"" ten "\": thiếu mã — tiêu đề dạng \"### [mức] RVW-NNN — <tiêu đề>\""
+      if (ma != "") { if (ma in da_ma) print "Lens 3: " ma " trùng — mỗi finding một mã"; da_ma[ma] = 1 }
       co_loc = 0; loc = ""; kb = ""; cat = ""; n_f++; if (muc == "Blocker") n_b++
     } else print "Lens 3: tiêu đề \"" $0 "\" không có mức [Blocker] / [Should fix] / [Nit]"
     next
@@ -319,6 +331,8 @@ fi
 # Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.
 cb_base=$(kc_base_la "$DIR")
 [ -z "$cb_base" ] || echo "  [CẢNH BÁO] $cb_base"
+# Glob plan.md giai đoạn chuyển tiếp (* sắp không qua /): chỉ cảnh báo, không chặn.
+kc_glob_chuyen_tiep "$DIR" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l (chỉ cảnh báo)"; done
 
 awk -v loi_truoc="$n_truoc" '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
@@ -360,6 +374,7 @@ awk -v loi_truoc="$n_truoc" '
 
     for (i = 1; i <= n_yc; i++) {
       c = dsach[i]
+      # giữ: INV-004
       if (!(c in ket_luan)) {
         loi(c ": không có kết luận nào trong review.md. Bỏ sót một yêu cầu " \
             "nghĩa là phase rà soát chưa chạy xong.")

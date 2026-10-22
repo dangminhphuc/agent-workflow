@@ -57,14 +57,18 @@ Usage: `README.md`, `docs/huong-dan.md`. Design rationale: `docs/kien-truc.md`. 
 - One rule, one place. Phase files never restate the I/O contract or what the checker checks.
   Rationale goes in `docs/kien-truc.md`.
 - New rule: precise → block; cross-phase or false-positive-prone → warn in implement, block in review.
+- A new block/warn rule gets a comment `# giữ: CAP-…[, INV-…]` above it naming what it keeps; `sh tools/check-sdlc.sh`
+  blocks a claimed `machine` capability no rule names, and unknown ids (older rules are tagged gradually).
 
 ## Change together
 
 - Phase: `workflow/phases/NN-<id>.md` + `phases:` in `workflow.yaml`; `exit_machine` →
   `tools/check-<id>.sh` + `tools/lib/commands.sh`; new artifact → template; tests;
   `implements:` + `provides:` + `capabilities:` in frontmatter; `sh tools/check-sdlc.sh` passes.
-- SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `tools/tests/20-sdlc-conformance.sh` (mapping)
-  or `22-sdlc-stage-files.sh` (stage file, capability, invariant);
+- SDLC stage or invariant: `sdlc/stages/` or `sdlc/invariants.md` + `tools/tests/20-sdlc-conformance.sh` (mapping),
+  `24-sdlc-stage-status.sh` (derived status, `out_of_scope`), `22-sdlc-stage-files.sh` (stage file, invariant),
+  `25-sdlc-capabilities.sh` (capability)
+  or `23-sdlc-syntax.sh` (YAML subset, abstract `Rule:`, named test cases, `# giữ:` tags);
   a new stage declares ≥1 capability under `## Capabilities`.
 - Implement a missing capability: its id in the phase's `capabilities:` + fix or drop the stage's
   `note` in `sdlc:` of `workflow.yaml` + tests of the behaviour; `sh tools/check-sdlc.sh` passes.

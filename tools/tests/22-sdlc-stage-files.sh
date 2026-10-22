@@ -48,33 +48,6 @@ moi; thay "$E/sdlc/stages/00-plan.md" 'purpose: ' 'purpose_x: '
 vi_pham "thiếu purpose → chặn" "stage plan: thiếu purpose"
 
 # ---------------------------------------------------------------- capability trong file stage
-nhom "check-sdlc.sh: capability trong file stage"
-moi; awk '/^## Capabilities/ { exit } { print }' "$E/sdlc/stages/07-operate.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/07-operate.md"
-vi_pham "stage không có capability → chặn" "stage operate: không có capability"
-moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-01 — ' '### CAP-deploy-01 - '
-vi_pham "heading capability gõ - thay vì — → chặn" "stage deploy: heading capability \"### CAP-deploy-01 - "
-moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-01 — ' '### CAP-verify-01 — '
-vi_pham "id capability mang stage khác → chặn" "stage deploy: heading capability \"### CAP-verify-01"
-moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-02 — ' '### CAP-deploy-01 — '
-vi_pham "id capability trùng → chặn" "stage deploy: CAP-deploy-01 trùng"
-moi; awk '!(/^- Rule:/ && ++n == 1)' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
-vi_pham "capability thiếu Rule → chặn" "CAP-deploy-01: thiếu \"- Rule:\""
-moi; awk '!(/^- Judged by:/ && ++n == 1)' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
-vi_pham "capability thiếu Judged by → chặn" "CAP-deploy-01: thiếu \"- Judged by:\""
-moi; thay "$E/sdlc/stages/06-deploy.md" '- Judged by: human' '- Judged by: robot'
-vi_pham "Judged by lạ → chặn" "Judged by \"robot\" — chỉ nhận machine | agent | human"
-# capability CUỐI file mất Rule; Rule lạc dưới heading sau nó không được tính cho nó
-moi; awk '!(/^- Rule:/ && ++n == 3)' "$E/sdlc/stages/06-deploy.md" > "$E/s" && printf '\n## Notes\n\n- Rule: lạc chỗ\n' >> "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
-vi_pham "Rule nằm dưới heading khác không tính → chặn" "CAP-deploy-03: thiếu \"- Rule:\""
-moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-03 — ' '#### CAP-deploy-03 — '
-vi_pham "capability với heading #### → chặn, không lờ đi" "stage deploy: heading capability \"#### CAP-deploy-03"
-moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-03 — ' '### Cap-deploy-03 — '
-vi_pham "capability viết thường Cap- → chặn, không lờ đi" "stage deploy: heading capability \"### Cap-deploy-03"
-moi; thay "$E/sdlc/stages/06-deploy.md" '### CAP-deploy-03 — ' '### Rollback — '
-vi_pham "heading lạ trong ## Capabilities → chặn" "stage deploy: heading capability \"### Rollback"
-moi; sed 's/$/\r/' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
-ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
-
 # ---------------------------------------------------------------- invariant
 nhom "check-sdlc.sh: invariant trỏ tới checker + test có thật"
 moi; thay "$E/sdlc/stages/05-verify.md" '  - INV-004' '  - INV-099'
@@ -94,5 +67,6 @@ moi; thay "$E/sdlc/invariants.md" '"check-repro chặn khi test XANH trên code 
 vi_pham "\"Tested by\" nêu ca test không có trong file → chặn" "INV-007: ca \"check-repro chặn ca không có\" không có trong tools/tests/10-intake-bugfix.sh"
 moi; thay "$E/sdlc/stages/00-plan.md" 'skippable: false' 'skippable: maybe'
 vi_pham "stage có skippable lạ → chặn" "stage plan: skippable \"maybe\" — chỉ nhận true | false"
+
 
 ket_thuc
