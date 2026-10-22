@@ -182,7 +182,7 @@ function mau_ere(p, moi,   r, i, ch, n) {
 
 # khop_duong <đường-dẫn> <mẫu...> -> 0 nếu khớp một mẫu theo nghĩa MỚI của glob trong plan.md:
 # ** khớp cả "/", * và ? không. Bản này mới chỉ dùng để cảnh báo chuyển tiếp (kc_glob_chuyen_tiep);
-# việc khớp phạm vi vẫn theo khop_glob — đổi ở bản sau (docs/viec-can-lam.md).
+# việc khớp phạm vi vẫn theo khop_glob — đổi ở bản sau (roadmap SP18, docs/superpowers/).
 khop_duong() {
   _kd_s="$1"; shift
   [ $# -gt 0 ] || return 1
