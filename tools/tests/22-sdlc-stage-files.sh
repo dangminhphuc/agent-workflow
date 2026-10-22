@@ -116,6 +116,17 @@ vi_pham "\"Enforced by\" trỏ tới thứ không phải checker → chặn" "IN
 
 moi; thay "$E/sdlc/invariants.md" '"check-repro chặn khi test XANH trên code chưa sửa"' '"check-repro chặn ca không có"'
 vi_pham "\"Tested by\" nêu ca test không có trong file → chặn" "INV-007: ca \"check-repro chặn ca không có\" không có trong tools/tests/10-intake-bugfix.sh"
+# mọi invariant nêu tên ca test (không chỉ file); Rule: trừu tượng, cú pháp engine ở "- Engine:"
+moi; awk '/^### INV-007 / { on = 1 } /^### INV-008 / { on = 0 } { if (on && /^- Tested by:/) sub(/` .*$/, "`"); print }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
+vi_pham "invariant chỉ trỏ file test, không nêu ca → chặn" "INV-007: \"Tested by:\" không nêu ca test nào — thêm tên ca (trong \"…\") sau đường dẫn file."
+moi; awk '/^### INV-001 / { on = 1 } /^### INV-002 / { on = 0 } { if (on && /^- Rule:/) $0 = $0 " See `plan.md`."; print }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
+vi_pham "Rule: của invariant có backtick → chặn" "INV-001: \"Rule:\" chứa cú pháp engine"
+moi; awk '/^### INV-001 / { on = 1 } /^### INV-002 / { on = 0 } { if (on && /^- Rule:/) $0 = $0 " Like REQ-001."; print }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
+vi_pham "Rule: của invariant có mã REQ- → chặn" "INV-001: \"Rule:\" chứa cú pháp engine (REQ-)"
+moi; awk '{ if (/^- Rule:/ && ++n == 1) $0 = $0 " Based on DEC-001."; print }' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
+vi_pham "Rule: của capability có mã DEC- → chặn" "CAP-deploy-01: \"Rule:\" chứa cú pháp engine (DEC-)"
+moi; awk '/^### INV-001 / { on = 1 } /^### INV-002 / { on = 0 } { print; if (on && /^- Rule:/) print "- Engine: task line `Covers: REQ-NNN`" }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
+ky_vong 0 "\"- Engine:\" được dùng backtick và mã → ĐẠT" sh "$SC" "$E"
 moi; thay "$E/sdlc/stages/00-plan.md" 'skippable: false' 'skippable: maybe'
 vi_pham "stage có skippable lạ → chặn" "stage plan: skippable \"maybe\" — chỉ nhận true | false"
 

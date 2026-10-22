@@ -130,7 +130,8 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
 1. Tìm capability hay invariant luật đó giữ (`sdlc/stages/`, `sdlc/invariants.md`).
 2. Không có cái nào nói điều luật đó kiểm → thêm capability (4.3) hoặc invariant trước.
 3. Viết test (đỏ) rồi code checker, như mọi luật (`AGENTS.md` § Verify).
-4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và ca test.
+4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và **ít nhất một ca** test
+   chặn; `Rule:` viết trừu tượng (không backtick, không mã `REQ-`/`DEC-`…), cú pháp engine ghi ở `- Engine:`.
 5. `changes/<branch>.md`: mục `Thêm` / `Thay đổi` (người dùng `aw` thấy luật mới), nêu id.
 
 ### 4.2 Làm một capability đang thiếu
@@ -194,6 +195,8 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `stage X: CAP-X-NN trùng` | Hai khối cùng id | Đổi số của một khối |
 | `CAP-…: thiếu "- Rule:"` / `thiếu "- Judged by:"` | Khối capability thiếu dòng (dòng nằm dưới heading khác không tính) | Thêm dòng ngay dưới heading capability |
 | `CAP-…: Judged by "…"` | Giá trị lạ | Chỉ `machine`, `agent`, `human` |
+| `…: "Rule:" chứa cú pháp engine` | `Rule:` của capability / invariant có backtick hoặc mã `REQ-`, `DEC-`, `TSK-`, `RVW-`, `FND-`, `RFR-`, `BR-` | Viết điều phải đúng bằng lời; cú pháp engine chuyển sang `- Engine:` (invariant) |
+| `INV-…: "Tested by:" không nêu ca test nào` | Invariant chỉ trỏ file test | Thêm tên ca chặn (trong `"…"`) sau đường dẫn file |
 | `CAP-…: khai "- Artifact:" nhiều dòng` | Hai dòng `- Artifact:` trong một capability — dòng sau đè dòng trước | Gộp vào một dòng, cách nhau dấu phẩy |
 | `CAP-…: thiếu "- Artifact:"` | Khối capability không có dòng `- Artifact:`, hoặc dòng rỗng | Thêm loại artifact capability bảo đảm, lấy trong `provides` của stage |
 | `CAP-…: Artifact "…" không có trong provides` | Gõ sai tên loại, hoặc capability thuộc stage khác | Sửa tên loại, hoặc chuyển capability sang stage `provides` loại đó |
@@ -211,7 +214,9 @@ Các lỗi khác (`provides`, `exit`, thứ tự phase, invariant, profile) li�
 
 ## 6. Roadmap hiện tại
 
-Ảnh chụp tại lúc viết — `sh tools/check-sdlc.sh` in lại bảng này, luôn tin output hơn ảnh chụp:
+Ảnh chụp ba bảng của `sh tools/check-sdlc.sh` — **ảnh chụp duy nhất** trong docs. Test
+`tools/tests/20-sdlc-conformance.sh` so khối dưới đây với output thật; lệch là test hỏng, nên engine đổi
+thì phải chép lại khối này:
 
 ```
 Stage → phase (trạng thái suy ra từ capabilities: của phase):
@@ -239,6 +244,16 @@ Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   operate (gap): CI/CD và observability nằm ngoài engine; sự cố chưa quay lại thành việc mới
     CAP-operate-01  machine  The delivered change is observed in production
     CAP-operate-02  human    Incidents and production findings become new work items
+Job type × stage (chạy · tuỳ = có thể bỏ · bỏ · gap = engine không làm):
+             plan       require    design     breakdown  implement  verify     deploy     operate
+  bugfix     chạy       chạy       tuỳ        chạy       chạy       chạy       tuỳ        gap
+  chore      chạy       chạy       bỏ         chạy       chạy       chạy       tuỳ        gap
+  feature    chạy       chạy       chạy       chạy       chạy       chạy       tuỳ        gap
+  perf       chạy       chạy       chạy       chạy       chạy       chạy       tuỳ        gap
+  refactor   chạy       chạy       tuỳ        chạy       chạy       chạy       tuỳ        gap
+  bugfix: có thể vắng: design
+  chore: có thể vắng: design
+  refactor: có thể vắng: design
 ```
 
 Đọc bảng theo từng stage chưa đủ:

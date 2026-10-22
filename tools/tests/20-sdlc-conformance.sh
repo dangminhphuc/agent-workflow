@@ -40,6 +40,14 @@ dung "…roadmap liệt kê đúng các capability chưa phase nào nhận" bang
 dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-02 +machine +'"
 dung "…roadmap không liệt kê capability đã nhận" sh -c "! sh '$SC' '$ROOT' 2>/dev/null | grep -q '^    CAP-deploy-01 '"
 dung "check-sdlc không đăng ký trong aw check (chỉ dùng cho repo engine)" sh -c ". '$T/lib/commands.sh'; ! bl_checker sdlc"
+# Ảnh chụp duy nhất của ba bảng (docs/interface-sdlc.md § 6) phải trùng output — không thì docs lệch âm thầm.
+# anh_chup <file docs> -> khối ``` đầu tiên sau heading "## 6."
+anh_chup() { awk '/^## 6\./ { s = 1; next } s && /^```/ { if (t) exit; t = 1; next } t' "$1"; }
+sh "$SC" "$ROOT" 2>/dev/null | awk '/^Stage → phase/ { p = 1 } /^Engine tuân thủ/ { p = 0 } p' > "$TMP/sdlc-bang"
+anh_chup "$ROOT/docs/interface-sdlc.md" > "$TMP/sdlc-anh"
+dung "ảnh chụp ở docs/interface-sdlc.md § 6 trùng output check-sdlc.sh" sh -c "diff '$TMP/sdlc-anh' '$TMP/sdlc-bang' >&2"
+sed '1s/.*/Stage → phase (sửa tay)/' "$TMP/sdlc-anh" > "$TMP/sdlc-anh2"
+dung "…ảnh chụp lệch một dòng thì so sánh báo khác" sh -c "! cmp -s '$TMP/sdlc-anh2' '$TMP/sdlc-bang'"
 
 # ---------------------------------------------------------------- trạng thái stage
 nhom "check-sdlc.sh: trạng thái stage (khối sdlc: của workflow.yaml)"

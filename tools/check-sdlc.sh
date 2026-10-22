@@ -13,7 +13,9 @@
 #     không có trong provides của stage, hoặc khai nhiều dòng; loại trong provides không capability nào
 #     khai Artifact (stage thiếu provides: chỉ báo thiếu provides).
 #   - Invariant: thiếu "Enforced by:" (tools/check-*.sh, tools/lib/*.sh) hoặc "Tested by:"
-#     (tools/tests/*.sh), hoặc trỏ tới file không có; ca test nêu tên ("…" sau file) không có trong file.
+#     (tools/tests/*.sh), hoặc trỏ tới file không có; không nêu ca test nào; ca test nêu tên ("…" sau
+#     file) không có trong file. "Rule:" (capability, invariant) có backtick hoặc mã REQ-/DEC-/… .
+#   - Tập con YAML (yaml_kiem): workflow.yaml, phase, utility command, file stage, profile.
 #   - Khối sdlc: của workflow.yaml: stage không có, còn khoá status (trạng thái do máy suy ra).
 #   - Phase: thiếu implements hoặc implements stage không có; provides sai dạng, file không nằm
 #     trong outputs, loại mà stage không khai và không profile nào thêm; thứ tự phase lệch thứ tự stage;
@@ -80,6 +82,10 @@ if [ -f "$INV" ]; then
     { sub(/\r$/, "") }
     /^### INV-[0-9]+/ { match($0, /INV-[0-9]+/); cur = substr($0, RSTART, RLENGTH); print cur "|id|"; next }
     /^#/ { cur = ""; next }
+    # Rule: trừu tượng — cú pháp engine (backtick, mã REQ-/DEC-…) thuộc "- Engine:"
+    cur != "" && /^- Rule:/ { r = $0; sub(/^- Rule:[ \t]*/, "", r); f = ""
+      if (index(r, "`")) f = "`"; else if (match(r, /(REQ|DEC|TSK|RVW|FND|RFR|BR)-/)) f = substr(r, RSTART, RLENGTH)
+      if (f != "") print cur "|rule|" f; next }
     cur != "" && /^- (Enforced|Tested) by:/ {
       k = ($0 ~ /^- Enforced/) ? "enf" : "test"; s = $0; n = 0
       while (match(s, /`[^`]+`/)) {
@@ -99,7 +105,13 @@ for inv in $(awk -F'|' '$2 == "id" { print $1 }' "$W/inv"); do
     || loi "$inv: thiếu \"Enforced by:\" trỏ tới checker (tools/check-*.sh, tools/lib/*.sh)."
   awk -F'|' -v i="$inv" '$1 == i && $2 == "test" && $3 != ""' "$W/inv" | grep -q . \
     || loi "$inv: thiếu \"Tested by:\" trỏ tới test (tools/tests/*.sh)."
-  awk -F'|' -v i="$inv" '$1 == i && $2 != "case" && $3 != "" { print $2 "|" $3 }' "$W/inv" > "$W/inv1"
+  awk -F'|' -v i="$inv" '$1 == i && $2 == "case"' "$W/inv" | grep -q . \
+    || loi "$inv: \"Tested by:\" không nêu ca test nào — thêm tên ca (trong \"…\") sau đường dẫn file."
+  awk -F'|' -v i="$inv" '$1 == i && $2 == "rule" { print $3 }' "$W/inv" | while IFS= read -r f; do
+    echo "$inv: \"Rule:\" chứa cú pháp engine ($f) — viết trừu tượng, chuyển cú pháp sang \"- Engine:\"."
+  done > "$W/inv2"
+  while IFS= read -r l; do loi "$l"; done < "$W/inv2"
+  awk -F'|' -v i="$inv" '$1 == i && ($2 == "enf" || $2 == "test") && $3 != "" { print $2 "|" $3 }' "$W/inv" > "$W/inv1"
   while IFS='|' read -r k p; do
     case "$k|$p" in
       enf\|tools/check-*.sh|enf\|tools/lib/*.sh|test\|tools/tests/*.sh) ;;
@@ -194,7 +206,9 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
       if (c in da_co) { print "E|stage " s ": " c " trùng — mỗi id chỉ khai một lần."; next }
       da_co[c] = 1; cur = c; ten = $0; sub(/^### [^ ]+ — /, "", ten); rule = 0; coj = 0; jd = ""; av = ""; na = 0; next
     }
-    cur != "" && /^- Rule:/ { rule = 1 }
+    cur != "" && /^- Rule:/ { rule = 1; r = $0; sub(/^- Rule:[ \t]*/, "", r); f = ""
+      if (index(r, "`")) f = "`"; else if (match(r, /(REQ|DEC|TSK|RVW|FND|RFR|BR)-/)) f = substr(r, RSTART, RLENGTH)
+      if (f != "") print "E|" cur ": \"Rule:\" chứa cú pháp engine (" f ") — viết trừu tượng, chuyển cú pháp sang \"- Engine:\"." }
     cur != "" && /^- Judged by:/ { coj = 1; jd = $0; sub(/^- Judged by:[ \t]*/, "", jd); sub(/[ \t]+$/, "", jd) }
     cur != "" && /^- Artifact:/ { na++; av = $0; sub(/^- Artifact:/, "", av) }
     END { dong() }

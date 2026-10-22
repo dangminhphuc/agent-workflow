@@ -22,3 +22,7 @@
 - **`check-sdlc.sh` chặn YAML ngoài tập con.** `yaml_kiem` (`tools/lib/md.sh`) báo từng dòng sai kèm
   file + số dòng (tab, `k:v`, thụt sâu, khối `|`/`>`, `{…}`, danh sách `[a, b]`) trên `workflow.yaml`,
   phase, utility command, file stage, profile — trước đây dòng lạ bị đọc thành rỗng, lỗi lộ ở chỗ khác.
+- **Invariant chặt hơn.** Mọi invariant nêu ít nhất một ca test chặn (trước đây INV-001…006 chỉ trỏ
+  file); `Rule:` của capability và invariant không còn cú pháp engine (máy chặn backtick, mã `REQ-`/
+  `DEC-`…), cách engine hiện thực chuyển sang dòng `- Engine:`. Ba bảng của `check-sdlc.sh` chỉ còn một
+  ảnh chụp (`docs/interface-sdlc.md` § 6), có test so với output.

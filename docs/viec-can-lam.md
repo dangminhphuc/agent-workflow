@@ -270,7 +270,5 @@ quy trình — chỉ làm khi người chủ engine muốn.
     qua test). Mẫu theo ngôn ngữ dễ báo nhầm → cảnh báo ở implement, chặn ở review.
   - refactor "không thêm hành vi" ở mức code: chỉ giữ ở mức spec (REQ `preserve`/`structural`, INV-008).
     Chưa thấy cách máy kiểm đáng tin; có thể để người phán và ghi rõ là không làm.
-- **Test so ảnh chụp bảng trong docs với output `check-sdlc.sh`**: bảng ánh xạ / roadmap trong
-  `kien-truc.md` và `interface-sdlc.md` § 6 hiện có thể lệch output mà không ai biết.
 - **Đổi tên để bớt nhầm phase ↔ stage**: phase `03-plan` (thuộc stage `breakdown`) trùng chữ với stage
   `plan` (`00-intake`). Đổi tên stage hay phase đều chạm test, docs, lệnh sinh ra — đề xuất riêng.

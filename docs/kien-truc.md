@@ -663,19 +663,9 @@ Cách đọc và công thức cho từng loại thay đổi: [`interface-sdlc.md
   `adds_invariants`. Thân tiếng Anh ngắn, mô tả artifact thêm như thân file stage. Stage khai
   `skippable: false` (`plan`, `require`, `breakdown`, `implement`, `verify`) thì không profile nào được bỏ.
 
-Ánh xạ hiện tại (`sh tools/check-sdlc.sh` in lại bảng này, kèm bảng capability còn thiếu — giải
-thích từng dòng ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại)):
-
-| Stage | Phase | `stage status` (suy ra) | Capability còn thiếu |
-|---|---|---|---|
-| `plan` | `00-intake` | `partial` | `CAP-plan-03` ưu tiên, `CAP-plan-04` ước lượng |
-| `require` | `01-spec` | `implemented` | |
-| `design` | `02-design` | `implemented` | |
-| `breakdown` | `03-plan` | `implemented` | |
-| `implement` | `04-implement` | `partial` | `CAP-implement-05` phạm vi theo từng task, glob rộng |
-| `verify` | `05-review` | `partial` | `CAP-verify-03` e2e, `CAP-verify-04` kiểm tải, `CAP-verify-05` UAT |
-| `deploy` | `06-ship` | `partial` | `CAP-deploy-02` release/triển khai, `CAP-deploy-03` rollback |
-| `operate` | — | `gap` | `CAP-operate-01` quan sát production, `CAP-operate-02` sự cố → việc mới |
+Ánh xạ stage → phase, trạng thái suy ra và capability còn thiếu: output `sh tools/check-sdlc.sh`, ảnh
+chụp (có test giữ khớp) và giải thích từng dòng ở
+[`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại).
 
 Tên stage trùng tên vài phase (`plan`, `design`, `implement`) nhưng không cùng nghĩa: stage `plan` là
 chọn việc nào vào quy trình (`00-intake`), phase `03-plan` thuộc stage `breakdown`. Nói "stage `plan`"
@@ -719,8 +709,13 @@ hay "phase `plan`", không nói trống.
   diff thành nghi thức. Bước A suy "diff chạm CAP/INV nào" từ file thay đổi; tới lúc đó người duyệt PR
   là người bắt. Cũng không bắt commit sửa interface đi trước commit code: không máy nào kiểm được,
   squash làm mất thứ tự — "cùng PR" là đủ.
-- **Ảnh chụp bảng trong tài liệu có thể lệch output.** Bảng ở trên và ở `interface-sdlc.md` § 6 là ảnh
-  chụp; output `sh tools/check-sdlc.sh` là nguồn. Test so ảnh chụp với output nằm ở `docs/viec-can-lam.md`.
+- **Một ảnh chụp, có test.** Ba bảng của output `sh tools/check-sdlc.sh` chỉ chép ở `interface-sdlc.md`
+  § 6; `tools/tests/20-sdlc-conformance.sh` so khối đó với output, lệch là test hỏng. Trước đây hai ảnh
+  chụp (ở đây và § 6) lệch output mà không ai biết.
+- **`Rule:` trừu tượng, cú pháp engine ở `- Engine:`.** `Rule:` của capability và invariant không có
+  backtick hay mã `REQ-`/`DEC-`… (máy chặn): implementation thứ hai phải tuân thủ được mà không chép cú
+  pháp artifact của engine này. Cách engine này hiện thực nằm ở dòng `- Engine:` của invariant. Mọi
+  invariant nêu ít nhất một **ca** test chặn, không chỉ file — trước đây INV-001…006 chỉ trỏ file.
 - **Chỉ kiểm cấu trúc.** `tools/check-sdlc.sh` chặn những gì đọc được từ file: dạng capability, phase
   nhận capability có thật của đúng stage, note khớp trạng thái suy ra, `provides` của các phase phủ
   `provides` của stage, `exit` của stage có `exit_machine` /
@@ -758,15 +753,13 @@ hay "phase `plan`", không nói trống.
 interface phải biểu diễn được nó; trước khi có profile, stage `implement` `requires: design` vô điều
 kiện dù chore không có design, và `repro.md`/`perf.md` không thuộc loại artifact nào.
 
-Ma trận hiện tại (`sh tools/check-sdlc.sh` in lại bảng này; `tuỳ` = có thể bỏ):
+Ma trận job type × stage: ảnh chụp ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại).
+Phần mỗi profile **thêm** (không có trong output nên không phải ảnh chụp):
 
-| Job type | `plan` | `require` | `design` | `breakdown` | `implement` | `verify` | `deploy` | `operate` | Thêm |
-|---|---|---|---|---|---|---|---|---|---|
-| `feature` | chạy | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | |
-| `bugfix` | chạy | chạy | tuỳ | chạy | chạy | chạy | tuỳ | gap | `reproduction-evidence` (`repro.md`), `INV-007` |
-| `refactor` | chạy | chạy | tuỳ | chạy | chạy | chạy | tuỳ | gap | `INV-008`, `INV-009` |
-| `perf` | chạy | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | `performance-evidence` (`perf.md`), `INV-008`…`INV-010` |
-| `chore` | chạy | chạy | bỏ | chạy | chạy | chạy | tuỳ | gap | `INV-011` |
+- `bugfix`: `reproduction-evidence` (`repro.md`), `INV-007`.
+- `refactor`: `INV-008`, `INV-009`.
+- `perf`: `performance-evidence` (`perf.md`), `INV-008`…`INV-010`.
+- `chore`: `INV-011`.
 
 **Quyết định:**
 
