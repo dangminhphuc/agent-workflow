@@ -6,6 +6,10 @@
 > Các mục ở § Đánh giá các phase đến từ một lượt đánh giá (10/2026). Mỗi mục là **đề xuất**: đổi
 > luật nên theo `AGENTS.md` § Making a change, người duyệt cách làm (file đụng tới, chặn hay
 > cảnh báo, test chứng minh gì) trước khi code. Thứ tự mục = thứ tự nên làm.
+>
+> Thứ tự làm và cách chia thành dự án con (spec → plan → PR theo luồng Superpowers):
+> [`superpowers/2026-10-22-roadmap-cai-thien.md`](superpowers/2026-10-22-roadmap-cai-thien.md).
+> Chi tiết vấn đề vẫn nằm ở các mục dưới; roadmap chỉ trỏ tới.
 
 ## Đánh giá các phase (10/2026)
 
