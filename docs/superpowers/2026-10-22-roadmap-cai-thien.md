@@ -21,17 +21,17 @@
 | # | Dự án con | Đợt | Phụ thuộc | Cần người quyết trước spec | Spec | Plan | PR |
 |---|---|---|---|---|---|---|---|
 | SP1 | Capability phạm vi + capability theo `purpose`/`provides` | 1 | — | — | [spec](specs/2026-10-22-sp1-capability-artifact-design.md) | [plan](plans/2026-10-22-sp1-capability-artifact.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
-| SP2 | Invariant chặt hơn | 2 | — | — | | | |
-| SP3 | Kiểm phạm vi diff | 1 | SP1 | — | | | |
-| SP4 | Vòng review → sửa | 1 | SP2 | Có cho "chấp nhận" Blocker? | | | |
-| SP5 | `out-of-scope` cho capability | 2 | SP1 | Có đảo quyết định "không có out-of-scope"? | | | |
-| SP6 | Tốc độ engine và test | 3 | — | — | | | |
-| SP7 | Parser YAML báo lỗi | 3 | — | — | | | |
-| SP8 | Glob `**` | 3 | SP3 | Có chấp nhận đổi nghĩa `*`? | | | |
-| SP9 | Chạy thật + gom nhật ký | 4 | SP3, SP4 | Repo đích nào | | | |
-| SP10 | Đường tắt cho việc nhỏ | 4 | số liệu SP9 | A / B / C | | | |
-| SP11 | Adapter thứ ba hoặc gỡ `planned` | 4 | — | Làm hay gỡ | | | |
-| SP12 | Bước A — gắn luật checker vào CAP/INV | sau | SP1, SP2 | — | | | |
+| SP2 | Invariant chặt hơn | 2 | — | — | [spec](specs/2026-10-22-sp2-invariant-chat-design.md) | | #79 |
+| SP3 | Kiểm phạm vi diff | 1 | SP1 | — | [spec](specs/2026-10-22-sp3-pham-vi-diff-design.md) | | #79 |
+| SP4 | Vòng review → sửa | 1 | SP2 | Chốt: Blocker luôn phải sửa | [spec](specs/2026-10-22-sp4-review-sua-design.md) | | #79 |
+| SP5 | `out-of-scope` cho capability | 2 | SP1 | Chốt: thêm out-of-scope | [spec](specs/2026-10-22-sp5-out-of-scope-design.md) | | #79 |
+| SP6 | Tốc độ engine và test | 3 | — | — | [spec](specs/2026-10-22-sp6-7-toc-do-yaml-design.md) | | #79 |
+| SP7 | Parser YAML báo lỗi | 3 | — | — | [spec](specs/2026-10-22-sp6-7-toc-do-yaml-design.md) | | #79 |
+| SP8 | Glob `**` | 3 | SP3 | Chốt: đổi có chuyển tiếp, chỉ glob của plan.md | [spec](specs/2026-10-22-sp8-glob-design.md) | | #79 |
+| SP9 | Chạy thật + gom nhật ký | 4 | SP3, SP4 | Chạy thật: người làm | [spec](specs/2026-10-22-sp9-11-12-design.md) (chỉ công cụ) | | #79 |
+| SP10 | Đường tắt cho việc nhỏ | 4 | số liệu SP9 | A / B / C — chờ số liệu SP9 | — | | |
+| SP11 | Adapter thứ ba hoặc gỡ `planned` | 4 | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | | #79 |
+| SP12 | Bước A — gắn luật checker vào CAP/INV | sau | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) (đợt 1) | | #79 |
 
 Cột Spec / Plan / PR: điền đường dẫn hoặc link khi có. Dự án con xong (PR merge) thì giữ dòng, ghi
 link PR — lịch sử nằm ở đây, nội dung nằm ở `CHANGELOG.md`.
