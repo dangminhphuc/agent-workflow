@@ -81,7 +81,7 @@ implement, review đều làm đúng một yêu cầu sai.
 § LLM checker + mục 3 của § Những chỗ yếu, `docs/huong-dan.md` § Phase 01 + § 4 Bản đồ artifact,
 `adapters/cursor/README.md`, `CHANGELOG.md` (`Thêm`).
 
-### 4. Đường tắt cho việc rất nhỏ — cần quyết định, chưa đề xuất code
+### 4. Đường tắt cho việc rất nhỏ — A đã làm, B/C chờ số liệu
 
 **Vấn đề.** Việc nhỏ nhất vẫn tốn: một phiên intake ở main checkout, rồi phiên mới cho spec, plan,
 implement, một subagent review, (tuỳ chọn) ship; người can thiệp ít nhất ba lần (xác nhận intake, tick
@@ -99,7 +99,8 @@ bugfix/refactor bỏ design khi `Design: skip`. Sửa typo trong tài liệu, bu
   `sensitive_code`): bỏ spec, chỉ còn intake → implement → review. Máy kiểm được giới hạn, nhưng thêm
   một job type làm phân loại ở intake khó hơn.
 
-**Nghiêng về:** A trước (lấy số liệu), rồi B nếu số liệu cho thấy `chore` chiếm phần lớn. C đổi triết lý
+**Trạng thái:** A đã làm — `docs/huong-dan.md` § 1.10 (khi nào không dùng `aw`, cách đo bằng `aw journal export`
+/ `report`). Bước tiếp: gom số liệu vài tuần; B nếu số liệu cho thấy `chore` chiếm phần lớn. C đổi triết lý
 quy trình — chỉ làm khi người chủ engine muốn.
 
 ## Mã định danh (sau khi đổi sang `REQ`/`DEC`/`FND`/`TSK`/`RFR`)
@@ -110,13 +111,12 @@ quy trình — chỉ làm khi người chủ engine muốn.
 
 ## Tốc độ test (sau SP6)
 
-- **Còn ~44 cặp "…đúng lý do" chạy checker hai lần** — mẫu grep có `\"`, `$`, `\\` nên không chuyển tự động
-  được; chuyển tay sang `ky_vong_ly_do` (`tools/tests/lib.sh`) khi đụng tới phần đó.
-- **`check-sdlc.sh` ~1,8 giây mỗi lần, ~650 lần gọi `awk`** (phần lớn ở ma trận profile: `luon_co`, `la_gap`,
-  `kieu` mỗi lần một awk). Bốn phần test SDLC chạy nó mỗi ca. Gom dữ liệu profile vào biến shell một lần
-  như `SO_STAGE` sẽ bớt nhiều nhất.
-- Bộ test sau SP6: ~4 phút 30 giây thực trên 4 luồng (1725 ca; trước: 5 phút /
-  13 phút CPU cho 1641 ca). Mục tiêu dưới 3 phút chưa đạt — phần dài nhất ~75 giây (`22-sdlc-stage-files`).
+- **Còn ~32 cặp "…đúng lý do" chạy checker hai lần** — dạng ghép (`&& sh …`, đường dẫn checker khác `$F`,
+  mẫu có `$` cần mở rộng) nên không chuyển tự động; chuyển tay sang `ky_vong_ly_do` khi đụng tới phần đó.
+- **`check-sdlc.sh` ~1,6 giây mỗi lần, ~660 lần gọi `awk`**, phần lớn từ `fm_list` (~130 lần, mỗi lần một
+  awk). Đọc frontmatter mọi file một lần vào biến / file tạm là bước kế tiếp nếu cần nhanh hơn.
+- Bộ test sau đợt 2: **~3 phút 45 giây** thực trên 4 luồng (1760 ca; trước SP6: 5 phút cho 1641 ca). Đích
+  3 phút chưa đạt — phần dài nhất `21-sdlc-profiles` ~58 giây.
 
 ## Interface SDLC (sau khi thêm `sdlc/`)
 

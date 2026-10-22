@@ -188,6 +188,25 @@ Spec và mỗi DEC-xxx có **đúng một** ô. Bạn duyệt bằng cách đổ
 - Quy ước repo (`conventions.md`) cũng được đọc **tại điểm rẽ khỏi base** của việc: sửa quy ước
   trong một việc không đổi luật của chính việc đó; có hiệu lực cho việc sau khi PR merge.
 
+### 1.10. Khi nào không dùng `aw`
+
+Quy trình đầy đủ tốn ít nhất ba lần bạn can thiệp (xác nhận intake, duyệt spec, xác nhận review) và
+nhiều phiên agent. Với việc dưới đây, làm một PR thường — không mở việc `aw`:
+
+- sửa chính tả, câu chữ trong tài liệu, không đổi ý nghĩa;
+- nâng dependency mức `patch` mà test vẫn xanh, không đổi code;
+- đổi một dòng cấu hình không đụng `production_code` hay `sensitive_code`;
+- `spike` (thử nghiệm sẽ bỏ) — xem § 5.
+
+Dấu hiệu nên quay lại `aw`: việc đổi hành vi người dùng thấy, đụng `production_code`, cần nhiều hơn một
+commit, hoặc bạn phải giải thích "vì sao" cho người review. Rủi ro cần tránh: bỏ quy trình với việc vặt
+rồi quen tay bỏ luôn với việc lớn — khi phân vân, dùng `aw`.
+
+**Đo để quyết đường tắt sau này.** Engine chưa có đường tắt cho việc nhỏ (gộp phase cho `chore` hay một
+loại việc mới) vì chưa có số liệu. Mỗi người chạy `aw journal export <file>` định kỳ; gom bằng
+`aw journal report <file>…` để biết bao nhiêu việc là `chore` / diff nhỏ và checker chặn ở đâu
+(`docs/viec-can-lam.md` mục 4).
+
 ---
 
 ## 2. Cài đặt và cấu hình target repo

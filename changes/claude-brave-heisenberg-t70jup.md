@@ -1,4 +1,7 @@
 ### Thêm
+- **Hướng dẫn: "Khi nào không dùng `aw`"** (`docs/huong-dan.md` § 1.10) — việc nào làm PR thường (typo, bump
+  `patch`, cấu hình một dòng), dấu hiệu nên quay lại `aw`, và cách đo bằng `aw journal export` / `report` để
+  quyết đường tắt cho việc nhỏ sau này.
 - **`aw journal export <file>` và `aw journal report <file>…`.** Nhật ký harness nằm ở bản clone từng máy; giờ
   xuất được ra một TSV (cột nguồn, máy, rồi cột gốc) và tổng hợp trên nhiều file export — gom số liệu khi chạy
   thử trên nhiều máy / nhiều người. Dòng sai dạng bị bỏ qua và báo số dòng.
@@ -83,3 +86,5 @@
   luật (`loi` / `loi_truoc` / `[CẢNH BÁO]`) chưa gắn id của từng `tools/check-*.sh` và `tools/task.sh` (153 chỗ
   lúc bắt đầu); `check-sdlc.sh` chặn khi vượt (luật mới không id) và khi thấp hơn mà chưa hạ — danh sách chỉ
   giảm. `sh tools/check-sdlc.sh --dem-luat` in số đúng.
+- **Test nhanh hơn:** thêm 14 cặp "mã thoát + lý do" chạy checker một lần (`ky_vong_ly_do`, kể cả mẫu có
+  escape); `luon_co` của `check-sdlc.sh` tra chuỗi tính sẵn. Bộ test ~3 phút 45 giây (1760 ca).

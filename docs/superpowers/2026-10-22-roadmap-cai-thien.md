@@ -27,11 +27,11 @@
 | SP5 | `out-of-scope` cho capability | 2 | SP1 | Chốt: thêm out-of-scope | [spec](specs/2026-10-22-sp5-out-of-scope-design.md) | | #79 |
 | SP6 | Tốc độ engine và test | 3 | — | — | [spec](specs/2026-10-22-sp6-7-toc-do-yaml-design.md) | | #79 |
 | SP7 | Parser YAML báo lỗi | 3 | — | — | [spec](specs/2026-10-22-sp6-7-toc-do-yaml-design.md) | | #79 |
-| SP8 | Glob `**` | 3 | SP3 | Chốt: đổi có chuyển tiếp, chỉ glob của plan.md | [spec](specs/2026-10-22-sp8-glob-design.md) | | #79 |
+| SP8 | Glob `**` | 3 | SP3 | Chốt: đổi có chuyển tiếp, chỉ glob của plan.md — bước 1 ở #79; **bước 2 chờ bản phát hành có bước 1** | [spec](specs/2026-10-22-sp8-glob-design.md) | | #79 |
 | SP9 | Chạy thật + gom nhật ký | 4 | SP3, SP4 | Chạy thật: người làm | [spec](specs/2026-10-22-sp9-11-12-design.md) (chỉ công cụ) | | #79 |
-| SP10 | Đường tắt cho việc nhỏ | 4 | số liệu SP9 | A / B / C — chờ số liệu SP9 | — | | |
+| SP10 | Đường tắt cho việc nhỏ | 4 | số liệu SP9 | A xong (đợt 2); B / C chờ số liệu | [spec](specs/2026-10-22-dot-2-design.md) § B | [plan](plans/2026-10-22-dot-2.md) | đợt 2 |
 | SP11 | Adapter thứ ba hoặc gỡ `planned` | 4 | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | | #79 |
-| SP12 | Bước A — gắn luật checker vào CAP/INV | sau | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) (đợt 1) | | #79 |
+| SP12 | Bước A — gắn luật checker vào CAP/INV | sau | SP1, SP2 | đợt 1 ở #79; đợt 2 (danh sách chưa phân loại) ở đợt 2; đợt 3 còn lại | [spec](specs/2026-10-22-sp9-11-12-design.md) (đợt 1), [spec](specs/2026-10-22-dot-2-design.md) § A (đợt 2) | [plan](plans/2026-10-22-dot-2.md) | #79, đợt 2 |
 
 Cột Spec / Plan / PR: điền đường dẫn hoặc link khi có. Dự án con xong (PR merge) thì giữ dòng, ghi
 link PR — lịch sử nằm ở đây, nội dung nằm ở `CHANGELOG.md`.
