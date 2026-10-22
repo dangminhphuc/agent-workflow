@@ -54,6 +54,7 @@ kq_khai check-implement.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 PLAN="$DIR/plan.md"
 KQ="$DIR/test-results.md"
 CAUHINH=$(kc_cau_hinh "$DIR")

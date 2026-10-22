@@ -44,8 +44,7 @@ cp "$ROOT/workflow/templates/intake.md" "$F/intake.md"
 thay "$F/intake.md" '`<feature | bugfix | refactor | perf | chore>`' '`feature`'
 thay "$F/intake.md" '<một câu>' 'làm x'
 thay "$F/intake.md" '  > <chép nguyên văn lời người dùng>' '  > cần làm x'
-ky_vong 1 "chặn dòng input mẫu chưa sửa (nguồn giả)" sh "$CHK" "$F"
-dung "…đúng lý do: chỗ giữ chỗ" sh -c "sh '$CHK' '$F' | grep -q 'chỗ giữ chỗ'"
+ky_vong_ly_do 1 "chặn dòng input mẫu chưa sửa (nguồn giả)" "…đúng lý do: chỗ giữ chỗ" 'chỗ giữ chỗ' sh "$CHK" "$F"
 viet_intake
 
 thay "$F/intake.md" '`[JIRA]` ABC-1' '`[JIRA]` abc'
@@ -72,8 +71,7 @@ viet_intake
 SHA_MAIN=$(git -C "$R" rev-parse --short main)
 thay "$F/intake.md" "- **Base:** \`main\` @ \`$SHA_MAIN\`
 " ''
-ky_vong 1 "chặn khi thiếu dòng Base" sh "$CHK" "$F"
-dung "…đúng lý do: thiếu Base" sh -c "sh '$CHK' '$F' | grep -q 'Thiếu dòng .*Base'"
+ky_vong_ly_do 1 "chặn khi thiếu dòng Base" "…đúng lý do: thiếu Base" 'Thiếu dòng .*Base' sh "$CHK" "$F"
 viet_intake
 thay "$F/intake.md" "@ \`$SHA_MAIN\`" '@ `khongphaisha`'
 ky_vong 1 "chặn Base có sha không phải commit" sh "$CHK" "$F"

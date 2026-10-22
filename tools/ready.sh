@@ -45,7 +45,7 @@ khong() { echo "  ✗ $1"; n_x=$((n_x + 1)); }
 tin()   { echo "  · $1"; }
 
 CONV=$(kc_conventions "$DIR"); CH=$(kc_cau_hinh "$DIR")
-GOC="${AW_REPO:-$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)}"
+GOC="${AW_REPO:-$(git_top "$DIR")}"
 
 # ---- 1. Cấu hình ----
 echo "Cấu hình"

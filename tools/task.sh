@@ -45,6 +45,7 @@ LENH="${1:-}"; DIR="${2:-}"; TASK="${3:-}"
 case "$LENH" in next|start|done|reopen) ;; *) dung ;; esac
 [ -n "$DIR" ] || dung
 PLAN="$DIR/plan.md"; KQ="$DIR/task-results.md"
+[ -d "$DIR" ] && nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 
 # kq_khong_muc -> task-results.md hiện có, bỏ mục của $TASK (hoặc phần đầu file nếu chưa có file).
 # Gộp dòng trống liên tiếp ngoài khối code — chạy lại nhiều lần không dồn dòng trống.

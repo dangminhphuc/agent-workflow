@@ -139,8 +139,7 @@ dung "tiến độ: bước tiếp chỉ đúng task kế" sh -c "sh '$SS' '$F' 
 nhom "task.sh (aw task)"
 TK="$T/task.sh"; HT="$T/check-implement.sh"
 dung "next → TSK-002 (stdout)" bang "$(sh "$TK" next "$F" 2>/dev/null)" "TSK-002"
-ky_vong 1 "implement chặn task chưa làm [ ]" sh "$HT" "$F"
-dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'TSK-002 chưa làm'"
+ky_vong_ly_do 1 "implement chặn task chưa làm [ ]" "…đúng lý do" 'TSK-002 chưa làm' sh "$HT" "$F"
 ky_vong 1 "done khi chưa start → TỪ CHỐI" sh "$TK" done "$F" TSK-002
 ky_vong 0 "start TSK-002 → [~]" sh "$TK" start "$F" TSK-002
 dung "…plan.md ghi [~]" grep -q '^- Status: `\[~\]`' "$F/plan.md"
@@ -165,16 +164,14 @@ ky_vong 0 "implement ĐẠT khi mọi task xong bằng máy" sh "$HT" "$F"
 
 viet_plan; ghi_based_on
 mv "$F/task-results.md" "$TMP/kqt.bak"
-ky_vong 1 "implement chặn [x] tự đánh, không có bằng chứng" sh "$HT" "$F"
-dung "…đúng lý do, chỉ lệnh sửa" sh -c "sh '$HT' '$F' | grep -q 'không có bằng chứng.*aw task done'"
+ky_vong_ly_do 1 "implement chặn [x] tự đánh, không có bằng chứng" "…đúng lý do, chỉ lệnh sửa" 'không có bằng chứng.*aw task done' sh "$HT" "$F"
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 1 "review cũng chặn [x] không có bằng chứng" sh "$T/check-review.sh" "$F"
 mv "$TMP/kqt.bak" "$F/task-results.md"
 thay "$F/plan.md" '- Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt`' '- Expected files: `src/b.txt`
 - Verify: `test -d src`'
-ky_vong 1 "implement chặn khi Verify đổi sau khi task xong" sh "$HT" "$F"
-dung "…đúng lý do" sh -c "sh '$HT' '$F' | grep -q 'TSK-002: lệnh Verify trong plan.md đã đổi'"
+ky_vong_ly_do 1 "implement chặn khi Verify đổi sau khi task xong" "…đúng lý do" 'TSK-002: lệnh Verify trong plan.md đã đổi' sh "$HT" "$F"
 
 # Đỏ liên tiếp → DỪNG (điều kiện dừng của vòng lặp)
 viet_plan; ghi_based_on

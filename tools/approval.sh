@@ -30,7 +30,7 @@ case "$PHASE" in design|plan) ;; *) echo "Dùng: aw approval design|plan <thư-m
 DIR=$(CDPATH= cd -- "$DIR" && pwd)
 VIEC=$(basename "$DIR")
 LOAI=$(kc_loai "$DIR")
-REPO=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)
+REPO=$(git_top "$DIR")
 tuong_doi() { if [ -n "$REPO" ]; then printf '%s' "${1#"$REPO"/}"; else printf '%s' "$1"; fi; }
 
 BO_TK=0; kc_bo_design "$DIR" && BO_TK=1

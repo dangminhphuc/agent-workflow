@@ -22,6 +22,7 @@ kq_khai check-perf.sh \
 . "$HERE/lib/cross-check.sh"
 
 DIR="${1:-}"; PHA="${2:-}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 case "$PHA" in
   --before) TEN="Trước" ;;
   --after)  TEN="Sau" ;;

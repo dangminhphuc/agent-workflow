@@ -37,6 +37,7 @@ kq_khai check-plan.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 SPEC="$DIR/spec.md"
 TDD="$DIR/tdd.md"
 PLAN="$DIR/plan.md"

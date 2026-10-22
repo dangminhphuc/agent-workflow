@@ -66,6 +66,7 @@ kq_khai check-review.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 SPEC="$DIR/spec.md"
 REVIEW="$DIR/review.md"
 KQ="$DIR/test-results.md"

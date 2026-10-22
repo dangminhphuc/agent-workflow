@@ -67,8 +67,7 @@ ky_vong 1 "…implement chặn khi quét bảo mật đỏ dù test xanh" sh "$C
 printf 'TEST_CMD="true"\nSECURITY_CMDS="\ntrivy fs .\n"\n' > "$CH"
 ky_vong 1 "dòng thiếu \"<nhóm>:\" → KHÔNG ĐẠT" sh "$BMC" "$F"
 printf 'TEST_CMD="true"\nSECURITY_CMDS="\ndast: true\n"\n' > "$CH"
-ky_vong 1 "nhóm lạ → KHÔNG ĐẠT" sh "$BMC" "$F"
-dung "…đúng lý do: liệt kê nhóm hợp lệ" sh -c "sh '$BMC' '$F' | grep -q 'secret, sast, sca, other'"
+ky_vong_ly_do 1 "nhóm lạ → KHÔNG ĐẠT" "…đúng lý do: liệt kê nhóm hợp lệ" 'secret, sast, sca, other' sh "$BMC" "$F"
 
 printf 'TEST_CMD="true"\nSECURITY_CMDS="secret: true"\n' > "$CH"
 ky_vong 0 "thiếu nhóm sast/sca chỉ CẢNH BÁO (người xác nhận có chủ ý)" sh "$BMC" "$F"

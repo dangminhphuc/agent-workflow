@@ -116,43 +116,7 @@ vi_pham "\"Enforced by\" trỏ tới thứ không phải checker → chặn" "IN
 
 moi; thay "$E/sdlc/invariants.md" '"check-repro chặn khi test XANH trên code chưa sửa"' '"check-repro chặn ca không có"'
 vi_pham "\"Tested by\" nêu ca test không có trong file → chặn" "INV-007: ca \"check-repro chặn ca không có\" không có trong tools/tests/10-intake-bugfix.sh"
-# mọi invariant nêu tên ca test (không chỉ file); Rule: trừu tượng, cú pháp engine ở "- Engine:"
-moi; awk '/^### INV-007 / { on = 1 } /^### INV-008 / { on = 0 } { if (on && /^- Tested by:/) sub(/` .*$/, "`"); print }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
-vi_pham "invariant chỉ trỏ file test, không nêu ca → chặn" "INV-007: \"Tested by:\" không nêu ca test nào — thêm tên ca (trong \"…\") sau đường dẫn file."
-moi; awk '/^### INV-001 / { on = 1 } /^### INV-002 / { on = 0 } { if (on && /^- Rule:/) $0 = $0 " See `plan.md`."; print }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
-vi_pham "Rule: của invariant có backtick → chặn" "INV-001: \"Rule:\" chứa cú pháp engine"
-moi; awk '/^### INV-001 / { on = 1 } /^### INV-002 / { on = 0 } { if (on && /^- Rule:/) $0 = $0 " Like REQ-001."; print }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
-vi_pham "Rule: của invariant có mã REQ- → chặn" "INV-001: \"Rule:\" chứa cú pháp engine (REQ-)"
-moi; awk '{ if (/^- Rule:/ && ++n == 1) $0 = $0 " Based on DEC-001."; print }' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
-vi_pham "Rule: của capability có mã DEC- → chặn" "CAP-deploy-01: \"Rule:\" chứa cú pháp engine (DEC-)"
-moi; awk '/^### INV-001 / { on = 1 } /^### INV-002 / { on = 0 } { print; if (on && /^- Rule:/) print "- Engine: task line `Covers: REQ-NNN`" }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
-ky_vong 0 "\"- Engine:\" được dùng backtick và mã → ĐẠT" sh "$SC" "$E"
 moi; thay "$E/sdlc/stages/00-plan.md" 'skippable: false' 'skippable: maybe'
 vi_pham "stage có skippable lạ → chặn" "stage plan: skippable \"maybe\" — chỉ nhận true | false"
-
-# ---------------------------------------------------------------- tập con YAML
-nhom "check-sdlc.sh: dòng YAML ngoài tập con bị chặn, kèm file + dòng"
-# so_dong <file> <dòng nguyên văn> -> số dòng đầu tiên trùng
-so_dong() { awk -v d="$2" '$0 == d { print NR; exit }' "$1"; }
-moi; thay "$E/sdlc/stages/06-deploy.md" 'exit: both' 'exit:both'
-vi_pham "frontmatter stage: thiếu dấu cách sau : → chặn" "sdlc/stages/06-deploy.md: dòng $(so_dong "$E/sdlc/stages/06-deploy.md" 'exit:both'): thiếu dấu cách sau \":\""
-moi; thay "$E/workflow/phases/04-implement.md" '  - diff' '	- diff'
-vi_pham "frontmatter phase: thụt bằng tab → chặn" "workflow/phases/04-implement.md: dòng $(so_dong "$E/workflow/phases/04-implement.md" '	- diff'): thụt lề bằng tab"
-moi; thay "$E/sdlc/profiles/bugfix.md" '  - design' '      - design'
-vi_pham "frontmatter profile: thụt sâu → chặn" "sdlc/profiles/bugfix.md: dòng $(so_dong "$E/sdlc/profiles/bugfix.md" '      - design'): thụt sâu hơn tập con cho phép"
-moi; thay "$E/workflow.yaml" 'language: vi' 'language: |'
-vi_pham "workflow.yaml: giá trị khối | → chặn" "workflow.yaml: dòng $(so_dong "$E/workflow.yaml" 'language: |'): giá trị khối | / > không được hỗ trợ"
-moi; thay "$E/workflow.yaml" 'version: 1' 'version: {a: b}'
-vi_pham "workflow.yaml: dạng {…} → chặn" "workflow.yaml: dòng $(so_dong "$E/workflow.yaml" 'version: {a: b}'): dạng {…} hoặc danh sách [a, b] không được hỗ trợ"
-moi; thay "$E/sdlc/profiles/bugfix.md" 'adds_invariants:
-  - INV-007' 'adds_invariants: [INV-007, INV-008]'
-vi_pham "frontmatter: danh sách [a, b] → chặn" "sdlc/profiles/bugfix.md: dòng $(so_dong "$E/sdlc/profiles/bugfix.md" 'adds_invariants: [INV-007, INV-008]'): dạng {…} hoặc danh sách [a, b] không được hỗ trợ"
-moi; thay "$E/sdlc/stages/00-plan.md" 'exit: both' 'exit: both
-lạc dòng'
-vi_pham "frontmatter: dòng lạ → chặn" "sdlc/stages/00-plan.md: dòng $(so_dong "$E/sdlc/stages/00-plan.md" 'lạc dòng'): dòng không thuộc tập con YAML"
-moi; thay "$E/workflow.yaml" '  - id: cursor' '  # chú thích thụt lề
-
-  - id: cursor'
-ky_vong 0 "workflow.yaml: chú thích thụt lề, dòng trống trong danh sách → ĐẠT" sh "$SC" "$E"
 
 ket_thuc

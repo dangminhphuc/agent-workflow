@@ -43,8 +43,7 @@ viet_review; thay "$F/review.md" '- None' "$L3_SF
 
 $L3_SF"
 toc_f review.md
-ky_vong 1 "chặn hai finding cùng mã" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3: RVW-001 trùng — mỗi finding một mã'"
+ky_vong_ly_do 1 "chặn hai finding cùng mã" "…đúng lý do" 'Lens 3: RVW-001 trùng — mỗi finding một mã' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Location: `src/a.txt:1`'
 ky_vong 1 "chặn [Should fix] thiếu Category" sh "$CHK" "$F"
@@ -70,8 +69,7 @@ viet_review; thay "$F/review.md" '- None' "$L3_B
 toc_f review.md
 ky_vong 0 "[Blocker] đủ trường, Conclusion khớp số → review đạt (ship mới chặn)" sh "$CHK" "$F"
 thay "$F/review.md" '- Blocker findings: 1' '- Blocker findings: 0'
-ky_vong 1 "chặn Conclusion ghi số Blocker lệch số mục" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Blocker findings: 0 nhưng Lens 3 có 1'"
+ky_vong_ly_do 1 "chặn Conclusion ghi số Blocker lệch số mục" "…đúng lý do" 'Blocker findings: 0 nhưng Lens 3 có 1' sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- Blocker findings: 0' '- Blocker findings: <n>'
 ky_vong 1 "chặn Conclusion còn giữ chỗ <n>" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- Blocker findings: 0
@@ -89,8 +87,7 @@ viet_review
 ky_vong 0 "không khai sensitive_code → không đòi Security reviewer" sh "$CHK" "$F"
 cp "$CFG/conventions.md" "$TMP/conv-nc.bak"
 thay "$CFG/conventions.md" 'sensitive_code:' 'sensitive_code: src/*'
-ky_vong 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" sh "$CHK" "$F"
-dung "…đúng lý do, nêu file nhạy cảm" sh -c "sh '$CHK' '$F' | grep -q 'code nhạy cảm (sensitive_code: src/a.txt)'"
+ky_vong_ly_do 1 "diff đụng code nhạy cảm mà thiếu Security reviewer → chặn" "…đúng lý do, nêu file nhạy cảm" 'code nhạy cảm (sensitive_code: src/a.txt)' sh "$CHK" "$F"
 dung "…implement chỉ LƯU Ý, không chặn" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'LƯU Ý.*src/a.txt' && sh '$T/check-implement.sh' '$F' >/dev/null 2>&1"
 printf -- '- Security reviewer: <tên người>\n' >> "$F/review.md"
 ky_vong 1 "chặn Security reviewer còn giữ chỗ" sh "$CHK" "$F"

@@ -25,6 +25,7 @@ kq_khai check-repro.sh \
 . "$HERE/lib/cross-check.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 OUT="$DIR/repro.md"
 CAUHINH=$(kc_cau_hinh "$DIR")
 

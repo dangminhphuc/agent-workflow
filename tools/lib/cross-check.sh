@@ -49,7 +49,7 @@ kc_loi_thoi() {
 kc_test_yc() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/spec.md" ] || return 0
-  _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
+  _top=$(git_top "$_d") || {
     echo "Không kiểm được test ↔ REQ: thư mục không nằm trong git repo"; return 0; }
   _mau=$(conv_get "$_conv" test_files)
   _tag=$(conv_get "$_conv" covers_tag); [ -n "$_tag" ] || _tag="covers:"
@@ -107,7 +107,7 @@ kc_test_yc() {
 kc_pham_vi() {
   _d="$1"; _conv=$(kc_conventions "$_d")
   [ -f "$_d/plan.md" ] || return 0
-  _top=$(git -C "$_d" rev-parse --show-toplevel 2>/dev/null) || {
+  _top=$(git_top "$_d") || {
     echo "Không kiểm được phạm vi diff: thư mục không nằm trong git repo"; return 0; }
   _mb=$(kc_mb "$_d") || {
     echo "Không kiểm được phạm vi diff: không tìm thấy base \"$(kc_base "$_d")\" (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)"; return 0; }
@@ -144,7 +144,7 @@ kc_pham_vi() {
 # ngoài phạm vi. Chỉ cảnh báo, kể cả ở review. Mỗi dòng một file.
 kc_glob_chuyen_tiep() {
   [ -f "$1/plan.md" ] || return 0
-  _gc_top=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _gc_top=$(git_top "$1") || return 0
   _gc_mb=$(kc_mb "$1") || return 0
   awk '
     function bt(s) { while (match(s, /`[^`]+`/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) } }
@@ -185,7 +185,7 @@ kc_glob_rong() {
   [ "$_gr_n" -gt 0 ] || return 0
   _gr_sha=$(intake_base_dong "$1" | awk '{ print $2 }')
   [ -n "$_gr_sha" ] || return 0
-  _gr_top=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _gr_top=$(git_top "$1") || return 0
   git -C "$_gr_top" cat-file -e "$_gr_sha^{commit}" 2>/dev/null || return 0
   git -C "$_gr_top" ls-tree -r --name-only "$_gr_sha" | awk -v n="$_gr_n" "$MAU_ERE_AWK"'
     FILENAME == ARGV[1] {
@@ -285,7 +285,7 @@ kc_loi_duyet() {
     }'
 }
 
-kc_top() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
+kc_top() { git_top "$1"; }
 
 # kc_engine_dong <thư-mục-feature> -> version ghi ở dòng "Engine:" của intake.md
 # (bỏ backtick, comment; không có dòng thì không in gì). Mọi `aw check` của việc

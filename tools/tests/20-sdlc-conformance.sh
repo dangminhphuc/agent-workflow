@@ -51,51 +51,6 @@ dung "ảnh chụp ở docs/interface-sdlc.md § 6 trùng output check-sdlc.sh" 
 sed '1s/.*/Stage → phase (sửa tay)/' "$TMP/sdlc-anh" > "$TMP/sdlc-anh2"
 dung "…ảnh chụp lệch một dòng thì so sánh báo khác" sh -c "! cmp -s '$TMP/sdlc-anh2' '$TMP/sdlc-bang'"
 
-# ---------------------------------------------------------------- trạng thái stage
-nhom "check-sdlc.sh: trạng thái stage (khối sdlc: của workflow.yaml)"
-moi; thay "$E/workflow.yaml" '  - stage: deploy
-    note:' '  - stage: deploy
-    status: partial
-    note:'
-vi_pham "khối sdlc: còn khoá status → chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
-moi; thay "$E/workflow.yaml" '  - stage: deploy
-    note:' '  - stage: deploy
-    status:
-    note:'
-vi_pham "khối sdlc: khoá status không giá trị → vẫn chặn" "khối sdlc: stage deploy còn khoá status — xoá dòng status"
-moi; thay "$E/workflow.yaml" 'note: Dừng ở MR/PR' 'note: A | B — Dừng ở MR/PR'
-dung "…note có dấu | → roadmap in nguyên note" sh -c "sh '$SC' '$E' 2>/dev/null | grep -q '^  deploy (partial): A | B — Dừng ở MR/PR'"
-moi; awk '!/note: Dừng ở MR\/PR/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "suy ra partial mà thiếu note → chặn" "stage deploy: suy ra partial nhưng khối sdlc: không có note"
-moi; awk '!/note: CI\/CD/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-vi_pham "suy ra gap mà thiếu note → chặn" "stage operate: suy ra gap nhưng khối sdlc: không có note"
-moi; thay "$E/workflow/phases/06-ship.md" '  - CAP-deploy-01' '  - CAP-deploy-01
-  - CAP-deploy-02
-  - CAP-deploy-03'
-awk '!/^  - CAP-deploy-02:/' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"  # nhận thì không còn out-of-scope
-vi_pham "nhận đủ capability mà còn note → chặn" "stage deploy: suy ra implemented nhưng khối sdlc: còn note"
-# chiều ngược: nhận đủ + xoá mục khối sdlc: → ĐẠT, stage thành implemented
-awk '/^  - stage: deploy$/ { bo = 1; next } bo && /^    / { next } { bo = 0; print }' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-ky_vong 0 "nhận đủ capability + xoá note → ĐẠT" sh "$SC" "$E"
-dung "…stage deploy thành implemented" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  deploy +implemented +ship'"
-moi; awk '/^capabilities:$/ { print "capabilities: []"; next } !/^  - CAP-/' "$E/workflow/phases/06-ship.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/06-ship.md"
-vi_pham "phase implements mà không nhận capability nào → chặn" "phase ship: implements deploy nhưng không nhận capability nào"
-moi; thay "$E/workflow.yaml" '  - stage: operate' '  - stage: monitor'
-vi_pham "khối sdlc: khai stage không có → chặn" "khối sdlc: khai stage \"monitor\" không có trong sdlc/stages/"
-# out_of_scope: capability engine quyết không làm, kèm lý do — không đổi trạng thái stage
-moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
-  - CAP-verify-99: không có'
-vi_pham "out_of_scope: id không có → chặn" "out_of_scope: CAP-verify-99 không có trong sdlc/stages/."
-moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
-  - CAP-deploy-01: thử'
-vi_pham "out_of_scope: id đã được phase nhận → chặn" "out_of_scope: CAP-deploy-01 vừa out-of-scope vừa được phase ship nhận — chọn một."
-moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
-  - CAP-verify-05:'
-vi_pham "out_of_scope: thiếu lý do → chặn" "out_of_scope: CAP-verify-05 thiếu lý do — ghi vì sao engine không làm."
-moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
-  - CAP-verify-03: lặp'
-vi_pham "out_of_scope: id khai hai lần → chặn" "out_of_scope: CAP-verify-03 khai hai lần."
-
 # ---------------------------------------------------------------- phase ↔ stage
 nhom "check-sdlc.sh: phase khai implements / provides"
 moi; awk '!/^implements:/' "$E/workflow/phases/05-review.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/05-review.md"

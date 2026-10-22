@@ -27,6 +27,7 @@ kq_khai check-security.sh \
 . "$HERE/lib/cross-check.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 KQ="$DIR/security-results.md"
 CAUHINH=$(kc_cau_hinh "$DIR")
 

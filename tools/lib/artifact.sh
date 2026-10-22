@@ -23,7 +23,7 @@ AR_CHI_MAY=".local-only"
 # <gốc>/TM_VIEC/<tên>; mã 1 nếu không phải (việc kiểu cũ, ngoài git…)
 ar_goc() {
   [ -d "$1" ] || return 1
-  _ag=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+  _ag=$(git_top "$1") || return 1
   _ag=$(CDPATH= cd -- "$_ag" && pwd -P) || return 1
   _ad=$(CDPATH= cd -- "$1" && pwd -P) || return 1
   [ "$(dirname "$_ad")" = "$_ag/$TM_VIEC" ] || return 1
@@ -37,7 +37,7 @@ ar_commit() {
   _ag=$(ar_goc "$1") || return 0
   [ -f "$1/$AR_CHI_MAY" ] && return 0
   # Checkout chính đứng trên nhánh gốc: commit ở đó là đưa artifact vào nhánh đích.
-  if [ "$(git -C "$_ag" rev-parse --git-dir 2>/dev/null)" = "$(git -C "$_ag" rev-parse --git-common-dir 2>/dev/null)" ]; then
+  if [ "$(git -C "$_ag" rev-parse --git-dir 2>/dev/null)" = "$(git_common "$_ag")" ]; then
     echo "Artifact: $1 nằm ở checkout chính — không commit (artifact chỉ commit trong worktree của việc)." >&2
     return 0
   fi

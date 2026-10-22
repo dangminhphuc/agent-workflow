@@ -191,7 +191,7 @@ adr_loi_hinh_thuc() {
 # lệch DEC đã duyệt (sửa tay, hoặc DEC đổi sau khi nâng), cộng lỗi hình thức thư mục ADR.
 adr_loi_viec() {
   _aT="$1/tdd.md"; [ -f "$_aT" ] || return 0
-  _arp=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _arp=$(git_top "$1") || return 0
   _aD="$_arp/$(adr_thu_muc "$(qu_hieu_luc "${AW_REPO:-$_arp}")")"
   _av=$(basename "$1")
   d_nang_ds "$_aT" | while IFS= read -r _d; do
@@ -214,7 +214,7 @@ adr_loi_viec() {
 # của DEC-xxx trong tdd.md (checker design chặn; plan, review chạy lại qua entry check).
 adr_loi_truong() {
   _aT="$1/tdd.md"; [ -f "$_aT" ] || return 0
-  _arp=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || _arp=${AW_REPO:-.}
+  _arp=$(git_top "$1") || _arp=${AW_REPO:-.}
   _aD="$_arp/$(adr_thu_muc "$(qu_hieu_luc "${AW_REPO:-$_arp}")")"
   _av=$(basename "$1")
   dy_quet "$_aT" tdd | awk -F'|' '$1 == "O" || $1 == "T" { print $2 }' | while IFS= read -r _d; do
@@ -252,7 +252,7 @@ adr_loi_truong() {
 adr_loi_ke_hoach() {
   [ -f "$1/tdd.md" ] && [ -f "$1/plan.md" ] || return 0
   _aN=$(d_nang_ds "$1/tdd.md"); [ -n "$_aN" ] || return 0
-  _arp=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || _arp=${AW_REPO:-.}
+  _arp=$(git_top "$1") || _arp=${AW_REPO:-.}
   _atm=$(adr_thu_muc "$(qu_hieu_luc "${AW_REPO:-$_arp}")")
   printf '%s\n' "$_aN" | while IFS= read -r _d; do
     awk -v d="$_d" -v tm="$_atm/" '

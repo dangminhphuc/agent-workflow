@@ -53,3 +53,11 @@
 - **INV-001 nới** (interface SDLC): "mọi task phủ một REQ" thành "mọi task phủ một REQ **hoặc sửa một finding
   của review hiện tại**". Lý do: finding lỗi (thiếu kiểm null, lỗ hổng) thường không gắn REQ nào; buộc
   `Covers:` khiến agent gán đại REQ, làm sai ánh xạ REQ → task mà review Lens 1 dựa vào.
+
+### Nội bộ
+- **Checker nhanh hơn: nhớ `git rev-parse` và quy ước hiệu lực.** `git_top` / `git_common` (`tools/lib/md.sh`)
+  nhớ theo thư mục trong biến shell; `nho_san` hâm sẵn ở shell chính của mỗi checker và `aw task`, nên các
+  `$(…)` sau dùng lại. Một lần `aw check review` trên fixture: 183 → 68 lần gọi git, 2,3 → 1,4 giây.
+  `check-sdlc.sh` tra thứ tự stage trong shell thay vì một `awk` mỗi lần.
+- **Test:** helper `ky_vong_ly_do` chạy checker một lần cho cặp "mã thoát + lý do" (24 cặp đã chuyển);
+  tách `22-sdlc-stage-files` → thêm `23-sdlc-syntax`, tách `20-sdlc-conformance` → thêm `24-sdlc-stage-status`.

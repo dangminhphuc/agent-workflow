@@ -140,4 +140,13 @@ thay "$F/plan.md" '`src/*` `test/*`' '`src/**` `test/*`'
 dung "viết src/** → hết cảnh báo chuyển tiếp" sh -c "! sh '$T/check-implement.sh' '$F' | grep -q 'nhờ \* vượt thư mục'"
 rm -rf "$R/src/sau"; tao_fixture
 
+# ---------------------------------------------------------------- git_top / git_common có nhớ (tốc độ)
+nhom "git_top / git_common: nhớ theo thư mục, không trả nhầm repo khác"
+R2="$TMP/repo-khac"; mkdir -p "$R2"; git -C "$R2" init -q
+dung "git_top: thư mục trong repo → gốc repo" bang "$(sh -c ". '$T/lib/md.sh'; git_top '$F'")" "$(git -C "$F" rev-parse --show-toplevel)"
+dung "git_top: gọi lần hai (đã nhớ) vẫn đúng, repo khác không bị trả nhầm" bang "$(sh -c ". '$T/lib/md.sh'; git_top '$F' >/dev/null; git_top '$F' >/dev/null; git_top '$R2'")" "$(git -C "$R2" rev-parse --show-toplevel)"
+dung "git_top: nhớ ở shell chính thì subshell \$(…) dùng lại, không gọi git" sh -c ". '$T/lib/md.sh'; git_top '$F' >/dev/null; git() { echo GOI-GIT; }; [ \"\$(git_top '$F')\" != GOI-GIT ]"
+dung "git_common: đúng thư mục git chung" bang "$(sh -c ". '$T/lib/md.sh'; cd '$F' && cd \"\$(git_common '$F')\" && pwd")" "$(cd "$F" && cd "$(git rev-parse --git-common-dir)" && pwd)"
+dung "git_top: ngoài repo → mã khác 0" sh -c "! sh -c \". '$T/lib/md.sh'; git_top /\""
+
 ket_thuc

@@ -230,8 +230,13 @@ while IFS='|' read -r s t; do
   grep -qxF "$s|$t" "$W/capart" \
     || loi "stage $s: provides \"$t\" — không capability nào khai \"Artifact: $t\"; thêm hoặc gắn một capability."
 done < "$W/prov"
-stage_co() { awk -F'|' -v s="$1" '$2 == s' "$W/stages" | grep -q .; }
-stage_so() { awk -F'|' -v s="$1" '$2 == s { print $1 }' "$W/stages"; }
+SO_STAGE=" $(awk -F'|' '{ printf "%s=%s ", $2, $1 }' "$W/stages")"  # stage_so tra ở shell chính, không awk mỗi lần
+stage_co() { case "$SO_STAGE" in *" $1="*) return 0 ;; esac; return 1; }
+# stage_so <stage> -> số thứ tự; tra chuỗi trong shell (gọi ~100 lần — mỗi lần một awk thì chậm)
+stage_so() {
+  [ -n "${SO_STAGE:-}" ] || SO_STAGE=" $(awk -F'|' '{ printf "%s=%s ", $2, $1 }' "$W/stages")"  # dự phòng; thường đã tính sẵn ở shell chính
+  case "$SO_STAGE" in *" $1="*) _so=${SO_STAGE#*" $1="}; printf '%s\n' "${_so%% *}" ;; esac
+}
 # cap_co <CAP-id> -> 0 nếu capability có trong sdlc/stages/; cap_stage <CAP-id> -> stage của nó
 cap_co() { awk -F'|' -v c="$1" '$2 == c' "$W/cap" | grep -q .; }
 cap_stage() { awk -F'|' -v c="$1" '$2 == c { print $1; exit }' "$W/cap"; }

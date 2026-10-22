@@ -108,14 +108,15 @@ quy trình — chỉ làm khi người chủ engine muốn.
   tên file (`design-findings.md:FND-001`) để phân biệt; các chỗ còn gắn cứng `design-findings.md` liệt
   kê ở § Đánh giá các phase, mục 3.
 
-## Tốc độ test (sau khi chia phần song song)
+## Tốc độ test (sau SP6)
 
-- **Checker gọi lặp `git rev-parse`.** Một lần `aw check review` chạy ~740 tiến trình, ~125 là
-  `git rev-parse --show-toplevel/--git-common-dir` lặp lại (`qu_hieu_luc` gọi trong `$(…)` nên cache
-  trong shell không giữ được). Cache theo biến môi trường sẽ nhanh cho cả người dùng lẫn test — đổi code
-  engine, cần đề xuất riêng.
-- **Ca "…đúng lý do" chạy checker lần hai** (~50 cặp `ky_vong` + `dung … | grep`): gộp được thành một
-  lần chạy, bớt ~9% CPU của bộ test.
+- **Còn ~44 cặp "…đúng lý do" chạy checker hai lần** — mẫu grep có `\"`, `$`, `\\` nên không chuyển tự động
+  được; chuyển tay sang `ky_vong_ly_do` (`tools/tests/lib.sh`) khi đụng tới phần đó.
+- **`check-sdlc.sh` ~1,8 giây mỗi lần, ~650 lần gọi `awk`** (phần lớn ở ma trận profile: `luon_co`, `la_gap`,
+  `kieu` mỗi lần một awk). Bốn phần test SDLC chạy nó mỗi ca. Gom dữ liệu profile vào biến shell một lần
+  như `SO_STAGE` sẽ bớt nhiều nhất.
+- Bộ test sau SP6: ~4 phút 30 giây thực trên 4 luồng (1725 ca; trước: 5 phút /
+  13 phút CPU cho 1641 ca). Mục tiêu dưới 3 phút chưa đạt — phần dài nhất ~75 giây (`22-sdlc-stage-files`).
 
 ## Interface SDLC (sau khi thêm `sdlc/`)
 

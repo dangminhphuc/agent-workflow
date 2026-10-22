@@ -33,11 +33,9 @@ printf '### FND-001 — x\n- Severity: `block`\n- Resolution: fixed\n- Problem: 
 toc_f design-findings.md
 ky_vong 0 "tên trường chỉ khớp ở đầu dòng, không khớp trong nội dung" sh "$CHK" "$F"
 printf '### FND-01 — x\n- Severity: `warn`\n- Resolution: open\n' > "$F/design-findings.md"
-ky_vong 1 "chặn mã FND sai dạng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'FND-01 sai dạng'"
+ky_vong_ly_do 1 "chặn mã FND sai dạng" "…đúng lý do" 'FND-01 sai dạng' sh "$CHK" "$F"
 viet_tdd; thay "$F/tdd.md" "### DEC-001" "### DEC-1"; duyet_lai "$F/tdd.md"
-ky_vong 1 "chặn mã DEC sai dạng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'DEC-1 sai dạng'"
+ky_vong_ly_do 1 "chặn mã DEC sai dạng" "…đúng lý do" 'DEC-1 sai dạng' sh "$CHK" "$F"
 
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
 ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
@@ -53,8 +51,7 @@ ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
-ky_vong 1 "chặn vào design khi người chưa duyệt spec" sh "$CHK" "$F"
-dung "…đúng lý do: spec chưa được người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'chưa được người duyệt'"
+ky_vong_ly_do 1 "chặn vào design khi người chưa duyệt spec" "…đúng lý do: spec chưa được người duyệt" 'chưa được người duyệt' sh "$CHK" "$F"
 viet_spec
 
 viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
@@ -162,8 +159,7 @@ ky_vong 1 "chặn khi tdd.md không qua checker của design" sh "$CHK" "$F"
 viet_tdd; ghi_based_on
 
 viet_plan; thay "$F/plan.md" '### TSK-001' '### TSK-0001'
-ky_vong 1 "chặn mã TSK sai dạng" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-0001 sai dạng'"
+ky_vong_ly_do 1 "chặn mã TSK sai dạng" "…đúng lý do" 'TSK-0001 sai dạng' sh "$CHK" "$F"
 
 viet_plan; thay "$F/plan.md" '- Covers: `REQ-002`' '- Covers: `REQ-001`'
 ky_vong 1 "chặn YÊU CẦU BỊ BỎ SÓT (chiều ngược)" sh "$CHK" "$F"

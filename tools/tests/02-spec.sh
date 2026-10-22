@@ -69,11 +69,9 @@ viet_spec; thay "$F/spec.md" '### REQ-002' '### REQ-001'
 ky_vong 1 "chặn mã REQ trùng nhau" sh "$CHK" "$F"
 
 viet_spec; thay "$F/spec.md" "### REQ-002" "### REQ-2"
-ky_vong 1 "chặn mã REQ sai dạng (không đủ 3 chữ số)" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-2 sai dạng'"
+ky_vong_ly_do 1 "chặn mã REQ sai dạng (không đủ 3 chữ số)" "…đúng lý do" 'REQ-2 sai dạng' sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" "### REQ-002" "### REQ-0002"
-ky_vong 1 "chặn mã REQ sai dạng trong open-questions.md" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-0002 sai dạng'"
+ky_vong_ly_do 1 "chặn mã REQ sai dạng trong open-questions.md" "…đúng lý do" 'REQ-0002 sai dạng' sh "$CHK" "$F"
 
 # Mã luôn ở "###" dưới một "##" của nhóm — dạng cũ "## REQ-NNN" trong open-questions.md bị chặn
 viet_spec; thay "$F/open-questions.md" "### REQ-002" "## REQ-002"; toc_f open-questions.md
@@ -153,8 +151,7 @@ thay "$F/spec.md" '## Constraints & dependencies' '<!-- ghi chú khác -->
 printf '\n\n' >> "$F/spec.md"
 ky_vong 0 "đổi chú thích / dòng trống không làm mất duyệt" sh "$CHK" "$F"
 thay "$F/spec.md" 'mở y thấy a' 'mở y thấy a và c'
-ky_vong 1 "chặn spec đổi nội dung sau khi người duyệt" sh "$CHK" "$F"
-dung "…đúng lý do: đổi sau khi người duyệt" sh -c "sh '$CHK' '$F' | grep -q 'đã đổi sau khi người duyệt'"
+ky_vong_ly_do 1 "chặn spec đổi nội dung sau khi người duyệt" "…đúng lý do: đổi sau khi người duyệt" 'đã đổi sau khi người duyệt' sh "$CHK" "$F"
 ky_vong 1 "…design cũng chặn spec đổi sau duyệt" sh "$T/check-design.sh" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "người xoá dấu duyệt (giữ tick) thì duyệt lại bản mới" sh "$CHK" "$F"
@@ -165,8 +162,7 @@ viet_spec
 
 # open-questions.md <-> spec.md phải khớp trạng thái
 viet_spec; printf '\n### REQ-099 — mồ côi\n- **Assumption:** z\n- **Blocking:** `non-blocking`\n- **Status:** `open`\n' >> "$F/open-questions.md"
-ky_vong 1 "chặn mục open-questions trỏ về REQ không có trong spec" sh "$CHK" "$F"
-dung "…đúng lý do: mục mồ côi REQ-099" sh -c "sh '$CHK' '$F' | grep -q 'spec.md không có REQ-099'"
+ky_vong_ly_do 1 "chặn mục open-questions trỏ về REQ không có trong spec" "…đúng lý do: mục mồ côi REQ-099" 'spec.md không có REQ-099' sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '`open`' '`xong`'
 ky_vong 1 "chặn Trạng thái điểm mù tự chế" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '`open`' '`answered`'
@@ -196,8 +192,7 @@ ky_vong 0 "đổi REQ: mục answered (kể cả Superseded answer) + nhãn [FIL
 thay "$F/open-questions.md" '- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-09 (đã xác nhận sửa REQ-001)' ''
 ky_vong 1 "…Superseded answer không thay được Answer" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § REQ-001](open-questions.md#req-001--a)'
-ky_vong 1 "chặn nhãn [FILE] trỏ vào open-questions.md § REQ-001 mà mục đó không có" sh "$CHK" "$F"
-dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'REQ-001: nguồn trỏ tới open-questions.md § REQ-001 nhưng không có mục'"
+ky_vong_ly_do 1 "chặn nhãn [FILE] trỏ vào open-questions.md § REQ-001 mà mục đó không có" "…đúng lý do" 'REQ-001: nguồn trỏ tới open-questions.md § REQ-001 nhưng không có mục' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)'
 ky_vong 1 "chặn nhãn trỏ vào điểm mù của REQ khác còn open" sh "$CHK" "$F"
 printf '# A\n\n## Tổng quan\n\nkhách mở y thấy a\n' > "$R/docs/a.md"
@@ -291,8 +286,7 @@ viet_spec
 
 # Tiêu chí chấp nhận, Ưu tiên
 viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' ''
-ky_vong 1 "chặn REQ không có tiêu chí chấp nhận" sh "$CHK" "$F"
-dung "…đúng lý do: REQ-001 thiếu tiêu chí" sh -c "sh '$CHK' '$F' | grep -q 'REQ-001: thiếu tiêu chí chấp nhận'"
+ky_vong_ly_do 1 "chặn REQ không có tiêu chí chấp nhận" "…đúng lý do: REQ-001 thiếu tiêu chí" 'REQ-001: thiếu tiêu chí chấp nhận' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] <quan sát được từ bên ngoài>'
 ky_vong 1 "chặn tiêu chí chấp nhận còn chỗ giữ chỗ" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [x] mở y thấy a'
@@ -320,8 +314,7 @@ ky_vong 1 "chặn bảng mâu thuẫn rỗng, chỉ có chỗ giữ chỗ" sh "$
 
 # Mâu thuẫn: agent không tự phân xử
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | chọn 30 ngày cho an toàn |'
-ky_vong 1 "chặn mâu thuẫn do agent tự phân xử" sh "$CHK" "$F"
-dung "…đúng lý do: cột Xử lý" sh -c "sh '$CHK' '$F' | grep -q 'Agent không tự phân xử'"
+ky_vong_ly_do 1 "chặn mâu thuẫn do agent tự phân xử" "…đúng lý do: cột Xử lý" 'Agent không tự phân xử' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § REQ-002](open-questions.md#req-002--b) |'
 ky_vong 0 "mâu thuẫn trỏ tới điểm mù có thật thì cho qua" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § REQ-099](open-questions.md#req-099) |'

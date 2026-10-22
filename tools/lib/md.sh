@@ -239,6 +239,22 @@ tm_bo() {
   return 1
 }
 
+# ---- git rev-parse có nhớ ----
+# Một lần aw check gọi rev-parse cho cùng vài thư mục hàng trăm lần. Nhớ theo thư mục hỏi trong biến
+# shell: subshell $(…) kế thừa biến, nên nhớ ở shell chính (nho_san) là mọi lời gọi sau dùng lại.
+# Khoá là chính thư mục hỏi — không bao giờ trả kết quả của thư mục / repo khác.
+# git_top <dir> -> gốc worktree; git_common <dir> -> thư mục git chung (như git in ra). Lỗi: mã 1.
+git_top() {
+  case "${_GT_NHO:-}" in *"<$1>="*) _gt=${_GT_NHO#*"<$1>="}; printf '%s\n' "${_gt%%>*}"; return 0 ;; esac
+  _gt=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+  _GT_NHO="${_GT_NHO:-}<$1>=$_gt>"; printf '%s\n' "$_gt"
+}
+git_common() {
+  case "${_GC_NHO:-}" in *"<$1>="*) _gcm=${_GC_NHO#*"<$1>="}; printf '%s\n' "${_gcm%%>*}"; return 0 ;; esac
+  _gcm=$(git -C "$1" rev-parse --git-common-dir 2>/dev/null) || return 1
+  _GC_NHO="${_GC_NHO:-}<$1>=$_gcm>"; printf '%s\n' "$_gcm"
+}
+
 # ---- conventions.md hiệu lực ----
 # Quy ước của repo đích nằm trong git (QU_DUONG_DAN); bản của bản clone
 # ($AW_CONFIG/conventions.md) chỉ được ghi đè các khoá QU_KHOA_MAY. Repo chưa
@@ -248,7 +264,7 @@ QU_KHOA_MAY="worktree_dir"
 
 # qu_goc <repo> -> gốc của checkout chính
 qu_goc() {
-  _qc=$(git -C "$1" rev-parse --git-common-dir 2>/dev/null) || return 1
+  _qc=$(git_common "$1") || return 1
   case "$_qc" in /*) ;; *) _qc="$1/$_qc" ;; esac
   dirname "$(CDPATH= cd -- "$_qc" 2>/dev/null && pwd -P)"
 }
@@ -258,7 +274,7 @@ qu_goc() {
 # thì không in gì.
 qu_diem_re() {
   _qg=$(qu_goc "$1") || return 0
-  _qt=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _qt=$(git_top "$1") || return 0
   [ "$(CDPATH= cd -- "$_qt" && pwd -P)" != "$_qg" ] || return 0
   _qb=$(git -C "$1" rev-parse --abbrev-ref HEAD 2>/dev/null)
   _qf="$_qt/$(tm_viec "$_qt" "$(printf '%s' "$_qb" | tr '/' '_')")"
@@ -297,7 +313,7 @@ qu_hieu_luc() {
   _QU_REPO=$1; QU_MAY=""; QU_CHINH=""; QU_NGUON=""
   _qm="$AW_CONFIG/conventions.md"; _qd="$AW_CONFIG/quy-uoc-hieu-luc"
   # Khoá theo gốc worktree git in ra: AW_REPO và --out có thể khác nhau qua symlink.
-  _qk=$(printf '%s' "$(git -C "$1" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$1")" | cksum | awk '{ print $1 }')
+  _qk=$(printf '%s' "$(git_top "$1" || printf '%s' "$1")" | cksum | awk '{ print $1 }')
   _qe=$(qu_diem_re "$1")
   if [ -n "$_qe" ] && git -C "$1" cat-file -e "$_qe:$QU_DUONG_DAN" 2>/dev/null &&
      mkdir -p "$_qd" 2>/dev/null && _qtmp=$(qu_tam "$_qd") &&
@@ -345,4 +361,16 @@ qu_hieu_luc() {
   fi
   mv "$_qtmp" "$_qd/$_qk.md"
   QU_HL="$_qd/$_qk.md"; printf '%s\n' "$QU_HL"
+}
+
+# nho_san <thư-mục-feature> — gọi ở shell chính của script, trước các lời gọi $(…): nhớ gốc repo, thư mục
+# git chung và conventions.md hiệu lực (qu_hieu_luc) để mọi subshell dùng lại thay vì gọi git lại.
+nho_san() {
+  git_top "$1" >/dev/null 2>&1 || return 0
+  git_common "$1" >/dev/null 2>&1
+  _ns_top=$(git_top "$1")
+  git_top "$_ns_top" >/dev/null 2>&1; git_common "$_ns_top" >/dev/null 2>&1
+  if [ -n "${AW_CONFIG:-}" ] && command -v qu_hieu_luc >/dev/null 2>&1; then
+    qu_hieu_luc "${AW_REPO:-$_ns_top}" >/dev/null 2>&1 || :
+  fi
 }

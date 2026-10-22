@@ -187,7 +187,7 @@ tk_mau_task() {
 # working tree, chưa track) mà không khớp mẫu của riêng task, trừ ignored_files và artifact.
 # Mỗi dòng một file. Chỉ để cảnh báo: sửa file của task khác có thể chính đáng (ghi "Unplanned").
 tk_pham_vi() {
-  _pv_top=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  _pv_top=$(git_top "$1") || return 0
   git -C "$_pv_top" cat-file -e "$3^{commit}" 2>/dev/null || return 0
   _pv_bo=$(conv_get "$(kc_conventions "$1")" ignored_files)
   _pv_cho=$(tk_mau_task "$1/plan.md" "$2")

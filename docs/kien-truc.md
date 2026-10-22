@@ -750,7 +750,7 @@ hay "phase `plan`", không nói trống.
   (`docs/viec-can-lam.md`).
 - **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
   target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
-  `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`) chạy nó
+  `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`, `23-sdlc-syntax.sh`, `24-sdlc-stage-status.sh`) chạy nó
   trên engine hiện tại (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
 - Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
   `provides` / `capabilities` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map

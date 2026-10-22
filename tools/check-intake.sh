@@ -31,6 +31,7 @@ kq_khai check-intake.sh \
 . "$HERE/lib/toc.sh"
 
 DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
 MD="$DIR/intake.md"
 [ -f "$MD" ] || { echo "LỖI: không tìm thấy $MD — chạy /aw-intake trước" >&2; exit 2; }
 
