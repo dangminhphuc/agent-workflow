@@ -124,6 +124,13 @@ viet_review; thay "$F/review.md" '- Repro test fails because: grep không thấy
 ky_vong 1 "review chặn bugfix thiếu \"Test tái hiện đỏ vì\"" sh "$T/check-review.sh" "$F"
 viet_review
 
+cp "$F/repro.md" "$TMP/repro.bak"
+sed 's/^- Lệnh: .*/- Lệnh: `echo khac`/' "$F/repro.md" > "$TMP/repro.doi" && mv "$TMP/repro.doi" "$F/repro.md"
+dung "implement: lệnh tái hiện khác lệnh đang xanh thì chỉ cảnh báo" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'lệnh tái hiện trong repro.md khác lệnh đang xanh'"
+ky_vong 0 "…implement vẫn ĐẠT" sh "$T/check-implement.sh" "$F"
+ky_vong_ly_do 1 "review chặn khi lệnh xanh không phải lệnh đã đỏ" "…đúng lý do" 'lệnh tái hiện trong repro.md khác lệnh đang xanh' sh "$T/check-review.sh" "$F"
+mv "$TMP/repro.bak" "$F/repro.md"
+
 # test xanh tren code chua sua -> khong tai hien duoc
 g stash -q
 printf 'TEST_CMD="true"\n%s\n' "$BM_XANH" > "$CFG/config.sh"

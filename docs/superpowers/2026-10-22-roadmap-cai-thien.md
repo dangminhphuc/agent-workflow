@@ -46,7 +46,7 @@
 | SP11 | Gỡ adapter `planned` | 4 | xong | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP13 | Checker LLM cho spec | 5 | chờ | — | Đọc lại nguồn hay chỉ `Quote`; chặn ở đâu | | | |
-| SP14 | Bugfix: test tái hiện xanh sau khi sửa | 5 | chờ | — | Chặn hay cảnh báo | | | |
+| SP14 | Bugfix: lệnh tái hiện xanh sau khi sửa | 5 | xong | — | So cả lệnh, không tách tên test; cảnh báo ở implement, chặn ở review | | | |
 | SP15 | `out_of_scope` cho capability `plan`/`verify`/`deploy` engine không định làm | 5 | chờ | — | Chốt danh sách id | | | |
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | chờ | — | Cách ghi nguồn | | | |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
@@ -144,19 +144,6 @@ bởi finding của spec là `design` **hoặc** `plan` khi `Design: skip`/`chor
 
 **Tài liệu.** `01-spec.md`, `docs/kien-truc.md` § LLM checker + điểm yếu 3, `docs/huong-dan.md` § Phase 01
 + § 4 Bản đồ artifact, `adapters/cursor/README.md`.
-
-### SP14 — Bugfix: test tái hiện xanh sau khi sửa
-
-**Vấn đề.** INV-007 chỉ giữ "test tái hiện đỏ trên code chưa sửa" (`aw check repro`). Máy không biết test
-đỏ **vì đúng bug**: lỗi biên dịch, test khác đang hỏng sẵn cũng đỏ. Hiện chỉ review phán (`Repro test fails
-because:` trong `review.md`).
-
-**Hướng.** Đòi đúng test đã đỏ trong `repro.md` phải xanh sau khi sửa — lỗi biên dịch hay test hỏng sẵn
-không tự xanh nhờ bản sửa. Kiểm trước: `repro.md` hiện ghi output của cả `TEST_CMD`, có tách được tên
-test đỏ không; `test-results.md` xanh toàn bộ đã ngầm đòi điều này tới đâu.
-
-**Cần quyết.** Chặn hay cảnh báo (nhận diện tên test theo ngôn ngữ dễ báo nhầm → cảnh báo ở implement,
-chặn ở review). Máy giữ được thì thêm invariant hoặc nới INV-007 (`interface-sdlc.md` § 4.1).
 
 ### SP15 — `out_of_scope` cho capability engine không định làm
 

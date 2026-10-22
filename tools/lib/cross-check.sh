@@ -519,6 +519,39 @@ kc_tai_hien() {
   grep -q 'Mã thoát: `' "$_t" || echo "repro.md không phải do check-repro.sh ghi (thiếu dòng mã thoát)"
 }
 
+# kc_lenh_art <file> -> dòng "- Lệnh:" bỏ backtick, hoặc rỗng.
+kc_lenh_art() {
+  [ -f "$1" ] || return 0
+  awk '
+    { sub(/\r$/, "") }
+    /^- Lệnh:/ {
+      sub(/^- Lệnh:[ \t]*/, "")
+      gsub(/`/, "")
+      gsub(/^[ \t]+|[ \t]+$/, "")
+      print
+      exit
+    }
+  ' "$1"
+}
+
+# kc_repro_cung_lenh <thư-mục> — bugfix: lệnh xanh (test-results.md) phải là lệnh đã đỏ (repro.md).
+# Không tách tên test trong output: cả lệnh, nên không báo nhầm theo ngôn ngữ.
+# Cảnh báo ở implement, review chặn (kc_canh_bao_theo_loai).
+kc_repro_cung_lenh() {
+  [ "$(kc_loai "$1")" = "bugfix" ] || return 0
+  [ -f "$1/repro.md" ] || return 0
+  [ -f "$1/test-results.md" ] || return 0
+  _do=$(kc_lenh_art "$1/repro.md")
+  _xanh=$(kc_lenh_art "$1/test-results.md")
+  if [ -z "$_do" ] || [ -z "$_xanh" ]; then
+    echo "repro.md hoặc test-results.md thiếu dòng \"Lệnh:\" — không biết lệnh đỏ và lệnh xanh có phải một"
+    return 0
+  fi
+  if [ "$_do" != "$_xanh" ]; then
+    echo "lệnh tái hiện trong repro.md khác lệnh đang xanh trong test-results.md — test đã đỏ không phải lệnh vừa qua"
+  fi
+}
+
 # kc_hieu_nang <thư-mục-feature> — perf: phải có số đo trước và sau do máy ghi
 kc_hieu_nang() {
   _t="$1/perf.md"
@@ -552,6 +585,7 @@ kc_chan_theo_loai() {
 kc_canh_bao_theo_loai() {
   kc_loai_branch "$1"
   case "$(kc_loai "$1")" in
+    bugfix)   kc_repro_cung_lenh "$1" ;;
     refactor|perf) kc_test_cu_sua "$1" ;;
   esac
 }

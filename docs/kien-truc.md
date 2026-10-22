@@ -65,7 +65,7 @@ Mẫu chung cho bằng chứng theo loại: **máy tự chạy và tự ghi**, *
 
 | Loại | Máy chặn | Người phán | Vì sao không để máy phán |
 |---|---|---|---|
-| `bugfix` | `repro.md` ghi lúc diff chỉ đụng file test, `ĐỎ` | Đỏ **đúng vì bug** | Test mới trên code cũ có thể đỏ vì lỗi biên dịch |
+| `bugfix` | `repro.md` đỏ khi diff chỉ đụng file test; lệnh xanh sau khi sửa phải là đúng lệnh đó | Đỏ **đúng vì bug** | Output của cả lệnh không tách được tên test; lỗi biên dịch cũng đỏ |
 | `refactor` | Xoá test cũ; sửa test cũ không khai; REQ preserve không có test trên nhánh gốc | Diff test cũ chỉ đổi import | "Chỉ đổi import" phụ thuộc ngôn ngữ, hay báo nhầm |
 | `perf` | Thiếu số đo trước/sau | Đạt mục tiêu chưa | Số đo dao động; chặn theo ngưỡng sẽ nhầm |
 | `chore` | Đụng `production_code`; dependency không khai; khai `major` | Mức phiên bản đúng | Cú pháp phiên bản mỗi hệ sinh thái mỗi khác |
