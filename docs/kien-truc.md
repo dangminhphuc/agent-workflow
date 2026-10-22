@@ -375,7 +375,7 @@ xếp checker mới: độ chính xác, chi phí nếu lọt, nơi sửa rẻ nh
 
 Trước đây mã mỗi loại một kiểu: `YC`/`PH` là chữ Việt viết tắt, `D`/`T` một chữ, phần số khi 2 khi
 3 chữ số. Người phải nhớ riêng từng loại, mã một chữ (`D`, `T`) lẫn với chữ thường trong câu và khó
-grep. Giờ mọi mã trong job dir là `<TIỀN TỐ>-NNN` (`REQ`, `DEC`, `FND`, `TSK`, `RFR`):
+grep. Giờ mọi mã trong job dir là `<TIỀN TỐ>-NNN` (`REQ`, `DEC`, `FND`, `TSK`, `RFR`, `RVW`):
 
 - **Ba chữ tiếng Anh**, viết tắt đúng thuật ngữ — cùng luật với tên trường trong artifact (tiếng
   Anh, checker khớp đúng chữ). Ba chữ đủ để thêm loại mới mà không đụng loại cũ; một chữ thì sớm hết.
@@ -544,6 +544,14 @@ làm `tdd.md` stale). LLM checker mới chỉ cần ghi `<id>-findings.md` đún
   và không phải tên agent; bỏ trống khoá = tắt luật.
 - **Category tự do (kebab-case)**: danh sách cố định hoặc quá thô hoặc dài tới mức chọn bừa;
   `aw journal` liệt kê tên đã có để dùng lại.
+- **Finding cần sửa có mã `RVW-NNN`; sửa đi qua `/aw-plan` bổ sung.** Trước đây finding không mã, nên task
+  sửa không trỏ về được; `aw check plan` buộc `Covers:` nên agent gán đại một REQ cho finding không gắn REQ,
+  làm sai ánh xạ REQ → task mà Lens 1 dựa vào; chạy lại `/aw-plan` có thể viết lại cả `plan.md`. Giờ
+  `Blocker`/`Should fix` mang mã (máy chặn thiếu/trùng), `/aw-plan` chỉ **thêm** task với `Fixes: RVW-NNN`
+  (hoặc URL bình luận MR), và INV-001 nới thành "phủ một REQ hoặc sửa một finding". Máy chỉ kiểm mã của
+  task chưa xong (review lại ghi đè `review.md`; lịch sử ở git); task `[x]` bị sửa nội dung thì Lens 2 bắt.
+  `Blocker` luôn phải sửa — không có đường "chấp nhận" (người không đồng ý thì hạ mức finding khi review
+  lại, kèm lý do).
 
 ## Cross-check, trạng thái sạch, nhật ký
 

@@ -67,6 +67,7 @@ case "${1:-}" in
         xuat()
         if (match($0, /\[(Blocker|Should fix)\]/)) {
           muc = substr($0, RSTART + 1, RLENGTH - 2); ten = trim(substr($0, RSTART + RLENGTH)); gsub(/\t/, " ", ten); cat = ""
+          if (match(ten, /^RVW-[0-9]+/)) { ten = trim(substr(ten, RLENGTH + 1)); sub(/^—[ \t]*/, "", ten) }  # mã chỉ có nghĩa trong một việc
         }
         next
       }

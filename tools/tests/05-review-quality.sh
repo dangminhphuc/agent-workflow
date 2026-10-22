@@ -20,21 +20,32 @@ ky_vong 0 "Lens 3 có finding đủ Location file:dòng thì cho qua" sh "$CHK" 
 viet_review; thay "$F/review.md" '- None' "- None
 $L3_SF"
 ky_vong 1 "chặn Lens 3 vừa \"- None\" vừa có finding" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Category: duplicate-code
 - Problem: có sẵn hàm tương tự'
 ky_vong 1 "chặn [Should fix] thiếu Location" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Category: duplicate-code
 - Location: `file:dòng`'
 ky_vong 1 "chặn Location giữ chỗ của mẫu (không phải file:dòng)" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] <tiêu đề>
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — <tiêu đề>
 - Location: `src/a.txt:1`'
 ky_vong 1 "chặn tiêu đề finding giữ chỗ của mẫu" sh "$CHK" "$F"
 viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên'
 toc_f review.md
 ky_vong 0 "[Nit] không bắt Location" sh "$CHK" "$F"
-viet_review; thay "$F/review.md" '- None' '### [Should fix] trùng hàm
+# Mã finding: [Blocker] / [Should fix] mang RVW-NNN để task sửa (Fixes:) trỏ về được; [Nit] không bắt
+viet_review; thay "$F/review.md" '- None' "$(printf '%s\n' "$L3_SF" | sed 's/RVW-001 — //')"
+toc_f review.md
+ky_vong 1 "chặn [Should fix] thiếu mã RVW" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3 \[Should fix\] \"trùng hàm\": thiếu mã — tiêu đề dạng \"### \[mức\] RVW-NNN — <tiêu đề>\"'"
+viet_review; thay "$F/review.md" '- None' "$L3_SF
+
+$L3_SF"
+toc_f review.md
+ky_vong 1 "chặn hai finding cùng mã" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 3: RVW-001 trùng — mỗi finding một mã'"
+viet_review; thay "$F/review.md" '- None' '### [Should fix] RVW-001 — trùng hàm
 - Location: `src/a.txt:1`'
 ky_vong 1 "chặn [Should fix] thiếu Category" sh "$CHK" "$F"
 dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'thiếu dòng \"- Category: <loại>\"'"
@@ -44,7 +55,7 @@ viet_review; thay "$F/review.md" '- None' '### [Nit] đặt tên
 - Category: Tên Tuỳ Ý'
 toc_f review.md
 ky_vong 0 "[Nit] không bắt Category" sh "$CHK" "$F"
-L3_B='### [Blocker] mất dữ liệu
+L3_B='### [Blocker] RVW-001 — mất dữ liệu
 - Category: data-loss
 - Location: `src/a.txt:1`
 - Problem: ghi đè'

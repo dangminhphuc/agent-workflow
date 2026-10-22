@@ -112,7 +112,11 @@ $alk
 EOF
 fi
 
-awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
+# Mã finding của review.md hiện tại — task "Fixes: RVW-NNN" (plan bổ sung sau review) phải trỏ về một mã có thật.
+RVW=""
+[ -f "$DIR/review.md" ] && RVW=$(awk '{ sub(/\r$/, "") } /^###[ \t]+\[(Blocker|Should fix|Nit)\][ \t]+RVW-[0-9]+/ { match($0, /RVW-[0-9]+/); printf " %s", substr($0, RSTART, RLENGTH) }' "$DIR/review.md")
+
+awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
   function loi(msg) { n_loi++; print "  [LỖI] " msg }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
   function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); return trim(s) }
@@ -185,6 +189,19 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
     next
   }
 
+  # Plan bổ sung sau review: task sửa finding thay "Covers" bằng "Fixes: RVW-NNN" hoặc URL bình luận MR.
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Fixes\**:/ {
+    v = $0; sub(/^[^:]*:/, "", v); gsub(/[`,]/, " ", v); n = split(v, gt_fx, /[ \t]+/)
+    for (i = 1; i <= n; i++) {
+      x = gt_fx[i]; if (x == "") continue
+      if (x ~ /^RVW-[0-9]+$/) { fx[cur] = fx[cur] " " x; co_sua[cur] = 1 }
+      else if (x ~ /^https?:\/\/./) co_sua[cur] = 1
+      else loi(cur ": \"Fixes:\" \"" x "\" — chỉ nhận RVW-NNN hoặc URL bình luận MR (http(s)://…)")
+    }
+    next
+  }
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Status\**:/ { if ($0 ~ /\[x\]/) xong[cur] = 1 }
+
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Based on\**:/ {
     thu_ma($0, "DEC-[0-9]+")
     for (i = 1; i <= n_tim; i++) {
@@ -224,7 +241,9 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
 
     for (i = 1; i <= n_task; i++) {
       t = dsach_task[i]
-      if (!(t in co_phu))      loi(t ": thiếu dòng \"Covers:\" — task không ánh xạ được về yêu cầu nào")
+      if (!(t in co_phu) && !(t in co_sua)) loi(t ": thiếu \"Covers:\" hoặc \"Fixes:\" — task phải phủ một REQ hoặc sửa một finding review")
+      # Fixes trên task chưa xong phải trỏ về finding của review.md hiện tại (task [x]: review đã ghi lại, lịch sử ở git)
+      if (!(t in xong)) { n_fx = split(fx[t], ds_fx, " "); for (j = 1; j <= n_fx; j++) if (ds_fx[j] != "" && index(rvw, " " ds_fx[j] " ") == 0) loi(t ": \"Fixes: " ds_fx[j] "\" nhưng review.md không có finding mã đó") }
       if (!(t in co_kc_dong))  loi(t ": thiếu dòng \"Verify:\"")
       if (!(t in co_fdk_dong)) loi(t ": thiếu dòng \"Expected files:\"")
     }

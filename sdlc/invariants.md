@@ -10,11 +10,11 @@ field names). How this engine implements the rule goes on the optional `- Engine
 `Tested by:` names a test file followed by the exact names of at least one of its cases in double
 quotes: `` `tools/tests/NN-x.sh` "case", "case" ``. Each named case must exist in that file.
 
-### INV-001 — Every task traces to a requirement
-- Rule: every task covers an existing requirement; every requirement is covered by a task or explicitly deferred.
-- Engine: task line `Covers: REQ-NNN`; plan section "Deferred".
+### INV-001 — Every task traces to a requirement or a review finding
+- Rule: every task covers an existing requirement or fixes a finding of the current review; every requirement is covered by a task or explicitly deferred.
+- Engine: task line `Covers: REQ-NNN` or `Fixes: RVW-NNN` (or an MR comment URL); plan section "Deferred".
 - Enforced by: `tools/check-plan.sh`
-- Tested by: `tools/tests/02-design-plan.sh` "chặn REQ chưa được ánh xạ"
+- Tested by: `tools/tests/02-design-plan.sh` "chặn REQ chưa được ánh xạ", "task không Covers, không Fixes → chặn", "Fixes: RVW không có trong review.md → chặn"
 
 ### INV-002 — Every task decision traces to a design decision
 - Rule: every design decision a task relies on exists in the approved design.

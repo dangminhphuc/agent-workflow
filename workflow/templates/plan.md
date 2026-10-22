@@ -31,6 +31,8 @@ based_on: []
 
 > **Status:** `[ ]` chưa làm · `[~]` đang làm · `[x]` xong.
 > Còn `[~]` nào thì phase 04 chưa đạt điều kiện ra.
+> Task sửa finding review (plan bổ sung sau `/aw-review`): dòng `Fixes:` với mã `RVW-NNN` thay cho `Covers:` khi finding
+> không gắn REQ; sửa bình luận reviewer MR: `Fixes:` với URL bình luận.
 > `Expected files` cho phép glob: `**` khớp qua thư mục (`src/**`), `*` trong một thư mục (`src/*`).
 > Bản này `*` vẫn còn khớp qua `/` nhưng máy cảnh báo — bản sau thì không; cần đệ quy thì viết `**`.
 

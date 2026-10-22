@@ -216,4 +216,39 @@ cp "$TMP/conv-glob.bak" "$CFG/conventions.md"
 viet_plan; ghi_based_on
 dung "mẫu hẹp, ngưỡng mặc định → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
 
+# Plan bổ sung sau review: task sửa finding trỏ về mã RVW (hoặc URL bình luận MR) bằng "Fixes:"
+# them_task_sua <dòng Fixes / Covers> <Status> — thêm TSK-003 trước "## Deferred"
+them_task_sua() { thay "$F/plan.md" '## Deferred' "### TSK-003 — sửa finding review
+$1
+- Expected files: \`src/a.txt\`
+- Verify: \`true\` → xanh
+- Status: \`$2\`
+
+## Deferred"; toc_f plan.md; }
+viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
+ky_vong 0 "task chỉ có Fixes: RVW có trong review.md → ĐẠT" sh "$CHK" "$F"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-009`' '[ ]'
+ky_vong 1 "Fixes: RVW không có trong review.md → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: \"Fixes: RVW-009\" nhưng review.md không có finding mã đó'"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-009`' '[x]'
+dung "Fixes trên task [x] (review đã ghi lại) → không kiểm mã" sh -c "! sh '$CHK' '$F' | grep -q 'RVW-009'"
+viet_plan; ghi_based_on; them_task_sua '- Depends on: none' '[ ]'
+ky_vong 1 "task không Covers, không Fixes → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: thiếu \"Covers:\" hoặc \"Fixes:\" — task phải phủ một REQ hoặc sửa một finding review'"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: https://gitlab.vd/nhom/repo/-/merge_requests/1#note_2' '[ ]'
+ky_vong 0 "Fixes: URL bình luận MR → ĐẠT" sh "$CHK" "$F"
+viet_plan; ghi_based_on; them_task_sua '- Fixes: abc' '[ ]'
+ky_vong 1 "Fixes: giá trị lạ → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'TSK-003: \"Fixes:\" \"abc\" — chỉ nhận RVW-NNN hoặc URL bình luận MR'"
+# Trọn vòng: review có RVW-001 → plan bổ sung task Fixes → aw task next trả task mới → review chặn tới khi xong
+viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md
+viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
+ky_vong 0 "trọn vòng: plan bổ sung ĐẠT" sh "$CHK" "$F"
+dung "…aw task next trả task sửa mới" bang "$(sh "$T/task.sh" next "$F" 2>/dev/null)" "TSK-003"
+ghi_tree_review
+ky_vong 1 "…review chặn khi task sửa chưa xong" sh "$T/check-review.sh" "$F"
+dung "…đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'TSK-003 chưa làm'"
+viet_plan; ghi_based_on; viet_review
+
 ket_thuc

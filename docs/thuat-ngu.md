@@ -27,7 +27,7 @@ Mọi mã theo cùng một dạng: `<TIỀN TỐ>-<SỐ>`.
 - **Số** có đúng 3 chữ số, có số 0 đứng đầu (`REQ-001`, `DEC-001`, `TSK-012`), đánh liên tiếp trong
   một artifact. Anchor là mã viết thường: `#req-001`, `#dec-001`. Heading có mã không đủ hoặc thừa
   chữ số (`REQ-1`, `DEC-0001`) bị `aw check` của phase viết ra mã chặn; đánh số liên tiếp thì chưa kiểm.
-- **Phạm vi**: mã trong job dir (`REQ`, `DEC`, `FND`, `TSK`, `RFR`) chỉ có nghĩa trong một `job`;
+- **Phạm vi**: mã trong job dir (`REQ`, `DEC`, `FND`, `TSK`, `RFR`, `RVW`) chỉ có nghĩa trong một `job`;
   `REQ-001` của hai job là hai thứ khác nhau. Mã của `durable knowledge` dùng chung cả `target repo`
   nên giữ dạng riêng: `BR-<MIỀN>-NNN` có thêm miền, `ADR-NNNN` theo quy ước ADR thông dụng.
 
@@ -39,6 +39,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `decision` *(trước: quyết định kỹ thuật)* | `DEC-NNN` | Lựa chọn mà người khác có thể chọn khác — ≥ 2 phương án, đánh đổi, lựa chọn, vì sao khó đảo ngược. Mỗi DEC một `approval checkbox` | `tdd.md` (`### DEC-NNN`) | agent (`Mode 1`) hoặc người phác trước (`Mode 2`) |
 | `finding` *(trước: phát hiện)* | `FND-NNN` | Kết quả của `LLM checker` về thiết kế: `Severity: block \| warn` | `design-findings.md` | `LLM checker` |
 | `task` | `TSK-NNN` | Bước của kế hoạch: `Covers` REQ nào, `Based on` DEC nào, `Expected files`, `Verify` | `plan.md` | agent; `Status` do máy giữ |
+| `review finding` | `RVW-NNN` | Finding `Blocker` / `Should fix` của review độc lập; task sửa nó ghi `Fixes: RVW-NNN` (plan bổ sung) | `review.md` | agent review |
 | `refactor request` | `RFR-NNN` | Yêu cầu refactor của người, mới ghi nhận, chưa làm | `refactor-requests.md` | `/aw-refactor` |
 | `business rule` *(trước: luật nghiệp vụ bền)* | `BR-<MIỀN>-NNN` | REQ đã duyệt được nâng thành bất biến của sản phẩm, đọc lại ở các `job` sau | `docs/product/rules/<miền>.md` của `target repo` | người chọn nâng (`- Promote: BR-…`) |
 | `ADR` | `ADR-NNNN` | **Architecture Decision Record**: DEC-xxx đã duyệt được nâng thành "vì sao code như vậy" của repo | `docs/adr/` của `target repo` | người chọn nâng (`- Promote: adr`) |

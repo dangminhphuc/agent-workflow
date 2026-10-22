@@ -1,4 +1,8 @@
 ### Thêm
+- **Vòng review → sửa có đường đi rõ.** Finding `Blocker` / `Should fix` của `review.md` mang mã `RVW-NNN`;
+  `/aw-plan` chạy lại sau review ở chế độ **bổ sung**: chỉ thêm task, task sửa ghi `Fixes: RVW-NNN` (hoặc
+  `Fixes: <URL bình luận MR>`) thay `Covers:`. `aw check plan` kiểm `Fixes` trỏ mã có thật. `Blocker` vẫn
+  luôn phải sửa.
 - **Glob `**` trong `plan.md`.** `Expected files` / `Unplanned` dùng được `**` (khớp qua thư mục). Giai đoạn
   chuyển tiếp: `*` vẫn khớp qua `/` nhưng `aw check implement` / `aw check review` cảnh báo (không chặn) file
   chỉ khớp nhờ `*` vượt thư mục và gợi ý cách viết `**` — bản sau `*` của `plan.md` sẽ không qua `/`. Glob
@@ -42,3 +46,10 @@
 - **Capability out-of-scope.** Khoá `out_of_scope:` của `workflow.yaml` khai capability engine quyết không
   làm kèm lý do (e2e, kiểm tải, triển khai, quan sát production); `check-sdlc.sh` in chúng ở khối "Không
   làm" thay vì roadmap. Trạng thái stage không đổi.
+
+### Thay đổi
+- **`aw check review` chặn finding `Blocker` / `Should fix` không có mã `RVW-NNN` hoặc trùng mã.** Review mới
+  phải viết tiêu đề dạng `### [Blocker] RVW-001 — <tiêu đề>` (mẫu `review.md` đã đổi); `[Nit]` không cần mã.
+- **INV-001 nới** (interface SDLC): "mọi task phủ một REQ" thành "mọi task phủ một REQ **hoặc sửa một finding
+  của review hiện tại**". Lý do: finding lỗi (thiếu kiểm null, lỗ hổng) thường không gắn REQ nào; buộc
+  `Covers:` khiến agent gán đại REQ, làm sai ánh xạ REQ → task mà review Lens 1 dựa vào.

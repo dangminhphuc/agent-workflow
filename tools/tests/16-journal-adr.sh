@@ -29,6 +29,7 @@ dung "…có ba phần" sh -c "sh '$NK' 2>/dev/null | grep -q 'Thất bại theo
 viet_review; thay "$F/review.md" '- None' "$L3_SF"; toc_f review.md; ghi_tree_review
 ky_vong 0 "review ĐẠT ghi finding theo Category" sh "$T/check-review.sh" "$F"
 dung "…findings.tsv có duplicate-code" sh -c "awk -F'\t' '\$4 == \"duplicate-code\"' '$JD/findings.tsv' | grep -q ."
+dung "…tiêu đề trong nhật ký bỏ mã RVW (mã chỉ có nghĩa trong một việc)" sh -c "awk -F'\t' '\$4 == \"duplicate-code\" { print \$5 }' '$JD/findings.tsv' | grep -qx 'trùng hàm'"
 sh "$T/check-review.sh" "$F" >/dev/null 2>&1
 dung "review chạy lại không nhân đôi" bang "$(awk -F'\t' '$4 == "duplicate-code"' "$JD/findings.tsv" | wc -l | tr -d ' ')" "1"
 F2="$R/.agent-workflow/feat_y"; cp -R "$F" "$F2"

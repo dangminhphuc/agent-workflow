@@ -271,6 +271,12 @@ l3=$(awk '
     dong_muc()
     if (match($0, /\[(Blocker|Should fix|Nit)\]/)) {
       muc = substr($0, RSTART + 1, RLENGTH - 2); ten = trim(substr($0, RSTART + RLENGTH))
+      # Mã RVW-NNN: task sửa (plan.md "Fixes:") trỏ về đúng finding; [Nit] không bắt
+      ma = ""
+      if (match(ten, /^RVW-[0-9]+/)) { ma = substr(ten, 1, RLENGTH); ten = trim(substr(ten, RLENGTH + 1)); sub(/^—[ \t]*/, "", ten) }
+      if ((muc == "Blocker" || muc == "Should fix") && ma == "")
+        print "Lens 3 [" muc "] \"" ten "\": thiếu mã — tiêu đề dạng \"### [mức] RVW-NNN — <tiêu đề>\""
+      if (ma != "") { if (ma in da_ma) print "Lens 3: " ma " trùng — mỗi finding một mã"; da_ma[ma] = 1 }
       co_loc = 0; loc = ""; kb = ""; cat = ""; n_f++; if (muc == "Blocker") n_b++
     } else print "Lens 3: tiêu đề \"" $0 "\" không có mức [Blocker] / [Should fix] / [Nit]"
     next

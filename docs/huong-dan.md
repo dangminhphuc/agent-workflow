@@ -583,6 +583,11 @@ quay về `[ ]` khi chạy lại plan. Bạn duyệt lại riêng DEC đó.
 **Việc của bạn:** không bắt buộc. Nên đọc lướt `Deferred` (nhất là `must` bị hoãn) và task
 `On assumption: yes`.
 
+**Chạy lại sau `/aw-review` (chế độ bổ sung):** review còn finding `Blocker` / `Should fix` (`RVW-NNN`)
+chưa có task sửa → `/aw-plan` chỉ **thêm** task cuối danh sách, dòng `Fixes: RVW-NNN` thay `Covers:` khi finding
+không gắn REQ. Task cũ giữ nguyên. `aw check plan` chặn task không `Covers` lẫn `Fixes`, và `Fixes` trỏ mã
+không có trong `review.md` (chỉ xét task chưa xong).
+
 **Máy chặn khi:** REQ không có task phủ mà không nằm trong `Deferred`; task thiếu trường. Bugfix: task
 đầu phải là viết test tái hiện. Perf: task đầu phải là đo trước.
 
@@ -646,7 +651,7 @@ artifact stale, tài liệu module/ADR/luật bị đụng phạm vi. **Chỉ c�
 | Lens 2 — Design and scope | lệch DEC-xxx, thay đổi ngoài task, task `[x]` không có dấu vết; mỗi task có cảnh báo phạm vi (`Scope warning`) phải giải trình ở `Task scope warnings` — thiếu là máy chặn |
 | `## Repo rules` | mỗi file `rules_*`/`uses_*` một verdict |
 | `## Durable knowledge` | mỗi ADR/tài liệu module/luật bị đụng phạm vi: `pass \| updated \| not applicable` |
-| Lens 3 — Quality | finding `[Blocker] / [Should fix] / [Nit]`, có vị trí, loại lỗi; Blocker có kịch bản lỗi |
+| Lens 3 — Quality | finding `[Blocker] / [Should fix]` có mã `RVW-NNN` (`[Nit]` không cần), có vị trí, loại lỗi; Blocker có kịch bản lỗi |
 | Lens 4 — Security | bảng **7 hạng mục cố định** (injection, authz, PII trong log, secrets, crypto, SSRF/path/deserialization, dependency mới) |
 | `Security reviewer` | (khi diff đụng `sensitive_code`) **tên người** đã rà bảo mật |
 
@@ -657,7 +662,8 @@ quyết. REQ đứng trên giả định chưa xác nhận → `pending`, không
 **Việc của bạn:**
 
 1. Đọc `Conclusion` và xác nhận kết luận.
-2. Quyết định xử lý từng `Blocker`: sửa → quay lại `/aw-implement` (task mới) rồi `/aw-review` lại.
+2. Mọi `Blocker` đều phải sửa (không có đường "chấp nhận"): chạy `/aw-plan` — chế độ **bổ sung** chỉ thêm task
+   `Fixes: RVW-NNN` cho từng finding, không đụng task cũ — rồi `/aw-implement`, rồi `/aw-review` lại.
 3. Diff đụng `sensitive_code` → **một người** đọc Lens 4 + diff và tự ghi `- Security reviewer: <tên>`.
    Agent không bao giờ điền dòng này.
 4. Base bất thường (xếp chồng trên branch khác) → xác nhận là cố ý.
@@ -681,7 +687,7 @@ chưa trả lời.
 4. `aw ship status` theo dõi; ghi `ship.md` (máy ghi, không sửa tay).
 5. **Bạn review và merge trên GitHub/GitLab.** Agent không bao giờ merge, approve, bật auto-merge.
 
-Reviewer yêu cầu sửa → `/aw-implement` (task mới) → `/aw-review` → `aw ship create … --target <cùng nhánh>`
+Reviewer yêu cầu sửa → `/aw-plan` (bổ sung task `Fixes: <URL bình luận>`) → `/aw-implement` → `/aw-review` → `aw ship create … --target <cùng nhánh>`
 (đẩy commit mới vào MR đang mở).
 
 **Ở main checkout (dọn việc đã merge):** chạy `/aw-ship` → `aw ship sweep` phân loại: *dọn được*
