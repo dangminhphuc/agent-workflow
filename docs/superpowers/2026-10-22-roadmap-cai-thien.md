@@ -45,7 +45,7 @@
 | SP10 | Đường tắt cho việc nhỏ | 4 | một phần | số liệu SP9 | A xong (#81); B / C chờ số liệu SP9 | [spec](specs/2026-10-22-dot-2-design.md) § B | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81) |
 | SP11 | Gỡ adapter `planned` | 4 | xong | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
-| SP13 | Checker LLM cho spec | 5 | xong | — | Bản đầu chỉ so `Quote` và lời `[HUMAN]` | | | |
+| SP13 | Checker LLM cho spec | 5 | xong | — | Bản đầu chỉ so `Quote` và lời `[HUMAN]` | | | [#83](https://github.com/dangminhphuc/agent-workflow/pull/83) |
 | SP14 | Bugfix: test tái hiện xanh sau khi sửa | 5 | chờ | — | Chặn hay cảnh báo | | | |
 | SP15 | `out_of_scope` cho capability `plan`/`verify`/`deploy` engine không định làm | 5 | chờ | — | Chốt danh sách id | | | |
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | chờ | — | Cách ghi nguồn | | | |
