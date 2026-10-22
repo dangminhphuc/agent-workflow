@@ -20,7 +20,7 @@
 
 | # | Dự án con | Đợt | Phụ thuộc | Cần người quyết trước spec | Spec | Plan | PR |
 |---|---|---|---|---|---|---|---|
-| SP1 | Capability phạm vi + capability theo `purpose`/`provides` | 1 | — | — | [spec](specs/2026-10-22-sp1-capability-artifact-design.md) | | |
+| SP1 | Capability phạm vi + capability theo `purpose`/`provides` | 1 | — | — | [spec](specs/2026-10-22-sp1-capability-artifact-design.md) | [plan](plans/2026-10-22-sp1-capability-artifact.md) | |
 | SP2 | Invariant chặt hơn | 2 | — | — | | | |
 | SP3 | Kiểm phạm vi diff | 1 | SP1 | — | | | |
 | SP4 | Vòng review → sửa | 1 | SP2 | Có cho "chấp nhận" Blocker? | | | |
