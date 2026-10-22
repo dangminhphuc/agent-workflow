@@ -20,6 +20,8 @@ implements: implement
 provides:
   - change: diff
   - test-evidence: test-results.md
+  - task-evidence: task-results.md
+  - security-evidence: security-results.md
   - reproduction-evidence: repro.md
   - performance-evidence: perf.md
 capabilities:

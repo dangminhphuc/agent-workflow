@@ -23,3 +23,18 @@
   hưởng:** dòng "Writes" của lệnh `/aw-implement` adapter sinh ra có thêm hai file đó; luật và hành vi
   của `aw` không đổi. Người sửa engine: thêm job type mới thì thêm profile (`AGENTS.md` § Change
   together).
+- **Hai loại artifact mới của stage `implement`: `task-evidence` và `security-evidence`.** Phase
+  `04-implement` map chúng ra `task-results.md` (`aw task done`) và `security-results.md` (`aw check
+  implement`); stage `verify` khai `requires` cả hai. Vì sao: review vốn chặn khi thiếu hai file này với
+  mọi job type, nhưng interface không biết verify cần bằng chứng từng task và bằng chứng quét bảo mật.
+  **Ai bị ảnh hưởng:** không ai — chỉ đổi mô tả interface, lệnh adapter sinh ra giữ nguyên.
+- **Stage mới `breakdown` (lập task) tách khỏi `implement` (viết code).** Interface có 8 stage; phase
+  `03-plan` nay `implements: breakdown`, mỗi stage tối đa một phase. `breakdown` provides `task-plan`,
+  giữ INV-001, INV-002 và capability `CAP-breakdown-01` (trước là `CAP-implement-01`, cùng nội dung);
+  `implement` thêm `requires: task-plan`, giữ INV-003, `CAP-implement-02`, `-03`. File stage đánh số lại
+  (`03-breakdown` … `07-operate`). Vì sao: phụ thuộc "code theo kế hoạch đã duyệt" trước đây bị giấu
+  trong một stage, và `check-sdlc.sh` không bắt được việc đổi chỗ phase `plan` ↔ `implement` trong
+  `workflow.yaml` — giờ chặn. **Ai bị ảnh hưởng:** người sửa engine (gắn capability của phase `03-plan`
+  vào `CAP-breakdown-*`); người dùng `aw` không thấy gì khác.
+- **Test `20-sdlc-conformance.sh` tách đôi** vì chậm: nhóm điều kiện ra, file stage, capability, invariant
+  sang part mới `tools/tests/22-sdlc-stage-files.sh`.

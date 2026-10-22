@@ -7,6 +7,8 @@ requires:
   - task-plan
   - change
   - test-evidence
+  - task-evidence
+  - security-evidence
 provides:
   - review-report
 exit: both

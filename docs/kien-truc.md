@@ -660,7 +660,7 @@ Cách đọc và công thức cho từng loại thay đổi: [`interface-sdlc.md
   so với luồng đầy đủ: `skippable` (stage có thể không chạy), `skipped` (stage luôn không chạy),
   `adds_provides` / `adds_requires` (`<stage>: <loại>` — loại artifact chỉ loại việc này có),
   `adds_invariants`. Thân tiếng Anh ngắn, mô tả artifact thêm như thân file stage. Stage khai
-  `skippable: false` (`plan`, `require`, `implement`, `verify`) thì không profile nào được bỏ.
+  `skippable: false` (`plan`, `require`, `breakdown`, `implement`, `verify`) thì không profile nào được bỏ.
 
 Ánh xạ hiện tại (`sh tools/check-sdlc.sh` in lại bảng này, kèm bảng capability còn thiếu — giải
 thích từng dòng ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-hiện-tại)):
@@ -670,13 +670,14 @@ thích từng dòng ở [`interface-sdlc.md` § 6](interface-sdlc.md#6-roadmap-h
 | `plan` | `00-intake` | `partial` | `CAP-plan-03` ưu tiên, `CAP-plan-04` ước lượng |
 | `require` | `01-spec` | `implemented` | |
 | `design` | `02-design` | `implemented` | |
-| `implement` | `03-plan`, `04-implement` | `implemented` | |
+| `breakdown` | `03-plan` | `implemented` | |
+| `implement` | `04-implement` | `implemented` | |
 | `verify` | `05-review` | `partial` | `CAP-verify-03` e2e, `CAP-verify-04` kiểm tải, `CAP-verify-05` UAT |
 | `deploy` | `06-ship` | `partial` | `CAP-deploy-02` release/triển khai, `CAP-deploy-03` rollback |
 | `operate` | — | `gap` | `CAP-operate-01` quan sát production, `CAP-operate-02` sự cố → việc mới |
 
 Tên stage trùng tên vài phase (`plan`, `design`, `implement`) nhưng không cùng nghĩa: stage `plan` là
-chọn việc nào vào quy trình (`00-intake`), phase `03-plan` thuộc stage `implement`. Nói "stage `plan`"
+chọn việc nào vào quy trình (`00-intake`), phase `03-plan` thuộc stage `breakdown`. Nói "stage `plan`"
 hay "phase `plan`", không nói trống.
 
 **Quyết định:**
@@ -720,6 +721,15 @@ hay "phase `plan`", không nói trống.
   `exit_human` tương ứng ở phase, thứ tự phase theo thứ tự stage, `requires` do stage trước cung cấp,
   invariant có checker + test có thật, utility command không khai `implements`. Danh sách đầy đủ ở đầu
   script. Không kiểm phase làm stage **tốt** tới đâu — xem § Những chỗ thiết kế này yếu.
+- **Lập task là stage riêng (`breakdown`), không nằm trong `implement`.** Trước đây phase `03-plan` và
+  `04-implement` cùng implement stage `implement`, nên: `task-plan` là thứ stage tự sinh ra, không khai được
+  là `requires` của phần viết code — phụ thuộc "code theo kế hoạch đã duyệt" bị giấu trong stage; INV-001,
+  INV-002 (task → REQ, task → DEC) và INV-003 (REQ → test) nằm chung một chỗ; đổi chỗ hai phase trong
+  `workflow.yaml` vẫn ĐẠT vì luật thứ tự chỉ so stage. Tách thì `implement` `requires: task-plan`, mỗi
+  stage một phase, và đổi chỗ bị chặn. Engine lúc chạy không đổi (`check-implement` vốn đòi `plan.md` qua
+  `check-plan`). Tên một từ vì id capability là `CAP-[a-z]+-NN`. `CAP-implement-01` chuyển thành
+  `CAP-breakdown-01` (id mang tên stage); `CAP-implement-02`, `-03` giữ id, không đánh số lại. Làm
+  trước "Bước A" (`docs/viec-can-lam.md`) để luật của `check-plan.sh` mang id `CAP-breakdown-*` ngay.
 - **Utility command không ánh xạ vào stage** (`clarify`, `approvals`, `import`, `bootstrap`,
   `refactor`): chúng phục vụ phase, không tự tạo artifact của stage nào; khai `implements` hay
   `capabilities` → chặn.
@@ -728,8 +738,8 @@ hay "phase `plan`", không nói trống.
   (`docs/viec-can-lam.md`).
 - **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
   target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
-  `tools/tests/20-sdlc-conformance.sh` (profile: `21-sdlc-profiles.sh`) chạy nó trên engine hiện tại
-  (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
+  `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`) chạy nó
+  trên engine hiện tại (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
 - Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
   `provides` / `capabilities` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map
   `repro.md`/`perf.md` thành loại artifact buộc `04-implement` liệt kê hai file đó trong `outputs` (chúng
@@ -744,13 +754,13 @@ kiện dù chore không có design, và `repro.md`/`perf.md` không thuộc lo�
 
 Ma trận hiện tại (`sh tools/check-sdlc.sh` in lại bảng này; `tuỳ` = có thể bỏ):
 
-| Job type | `plan` | `require` | `design` | `implement` | `verify` | `deploy` | `operate` | Thêm |
-|---|---|---|---|---|---|---|---|---|
-| `feature` | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | |
-| `bugfix` | chạy | chạy | tuỳ | chạy | chạy | tuỳ | gap | `reproduction-evidence` (`repro.md`), `INV-007` |
-| `refactor` | chạy | chạy | tuỳ | chạy | chạy | tuỳ | gap | `INV-008`, `INV-009` |
-| `perf` | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | `performance-evidence` (`perf.md`), `INV-008`…`INV-010` |
-| `chore` | chạy | chạy | bỏ | chạy | chạy | tuỳ | gap | `INV-011` |
+| Job type | `plan` | `require` | `design` | `breakdown` | `implement` | `verify` | `deploy` | `operate` | Thêm |
+|---|---|---|---|---|---|---|---|---|---|
+| `feature` | chạy | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | |
+| `bugfix` | chạy | chạy | tuỳ | chạy | chạy | chạy | tuỳ | gap | `reproduction-evidence` (`repro.md`), `INV-007` |
+| `refactor` | chạy | chạy | tuỳ | chạy | chạy | chạy | tuỳ | gap | `INV-008`, `INV-009` |
+| `perf` | chạy | chạy | chạy | chạy | chạy | chạy | tuỳ | gap | `performance-evidence` (`perf.md`), `INV-008`…`INV-010` |
+| `chore` | chạy | chạy | bỏ | chạy | chạy | chạy | tuỳ | gap | `INV-011` |
 
 **Quyết định:**
 
