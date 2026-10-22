@@ -167,3 +167,55 @@ tk_phu() {
     END { xuat() }
   ' "$1"
 }
+
+# ------------------------------------------------------------------ phạm vi theo task
+# tk_mau_task <plan.md> <TSK-NNN> -> mẫu file được phép cho riêng task: token trong backtick ở
+# dòng "Expected files" của task, cộng hàng "Unplanned" có cột Task = task đó.
+tk_mau_task() {
+  awk -v t="$2" '
+    function bt(s) { while (match(s, /`[^`]+`/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) } }
+    { sub(/\r$/, "") }
+    /^###[ \t]/ { vao = ($0 ~ ("^###[ \t]+" t "([ \t]|$)")); next }
+    /^##[ \t]+Unplanned/ { un = 1; vao = 0; next }
+    /^##[ \t]/ { un = 0; vao = 0; next }
+    vao && /^[ \t]*-[ \t]*\**Expected files\**:/ { bt($0) }
+    un && /^\|/ { split($0, c, "|"); x = c[2]; gsub(/[ \t`*]/, "", x); if (x == t) bt($0) }
+  ' "$1"
+}
+
+# tk_pham_vi <thư-mục-feature> <TSK-NNN> <commit lúc start> -> file đổi từ lúc task bắt đầu (đã commit,
+# working tree, chưa track) mà không khớp mẫu của riêng task, trừ ignored_files và artifact.
+# Mỗi dòng một file. Chỉ để cảnh báo: sửa file của task khác có thể chính đáng (ghi "Unplanned").
+tk_pham_vi() {
+  _pv_top=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  git -C "$_pv_top" cat-file -e "$3^{commit}" 2>/dev/null || return 0
+  _pv_bo=$(conv_get "$(kc_conventions "$1")" ignored_files)
+  _pv_cho=$(tk_mau_task "$1/plan.md" "$2")
+  set -f
+  { git -C "$_pv_top" diff --name-only "$3"; git -C "$_pv_top" ls-files --others --exclude-standard; } \
+    | sort -u | while IFS= read -r _pv_f; do
+      [ -n "$_pv_f" ] || continue
+      tm_bo "$_pv_f" && continue
+      # shellcheck disable=SC2086
+      khop_glob "$_pv_f" $_pv_bo && continue
+      # shellcheck disable=SC2086
+      khop_glob "$_pv_f" $_pv_cho && continue
+      printf '%s\n' "$_pv_f"
+    done
+  set +f
+}
+
+# tk_pham_vi_chua_giai_trinh <thư-mục-feature> <review.md> -> task có "Scope warning" trong
+# task-results.md mà dòng "- Task scope warnings:" của review.md không nhắc tên. Mỗi dòng một task.
+tk_pham_vi_chua_giai_trinh() {
+  [ -f "$1/task-results.md" ] || return 0
+  awk 'FILENAME == ARGV[1] {
+         sub(/\r$/, "")
+         if ($0 ~ /^##[ \t]/) { t = ""; if (match($0, /TSK-[0-9]+/)) t = substr($0, RSTART, RLENGTH); next }
+         if (t != "" && $0 ~ /^- Scope warning:/ && !(t in co)) { co[t] = 1; ds[++n] = t }
+         next
+       }
+       { sub(/\r$/, "") }
+       /^[ \t]*-[ \t]*\**Task scope warnings\**:/ { gt = gt " " $0 }
+       END { for (i = 1; i <= n; i++) if (index(gt, ds[i]) == 0) print ds[i] }' "$1/task-results.md" "$2"
+}

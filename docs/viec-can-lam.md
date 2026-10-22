@@ -88,56 +88,6 @@ review → sửa), và là chỗ hiện để agent tự ứng biến nhiều nh
 § Phase 03/05/06 + § 9 Tình huống thường gặp, `docs/kien-truc.md` § Review + § Mã định danh,
 `docs/thuat-ngu.md` (`RVW`, `Fixes`), `CHANGELOG.md` (`Thay đổi` — `/aw-plan` có hành vi mới).
 
-### 2. Phạm vi diff: `Expected files` không chặn được glob rộng, không kiểm theo task
-
-**Vấn đề.** `Expected files` do chính agent viết ở `/aw-plan` (không có cổng người), rồi dùng làm hàng
-rào cho diff của chính agent ở implement/review. Ba lỗ:
-
-- **Kiểm theo hợp của mọi task, không theo từng task.** `kc_pham_vi` (`tools/lib/cross-check.sh`, quanh
-  dòng 104–140) gom token trong backtick của **mọi** dòng `Expected files:` cộng mục `Unplanned`, rồi
-  so với diff toàn việc. `04-implement.md` dặn "do T — only within T's Expected files" nhưng máy không
-  biết task T đã đụng file của task khác.
-- **Glob quá rộng lọt.** `khop_glob` (`tools/lib/md.sh`, quanh dòng 117) dùng `case`: `*` khớp cả `/`,
-  nên `` `*` `` hay `` `src/*` `` biến kiểm phạm vi thành vô nghĩa. `aw check plan`
-  (`tools/check-plan.sh`, quanh dòng 197–200) chỉ chặn `Expected files` trống hoặc còn `<…>`. Đã ghi ở
-  `docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 9 và 21 — nhưng chưa có luật nào bù.
-- **Lan sang luật nghiệp vụ.** `luat_pham_vi` (`tools/lib/rule.sh`, quanh dòng 154) lấy phạm vi của luật
-  `BR-` từ `Expected files` của task phủ REQ. Glob rộng → luật có phạm vi rộng → về sau
-  `kt_luat_chua_test` (`tools/lib/knowledge.sh`) cảnh báo trên diff không liên quan ở **mọi việc sau**, và
-  review phải ghi verdict cho nó.
-
-**Đề xuất (cần duyệt).**
-
-1. **Cảnh báo glob rộng ở `aw check plan`** — cảnh báo, không chặn (dễ báo nhầm: một thư mục nhỏ cũng có
-   thể cần `dir/*`).
-   - Đo bằng số file đã track trên base khớp glob (`git ls-files` tại `Base:` của `intake.md`), không
-     đoán theo hình dạng chuỗi. Vượt ngưỡng → `CẢNH BÁO: TSK-003: \`src/*\` khớp 412 file — thu hẹp`.
-   - Khoá mới `scope_glob_max_files` trong `conventions.md` (mặc định đề xuất: 30; `0` = tắt). Đổi
-     `workflow/templates/conventions.md` + `conventions-reference.md`.
-   - Glob khớp **0** file mà không phải file sẽ tạo → không cảnh báo (task tạo file mới là thường).
-   - Cần quyết: luật "warn ở implement, block ở review" của `AGENTS.md` có áp dụng không. Chặn ở review
-     thì quá muộn (code đã viết); nghiêng về chỉ cảnh báo ở plan + implement, và review Lens 2 phải ghi
-     một dòng cho mỗi glob bị cảnh báo.
-2. **Kiểm phạm vi theo task ở `aw task done`** — cảnh báo.
-   - `aw task start` ghi commit/tree lúc bắt đầu (vào `task-results.md`, khối `## TSK-NNN`).
-   - `aw task done` so file đổi từ lúc start với `Expected files` của chính task + `Unplanned` ghi tên
-     task đó; lệch → cảnh báo, không đổi nhãn kết quả.
-   - Rủi ro: agent sửa file của task trước (sửa bug vừa phát hiện) là chính đáng — chính vì vậy chỉ
-     cảnh báo và đẩy vào `Unplanned`.
-3. Sau khi làm: cập nhật mục 9 và 21 trong `docs/kien-truc.md` § Những chỗ thiết kế này yếu.
-
-**Test.**
-- `tools/tests/02-spec-design-plan.sh`: glob khớp nhiều hơn ngưỡng → cảnh báo, nhãn vẫn ĐẠT; dưới ngưỡng
-  → không cảnh báo; `scope_glob_max_files: 0` → không cảnh báo; glob khớp 0 file → không cảnh báo.
-- `tools/tests/15-conventions-task.sh`: task đụng file của task khác → `aw task done` cảnh báo, task vẫn
-  `[x]`; file ghi trong `Unplanned` của đúng task → không cảnh báo; khoá mới hợp lệ ở `aw conventions
-  check`.
-- `tools/tests/17-rule-crosscheck.sh`: không đổi hành vi (chỉ chạy lại để chắc).
-
-**Tài liệu.** `03-plan.md` bước 1 (glob hẹp), `04-implement.md` § Loop, `docs/huong-dan.md` § Phase 03/04
-+ § 2.5 (khoá mới), `docs/kien-truc.md`, `CHANGELOG.md` (`Thêm` — cảnh báo mới; người dùng có thể thấy
-cảnh báo trên plan cũ).
-
 ### 3. Checker LLM cho spec: REQ có đọc đúng câu trích không
 
 **Vấn đề.** Chỗ dễ sai nhất của cả quy trình là REQ diễn giải sai nguồn — và chưa máy nào chạm tới.

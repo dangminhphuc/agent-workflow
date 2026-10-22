@@ -111,6 +111,11 @@ while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KT
 $ktl
 KT
 
+# Cảnh báo phạm vi theo task (aw task done ghi "Scope warning") phải được giải trình ở Lens 2.
+for t in $(tk_pham_vi_chua_giai_trinh "$DIR" "$REVIEW"); do
+  loi_truoc "Lens 2: $t có cảnh báo phạm vi trong task-results.md — giải trình ở \"Task scope warnings\" (lý do chấp nhận, hoặc đã khai Unplanned)"
+done
+
 cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
 # bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.

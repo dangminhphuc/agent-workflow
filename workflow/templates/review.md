@@ -46,6 +46,7 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 - Changes outside any task: <...>
 - Tasks marked done with no trace in the diff: <...>
 - Unplanned items handled silently: <...>
+- Task scope warnings: <TSK-NNN: lý do chấp nhận / đã khai Unplanned — mỗi task có "Scope warning" trong task-results.md; không có: none>
 
 ## Repo rules
 

@@ -138,6 +138,35 @@ kc_pham_vi() {
   set +f
 }
 
+# kc_glob_rong <thư-mục-feature>
+# Mẫu "Expected files" của plan.md khớp nhiều file đã track trên commit Base hơn
+# scope_glob_max_files (mặc định 30; 0 = tắt) — mẫu quá rộng làm kiểm phạm vi vô nghĩa.
+# Mẫu khớp 0 file không báo (task tạo file mới). Mỗi dòng một cảnh báo.
+kc_glob_rong() {
+  [ -f "$1/plan.md" ] || return 0
+  _gr_n=$(conv_get "$(kc_conventions "$1")" scope_glob_max_files); _gr_n=${_gr_n:-30}
+  case "$_gr_n" in *[!0-9]*) return 0 ;; esac
+  [ "$_gr_n" -gt 0 ] || return 0
+  _gr_sha=$(intake_base_dong "$1" | awk '{ print $2 }')
+  [ -n "$_gr_sha" ] || return 0
+  _gr_top=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 0
+  git -C "$_gr_top" cat-file -e "$_gr_sha^{commit}" 2>/dev/null || return 0
+  git -C "$_gr_top" ls-tree -r --name-only "$_gr_sha" | awk -v n="$_gr_n" "$MAU_ERE_AWK"'
+    FILENAME == ARGV[1] {
+      sub(/\r$/, "")
+      if ($0 ~ /^###[ \t]/) { t = ""; if (match($0, /TSK-[0-9]+/)) t = substr($0, RSTART, RLENGTH); next }
+      if ($0 ~ /^##[ \t]/) { t = ""; next }
+      if (t != "" && $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/) {
+        s = $0
+        while (match(s, /`[^`]+`/)) { m++; tk[m] = t; mau[m] = substr(s, RSTART + 1, RLENGTH - 2); re[m] = mau_ere(mau[m], 0); s = substr(s, RSTART + RLENGTH) }
+      }
+      next
+    }
+    { for (i = 1; i <= m; i++) if ($0 ~ re[i]) dem[i]++ }
+    END { for (i = 1; i <= m; i++) if (dem[i] + 0 > n + 0) printf "%s: `%s` khớp %d file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: %d)\n", tk[i], mau[i], dem[i], n }
+  ' "$1/plan.md" -
+}
+
 # ------------------------------------------------------------------ theo loại việc
 # Loại việc có MỘT nguồn sự thật: dòng "- **Type:**" trong intake.md.
 

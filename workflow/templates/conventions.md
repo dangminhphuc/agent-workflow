@@ -43,6 +43,8 @@ test_files: *.test.* *.spec.* *_test.* test/* tests/*
 dependency_files: package.json package-lock.json yarn.lock pnpm-lock.yaml
 # [default] file đổi không cần nằm trong "Expected files" (lockfile, file sinh)
 ignored_files: package-lock.json yarn.lock pnpm-lock.yaml
+# [default] mẫu "Expected files" của plan.md khớp quá chừng này file trên base → aw check plan cảnh báo (0 = tắt)
+scope_glob_max_files: 30
 
 # ── Test ──────────────────────────────────────────────────────────
 # [default] chuỗi trước mã REQ trong test, vd // covers: REQ-001

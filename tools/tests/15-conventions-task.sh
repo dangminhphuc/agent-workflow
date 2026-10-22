@@ -44,6 +44,7 @@ qu_loi "knowledge_adr_dir trong .agent-workflow" 'knowledge_adr_dir: docs/adr' '
 qu_loi "knowledge_adr_dir trong docs/sdlc" 'knowledge_adr_dir: docs/adr' 'knowledge_adr_dir: docs/sdlc/adr' 'gỡ khỏi branch trước MR'
 qu_loi "knowledge_rules_dir ngoài repo" 'knowledge_rules_dir: docs/product/rules' 'knowledge_rules_dir: /tmp/rules' 'phải là đường dẫn tương đối'
 qu_loi "base_branch không có" 'base_branch: main' 'base_branch: khong-co' 'không có trong repo'
+qu_loi "scope_glob_max_files không phải số" 'scope_glob_max_files: 30' 'scope_glob_max_files: nhieu' 'scope_glob_max_files "nhieu" — số nguyên ≥ 0'
 qu_loi "khối chưa đóng" 'uses_review:
 ```' 'uses_review:' 'chưa đóng'
 cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'sensitive_code:
@@ -217,6 +218,29 @@ dung "implement ĐẠT kèm lưu ý task thủ công" sh -c "sh '$HT' '$F' | gre
 tk_plan_t2 '- Verify: `true` → xanh
 - Status: `[~]`'
 ky_vong 1 "--manual khi Verify có lệnh → TỪ CHỐI" sh "$TK" done "$F" TSK-002 --manual "đã xem"
+
+# Phạm vi theo task: start ghi commit lúc bắt đầu; done cảnh báo file ngoài Expected files của CHÍNH task
+viet_plan; ghi_based_on; rm -f "$F/task-results.md"
+tk_plan_t2 '- Verify: `true` → xanh
+- Status: `[ ]`'
+ky_vong 0 "start ghi Started at" sh "$TK" start "$F" TSK-002
+dung "…task-results.md có Started at = HEAD" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Started at'")" "$(git -C "$R" rev-parse HEAD)"
+printf 'x\n' > "$R/src/khac-pv.txt"
+ky_vong 0 "done: file ngoài phần của task (thuộc task khác) → vẫn XONG" sh "$TK" done "$F" TSK-002
+dung "…in CẢNH BÁO phạm vi task" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi \`src/khac-pv.txt\` — ngoài Expected files của TSK-002'"
+dung "…ghi Scope warning vào task-results.md" grep -q '^- Scope warning: `src/khac-pv.txt`' "$F/task-results.md"
+dung "…giữ Started at sau khi done ghi lại mục" sh -c ". '$T/lib/task.sh'; [ -n \"\$(tk_bc '$F/task-results.md' TSK-002 'Started at')\" ]"
+thay "$F/plan.md" '|---|---|---|---|' '|---|---|---|---|
+| TSK-001 | lạc | `src/khac-pv.txt` | giữ |'
+dung "Unplanned của task KHÁC không miễn → vẫn cảnh báo" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi'"
+thay "$F/plan.md" '| TSK-001 | lạc |' '| TSK-002 | lạc |'
+dung "file khai ở Unplanned đúng task → hết cảnh báo cho file đó" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi \`src/khac-pv.txt\`'"
+dung "…và không còn Scope warning cho file đó" sh -c "! grep -q 'Scope warning: .src/khac-pv.txt' '$F/task-results.md'"
+rm -f "$R/src/khac-pv.txt"
+awk '!/^- Started at:/' "$F/task-results.md" > "$TMP/kq" && mv "$TMP/kq" "$F/task-results.md"
+printf 'x\n' > "$R/src/khac-pv.txt"
+dung "task không có Started at (bắt đầu ở bản cũ) → không kiểm phạm vi" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO'"
+rm -f "$R/src/khac-pv.txt"
 
 # Phụ thuộc
 viet_plan; ghi_based_on

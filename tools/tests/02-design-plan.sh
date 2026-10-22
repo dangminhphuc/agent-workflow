@@ -201,4 +201,19 @@ viet_plan; thay "$F/plan.md" '- Verify: `test -f src/a.txt` → có file
 ky_vong 1 "chặn chỗ giữ chỗ chưa điền" sh "$CHK" "$F"
 viet_plan; ghi_based_on
 
+# Glob rộng ở Expected files: đếm file đã track trên commit Base khớp mẫu; vượt scope_glob_max_files → cảnh báo
+cp "$CFG/conventions.md" "$TMP/conv-glob.bak"
+thay "$CFG/conventions.md" 'scope_glob_max_files: 30' 'scope_glob_max_files: 1'
+thay "$F/plan.md" '- Expected files: `src/*` `test/*`' '- Expected files: `*`'
+ky_vong 0 "glob khớp nhiều file hơn ngưỡng → vẫn ĐẠT" sh "$CHK" "$F"
+dung "…kèm CẢNH BÁO nêu task, mẫu, số file" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*TSK-001: \`\*\` khớp [0-9]* file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: 1)'"
+thay "$CFG/conventions.md" 'scope_glob_max_files: 1' 'scope_glob_max_files: 0'
+dung "scope_glob_max_files: 0 → tắt cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+thay "$CFG/conventions.md" 'scope_glob_max_files: 0' 'scope_glob_max_files: 1'
+thay "$F/plan.md" '- Expected files: `*`' '- Expected files: `moi/*`'
+dung "glob khớp 0 file (task tạo file mới) → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+cp "$TMP/conv-glob.bak" "$CFG/conventions.md"
+viet_plan; ghi_based_on
+dung "mẫu hẹp, ngưỡng mặc định → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -q 'thu hẹp mẫu'"
+
 ket_thuc

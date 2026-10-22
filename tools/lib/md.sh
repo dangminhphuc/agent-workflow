@@ -159,6 +159,25 @@ file_hash() {
   tr -d '\r' < "$1" | sed 's/ *<!-- approval-hash: [0-9a-f]* -->//' | cksum | awk '{ print $1 }'
 }
 
+# MAU_ERE_AWK — hàm awk mau_ere(<mẫu>, <moi>) -> ERE khớp cả chuỗi. moi=0: nghĩa của khop_glob
+# (* và ? khớp cả "/"); moi=1: ** khớp cả "/", * và ? không. Ký tự khác khớp nguyên văn.
+# Ghép vào chương trình awk: awk "$MAU_ERE_AWK"' …dùng mau_ere(…)… '.
+# shellcheck disable=SC2016
+MAU_ERE_AWK='
+function mau_ere(p, moi,   r, i, ch, n) {
+  r = ""; n = length(p)
+  for (i = 1; i <= n; i++) {
+    ch = substr(p, i, 1)
+    if (ch == "*") {
+      if (moi && substr(p, i + 1, 1) == "*") { r = r ".*"; i++ }
+      else r = r (moi ? "[^/]*" : ".*")
+    } else if (ch == "?") r = r (moi ? "[^/]" : ".")
+    else if (index("\\.^$+(){}[]|", ch)) r = r "\\" ch
+    else r = r ch
+  }
+  return "^" r "$"
+}'
+
 # khop_glob <chuỗi> <mẫu...> -> 0 nếu khớp một mẫu. Trong mẫu, * khớp cả "/".
 khop_glob() {
   # Tên biến riêng: sh không có biến cục bộ, dùng _s/_p ở đây sẽ ghi đè biến

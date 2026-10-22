@@ -176,6 +176,9 @@ re_dung() { # <khoá> <cách dùng: awk|grep>
 re_dung jira_key_regex awk
 re_dung skipped_test_regex grep
 
+SG=$(gt scope_glob_max_files)
+case "$SG" in ""|*[!0-9]*) [ -z "$SG" ] || loi "scope_glob_max_files \"$SG\" — số nguyên ≥ 0 (0 = tắt cảnh báo glob rộng)" ;; esac
+
 CHINH=$(wt_chinh "$MT_REPO" 2>/dev/null) || CHINH=$MT_REPO
 TM=$(gt worktree_dir)
 if [ -n "$TM" ]; then

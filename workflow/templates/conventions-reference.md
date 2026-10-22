@@ -109,6 +109,11 @@ Manifest/lockfile. `chore` đụng vào thì `plan.md` phải có bảng "Depend
 File thay đổi mà không cần nằm trong "Expected files" của `plan.md` (lockfile, file
 sinh tự động…). Bugfix được đụng các file này ở bước tái hiện.
 
+### `scope_glob_max_files`
+Số nguyên ≥ 0, mặc định 30; `0` = tắt. Một mẫu trong "Expected files" của `plan.md` khớp nhiều
+file đã track trên commit `Base:` hơn ngưỡng này thì `aw check plan` cảnh báo (không chặn): mẫu quá rộng
+(`*`, `src/*`) làm kiểm phạm vi diff vô nghĩa. Mẫu khớp 0 file (task tạo file mới) không bị cảnh báo.
+
 ## Test
 
 ### `covers_tag`

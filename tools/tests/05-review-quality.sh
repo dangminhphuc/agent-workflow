@@ -95,4 +95,14 @@ cp "$TMP/conv-nc.bak" "$CFG/conventions.md"
 # Bảng khác nhắc mã REQ ở cột lý do không được ghi đè kết luận của Lens 1
 viet_review; thay "$F/review.md" '| Authn / authz | pass | màn hình y dùng quyền có sẵn, khớp REQ-001 |' '| Authn / authz | pass | khớp REQ-002 |'
 ky_vong 0 "dòng Lens 4 nhắc REQ-002 không ghi đè kết luận pending của Lens 1" sh "$CHK" "$F"
+
+# Cảnh báo phạm vi theo task (task-results.md "Scope warning") phải được giải trình ở Lens 2
+viet_review
+cp "$F/task-results.md" "$TMP/kq-pv.bak"
+awk '{ print } /^## TSK-002/ { print ""; print "- Scope warning: `src/a.txt`" }' "$TMP/kq-pv.bak" > "$F/task-results.md"
+ky_vong 1 "task có Scope warning mà Lens 2 không giải trình → chặn" sh "$CHK" "$F"
+dung "…đúng lý do" sh -c "sh '$CHK' '$F' | grep -q 'Lens 2: TSK-002 có cảnh báo phạm vi trong task-results.md — giải trình ở \"Task scope warnings\"'"
+printf '\n## Lens 2 — Design and scope\n\n- Task scope warnings: TSK-002 sửa src/a.txt của TSK-001 vì bug phát hiện khi làm, đã khai Unplanned\n' >> "$F/review.md"; toc_f review.md; ghi_tree_review
+ky_vong 0 "Lens 2 nhắc tên task trong Task scope warnings → ĐẠT" sh "$CHK" "$F"
+cp "$TMP/kq-pv.bak" "$F/task-results.md"; viet_review
 ket_thuc

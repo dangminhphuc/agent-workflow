@@ -227,7 +227,7 @@ Stage → phase (trạng thái suy ra từ capabilities: của phase):
   require    implemented  spec
   design     implemented  design
   breakdown  implemented  plan
-  implement  partial      implement
+  implement  implemented  implement
   verify     partial      review
   deploy     partial      ship
   operate    gap          —
@@ -235,8 +235,6 @@ Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   plan (partial): Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
     CAP-plan-03  human    Work items are prioritised against each other
     CAP-plan-04  human    Work item carries an effort estimate
-  implement (partial): Phạm vi diff chỉ kiểm theo cả việc, chưa theo từng task; glob rộng không bị cảnh báo
-    CAP-implement-05  machine  Each task changes only its own files, and file patterns are narrow enough to mean something
   verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; không có e2e, kiểm tải hay UAT
     CAP-verify-05  human    Stakeholders accept the change (UAT)
   deploy (partial): Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
@@ -269,10 +267,6 @@ Job type × stage (chạy · tuỳ = có thể bỏ · bỏ · gap = engine khô
   loại việc, nguồn, base, và để người xác nhận. Chưa có: xếp ưu tiên giữa các việc (`CAP-plan-03`) và
   ước lượng công (`CAP-plan-04`). Cả hai đều `human`: engine chỉ có thể tạo chỗ ghi và kiểm đã ghi,
   quyết vẫn là người.
-- **`implement` — partial.** Phạm vi diff đã kiểm theo cả việc: file đổi phải nằm trong file của một
-  task hoặc được khai ngoài kế hoạch (`CAP-implement-04`). Chưa có: kiểm theo **từng task** — task chỉ
-  đổi file của chính nó — và cảnh báo mẫu file quá rộng như `src/*` (`CAP-implement-05`; dự án con SP3
-  trong `docs/superpowers/2026-10-22-roadmap-cai-thien.md`).
 - **`verify` — partial.** Có review độc lập theo từng REQ và người review bảo mật cho code nhạy cảm.
   Chưa có: người yêu cầu nghiệm thu (UAT, `CAP-verify-05`). **Không làm** (out-of-scope): e2e trên hệ
   thống đã ghép (`CAP-verify-03`) và đo tải cho mọi thay đổi (`CAP-verify-04`) — việc của CI/CD và

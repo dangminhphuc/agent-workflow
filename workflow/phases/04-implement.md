@@ -28,6 +28,7 @@ capabilities:
   - CAP-implement-02
   - CAP-implement-03
   - CAP-implement-04
+  - CAP-implement-05
   - CAP-implement-06
 exit_machine:
   - aw check implement
@@ -58,7 +59,7 @@ loop:
   aw task done <dir> T          (no command in Verify: --manual "<what you did, what you saw>")
       ĐỎ   → fix within T, rerun done
       DỪNG → record "Unplanned" (what you tried, the error), stop, tell the human
-      XONG → commit T
+      XONG → commit T (a scope warning = T changed a file outside its "Expected files": add an "Unplanned" row with Task = T, or revert)
 ```
 
 - **Doing T:** tag each test `covers: REQ-NNN`. A REQ not testable automatically → `plan.md` "Manual verification" + reason.

@@ -46,6 +46,25 @@ case "$LENH" in next|start|done|reopen) ;; *) dung ;; esac
 [ -n "$DIR" ] || dung
 PLAN="$DIR/plan.md"; KQ="$DIR/task-results.md"
 
+# kq_khong_muc -> task-results.md hiện có, bỏ mục của $TASK (hoặc phần đầu file nếu chưa có file).
+# Gộp dòng trống liên tiếp ngoài khối code — chạy lại nhiều lần không dồn dòng trống.
+kq_khong_muc() {
+  if [ -f "$KQ" ]; then
+    awk -v t="$TASK" '
+      /^##[ \t]/ { bo = ($0 ~ ("^##[ \t]+" t "([ \t]|$)")) }
+      bo { next }
+      /^```/ { code = !code }
+      !code && $0 == "" { if (trong) next; trong = 1; print; next }
+      { trong = 0; print }
+    ' "$KQ" | awk '{ l[NR] = $0 } END { n = NR; while (n > 0 && l[n] == "") n--; for (i = 1; i <= n; i++) print l[i] }'
+  else
+    echo "# Kết quả kiểm chứng task"
+    echo ""
+    echo "> File này do \`aw task done\` ghi tự động — không sửa tay."
+    echo "> aw check implement chặn task [x] không có mục xanh ở đây."
+  fi
+}
+
 # ---------------------------------------------------------------- reopen
 # Trước kiểm plan.md: đổi REQ khi chưa có plan là chuyện thường — không có task nào phải làm lại.
 if [ "$LENH" = reopen ]; then
@@ -125,6 +144,11 @@ if [ "$LENH" = start ]; then
     echo "TỪ CHỐI: $TASK phụ thuộc$chua — chưa [x]." >&2; exit 1
   fi
   tk_dat "$PLAN" "$TASK" "~" || { echo "LỖI: không ghi được ô Status của $TASK." >&2; exit 1; }
+  # Commit lúc bắt đầu: done so file đổi từ đây với Expected files của riêng task (cảnh báo phạm vi).
+  sha=$(git -C "$DIR" rev-parse HEAD 2>/dev/null)
+  if [ -n "$sha" ]; then
+    { kq_khong_muc; echo ""; echo "## $TASK"; echo ""; echo "- Started at: $sha"; } > "$KQ.moi" && mv "$KQ.moi" "$KQ"
+  fi
   echo "$TASK: [ ] → [~]"
   exit 0
 fi
@@ -184,23 +208,14 @@ fi
 truoc=$(do_lien_tiep "$TASK")
 if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
 
+# Phạm vi theo task: chỉ khi task bắt đầu ở bản có "Started at" và Verify xanh.
+bat_dau=$(tk_bc "$KQ" "$TASK" "Started at")
+pham_vi=""
+if [ "$ma" -eq 0 ] && [ -n "$bat_dau" ]; then pham_vi=$(tk_pham_vi "$DIR" "$TASK" "$bat_dau"); fi
+
 # Ghi lại mục của task (bỏ mục cũ cùng mã).
 {
-  if [ -f "$KQ" ]; then
-    # Gộp dòng trống liên tiếp ngoài khối code — chạy lại nhiều lần không dồn dòng trống.
-    awk -v t="$TASK" '
-      /^##[ \t]/ { bo = ($0 ~ ("^##[ \t]+" t "([ \t]|$)")) }
-      bo { next }
-      /^```/ { code = !code }
-      !code && $0 == "" { if (trong) next; trong = 1; print; next }
-      { trong = 0; print }
-    ' "$KQ" | awk '{ l[NR] = $0 } END { n = NR; while (n > 0 && l[n] == "") n--; for (i = 1; i <= n; i++) print l[i] }'
-  else
-    echo "# Kết quả kiểm chứng task"
-    echo ""
-    echo "> File này do \`aw task done\` ghi tự động — không sửa tay."
-    echo "> aw check implement chặn task [x] không có mục xanh ở đây."
-  fi
+  kq_khong_muc
   echo ""
   echo "## $TASK"
   echo ""
@@ -213,6 +228,8 @@ if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
   echo "- Mã thoát: \`$ma\`"
   [ -z "$NHAN_TB" ] || echo "- Toàn bộ test: \`$TEST_CMD\` → $NHAN_TB"
   echo "- Đỏ liên tiếp: $do_moi"
+  [ -z "$bat_dau" ] || echo "- Started at: $bat_dau"
+  if [ -n "$pham_vi" ]; then printf '%s\n' "$pham_vi" | while IFS= read -r _f; do echo "- Scope warning: \`$_f\`"; done; fi
   kc_dong_moi "$DIR"
   echo ""
   echo '```'
@@ -235,5 +252,10 @@ if [ "$ma" -ne 0 ]; then
 fi
 tk_dat "$PLAN" "$TASK" "x" || { echo "LỖI: không ghi được ô Status của $TASK." >&2; exit 1; }
 echo "$TASK: Verify XANH → [x]. Bằng chứng: $KQ"
+if [ -n "$pham_vi" ]; then
+  printf '%s\n' "$pham_vi" | while IFS= read -r _f; do
+    echo "CẢNH BÁO: $TASK đổi \`$_f\` — ngoài Expected files của $TASK; thuộc task khác hay lạc phạm vi thì ghi vào \"Unplanned\" (cột Task = $TASK) kèm lý do. /aw-review chặn nếu không giải trình."
+  done
+fi
 [ -n "$CO_MANUAL" ] && echo "  (kiểm chứng thủ công — người rà soát sẽ thấy bằng chứng này)"
 exit 0

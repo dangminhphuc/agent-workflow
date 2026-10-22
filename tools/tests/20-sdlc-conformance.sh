@@ -28,15 +28,15 @@ ky_vong 0 "engine của repo này → ĐẠT" sh "$SC" "$ROOT"
 ky_vong 0 "không tham số → kiểm engine chứa script → ĐẠT" sh "$SC"
 moi
 ky_vong 0 "bản chép chưa sửa → ĐẠT" sh "$SC" "$E"
-dung "…in ánh xạ stage → phase" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  implement +partial +implement$' && sh '$SC' '$E' 2>/dev/null | grep -Eq '^  breakdown +implemented +plan$'"
+dung "…in ánh xạ stage → phase" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  implement +implemented +implement$' && sh '$SC' '$E' 2>/dev/null | grep -Eq '^  breakdown +implemented +plan$'"
 ky_vong 2 "thư mục không phải engine → SAI THAM SỐ" sh "$SC" "$TMP/khong-co"
 ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$SC" "$E" "$E"
 dung "…bảng ánh xạ in trạng thái suy ra" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^  verify +partial +review'"
 sh "$SC" "$ROOT" > "$TMP/sdlc-ra" 2>/dev/null
 dung "…trạng thái suy ra đúng cả 8 stage" bang "$(awk '/^Stage → phase/ { p = 1; next } /^[^ ]/ { p = 0 } p { printf "%s=%s ", $1, $2 }' "$TMP/sdlc-ra")" \
-  "plan=partial require=implemented design=implemented breakdown=implemented implement=partial verify=partial deploy=partial operate=gap "
+  "plan=partial require=implemented design=implemented breakdown=implemented implement=implemented verify=partial deploy=partial operate=gap "
 dung "…roadmap liệt kê đúng các capability chưa phase nào nhận (trừ out-of-scope)" bang "$(awk '/^Capability còn thiếu/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
-  "CAP-plan-03 CAP-plan-04 CAP-implement-05 CAP-verify-05 CAP-deploy-03 CAP-operate-02 "
+  "CAP-plan-03 CAP-plan-04 CAP-verify-05 CAP-deploy-03 CAP-operate-02 "
 dung "…khối Không làm liệt kê đúng capability out-of-scope" bang "$(awk '/^Không làm/ { p = 1; next } /^[^ ]/ { p = 0 } p && /^    CAP-/ { printf "%s ", $1 }' "$TMP/sdlc-ra")" \
   "CAP-verify-03 CAP-verify-04 CAP-deploy-02 CAP-operate-01 "
 dung "…in bảng roadmap capability còn thiếu" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^    CAP-deploy-03 +human +'"
@@ -95,13 +95,6 @@ vi_pham "out_of_scope: thiếu lý do → chặn" "out_of_scope: CAP-verify-05 t
 moi; thay "$E/workflow.yaml" 'out_of_scope:' 'out_of_scope:
   - CAP-verify-03: lặp'
 vi_pham "out_of_scope: id khai hai lần → chặn" "out_of_scope: CAP-verify-03 khai hai lần."
-# implement thành implemented khi phase nhận nốt CAP-implement-05 (sau SP3): note phải bị đòi xoá
-moi; thay "$E/workflow/phases/04-implement.md" '  - CAP-implement-06' '  - CAP-implement-06
-  - CAP-implement-05'
-vi_pham "implement nhận đủ capability mà còn note → chặn" "stage implement: suy ra implemented nhưng khối sdlc: còn note"
-awk '/^  - stage: implement$/ { bo = 1; next } bo && /^    / { next } { bo = 0; print }' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
-ky_vong 0 "implement nhận đủ + xoá note → ĐẠT" sh "$SC" "$E"
-dung "…stage implement thành implemented" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  implement +implemented +implement$'"
 
 # ---------------------------------------------------------------- phase ↔ stage
 nhom "check-sdlc.sh: phase khai implements / provides"

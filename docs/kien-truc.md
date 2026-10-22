@@ -916,6 +916,7 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 8. **`review` không chạy lại test hay quét** — biết kết quả cũ, không biết lệnh có đủ. Lệnh lệch
    pipeline thì local xanh mà CI chặn. Lệnh ghi file vào repo (không `.gitignore`) làm `Tree` đổi.
 9. **Glob dùng `case` của shell**: `*` khớp cả `/`, không có `**` — `src/*` rộng hơn người đọc tưởng.
+   Bù một phần: `aw check plan` cảnh báo mẫu `Expected files` khớp quá `scope_glob_max_files` file trên base.
 10. **Artifact không đi theo PR** — reviewer chỉ thấy code. DEC-xxx người chọn nâng thì đi theo PR dưới
     dạng ADR; phần còn lại của `tdd.md` thì không.
 11. **Ghim sha256 là tin lần đầu (TOFU)**; repo cấu hình chung của team thu hẹp, không xoá rủi ro.
@@ -936,9 +937,10 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     Tương tự, nguồn mới mâu thuẫn với luật `BR-` active chỉ agent spec và người phát hiện.
 20. **PRD đổi sau khi luật đã nâng**: máy không theo dõi Confluence/Jira; phiên bản ghi trong `Source`
     chỉ cho người so tay. Luật cũ vẫn `active` tới khi một việc thay nó.
-21. **Phạm vi thô**: glob `case` (`*` khớp cả `/`), tài liệu module phủ cả thư mục — sửa một file test
-    trong `src/` cũng đòi verdict cho `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen
-    tay ghi `pass` không đọc.
+21. **Phạm vi thô**: tài liệu module phủ cả thư mục — sửa một file test trong `src/` cũng đòi verdict cho
+    `src/ARCHITECTURE.md`. Verdict `pass` rẻ, nhưng người có thể quen tay ghi `pass` không đọc. Phạm vi
+    diff giờ kiểm cả theo từng task (`aw task done` cảnh báo, review đòi giải trình), nhưng mẫu do agent
+    tự viết ở plan — không cổng người.
 22. **Tuân thủ interface SDLC ≠ chất lượng.** `check-sdlc.sh` chỉ kiểm lời khai có nhất quán: stage
     có phase, loại artifact có file, invariant có checker + test, capability có phase nhận. Nó không
     biết phase làm capability đó tốt không, `note` của `partial` có nói đủ phần thiếu không, hay

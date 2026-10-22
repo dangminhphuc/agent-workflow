@@ -37,7 +37,7 @@ No design phase (`chore`, or `Design: skip` in `spec.md`) → no `tdd.md`: input
    - `Covers:` ≥ 1 `REQ-NNN` from `spec.md`;
    - `Based on: DEC-xxx` if it implements a decision;
    - `Design: [tdd.md § …](tdd.md#…)`;
-   - `Expected files:` — paths in backticks, globs allowed (`src/todo/*`) — used to check diff scope;
+   - `Expected files:` — paths in backticks, globs allowed (`src/todo/*`) — used to check diff scope, per task. Keep each pattern narrow: `aw check plan` warns when one matches more than `scope_glob_max_files` tracked files;
    - `Verify:` — command in backticks + what to observe;
    - `Depends on:` if any;
    - small enough to finish in one go without breaking the build on its own.

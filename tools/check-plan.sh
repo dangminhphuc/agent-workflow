@@ -256,7 +256,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" '
 ' "$SPEC" "$TDD" "$PLAN"
 ma=$?
 
-cb=$(kc_loi_thoi "$DIR")
+cb=$( { kc_loi_thoi "$DIR"; kc_glob_rong "$DIR"; } )
 if [ -n "$cb" ]; then
   echo ""
   echo "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done

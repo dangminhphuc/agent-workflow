@@ -572,13 +572,13 @@ quay về `[ ]` khi chạy lại plan. Bạn duyệt lại riêng DEC đó.
 
 | Phần | Quyết định |
 |---|---|
-| `### TSK-NNN` | task: `Covers` (REQ), `Based on` (DEC-xxx), `Expected files` (**ranh giới diff**), `Verify` (lệnh chứng minh xong), `Depends on`, `On assumption` |
+| `### TSK-NNN` | task: `Covers` (REQ), `Based on` (DEC-xxx), `Expected files` (**ranh giới diff của riêng task** — mẫu khớp quá `scope_glob_max_files` file trên base thì `aw check plan` cảnh báo), `Verify` (lệnh chứng minh xong), `Depends on`, `On assumption` |
 | `Status` | `[ ]` / `[~]` / `[x]` — **chỉ máy đổi** (`aw task`) |
 | `## Deferred` | REQ hoãn + lý do (hoãn `must` → cảnh báo, báo bạn) |
 | `## Manual verification` | REQ không test tự động được + lý do |
 | `## Modified existing tests` | (refactor/perf) test cũ sẽ sửa |
 | `## Dependency upgrades` | (chore) thư viện nâng, chỉ `patch \| minor` |
-| `## Unplanned` | implement ghi điều chưa lường, file ngoài phạm vi |
+| `## Unplanned` | implement ghi điều chưa lường, file ngoài phạm vi (cột Task: task nào đổi file đó) |
 
 **Việc của bạn:** không bắt buộc. Nên đọc lướt `Deferred` (nhất là `must` bị hoãn) và task
 `On assumption: yes`.
@@ -606,9 +606,10 @@ Agent **không được sửa** các file `*-results.md`, `repro.md`, `perf.md` 
 ```
 aw ready <dir>              đầu phiên: test xanh trên base chưa? bước tiếp là gì?
 aw task next <dir>          task kế
-aw task start <dir> TSK-NNN    [ ] → [~]   (chỉ một task [~] một lúc)
+aw task start <dir> TSK-NNN    [ ] → [~]   (chỉ một task [~] một lúc; ghi commit lúc bắt đầu)
 aw task done <dir> TSK-NNN     chạy Verify; chỉ XANH mới [ ] → [x]
                             (TASK_FULL_TEST=1: chạy thêm toàn bộ test)
+                            (cảnh báo file đổi ngoài Expected files của chính task)
 aw task reopen <dir> REQ-NNN|DEC-NNN   REQ vừa đổi / DEC mở lại: task phủ nó về [ ]
 aw check implement <dir>    chạy toàn bộ test + quét bảo mật, ghi *-results.md
 ```
@@ -642,7 +643,7 @@ artifact stale, tài liệu module/ADR/luật bị đụng phạm vi. **Chỉ c�
 | `Reviewed tree` | kết luận gắn với đúng cây code nào (code đổi sau đó → phải review lại) |
 | `## Conclusion` | `Mergeable`, số `Blocker`, tóm tắt cho người đọc |
 | Lens 1 — Spec conformance | **mỗi** REQ: `pass \| partial \| fail \| pending` + bằng chứng `file:dòng` |
-| Lens 2 — Design and scope | lệch DEC-xxx, thay đổi ngoài task, task `[x]` không có dấu vết |
+| Lens 2 — Design and scope | lệch DEC-xxx, thay đổi ngoài task, task `[x]` không có dấu vết; mỗi task có cảnh báo phạm vi (`Scope warning`) phải giải trình ở `Task scope warnings` — thiếu là máy chặn |
 | `## Repo rules` | mỗi file `rules_*`/`uses_*` một verdict |
 | `## Durable knowledge` | mỗi ADR/tài liệu module/luật bị đụng phạm vi: `pass \| updated \| not applicable` |
 | Lens 3 — Quality | finding `[Blocker] / [Should fix] / [Nit]`, có vị trí, loại lỗi; Blocker có kịch bản lỗi |
