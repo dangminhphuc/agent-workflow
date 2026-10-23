@@ -52,10 +52,19 @@
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
 | SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
+| SP20 | Durable knowledge: truy xuất theo phạm vi ở implement, review | 6 | chờ | — | Duyệt spec | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § A | | |
+| SP21 | Durable knowledge: chunk theo mục và khối ID | 6 | chờ | SP20 | Neo heading nguyên văn hay slug | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § B | | |
+| SP22 | Durable knowledge: chỉ mục chung | 6 | chờ | SP21 | Mặc định bật, kiểm khi file có | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § C | | |
+| SP23 | Durable knowledge: tìm theo từ khoá | sau | chặn | SP22, số liệu SP9 | Có đáng làm không | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § D | | |
+| SP24 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP22, số liệu SP9 | Chặn ở review hay chỉ cảnh báo | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § E | | |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
 sau đều làm đúng một yêu cầu sai.
+
+Đợt 6 (SP20–SP24, một spec chung vì cùng một bộ lọc `Scope`): durable knowledge của repo đích truy xuất
+như RAG, vẫn tất định (không vector). SP20 đóng lỗ ở vòng chạy chính — việc bỏ design không bao giờ đọc
+ADR — nên đi trước; SP23, SP24 thêm luật nên chờ số liệu SP9 (nguyên tắc 3).
 
 ## Chi tiết các dự án con chưa xong
 
@@ -134,6 +143,18 @@ của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đ�
 **Đã làm thêm.** `sh tools/check-sdlc.sh --suy <file>…` in các id `# giữ:` trong những file đó (đưa
 danh sách file của diff). Id không có thì chặn. Không tự viết `# giữ:`.
 
+### SP20–SP24 — Durable knowledge như RAG
+
+**Vấn đề.** `aw knowledge` chỉ chạy ở spec và design, lấy cả file; `chore` và việc `Design: skip` không
+đọc ADR nào; kiến thức không gắn đường dẫn chỉ tìm được bằng cách đọc hết.
+
+**Hướng.** Spec [`2026-10-23-sp20-24-rag-markdown-design.md`](specs/2026-10-23-sp20-24-rag-markdown-design.md):
+A truy xuất theo `Expected files` / diff ở implement, review; B ref `<file>#<neo>` và `Scope` theo mục;
+C chỉ mục `docs/knowledge-index.md` máy dựng, lệch thì chặn; D `aw knowledge find`; E theo liên kết một
+bước và bảng `## Knowledge used`.
+
+**Cần quyết.** Duyệt spec; các "Cần quyết" trong từng mục của spec.
+
 ## Việc nhỏ (không thành dự án con)
 
 Đụng phần nào thì làm phần đó, không cần spec:
@@ -154,4 +175,5 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 | Xếp ưu tiên, ước lượng, nghiệm thu (`CAP-plan-03`, `CAP-plan-04`, `CAP-verify-05`) | Việc của người hoặc của repo đích; đã khai `out_of_scope` (SP15). `CAP-deploy-03` giữ trên roadmap: engine ghi được đường rollback | — |
 | Refactor "không thêm hành vi" ở mức code | Chưa có cách máy kiểm đáng tin; giữ ở mức spec (REQ `preserve`/`structural`, INV-008) và để review/người phán | Có cách kiểm không báo nhầm |
 | Đổi tên phase `03-plan` (stage `breakdown`) ↔ stage `plan` | Chạm test, docs, lệnh sinh ra; `docs/thuat-ngu.md` (mục `stage`) đã giải thích | Người dùng nhầm thật |
+| Embedding / vector DB cho durable knowledge | Kết quả theo độ tương đồng không lặp lại được: checker không kiểm được "đọc đúng tài liệu", cross-check stale và verdict review mất chỗ bám (spec SP20–SP24 § 0) | Có cách truy xuất tất định không đủ, đo được bằng số liệu SP9 |
 | Adapter thứ ba (`codex`, `copilot`) | SP11 đã gỡ `planned`; thêm khi có người dùng thật cần (`adapters/README.md`) | Có người dùng |
