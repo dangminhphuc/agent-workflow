@@ -53,6 +53,7 @@ viet_spec
 dung "fixture: spec có ## Contents, REQ lồng dưới Requirements" sh -c "grep -qxF -- '- [Requirements](#requirements)' '$F/spec.md' && grep -qxF -- '  - [REQ-001 — a](#req-001--a)' '$F/spec.md'"
 dung "aw toc mở rộng anchor rút gọn trong link — chỉ khi khớp đúng một mục" grep -qF '(open-questions.md#req-002--b)' "$F/spec.md"
 ky_vong 0 "spec có mục lục, link đúng → ĐẠT" sh "$CHK" "$F"
+ky_vong 0 "aw toc nhận spec-findings.md" sh "$TOC" "$F" spec-findings.md
 cksum "$F/spec.md" "$F/open-questions.md" > "$TMP/toc.ck"
 ky_vong 0 "aw toc chạy lại trên artifact đã khớp → ĐÃ KHỚP" sh "$TOC" "$F"
 dung "…không ghi lại file (artifact phía sau không lỗi thời)" sh -c "cksum '$F/spec.md' '$F/open-questions.md' | cmp -s - '$TMP/toc.ck'"

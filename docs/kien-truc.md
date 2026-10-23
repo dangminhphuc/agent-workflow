@@ -356,10 +356,10 @@ một chỗ duyệt văn xuôi không có quyết định thật.
 
 ### LLM checker: chỉ được chặn
 
-Điều script không kiểm được (lệch DEC-xxx, quyết định ngầm) giao LLM checker, với ràng buộc: ghi phát
-hiện ra **file**; script fail nếu còn `Chặn` chưa xử lý; LLM **không bao giờ** nói "đạt"; người là
+Điều script không kiểm được (lệch câu trích ở spec, lệch DEC-xxx, quyết định ngầm) giao LLM checker, với ràng buộc: ghi phát
+hiện ra **file**; script fail nếu còn `block` chưa xử lý; LLM **không bao giờ** nói "đạt"; người là
 trọng tài theo ngoại lệ. Cho LLM duyệt là quay lại "agent tự đánh giá là đạt"; cho nó chỉ chặn thì
-sai sót chỉ tốn thời gian người.
+sai sót chỉ tốn thời gian người. Spec và design cùng một khuôn: `spec-findings.md`, `design-findings.md`.
 
 ### Chặn hay cảnh báo
 
@@ -923,9 +923,10 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 1. **`06-ship` chỉ lo MR**, không lo deploy/tag/release note. Không có `gh`/`glab` thì trạng thái MR
    chỉ suy từ git, không nhận ra squash có sửa xung đột.
 2. **"clean context" không cưỡng chế được ở agent không có subagent** — lùi về lời dặn người.
-3. **Checker kiểm hình thức, không kiểm nội dung.** Mọi REQ có nhãn ≠ REQ đúng với BRD. Đừng nhầm "qua
-   hết checker" với "làm đúng"; LLM checker chỉ thu hẹp khoảng trống này. Câu trích `[FILE]` máy kiểm
-   được có thật trong nguồn — nhưng REQ diễn giải đúng câu trích hay không vẫn là việc của người.
+3. **Checker máy kiểm hình thức và file phát hiện, không đọc lại nguồn.** Mọi REQ có nhãn ≠ REQ đúng với BRD.
+   Câu trích `[FILE]` máy kiểm được có thật trong nguồn. Checker LLM của spec đối chiếu mô tả và tiêu chí
+   với `Quote` và lời `[HUMAN]` (không mở lại `[FILE]`/`[JIRA]`/`[CONFLUENCE]`); máy chỉ chặn khi thiếu
+   `spec-findings.md` hoặc còn `block` chưa xử lý. Đừng nhầm "qua hết checker" với "làm đúng".
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
 6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng. File của engine đã được `check-sdlc.sh` kiểm

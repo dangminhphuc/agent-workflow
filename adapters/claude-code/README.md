@@ -50,7 +50,7 @@ không sinh nhánh nào theo loại.
 | approval guard | `aw guard` (người tự cài, mục dưới) | Chỉ còn lời dặn + approval hash mà `aw check` vẫn kiểm |
 | Confluence/Jira | MCP Atlassian | Tải tài liệu về repo, nhãn `[FILE]` |
 | Cách gọi | Slash command | Lời dặn / rules của agent đó |
-| LLM checker | Subagent `design-checker`; thiếu file phát hiện thì `aw check design` fail | Người tự chạy; không có file ≠ đạt |
+| LLM checker | Subagent `spec-checker` và `design-checker`; thiếu file phát hiện thì `aw check` của phase đó fail | Người tự chạy; không có file ≠ đạt |
 | Câu hỏi lựa chọn (`choice_ui`) | `AskUserQuestion`; "Type something" / "Chat about this" có sẵn nên không thêm vào `options` | In lựa chọn đánh số + lối tự nhập / trao đổi |
 | Hộp xác nhận cổng duyệt | `AskUserQuestion` + `preview` (file/dòng phải tick) | In ba lựa chọn đánh số |
 | Skill của team (`uses_<phase>`) | Skill tool: tham số, dòng chèn lệnh shell, `allowed-tools`, `hooks` có hiệu lực; cần quyền `Skill(<tên>)` | Đọc `SKILL.md` như tài liệu — frontmatter không có hiệu lực |
