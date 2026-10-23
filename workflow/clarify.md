@@ -17,7 +17,7 @@ trace_rule: true
 | Source | File | Human does | Blocks |
 |---|---|---|---|
 | Open question | `open-questions.md` | **Answers** (often has to ask PO/BA) | By `Blocking` (`rules/source-tracing.md`) |
-| LLM checker finding | `<checker>-findings.md` (currently `design-findings.md`) | **Arbitrates**: agree (fix) or reject + reason | `block`: that phase's checker (`design-findings.md` → `/aw-plan`); `warn`: nothing |
+| LLM checker finding | `<checker>-findings.md` (`spec-findings.md`, `design-findings.md`) | **Arbitrates**: agree (fix) or reject + reason | `block`: the next phase (`spec-findings.md` → `/aw-design`, or `/aw-plan` when design is skipped; `design-findings.md` → `/aw-plan`); `warn`: nothing |
 
 Blocking levels and `Severity` are proposed by the agent, changed **only by the human**.
 

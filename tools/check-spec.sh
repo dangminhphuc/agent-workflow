@@ -15,6 +15,7 @@
 #            open-questions.md / refactor-requests.md: mục ở cấp cũ "## REQ-/RFR-" (phải "###");
 #            RFR sai dạng (không đúng 3 chữ số) hay trùng.
 #            [JIRA] không có mã khớp jira_key_regex; [INFERRED] không ghi lý do.
+#            spec-findings.md thiếu, hoặc còn phát hiện Severity block chưa fixed / rejected: <lý do>.
 # Cảnh báo:  nguồn [JIRA]/[CONFLUENCE]/[FILE] không có trong "## Input" của intake.md;
 #            "Risk: normal" mà spec có từ khoá high_risk_keywords (conventions.md).
 #
@@ -30,6 +31,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
 . "$HERE/lib/toc.sh"
+. "$HERE/lib/findings.sh"
 . "$HERE/lib/result.sh"
 kq_khai check-spec.sh \
   "0=ĐẠT — được sang phase sau" \
@@ -69,9 +71,15 @@ while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [L�
 $kld
 EOF
 # Mục lục và link tới mục (tools/lib/toc.sh).
-tl=$(toc_loi "$DIR" spec.md open-questions.md)
+tl=$(toc_loi "$DIR" spec.md open-questions.md spec-findings.md)
 while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $tl
+EOF
+# Checker LLM của spec: thiếu file, hoặc block chưa fixed / rejected có lý do (tools/lib/findings.sh).
+sfl=$(ph_loi_chan "$DIR/spec-findings.md")
+# giữ: CAP-require-01
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$sfl
 EOF
 # REQ người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/rule.sh.
 lsl=$(luat_loi_spec "$DIR")

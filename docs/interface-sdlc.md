@@ -137,7 +137,8 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
    (trước dòng trống kế tiếp). "Chỗ luật" = gọi `loi` / `loi_truoc` / `canh_bao`, dòng in `[LỖI]` / `[CẢNH BÁO]`,
    hoặc `TỪ CHỐI:` / `DỪNG:` / `CẢNH BÁO:` (`tools/task.sh`). Luật mới không gắn thì chặn
    (số luật chưa gắn của file vượt `tools/unclassified-rules.txt`); gắn id cho luật cũ thì hạ số trong danh
-   sách (`sh tools/check-sdlc.sh --dem-luat` in số đúng).
+   sách (`sh tools/check-sdlc.sh --dem-luat` in số đúng). `sh tools/check-sdlc.sh --suy <file>…` in
+   các id `# giữ:` đã có trong những file đó (id đụng bởi diff) — không tự gắn id mới.
 4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và **ít nhất một ca** test
    chặn; `Rule:` viết trừu tượng (không backtick, không mã `REQ-`/`DEC-`…), cú pháp engine ghi ở `- Engine:`.
 5. `changes/<branch>.md`: mục `Thêm` / `Thay đổi` (người dùng `aw` thấy luật mới), nêu id.
@@ -243,19 +244,18 @@ Stage → phase (trạng thái suy ra từ capabilities: của phase):
   deploy     partial      ship
   operate    gap          —
 Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
-  plan (partial): Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
-    CAP-plan-03  human    Work items are prioritised against each other
-    CAP-plan-04  human    Work item carries an effort estimate
-  verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; chưa có UAT (e2e, kiểm tải: out_of_scope)
-    CAP-verify-05  human    Stakeholders accept the change (UAT)
   deploy (partial): Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
     CAP-deploy-03  human    Rollback path is recorded before delivery
   operate (gap): CI/CD và observability nằm ngoài engine; sự cố chưa quay lại thành việc mới
     CAP-operate-02  human    Incidents and production findings become new work items
 Không làm (out-of-scope — lý do trong workflow.yaml):
-  verify (partial)
+  plan (partial): Chỉ nhận việc đã có (ticket, tài liệu, lời người); xếp ưu tiên và ước lượng: out_of_scope
+    CAP-plan-03  human    Engine chỉ nhận việc đã có; xếp ưu tiên giữa các việc là việc của người, không của engine
+    CAP-plan-04  human    Ước lượng công là việc của người, không của engine
+  verify (partial): Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; UAT, e2e, kiểm tải: out_of_scope
     CAP-verify-03  machine  E2E trên hệ thống đã ghép là việc của CI/CD của repo đích, không của engine
     CAP-verify-04  machine  Hạ tầng đo tải nằm ngoài engine; việc loại perf đã có số đo trước/sau do máy ghi
+    CAP-verify-05  human    Nghiệm thu (UAT) thuộc quy trình của repo đích, không của engine
   deploy (partial)
     CAP-deploy-02  machine  Release và triển khai là pipeline của repo đích; engine dừng ở MR/PR người merge
   operate (gap)
@@ -275,13 +275,11 @@ Job type × stage (chạy · tuỳ = có thể bỏ · bỏ · gap = engine khô
 Đọc bảng theo từng stage chưa đủ:
 
 - **`plan` — partial.** Engine nhận một việc đã được ai đó chọn (ticket, tài liệu, lời người), ghi
-  loại việc, nguồn, base, và để người xác nhận. Chưa có: xếp ưu tiên giữa các việc (`CAP-plan-03`) và
-  ước lượng công (`CAP-plan-04`). Cả hai đều `human`: engine chỉ có thể tạo chỗ ghi và kiểm đã ghi,
-  quyết vẫn là người.
+  loại việc, nguồn, base, và để người xác nhận. **Không làm**: xếp ưu tiên giữa các việc
+  (`CAP-plan-03`) và ước lượng công (`CAP-plan-04`) — việc của người, không của engine.
 - **`verify` — partial.** Có review độc lập theo từng REQ và người review bảo mật cho code nhạy cảm.
-  Chưa có: người yêu cầu nghiệm thu (UAT, `CAP-verify-05`). **Không làm** (out-of-scope): e2e trên hệ
-  thống đã ghép (`CAP-verify-03`) và đo tải cho mọi thay đổi (`CAP-verify-04`) — việc của CI/CD và
-  hạ tầng của repo đích.
+  **Không làm** (out-of-scope): nghiệm thu UAT (`CAP-verify-05`), e2e trên hệ thống đã ghép
+  (`CAP-verify-03`) và đo tải cho mọi thay đổi (`CAP-verify-04`) — việc của repo đích.
 - **`deploy` — partial.** Engine dừng ở MR/PR mà người merge. Chưa có: đường rollback được ghi và
   người xác nhận trước khi release (`CAP-deploy-03`). **Không làm**: release / triển khai
   (`CAP-deploy-02`) — pipeline của repo đích.
