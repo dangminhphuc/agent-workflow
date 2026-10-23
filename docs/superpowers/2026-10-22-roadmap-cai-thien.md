@@ -138,9 +138,6 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 
 Đụng phần nào thì làm phần đó, không cần spec:
 
-- **2 cặp "…đúng lý do" còn kiểm hai thông báo** — `ky_vong_ly_do` chỉ nhận một mẫu. Mục lục vừa thiếu mục
-  mới vừa thừa link cũ (`01-fixture-engine-toc.sh`, chạy checker hai lần) và cả hai file kết quả lỗi thời
-  (`06-review-freshness.sh`, chạy một lần). Các cặp một thông báo đã chuyển.
 - **`check-sdlc.sh` ~1,6 giây mỗi lần** (trước ~2 giây). `cap_co`, `cap_stage`, id invariant, phase theo
   stage, `skippable: false` và requires của stage tra chuỗi tính một lần. Phần còn lại là đọc frontmatter
   từng file và quét `# giữ:`.
