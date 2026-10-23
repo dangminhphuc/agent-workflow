@@ -62,8 +62,8 @@ ky_vong_ly_do 1 "chặn artifact có heading mà thiếu ## Contents" "…đúng
 toc_f spec.md
 ky_vong 0 "aw toc thêm lại mục lục → ĐẠT" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'
-ky_vong 1 "chặn mục lục lệch heading (đổi tên heading)" sh "$CHK" "$F"
-dung "…đúng lý do: thiếu mục mới, thừa link cũ" sh -c "sh '$CHK' '$F' | grep -q 'Contents\" thiếu mục \"Out of scope now\"' && sh '$CHK' '$F' | grep -q 'link \"#out-of-scope\" không ứng'"
+ky_vong_hai_ly_do 1 "chặn mục lục lệch heading (đổi tên heading)" "…đúng lý do: thiếu mục mới, thừa link cũ" \
+  'Contents" thiếu mục "Out of scope now"' 'link "#out-of-scope" không ứng' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '## Out of scope' '## Out of scope now'; toc_f spec.md
 ky_vong 0 "…aw toc sinh lại mục lục → ĐẠT" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Out of scope

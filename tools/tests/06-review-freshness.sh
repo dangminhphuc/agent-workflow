@@ -61,8 +61,8 @@ dung "test-results.md ghi HEAD, Tree, thời điểm" sh -c "grep -q '^- HEAD: \
 dung "security-results.md ghi HEAD, Tree, output thật từng nhóm" sh -c "grep -q '^- Tree: \`[0-9a-f]\{40\}\`' '$F/security-results.md' && grep -q '^## sca — ' '$F/security-results.md' && grep -q 'sca-sach' '$F/security-results.md'"
 
 printf 'sua sau review\n' > "$R/src/a.txt"; printf 'moi\n' >> "$R/src/a.txt"
-ky_vong 1 "CỔNG CUỐI: chặn khi code đổi (chưa commit) sau lần chạy test/quét" sh "$CHK" "$F"
-dung "…đúng lý do: cả hai file kết quả lỗi thời" sh -c "out=\$(sh '$CHK' '$F'); echo \"\$out\" | grep -q 'test-results.md stale' && echo \"\$out\" | grep -q 'security-results.md stale'"
+ky_vong_hai_ly_do 1 "CỔNG CUỐI: chặn khi code đổi (chưa commit) sau lần chạy test/quét" \
+  "…đúng lý do: cả hai file kết quả lỗi thời" 'test-results.md stale' 'security-results.md stale' sh "$CHK" "$F"
 printf 'moi\n' > "$R/src/a.txt"
 ky_vong 0 "…hoàn tác về đúng nội dung đã chạy thì hết lỗi thời" sh "$CHK" "$F"
 
