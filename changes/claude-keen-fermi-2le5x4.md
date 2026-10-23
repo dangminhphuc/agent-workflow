@@ -1,0 +1,2 @@
+### Nội bộ
+- **Spec SP20: tên lệnh theo stage SDLC (nháp).** Lệnh phase sẽ đổi thành `/aw-<stage>` (vd `/aw-intake` → `/aw-plan`, `/aw-plan` → `/aw-breakdown`), số phase lấy theo stage, máy chặn khi lệch. Chưa đổi gì trong engine; spec còn chờ người chốt § 5 (phạm vi đổi tên, lệnh con duyệt, chuyển tiếp chữ `plan`). Xem `docs/superpowers/specs/2026-10-23-sp20-ten-lenh-theo-stage-design.md` và roadmap § SP20.
