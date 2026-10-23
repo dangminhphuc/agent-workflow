@@ -52,6 +52,7 @@
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
 | SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
+| SP20 | File tiến độ của việc: phase, thời gian tương tác, token | 4 | đang làm | — | Chốt: Markdown + Mermaid, file trong thư mục việc, token chỉ Claude Code | [spec](specs/2026-10-23-sp20-tien-do-phase-design.md) | | |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -133,6 +134,12 @@ của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đ�
 
 **Đã làm thêm.** `sh tools/check-sdlc.sh --suy <file>…` in các id `# giữ:` trong những file đó (đưa
 danh sách file của diff). Id không có thì chặn. Không tự viết `# giữ:`.
+
+### SP20 — File tiến độ của việc
+
+- Spec: [specs/2026-10-23-sp20-tien-do-phase-design.md](specs/2026-10-23-sp20-tien-do-phase-design.md).
+- Còn lại: người duyệt spec (hai câu ở § Cần người quyết khi duyệt spec) → `writing-plans` → implement.
+- Cho SP9 số liệu "thời gian phase" và token mà nhật ký hiện chưa ghi.
 
 ## Việc nhỏ (không thành dự án con)
 
