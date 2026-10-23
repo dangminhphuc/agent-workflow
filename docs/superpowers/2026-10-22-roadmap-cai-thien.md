@@ -46,7 +46,7 @@
 | SP11 | Gỡ adapter `planned` | 4 | xong | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP13 | Checker LLM cho spec | 5 | xong | — | Bản đầu chỉ so `Quote` và lời `[HUMAN]` | | | [#83](https://github.com/dangminhphuc/agent-workflow/pull/83) |
-| SP14 | Bugfix: test tái hiện xanh sau khi sửa | 5 | chờ | — | Chặn hay cảnh báo | | | |
+| SP14 | Bugfix: lệnh tái hiện xanh sau khi sửa | 5 | xong | — | So cả lệnh, không tách tên test; cảnh báo ở implement, chặn ở review | | | [#84](https://github.com/dangminhphuc/agent-workflow/pull/84) |
 | SP15 | `out_of_scope` cho capability `plan`/`verify` engine không định làm | 5 | xong | — | — | | | [#85](https://github.com/dangminhphuc/agent-workflow/pull/85) |
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | chờ | — | Cách ghi nguồn | | | |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
@@ -87,19 +87,6 @@ bugfix/refactor bỏ design khi `Design: skip`. Sửa typo trong tài liệu, bu
 
 **Nghiêng về:** A trước (lấy số liệu SP9), rồi B nếu `chore` chiếm phần lớn. C đổi triết lý quy trình —
 chỉ làm khi người chủ engine muốn.
-
-### SP14 — Bugfix: test tái hiện xanh sau khi sửa
-
-**Vấn đề.** INV-007 chỉ giữ "test tái hiện đỏ trên code chưa sửa" (`aw check repro`). Máy không biết test
-đỏ **vì đúng bug**: lỗi biên dịch, test khác đang hỏng sẵn cũng đỏ. Hiện chỉ review phán (`Repro test fails
-because:` trong `review.md`).
-
-**Hướng.** Đòi đúng test đã đỏ trong `repro.md` phải xanh sau khi sửa — lỗi biên dịch hay test hỏng sẵn
-không tự xanh nhờ bản sửa. Kiểm trước: `repro.md` hiện ghi output của cả `TEST_CMD`, có tách được tên
-test đỏ không; `test-results.md` xanh toàn bộ đã ngầm đòi điều này tới đâu.
-
-**Cần quyết.** Chặn hay cảnh báo (nhận diện tên test theo ngôn ngữ dễ báo nhầm → cảnh báo ở implement,
-chặn ở review). Máy giữ được thì thêm invariant hoặc nới INV-007 (`interface-sdlc.md` § 4.1).
 
 ### SP16 — `CAP-operate-02`: sự cố → việc mới
 

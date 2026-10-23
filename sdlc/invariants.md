@@ -47,10 +47,10 @@ quotes: `` `tools/tests/NN-x.sh` "case", "case" ``. Each named case must exist i
 - Tested by: `tools/tests/06-review-freshness.sh` "CỔNG CUỐI: chặn artifact lỗi thời"
 
 ### INV-007 — Bugfix: the reproduction test fails on the unfixed code
-- Rule: the machine runs the reproduction test before any production code changes and records it failing; the implement and verify stages block without that record.
+- Rule: the machine runs the reproduction test before any production code changes and records it failing; the implement and verify stages block without that record. After the fix, verify blocks unless the command recorded as passing is that same command; implement only warns.
 - Engine: `repro.md` written by `aw check repro`.
 - Enforced by: `tools/check-repro.sh` `tools/check-implement.sh` `tools/check-review.sh`
-- Tested by: `tools/tests/10-intake-bugfix.sh` "check-repro chặn khi test XANH trên code chưa sửa", "check-repro từ chối khi đã sửa code production", "implement chặn bugfix không có repro.md", "review chặn bugfix không có repro.md"
+- Tested by: `tools/tests/10-intake-bugfix.sh` "check-repro chặn khi test XANH trên code chưa sửa", "check-repro từ chối khi đã sửa code production", "implement chặn bugfix không có repro.md", "review chặn bugfix không có repro.md", "implement: lệnh tái hiện khác lệnh đang xanh thì chỉ cảnh báo", "review chặn khi lệnh xanh không phải lệnh đã đỏ"
 
 ### INV-008 — Refactor and perf: requirements add no behaviour
 - Rule: every requirement preserves or restructures existing behaviour (perf: or states a numeric performance target); preserved behaviour is protected by a test that exists on the base branch.

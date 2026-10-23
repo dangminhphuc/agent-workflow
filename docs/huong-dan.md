@@ -620,7 +620,7 @@ không có trong `review.md` (chỉ xét task chưa xong).
 | `task-results.md` | `aw task done` | bằng chứng từng task đã xanh (lệnh `Verify` đã chạy, output) |
 | `test-results.md` | `aw check implement` | toàn bộ test xanh trên **đúng cây code** (`Tree`) |
 | `security-results.md` | `aw check implement` / `aw check security` | quét bảo mật xanh, cùng lệnh với CI |
-| `repro.md` | `aw check repro` (bugfix) | test tái hiện **đỏ trên code chưa sửa** |
+| `repro.md` | `aw check repro` (bugfix) | test tái hiện **đỏ trên code chưa sửa**; lệnh đó phải là lệnh xanh trong `test-results.md` |
 | `perf.md` | `aw check perf --before/--after` (perf) | số đo trước/sau |
 
 Agent **không được sửa** các file `*-results.md`, `repro.md`, `perf.md` hay `Status` của task.
