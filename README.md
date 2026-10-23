@@ -71,7 +71,7 @@ flowchart TD
 | Lệnh | Đọc → ghi | Máy chặn (`aw check …`) | Người |
 |---|---|---|---|
 | `/aw-intake` | ticket, URL, file, lời người → `intake.md` | job type, input, `Base`, `Engine` | chọn base, xác nhận job type và input |
-| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md` | mọi REQ truy được về nguồn; open question khớp hai file | duyệt REQ, `Blocking`, `Risk`, `Design`; tick "Approved by human" |
+| `/aw-spec` | input trong `intake.md` → `spec.md`, `open-questions.md`, `spec-findings.md` | mọi REQ truy được về nguồn; open question khớp hai file; LLM checker không còn `block` | duyệt REQ, `Blocking`, `Risk`, `Design`; phân xử finding; tick "Approved by human" |
 | `/aw-design` | spec đã duyệt → `tdd.md` | đủ mục, DEC-xxx hợp lệ, REQ được ánh xạ, LLM checker không còn `Chặn` | duyệt từng DEC-xxx |
 | `/aw-plan` | DEC-xxx đã duyệt (không có design: spec đã duyệt) → `plan.md` | mọi REQ có task phủ hoặc hoãn có lý do | — |
 | `/aw-implement` | `plan.md` → diff | test và quét bảo mật **xanh** (máy tự chạy), mọi task có bằng chứng | — |

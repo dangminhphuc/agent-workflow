@@ -81,9 +81,9 @@ phases:
 # tools/check-sdlc.sh kiểm khối này cùng frontmatter phase (docs/kien-truc.md § Interface SDLC).
 sdlc:
   - stage: plan
-    note: Chỉ nhận việc đã có (ticket, tài liệu, lời người); không lập roadmap, ước lượng hay ưu tiên giữa các việc
+    note: Chỉ nhận việc đã có (ticket, tài liệu, lời người); xếp ưu tiên và ước lượng: out_of_scope
   - stage: verify
-    note: Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; chưa có UAT (e2e, kiểm tải: out_of_scope)
+    note: Review độc lập đối chiếu diff với spec, thiết kế, kế hoạch và bằng chứng test/quét máy ghi; UAT, e2e, kiểm tải: out_of_scope
   - stage: deploy
     note: Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
   - stage: operate
@@ -92,7 +92,10 @@ sdlc:
 # Capability engine quyết KHÔNG làm, kèm lý do (tools/check-sdlc.sh in riêng khỏi roadmap). Trạng thái
 # stage không đổi — chỗ thiếu vẫn hiện; chỉ tách việc sẽ làm khỏi việc không bao giờ làm. Dạng "- CAP-id: lý do".
 out_of_scope:
+  - CAP-plan-03: Engine chỉ nhận việc đã có; xếp ưu tiên giữa các việc là việc của người, không của engine
+  - CAP-plan-04: Ước lượng công là việc của người, không của engine
   - CAP-verify-03: E2E trên hệ thống đã ghép là việc của CI/CD của repo đích, không của engine
+  - CAP-verify-05: Nghiệm thu (UAT) thuộc quy trình của repo đích, không của engine
   - CAP-verify-04: Hạ tầng đo tải nằm ngoài engine; việc loại perf đã có số đo trước/sau do máy ghi
   - CAP-deploy-02: Release và triển khai là pipeline của repo đích; engine dừng ở MR/PR người merge
   - CAP-operate-01: Quan sát production thuộc hệ thống observability bên ngoài

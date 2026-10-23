@@ -45,13 +45,13 @@
 | SP10 | Đường tắt cho việc nhỏ | 4 | một phần | số liệu SP9 | A xong (#81); B / C chờ số liệu SP9 | [spec](specs/2026-10-22-dot-2-design.md) § B | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81) |
 | SP11 | Gỡ adapter `planned` | 4 | xong | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
-| SP13 | Checker LLM cho spec | 5 | chờ | — | Đọc lại nguồn hay chỉ `Quote`; chặn ở đâu | | | |
+| SP13 | Checker LLM cho spec | 5 | xong | — | Bản đầu chỉ so `Quote` và lời `[HUMAN]` | | | [#83](https://github.com/dangminhphuc/agent-workflow/pull/83) |
 | SP14 | Bugfix: test tái hiện xanh sau khi sửa | 5 | chờ | — | Chặn hay cảnh báo | | | |
-| SP15 | `out_of_scope` cho capability `plan`/`verify`/`deploy` engine không định làm | 5 | chờ | — | Chốt danh sách id | | | |
+| SP15 | `out_of_scope` cho capability `plan`/`verify` engine không định làm | 5 | xong | — | — | | | [#85](https://github.com/dangminhphuc/agent-workflow/pull/85) |
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | một phần | — | Nhãn `[INCIDENT]` xong; capability vẫn human vì stage operate | | | [#86](https://github.com/dangminhphuc/agent-workflow/pull/86) |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
-| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | SP13 | Chặn luật mới không id xong (#81); còn: gắn luật cũ, `Category`, `tools/lib/`, suy từ diff — chia mấy PR | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81) (một phần) |
+| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -88,63 +88,6 @@ bugfix/refactor bỏ design khi `Design: skip`. Sửa typo trong tài liệu, bu
 **Nghiêng về:** A trước (lấy số liệu SP9), rồi B nếu `chore` chiếm phần lớn. C đổi triết lý quy trình —
 chỉ làm khi người chủ engine muốn.
 
-### SP13 — Checker LLM cho spec: REQ có đọc đúng câu trích không
-
-**Vấn đề.** `aw check spec` chỉ kiểm hình thức: câu trích `[FILE]` có thật trong nguồn
-(`tools/lib/quote.sh`), REQ có nhãn nguồn, có tiêu chí. Nó không biết `Description` và các `- [ ]` có nói
-**đúng, đủ, không thừa** so với `Quote` không. Phase design có checker LLM (`workflow/checkers/design.md`),
-phase spec thì không.
-
-**Hạ tầng đã có.**
-- Frontmatter `llm_checker:` → adapter sinh subagent `<tên>-checker` và chèn lời dặn gọi nó
-  (`adapters/lib/common.sh`: `ten_agent_checker`). Thêm checker = thêm file + một dòng frontmatter.
-- Đọc finding dùng chung: `tools/lib/findings.sh` (`Severity`, `Category`, `Location`, `Problem`,
-  `Resolution`).
-- `tools/pending.sh` khoá finding theo `file:FND-NNN` — hai checker trùng số `FND` không lẫn.
-
-**Chỗ còn gắn cứng `design-findings.md`** (tổng quát hoá hoặc thêm nhánh): `tools/check-design.sh`,
-`tools/approval.sh` (chỉ hiện finding cho DEC), `tools/pending.sh` (bảng `ph_chan` tĩnh, mà phase bị chặn
-bởi finding của spec là `design` **hoặc** `plan` khi `Design: skip`/`chore`), `tools/lib/toc.sh`
-(`TOC_ART`), `adapters/cursor/README.md`.
-
-**Hướng (đề xuất).**
-1. `workflow/checkers/spec.md`, đọc `intake.md`, `spec.md`, `open-questions.md`, ghi `spec-findings.md`.
-   Cùng luật với checker design: chỉ được chặn, không được duyệt; ngữ cảnh trắng; chạy lại thì ghi đè;
-   không có gì vẫn ghi file với một dòng `No blocking findings.`.
-2. Bảng `Category`:
-
-   | `Category` | Nghĩa | `Severity` |
-   |---|---|---|
-   | `quote-misread` | `Description`/tiêu chí nói điều `Quote` không nói, hoặc ngược với `Quote` | `block` |
-   | `added-scope` | Tiêu chí, giới hạn, số liệu không có trong `Quote` hay nguồn nào | `block` |
-   | `dropped-condition` | `Quote` có điều kiện / ngoại lệ / giới hạn mà tiêu chí bỏ mất | `block` |
-   | `unflagged-ambiguity` | `Quote` đọc được nhiều cách, REQ chọn một mà không có `[OPEN-QUESTION]` | `block` |
-   | `unsourced-priority` | `should` mà câu nguồn không nói "nice to have", "phase 2"… | `block` |
-   | `inferred-business-decision` | `[INFERRED]` trên quyết định nghiệp vụ | `block` |
-   | `merged-requirements` | Một REQ gộp hai yêu cầu kiểm chứng độc lập | `warn` |
-   | `unobservable-criterion` | Tiêu chí không quan sát được từ ngoài ("phải nhanh") | `warn` |
-   | `nfr-unasked` | Việc đụng nhóm NFR (`01-spec.md` bước 5) mà không có REQ hay open question | `warn` |
-   | `risk-understated` | Đụng tiền/kế toán, schema lõi, tích hợp mới mà `Risk: normal` | `warn` |
-
-3. `aw check spec` chặn khi chưa có `spec-findings.md` hoặc còn `block` chưa `fixed`/`rejected: <lý do>`
-   — giống `check-design`. Người phân xử qua `/aw-clarify` trước khi tick "Approved by human";
-   `aw approvals` hiện finding của spec cạnh ô duyệt spec.
-4. Tương thích: việc đã ghim engine cũ không bị ảnh hưởng; việc mới phải có `spec-findings.md`
-   (`changes/` mục `Thay đổi`).
-5. Chi phí: thêm một subagent mỗi lần `/aw-spec` — chấp nhận được vì spec chạy ít lần và sai ở đây đắt nhất.
-
-**Cần quyết.** Đọc lại nguồn? Đọc lại `[FILE]` thì rẻ; `[JIRA]`/`[CONFLUENCE]` cần MCP và tốn ngữ cảnh.
-Đề xuất bản đầu chỉ so `spec.md` với `Quote` và lời `[HUMAN]` trong `intake.md` (đủ cho 6 loại `block`);
-`missed-requirement` (câu nguồn có "phải/must" mà không REQ nào trích) để bản sau.
-
-**Test.** `02-spec-design-plan.sh` (thiếu file, `block` `open`, `rejected:` không lý do → chặn; `fixed`,
-`rejected: <lý do>`, chỉ `warn` → ĐẠT); `11-design-skip-refactor.sh` (`Design: skip` → finding spec chặn
-`plan`); `08-adapters.sh` (subagent `spec-checker`, `AW_COMPARE=1`); `01-fixture-engine-toc.sh`
-(`aw toc` nhận `spec-findings.md`).
-
-**Tài liệu.** `01-spec.md`, `docs/kien-truc.md` § LLM checker + điểm yếu 3, `docs/huong-dan.md` § Phase 01
-+ § 4 Bản đồ artifact, `adapters/cursor/README.md`.
-
 ### SP14 — Bugfix: test tái hiện xanh sau khi sửa
 
 **Vấn đề.** INV-007 chỉ giữ "test tái hiện đỏ trên code chưa sửa" (`aw check repro`). Máy không biết test
@@ -157,19 +100,6 @@ test đỏ không; `test-results.md` xanh toàn bộ đã ngầm đòi điều n
 
 **Cần quyết.** Chặn hay cảnh báo (nhận diện tên test theo ngôn ngữ dễ báo nhầm → cảnh báo ở implement,
 chặn ở review). Máy giữ được thì thêm invariant hoặc nới INV-007 (`interface-sdlc.md` § 4.1).
-
-### SP15 — `out_of_scope` cho capability engine không định làm
-
-**Vấn đề.** `check-sdlc.sh` còn in là "còn thiếu" những capability nằm ngoài hướng engine: engine chỉ nhận
-việc đã có, không ưu tiên hay ước lượng giữa các việc (`CAP-plan-03`, `CAP-plan-04`); UAT
-(`CAP-verify-05`) và đường rollback (`CAP-deploy-03`) thuộc quy trình của repo đích. Bảng "còn thiếu"
-lẫn việc sẽ làm với việc không làm.
-
-**Hướng.** Khai từng id trong `out_of_scope:` của `workflow.yaml` kèm lý do (cơ chế SP5). Làm yếu
-interface → id + lý do dưới `### Bỏ` của `changes/<branch>.md`.
-
-**Cần quyết.** Danh sách id. `CAP-deploy-03` có thể giữ: engine ghi được đường rollback trong
-`merge-request.md` như một mục người điền.
 
 ### SP16 — `CAP-operate-02`: sự cố → việc mới
 
@@ -212,9 +142,10 @@ báo chuyển tiếp. Glob của `conventions.md` giữ nghĩa cũ (spec SP8).
 của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đúng một chỗ luật ngay dưới.
 
 **Hướng (phần còn lại).** Gắn id cho chỗ còn lại (hạ dần danh sách) và mọi `Category`; đếm cả luật trong
-`tools/lib/`; suy "diff chạm CAP/INV nào" từ file thay đổi.
+`tools/lib/`. Không gắn hàng loạt: id có thật vẫn qua máy dù gắn nhầm capability.
 
-**Cần quyết.** Chia mấy PR. Làm sau SP13 để `Category` của checker spec mang id ngay.
+**Đã làm thêm.** `sh tools/check-sdlc.sh --suy <file>…` in các id `# giữ:` trong những file đó (đưa
+danh sách file của diff). Id không có thì chặn. Không tự viết `# giữ:`.
 
 ## Việc nhỏ (không thành dự án con)
 
@@ -236,6 +167,7 @@ của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đ�
 |---|---|---|
 | Tách version / repo của interface SDLC | Chỉ có một implementation; tách chỉ thêm việc đồng bộ (`kien-truc.md` § Interface SDLC) | Có implementation thứ hai |
 | Release, triển khai, quan sát production (`CAP-deploy-02`, `CAP-operate-01`) | Pipeline và observability của repo đích; đã khai `out_of_scope` (SP5) | — |
+| Xếp ưu tiên, ước lượng, nghiệm thu (`CAP-plan-03`, `CAP-plan-04`, `CAP-verify-05`) | Việc của người hoặc của repo đích; đã khai `out_of_scope` (SP15). `CAP-deploy-03` giữ trên roadmap: engine ghi được đường rollback | — |
 | Refactor "không thêm hành vi" ở mức code | Chưa có cách máy kiểm đáng tin; giữ ở mức spec (REQ `preserve`/`structural`, INV-008) và để review/người phán | Có cách kiểm không báo nhầm |
 | Đổi tên phase `03-plan` (stage `breakdown`) ↔ stage `plan` | Chạm test, docs, lệnh sinh ra; `docs/thuat-ngu.md` (mục `stage`) đã giải thích | Người dùng nhầm thật |
 | Adapter thứ ba (`codex`, `copilot`) | SP11 đã gỡ `planned`; thêm khi có người dùng thật cần (`adapters/README.md`) | Có người dùng |

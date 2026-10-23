@@ -9,6 +9,20 @@ tao_fixture
 nhom "check-spec.sh"
 CHK="$T/check-spec.sh"
 
+# Checker LLM của spec: thiếu file, block còn mở, rejected không lý do → chặn; đã xử lý → ĐẠT
+viet_spec; rm -f "$F/spec-findings.md"
+ky_vong_ly_do 1 "chặn khi checker LLM của spec chưa chạy" "…đúng lý do" 'Chưa có spec-findings.md' sh "$CHK" "$F"
+printf '### FND-001 — x\n- Severity: `block`\n- Resolution: `open`\n' > "$F/spec-findings.md"
+ky_vong_ly_do 1 "chặn phát hiện block của spec chưa xử lý" "…đúng lý do" 'FND-001: phát hiện Severity block chưa xử lý' sh "$CHK" "$F"
+printf '### FND-001 — x\n- Severity: `block`\n- Resolution: `rejected:`\n' > "$F/spec-findings.md"
+ky_vong_ly_do 1 "chặn bác bỏ phát hiện spec mà không có lý do" "…đúng lý do" 'FND-001: Severity block bị rejected mà không có lý do' sh "$CHK" "$F"
+printf '### FND-001 — x\n- Severity: `block`\n- Resolution: fixed\n### FND-002 — y\n- Severity: `warn`\n- Resolution: open\n' > "$F/spec-findings.md"
+toc_f spec-findings.md
+ky_vong 0 "spec: block đã fixed + cảnh báo chưa xử lý thì cho qua" sh "$CHK" "$F"
+printf '### FND-001 — x\n- Severity: `block`\n- Resolution: rejected: câu trích không nói điều này\n' > "$F/spec-findings.md"
+toc_f spec-findings.md
+ky_vong 0 "spec: bác bỏ block có lý do thì cho qua" sh "$CHK" "$F"
+
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Description: không nguồn'
 ky_vong 1 "chặn yêu cầu không có nhãn nguồn" sh "$CHK" "$F"
 

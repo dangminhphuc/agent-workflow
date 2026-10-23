@@ -16,7 +16,7 @@
 #
 # Yêu cầu: không. Không đọc AW_REPO/AW_CONFIG — chỉ làm việc trên thư mục feature.
 
-TOC_ART="intake.md spec.md open-questions.md tdd.md design-findings.md plan.md review.md merge-request.md"
+TOC_ART="intake.md spec.md open-questions.md spec-findings.md tdd.md design-findings.md plan.md review.md merge-request.md"
 
 # Phần awk dùng chung — nối vào trước chương trình awk: awk "$TOC_AWK"'…'
 #   toc_khoi_tao()     gọi trong BEGIN

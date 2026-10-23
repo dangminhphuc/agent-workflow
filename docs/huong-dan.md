@@ -91,7 +91,7 @@ branch. Nếu team squash-merge hoặc xoá branch sau khi merge thì lịch s�
 ```mermaid
 flowchart TD
     INTAKE["/aw-intake<br/>→ intake.md<br/><i>BẠN: chọn job type, base</i>"]
-    SPEC["/aw-spec<br/>→ spec.md + open-questions.md<br/><i>BẠN: duyệt spec, Risk, Blocking</i>"]
+    SPEC["/aw-spec<br/>→ spec.md + open-questions.md + spec-findings.md<br/><i>BẠN: duyệt spec, Risk, Blocking, phân xử finding</i>"]
     CLARIFY["/aw-clarify<br/>trả lời open question, phân xử LLM checker"]
     DESIGN["/aw-design<br/>→ tdd.md + design-findings.md<br/><i>BẠN: duyệt từng DEC-xxx</i>"]
     PLAN["/aw-plan → plan.md"]
@@ -442,7 +442,7 @@ Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — ch�
 
 - **Chạy ở:** worktree.
 - **Đọc → ghi:** input trong `intake.md` (và luật nghiệp vụ `BR-` đang active) → `spec.md`,
-  `open-questions.md`.
+  `open-questions.md`, `spec-findings.md`.
 
 **`spec.md` quyết định *cái gì* phải làm** — mọi phase sau đo theo nó:
 
@@ -729,6 +729,7 @@ Tất cả nằm ở `<worktree>/docs/sdlc/<tên-branch>/` (việc tạo bằng 
 |---|---|---|---|---|---|
 | `intake.md` | intake | agent + máy (`aw input`, `Base`, `Engine`) | job type, base, engine, nguồn duy nhất | mọi phase, mọi checker | xác nhận loại, chọn base |
 | `spec.md` | spec | agent | **cái gì** phải làm; `Risk`; phạm vi | design, plan, implement, review | đọc REQ + Out of scope, duyệt Risk, **tick** |
+| `spec-findings.md` | spec | LLM checker | mô tả/tiêu chí có lệch `Quote` hoặc lời `[HUMAN]` không | spec (chặn), clarify | phân xử `block` |
 | `open-questions.md` | spec, clarify | agent đề xuất, người trả lời | agent đang đoán gì, đoán sai tốn bao nhiêu | design (blocking), review (review-blocking) | duyệt mức `Blocking`, trả lời |
 | `tdd.md` | design | agent (Mode 2: người phác DEC) | **làm thế nào**; DEC-xxx | plan, implement, review | **tick từng DEC-xxx** |
 | `design-findings.md` | design | LLM checker | lỗ của thiết kế | design (chặn), clarify | phân xử `block` |
@@ -983,7 +984,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | Lệnh | Chạy ở | Việc |
 |---|---|---|
 | `/aw-intake <input…>` | main checkout / worktree | tạo việc, worktree, `intake.md`; thêm input |
-| `/aw-spec` | worktree | `spec.md`, `open-questions.md` |
+| `/aw-spec` | worktree | `spec.md`, `open-questions.md`, `spec-findings.md` |
 | `/aw-clarify` | worktree | chốt open question, phân xử LLM checker |
 | `/aw-design` | worktree | `tdd.md`, `design-findings.md` |
 | `/aw-plan` | worktree | `plan.md` |

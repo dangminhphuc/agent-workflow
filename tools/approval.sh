@@ -124,6 +124,7 @@ if [ "$CONG" = spec ]; then
       print "Spec có " n " yêu cầu" (t == "" ? "" : ": " t)
     }
   ' "$SPEC" "$OQF"
+  ph_cho_phan_xu "$DIR/spec-findings.md"
   exit 1
 fi
 

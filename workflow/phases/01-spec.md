@@ -11,6 +11,7 @@ inputs:
 outputs:
   - spec.md
   - open-questions.md
+  - spec-findings.md
 implements: require
 provides:
   - requirements: spec.md
@@ -27,7 +28,9 @@ exit_human:
   - Repo owner approves "Risk" (high → design runs Mode 2, the human drafts DEC-xxx first)
   - Repo owner approves "Design" (skip → no design phase, plan works from the spec)
   - Then the repo owner ticks "Approved by human" — design (no design phase: plan) blocks until then
+  - The human arbitrates the LLM checker's findings (confirm, or reject with a reason)
 needs_clean_context: true
+llm_checker: workflow/checkers/spec.md
 trace_rule: true
 ---
 
@@ -74,7 +77,8 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
     - A REQ that stays true after this job (a business invariant, not a screen detail) with a durable source → propose `- Promote: BR-<DOMAIN>-NNN` under it. `[INFERRED]` / `[OPEN-QUESTION]` REQs cannot be promoted.
 12. **Leave `- [ ] **Approved by human**` unticked**; any content edit unticks it. Spec edited after the human ticked → the human re-approves: reads the change and deletes `<!-- approval-hash: … -->` (keeps the tick), or re-ticks.
     - The human disagrees with an existing REQ → `/aw-clarify REQ-NNN` records the change as an answered open question; do not silently rewrite the REQ.
-13. **Record inputs:** `aw based-on <dir> spec.md intake.md`.
+13. **Run the LLM checker** → `spec-findings.md`. It compares description and acceptance criteria to `Quote` and `[HUMAN]` text only. Fix what you agree with (`Resolution: fixed`); the human arbitrates the rest via `/aw-clarify` before ticking.
+14. **Record inputs:** `aw based-on <dir> spec.md intake.md`.
 
 ## By work type
 
@@ -88,6 +92,7 @@ Refactoring an area with no protecting test → checker blocks. Write the tests 
 
 ## Forbidden
 
+- Treating "LLM checker reported nothing" as a pass when it has not run.
 - Requirements that do not trace to a source.
 - **Choosing a technical solution** (library, tables, modules) — that is `02-design`.
 - Picking one reading of an ambiguity without an `[OPEN-QUESTION]`; resolving source conflicts yourself ("pick the safer side").

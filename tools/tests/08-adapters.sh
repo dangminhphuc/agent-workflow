@@ -14,7 +14,7 @@ ky_vong 0 "build bản đúng thành công" sh "$BUILD" --out "$O"
 
 du=1
 for f in commands/aw-intake.md commands/aw-spec.md commands/aw-design.md commands/aw-plan.md commands/aw-implement.md commands/aw-review.md \
-         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md commands/aw-refactor.md commands/aw-approvals.md agents/independent-reviewer.md agents/design-checker.md skills/agent-workflow/SKILL.md; do
+         commands/aw-ship.md commands/aw-import.md commands/aw-clarify.md commands/aw-bootstrap.md commands/aw-refactor.md commands/aw-approvals.md agents/independent-reviewer.md agents/design-checker.md agents/spec-checker.md skills/agent-workflow/SKILL.md; do
   [ -f "$O/.claude/$f" ] || { du=0; echo "        thiếu .claude/$f"; }
 done
 dung "sinh đúng bộ file" test "$du" = 1
@@ -29,6 +29,7 @@ dung "command có bước xác định feature bằng aw feature" grep -q 'aw fe
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <dir>`' "$O/.claude/commands/aw-design.md"
 dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
 dung "command design gọi checker LLM" grep -q 'design-checker' "$O/.claude/commands/aw-design.md"
+dung "command spec gọi checker LLM" grep -q 'spec-checker' "$O/.claude/commands/aw-spec.md"
 dung "lệnh /aw-clarify có bước xác định feature + chạy aw pending" sh -c \
   "grep -q 'aw feature <feature-name if the user gave one>' '$O/.claude/commands/aw-clarify.md' && grep -q 'aw pending' '$O/.claude/commands/aw-clarify.md'"
 dung "lệnh /aw-clarify hỏi bằng AskUserQuestion, có Chat about this" sh -c \
@@ -87,6 +88,7 @@ dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec
 dung "…phase cuối không có lệnh tiếp theo" sh -c "! grep -q 'Tiếp theo:' '$O/.claude/commands/aw-ship.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/independent-reviewer.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/design-checker.md"
+dung "…checker LLM soát spec đọc aw rules spec" grep -q 'aw rules spec' "$O/.claude/agents/spec-checker.md"
 dung "phase có quy tắc repo: lệnh gọi aw uses <phase>, subagent rà soát gọi aw uses review; intake thì không" sh -c \
   "for p in spec design plan implement; do grep -q \"aw uses \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done; grep -q 'aw uses review' '$O/.claude/agents/independent-reviewer.md' && ! grep -q 'aw uses' '$O/.claude/commands/aw-intake.md'"
 dung "…Claude Code gọi skill qua Skill tool, không đọc file; subagent qua subagent_type" sh -c \
@@ -198,6 +200,7 @@ dung "/aw-intake: aw feature không tham số, input đi qua heredoc với <tham
   "grep -q 'Run \`aw feature\` — \*\*without\*\* the command arguments' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <dir>`' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-design gọi subagent checker LLM design-checker" grep -q 'subagent `design-checker`' "$O3/.cursor/commands/aw-design.md"
+dung "/aw-spec gọi subagent checker LLM spec-checker" grep -q 'subagent `spec-checker`' "$O3/.cursor/commands/aw-spec.md"
 dung "/aw-review bắt buộc subagent independent-reviewer" grep -q 'subagent `independent-reviewer`' "$O3/.cursor/commands/aw-review.md"
 dung "subagent: frontmatter name trùng tên file (Cursor nạp .cursor/agents/)" sh -c \
   "for f in '$O3'/.cursor/agents/*.md; do head -1 \"\$f\" | grep -qx -- '---' && sed -n 2p \"\$f\" | grep -qx \"name: \$(basename \"\$f\" .md)\" || exit 1; done"
