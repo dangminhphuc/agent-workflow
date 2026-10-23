@@ -9,6 +9,7 @@
 #   - Mục "Input" không có nguồn nào, nhãn không hợp lệ, hay có [INFERRED].
 #     Input chỉ nhận tài liệu có định danh hoặc lời người dùng CHÉP NGUYÊN VĂN —
 #     suy đoán của agent mà vào đây thì mọi phase sau sẽ truy về nó như có nguồn.
+#   - [INCIDENT] cùng dạng [FILE]: phải có định danh, không chỗ giữ chỗ. Không bắt buộc.
 #   - [HUMAN] không kèm nguyên văn.
 #   - [JIRA] mà định danh không có mã khớp jira_key_regex (conventions.md).
 #   - Thiếu dòng "Base:" dạng `<ref>` @ `<sha>` (worktree-new.sh in ra), hoặc sha
@@ -84,7 +85,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     cho_nv = 0
   }
   BEGIN { n_loi = n_base; n = split(loai_hl, a, " "); for (i = 1; i <= n; i++) hl[a[i]] = 1
-          nhan["CONFLUENCE"]=1; nhan["JIRA"]=1; nhan["FILE"]=1; nhan["HUMAN"]=1 }
+          nhan["CONFLUENCE"]=1; nhan["JIRA"]=1; nhan["FILE"]=1; nhan["HUMAN"]=1; nhan["INCIDENT"]=1 }
   { sub(/\r$/, "") }
 
   !co_loai && /^[ \t]*-[ \t]+\*\*Type:\*\*/ { co_loai = 1; loai = gia_tri($0) }
@@ -99,7 +100,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     t = substr($0, RSTART + 1, RLENGTH - 2); rest = substr($0, RSTART + RLENGTH)
     n_in++
     if (t == "INFERRED") { loi("Input #" n_in ": [INFERRED] không được là input — input chỉ là tài liệu hoặc lời người dùng nguyên văn"); next }
-    if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | FILE | HUMAN)"); next }
+    if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | FILE | HUMAN | INCIDENT)"); next }
     gsub(/<!--.*-->/, "", rest); gsub(/^[`* \t]+|[ \t]+$/, "", rest)
     if (t == "HUMAN" && (rest == "" || rest ~ /^<.*>$/)) cho_nv = 1
     else if (t != "HUMAN" && rest == "") loi("Input #" n_in ": [" t "] thiếu định danh (URL, mã issue, đường dẫn)")

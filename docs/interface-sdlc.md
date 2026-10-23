@@ -246,7 +246,7 @@ Stage → phase (trạng thái suy ra từ capabilities: của phase):
 Capability còn thiếu (roadmap — mô tả ở sdlc/stages/):
   deploy (partial): Dừng ở MR/PR đã merge; release, tag, triển khai và rollback chưa làm
     CAP-deploy-03  human    Rollback path is recorded before delivery
-  operate (gap): CI/CD và observability nằm ngoài engine; sự cố chưa quay lại thành việc mới
+  operate (gap): CI/CD và observability nằm ngoài engine; intake ghi được sự cố bằng [INCIDENT], không bắt buộc, và stage operate chưa có phase
     CAP-operate-02  human    Incidents and production findings become new work items
 Không làm (out-of-scope — lý do trong workflow.yaml):
   plan (partial): Chỉ nhận việc đã có (ticket, tài liệu, lời người); xếp ưu tiên và ước lượng: out_of_scope
@@ -283,9 +283,7 @@ Job type × stage (chạy · tuỳ = có thể bỏ · bỏ · gap = engine khô
 - **`deploy` — partial.** Engine dừng ở MR/PR mà người merge. Chưa có: đường rollback được ghi và
   người xác nhận trước khi release (`CAP-deploy-03`). **Không làm**: release / triển khai
   (`CAP-deploy-02`) — pipeline của repo đích.
-- **`operate` — gap.** Sự cố chưa quay lại thành việc mới (`CAP-operate-02`) — việc engine có thể làm
-  ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP16). **Không làm**: quan sát production (`CAP-operate-01`) —
-  hệ thống observability bên ngoài.
+- **`operate` — gap.** Intake nhận sự cố làm input `[INCIDENT] <định danh>` (cùng dạng `[FILE]`, không bắt buộc — báo cáo của người không có mã sự cố vẫn là `[HUMAN]`). `CAP-operate-02` vẫn `human` và stage vẫn gap: capability thuộc stage `operate`, phase `intake` implement stage `plan` nên không nhận được, và phase operate phải đứng sau ship. **Không làm**: quan sát production (`CAP-operate-01`) — hệ thống observability bên ngoài.
 
 Muốn làm một dòng trong bảng: theo công thức 4.2. Muốn đưa một capability vào hay ra khỏi khối
 **Không làm**: sửa khoá `out_of_scope:` của `workflow.yaml` (`- CAP-id: lý do`) — trạng thái stage không

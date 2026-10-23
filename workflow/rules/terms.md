@@ -29,7 +29,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `job dir` | `docs/sdlc/<branch>/` — the job's artifacts; committed on the job branch, removed from it before the MR | thư mục việc |
 | `artifact` | File written into the job dir (`spec.md`, `tdd.md`…) | |
 | `input` | The sources spec reads: `## Input` of `intake.md` | |
-| `source label` | `[CONFLUENCE]`, `[JIRA]`, `[FILE]`, `[INFERRED]`, `[OPEN-QUESTION]`, `[HUMAN]` | nhãn nguồn |
+| `source label` | `[CONFLUENCE]`, `[JIRA]`, `[FILE]`, `[INCIDENT]`, `[INFERRED]`, `[OPEN-QUESTION]`, `[HUMAN]` | nhãn nguồn |
 | `Quote` | Source sentences copied verbatim under a REQ's `Source:`, one `> …` line each | |
 | `open question` | Something the source does not say; agent assumes, human answers: `open-questions.md` | điểm mù |
 | `Blocking` | Level of an open question: `blocking`, `review-blocking`, `non-blocking` | mức chặn |
