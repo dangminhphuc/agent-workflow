@@ -225,7 +225,7 @@ loại việc mới) vì chưa có số liệu. Mỗi người chạy `aw journa
 
 ```sh
 mkdir -p ~/.local/bin
-curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.30/aw -o ~/.local/bin/aw
+curl -fsSL https://github.com/dangminhphuc/agent-workflow/releases/download/2026.10.31/aw -o ~/.local/bin/aw
 chmod +x ~/.local/bin/aw
 aw version
 aw doctor          # kiểm sh, git, tar, gzip, curl/wget, sha256sum/shasum
