@@ -73,4 +73,14 @@ dung "…không kèm lỗi Artifact cho từng capability" sh -c "! grep -q 'pro
 moi; sed 's/$/\r/' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
 ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
 
+# --suy: id mà diff đã gắn, không tự gắn
+nhom "--suy"
+printf '# giữ: CAP-require-01, INV-007\n# giữ: CAP-require-01\n' > "$TMP/suy-a.sh"
+printf 'CAP-require-01\nINV-007\n' > "$TMP/suy-mong"
+ky_vong 0 "--suy in từng id một lần" sh -c "sh '$SC' --suy '$TMP/suy-a.sh' | cmp -s - '$TMP/suy-mong'"
+printf '# giữ: CAP-khong-co\n' > "$TMP/suy-b.sh"
+ky_vong 1 "--suy id không có → KHÔNG ĐẠT" sh "$SC" --suy "$TMP/suy-b.sh"
+ky_vong 2 "--suy thiếu file → SAI THAM SỐ" sh "$SC" --suy
+ky_vong 0 "--suy file không có # giữ thì in rỗng" sh -c "printf 'echo x\n' > '$TMP/suy-c.sh'; sh '$SC' --suy '$TMP/suy-c.sh' | cmp -s - /dev/null"
+
 ket_thuc
