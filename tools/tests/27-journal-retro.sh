@@ -20,4 +20,23 @@ OUT_AP=$(sh "$T/approvals.sh" 2>/dev/null)
 H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F spec ||p")
 ky_vong 0 "aw approvals tick spec" sh "$T/approvals.sh" tick "$F" spec "$H_AP"
 dung "approvals.tsv: cột cuối = version engine" sh -c "awk -F'\t' -v v='$V' '\$NF == v' '$JD/approvals.tsv' | grep -q ."
+
+# ---------------------------------------------------------------- export/report: cũ lẫn mới, --version (Task 2)
+nhom "SP9b: export và report đọc cả export cũ lẫn mới, có --version"
+ky_vong 0 "export mới (máy may-a)" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/moi.tsv"
+awk -F'\t' 'BEGIN { OFS = "\t" } { NF = NF - 1; print }' "$TMP/moi.tsv" > "$TMP/cu.tsv"
+n_moi=$(sh "$NK" report "$TMP/moi.tsv" | awk '$1 == "plan" { print $2; exit }')
+[ -n "$n_moi" ] || ca_hong "fixture không có lần chạy check plan — ca export/report không kiểm được gì"
+dung "export cũ (không cột version) đọc được: đếm đúng" bang "$(sh "$NK" report "$TMP/cu.tsv" | awk '$1 == "plan" { print $2; exit }')" "$n_moi"
+dung "export cũ + mới trong một report: cộng dồn, không dòng nào bị bỏ" sh -c "! sh '$NK' report '$TMP/moi.tsv' '$TMP/cu.tsv' | grep -q 'bỏ'"
+dung "…cộng dồn đúng" bang "$(sh "$NK" report "$TMP/moi.tsv" "$TMP/cu.tsv" | awk '$1 == "plan" { print $2; exit }')" "$((n_moi * 2))"
+dung "--version = version engine: đếm đủ" bang "$(sh "$NK" report --version "$V" "$TMP/moi.tsv" | awk '$1 == "plan" { print $2; exit }')" "$n_moi"
+dung "--version khác: không còn lần chạy nào" sh -c "sh '$NK' report --version 9.9.9 '$TMP/moi.tsv' | grep -q 'chưa có'"
+dung "--version ? lọc dòng cũ (không version)" bang "$(sh "$NK" report --version '?' "$TMP/cu.tsv" | awk '$1 == "plan" { print $2; exit }')" "$n_moi"
+dung "--version ? bỏ dòng có version thật" sh -c "sh '$NK' report --version '?' '$TMP/moi.tsv' | grep -q 'chưa có'"
+dung "--version không đi kèm giá trị → SAI THAM SỐ" sh -c "! sh '$NK' report --version >/dev/null 2>&1"
+dung "--version không có file: lọc nhật ký của máy này" bang "$(sh "$NK" report --version "$V" | awk '$1 == "plan" { print $2; exit }')" "$(sh "$NK" report | awk '$1 == "plan" { print $2; exit }')"
+printf '2026-10-24T01:00:00Z\tfeat_x\tspec\t%s\n' "$V" > "$CFG/journal/phases.tsv"
+ky_vong 0 "export có nguồn phases" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/pha.tsv"
+dung "…dòng phases có tên nguồn và máy" sh -c "awk -F'\t' '\$1 == \"phases\" && \$2 == \"may-a\"' '$TMP/pha.tsv' | grep -q ."
 ket_thuc

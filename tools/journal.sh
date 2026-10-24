@@ -127,7 +127,7 @@ if [ "${1:-}" = export ]; then
   [ -d "$(dirname -- "$2")" ] || { echo "LỖI: thư mục của \"$2\" không có." >&2; exit 2; }
   may=$(bay "${AW_JOURNAL_MACHINE:-$(uname -n 2>/dev/null || echo may)}")
   {
-    for s in checks failures approvals findings; do
+    for s in checks failures approvals findings phases jobs; do
       if [ -f "$JD/$s.tsv" ]; then awk -v s="$s" -v m="$may" '{ print s "\t" m "\t" $0 }' "$JD/$s.tsv"; fi
     done
   } > "$2" || exit 2
@@ -139,24 +139,41 @@ fi
 case "${1:-report}" in report) ;; *) echo "Dùng: aw journal [report [<file export>…]] | aw journal add <layer> \"<mô tả>\" | aw journal export <file>" >&2; exit 2 ;; esac
 [ $# -gt 0 ] && shift
 
+# --version <v>: chỉ tính dòng có version đó (? = engine không đọc được version).
+RV=""
+if [ "${1:-}" = --version ]; then
+  [ -n "${2:-}" ] || { echo "LỖI: --version cần một version (vd 2026.10.31, hoặc ?)." >&2; exit 2; }
+  RV=$2; shift 2
+fi
+
 NGUON=$JD; bo=0
-if [ $# -gt 0 ]; then
-  # Report trên file export: tách lại thành bốn nguồn trong thư mục tạm rồi tổng hợp như thường.
-  for f in "$@"; do [ -f "$f" ] || { echo "LỖI: không có file \"$f\"." >&2; exit 2; }; done
-  # Bỏ file trùng đường dẫn (truyền hai lần thì đếm một lần).
-  da="|"; n=$#
-  while [ "$n" -gt 0 ]; do
-    f=$1; shift; n=$((n - 1))
-    case "$da" in *"|$f|"*) ;; *) da="$da$f|"; set -- "$@" "$f" ;; esac
-  done
-  JD=$(mktemp -d "${TMPDIR:-/tmp}/aw-journal.XXXXXX" 2>/dev/null) || { JD="${TMPDIR:-/tmp}/aw-journal.$$"; mkdir "$JD" || exit 2; }
-  kq_don 'rm -rf "$JD"'
-  bo=$(awk -F'\t' -v d="$JD" '
-    BEGIN { cot["checks"] = 6; cot["failures"] = 5; cot["approvals"] = 6; cot["findings"] = 6 }
-    ($1 in cot) && NF == cot[$1] + 2 { s = $1; sub(/^[^\t]*\t[^\t]*\t/, ""); print > (d "/" s ".tsv"); next }
+if [ $# -gt 0 ] || [ -n "$RV" ]; then
+  TD=$(mktemp -d "${TMPDIR:-/tmp}/aw-journal.XXXXXX" 2>/dev/null) || { TD="${TMPDIR:-/tmp}/aw-journal.$$"; mkdir "$TD" || exit 2; }
+  kq_don 'rm -rf "$TD"'
+  if [ $# -eq 0 ]; then
+    # Không có file: nhật ký máy này đi qua đúng đường export, rồi đọc như file export.
+    sh "$0" export "$TD/may.tsv" >/dev/null || exit 2
+    set -- "$TD/may.tsv"
+    NGUON="nhật ký máy này"
+  else
+    # Report trên file export: tách lại thành các nguồn trong thư mục tạm rồi tổng hợp như thường.
+    for f in "$@"; do [ -f "$f" ] || { echo "LỖI: không có file \"$f\"." >&2; exit 2; }; done
+    # Bỏ file trùng đường dẫn (truyền hai lần thì đếm một lần).
+    da="|"; n=$#
+    while [ "$n" -gt 0 ]; do
+      f=$1; shift; n=$((n - 1))
+      case "$da" in *"|$f|"*) ;; *) da="$da$f|"; set -- "$@" "$f" ;; esac
+    done
+    NGUON="gộp $# file export"
+  fi
+  JD="$TD/nhat-ky"; mkdir "$JD"
+  # Dòng đủ cột (có version cuối) giữ nguyên; dòng cũ thiếu version thì thêm "?" — đều qua được lọc --version.
+  bo=$(awk -F'\t' -v d="$JD" -v rv="$RV" '
+    BEGIN { cot["checks"] = 6; cot["failures"] = 5; cot["approvals"] = 6; cot["findings"] = 6; cot["phases"] = 4; cot["jobs"] = 16 }
+    ($1 in cot) && NF == cot[$1] + 2 { if (rv == "" || $NF == rv) { s = $1; sub(/^[^\t]*\t[^\t]*\t/, ""); print > (d "/" s ".tsv") }; next }
+    ($1 in cot) && NF == cot[$1] + 1 { if (rv == "" || rv == "?") { s = $1; sub(/^[^\t]*\t[^\t]*\t/, ""); print ($0 "\t?") > (d "/" s ".tsv") }; next }
     { bo++ }
     END { print bo + 0 }' "$@")
-  NGUON="gộp $# file export"
 fi
 
 echo "harness journal — $NGUON"
