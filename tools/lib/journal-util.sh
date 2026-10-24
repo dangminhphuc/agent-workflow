@@ -26,7 +26,7 @@ function epoch(s,   y, mo, d, h, mi, se, dm, days) {
 # ju_trung_vi: đọc "nhóm<TAB>số" đã sắp theo nhóm rồi theo số (sort -t tab -k1,1 -k2,2n); in "nhóm<TAB>n<TAB>trung vị".
 ju_trung_vi() {
   awk -F'\t' '
-    function xuat() { if (nhom != "") { m = (n % 2) ? v[(n + 1) / 2] : (v[n / 2] + v[n / 2 + 1]) / 2; printf "%s\t%d\t%g\n", nhom, n, m } }
+    function xuat() { if (nhom != "") { m = (n % 2) ? v[(n + 1) / 2] : (v[n / 2] + v[n / 2 + 1]) / 2; printf "%s\t%d\t%s\n", nhom, n, (m == int(m) ? sprintf("%d", m) : sprintf("%.1f", m)) } }
     $1 != nhom { xuat(); nhom = $1; n = 0 }
     { n++; v[n] = $2 + 0 }
     END { xuat() }'

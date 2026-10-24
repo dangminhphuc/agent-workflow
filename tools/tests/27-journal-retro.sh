@@ -31,9 +31,10 @@ dung "export cũ (không cột version) đọc được: đếm đúng" bang "$(
 dung "export cũ + mới trong một report: cộng dồn, không dòng nào bị bỏ" sh -c "! sh '$NK' report '$TMP/moi.tsv' '$TMP/cu.tsv' | grep -q 'bỏ'"
 dung "…cộng dồn đúng" bang "$(sh "$NK" report "$TMP/moi.tsv" "$TMP/cu.tsv" | awk '$1 == "plan" { print $2; exit }')" "$((n_moi * 2))"
 dung "--version = version engine: đếm đủ" bang "$(sh "$NK" report --version "$V" "$TMP/moi.tsv" | awk '$1 == "plan" { print $2; exit }')" "$n_moi"
-dung "--version khác: không còn lần chạy nào" sh -c "sh '$NK' report --version 9.9.9 '$TMP/moi.tsv' | grep -q 'chưa có'"
+dung "--version 9.9.9: không còn dòng checker plan" sh -c "! sh '$NK' report --version 9.9.9 '$TMP/moi.tsv' | grep -q '^  plan '"
+dung "--version đúng: còn dòng checker plan" sh -c "sh '$NK' report --version '$V' '$TMP/moi.tsv' | grep -q '^  plan '"
 dung "--version ? lọc dòng cũ (không version)" bang "$(sh "$NK" report --version '?' "$TMP/cu.tsv" | awk '$1 == "plan" { print $2; exit }')" "$n_moi"
-dung "--version ? bỏ dòng có version thật" sh -c "sh '$NK' report --version '?' '$TMP/moi.tsv' | grep -q 'chưa có'"
+dung "--version ? bỏ dòng có version thật (moi.tsv)" sh -c "! sh '$NK' report --version '?' '$TMP/moi.tsv' | grep -q '^  plan '"
 dung "--version không đi kèm giá trị → SAI THAM SỐ" sh -c "! sh '$NK' report --version >/dev/null 2>&1"
 dung "--version không có file: lọc nhật ký của máy này" bang "$(sh "$NK" report --version "$V" | awk '$1 == "plan" { print $2; exit }')" "$(sh "$NK" report | awk '$1 == "plan" { print $2; exit }')"
 printf '2026-10-24T01:00:00Z\tfeat_x\tspec\t%s\n' "$V" > "$CFG/journal/phases.tsv"
@@ -92,6 +93,20 @@ ky_vong 6 "retro ở checkout chính → thoát 6" env AW_REPO="$R" sh "$NK" ret
 dung "…checkout chính không ghi" bang "$(wc -l < "$RJ" | tr -d ' ')" 1
 dung "…lệnh sai không ghi đè dòng đã có" awk -F'\t' '$12 == 55' "$RJ"
 
+# ---------------------------------------------------------------- sửa sau review cuối nhánh (SP9b)
+nhom "SP9b: sửa sau review — --nham chuẩn hoá, --nham quá lớn, trung vị lớn"
+TAB=$(printf '\t')
+tsv() { _o=""; for _a in "$@"; do _o="$_o$_a$TAB"; done; _o=${_o%"$TAB"}; printf '%s\n' "$_o"; }
+ky_vong 0 "retro --nham 01 (số có số 0 đầu)" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 01 --phut 1
+dung "…lưu thành số 1, không giữ 01" sh -c "awk -F'\t' '\$11 == \"1\"' '$RJ' | grep -q ."
+ky_vong 2 "--nham số quá lớn → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 99999999999999999999 --phut 1
+rm -rf "$JD"; mkdir -p "$JD"
+{ tsv 2026-01-01T00:00:00Z feat_big spec 1 "x" "$V"; } > "$JD/checks.tsv"
+{ tsv 2026-01-01T00:00:00Z feat_big spec "$V"; } > "$JD/phases.tsv"
+{ tsv 2026-01-18T00:00:00Z feat_big feature spec ran 1 1 - 0 1468800 - - - - - "$V"; } > "$JD/jobs.tsv"
+dung "trung vị lớn (17 ngày) in đủ chữ số, không ký hiệu khoa học" sh -c "sh '$NK' report | grep -q '^  spec .*trung vị 1468800 giây'"
+
+
 # ---------------------------------------------------------------- report: mục mới (Task 5)
 nhom "SP9b: report — độ chính xác checker, thời gian phase, việc theo loại, lỗi lọt"
 TAB=$(printf '\t')
@@ -121,7 +136,7 @@ dung "việc: feature 1 việc" sh -c "printf '%s\n' \"\$1\" | grep -q '^  featu
 dung "việc: bugfix 1 việc, 1 bỏ design" sh -c "printf '%s\n' \"\$1\" | grep -q '^  bugfix .*1 bỏ design'" _ "$OUT_RP"
 dung "việc: file trung vị của feature = 10" sh -c "printf '%s\n' \"\$1\" | grep -q '^  feature .*file trung vị 10'" _ "$OUT_RP"
 dung "lỗi lọt: verify 1 việc" sh -c "printf '%s\n' \"\$1\" | grep -q '^  verify .*1 việc'" _ "$OUT_RP"
-dung "--version 9.9.9: không còn dòng nào" sh -c "sh '$NK' report --version 9.9.9 | grep -q 'chưa có'"
+dung "--version 9.9.9 (nhật ký máy này): không còn dòng checker plan" sh -c "! sh '$NK' report --version 9.9.9 | grep -q '^  plan '"
 rm -rf "$JD"
 ky_vong 0 "report khi chưa có nhật ký mục mới → vẫn thoát 0" sh "$NK" report
 dung "…các mục mới in (chưa có …), tối thiểu 4 chỗ" sh -c "sh '$NK' report | awk '/chưa có/ { n++ } END { exit !(n >= 4) }'"

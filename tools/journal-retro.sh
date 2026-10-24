@@ -16,6 +16,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 kq_khai journal-retro.sh \
   "0=XONG — đã in phần máy, hoặc đã ghi jobs.tsv" \
   "2=SAI THAM SỐ — xem thông báo phía trên" \
+  "1=KHÔNG GHI ĐƯỢC jobs.tsv — xem thông báo phía trên" \
   "6=ĐANG Ở CHECKOUT CHÍNH — retro chạy trong worktree của việc"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
@@ -72,10 +73,17 @@ if [ "$CO_NGUOI" = 1 ]; then
     case "$PHUT" in *[!0-9]*) sai "--phut phải là số nguyên ≥ 0." ;; esac
   fi
   if [ -n "$NHAM" ]; then
+    # Chuẩn hoá (bỏ số 0 đầu, bỏ trùng) để report khớp đúng số thứ tự lần chặn.
+    NORM=""
     for x in $(printf '%s' "$NHAM" | tr ',' ' '); do
       case "$x" in ""|*[!0-9]*) sai "--nham phải là các số cách nhau bằng dấu phẩy." ;; esac
-      if [ "$x" -lt 1 ] || [ "$x" -gt "$N_CHAN" ]; then sai "--nham $x không có trong danh sách lần bị chặn (1–$N_CHAN)."; fi
+      [ "${#x}" -le 6 ] || sai "--nham $x quá lớn."
+      x=$(printf '%s' "$x" | sed 's/^0*//')
+      [ -n "$x" ] || sai "--nham phải từ 1."
+      if [ "$x" -gt "$N_CHAN" ]; then sai "--nham $x không có trong danh sách lần bị chặn (1–$N_CHAN)."; fi
+      case ",$NORM," in *",$x,"*) ;; *) NORM="${NORM:+$NORM,}$x" ;; esac
     done
+    NHAM=$NORM
   fi
   if [ -n "$LOP" ]; then
     case " $LOP_HOP_LE " in *" $LOP "*) ;; *) sai "--lop phải là một trong: $LOP_HOP_LE." ;; esac
@@ -168,7 +176,11 @@ ROW=$(printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' 
   "$NHAM_OUT" "$PHUT_OUT" "$VUONG_OUT" "$GAY_OUT" "$LOP_OUT" "$VER")
 mkdir -p "$JDIR" || exit 2
 TMPF="$JDIR/jobs.tsv.$$"
-{ if [ -f "$JDIR/jobs.tsv" ]; then awk -F'\t' -v v="$VIEC" '$2 != v' "$JDIR/jobs.tsv"; fi; printf '%s\n' "$ROW"; } > "$TMPF" && mv "$TMPF" "$JDIR/jobs.tsv" || rm -f "$TMPF"
-echo ""
-echo "Đã ghi jobs.tsv: $VIEC"
-exit 0
+if { if [ -f "$JDIR/jobs.tsv" ]; then awk -F'\t' -v v="$VIEC" '$2 != v' "$JDIR/jobs.tsv"; fi; printf '%s\n' "$ROW"; } > "$TMPF" && mv "$TMPF" "$JDIR/jobs.tsv"; then
+  echo ""
+  echo "Đã ghi jobs.tsv: $VIEC"
+  exit 0
+fi
+rm -f "$TMPF"
+echo "KHÔNG GHI ĐƯỢC $JDIR/jobs.tsv — kiểm quyền ghi thư mục nhật ký." >&2
+exit 1
