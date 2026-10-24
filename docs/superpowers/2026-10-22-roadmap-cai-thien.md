@@ -58,10 +58,19 @@
 | SP23 | Dọn nhánh remote, số liệu roadmap | 6 | đang làm | — | Người duyệt danh sách nhánh trước khi xoá | [spec](specs/2026-10-23-sp23-don-dep-design.md) | | |
 | SP24 | Hai nhánh tính năng chưa merge: làn light + `mr_include_artifacts`, điểm mù nêu story/AC | sau | chặn | — | Lấy lại hay bỏ | | | |
 | SP25 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp25-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
+| SP26 | Durable knowledge: truy xuất theo phạm vi ở implement, review | 7 | xong | — | Chốt: không thêm luật chặn mới ở implement; review chấm verdict đúng tập diff chạm | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § A | [plan](plans/2026-10-24-sp26-knowledge-implement-review.md) | [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) |
+| SP27 | Durable knowledge: chunk theo mục và khối ID | 7 | chờ | SP26 | Chốt: neo heading nguyên văn, chỉ `##` | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § B | | |
+| SP28 | Durable knowledge: chỉ mục chung | 7 | chờ | SP27 | Chốt: mặc định bật, kiểm khi file có | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § C | | |
+| SP29 | Durable knowledge: tìm theo từ khoá | sau | chặn | SP28, số liệu SP9 | Có đáng làm không | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § D | | |
+| SP30 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP28, số liệu SP9 | Chốt: chỉ cảnh báo; chặn chờ số liệu SP9 | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § E | | |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
 sau đều làm đúng một yêu cầu sai.
+
+Đợt 7 (SP26–SP30, một spec chung vì cùng một bộ lọc `Scope`): durable knowledge của repo đích truy xuất
+như RAG, vẫn tất định (không vector). SP26 đóng lỗ ở vòng chạy chính — việc bỏ design không bao giờ đọc
+ADR — nên đi trước; SP29, SP30 thêm luật nên chờ số liệu SP9 (nguyên tắc 3).
 
 ## Chi tiết các dự án con chưa xong
 
@@ -163,6 +172,20 @@ trùng phương án C của SP10 — xét cùng SP10 khi có số liệu SP9. `m
 
 **Cần quyết.** Lấy phần nào, bỏ phần nào; bỏ thì xoá nhánh (SP23).
 
+### SP26–SP30 — Durable knowledge như RAG
+
+**Vấn đề.** `aw knowledge` chỉ chạy ở spec và design, lấy cả file; `chore` và việc `Design: skip` không
+đọc ADR nào; kiến thức không gắn đường dẫn chỉ tìm được bằng cách đọc hết.
+
+**Hướng.** Spec [`2026-10-23-sp26-30-rag-markdown-design.md`](specs/2026-10-23-sp26-30-rag-markdown-design.md):
+A truy xuất theo `Expected files` / diff ở implement, review; B ref `<file>#<neo>` và `Scope` theo mục;
+C chỉ mục `docs/knowledge-index.md` máy dựng, lệch thì chặn; D `aw knowledge find`; E theo liên kết một
+bước và bảng `## Knowledge used`.
+
+**Đã chốt (2026-10-24).** Spec đã duyệt, mọi phương án "Nghiêng về" được chọn (spec ghi ở từng mục **Đã chốt**).
+
+**Tiến độ.** SP26 xong ở [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) (`aw knowledge implement` / `review`). SP27–SP30 còn lại.
+
 ## Việc nhỏ (không thành dự án con)
 
 Đụng phần nào thì làm phần đó, không cần spec:
@@ -174,6 +197,9 @@ trùng phương án C của SP10 — xét cùng SP10 khi có số liệu SP9. `m
   dưới 3 phút đạt trên máy này; theo dõi tiếp trên CI. Phần dài nhất `23-sdlc-syntax` (36 giây), rồi
   `21-sdlc-profiles`, `15-conventions-task`, `08-adapters` (~34 giây) — chưa tới ngưỡng cảnh báo nên tách.
   Số cũ (1775 ca, ~5 phút trên 6 luồng) đo trên máy khác, không so trực tiếp.
+- Bộ đọc token `Expected files` (dấu backtick) đang có ba bản: `kc_pham_vi` (~dòng 124) và `kc_glob_rong` (~dòng 206)
+  trong `tools/lib/cross-check.sh`, `kt_duong_plan` trong `tools/lib/knowledge.sh`. Gom về một helper trước khi SP18
+  đổi ngữ nghĩa glob. `kc_glob_rong` cũng chưa tắt `core.quotepath` (đường dẫn có dấu) — làm cùng lúc.
 
 ## Không làm
 
@@ -184,4 +210,5 @@ trùng phương án C của SP10 — xét cùng SP10 khi có số liệu SP9. `m
 | Xếp ưu tiên, ước lượng, nghiệm thu (`CAP-plan-03`, `CAP-plan-04`, `CAP-verify-05`) | Việc của người hoặc của repo đích; đã khai `out_of_scope` (SP15). `CAP-deploy-03` giữ trên roadmap: engine ghi được đường rollback | — |
 | Refactor "không thêm hành vi" ở mức code | Chưa có cách máy kiểm đáng tin; giữ ở mức spec (REQ `preserve`/`structural`, INV-008) và để review/người phán | Có cách kiểm không báo nhầm |
 | Đổi tên phase `03-plan` (stage `breakdown`) ↔ stage `plan` | Chạm test, docs, lệnh sinh ra; `docs/thuat-ngu.md` (mục `stage`) đã giải thích | Người dùng nhầm thật |
+| Embedding / vector DB cho durable knowledge | Kết quả theo độ tương đồng không lặp lại được: checker không kiểm được "đọc đúng tài liệu", cross-check stale và verdict review mất chỗ bám (spec SP20–SP24 § 0) | Có cách truy xuất tất định không đủ, đo được bằng số liệu SP9 |
 | Adapter thứ ba (`codex`, `copilot`) | SP11 đã gỡ `planned`; thêm khi có người dùng thật cần (`adapters/README.md`) | Có người dùng |

@@ -113,6 +113,7 @@ $lvl
 LUAT
 # Kiến thức bền bị diff ảnh hưởng: mỗi tài liệu một verdict ở "## Durable knowledge".
 ktl=$(kt_loi_review "$DIR" "$REVIEW")
+# giữ: CAP-verify-06
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KT
 $ktl
 KT

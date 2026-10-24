@@ -169,7 +169,8 @@ Test gắn `covers: BR-…` như với REQ.
 ### `knowledge_files`
 Glob tài liệu module đã commit; mặc định `*/ARCHITECTURE.md`. Phạm vi của mỗi file là thư mục
 chứa nó: `aw knowledge design` in file đó khi `## Existing code` của `tdd.md` ghi một đường dẫn
-nằm trong thư mục ấy.
+nằm trong thư mục ấy; `aw knowledge implement` khi `Expected files` của `plan.md` nằm trong thư mục ấy;
+`aw knowledge review` khi diff của việc đụng thư mục ấy.
 
 ## Repo rules
 

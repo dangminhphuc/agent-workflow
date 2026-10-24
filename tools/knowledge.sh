@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Liệt kê kiến thức bền của repo đích mà một phase phải đọc.
 #
-#   aw knowledge spec|design <thư-mục-feature>
+#   aw knowledge spec|design|implement|review <thư-mục-feature>
 #
 # spec: mọi file có luật nghiệp vụ active (BR-) — spec đối chiếu yêu cầu mới với luật
 #   đang có; chưa có đường dẫn code để lọc nên in hết.
@@ -12,6 +12,13 @@
 #     đó, và file khớp knowledge_files (mặc định */ARCHITECTURE.md) nằm ở thư mục cha
 #     của đường dẫn đó — phạm vi của tài liệu module là thư mục chứa nó.
 #   - file có luật active mà Scope khớp đường dẫn đó.
+# implement — đường dẫn suy từ "Expected files:" của plan.md (file có thật trên commit Base khớp
+#   mẫu + tiền tố thư mục của mẫu, nên thư mục mới vẫn khớp; bỏ file test, thư mục ADR / luật):
+#   ADR accepted, file luật, tài liệu module liên quan như design. Việc có design thì bỏ chỉ mục
+#   ADR (design đã đọc); việc bỏ design (chore, skip) thì in chỉ mục ADR trước. Không có plan.md
+#   hay không có Expected files → chỉ chỉ mục (nếu có).
+# review — tài liệu mà diff của việc đụng phạm vi (cột 1 của kt_anh_huong, đã khử trùng); chưa có diff
+#   → không in gì.
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -27,10 +34,12 @@ kq_khai knowledge.sh \
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
+. "$HERE/lib/cross-check.sh"
+. "$HERE/lib/knowledge.sh"
 . "$HERE/lib/env.sh"
 mt_dat
 
-BL_KIEN_THUC="spec design"
+BL_KIEN_THUC="spec design implement review"
 PH="${1:-}"; DIR="${2:-}"
 case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;; esac ||
   { echo "Dùng: aw knowledge <phase> <thư-mục-feature>   (phase: $BL_KIEN_THUC)" >&2; exit 2; }
@@ -41,7 +50,16 @@ if [ "$PH" = spec ]; then
   luat_ds "$R" "$MT_CONV" | awk -F'|' '$3 == "active" && !t[$1]++ { print $1 }'
   exit 0
 fi
+if [ "$PH" = review ]; then
+  kt_anh_huong "$DIR" | awk -F"|" '$1 != "" && !t[$1]++ { print $1 }'
+  exit 0
+fi
 TM=$(adr_thu_muc "$MT_CONV")
+if [ "$PH" = implement ]; then
+  if kc_bo_design "$DIR" && [ -f "$R/$TM/README.md" ]; then printf '%s\n' "$TM/README.md"; fi
+  kt_duong_plan "$DIR" "$MT_CONV" | kt_lay "$R" "$MT_CONV"
+  exit 0
+fi
 [ -f "$R/$TM/README.md" ] && printf '%s\n' "$TM/README.md"
 
 # Đường dẫn có thật trong repo, ghi ở mục "## Existing code" của tdd.md.
@@ -58,35 +76,5 @@ DD=$( [ -f "$DIR/tdd.md" ] && awk '
   done | sort -u)
 [ -n "$DD" ] || exit 0
 
-# Một file có thể khớp nhiều cách (tài liệu module chứa luật) — in một lần.
-{
-  # ADR accepted có Scope khớp (thư mục: khớp một file giả bên trong nó).
-  adr_ds "$R/$TM" | while IFS= read -r f; do
-    [ "$(adr_truong "$f" Status)" = accepted ] || continue
-    sc=$(adr_truong "$f" Scope); [ -n "$sc" ] || continue
-    printf '%s\n' "$DD" | while IFS= read -r p; do
-      set -f
-      # shellcheck disable=SC2086
-      if khop_glob "$p" $sc || { [ -d "$R/$p" ] && khop_glob "$p/x" $sc; }; then set +f; printf '%s\n' "${f#"$R"/}"; break; fi
-      set +f
-    done
-  done
-
-  # Luật nghiệp vụ active có Scope khớp.
-  printf '%s\n' "$DD" | luat_lien_quan "$R" "$MT_CONV"
-
-  # Tài liệu module: file đã commit khớp knowledge_files, thư mục chứa nó là cha của đường dẫn.
-  KF=$(conv_get "$MT_CONV" knowledge_files); KF=${KF:-*/ARCHITECTURE.md}
-  git -C "$R" ls-files 2>/dev/null | while IFS= read -r f; do
-    tm_bo "$f" && continue
-    set -f
-    # shellcheck disable=SC2086
-    khop_glob "$f" $KF || { set +f; continue; }
-    set +f
-    d=$(dirname "$f")
-    printf '%s\n' "$DD" | while IFS= read -r p; do
-      case "$p/" in "$d"/*) printf '%s\n' "$f"; break ;; esac
-    done
-  done
-} | awk '!t[$0]++'
+printf '%s\n' "$DD" | kt_lay "$R" "$MT_CONV"
 exit 0

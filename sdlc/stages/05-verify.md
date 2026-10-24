@@ -50,3 +50,8 @@ invariants:
 - Rule: the people who asked for the change accept it against the requirements before it ships.
 - Judged by: human
 - Artifact: review-report
+
+### CAP-verify-06 — Every durable-knowledge document whose scope the change touches has a review verdict
+- Rule: for each document whose scope the change touches, the review records whether it is still true, was updated in the change, or does not apply with a reason; a missing verdict blocks.
+- Judged by: machine
+- Artifact: review-report
