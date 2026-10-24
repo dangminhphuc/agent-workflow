@@ -27,6 +27,7 @@
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
+. "$HERE/lib/journal-version.sh"
 
 LOP_HOP_LE="task context env verify state model"
 # Một loại finding lặp ở ít nhất chừng này việc khác nhau thì gợi ý nâng thành luật.
@@ -49,15 +50,15 @@ case "${1:-}" in
     [ $# -eq 5 ] || exit 0
     mkdir -p "$JD" 2>/dev/null || exit 0
     dau=$(grep -m1 -E '^[ \t]*\[LỖI\]' "$5" 2>/dev/null | sed 's/^[ \t]*\[LỖI\][ \t]*//')
-    printf '%s\t%s\t%s\t%s\t%s\n' "$(gio)" "$(viec "$3")" "$2" "$4" "$(bay "$dau")" >> "$JD/checks.tsv" 2>/dev/null
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$(gio)" "$(viec "$3")" "$2" "$4" "$(bay "$dau")" "$(jv_version "$HERE")" >> "$JD/checks.tsv" 2>/dev/null
     exit 0 ;;
   _findings)
     [ $# -eq 3 ] || exit 0
     mkdir -p "$JD" 2>/dev/null || exit 0
     v=$(viec "$2")
-    moi=$(awk -v v="$v" -v t="$(gio)" '
+    moi=$(awk -v v="$v" -v t="$(gio)" -v j="$(jv_version "$HERE")" '
       function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
-      function xuat() { if (muc != "") print t "\t" v "\t" muc "\t" (cat == "" ? "-" : cat) "\t" ten; muc = "" }
+      function xuat() { if (muc != "") print t "\t" v "\t" muc "\t" (cat == "" ? "-" : cat) "\t" ten "\t" j; muc = "" }
       { sub(/\r$/, "") }
       /<!--/ && !/-->/ { cm = 1 }
       cm { if (/-->/) cm = 0; next }
@@ -113,7 +114,7 @@ if [ "${1:-}" = add ]; then
   [ -n "$(bay "$mota")" ] || { echo "LỖI: cần mô tả — agent làm sai gì, ở đâu, harness thiếu gì." >&2; exit 2; }
   [ -n "$ft" ] || ft=$(git -C "${AW_REPO:-.}" rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '_')
   mkdir -p "$JD" || exit 2
-  printf '%s\t%s\t%s\t%s\n' "$(gio)" "${ft:--}" "$lop" "$(bay "$mota")" >> "$JD/failures.tsv"
+  printf '%s\t%s\t%s\t%s\t%s\n' "$(gio)" "${ft:--}" "$lop" "$(bay "$mota")" "$(jv_version "$HERE")" >> "$JD/failures.tsv"
   echo "Đã ghi vào $JD/failures.tsv: [$lop] $(bay "$mota")"
   exit 0
 fi
@@ -151,7 +152,7 @@ if [ $# -gt 0 ]; then
   JD=$(mktemp -d "${TMPDIR:-/tmp}/aw-journal.XXXXXX" 2>/dev/null) || { JD="${TMPDIR:-/tmp}/aw-journal.$$"; mkdir "$JD" || exit 2; }
   kq_don 'rm -rf "$JD"'
   bo=$(awk -F'\t' -v d="$JD" '
-    BEGIN { cot["checks"] = 5; cot["failures"] = 4; cot["approvals"] = 5; cot["findings"] = 5 }
+    BEGIN { cot["checks"] = 6; cot["failures"] = 5; cot["approvals"] = 6; cot["findings"] = 6 }
     ($1 in cot) && NF == cot[$1] + 2 { s = $1; sub(/^[^\t]*\t[^\t]*\t/, ""); print > (d "/" s ".tsv"); next }
     { bo++ }
     END { print bo + 0 }' "$@")
