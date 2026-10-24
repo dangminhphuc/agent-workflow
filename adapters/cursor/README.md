@@ -139,6 +139,11 @@ Như Claude Code (xem [../claude-code/README.md](../claude-code/README.md#hook-g
   (`pre pre · lệnh · post post`).
 - Hook chạy `aw` từ thư mục repo; `aw` phải có trong `PATH` của Cursor.
 
+## Đo lượt và token
+
+Cursor không đo token: tiến độ phase chỉ có thời gian đồng hồ (Wall), lấy từ mốc `aw feature --phase`.
+(Cursor chạy cả hook của `.claude/settings.json`; payload không phải của Claude Code thì `aw journal _turn` bỏ qua.)
+
 ## Đã kiểm / chưa kiểm
 
 Định dạng theo tài liệu Cursor (2026-10): lệnh `.cursor/commands/*.md`, subagent

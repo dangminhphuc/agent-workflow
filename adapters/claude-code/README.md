@@ -118,6 +118,28 @@ mặc định cổng chặn đặt ở cuối phase):
   "command": "sh -c 'for f in $CLAUDE_FILE_PATHS; do case \"$f\" in */docs/sdlc/*/spec.md|*.agent-workflow/*/spec.md) aw check spec \"$(dirname \"$f\")\" >&2 ;; esac; done' || true" } ] } ] } }
 ```
 
+## Hook đo lượt và token
+
+Tuỳ chọn, thêm cạnh hook `aw guard` trong `.claude/settings.json`: ghi thời gian và token của từng lượt
+vào nhật ký (`turns.tsv`) để `aw status` hiện tiến độ từng phase. Cả ba hook không in gì ra stdout và
+luôn thoát 0, nên không làm phiền agent.
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "aw journal _turn begin" }] }],
+    "Stop": [{ "hooks": [{ "type": "command", "command": "aw journal _turn end" }] }],
+    "SubagentStop": [{ "hooks": [{ "type": "command", "command": "aw journal _turn sub" }] }]
+  }
+}
+```
+
+- `begin` đặt mốc giờ; `end` cộng token của các dòng transcript mới kể từ lần trước (mỗi `message.id`
+  tính một lần) và ghi một dòng gắn với phase hiện tại của worktree; `sub` ghi lượt của subagent
+  (token từ `agent_transcript_path`, không có thời gian riêng vì đã nằm trong lượt chính).
+- Không có hook thì phase vẫn có mốc từ `aw feature --phase`, chỉ thiếu số lượt và token.
+- Đặt `AW_JOURNAL=0` để tắt ghi.
+
 ## Kết quả
 
 | Nhãn | Nghĩa |

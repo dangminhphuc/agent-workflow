@@ -23,6 +23,7 @@
 #   journal.sh _check <checker> <thư-mục-feature> <mã-thoát> <file-output>
 #   journal.sh _findings <thư-mục-feature> <review.md>
 #   journal.sh _phase <thư-mục-worktree> <feature> <phase>   (aw feature --phase; ghi phases.tsv)
+#   journal.sh _turn <begin|end|sub>   (hook Claude Code, payload JSON ở stdin; ghi turns.tsv)
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -59,6 +60,72 @@ case "${1:-}" in
     [ "${AW_JOURNAL:-1}" != 0 ] || exit 0
     mkdir -p "$JD" 2>/dev/null || exit 0
     printf '%s\t%s\t%s\t%s\n' "$(gio)" "$(viec "$2")" "$(bay "$3")" "$(bay "$4")" >> "$JD/phases.tsv" 2>/dev/null
+    exit 0 ;;
+  _turn)
+    # Lượt và token từ hook Claude Code (UserPromptSubmit/Stop/SubagentStop; payload JSON ở stdin).
+    # Không in gì ra stdout, luôn thoát 0, mọi lỗi im lặng.
+    {
+      [ "${AW_JOURNAL:-1}" != 0 ] || exit 0
+      loai="${2:-}"
+      case "$loai" in begin|end|sub) ;; *) exit 0 ;; esac
+      pl=$(cat)
+      trich() { printf '%s' "$pl" | sed -n 's/.*"'"$1"'"[ ]*:[ ]*"\([^"]*\)".*/\1/p' | head -n 1; }
+      sess=$(trich session_id | tr -c 'A-Za-z0-9_\n-' '_')
+      cwd=$(trich cwd)
+      tr_path=$(trich transcript_path)
+      [ -n "$sess" ] && [ -n "$tr_path" ] || exit 0
+      if [ "$loai" = sub ]; then
+        tr_path=$(trich agent_transcript_path)
+        [ -n "$tr_path" ] || exit 0
+      fi
+      [ -f "$tr_path" ] || exit 0
+      mkdir -p "$JD/.turn" || exit 0
+      st="$JD/.turn/$sess"
+      b_iso=""; b_epoch=""; off=0
+      if [ -f "$st" ]; then
+        # cut, không read: tab là IFS-space, hai ô rỗng đầu dòng sẽ bị gộp mất.
+        b_iso=$(head -n 1 "$st" | cut -f1); b_epoch=$(head -n 1 "$st" | cut -f2); off=$(head -n 1 "$st" | cut -f3)
+      fi
+      case "$off" in ''|*[!0-9]*) off=0 ;; esac
+      now=$(date -u +%s)
+      if [ "$loai" = begin ]; then
+        printf '%s\t%s\t%s\n' "$(gio)" "$now" "$off" > "$st"
+        exit 0
+      fi
+      if [ "$loai" = sub ]; then off=0; b_iso=""; b_epoch=""; fi
+      size=$(wc -c < "$tr_path" | tr -d ' ')
+      [ "$size" -ge "$off" ] || off=0
+      tokens=$(tail -c +$((off + 1)) "$tr_path" | awk '
+        function trich(re) { if (match($0, re)) return substr($0, RSTART, RLENGTH); return "" }
+        function so(k,   t) { t = trich("\"" k "\"[ ]*:[ ]*[0-9]+"); if (t == "") return 0; sub(/^[^:]*:[ ]*/, "", t); return t + 0 }
+        /"type"[ ]*:[ ]*"assistant"/ {
+          id = trich("\"id\"[ ]*:[ ]*\"msg_[^\"]*\"")
+          if (id != "" && (id in thay)) next
+          thay[id] = 1
+          vao += so("input_tokens"); ra += so("output_tokens")
+          cd += so("cache_read_input_tokens"); cg += so("cache_creation_input_tokens"); co = 1
+        }
+        END { if (co) print vao "\t" ra "\t" cd "\t" cg; else print "\t\t\t" }')
+      wt=$(git -C "${cwd:-.}" rev-parse --show-toplevel 2>/dev/null)
+      w=-; ft=-; ph=-
+      if [ -n "$wt" ]; then
+        w=$(viec "$wt")
+        if [ -f "$JD/phases.tsv" ]; then
+          dong=$(awk -F'\t' -v w="$w" '$2 == w { d = $0 } END { print d }' "$JD/phases.tsv")
+          if [ -n "$dong" ]; then
+            ft=$(printf '%s' "$dong" | cut -f3); ph=$(printf '%s' "$dong" | cut -f4)
+          fi
+        fi
+      fi
+      if [ "$loai" = sub ]; then
+        kind=subagent; giay=0; t0=$(gio)
+      else
+        kind=main; giay=""; t0="$b_iso"
+        if [ -n "$b_epoch" ] && [ "$now" -ge "$b_epoch" ] 2>/dev/null; then giay=$((now - b_epoch)); fi
+      fi
+      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$t0" "$(gio)" "$w" "${ft:--}" "${ph:--}" "$sess" "$kind" "$giay" "$tokens" >> "$JD/turns.tsv"
+      if [ "$loai" = end ]; then printf '\t\t%s\n' "$size" > "$st"; fi
+    } >/dev/null 2>&1
     exit 0 ;;
   _findings)
     [ $# -eq 3 ] || exit 0
