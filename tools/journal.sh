@@ -192,14 +192,14 @@ if [ "${1:-}" = add ]; then
 fi
 
 # ---------------------------------------------------------------- export
-# Một TSV gồm mọi dòng của bốn nguồn, thêm hai cột đầu: nguồn, máy — gom nhật ký nhiều máy để
+# Một TSV gồm mọi dòng của sáu nguồn, thêm hai cột đầu: nguồn, máy — gom nhật ký nhiều máy để
 # `aw journal report <file…>` tổng hợp (nhật ký nằm ở bản clone từng máy, không commit).
 if [ "${1:-}" = export ]; then
   [ $# -eq 2 ] && [ -n "$2" ] || { echo "Dùng: aw journal export <file>" >&2; exit 2; }
   [ -d "$(dirname -- "$2")" ] || { echo "LỖI: thư mục của \"$2\" không có." >&2; exit 2; }
   may=$(may_nay)
   {
-    for s in checks failures approvals findings; do
+    for s in checks failures approvals findings phases turns; do
       if [ -f "$JD/$s.tsv" ]; then awk -v s="$s" -v m="$may" '{ print s "\t" m "\t" $0 }' "$JD/$s.tsv"; fi
     done
   } > "$2" || exit 2
@@ -213,7 +213,7 @@ case "${1:-report}" in report) ;; *) echo "Dùng: aw journal [report [<file expo
 
 NGUON=$JD; bo=0
 if [ $# -gt 0 ]; then
-  # Report trên file export: tách lại thành bốn nguồn trong thư mục tạm rồi tổng hợp như thường.
+  # Report trên file export: tách lại thành sáu nguồn trong thư mục tạm rồi tổng hợp như thường.
   for f in "$@"; do [ -f "$f" ] || { echo "LỖI: không có file \"$f\"." >&2; exit 2; }; done
   # Bỏ file trùng đường dẫn (truyền hai lần thì đếm một lần).
   da="|"; n=$#
@@ -224,8 +224,12 @@ if [ $# -gt 0 ]; then
   JD=$(mktemp -d "${TMPDIR:-/tmp}/aw-journal.XXXXXX" 2>/dev/null) || { JD="${TMPDIR:-/tmp}/aw-journal.$$"; mkdir "$JD" || exit 2; }
   kq_don 'rm -rf "$JD"'
   bo=$(awk -F'\t' -v d="$JD" '
-    BEGIN { cot["checks"] = 5; cot["failures"] = 4; cot["approvals"] = 5; cot["findings"] = 5 }
-    ($1 in cot) && NF == cot[$1] + 2 { s = $1; sub(/^[^\t]*\t[^\t]*\t/, ""); print > (d "/" s ".tsv"); next }
+    BEGIN { cot["checks"] = 5; cot["failures"] = 4; cot["approvals"] = 5; cot["findings"] = 5; cot["phases"] = 4; cot["turns"] = 12 }
+    ($1 in cot) && NF == cot[$1] + 2 {
+      s = $1; m = $2; sub(/^[^\t]*\t[^\t]*\t/, "")
+      # turns: gắn máy vào worktree để hai máy trùng tên worktree vẫn là hai việc
+      if (s == "turns") { n = split($0, a, "\t"); a[3] = m "/" a[3]; $0 = a[1]; for (i = 2; i <= n; i++) $0 = $0 "\t" a[i] }
+      print > (d "/" s ".tsv"); next }
     { bo++ }
     END { print bo + 0 }' "$@")
   NGUON="gộp $# file export"
@@ -281,5 +285,32 @@ if [ -s "$JD/findings.tsv" ]; then
   [ "$kc" -gt 0 ] && echo "  ($kc finding không có Category)"
 else
   echo "  (chưa có — aw check review ghi khi ĐẠT)"
+fi
+
+echo ""
+echo "Thời gian và token theo phase"
+if [ -s "$JD/turns.tsv" ]; then
+  # active mỗi việc = tổng seconds lượt main; trung vị trên các việc; token cộng mọi lượt.
+  awk -F'\t' "$TD_AWK_DD"'
+    $5 == "-" || $5 == "" { next }
+    {
+      p = $5; j = $3 "|" $4
+      if (!(p in vt)) { vt[p] = 1; ord[++np] = p }
+      if (!((p, j) in jv)) { jv[p, j] = 1; nj[p]++; ja[p, nj[p]] = j }
+      if ($7 == "main" && $8 ~ /^[0-9]+$/) ac[p, j] += $8
+      if ($9 ~ /^[0-9]+$/) vao[p] += $9
+      if ($10 ~ /^[0-9]+$/) ra[p] += $10
+    }
+    END {
+      for (i = 1; i <= np; i++) {
+        p = ord[i]; n = nj[p]; tong = 0
+        for (k = 1; k <= n; k++) { v[k] = ac[p, ja[p, k]] + 0; tong += v[k] }
+        for (k = 2; k <= n; k++) { x = v[k]; q = k - 1; while (q >= 1 && v[q] > x) { v[q + 1] = v[q]; q-- } v[q + 1] = x }
+        if (n % 2) tv = v[(n + 1) / 2]; else tv = int((v[n / 2] + v[n / 2 + 1]) / 2)
+        printf "  %-10s %3d việc, active tổng %s, trung vị %s, token vào %s / ra %s\n", p, n, td_tg(tong), td_tg(tv), td_tk(vao[p] + 0), td_tk(ra[p] + 0)
+      }
+    }' "$JD/turns.tsv"
+else
+  echo "  chưa có dữ liệu"
 fi
 exit 0

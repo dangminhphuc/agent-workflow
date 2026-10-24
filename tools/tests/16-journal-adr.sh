@@ -35,6 +35,27 @@ dung "review chạy lại không nhân đôi" bang "$(awk -F'\t' '$4 == "duplica
 F2="$R/.agent-workflow/feat_y"; cp -R "$F" "$F2"
 dung "loại lặp ở việc thứ hai → GỢI Ý nâng thành luật" sh -c "sh '$T/check-review.sh' '$F2' | grep -q 'GỢI Ý.*duplicate-code.*2 việc'"
 dung "report đánh dấu loại lặp lại" sh -c "sh '$NK' 2>/dev/null | grep -q 'duplicate-code.*lặp lại'"
+# Nguồn phases/turns: export mang theo, report có mục thời gian và token theo phase
+dung "report chưa có turns → mục thời gian ghi chưa có dữ liệu" sh -c "sh '$NK' report | awk '/^Thời gian và token theo phase/ { m = 1; next } m { print; exit }' | grep -q 'chưa có dữ liệu'"
+TS=$(printf '\t')
+printf '2026-10-01T10:00:00Z\tw1\tf1\tplan\n2026-10-01T11:00:00Z\tw2\tf2\tplan\n' > "$JD/phases.tsv"
+{ printf '2026-10-01T10:00:00Z\t2026-10-01T10:01:40Z\tw1\tf1\tplan\ts1\tmain\t100\t10\t20\t1\t1\n'
+  printf '2026-10-01T10:05:00Z\t2026-10-01T10:05:50Z\tw1\tf1\tplan\ts1\tmain\t50\t10\t20\t1\t1\n'
+  printf '2026-10-01T10:06:00Z\t2026-10-01T10:06:00Z\tw1\tf1\tplan\ts1\tsubagent\t0\t5\t5\t\t\n'
+  printf '2026-10-01T11:00:00Z\t2026-10-01T11:05:00Z\tw2\tf2\tplan\ts2\tmain\t300\t100\t200\t0\t0\n'
+  printf '2026-10-01T12:00:00Z\t2026-10-01T12:00:10Z\tw2\tf2\tbuild\ts2\tmain\t10\t1\t2\t0\t0\n'; } > "$JD/turns.tsv"
+sh "$NK" report > "$TMP/nk-tr"
+dung "report trực tiếp: phase plan 2 việc, active tổng 8m, trung vị 4m, token 125/245" sh -c "awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tr' | grep -E '^ +plan +2 việc.*8m.*4m.*125.*245'"
+dung "…phase build 1 việc" sh -c "awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tr' | grep -E '^ +build +1 việc.*10s'"
+ky_vong 0 "export có phases/turns" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/nk-a.tsv"
+dung "…dòng phases, máy" sh -c "grep -c '^phases	may-a	' '$TMP/nk-a.tsv' | grep -qx 2"
+dung "…dòng turns, máy" sh -c "grep -c '^turns	may-a	' '$TMP/nk-a.tsv' | grep -qx 5"
+dung "report từ file export cùng mục, cùng số" sh -c "sh '$NK' report '$TMP/nk-a.tsv' | awk '/^Thời gian và token theo phase/ { m = 1; next } m' > '$TMP/nk-t2'; awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tr' | diff - '$TMP/nk-t2' >&2"
+sed 's/	may-a	/	may-b	/' "$TMP/nk-a.tsv" > "$TMP/nk-b2.tsv"
+dung "hai máy: việc và token cộng dồn (trùng tên worktree vẫn là hai việc)" sh -c "sh '$NK' report '$TMP/nk-a.tsv' '$TMP/nk-b2.tsv' | grep -E '^ +plan +4 việc.*15m.*4m.*250.*490'"
+grep -v '^phases	\|^turns	' "$TMP/nk-a.tsv" > "$TMP/nk-cu.tsv"
+dung "file export cũ (không phases/turns) → report chạy, mục ghi chưa có dữ liệu" sh -c "sh '$NK' report '$TMP/nk-cu.tsv' | awk '/^Thời gian và token theo phase/ { m = 1; next } m { print; exit }' | grep -q 'chưa có dữ liệu'"
+rm -f "$JD/phases.tsv" "$JD/turns.tsv"
 # Gom nhật ký từ nhiều máy: export ra một TSV (nguồn, máy, cột gốc), report đọc lại được nhiều file
 ky_vong 0 "journal export <file>" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/nk-a.tsv"
 dung "…mỗi dòng: nguồn, máy, rồi cột gốc" sh -c "awk -F'\t' '\$1 == \"findings\" && \$2 == \"may-a\"' '$TMP/nk-a.tsv' | grep -q ."
