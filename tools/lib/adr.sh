@@ -79,9 +79,53 @@ adr_cua_d() {
   done
 }
 
-# adr_so_moi <thư-mục ADR> -> số kế tiếp, 4 chữ số
+# adr_ref_viec <thư-mục-feature> -> ref để so số ADR: origin/<Base> nếu có, không thì <Base>
+# (dòng Base: của intake.md). Không có Base, hoặc ref không có trong repo, thì không in gì.
+adr_ref_viec() {
+  set -- "$1" $(intake_base_dong "$1")
+  [ -n "${2:-}" ] || return 0
+  _arr=$(git_top "$1") || return 0
+  for _arx in "refs/remotes/origin/${2#origin/}" "$2"; do
+    if git -C "$_arr" rev-parse --verify --quiet "$_arx^{commit}" >/dev/null; then printf '%s\n' "$_arx"; return 0; fi
+  done
+}
+
+# adr_ds_ref <repo> <ref> <thư-mục ADR tương đối> -> tên file ADR (NNNN-*.md) có trên ref
+adr_ds_ref() {
+  git -C "$1" ls-tree --name-only "$2" -- "$3/" 2>/dev/null | sed 's#.*/##' | grep -E '^[0-9][0-9][0-9][0-9]-.*\.md$'
+}
+
+# adr_so_moi <thư-mục ADR> [<repo> <ref> <thư-mục ADR tương đối>] -> số kế tiếp, 4 chữ số,
+# lớn hơn mọi số trong worktree và trên ref — hai việc rẽ từ cùng base không lấy cùng số
+# khi một việc đã merge.
 adr_so_moi() {
-  adr_ds "$1" | awk -F/ '{ n = substr($NF, 1, 4) + 0; if (n > m) m = n } END { printf "%04d\n", m + 1 }'
+  { adr_ds "$1" | sed 's#.*/##'; [ -z "${3:-}" ] || adr_ds_ref "$2" "$3" "$4"; } |
+    awk '{ n = substr($0, 1, 4) + 0; if (n > m) m = n } END { printf "%04d\n", m + 1 }'
+}
+
+# adr_trung_ref <repo> <ref> <thư-mục ADR tương đối> <tên file ADR> -> file trên ref cùng số NNNN
+# mà khác tên (tên mang việc + DEC, nên khác tên = khác Origin). Không trùng thì không in gì.
+adr_trung_ref() {
+  _ats=$(printf '%s' "$4" | cut -c1-4)
+  adr_ds_ref "$1" "$2" "$3" | while IFS= read -r _atf; do
+    [ "$(printf '%s' "$_atf" | cut -c1-4)" = "$_ats" ] && [ "$_atf" != "$4" ] && printf '%s\n' "$_atf"
+  done
+  return 0
+}
+
+# adr_trung_base <thư-mục-feature> [<ref>] -> lỗi cho mỗi ADR của việc mà số đã bị một ADR khác
+# chiếm trên ref (mặc định adr_ref_viec): PR merge sau sẽ mang hai file cùng số vào base.
+adr_trung_base() {
+  _abT="$1/tdd.md"; [ -f "$_abT" ] || return 0
+  _abr=$(git_top "$1") || return 0
+  _abf=${2:-$(adr_ref_viec "$1")}; [ -n "$_abf" ] || return 0
+  _abm=$(adr_thu_muc "$(qu_hieu_luc "${AW_REPO:-$_abr}")")
+  _abv=$(basename "$1")
+  d_nang_ds "$_abT" | while IFS= read -r _abd; do
+    _abc=$(adr_cua_d "$_abr/$_abm" "$_abv" "$_abd"); [ -n "$_abc" ] || continue
+    _abk=$(adr_trung_ref "$_abr" "$_abf" "$_abm" "$(basename "$_abc")" | sed -n 1p)
+    [ -z "$_abk" ] || echo "$(basename "$_abc"): số $(basename "$_abc" | cut -c1-4) đã có trên ${_abf#refs/remotes/} ($_abk) — chạy lại: aw adr promote $1 $_abd (cấp số mới)"
+  done
 }
 
 # adr_nguon <thư-mục-feature> <DEC-NNN> -> "- REQ-NNN (`<việc>`): <Source>" cho mỗi REQ
@@ -208,6 +252,7 @@ adr_loi_viec() {
   # Hình thức thư mục ADR chỉ là việc của việc có nâng ADR: thư mục hỏng sẵn trên base
   # không được chặn mọi việc khác (aw adr check báo riêng).
   [ -z "$(d_nang_ds "$_aT")" ] || adr_loi_hinh_thuc "$_aD"
+  adr_trung_base "$1"
 }
 
 # adr_loi_truong <thư-mục-feature> -> lỗi các trường Promote / Scope / Supersedes

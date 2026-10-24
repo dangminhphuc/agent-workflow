@@ -958,9 +958,11 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     trước khi pull bản đã merge, người phải xoá bản chưa track (git từ chối ghi đè).
 17. **Bản hiệu lực làm mới khi script đọc quy ước**: agent mở `.engine/conventions.md` trước mọi
     lệnh `aw` của phiên thì có thể thấy bản cũ (mọi phase đều chạy `aw feature` trước).
-18. **Số ADR cấp lúc nâng, theo thư mục ở worktree**: hai việc song song cùng lấy `0004`; PR merge sau
-    có hai file trùng số (`aw adr check` chặn ở việc kế tiếp) và xung đột ở bảng chỉ mục — người
-    đổi số, chạy lại `aw adr promote`.
+18. **Số ADR cấp lúc nâng**: số nhìn cả worktree lẫn `origin/<Base>`, nên việc đã merge không bị lấy
+    lại số; trùng với base thì implement/review/`aw ship create` chặn và chạy lại `aw adr promote` đổi
+    số. Còn hở: hai PR **cùng mở** vẫn cùng số tới khi một PR merge — PR sau bị chặn ở lần kiểm kế tiếp
+    (sau fetch / merge base), không trước. Bảng chỉ mục vẫn xung đột khi merge base — giải bằng chạy lại
+    `promote`. Không đổi tên ADR sang slug/ngày: hỏng tham chiếu `ADR-NNNN` sẵn có.
 19. **"Đi ngược ADR" chỉ LLM checker thấy** — máy chỉ kiểm `Supersedes` khi DEC tự khai.
     Tương tự, nguồn mới mâu thuẫn với luật `BR-` active chỉ agent spec và người phát hiện.
 20. **PRD đổi sau khi luật đã nâng**: máy không theo dõi Confluence/Jira; phiên bản ghi trong `Source`
