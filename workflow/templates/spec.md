@@ -102,7 +102,7 @@ Không có gì thì ghi "Không có." — checker chặn mục rỗng. -->
 ## Source conflicts
 
 <!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § Q-NNN](open-questions.md#q-nnn)`, hoặc trỏ tới
-nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
+nguồn đã chốt (`[JIRA]` hay `[ISSUE]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
 Agent không tự phân xử mâu thuẫn nghiệp vụ — checker chặn. -->
 
 | Source A says | Source B says | Resolution |

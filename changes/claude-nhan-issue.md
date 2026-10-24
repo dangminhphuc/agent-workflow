@@ -8,5 +8,7 @@
   câu trích, cảnh báo URL không có trong `## Input`. `aw rule promote` / `aw rule check` nhận nguồn
   `[ISSUE]` (phiên bản lấy ở bảng `## Sources`). Không có khoá `conventions.md` mới; không cần làm gì
   — `intake.md` cũ vẫn hợp lệ. URL issue đang ghi `[CONFLUENCE]` thì có thể đổi tay sang `[ISSUE]`.
+  Lưu ý: URL issue/PR/MR trên host có trong `confluence_domains` nay cũng thành `[ISSUE]`, không còn
+  `[CONFLUENCE]`.
   Interface: CAP-plan-01 (intake ghi nguồn dạng máy kiểm), CAP-require-01 (REQ truy về nguồn) —
   không đổi interface.

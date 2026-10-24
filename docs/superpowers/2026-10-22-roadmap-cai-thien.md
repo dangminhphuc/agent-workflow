@@ -215,6 +215,8 @@ dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi t
   trong `tools/lib/cross-check.sh`, `kt_duong_plan` trong `tools/lib/knowledge.sh`. Gom về một helper trước khi SP18
   đổi ngữ nghĩa glob. `kc_glob_rong` cũng chưa tắt `core.quotepath` (đường dẫn có dấu) — làm cùng lúc.
 
+- `aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea —
+  các URL đó vẫn rơi về `[CONFLUENCE]`/`[HUMAN]`; thêm dạng vào `la_issue` (`tools/input.sh`) + checker khi cần.
 ## Không làm
 
 | Việc | Lý do | Xét lại khi |
