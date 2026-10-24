@@ -30,6 +30,7 @@ capabilities:
   - CAP-implement-04
   - CAP-implement-05
   - CAP-implement-06
+  - CAP-implement-07
 exit_machine:
   - aw check implement
 exit_human: []
@@ -45,6 +46,8 @@ Do each task in `plan.md` per `tdd.md`, **without leaving scope**. The typical f
 `plan.md` is the only source of work; `tdd.md` says how (contract, data, flow, DEC-xxx); `spec.md` says why. Test file patterns and `covers:` syntax: conventions.
 
 ## Loop
+
+**Before the first task:** `aw knowledge implement <dir>` — read every file it prints.
 
 ```
 aw ready <dir>

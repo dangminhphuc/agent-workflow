@@ -33,3 +33,8 @@ invariants:
 - Rule: each decision is consumed only after the human approves it, and the approval no longer counts once its content changes.
 - Judged by: machine
 - Artifact: design
+
+### CAP-design-04 — Design reads durable knowledge in scope of the code it surveys
+- Rule: the machine computes the documents from the paths the design records as existing code; the design reads them before deciding.
+- Judged by: agent
+- Artifact: design

@@ -73,6 +73,22 @@ dung "…không kèm lỗi Artifact cho từng capability" sh -c "! grep -q 'pro
 moi; sed 's/$/\r/' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
 ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
 
+
+nhom "capability kiến thức bền (SP20)"
+for c in implement-07:04-implement:implement design-04:02-design:design verify-06:05-verify:review; do
+  id="CAP-${c%%:*}"; r="${c#*:}"; st="${r%%:*}"; ph="${r#*:}"
+  dung "$id có trong stage $st và phase $ph nhận" sh -c "grep -q '^### $id — ' '$ROOT/sdlc/stages/$st.md' && grep -q '^  - $id\$' '$ROOT/workflow/phases/'*-$ph.md"
+done
+# bỏ nhận capability làm stage suy ra partial mà không có note → chặn (verify vốn đã partial nên không đổi)
+moi; thay "$E/workflow/phases/"*-design.md "  - CAP-design-04
+" ""
+vi_pham "phase design bỏ nhận CAP-design-04 → chặn" "stage design: suy ra partial nhưng khối sdlc: không có note"
+moi; thay "$E/workflow/phases/"*-implement.md "  - CAP-implement-07
+" ""
+vi_pham "phase implement bỏ nhận CAP-implement-07 → chặn" "stage implement: suy ra partial nhưng khối sdlc: không có note"
+moi; thay "$E/tools/check-review.sh" "# giữ: CAP-verify-06
+" ""
+vi_pham "CAP-verify-06 machine mà luật không gắn # giữ → chặn" "CAP-verify-06: Judged by machine, phase review nhận, nhưng không luật checker nào khai"
 # --suy: id mà diff đã gắn, không tự gắn
 nhom "--suy"
 printf '# giữ: CAP-require-01, INV-007\n# giữ: CAP-require-01\n' > "$TMP/suy-a.sh"

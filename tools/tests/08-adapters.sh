@@ -76,6 +76,8 @@ dung "/aw-approvals: không chạy aw feature, liệt kê rồi chỉ tick mục
 dung "luật chung: ngoại lệ duy nhất là aw approvals tick trong /aw-approvals" grep -q 'Only `/aw-approvals` runs `aw approvals tick`' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "phase có quy tắc repo: lệnh gọi aw rules <phase> (review: subagent đọc)" sh -c \
   "for p in spec design plan implement; do grep -q \"aw rules \$p\" '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "phase implement đọc kiến thức bền: lệnh gọi aw knowledge implement; subagent rà soát gọi aw knowledge review" sh -c \
+  "grep -q 'aw knowledge implement' '$O/.claude/commands/aw-implement.md' && grep -q 'aw knowledge review' '$O/.claude/agents/independent-reviewer.md'"
 dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -c \
   "grep -q 'What this session does' '$O/.claude/commands/aw-review.md' && ! grep -q 'Four lenses' '$O/.claude/commands/aw-review.md' && grep -q 'Four lenses' '$O/.claude/agents/independent-reviewer.md'"
 dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắt giữa chừng)" sh -c \
