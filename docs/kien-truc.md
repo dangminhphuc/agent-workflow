@@ -209,8 +209,9 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
 - **Lệnh kiểm nằm trong git (`make test`), `config.sh` chỉ trỏ tới.** Chép lệnh vào `config.sh`
   (ngoài git, mỗi máy một bản) thì local và CI lệch dần: local xanh mà pipeline chặn. Target mẫu
   chưa khai thoát mã 1 — "quên khai" không bao giờ thành xanh, đúng như `TEST_CMD` trống.
-- `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn; cách nạp theo phạm vi diff
-  là bước sau.
+- `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn. Tài liệu bền theo phạm vi: `aw knowledge
+  implement` lọc theo `Expected files` của `plan.md`, `aw knowledge review` lọc theo diff — cùng tập tài liệu
+  review phải chấm verdict.
 
 ### `/aw-bootstrap`: dựng bản đồ một lần cho repo có sẵn
 
@@ -256,6 +257,8 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
 - **`aw knowledge` tách khỏi `aw rules`**: `rules` nghĩa là "đọc hết, review chấm từng file"; kiến
   thức bền lọc theo phạm vi (đường dẫn trong `## Existing code`) — trộn vào thì bảng `## Repo rules`
   phình theo số module. Design gọi hai lần: trước khảo sát (chỉ mục) và sau khi ghi `Existing code`.
+  `aw knowledge` gọi ở spec, design, implement, review. Implement và review không thêm luật chặn: máy không
+  kiểm được agent đã đọc; review chỉ chấm verdict từng tài liệu (CAP-verify-06).
 - Đi ngược ADR mà không khai `Supersedes` máy không phát hiện được (cần hiểu nội dung) → LLM checker
   thiết kế chặn (`trái ADR`).
 

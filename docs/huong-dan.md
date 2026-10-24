@@ -875,7 +875,7 @@ Artifact của việc không vào git. Hai thứ **bạn chọn** được đưa
 | Ai quyết nâng | bạn, bằng cách duyệt DEC đó | bạn, bằng cách duyệt spec |
 | Lệnh (implement chạy, không viết tay) | `aw adr promote <dir> DEC-NNN` | `aw rule promote <dir> REQ-NNN` |
 | Ghi vào | `docs/adr/NNNN-<việc>-dec-nnn.md` + chỉ mục `README.md` | `docs/product/rules/<miền>.md` |
-| Việc sau đọc | design (`aw knowledge design`) | spec (`aw knowledge spec`) |
+| Việc sau đọc | design, implement, review (`aw knowledge <phase>`) | spec, design, implement, review (`aw knowledge <phase>`) |
 | Kiểm | `aw adr check` | `aw rule check` |
 
 Nên nâng: quyết định **còn đúng sau việc này**, xuyên module, khó đảo ngược (ADR); bất biến nghiệp vụ,
@@ -885,6 +885,9 @@ DEC đi ngược một ADR `accepted` phải khai `- Supersedes: ADR-NNNN` — A
 
 **Chống stale:** diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi →
 implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`.
+
+Implement đọc theo `Expected files` của `plan.md` (`aw knowledge implement`); review đọc theo diff (`aw knowledge review`),
+đúng tập tài liệu review phải chấm verdict. Việc bỏ design (`chore`, `Design: skip`) vẫn đọc chỉ mục ADR ở implement.
 
 Hai việc song song cùng nâng ADR có thể trùng số → `aw adr check` chặn ở việc kế tiếp; bạn đổi số và
 chạy lại `aw adr promote`.
