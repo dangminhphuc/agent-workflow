@@ -92,7 +92,7 @@ if [ "$CONG" = spec ]; then
       if (match($0, /\[(CONFLUENCE|JIRA|FILE|INFERRED|OPEN-QUESTION)\]/)) { nhan[cur] = substr($0, RSTART + 1, RLENGTH - 2); dem[nhan[cur]]++ }
     }
     idx == 1 && sec == "npv" && $0 !~ /^[ \t]*$/ { v = ra($0); if (v != "" && v !~ /^</) npv[++n_npv] = v }
-    idx == 2 && /^###[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); q = substr($0, RSTART, RLENGTH); oq[++n_oq] = q; tt[q] = "open"; mc[q] = "?"; next }
+    idx == 2 && /^###[ \t]+(Q|REQ)-[0-9]+/ { match($0, /(Q|REQ)-[0-9]+/); q = substr($0, RSTART, RLENGTH); oq[++n_oq] = q; tt[q] = "open"; mc[q] = "?"; next }
     idx == 2 && q != "" && /^[-*][ \t]*\*{0,2}Blocking[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); mc[q] = ra(v) }
     idx == 2 && q != "" && /^[-*][ \t]*\*{0,2}Status[^:]*:/ { v = $0; sub(/^[^:]*:/, "", v); tt[q] = ra(v) }
     END {

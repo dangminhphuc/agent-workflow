@@ -17,7 +17,7 @@
 #   4. Điểm mù `review-blocking`      — chặn /aw-review
 #   5. Phát hiện mức `Cảnh báo`     — không chặn
 #   6. Điểm mù `non-blocking`       — không chặn
-# Trong nhóm điểm mù: REQ "must" trước "should", rồi nhiều task trong plan.md
+# Trong nhóm điểm mù: câu hỏi có REQ "must" trước "should", rồi nhiều task trong plan.md
 # đứng trên giả định tạm hơn thì trước, rồi thứ tự trong file. Trong nhóm phát
 # hiện: thứ tự trong file.
 # Mục đã xong (điểm mù `answered`, phát hiện `fixed` / `rejected: <lý do>`) chỉ
@@ -73,10 +73,10 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   FNR==1 { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : (FILENAME == ARGV[3]) ? 3 : 4; cur = ""; nguon = ten_file(FILENAME) }
 
   # ---- File 1: open-questions.md ----
-  idx==1 && /^###[ \t]+REQ-[0-9]+/ {
-    match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+  idx==1 && /^###[ \t]+(Q|REQ)-[0-9]+/ {
+    match($0, /(Q|REQ)-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
     ds[++n] = cur; tt[cur] = "open"; muc[cur] = ""
-    t = $0; sub(/^###[ \t]+REQ-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t
+    t = $0; sub(/^###[ \t]+(Q|REQ)-[0-9]+[ \t]*[—:-]*[ \t]*/, "", t); ten[cur] = t
     next
   }
   idx==1 && /^(#|##|###)[ \t]/ { cur = ""; next }
@@ -91,16 +91,24 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   }
   idx==1 { next }
 
-  # ---- File 2: spec.md — Priority của REQ ----
+  # ---- File 2: spec.md — Priority của REQ, câu hỏi REQ đứng trên (link § Q-NNN ở dòng Source;
+  # dạng cũ không link: câu hỏi cùng mã REQ) ----
   idx==2 && /^###[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
   idx==2 && /^###?[ \t]/ { cur = ""; next }
-  idx==2 && cur != "" && /^[ \t]*-[ \t]*\**Priority\**:/ { ut[cur] = gia_tri($0); next }
+  idx==2 && cur != "" && /^[ \t]*-[ \t]*\**Priority\**:/ { ut_yc[cur] = gia_tri($0); next }
+  idx==2 && cur != "" && /^[ \t]*-[ \t]*\**Source\**:/ {
+    q = ""
+    if (match($0, /open-questions\.md[^)]*(Q|REQ)-[0-9]+/)) { p = substr($0, RSTART, RLENGTH); sub(/^open-questions\.md/, "", p); match(p, /(Q|REQ)-[0-9]+/); q = substr(p, RSTART, RLENGTH) }
+    else if ($0 ~ /\[OPEN-QUESTION\]/) q = cur
+    if (q != "") { yc_cua[q] = yc_cua[q] ", " cur; n_yc_cua[q]++; yc_q[q, n_yc_cua[q]] = cur }
+    next
+  }
   idx==2 { next }
 
   # ---- File 3: plan.md — task đứng trên giả định tạm ----
   idx==3 && /^###[ \t]+TSK-[0-9]+/ { match($0, /TSK-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
   idx==3 && cur != "" && /^[ \t]*-[ \t]*\**On assumption\**:/ {
-    s = $0; while (match(s, /REQ-[0-9]+/)) { q = substr(s, RSTART, RLENGTH); so_task[q]++; task[q] = task[q] " " cur; s = substr(s, RSTART + RLENGTH) }
+    s = $0; while (match(s, /(Q|REQ)-[0-9]+/)) { q = substr(s, RSTART, RLENGTH); so_task[q]++; task[q] = task[q] " " cur; s = substr(s, RSTART + RLENGTH) }
   }
   idx==3 { next }
 
@@ -138,6 +146,16 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
     ph_chan["design-findings.md"] = "plan"
     ph_chan["spec-findings.md"] = "design"
 
+    # Priority của câu hỏi: must nếu một REQ đứng trên nó là must (hay chưa ghi), should khi mọi REQ là should.
+    for (i = 1; i <= n; i++) {
+      q = ds[i]; ut[q] = ""
+      for (j = 1; j <= n_yc_cua[q]; j++) {
+        u = ut_yc[yc_q[q, j]]
+        if (u == "should") { if (ut[q] == "") ut[q] = "should" } else if (u != "") ut[q] = "must"
+      }
+      # Dạng cũ: mã câu hỏi là mã REQ.
+      if (!(q in yc_cua) && (q in ut_yc)) { ut[q] = ut_yc[q]; yc_cua[q] = ", " q }
+    }
     for (i = 1; i <= n; i++) {
       q = ds[i]
       if (tt[q] == "answered") { n_xong++; continue }
@@ -196,7 +214,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
         continue
       }
       printf "  %d. %s%s%s\n", i, q, (ten[q] != "" ? " — " ten[q] : ""), dc
-      printf "     Ask: %s · Priority: %s · Task on assumption: %d%s\n", \
+      printf "     REQ: %s · Ask: %s · Priority: %s · Task on assumption: %d%s\n", ((q in yc_cua) ? substr(yc_cua[q], 3) : "?"), \
         (co_nd(ai[q]) ? ai[q] : "?"), (co_nd(ut[q]) ? ut[q] : "?"), so_task[q], (so_task[q] ? " (" substr(task[q], 2) ")" : "")
       printf "     Question: %s\n", (co_nd(hoi[q]) ? hoi[q] : "<chưa ghi>")
       printf "     Assumption: %s\n", (co_nd(gd[q]) ? gd[q] : "<chưa ghi>")

@@ -40,10 +40,10 @@ ky_vong_ly_do 1 "chặn mã DEC sai dạng" "…đúng lý do" 'DEC-1 sai dạng
 viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'
 ky_vong 0 "điểm mù \"chặn review\" còn mở không chặn design" sh "$CHK" "$F"
 viet_spec; viet_tdd; thay "$F/open-questions.md" '`non-blocking`' '`blocking`'
-ky_vong_ly_do 1 "chặn điểm mù \"chặn\" còn mở" "…đúng lý do: REQ-002 mức chặn" 'REQ-002: open question mức "blocking"' sh "$CHK" "$F"
+ky_vong_ly_do 1 "chặn điểm mù \"chặn\" còn mở" "…đúng lý do: Q-001 (REQ-002) mức chặn" 'Q-001 (REQ-002): open question mức "blocking"' sh "$CHK" "$F"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '`[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '`[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)
 - Quote: > qua email'
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời thì cho qua" sh "$CHK" "$F"
@@ -53,8 +53,7 @@ viet_tdd; thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ]
 ky_vong_ly_do 1 "chặn vào design khi người chưa duyệt spec" "…đúng lý do: spec chưa được người duyệt" 'chưa được người duyệt' sh "$CHK" "$F"
 viet_spec
 
-viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
-- Assumption: y' '`[JIRA]` ABC-1
+viet_tdd; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '`[JIRA]` ABC-1
 - Quote: > khách mở y thấy b'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte không làm design đọc lệch file" sh "$CHK" "$F"

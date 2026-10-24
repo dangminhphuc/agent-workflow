@@ -51,7 +51,7 @@ nhom "aw toc / tools/lib/toc.sh"
 TOC="$T/toc.sh"; CHK="$T/check-spec.sh"
 viet_spec
 dung "fixture: spec có ## Contents, REQ lồng dưới Requirements" sh -c "grep -qxF -- '- [Requirements](#requirements)' '$F/spec.md' && grep -qxF -- '  - [REQ-001 — a](#req-001--a)' '$F/spec.md'"
-dung "aw toc mở rộng anchor rút gọn trong link — chỉ khi khớp đúng một mục" grep -qF '(open-questions.md#req-002--b)' "$F/spec.md"
+dung "aw toc mở rộng anchor rút gọn trong link — chỉ khi khớp đúng một mục" grep -qF '(open-questions.md#q-001--hỏi-b)' "$F/spec.md"
 ky_vong 0 "spec có mục lục, link đúng → ĐẠT" sh "$CHK" "$F"
 ky_vong 0 "aw toc nhận spec-findings.md" sh "$TOC" "$F" spec-findings.md
 cksum "$F/spec.md" "$F/open-questions.md" > "$TMP/toc.ck"
@@ -73,16 +73,16 @@ viet_spec; thay "$F/spec.md" '## Constraints & dependencies' '## Out of scope
 ## Constraints & dependencies'
 toc_f spec.md
 dung "heading trùng tên → anchor thứ hai có hậu tố -1 (như GitHub)" grep -qxF -- '- [Out of scope](#out-of-scope-1)' "$F/spec.md"
-viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md#req-009)'
-ky_vong_ly_do 1 "chặn link tới mục không có của artifact khác" "…đúng lý do" 'link "open-questions.md#req-009" không trỏ tới mục nào' sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '(open-questions.md#q-001--hỏi-b)' '(open-questions.md#q-009)'
+ky_vong_ly_do 1 "chặn link tới mục không có của artifact khác" "…đúng lý do" 'link "open-questions.md#q-009" không trỏ tới mục nào' sh "$CHK" "$F"
 ky_vong 1 "aw toc báo CÒN LINK SAI khi link không mở rộng được" sh "$TOC" "$F" spec.md
-viet_spec; thay "$F/spec.md" '(open-questions.md#req-002--b)' '(open-questions.md)'
+viet_spec; thay "$F/spec.md" '(open-questions.md#q-001--hỏi-b)' '(open-questions.md)'
 ky_vong 1 "chặn link tới artifact mà không trỏ tới mục" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '[open-questions.md § REQ-002](open-questions.md#req-002--b)' '`open-questions.md` § REQ-002'
-ky_vong 1 "chặn tham chiếu \"open-questions.md § REQ-002\" chữ trơn" sh "$CHK" "$F"
-dung "…gợi ý đúng link đầy đủ" sh -c "sh '$CHK' '$F' | grep -qF 'viết thành [open-questions.md § REQ-002](open-questions.md#req-002--b)'"
-viet_spec; thay "$F/spec.md" '[open-questions.md § REQ-002](open-questions.md#req-002--b)' '[open-questions.md § REQ-002](open-questions.md#REQ-002)'; toc_f spec.md
-dung "aw toc mở rộng anchor viết hoa / rút gọn" grep -qF '(open-questions.md#req-002--b)' "$F/spec.md"
+viet_spec; thay "$F/spec.md" '[open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '`open-questions.md` § Q-001'
+ky_vong 1 "chặn tham chiếu \"open-questions.md § Q-001\" chữ trơn" sh "$CHK" "$F"
+dung "…gợi ý đúng link đầy đủ" sh -c "sh '$CHK' '$F' | grep -qF 'viết thành [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)'"
+viet_spec; thay "$F/spec.md" '[open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '[open-questions.md § Q-001](open-questions.md#Q-001)'; toc_f spec.md
+dung "aw toc mở rộng anchor viết hoa / rút gọn" grep -qF '(open-questions.md#q-001--hỏi-b)' "$F/spec.md"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/plan.md § Tổng quan'
 thay "$F/spec.md" '- Priority: `must`' '- Priority: `must`
 - Note: [y](#khong-co)'
@@ -103,8 +103,7 @@ toc_f spec.md
 dung "heading trong HTML comment / khối code không vào mục lục" sh -c "! grep -qF '[Không tính]' '$F/spec.md' && ! grep -qF '[cũng không tính]' '$F/spec.md'"
 ky_vong 0 "…và checker không đòi chúng" sh "$CHK" "$F"
 printf '# Open questions\n\nNo open questions.\n' > "$TMP/oq.md"
-viet_spec; thay "$F/spec.md" '- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
-- Assumption: y' '- Source: `[JIRA]` ABC-1
+viet_spec; thay "$F/spec.md" '- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '- Source: `[JIRA]` ABC-1
 - Quote: > khách mở y thấy b'; cp "$TMP/oq.md" "$F/open-questions.md"
 ky_vong 0 "artifact không có heading ## / ### thì không cần mục lục" sh "$CHK" "$F"
 ky_vong 2 "aw toc: artifact lạ → SAI THAM SỐ" sh "$TOC" "$F" task-results.md

@@ -496,10 +496,26 @@ thoại **là** human gate của open question; dấu vết ở `Answer:` (ai, n
 sửa theo câu trả lời thì bỏ tick, người tick lại — máy không phân biệt "sửa người vừa xác nhận" với
 "sửa người chưa thấy".
 
-**Người đổi REQ đã có nguồn** đi cùng đường open question (`/aw-clarify REQ-NNN`): ghi thành mục `answered`
-trong `open-questions.md` (cách hiểu cũ ở `Assumption`, lời người ở `Answer`), REQ đổi nhãn sang
-`[FILE] open-questions.md § REQ-NNN`. Không thêm source label thứ sáu; checker spec chặn nhãn
-trỏ vào `open-questions.md § REQ-NNN` mà mục đó không có — chính xác nên chặn. Sửa thẳng `spec.md` thì nhãn cũ
+**Câu hỏi có mã riêng (`Q-NNN`), quan hệ ghi ở một phía.** Trước đây mỗi open question mang mã và tiêu
+đề của một REQ, nên `open-questions.md` thành bản sao của spec: `Assumption` ghi ở cả hai file (máy chỉ
+kiểm một bản, hai bản lệch không ai báo), một câu hỏi đụng nhiều REQ phải ghi nhiều mục. Nay câu hỏi đánh
+số riêng; REQ trỏ tới câu hỏi ở dòng `Source:`, và **chỉ ở đó** — máy suy ngược câu hỏi phủ REQ nào
+(`aw pending`, cổng mức chặn in sẵn). Không ghi thêm `Affects:` ở câu hỏi: cả hai phía do cùng agent
+viết cùng lượt, luật đối chiếu hai phía chủ yếu bắt lỗi quên sửa một phía — lỗi do chính việc ghi hai lần
+sinh ra. Một REQ đứng trên tối đa một câu hỏi (giữ "đúng một `Source:`"): REQ nhiều câu hỏi rơi vào trạng
+thái lửng (một đã trả lời, một chưa) và kéo theo viết lại review `pending`, `aw rule promote`, đếm nhãn;
+REQ có hai ẩn số độc lập thì tách REQ. Chỗ lặp duy nhất còn lại là cố ý: `Quote:` của REQ chép lời trong
+`Answer:` để `quote.sh` kiểm câu trích có thật, như mọi nguồn `[FILE]`. Mục dạng cũ `### REQ-NNN` đọc
+được vô thời hạn (link cũ `§ REQ-NNN` chính là "REQ trỏ tới câu hỏi đó", nên luật mới áp dụng y nguyên),
+không có lệnh chuyển đổi: chuyển là sửa spec đã duyệt — hoặc người phải duyệt lại vì engine đổi định
+dạng, hoặc máy tự tính lại approval hash, tức sửa nội dung người đã duyệt rồi coi như vẫn duyệt.
+
+**Người đổi REQ đã có nguồn** đi cùng đường open question (`/aw-clarify REQ-NNN`): ghi thành một mục
+`Q-NNN` `answered` tối giản — chỉ `Question` ("REQ-NNN nên hiểu là X hay Y?") và lời người ở `Answer` —
+REQ đổi nhãn sang `[FILE] open-questions.md § Q-NNN`. Không chép `Source says`/`Assumption` (cách hiểu cũ
+nằm ở git), không file nhật ký riêng (thêm artifact, mục lục, chuỗi `based_on` mà không bắt thêm lỗi nào),
+không trường `Kind` (chưa luật nào cần phân biệt). Không thêm source label thứ sáu; checker spec chặn nhãn
+trỏ vào `open-questions.md § Q-NNN` mà mục đó không có — chính xác nên chặn. Sửa thẳng `spec.md` thì nhãn cũ
 (`[CONFLUENCE]`…) nói dối về nguồn và không máy nào bắt. Thêm/bỏ REQ là đổi phạm vi → `[HUMAN]` trong
 `intake.md`, chạy lại spec. Lan xuống dưới: `based_on` chỉ biết *file* đã đổi, nên `aw task reopen`
 đưa đúng task `Covers`/`On assumption` REQ đó (hay `Based on` DEC đó) về `[ ]` — máy làm, khỏi để agent

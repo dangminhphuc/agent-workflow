@@ -53,7 +53,7 @@ dung "…kèm hướng dẫn đổi sang Blocking" sh -c "sh '$CHK' '$F' | grep 
 # Việc tạo trước khi đổi sang tiếng Anh: "Mức chặn" tiếng Việt cũng là nhãn cũ
 viet_spec; thay "$F/open-questions.md" '- **Blocking:** `non-blocking`' '- **Mức chặn:** `không chặn`'
 ky_vong 1 "chặn nhãn cũ \"Mức chặn\"" sh "$CHK" "$F"
-dung "…kèm hướng dẫn đổi sang Blocking" sh -c "sh '$CHK' '$F' | grep -q 'REQ-002: nhãn cũ.*đã đổi thành \"Blocking'"
+dung "…kèm hướng dẫn đổi sang Blocking" sh -c "sh '$CHK' '$F' | grep -q 'Q-001: nhãn cũ.*đã đổi thành \"Blocking'"
 viet_spec; thay "$F/open-questions.md" '`non-blocking`' '`toàn bộ thiết kế`'
 ky_vong 1 "chặn giá trị cũ \"toàn bộ thiết kế\" dưới nhãn Blocking" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '`non-blocking`' '`không chặn`'
@@ -84,12 +84,12 @@ ky_vong 1 "chặn mã REQ trùng nhau" sh "$CHK" "$F"
 
 viet_spec; thay "$F/spec.md" "### REQ-002" "### REQ-2"
 ky_vong_ly_do 1 "chặn mã REQ sai dạng (không đủ 3 chữ số)" "…đúng lý do" 'REQ-2 sai dạng' sh "$CHK" "$F"
-viet_spec; thay "$F/open-questions.md" "### REQ-002" "### REQ-0002"
-ky_vong_ly_do 1 "chặn mã REQ sai dạng trong open-questions.md" "…đúng lý do" 'REQ-0002 sai dạng' sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" "### Q-001" "### Q-0001"
+ky_vong_ly_do 1 "chặn mã câu hỏi sai dạng trong open-questions.md" "…đúng lý do" 'Q-0001 sai dạng' sh "$CHK" "$F"
 
 # Mã luôn ở "###" dưới một "##" của nhóm — dạng cũ "## REQ-NNN" trong open-questions.md bị chặn
-viet_spec; thay "$F/open-questions.md" "### REQ-002" "## REQ-002"; toc_f open-questions.md
-ky_vong_ly_do 1 "chặn mục open question ở cấp cũ \"## REQ-NNN\"" "…đúng lý do, chỉ cách đổi" 'open-questions.md: "## REQ-002" là cấp heading cũ — đổi thành "### REQ-002" dưới "## Questions"' sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" "### Q-001" "## Q-001"; toc_f open-questions.md
+ky_vong_ly_do 1 "chặn mục open question ở cấp cũ \"## Q-NNN\"" "…đúng lý do, chỉ cách đổi" 'open-questions.md: "## Q-001" là cấp heading cũ — đổi thành "### Q-001" dưới "## Questions"' sh "$CHK" "$F"
 
 # refactor-requests.md (/aw-refactor): "### RFR-NNN", đúng 3 chữ số, không trùng
 viet_spec
@@ -124,8 +124,7 @@ toc_f spec.md
 ky_vong 0 "Nguồn dưới \"### phụ\" không bị cộng vào REQ phía trên" sh "$CHK" "$F"
 
 # open-questions.md 0 byte = đã rà, không có điểm mù (không được làm lệch thứ tự file)
-viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
-- Assumption: y' '`[JIRA]` ABC-1
+viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '`[JIRA]` ABC-1
 - Quote: > khách mở y thấy b'
 : > "$F/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte thì cho qua" sh "$CHK" "$F"
@@ -176,14 +175,14 @@ ky_vong 1 "chặn Trạng thái điểm mù tự chế" sh "$CHK" "$F"
 viet_spec; thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** qua email\n' >> "$F/open-questions.md"
 ky_vong 1 "chặn điểm mù đã trả lời mà spec vẫn gắn [OPEN-QUESTION]" sh "$CHK" "$F"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '`[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '`[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)
 - Quote: > qua email'
 ky_vong 1 "spec đã duyệt mà bị sửa (vd /aw-clarify đổi nhãn) thì phải duyệt lại" sh "$CHK" "$F"
 duyet_lai "$F/spec.md"
 ky_vong 0 "đã trả lời + spec đổi nhãn nguồn + người duyệt lại thì cho qua" sh "$CHK" "$F"
 thay "$F/open-questions.md" '- **Answer:** qua email' '- **Answer:** <người trả lời ghi vào đây>'
 ky_vong 1 "chặn đã trả lời mà Trả lời còn trống/chỗ giữ chỗ" sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '`[JIRA]` ABC-2'
+viet_spec; thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '`[JIRA]` ABC-2'
 ky_vong 1 "chặn spec đã có nguồn mà điểm mù vẫn mở" sh "$CHK" "$F"
 # Người đổi REQ đã có nguồn (/aw-clarify REQ-NNN): ghi thành điểm mù đã trả lời
 viet_spec; sh "$CHK" "$F" >/dev/null 2>&1   # máy ghi dấu duyệt cho bản người đã tick
@@ -201,7 +200,7 @@ thay "$F/open-questions.md" '- **Answer:** "a tối đa 30 ngày" — PO, 2026-1
 ky_vong 1 "…Superseded answer không thay được Answer" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § REQ-001](open-questions.md#req-001--a)'
 ky_vong_ly_do 1 "chặn nhãn [FILE] trỏ vào open-questions.md § REQ-001 mà mục đó không có" "…đúng lý do" 'REQ-001: nguồn trỏ tới open-questions.md § REQ-001 nhưng không có mục' sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)'
 ky_vong 1 "chặn nhãn trỏ vào điểm mù của REQ khác còn open" sh "$CHK" "$F"
 printf '# A\n\n## Tổng quan\n\nkhách mở y thấy a\n' > "$R/docs/a.md"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` docs/a.md § Tổng quan'
@@ -252,7 +251,7 @@ thay "$F/intake.md" '- `[JIRA]` ABC-1' '- `[JIRA]` ABC-1
 - `[CONFLUENCE]` https://wiki.x/p/1'
 dung "…URL có trong Input (bỏ anchor) → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
 viet_intake
-viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)'
 dung "[FILE] trỏ open-questions.md của việc → không cảnh báo nguồn ngoài intake" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
 viet_spec
 printf '# BRD\n\n## Hoàn tiền\n\nKhách được hoàn tiền trong vòng\n30 ngày   kể từ ngày thanh toán.\n> Phí: 1.5%% * số tiền (C:\\tmp\\n) [tối đa].\n' > "$R/docs/brd.md"
@@ -319,7 +318,7 @@ ky_vong 1 "chặn bảng mâu thuẫn rỗng, chỉ có chỗ giữ chỗ" sh "$
 # Mâu thuẫn: agent không tự phân xử
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | chọn 30 ngày cho an toàn |'
 ky_vong_ly_do 1 "chặn mâu thuẫn do agent tự phân xử" "…đúng lý do: cột Xử lý" 'Agent không tự phân xử' sh "$CHK" "$F"
-viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § REQ-002](open-questions.md#req-002--b) |'
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b) |'
 ky_vong 0 "mâu thuẫn trỏ tới điểm mù có thật thì cho qua" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § REQ-099](open-questions.md#req-099) |'
 ky_vong 1 "chặn mâu thuẫn trỏ tới điểm mù không có" sh "$CHK" "$F"
@@ -334,5 +333,65 @@ ky_vong 1 "tiêu chí nằm trong comment không được tính" sh "$CHK" "$F"
 cp "$ROOT/workflow/templates/spec.md" "$F/spec.md"
 ky_vong 1 "mẫu spec chưa điền thì không qua" sh "$CHK" "$F"
 viet_spec
+
+
+# Câu hỏi có mã riêng Q-NNN: quan hệ câu hỏi ↔ REQ chỉ khai ở dòng Source của REQ, máy suy ngược
+LINK_Q1='[open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' "- Source: \`[OPEN-QUESTION]\` → $LINK_Q1"
+ky_vong 0 "một câu hỏi Q-001 phủ hai REQ → cho qua" sh "$CHK" "$F"
+dung "…REQ không có dòng Assumption (giả định chỉ ở câu hỏi)" sh -c "! grep -q 'Assumption' '$F/spec.md'"
+thay "$F/open-questions.md" '`open`' '`answered`'; printf -- '- **Answer:** "qua email" — PO, 2026-10-24\n' >> "$F/open-questions.md"
+thay "$F/spec.md" "\`[OPEN-QUESTION]\` → $LINK_Q1
+- Priority: \`should\`" "\`[FILE]\` $LINK_Q1
+- Quote:
+  > \"qua email\" — PO, 2026-10-24
+- Priority: \`should\`"
+ky_vong_ly_do 1 "trả lời câu hỏi nhưng một REQ trỏ tới vẫn [OPEN-QUESTION] → chặn" "…đúng lý do, nêu đúng REQ" 'Q-001: open question đã trả lời nhưng REQ-001 vẫn gắn \[OPEN-QUESTION\]' sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" "(open-questions.md#q-001--hỏi-b)" "(open-questions.md#q-001--hỏi-b) [open-questions.md § Q-009](open-questions.md#q-001--hỏi-b)"
+ky_vong 0 "…mã câu hỏi lấy theo link đầu tiên của dòng Source" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '§ Q-001](open-questions.md#q-001--hỏi-b)' '§ Q-009](open-questions.md#q-001--hỏi-b)'
+ky_vong_ly_do 1 "REQ [OPEN-QUESTION] trỏ tới Q-009 không có → chặn" "…đúng lý do" 'REQ-002: nguồn trỏ tới open-questions.md § Q-009 nhưng không có mục' sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" "\`[OPEN-QUESTION]\` → $LINK_Q1" '`[OPEN-QUESTION]`'; printf '\n### Q-002 — khác\n- **Status:** `answered`\n- **Answer:** x\n' >> "$F/open-questions.md"
+ky_vong_ly_do 1 "REQ [OPEN-QUESTION] không trỏ tới câu hỏi nào → chặn" "…đúng lý do" 'REQ-002: gắn \[OPEN-QUESTION\] nhưng không trỏ tới câu hỏi nào' sh "$CHK" "$F"
+viet_spec; printf '\n### Q-002 — hỏi thừa\n- **Assumption:** z\n- **Blocking:** `non-blocking`\n- **Status:** `open`\n' >> "$F/open-questions.md"; toc_f open-questions.md
+ky_vong_ly_do 1 "câu hỏi còn open mà không REQ nào trỏ tới → chặn" "…đúng lý do" 'Q-002 còn "open" nhưng không REQ nào trong spec.md trỏ tới' sh "$CHK" "$F"
+thay "$F/open-questions.md" '- **Status:** `open`
+' '- **Status:** `open`
+' ; thay "$F/open-questions.md" '- **Assumption:** z
+- **Blocking:** `non-blocking`
+- **Status:** `open`' '- **Status:** `answered`
+- **Answer:** "nguồn khác" — PO, 2026-10-24'
+ky_vong 0 "…đã answered mà không REQ nào trỏ tới (câu trả lời chỉ sang nguồn khác) → cho qua" sh "$CHK" "$F"
+viet_spec; printf '\n### Q-001 — hỏi b lần hai\n- **Status:** `answered`\n- **Answer:** x\n' >> "$F/open-questions.md"
+ky_vong_ly_do 1 "mã câu hỏi trùng → chặn" "…đúng lý do" 'Mã Q-001 xuất hiện nhiều lần trong open-questions.md' sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' "- Source: \`[FILE]\` $LINK_Q1"
+ky_vong_ly_do 1 "REQ [FILE] trỏ tới câu trả lời mà câu hỏi còn open → chặn" "…đúng lý do" 'Q-001: REQ-001 đã gắn nguồn \[FILE\] trỏ tới câu trả lời nhưng open question vẫn "open"' sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b) |'
+ky_vong 0 "mâu thuẫn trỏ tới câu hỏi Q-001 có thật → cho qua" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '| | | |' '| BRD: 30 ngày | ABC-1: 60 ngày | [open-questions.md § Q-099](open-questions.md#q-099) |'
+ky_vong_ly_do 1 "mâu thuẫn trỏ tới Q-099 không có → chặn" "…đúng lý do" 'trỏ tới Q-099 nhưng open-questions.md không có mục' sh "$CHK" "$F"
+# Đổi REQ đã có nguồn (/aw-clarify REQ-NNN): một Q- answered tối giản, chỉ Question + Answer
+viet_spec; printf '\n### Q-002 — REQ-001 nên hiểu thế nào\n- **Question:** REQ-001 nên hiểu là 30 ngày hay 60 ngày?\n- **Status:** `answered`\n- **Answer:** "a tối đa 30 ngày" — PO, 2026-10-24 (đã xác nhận sửa REQ-001)\n' >> "$F/open-questions.md"; toc_f open-questions.md
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[FILE]` [open-questions.md § Q-002](open-questions.md#q-002)
+- Quote:
+  > "a tối đa 30 ngày" — PO, 2026-10-24'; toc_f spec.md
+ky_vong 0 "đổi REQ: Q-002 answered chỉ có Question + Answer → cho qua" sh "$CHK" "$F"
+# Dạng cũ "### REQ-NNN": vẫn đọc được, một dòng cảnh báo; trộn với Q-NNN được
+viet_spec; thay "$F/open-questions.md" '### Q-001 — hỏi b' '### REQ-002 — b'; thay "$F/spec.md" '§ Q-001](open-questions.md#q-001--hỏi-b)' '§ REQ-002](open-questions.md#req-002--b)'; toc_f spec.md open-questions.md
+ky_vong 0 "dạng cũ \"### REQ-NNN\" → vẫn cho qua" sh "$CHK" "$F"
+dung "…kèm một dòng cảnh báo dạng cũ" sh -c "[ \"\$(sh '$CHK' '$F' | grep -c 'dạng cũ \"### REQ-NNN\"')\" = 1 ]"
+thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001)'
+printf '\n### Q-001 — hỏi a\n- **Assumption:** x\n- **Blocking:** `non-blocking`\n- **Status:** `open`\n' >> "$F/open-questions.md"; toc_f spec.md open-questions.md; duyet_lai "$F/spec.md"
+ky_vong 0 "trộn dạng cũ REQ-002 và Q-001 trong một file → cho qua" sh "$CHK" "$F"
+viet_spec; thay "$F/open-questions.md" '### Q-001 — hỏi b' '### REQ-002 — b'; thay "$F/spec.md" "\`[OPEN-QUESTION]\` → $LINK_Q1" '`[OPEN-QUESTION]`'; toc_f spec.md open-questions.md
+ky_vong 0 "dạng cũ: REQ [OPEN-QUESTION] không link → câu hỏi cùng mã REQ" sh "$CHK" "$F"
+viet_spec
+dung "…fixture Q-001 không in cảnh báo dạng cũ" sh -c "! sh '$CHK' '$F' | grep -q 'dạng cũ'"
 
 ket_thuc

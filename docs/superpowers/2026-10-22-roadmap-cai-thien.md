@@ -57,6 +57,7 @@
 | SP22 | Số ADR không trùng khi hai việc song song | 6 | đang làm | — | `aw ship create` chặn khi trùng số | [spec](specs/2026-10-23-sp22-so-adr-song-song-design.md) | | |
 | SP23 | Dọn nhánh remote, số liệu roadmap | 6 | đang làm | — | Người duyệt danh sách nhánh trước khi xoá | [spec](specs/2026-10-23-sp23-don-dep-design.md) | | |
 | SP24 | Hai nhánh tính năng chưa merge: làn light + `mr_include_artifacts`, điểm mù nêu story/AC | sau | chặn | — | Lấy lại hay bỏ | | | |
+| SP25 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp25-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase

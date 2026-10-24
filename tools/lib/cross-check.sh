@@ -653,13 +653,13 @@ kc_canh_bao_theo_loai() {
 MUC_CHAN_HOP_LE="blocking|review-blocking|non-blocking"
 
 # kc_diem_mu <thư-mục-feature> -> mỗi mục trong open-questions.md một dòng
-# "<mã>|<blocking>|<status>". Thiếu dòng Blocking thì mức rỗng.
+# "<mã>|<blocking>|<status>". Mã là Q-NNN (dạng cũ: REQ-NNN). Thiếu dòng Blocking thì mức rỗng.
 kc_diem_mu() {
   [ -s "$1/open-questions.md" ] || return 0
   awk '
     function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
     { sub(/\r$/, "") }
-    /^###[ \t]+REQ-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /REQ-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "open"; next }
+    /^###[ \t]+(Q|REQ)-[0-9]+/ { if (q != "") print q "|" m "|" t; match($0, /(Q|REQ)-[0-9]+/); q = substr($0, RSTART, RLENGTH); m = ""; t = "open"; next }
     /^(#|##|###)[ \t]/ { if (q != "") print q "|" m "|" t; q = ""; next }
     q != "" && /^[ \t]*-[ \t]*\**Blocking\**:/ { m = gia_tri($0) }
     q != "" && /^[ \t]*-[ \t]*\**Status\**:/   { t = gia_tri($0) }
@@ -667,18 +667,40 @@ kc_diem_mu() {
   ' "$1/open-questions.md"
 }
 
+# kc_cau_hoi_req <thư-mục-feature> -> mỗi câu hỏi có REQ trỏ tới một dòng "<mã>|REQ-001, REQ-002".
+# Quan hệ chỉ khai ở dòng Source của REQ (link "open-questions.md § Q-NNN"); REQ [OPEN-QUESTION]
+# không có link (dạng cũ) thì câu hỏi cùng mã REQ.
+kc_cau_hoi_req() {
+  [ -f "$1/spec.md" ] || return 0
+  awk '
+    { sub(/\r$/, "") }
+    /^###[ \t]+REQ-[0-9]+/ { match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH); next }
+    /^###?[ \t]/ { cur = ""; next }
+    cur != "" && /^[ \t]*-[ \t]*\**Source\**:/ {
+      q = ""
+      if (match($0, /open-questions\.md[^)]*(Q|REQ)-[0-9]+/)) { p = substr($0, RSTART, RLENGTH); sub(/^open-questions\.md/, "", p); match(p, /(Q|REQ)-[0-9]+/); q = substr(p, RSTART, RLENGTH) }
+      else if ($0 ~ /\[OPEN-QUESTION\]/) q = cur
+      if (q != "") { if (!(q in ds)) thu[++n] = q; ds[q] = ds[q] ", " cur }
+      cur = ""
+    }
+    END { for (i = 1; i <= n; i++) print thu[i] "|" substr(ds[thu[i]], 3) }
+  ' "$1/spec.md"
+}
+
 # kc_diem_mu_mo <thư-mục-feature> <mức...> -> điểm mù CÒN MỞ thuộc các mức đã cho.
 # Gọi với "blocking" làm cổng vào design (không có design — kc_bo_design: plan); với "blocking" + "review-blocking"
 # ở implement (cảnh báo) và review (chặn).
 kc_diem_mu_mo() {
   _dm_d="$1"; shift
+  _dm_r=$(kc_cau_hoi_req "$_dm_d")
   kc_diem_mu "$_dm_d" | while IFS='|' read -r _q _m _t; do
     [ "$_t" = "answered" ] && continue
+    _dm_ds=$(printf '%s\n' "$_dm_r" | awk -F'|' -v q="$_q" '$1 == q && $2 != q { print " (" $2 ")"; exit }')
     for _w in "$@"; do
       [ "$_m" = "$_w" ] || continue
       case "$_m" in
-        blocking) echo "$_q: open question mức \"blocking\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh clarify dẫn dắt việc này)" ;;
-        *)    echo "$_q: open question mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh clarify dẫn dắt việc này)" ;;
+        blocking) echo "$_q$_dm_ds: open question mức \"blocking\" chưa trả lời — sai giả định thì cả thiết kế đổi hướng. Giải quyết trước (lệnh clarify dẫn dắt việc này)" ;;
+        *)    echo "$_q$_dm_ds: open question mức \"$_m\" chưa trả lời — review chặn tới khi có câu trả lời (lệnh clarify dẫn dắt việc này)" ;;
       esac
     done
   done

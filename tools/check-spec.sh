@@ -6,7 +6,8 @@
 #
 # Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
 #            REQ "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
-#            Nhãn `[FILE]` [open-questions.md § REQ-NNN](open-questions.md#…) mà mục đó không có (hay chưa answered).
+#            Nhãn `[FILE]` [open-questions.md § Q-NNN](open-questions.md#…) mà mục đó không có (hay chưa answered);
+#            mục `Q-NNN` còn open mà không REQ nào trỏ tới; mã câu hỏi trùng. Dạng cũ `### REQ-NNN`: cảnh báo.
 #            "Design:" khác required | skip; skip ngoài bugfix/refactor hoặc khi Risk khác normal;
 #            chore ghi required.
 #            REQ nguồn [CONFLUENCE] [JIRA] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
@@ -175,11 +176,15 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
 
   # ---- File 1: open-questions.md ----
   idx==1 {
-    # Mục là "### REQ-NNN" dưới "## Questions"; cấp cũ "## REQ-NNN" vẫn đọc để không kéo theo lỗi khác.
-    if ($0 ~ /^###?[ \t]+REQ-[0-9]+/) {
-      match($0, /REQ-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
+    # Mục là "### Q-NNN" dưới "## Questions". Dạng cũ "### REQ-NNN" (mã câu hỏi = mã REQ) vẫn đọc;
+    # cấp cũ "## …" vẫn đọc để không kéo theo lỗi khác.
+    if ($0 ~ /^###?[ \t]+(Q|REQ)-[0-9]+/) {
+      match($0, /(Q|REQ)-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
       if ($0 ~ /^##[ \t]/) loi("open-questions.md: \"## " cur_oq "\" là cấp heading cũ — đổi thành \"### " cur_oq "\" dưới \"## Questions\", rồi chạy aw toc")
-      if (cur_oq !~ /^REQ-[0-9][0-9][0-9]$/) loi("Mã " cur_oq " sai dạng trong open-questions.md: phải đúng 3 chữ số (REQ-001)")
+      if (cur_oq !~ /^(Q|REQ)-[0-9][0-9][0-9]$/) loi("Mã " cur_oq " sai dạng trong open-questions.md: phải đúng 3 chữ số (Q-001)")
+      # giữ: CAP-require-02
+      if (cur_oq in co_muc) loi("Mã " cur_oq " xuất hiện nhiều lần trong open-questions.md")
+      if (cur_oq ~ /^REQ-/) dang_cu = 1
       co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
     }
     # giữ: CAP-require-02
@@ -254,11 +259,11 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     if (a == "" && b == "" && x == "") next                 # dòng mẫu trống
     n_mt++
     ten = (a == "" ? "dòng " n_mt : "\"" a "\"")
-    if (match(x, /REQ-[0-9]+/)) {
-      q = substr(x, RSTART, RLENGTH)
+    if (match(x, /(^|[^A-Za-z0-9])(Q|REQ)-[0-9]+/)) {
+      q = substr(x, RSTART, RLENGTH); sub(/^[^A-Z]/, "", q)
       if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"### " q "\"")
     } else if (x !~ /\[(CONFLUENCE|JIRA|FILE)\]/) {
-      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § REQ-NNN](open-questions.md#req-nnn)) hoặc nguồn đã chốt " \
+      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § Q-NNN](open-questions.md#q-nnn)) hoặc nguồn đã chốt " \
           "([CONFLUENCE] [JIRA] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
     }
     next
@@ -288,8 +293,9 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     dong = $0
     sub(/^[^:]*:[ \t]*/, "", dong)
     nguon[cur] = dong
-    # Nhãn trỏ vào câu trả lời trong open-questions.md (/aw-clarify) thì mục đó phải có thật.
-    if (match(dong, /open-questions\.md[^Y]*REQ-[0-9]+/)) { p = substr(dong, RSTART, RLENGTH); match(p, /REQ-[0-9]+/); tro_oq[cur] = substr(p, RSTART, RLENGTH) }
+    # Câu hỏi REQ đứng trên: link "open-questions.md § Q-NNN" (dạng cũ: § REQ-NNN). Quan hệ câu
+    # hỏi ↔ REQ chỉ khai ở đây; danh sách REQ của mỗi câu hỏi suy ngược ở END.
+    if (match(dong, /open-questions\.md[^)]*(Q|REQ)-[0-9]+/)) { p = substr(dong, RSTART, RLENGTH); sub(/^open-questions\.md/, "", p); match(p, /(Q|REQ)-[0-9]+/); tro_oq[cur] = substr(p, RSTART, RLENGTH) }
     if (match(dong, /\[[^]]+\]/)) {
       nhan[cur] = substr(dong, RSTART + 1, RLENGTH - 2)
     } else {
@@ -389,36 +395,46 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
         }
       }
       if (t == "OPEN-QUESTION") {
-        if (!(c in co_muc))
-          loi(c ": gắn [OPEN-QUESTION] nhưng open-questions.md không có mục \"### " c "\". " \
-              "Gắn nhãn mà không hỏi ai thì nhãn vô nghĩa.")
-        else if (!(c in co_gia_dinh))
-          loi(c ": mục trong open-questions.md thiếu dòng \"Assumption:\". " \
-              "Không có giả định tạm thì phase sau không đi tiếp được.")
-        else if (!(c in muc_ch) && (c in muc_cu))
-          loi(c ": nhãn cũ (\"Mức chặn\" / \"Mức ảnh hưởng\") đã đổi thành \"Blocking: blocking | review-blocking | non-blocking\". " \
-              "chặn / toàn bộ thiết kế → blocking; chặn review → review-blocking; không chặn → non-blocking; cục bộ → NGƯỜI chọn.")
-        else if (!(c in muc_ch))
-          loi(c ": mục trong open-questions.md thiếu dòng \"Blocking:\" " \
-              "(blocking | review-blocking | non-blocking).")
-        else if (!(muc_ch[c] in mc_hop_le))
-          loi(c ": \"Blocking: " muc_ch[c] "\" không hợp lệ. Chỉ chấp nhận: blocking | review-blocking | non-blocking")
+        # Câu hỏi của REQ: link § Q-NNN; dạng cũ không link thì mục cùng mã REQ.
+        q = (c in tro_oq) ? tro_oq[c] : c
+        if (!(q in co_muc)) {
+          # giữ: CAP-require-02
+          if (c in tro_oq)
+            loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng không có mục \"### " q "\".")
+          else
+            loi(c ": gắn [OPEN-QUESTION] nhưng không trỏ tới câu hỏi nào — thêm [open-questions.md § Q-NNN](open-questions.md#q-nnn) " \
+                "vào dòng Source và mục \"### Q-NNN\" trong open-questions.md. Gắn nhãn mà không hỏi ai thì nhãn vô nghĩa.")
+        } else {
+          tro_mo[q] = tro_mo[q] ", " c
+          if (q in da_kiem) { dem_nhan[t]++; continue }
+          da_kiem[q] = 1
+          if (!(q in co_gia_dinh))
+            loi(q ": mục trong open-questions.md thiếu dòng \"Assumption:\". " \
+                "Không có giả định tạm thì phase sau không đi tiếp được.")
+          else if (!(q in muc_ch) && (q in muc_cu))
+            loi(q ": nhãn cũ (\"Mức chặn\" / \"Mức ảnh hưởng\") đã đổi thành \"Blocking: blocking | review-blocking | non-blocking\". " \
+                "chặn / toàn bộ thiết kế → blocking; chặn review → review-blocking; không chặn → non-blocking; cục bộ → NGƯỜI chọn.")
+          else if (!(q in muc_ch))
+            loi(q ": mục trong open-questions.md thiếu dòng \"Blocking:\" " \
+                "(blocking | review-blocking | non-blocking).")
+          else if (!(muc_ch[q] in mc_hop_le))
+            loi(q ": \"Blocking: " muc_ch[q] "\" không hợp lệ. Chỉ chấp nhận: blocking | review-blocking | non-blocking")
+        }
       }
       if (t == "FILE" && (c in tro_oq)) {
         q = tro_oq[c]
         if (!(q in co_muc))
           loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng không có mục \"### " q "\". " \
               "Câu trả lời của người phải được ghi ở đó (/aw-clarify).")
-        else if (tt_oq[q] != "answered" && q != c)
-          loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng mục đó chưa \"answered\".")
+        else tro_tl[q] = tro_tl[q] ", " c
       }
       dem_nhan[t]++
     }
 
-    # ---- open-questions.md phải khớp spec.md ----
+    # ---- open-questions.md phải khớp spec.md (quan hệ suy từ dòng Source của REQ) ----
     for (i = 1; i <= n_oq; i++) {
       q = ds_oq[i]; s = tt_oq[q]
-      if (!(q in da_gap)) {
+      if (q ~ /^REQ-/ && !(q in da_gap)) {
         loi("open-questions.md có mục \"### " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
         continue
       }
@@ -428,13 +444,25 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       }
       if (s == "answered" && !(q in tra_loi))
         loi(q ": open question ghi \"answered\" nhưng dòng \"Answer:\" còn trống.")
-      else if (s == "answered" && nhan[q] == "OPEN-QUESTION")
-        loi(q ": open question đã trả lời nhưng spec.md vẫn gắn [OPEN-QUESTION]. Đổi source label sang nơi chứa câu trả lời " \
+      else if (s == "answered" && (q in tro_mo))
+        loi(q ": open question đã trả lời nhưng " substr(tro_mo[q], 3) " vẫn gắn [OPEN-QUESTION]. Đổi source label sang nơi chứa câu trả lời " \
             "(vd `[FILE]` [open-questions.md § " q "](open-questions.md#" tolower(q) ") rồi chạy aw toc).")
-      else if (s == "open" && so_nguon[q] == 1 && nhan[q] != "OPEN-QUESTION")
-        loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng open question trong open-questions.md vẫn \"open\". " \
+      else if (s == "open" && (q in tro_tl))
+        loi(q ": " substr(tro_tl[q], 3) " đã gắn nguồn [FILE] trỏ tới câu trả lời nhưng open question vẫn \"open\". " \
             "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")
+      else if (s == "open" && !(q in tro_mo)) {
+        # giữ: CAP-require-02
+        if (q ~ /^REQ-/ && so_nguon[q] == 1)
+          loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng open question trong open-questions.md vẫn \"open\". " \
+              "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")
+        else if (q !~ /^REQ-/)
+          loi("open-questions.md: " q " còn \"open\" nhưng không REQ nào trong spec.md trỏ tới. Thêm " \
+              "[open-questions.md § " q "](open-questions.md#" tolower(q) ") vào dòng Source của REQ đứng trên giả định, hoặc xoá mục.")
+      }
     }
+    # giữ: CAP-require-02
+    if (dang_cu)
+      canh_bao("open-questions.md còn mục dạng cũ \"### REQ-NNN\" — vẫn đọc được; câu hỏi mới dùng \"### Q-NNN\" (một câu hỏi phủ được nhiều REQ).")
 
     # ---- luật theo loại việc ----
     if (loai == "bugfix") {
