@@ -12,6 +12,9 @@
 # Luật, cho từng token (tách theo khoảng trắng):
 #   - khớp jira_key_regex                         -> [JIRA]
 #   - URL có /browse/<mã khớp jira_key_regex>      -> [JIRA] <mã> — <URL>
+#   - URL issue / PR / MR                         -> [ISSUE] (khoá: URL bỏ query/fragment)
+#     GitLab mọi host: …/-/(issues|merge_requests)/N; GitHub: github.com hoặc host
+#     của origin (GitHub Enterprise), /<o>/<r>/(issues|pull)/N
 #   - URL khớp confluence_domains               -> [CONFLUENCE]
 #     (chưa khai confluence_domains: mọi URL còn lại -> [CONFLUENCE], kèm cảnh báo)
 #   - file có thật trong repo                -> [FILE]
@@ -77,6 +80,25 @@ kq_don 'rm -rf "$TMPD"'
 
 la_jira() { printf '%s\n' "$1" | awk -v re="$MJ" '{ exit !($0 ~ ("^(" re ")$")) }'; }
 
+# Host của origin (GitHub Enterprise / GitLab tự host): "git@h:o/r.git", "ssh://git@h:22/…", "https://h/…".
+HOST_GOC=$(git -C "$TOP" remote get-url origin 2>/dev/null | awk '{
+  s = $0
+  if (s ~ /^[A-Za-z][A-Za-z0-9+.-]*:\/\//) { sub(/^[^:]*:\/\//, "", s); sub(/\/.*$/, "", s) }
+  else if (s ~ /^[^\/]*:/) sub(/:.*$/, "", s)
+  else exit
+  sub(/^.*@/, "", s); sub(/:.*$/, "", s); print tolower(s) }')
+
+# la_issue <url đã bỏ query/fragment, bỏ "/" cuối> -> 0 nếu là issue / PR / MR:
+#   GitLab (mọi host, cả nhóm con): …/<nhóm>/<repo>/-/(issues|merge_requests)/N
+#   GitHub: github.com hoặc host của origin, /<o>/<r>/(issues|pull)/N
+la_issue() {
+  printf '%s\n' "$1" | awk -v hg="$HOST_GOC" '{
+    if ($0 ~ /^https?:\/\/[^\/]+\/([^\/]+\/)+-\/(issues|merge_requests)\/[0-9]+$/) exit 0
+    if ($0 !~ /^https?:\/\/[^\/]+\/[^\/]+\/[^\/]+\/(issues|pull)\/[0-9]+$/) exit 1
+    h = $0; sub(/^https?:\/\//, "", h); sub(/\/.*$/, "", h); h = tolower(h)
+    exit !(h == "github.com" || (hg != "" && h == hg)) }'
+}
+
 # ma_browse <url> -> mã issue sau "/browse/" (rỗng nếu không có)
 ma_browse() {
   printf '%s\n' "$1" | awk '{ i = index($0, "/browse/"); if (!i) exit; s = substr($0, i + 8); sub(/[\/?#].*$/, "", s); print s }'
@@ -110,6 +132,8 @@ if [ -n "$TRU" ]; then
         }
       } else if (t == "CONFLUENCE") {
         if (match(r, /https?:\/\/[^ \t)>]+/)) { s = substr(r, RSTART, RLENGTH); sub(/\/+$/, "", s); print "CONFLUENCE\t" s }
+      } else if (t == "ISSUE") {
+        if (match(r, /https?:\/\/[^ \t)>]+/)) { s = substr(r, RSTART, RLENGTH); sub(/[?#].*$/, "", s); sub(/\/+$/, "", s); print "ISSUE\t" s }
       } else if (t == "FILE") {
         n = split(r, a, /[ \t]+/); for (i = 1; i <= n; i++) if (a[i] != "") { s = a[i]; sub(/^\.\//, "", s); print "FILE\t" s; break }
       } else if (t == "HUMAN") {
@@ -138,6 +162,8 @@ for tk in $VAN; do
       ma=$(ma_browse "$t")
       if [ -n "$ma" ] && la_jira "$ma"; then
         printf 'JIRA\t%s\t- `[JIRA]` %s — %s\n' "$ma" "$ma" "$t" >> "$TMPD/nguon"
+      elif ui=$(printf '%s' "$t" | sed 's/[?#].*$//; s#/*$##') && la_issue "$ui"; then
+        printf 'ISSUE\t%s\t- `[ISSUE]` %s\n' "$ui" "$t" >> "$TMPD/nguon"
       else
         u=$(printf '%s' "$t" | sed 's#/*$##'); con=${u#*://}; khop=0
         if [ -z "$MC" ]; then
@@ -216,6 +242,6 @@ fi
 
 ra=$(in_nguon "$TMPD/nguon")
 [ -n "$ra" ] && printf '%s\n' "$ra"
-[ "$canh_bao_conf" = 1 ] && echo "CẢNH BÁO: conventions.md chưa khai confluence_domains — mọi URL không phải Jira được coi là [CONFLUENCE]. Người kiểm lại." >&2
+[ "$canh_bao_conf" = 1 ] && echo "CẢNH BÁO: conventions.md chưa khai confluence_domains — mọi URL không phải Jira hay issue được coi là [CONFLUENCE]. Người kiểm lại." >&2
 [ -z "$ra" ] && echo "Không có input mới." >&2
 exit 0

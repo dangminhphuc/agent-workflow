@@ -148,7 +148,7 @@ Trống = `[A-Z][A-Z0-9]*-[0-9]+`.
 
 ### `confluence_domains`
 Mẫu glob `miền[/đường-dẫn]` của Confluence, vd `wiki.cong-ty.vn *.atlassian.net/wiki`.
-URL khớp → `[CONFLUENCE]`. Trống: mọi URL không phải Jira đều là `[CONFLUENCE]` (có
+URL khớp → `[CONFLUENCE]`. Trống: mọi URL không phải Jira hay issue đều là `[CONFLUENCE]` (có
 cảnh báo).
 
 ## Durable knowledge

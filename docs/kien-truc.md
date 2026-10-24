@@ -53,6 +53,15 @@ URL GitHub vẫn lọt. Quyết trên **cả chuỗi**: một từ không nhận
 tách từng từ sẽ thành input rác và mất câu gốc. Chạy lại chỉ **gộp thêm**; `spec.md` ghi
 `based_on: intake.md` nên input mới làm spec stale.
 
+**Issue/PR/MR là nhãn riêng `[ISSUE]`**, không phải `[CONFLUENCE]`: trước đây chưa khai
+`confluence_domains` thì URL issue GitHub cũng thành `[CONFLUENCE]` và spec đi đọc bằng MCP Atlassian.
+Máy nhận theo **dạng đường dẫn**, không thêm khoá `conventions.md`: `…/-/(issues|merge_requests)/N`
+là đường riêng của GitLab nên nhận ở mọi host (cả GitLab tự host); `/<o>/<r>/(issues|pull)/N` thì
+quá chung, chỉ nhận ở `github.com` hoặc host của `origin` (GitHub Enterprise) — host khác rơi về
+luật cũ. Khoá so trùng là URL bỏ query/fragment (một issue, nhiều link comment = một nguồn).
+Checker (`intake`, `spec`) chỉ kiểm dạng URL, không kiểm host: nhãn đã qua máy gán, người sửa tay
+chịu trách nhiệm phần còn lại.
+
 **Nguồn sự thật của job type** là `intake.md`. Tiền tố branch chỉ gợi ý; lệch thì review chặn,
 không có ngoại lệ "ghi lý do" (ngoại lệ dễ ghi hơn sửa, tiền tố sẽ mất nghĩa). `aw rename` đổi
 branch, thư mục artifact, worktree trong một lệnh.

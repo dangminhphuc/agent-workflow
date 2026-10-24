@@ -11,7 +11,7 @@
 #   ### BR-BILLING-003: <tên>
 #   - Rule: <must / must not, kiểm được>
 #   - Scope: `<glob>` …
-#   - Source: `[CONFLUENCE|JIRA|FILE|HUMAN]` <định danh> (version: <phiên bản>)
+#   - Source: `[CONFLUENCE|JIRA|ISSUE|FILE|HUMAN]` <định danh> (version: <phiên bản>)
 #   - Quote: "<nguyên văn>"                  (chỉ [HUMAN])
 #   - Status: active | superseded by BR-…
 #   - Acceptance:
@@ -114,7 +114,7 @@ luat_nguon() {
   _lnh=$(printf '%s' "$_lsrc" | sed -n 's/^`*\[\([A-Z-]*\)\]`*.*/\1/p')
   _lcon=$(printf '%s' "$_lsrc" | sed 's/^`*\[[A-Z-]*\]`*[ \t]*//')
   case "$_lnh" in
-    JIRA|CONFLUENCE)
+    JIRA|CONFLUENCE|ISSUE)
       _lkey=$(printf '%s\n' "$_lcon" | awk '{ if (match($0, /https?:\/\/[^) ]+/)) print substr($0, RSTART, RLENGTH); else if (match($0, /[A-Z][A-Z0-9]*-[0-9]+/)) print substr($0, RSTART, RLENGTH) }')
       _lpb=$(awk -v k="$_lkey" '
         { sub(/\r$/, "") }
@@ -148,7 +148,7 @@ luat_nguon() {
           [ -n "$_lpb" ] || { echo "L|$2: nguồn [FILE] $_lp chưa commit trong repo — không có phiên bản"; return; }
           echo "S|\`[FILE]\` $_lcon (version: $_lpb)" ;;
       esac ;;
-    *) echo "L|$2: nguồn [${_lnh:-?}] không nâng được thành luật — chỉ [JIRA] [CONFLUENCE] [FILE] (kể cả lời người đã ghi trong intake.md / open-questions.md)" ;;
+    *) echo "L|$2: nguồn [${_lnh:-?}] không nâng được thành luật — chỉ [JIRA] [CONFLUENCE] [ISSUE] [FILE] (kể cả lời người đã ghi trong intake.md / open-questions.md)" ;;
   esac
 }
 
@@ -281,7 +281,7 @@ luat_loi_hinh_thuc() {
       END {
         split("Rule Scope Source Status Acceptance", kk, " ")
         for (i = 1; i <= 5; i++) if (!(kk[i] in co)) print f ": " id " thiếu \"" kk[i] ":\"" (kk[i] == "Acceptance" ? " (ít nhất một dòng \"  - …\")" : "")
-        if (src != "" && src !~ /\[(CONFLUENCE|JIRA|FILE|HUMAN)\]/) print f ": " id " — Source phải mang nhãn [CONFLUENCE] [JIRA] [FILE] [HUMAN]"
+        if (src != "" && src !~ /\[(CONFLUENCE|JIRA|ISSUE|FILE|HUMAN)\]/) print f ": " id " — Source phải mang nhãn [CONFLUENCE] [JIRA] [ISSUE] [FILE] [HUMAN]"
         if (src != "" && src !~ /\(version: [^)]+\)/) print f ": " id " — Source thiếu \"(version: …)\""
       }'
     case "$_lst" in

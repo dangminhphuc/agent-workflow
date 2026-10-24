@@ -253,6 +253,23 @@ dung "…URL có trong Input (bỏ anchor) → không cảnh báo" sh -c "! sh '
 viet_intake
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)'
 dung "[FILE] trỏ open-questions.md của việc → không cảnh báo nguồn ngoài intake" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
+# [ISSUE]: issue / PR / MR GitHub, GitLab — cần URL đúng dạng và Quote; so Input theo URL bỏ #comment
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[ISSUE]` [#12](https://github.com/o/r/issues/12#issuecomment-5)'
+thay "$F/intake.md" '- `[JIRA]` ABC-1' '- `[JIRA]` ABC-1
+- `[ISSUE]` https://github.com/o/r/issues/12'
+ky_vong 0 "[ISSUE] URL issue + Quote → cho qua" sh "$CHK" "$F"
+dung "…URL có trong Input (bỏ #comment) → không cảnh báo" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
+viet_intake
+dung "[ISSUE] URL không có trong Input → cảnh báo" sh -c "sh '$CHK' '$F' | grep -qF 'nguồn https://github.com/o/r/issues/12 không có trong'"
+dung "[ISSUE] .../issues/1 không khớp nhầm .../issues/12 trong Input" sh -c "sed 's#issues/12#issues/1#' '$F/spec.md' > '$F/s1' && mv '$F/s1' '$F/spec.md' && printf '%s\n' '## Input' '- \`[ISSUE]\` https://github.com/o/r/issues/12' >> '$F/intake.md' && sh '$CHK' '$F' | grep -qF 'nguồn https://github.com/o/r/issues/1 không có trong'"
+viet_intake
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[ISSUE]` https://github.com/o/r'
+ky_vong_ly_do 1 "chặn [ISSUE] không có URL issue / PR / MR" "…đúng lý do" 'REQ-001: nguồn \[ISSUE\] không có URL issue' sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
+- Quote:
+  > khách mở y thấy a' '- Source: `[ISSUE]` https://gitlab.com/g/r/-/issues/3'
+ky_vong_ly_do 1 "chặn [ISSUE] thiếu câu trích" "…đúng lý do" 'REQ-001: nguồn \[ISSUE\] thiếu câu trích' sh "$CHK" "$F"
+viet_spec
 viet_spec
 printf '# BRD\n\n## Hoàn tiền\n\nKhách được hoàn tiền trong vòng\n30 ngày   kể từ ngày thanh toán.\n> Phí: 1.5%% * số tiền (C:\\tmp\\n) [tối đa].\n' > "$R/docs/brd.md"
 quote_file() {
