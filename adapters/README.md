@@ -12,7 +12,7 @@ Thư mục `adapters/<id>/` gồm:
 | File | Vai trò |
 |---|---|
 | `build.sh` | `sh build.sh --out <thư-mục> [--force]` — khai `AD_ID`, `AD_TEN`, `AD_GOC`, chuẩn định dạng (`AD_LENH_FM`, `AD_*_KHOA`), các hook, rồi gọi `ad_sinh` |
-| `exclude` | Đường dẫn adapter sinh ra, mỗi dòng một mẫu (`/.claude/`). `aw init` thêm vào `.git/info/exclude` |
+| `exclude` | Đường dẫn adapter sinh ra, mỗi dòng một mẫu (`/.claude/commands/aw-*.md`). `aw init` thêm vào `.git/info/exclude` |
 | `README.md` | Biên dịch ra gì, cái gì không portable |
 
 **Toàn bộ việc sinh nằm trong `adapters/lib/common.sh` (`ad_sinh`)**: lệnh cho từng
@@ -139,9 +139,9 @@ phẩy): `ADAPTER="claude-code cursor"`. `aw init` exclude đường dẫn của
    gốc của agent, vd `.cursor`), source `adapters/lib/common.sh`, định nghĩa các hook
    (bảng trên) và chuẩn định dạng (`AD_LENH_FM`, `AD_*_KHOA` — mục "Chuẩn định dạng của agent"),
    rồi `ad_sinh "$@"`. Xem `adapters/cursor/build.sh` — chỉ có hook và chuẩn.
-2. Tạo `adapters/<id>/exclude` liệt kê đường dẫn adapter sinh ra. Chỉ exclude thư
-   mục adapter thật sự ghi vào, không cả thư mục gốc của agent nếu team hay commit
-   file khác trong đó (Cursor: `.cursor/rules/`, `hooks.json`).
+2. Tạo `adapters/<id>/exclude` liệt kê đúng các đường dẫn adapter sinh ra (file hoặc thư mục
+   riêng của engine, vd `/.claude/commands/aw-*.md`). Không exclude cả thư mục gốc của agent
+   (`.claude/`, `.cursor/`): team commit skill, subagent, settings, rules ở đó.
 3. Lời dặn agent chỉ gọi `aw …` và đọc mẫu/luật trong `.agent-workflow/.engine/`.
    Không nhúng luật vào hook.
 4. Với mỗi khả năng không dịch được (clean context, hook, MCP, cách gọi, checker

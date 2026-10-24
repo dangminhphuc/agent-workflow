@@ -260,15 +260,16 @@ Cursor (`cursor-agent`, 2026-10) không có tool gọi skill theo tên: với `u
    - Skill / subagent từ **plugin** hay cài cho cả máy (`~/.claude/skills/`): chép thư mục của nó
      vào `.claude/skills/` của repo. Máy chỉ nhận thứ nằm trong repo — máy khác, CI, người review
      cũng có đúng bản đó.
-2. Commit vào base. `aw init` exclude cả `/.claude/` (nơi adapter Claude Code sinh file), nên phải
-   thêm `-f`: `git add -f .claude/skills/go-senior .claude/agents/db-migrator.md`. File đã
-   commit thì sửa sau không cần `-f`; file **mới** thêm vào thư mục đó vẫn cần.
+2. Commit vào base: `git add .claude/skills/go-senior .claude/agents/db-migrator.md`. `aw init` chỉ
+   exclude file adapter tự sinh (`.claude/commands/aw-*.md`, subagent `independent-reviewer` và `*-checker`,
+   `.claude/skills/agent-workflow/`), không cần `-f`. Repo init từ bản cũ còn dòng `/.claude/` trong
+   `.git/info/exclude`: `aw doctor` báo, xoá dòng đó đi.
 3. Khai trong `conventions.md`, commit qua PR như mọi thay đổi quy ước:
    ```
    uses_implement: skill:go-senior agent:db-migrator
    ```
 4. Claude Code: cho phép gọi skill không cần hỏi, trong `.claude/settings.json` của repo (commit
-   bằng `-f`) hoặc cấu hình của máy — không có thì mỗi lần agent gọi skill, người phải bấm duyệt:
+   bình thường) hoặc cấu hình của máy — không có thì mỗi lần agent gọi skill, người phải bấm duyệt:
    ```json
    { "permissions": { "allow": ["Skill(go-senior)"] } }
    ```

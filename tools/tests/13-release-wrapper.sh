@@ -140,7 +140,7 @@ dung "…ghi version, checksums, config.sh vào .git/agent-workflow/; quy ước
   "grep -qx 2099.1.1 '$C7/version' && grep -q ' agent-workflow-2099.1.1.tar.gz' '$C7/checksums' && [ -f '$R7/docs/agent-workflow/conventions.md' ] && [ ! -f '$C7/conventions.md' ] && grep -q 'TEST_CMD=\"true\"' '$C7/config.sh'"
 dung "…engine vào cache theo version, có dấu sha256" sh -c "[ -f '$AWH/engine/2099.1.1/bin/aw-engine' ] && [ -s '$AWH/engine/2099.1.1/.aw-sha256' ]"
 dung "…sha ghim khớp SHA256SUMS của bản phát hành" sh -c "grep -qF \"\$(awk '\$2 == \"agent-workflow-2099.1.1.tar.gz\" { print \$1 }' '$MIR/2099.1.1/SHA256SUMS')\" '$C7/checksums'"
-dung "…exclude /.agent-workflow/ và /.claude/" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qx '/.claude/' '$R7/.git/info/exclude'"
+dung "…exclude /.agent-workflow/ và mẫu hẹp /.claude/commands/aw-*.md" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qxF '/.claude/commands/aw-*.md' '$R7/.git/info/exclude'"
 dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/aw-intake.md"
 dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)" "$GOC7"
 dung "…file sinh ra không lọt vào git status — chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R7' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
@@ -148,7 +148,7 @@ ky_vong 0 "aw guard pre → chuyển sang engine của bản clone (chưa có vi
 ky_vong 0 "aw guard post → như trên" aw7 guard post
 ky_vong 2 "aw approval → chuyển sang engine (thư mục không có → SAI THAM SỐ)" aw7 approval design "$TMP/khong-co"
 aw7 init >/dev/null 2>&1
-dung "init lại: không nhân đôi dòng exclude" bang "$(grep -cx '/.claude/' "$R7/.git/info/exclude")" 1
+dung "init lại: không nhân đôi dòng exclude" bang "$(grep -cxF '/.claude/commands/aw-*.md' "$R7/.git/info/exclude")" 1
 ky_vong 2 "init lại với version khác → SAI THAM SỐ (dùng aw upgrade)" aw7 init --version 2099.1.2
 dung "aw version in engine đang dùng" sh -c "cd '$R7' && AW_HOME='$AWH' sh '$ROOT/bin/aw' version 2>/dev/null | grep -q 'engine       2099.1.1'"
 ky_vong 0 "aw doctor: mọi mục ✓" aw7 doctor

@@ -219,7 +219,7 @@ thời gian từng phase, việc theo loại và lỗi lọt theo lớp ([roadma
 | Engine | `~/.agent-workflow/engine/<YYYY.M.N>/` | cache, tải khi cần | không |
 | **Quy ước repo** | `docs/agent-workflow/conventions.md` | cả team, sửa qua PR | **có** |
 | Cấu hình bản clone | `.git/agent-workflow/` (`config.sh`, `version`, `checksums`…) | từng bản clone, mọi worktree dùng chung | không |
-| Lệnh cho agent (sinh ra) | `.claude/`, `.cursor/`, `.agent-workflow/.engine/` | `aw` sinh lại | không (bị exclude) |
+| Lệnh cho agent (sinh ra) | `.claude/`, `.cursor/`, `.agent-workflow/.engine/` (phần aw sinh) | `aw` sinh lại | không (bị exclude) |
 
 ### 2.2. Bước 1 — cài `aw` (mỗi máy)
 
@@ -244,7 +244,7 @@ aw init --test-cmd "make test"     # thêm --adapter claude-code,cursor nếu te
 
 1. tải engine, kiểm và **ghim** sha256;
 2. tạo `.git/agent-workflow/` (`version`, `checksums`, `config.sh`, `archive/`, `journal/`);
-3. thêm `/.agent-workflow/`, `/docs/sdlc/` và thư mục adapter (`/.claude/`, `/.cursor/`) vào `.git/info/exclude`;
+3. thêm `/.agent-workflow/`, `/docs/sdlc/` và đường dẫn adapter tự sinh (`.claude/commands/aw-*.md`, `.claude/agents/…`, `.claude/skills/agent-workflow/`, tương tự `.cursor/`) vào `.git/info/exclude`;
 4. sinh lệnh `/aw-*` cho agent ở main checkout;
 5. repo chưa có quy ước → tạo `docs/agent-workflow/conventions.md` từ mẫu (**không bao giờ ghi
    đè** file đã có).
@@ -354,7 +354,7 @@ Không có hook, "agent không tick" chỉ là lời dặn. Thêm vào `.claude/
 
 Hai hook phải cùng matcher. Bạn tick đúng lúc agent đang chạy một lệnh dài thì tick bị bỏ — tick
 lại. Cursor: [`adapters/cursor/README.md`](../adapters/cursor/README.md#approval-guard).
-`.claude/` bị exclude nên commit file này bằng `git add -f`.
+`.claude/settings.json` không bị exclude: commit như file thường (repo init từ bản cũ: xem `aw doctor`, xoá dòng `/.claude/` trong `.git/info/exclude`).
 
 ### 2.8. Bước 7 — luật, skill, subagent của team cho từng phase (tuỳ chọn)
 
@@ -372,7 +372,7 @@ rules_implement: docs/coding-style.md src/api/ARCHITECTURE.md
 uses_implement: skill:go-senior agent:db-migrator
 ```
 
-Điều kiện: file **đã commit vào base** (`.claude/` bị exclude → `git add -f`); skill không có
+Điều kiện: file **đã commit vào base** (repo init từ bản cũ còn dòng `/.claude/` trong `.git/info/exclude` thì `aw doctor` báo — xoá dòng đó); skill không có
 `disable-model-invocation: true`; tên không có `:` (skill của plugin phải chép vào repo). Claude
 Code: cho phép gọi không hỏi bằng `{"permissions": {"allow": ["Skill(go-senior)"]}}`. Kiểm:
 `aw conventions check`, `aw uses implement`. Chi tiết: [README § 4](../README.md#4-skill-subagent-của-team-cho-từng-phase-tuỳ-chọn).

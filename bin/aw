@@ -432,6 +432,12 @@ cmd_doctor() {
     for _p in $_ds; do
       grep -qxF "$_p" "$_ex" 2>/dev/null && co "info/exclude có $_p" || khong "info/exclude thiếu $_p — chạy: aw init"
     done
+    # Dòng exclude rộng engine cũ từng ghi: giấu cả file team (skill, agent, settings). Chỉ cảnh báo — không tự sửa file của người dùng.
+    for _p in /.claude/ /.cursor/commands/ /.cursor/agents/; do
+      grep -qxF "$_p" "$_ex" 2>/dev/null || continue
+      case " $_ds " in *" $_p "*) continue ;; esac
+      echo "  ! info/exclude còn dòng cũ $_p — giấu cả file của team (git add -f mới thêm được). Xoá dòng đó khỏi $_ex (aw init đã thêm mẫu hẹp thay thế)"
+    done
     # Dấu build adapter ở worktree hiện tại (adapter-build.sh ghi "<id> <version>").
     _dau="$AW_REPO/.agent-workflow/.adapters"
     echo "Adapter ở worktree này ($_ad)"

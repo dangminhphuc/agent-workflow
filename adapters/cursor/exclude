@@ -1,5 +1,8 @@
 # Đường dẫn adapter này sinh ra trong repo đích — aw init thêm vào .git/info/exclude.
-# Không exclude cả /.cursor/: team hay commit .cursor/rules, .cursor/hooks.json, .cursor/mcp.json.
-/.cursor/commands/
-/.cursor/agents/
+# Không exclude cả /.cursor/: team hay commit .cursor/rules, .cursor/hooks.json, .cursor/mcp.json,
+# cũng như lệnh / subagent riêng trong .cursor/commands, .cursor/agents.
+/.cursor/commands/aw-*.md
+/.cursor/agents/independent-reviewer.md
+/.cursor/agents/spec-checker.md
+/.cursor/agents/design-checker.md
 /.cursor/skills/agent-workflow/

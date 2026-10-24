@@ -114,17 +114,23 @@ ky_vong 2 "init --adapter rỗng → SAI THAM SỐ" awd "$R10" init --version "$
 ky_vong 0 "aw init --adapter claude-code,cursor" awd "$R10" init --version "$VDEV" --test-cmd true --adapter claude-code,cursor
 dung "…config.sh ghi ADAPTER=\"claude-code cursor\"" grep -qx 'ADAPTER="claude-code cursor"' "$C10/config.sh"
 dung "…exclude có đường dẫn của MỌI adapter" sh -c \
-  "for p in /.agent-workflow/ /.claude/ /.cursor/commands/ /.cursor/agents/ /.cursor/skills/agent-workflow/; do grep -qxF \"\$p\" '$R10/.git/info/exclude' || exit 1; done"
+  "for p in /.agent-workflow/ /.claude/commands/aw-*.md /.claude/agents/independent-reviewer.md /.claude/skills/agent-workflow/ /.cursor/commands/aw-*.md /.cursor/agents/spec-checker.md /.cursor/skills/agent-workflow/; do grep -qxF \"\$p\" '$R10/.git/info/exclude' || exit 1; done"
 dung "…sinh cả hai bộ ở checkout chính" sh -c "[ -f '$R10/.claude/commands/aw-intake.md' ] && [ -f '$R10/.cursor/commands/aw-intake.md' ] && [ -f '$R10/.cursor/agents/independent-reviewer.md' ]"
 dung "…cả hai bộ giống hệt build riêng (không ảnh hưởng nhau)" sh -c "diff -r '$R10/.claude' '$TMP/doi-chieu-that/claude-code/.claude' && diff -r '$R10/.cursor' '$TMP/doi-chieu-that/cursor/.cursor'"
 dung "…dấu build ghi cả hai, đúng version" bang "$(cat "$R10/.agent-workflow/.adapters")" "claude-code $VDEV
 cursor $VDEV"
 dung "…không commit gì; cây chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R10' rev-parse HEAD)\" = '$GOC10' ] && [ \"\$(git -C '$R10' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 ky_vong 0 "init lại: cùng tập adapter, khác thứ tự/cách viết → không coi là đổi" awd "$R10" init --adapter "cursor claude-code"
-dung "…không nhân đôi dòng exclude" bang "$(grep -cxF '/.cursor/agents/' "$R10/.git/info/exclude")" 1
+dung "…không nhân đôi dòng exclude" bang "$(grep -cxF "/.cursor/agents/spec-checker.md" "$R10/.git/info/exclude")" 1
 ky_vong 2 "init --adapter khác tập trong config.sh → SAI THAM SỐ (sửa config.sh)" awd "$R10" init --adapter cursor
 dung "…config.sh giữ nguyên" grep -qx 'ADAPTER="claude-code cursor"' "$C10/config.sh"
 ky_vong 0 "aw doctor: mọi mục ✓ với hai adapter" awd "$R10" doctor
+dung "…doctor không cảnh báo dòng exclude cũ khi chỉ có mẫu hẹp" sh -c "cd '$R10' && ! AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q dòng cũ"
+printf '/.claude/\n' >> "$R10/.git/info/exclude"
+ky_vong 0 "doctor: dòng /.claude/ cũ trong exclude → chỉ cảnh báo, không ✗" awd "$R10" doctor
+dung "…cảnh báo nêu dòng cũ và cách xoá" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q '! info/exclude còn dòng cũ /.claude/ .*Xoá dòng đó'"
+ky_vong 0 "init lại không tự sửa exclude của người dùng" awd "$R10" init
+grep -vxF /.claude/ "$R10/.git/info/exclude" > "$R10/.git/exclude.tmp"; mv "$R10/.git/exclude.tmp" "$R10/.git/info/exclude"
 dung "…liệt kê từng adapter của worktree" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q '✓ cursor (engine $VDEV)'"
 
 W10=$(awd "$R10" worktree new feature hai-agent --create --base main 2>/dev/null)
