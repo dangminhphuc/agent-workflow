@@ -9,6 +9,9 @@
 #   td_tinh <dir>          -> dòng P/R/B/M (cần nạp trước md.sh, cross-check.sh; HERE = tools/)
 #   td_tg <giây>           -> 2h10m | 25m | 40s | — (rỗng)
 #   td_tk <số>             -> 999 | 82k | 1.2M | — (rỗng)
+#   td_md_bang <dir>       -> bảng Markdown (header, dòng phase, **Total**); rỗng nếu không có dữ liệu
+#   td_md_file <dir>       -> nội dung progress.md (bảng, Gantt, pie, khối aw-progress v1)
+#   (td_md_*: cần như td_tinh; khối sai dạng: TD_CANH_BAO=1)
 #
 # Sự kiện (tab giữa cột; cũng là dòng trong khối "<!-- aw-progress v1" … "-->" của progress.md):
 #   phases  <máy>  <ts>  <phase>
@@ -157,3 +160,104 @@ td_tinh() {
   ' "$_td_tm"
   rm -f "$_td_tm"
 }
+
+# Chương trình awk dựng Markdown từ dòng td_tinh (ARGV[1]); che=file thêm phần còn lại của progress.md,
+# ARGV[2] = sự kiện đã sắp (khối aw-progress v1). Ô không có dữ liệu = trống.
+TD_AWK_MD='
+function o(c, v) {
+  if (v == "") return ""
+  if (c == 4 || c == 5) return td_tg(v)
+  if (c == 6 || c == 7) return v
+  return td_tk(v)
+}
+function dong(a, b, x,  c, s) {
+  s = "| " a " |" (b == "" ? " |" : " " b " |")
+  for (c = 4; c <= 11; c++) s = s (x[c] == "" ? " |" : " " x[c] " |")
+  return s
+}
+FILENAME == ARGV[1] && $1 == "P" {
+  np++; ph[np] = $2; tt[np] = $3
+  if ($3 != "pending" && $3 != "skipped") co_du = 1
+  for (c = 4; c <= 11; c++) {
+    v[np, c] = $c
+    if ($c != "") { co_du = 1; tg[c] += $c; co[c] = 1 }
+  }
+  if ($8 + $9 > 0) { nk++; kp[nk] = $2; kv[nk] = sprintf("%.1f", ($8 + $9) / 1000) }
+  next
+}
+FILENAME == ARGV[1] && $1 == "R" { nr++; rp[nr] = $2; rb[nr] = $3; re[nr] = $4; rk[nr] = $5; next }
+FILENAME == ARGV[1] && $1 == "B" { nb++; bp[nb] = $2; be[nb] = $3; next }
+FILENAME == ARGV[1] && $1 == "M" { hien = $2; cuoi = $3; may = $4; moc = $5; luot = $6; next }
+FILENAME == ARGV[2] { ns++; sk[ns] = $0; next }
+END {
+  if (che == "bang" && !co_du) exit
+  nhan["done"] = "✓ done"; nhan["active"] = "▶ active"; nhan["skipped"] = "— skipped"; nhan["pending"] = "· pending"
+  if (che == "file") {
+    gsub(/,/, ", ", may)
+    print "# Progress — " viec
+    print ""
+    print "- Current phase: " (hien != "" ? "**" hien "**" : "—")
+    print "- Updated: " (cuoi != "" ? substr(cuoi, 1, 10) " " substr(cuoi, 12, 5) " UTC" : "—")
+    print "- Machines: " (may != "" ? may : "—")
+    print ""
+  }
+  print "| Phase | Status | Active | Wall | Turns | Blocked checks | Tokens in | Tokens out | Cache read | Cache write |"
+  print "|---|---|---|---|---|---|---|---|---|---|"
+  for (i = 1; i <= np; i++) {
+    for (c = 4; c <= 11; c++) x[c] = o(c, v[i, c])
+    print dong(ph[i], nhan[tt[i]], x)
+  }
+  for (c = 4; c <= 11; c++) x[c] = co[c] ? o(c, tg[c] "") : ""
+  print dong("**Total**", "", x)
+  if (che != "file") exit
+  print ""
+  print "<!-- Active = tổng thời gian các lượt (prompt → agent dừng). Wall = từ lúc bắt đầu phase tới khi phase kế tiếp bắt đầu (phase đang làm: tới sự kiện cuối). -->"
+  if (moc == 1 && luot == 0) {
+    print ""
+    print "> Chưa ghi được lượt nào — chỉ có cột Wall. Trên Claude Code, cài hook theo"
+    print "> `adapters/claude-code/README.md` § Hook."
+  }
+  if (nr > 0) {
+    print ""
+    print "```mermaid"
+    print "gantt"
+    print "  title Timeline"
+    print "  dateFormat X"
+    print "  axisFormat %d/%m %H:%M"
+    for (i = 1; i <= np; i++) {
+      p = ph[i]; dau = 1
+      for (j = 1; j <= nr; j++) if (rp[j] == p) {
+        if (dau) { print "  section " p; dau = 0 }
+        print "  " p " :" rk[j] ", " rb[j] ", " re[j]
+      }
+      if (!dau) for (j = 1; j <= nb; j++) if (bp[j] == p) print "  blocked :milestone, crit, " be[j] ", " be[j]
+    }
+    print "```"
+  }
+  if (nk > 0) {
+    print ""
+    print "```mermaid"
+    print "pie title Tokens by phase (k, in + out)"
+    for (i = 1; i <= nk; i++) print "  \"" kp[i] "\" : " kv[i]
+    print "```"
+  }
+  print ""
+  print "<!-- aw-progress v1"
+  for (i = 1; i <= ns; i++) print sk[i]
+  print "-->"
+}'
+
+# _td_md <che: bang|file> <dir>
+_td_md() {
+  _td_mm=$(mktemp "${TMPDIR:-/tmp}/aw-tdm.XXXXXX" 2>/dev/null) || { _td_mm="${TMPDIR:-/tmp}/aw-tdm.$$"; : > "$_td_mm" || return 1; }
+  _td_ms="$_td_mm.sk"
+  td_tinh "$2" > "$_td_mm"
+  _td_cb=$TD_CANH_BAO
+  if [ "$1" = file ]; then td_su_kien "$2" | LC_ALL=C sort > "$_td_ms"; else : > "$_td_ms"; fi
+  TD_CANH_BAO=$_td_cb
+  awk -F'\t' -v che="$1" -v viec="$(basename "$(CDPATH= cd -- "$2" 2>/dev/null && pwd || echo "$2")")" \
+    "$TD_AWK_DD$TD_AWK_MD" "$_td_mm" "$_td_ms"
+  rm -f "$_td_mm" "$_td_ms"
+}
+td_md_bang() { _td_md bang "$1"; }
+td_md_file() { _td_md file "$1"; }

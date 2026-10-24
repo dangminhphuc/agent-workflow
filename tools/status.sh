@@ -2,9 +2,11 @@
 # Tiến độ của một việc: từng phase — trạng thái, thời gian tương tác, thời gian đồng hồ, lượt,
 # check chặn, token. Suy từ journal (phases.tsv, turns.tsv, checks.tsv), không do agent tự khai.
 #
-#   aw status <thư-mục-feature>
+#   aw status <thư-mục-feature>            in bảng ra terminal
+#   aw status <thư-mục-feature> --write    ghi <thư-mục-feature>/progress.md (aw check ĐẠT gọi)
+#   aw status <thư-mục-feature> --table    chỉ in bảng Markdown (rỗng nếu chưa có dữ liệu)
 #
-# Số liệu: tools/lib/progress.sh (td_tinh). Chỉ đọc, không sửa file nào.
+# Số liệu: tools/lib/progress.sh (td_tinh, td_md_bang, td_md_file). Chỉ --write sửa file.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -12,17 +14,22 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai status.sh \
   "0=XONG — đã in tiến độ (--write: đã ghi progress.md)" \
+  "1=KHÔNG GHI ĐƯỢC — không ghi được progress.md, xem thông báo phía trên" \
   "2=SAI THAM SỐ — xem thông báo phía trên"
 
-D=""
+DUNG="Dùng: aw status <thư-mục-feature> [--write | --table]"
+D=""; CHE=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    -*) echo "LỖI: cờ lạ \"$1\". Dùng: aw status <thư-mục-feature>" >&2; exit 2 ;;
-    *) if [ -n "$D" ]; then echo "LỖI: chỉ nhận một thư mục feature. Dùng: aw status <thư-mục-feature>" >&2; exit 2; fi
+    --write|--table)
+      if [ -n "$CHE" ]; then echo "LỖI: chỉ dùng một trong --write, --table. $DUNG" >&2; exit 2; fi
+      CHE=${1#--}; shift ;;
+    -*) echo "LỖI: cờ lạ \"$1\". $DUNG" >&2; exit 2 ;;
+    *) if [ -n "$D" ]; then echo "LỖI: chỉ nhận một thư mục feature. $DUNG" >&2; exit 2; fi
        D=$1; shift ;;
   esac
 done
-[ -n "$D" ] || { echo "Dùng: aw status <thư-mục-feature>" >&2; exit 2; }
+[ -n "$D" ] || { echo "$DUNG" >&2; exit 2; }
 [ -d "$D" ] || { echo "LỖI: không có thư mục \"$D\"." >&2; exit 2; }
 
 . "$HERE/lib/md.sh"
@@ -31,10 +38,22 @@ done
 
 TM=$(mktemp "${TMPDIR:-/tmp}/aw-status.XXXXXX" 2>/dev/null) || { TM="${TMPDIR:-/tmp}/aw-status.$$"; : > "$TM" || exit 2; }
 kq_don 'rm -f "$TM"'
+canh_bao() {
+  if [ "$TD_CANH_BAO" = 1 ]; then
+    echo "CẢNH BÁO: khối aw-progress v1 trong $D/progress.md sai dạng — bỏ qua, chỉ tính journal máy này." >&2
+  fi
+}
+case "$CHE" in
+  table) td_md_bang "$D"; canh_bao; exit 0 ;;
+  write)
+    # Dựng hết trước rồi mới ghi: khối của máy khác đọc từ chính progress.md cũ.
+    td_md_file "$D" > "$TM"; canh_bao
+    if ! cat "$TM" > "$D/progress.md"; then echo "LỖI: không ghi được $D/progress.md." >&2; exit 1; fi
+    echo "Đã ghi $D/progress.md"
+    exit 0 ;;
+esac
 td_tinh "$D" > "$TM"
-if [ "$TD_CANH_BAO" = 1 ]; then
-  echo "CẢNH BÁO: khối aw-progress v1 trong $D/progress.md sai dạng — bỏ qua, chỉ tính journal máy này." >&2
-fi
+canh_bao
 
 # LC_ALL=C: độ rộng ô = số byte trừ byte nối UTF-8 (mawk đếm byte).
 LC_ALL=C awk -F'\t' -v viec="$(basename "$(CDPATH= cd -- "$D" && pwd)")" "$TD_AWK_DD"'

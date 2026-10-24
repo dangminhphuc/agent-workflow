@@ -37,7 +37,7 @@
 #   aw ready <feature-dir> [--no-test]     worktree sẵn sàng chưa (test xanh trên base…), bước tiếp
 #   aw task start|done|next <feature-dir> [TSK-NNN] [--manual "<bằng chứng>"]   trạng thái task do máy giữ
 #   aw journal [report [<file export>…]] | aw journal add <layer> "<mô tả>" | aw journal export <file>   nhật ký thất bại của harness
-#   aw status <feature-dir>                tiến độ từng phase: trạng thái, thời gian, lượt, check chặn, token (từ journal)
+#   aw status <feature-dir> [--write|--table]   tiến độ từng phase: trạng thái, thời gian, lượt, check chặn, token (từ journal); --write ghi progress.md
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
 #   aw approvals [--global]               mọi ô duyệt chờ người, kèm link tới artifact (lệnh /aw-approvals gọi)

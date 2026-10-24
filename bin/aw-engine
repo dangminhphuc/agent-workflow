@@ -8,7 +8,7 @@
 #   aw-engine feature [name]
 #   aw-engine input [--skip <intake.md>] <args|->
 #   aw-engine pending <feature-dir>
-#   aw-engine status <feature-dir>                tiến độ từng phase (thời gian, lượt, check chặn, token) từ journal
+#   aw-engine status <feature-dir> [--write|--table]  tiến độ từng phase (thời gian, lượt, check chặn, token) từ journal
 #   aw-engine rules <phase>
 #   aw-engine uses <phase>                        skill / subagent của repo mà phase phải gọi
 #   aw-engine knowledge spec|design <feature-dir> kiến thức bền phase phải đọc (luật BR-, ADR, tài liệu module)
@@ -102,6 +102,10 @@ case "$LENH" in
     # không đổi kết quả chấm — chỉ báo.
     if [ "$_ma" = 0 ]; then
       . "$T/lib/md.sh"; . "$T/lib/adapter.sh"; . "$T/lib/artifact.sh"
+      # Tiến độ (tools/status.sh) đi cùng commit artifact; lỗi không đổi kết quả chấm.
+      if [ "${AW_JOURNAL:-1}" != 0 ]; then
+        sh "$T/status.sh" "$1" --write >/dev/null 2>&1 || echo "CẢNH BÁO: không sinh được $1/progress.md — chạy aw status $1 --write để xem lỗi." >&2
+      fi
       AR_DA_COMMIT=""
       if ar_commit "$1" "chore(sdlc): $(basename "$1") $ten"; then
         [ -z "$AR_DA_COMMIT" ] || echo "Artifact: đã commit $TM_VIEC/$(basename "$1")/ (chore(sdlc): $(basename "$1") $ten)" >&2

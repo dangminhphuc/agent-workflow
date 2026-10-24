@@ -742,6 +742,7 @@ Tất cả nằm ở `<worktree>/docs/sdlc/<tên-branch>/` (việc tạo bằng 
 | `review.md` | review | reviewer clean context | **có được merge không** | ship | xác nhận; ký `Security reviewer` khi cần |
 | `merge-request.md` | ship | agent | tiêu đề + mô tả MR | `aw ship create` | xác nhận trước khi gửi |
 | `ship.md` | ship | **máy** | MR nào, trạng thái | `aw ship sweep` | — |
+| `progress.md` | mọi `aw check` ĐẠT | **máy** (`aw status --write`) | tiến độ từng phase: thời gian, lượt, check chặn, token | người, reviewer | xem; không sửa tay (§9 Xem tiến độ của việc) |
 
 **Mục lục và link.** Artifact agent viết có `## Contents` ngay trước heading `##`/`###` đầu
 tiên, và mọi tham chiếu sang artifact khác là link tới mục, vd
@@ -975,6 +976,28 @@ aw journal report <file> [<file>…]          # tổng hợp trên các file exp
 
 Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành luật máy. Máy không tự thêm luật.
 
+### Xem tiến độ của việc
+
+Mỗi lệnh phase ghi mốc bắt đầu phase vào nhật ký máy này; `aw check` ghi lần chấm. Từ đó máy suy ra,
+cho từng phase: trạng thái, thời gian tương tác, thời gian đồng hồ, số lượt, số lần check chặn, token.
+Agent không tự khai số nào.
+
+```sh
+aw status <dir>             # bảng tiến độ ra terminal
+aw status <dir> --write     # ghi <dir>/progress.md (bảng, biểu đồ Gantt và pie Mermaid)
+aw status <dir> --table     # chỉ bảng Markdown, để dán vào chỗ khác
+```
+
+- Mỗi lần `aw check` ĐẠT, máy tự sinh lại `progress.md` và commit cùng artifact. Giữa hai lần check,
+  xem bằng `aw status <dir>`. Sinh file lỗi thì check vẫn ĐẠT, chỉ in `CẢNH BÁO`.
+- Làm tiếp việc ở máy khác: số liệu của máy cũ nằm trong khối `<!-- aw-progress v1 … -->` cuối
+  `progress.md`, máy mới giữ nguyên và cộng vào. Đừng sửa tay khối này; sai dạng thì máy bỏ cả khối,
+  chỉ tính nhật ký máy đang chạy.
+- Số lượt và token chỉ có trên Claude Code, khi đã cài ba hook `aw journal _turn …` theo
+  [`adapters/claude-code/README.md` § Hook đo lượt và token](../adapters/claude-code/README.md#hook-đo-lượt-và-token).
+  Chưa cài thì chỉ có cột Wall (thời gian đồng hồ), và `progress.md` có một dòng nhắc.
+- `AW_JOURNAL=0`: không ghi nhật ký, `aw check` không sinh `progress.md`.
+
 ---
 
 ## 10. Tham chiếu lệnh
@@ -1015,6 +1038,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw adr check` · `aw rule check` | kiểm ADR · luật nghiệp vụ |
 | `aw rules <phase>` · `aw uses <phase>` | xem luật/skill khai cho phase |
 | `aw adapter build [a,b] [--force]` | sinh lại lệnh cho agent |
+| `aw status <dir> [--write\|--table]` | tiến độ từng phase; `--write` ghi `progress.md` |
 | `aw journal` · `aw journal add <lớp> "…"` · `aw journal export <file>` · `aw journal report <file>…` | harness journal; export / report trên file để gom nhiều máy |
 
 `<dir>` là thư mục artifact của việc: `docs/sdlc/<tên-branch>`.

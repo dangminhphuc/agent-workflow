@@ -176,7 +176,9 @@ dung "…thêm /docs/sdlc/ vào .git/info/exclude" grep -qx '/docs/sdlc/' "$RC/.
 dung "…báo đã commit" sh -c "printf '%s' \"\$1\" | grep -q 'Artifact: đã commit docs/sdlc/feat_x/'" _ "$OUTC"
 g reset -q; rm -f "$R/src/nhap.txt"
 H1=$(dau)
-ky_vong 0 "check lại khi artifact không đổi → ĐẠT" sh "$AWE" check spec "$F"
+# AW_JOURNAL=0: mỗi check ĐẠT có journal thêm một dòng checks.tsv nên progress.md đổi thật (SP20);
+# ca này kiểm ar_commit không tạo commit rỗng khi thư mục việc không đổi.
+ky_vong 0 "check lại khi artifact không đổi → ĐẠT" env AW_JOURNAL=0 sh "$AWE" check spec "$F"
 dung "…không tạo commit rỗng" bang "$(dau)" "$H1"
 dung "commit artifact không đổi dấu vân tay code (Tree)" bang "$(vt)" "$VT0"
 dung "…commit cả thư mục việc, không chỉ file của phase" sh -c "git -C '$R' ls-files --error-unmatch docs/sdlc/feat_x/review.md docs/sdlc/feat_x/test-results.md"

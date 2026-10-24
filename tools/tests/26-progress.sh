@@ -227,4 +227,98 @@ mkdir -p "$W26/docs/sdlc/feat_x"
 ky_vong 0 "aw status qua wrapper → XONG" awd "$W26" status docs/sdlc/feat_x
 dung "…in Phase hiện tại: plan (từ aw feature --phase plan ở trên)" sh -c "cd '$W26' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' status docs/sdlc/feat_x 2>&1 | grep -q 'Phase hiện tại: plan'"
 
+
+
+# ---------------------------------------------------------------- progress.md
+nhom "progress.md (aw status --write, --table) và aw check ĐẠT"
+# Cùng dữ liệu C1/D1 ở trên. PM = progress.md của ca.
+PM1="$D1/progress.md"
+ky_vong 0 "--write → XONG" tst "$C1" "$D1" --write
+dung "…dòng tiêu đề # Progress — feat_p" grep -qxF '# Progress — feat_p' "$PM1"
+dung "…- Current phase: **plan**" grep -qxF -- '- Current phase: **plan**' "$PM1"
+dung "…- Updated = giờ sự kiện cuối" grep -qxF -- '- Updated: 2026-10-23 09:50 UTC' "$PM1"
+dung "…- Machines: may-a" grep -qxF -- '- Machines: may-a' "$PM1"
+dung "…header bảng tiếng Anh" grep -qxF '| Phase | Status | Active | Wall | Turns | Blocked checks | Tokens in | Tokens out | Cache read | Cache write |' "$PM1"
+dung "…| spec | ✓ done | đủ số" grep -qxF '| spec | ✓ done | 18m | 2h10m | 1 | 2 | 240k | 21k | 1.2M | 90k |' "$PM1"
+dung "…| design | — skipped | ô trống" grep -qxF '| design | — skipped | | | | | | | | |' "$PM1"
+dung "…| plan | ▶ active |" grep -q '^| plan | ▶ active |' "$PM1"
+dung "…| implement | · pending |" grep -q '^| implement | · pending |' "$PM1"
+dung "…| **Total** | cộng mọi phase" grep -qxF '| **Total** | | 33m | 2h50m | 3 | 2 | 440k | 35k | 2.1M | 160k |' "$PM1"
+dung "…2 khối mermaid" bang "$(grep -c '^```mermaid$' "$PM1")" 2
+dung "…gantt, dateFormat X" sh -c "grep -qx 'gantt' '$PM1' && grep -qx '  dateFormat X' '$PM1'"
+dung "…thanh spec :done (epoch đầu, cuối)" grep -qxF '  spec :done, 1792740600, 1792748400' "$PM1"
+dung "…thanh plan :active" grep -qxF '  plan :active, 1792748400, 1792749000' "$PM1"
+dung "…đúng 2 milestone crit" bang "$(grep -c ':milestone, crit,' "$PM1")" 2
+dung "…milestone nằm trong section spec" bang "$(awk '/^  section /{ s = $2 } /:milestone, crit,/{ print s }' "$PM1" | sort -u)" spec
+dung "…không section cho phase không chạy" sh -c "! grep -q 'section design' '$PM1'"
+dung "…pie có 3 lát (intake, spec, plan)" bang "$(grep -c '^  "[a-z]*" : ' "$PM1")" 3
+dung "…lát intake = (in+out)/1000" grep -qxF '  "intake" : 85.0' "$PM1"
+dung "…khối aw-progress v1 có sự kiện máy này" sh -c "awk '/^<!-- aw-progress v1\$/{t=1;next} /^-->\$/{t=0} t' '$PM1' | grep -q \"^phases	may-a	\""
+dung "…khối kết thúc bằng -->" bang "$(tail -n 1 "$PM1")" "-->"
+dung "…không nhắc cài hook" sh -c "! grep -q 'Chưa ghi được lượt nào' '$PM1'"
+cp "$PM1" "$TMP/pm1.lan1"
+tst "$C1" "$D1" --write >/dev/null 2>&1
+dung "--write lần hai → giống hệt từng byte" cmp -s "$PM1" "$TMP/pm1.lan1"
+
+# Máy khác: thêm một lượt của may-khac vào khối, sinh lại.
+C7="$TMP/td7"; mkdir -p "$C7/journal" "$C7/v"; cp -R "$C1/journal" "$C7/"; cp -R "$D1" "$C7/v/"; D7="$C7/v/feat_p"
+awk -v d="$(tsv 'turns|may-khac|2026-10-23T09:42:00Z|2026-10-23T09:43:00Z|plan|subagent|0|1000|0|0|0')" \
+  '{ print } $0 == "<!-- aw-progress v1" { print d }' "$PM1" > "$D7/progress.md"
+tst "$C7" "$D7" --write >/dev/null 2>&1
+dung "khối có dòng may-khac → --write giữ dòng đó" grep -q "^turns	may-khac	" "$D7/progress.md"
+dung "…Total Tokens in tăng 1000 (441k)" bang "$(grep '^| \*\*Total\*\*' "$D7/progress.md" | cut -d'|' -f8)" " 441k "
+dung "…Machines: may-a, may-khac" grep -qxF -- '- Machines: may-a, may-khac' "$D7/progress.md"
+: > "$C7/journal/phases.tsv"; : > "$C7/journal/turns.tsv"; : > "$C7/journal/checks.tsv"
+tst "$C7" "$D7" --write >/dev/null 2>&1
+dung "máy này rỗng journal → dòng may-khac vẫn còn" grep -q "^turns	may-khac	" "$D7/progress.md"
+dung "…dòng máy này trong khối bỏ (lấy lại từ journal rỗng)" sh -c "! grep -q '	may-a	' '$D7/progress.md'"
+dung "…Total Tokens in = 1k" bang "$(grep '^| \*\*Total\*\*' "$D7/progress.md" | cut -d'|' -f8)" " 1k "
+
+# Khối sai dạng: cảnh báo, sinh lại chỉ từ journal máy này.
+C8="$TMP/td8"; mkdir -p "$C8/v"; cp -R "$C1/journal" "$C8/"; cp -R "$D1" "$C8/v/"; D8="$C8/v/feat_p"
+awk -v d="$(tsv 'turns|may-khac|thiếu-cột')" -v e="$(tsv 'phases|may-khac|2026-10-22T06:00:00Z|intake')" \
+  '{ print } $0 == "<!-- aw-progress v1" { print e; print d }' "$PM1" > "$D8/progress.md"
+tst "$C8" "$D8" --write > "$TMP/st8.out" 2>&1; _ma=$?
+dung "khối sai dạng → --write cảnh báo, vẫn XONG" sh -c "test $_ma = 0 && grep -q 'CẢNH BÁO' '$TMP/st8.out'"
+dung "…file sinh lại chỉ từ journal máy này" cmp -s "$D8/progress.md" "$PM1"
+
+# Không token, không lượt main.
+C9="$TMP/td9"; D9=$(viec_moi "$C9" feat_n feature)
+tsv '2026-10-23T07:00:00Z|wt|feat_n|intake' '2026-10-23T07:20:00Z|wt|feat_n|spec' > "$C9/journal/phases.tsv"
+tst "$C9" "$D9" --write >/dev/null 2>&1
+dung "không token → không khối pie" sh -c "! grep -q '^pie' '$D9/progress.md'"
+dung "…vẫn có gantt" grep -qx 'gantt' "$D9/progress.md"
+dung "không lượt main → > Chưa ghi được lượt nào ngay dưới bảng (trước mermaid)" sh -c "awk '/^\\| \\*\\*Total\\*\\*/{ t = NR } /^> Chưa ghi được lượt nào/{ n = NR } /^\`\`\`mermaid/ && !m { m = NR } END { exit !(t && n > t && n < m) }' '$D9/progress.md'"
+dung "…nhắc cột Wall và § Hook" sh -c "grep -q 'chỉ có cột Wall' '$D9/progress.md' && grep -qF '\`adapters/claude-code/README.md\` § Hook' '$D9/progress.md'"
+dung "…giữa bảng và lời nhắc chỉ có dòng trống / chú thích" sh -c "awk '/^\\| \\*\\*Total\\*\\*/{ t = 1; next } t && /^> /{ exit 0 } t && !/^\$/ && !/^<!--.*-->\$/{ exit 1 }' '$D9/progress.md'"
+
+# --table
+tst "$C1" "$D1" --table > "$TMP/tb1.out" 2>/dev/null; _ma=$?
+dung "--table → mã 0, dòng đầu là header bảng" sh -c "test $_ma = 0 && head -n 1 '$TMP/tb1.out' | grep -q '^| Phase | Status |'"
+dung "…dòng cuối là **Total**" sh -c "tail -n 1 '$TMP/tb1.out' | grep -q '^| \*\*Total\*\* |'"
+dung "…không mermaid, không <!--" sh -c "! grep -q 'mermaid' '$TMP/tb1.out' && ! grep -q '<!--' '$TMP/tb1.out'"
+dung "…đúng bảng trong progress.md" sh -c "grep '^|' '$PM1' | cmp -s - '$TMP/tb1.out'"
+dung "--table không dữ liệu → stdout rỗng" bang "$(tst "$C2" "$D2" --table 2>/dev/null)" ""
+ky_vong 0 "…vẫn XONG" tst "$C2" "$D2" --table
+dung "--table việc cũ (chỉ check) → có bảng (intake ✓ done)" sh -c "AW_REPO='$TMP' AW_CONFIG='$C3' AW_JOURNAL_MACHINE=may-a sh '$AWE' status '$D3' --table 2>/dev/null | grep -q '^| intake | ✓ done |'"
+ky_vong 2 "--write --table cùng lúc → SAI THAM SỐ" tst "$C1" "$D1" --write --table
+tst "$C2" "$D2" --write >/dev/null 2>&1
+dung "--write không dữ liệu → - Updated: —, Current phase: —" sh -c "grep -qxF -- '- Updated: —' '$D2/progress.md' && grep -qxF -- '- Current phase: —' '$D2/progress.md'"
+dung "…không mermaid" sh -c "! grep -q mermaid '$D2/progress.md'"
+
+# aw check ĐẠT → progress.md vào commit artifact.
+R=$R26; F="$W26/docs/sdlc/feat_x"; LOAI=chore
+viet_intake
+ky_vong 0 "aw check intake ĐẠT (worktree) → mã 0" awd "$W26" check intake docs/sdlc/feat_x
+dung "…progress.md có trong commit artifact" sh -c "git -C '$W26' show --stat --format= HEAD | grep -q 'docs/sdlc/feat_x/progress.md'"
+dung "…progress.md có intake ✓ done" grep -q '^| intake | ✓ done |' "$F/progress.md"
+rm -f "$F/progress.md"; mkdir "$F/progress.md"
+awd "$W26" check intake docs/sdlc/feat_x > "$TMP/ck.out" 2>&1; _ma=$?
+dung "status.sh hỏng (progress.md là thư mục) → check vẫn mã 0" bang "$_ma" 0
+dung "…stderr có CẢNH BÁO không sinh được progress.md" grep -q 'CẢNH BÁO: không sinh được .*progress.md' "$TMP/ck.out"
+ky_vong 1 "…status.sh --write khi progress.md là thư mục → KHÔNG GHI ĐƯỢC" awd "$W26" status docs/sdlc/feat_x --write
+rmdir "$F/progress.md"
+ky_vong 0 "AW_JOURNAL=0 aw check intake → mã 0" env AW_JOURNAL=0 AW_HOME="$AWHD" AW_ENGINE_DIR="$ROOT" sh -c "cd '$W26' && sh '$ROOT/bin/aw' check intake docs/sdlc/feat_x"
+dung "…không sinh progress.md" test ! -e "$F/progress.md"
+
 ket_thuc
