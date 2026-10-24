@@ -63,6 +63,7 @@
 | SP28 | Durable knowledge: chỉ mục chung | 7 | chờ | SP27 | Chốt: mặc định bật, kiểm khi file có | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § C | | |
 | SP29 | Durable knowledge: tìm theo từ khoá | sau | chặn | SP28, số liệu SP9 | Có đáng làm không | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § D | | |
 | SP30 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP28, số liệu SP9 | Chốt: chỉ cảnh báo; chặn chờ số liệu SP9 | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § E | | |
+| SP31 | Tên lệnh theo stage SDLC (`/aw-<stage>`, đánh số khớp stage) | sau | chặn | — | §5 của spec: phạm vi đổi tên, lệnh con duyệt, chuyển tiếp `plan`, dạng số | [spec](specs/2026-10-23-sp31-ten-lenh-theo-stage-design.md) | | |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -185,6 +186,17 @@ bước và bảng `## Knowledge used`.
 **Đã chốt (2026-10-24).** Spec đã duyệt, mọi phương án "Nghiêng về" được chọn (spec ghi ở từng mục **Đã chốt**).
 
 **Tiến độ.** SP26 xong ở [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) (`aw knowledge implement` / `review`). SP27–SP30 còn lại.
+
+### SP31 — Tên lệnh theo stage SDLC
+
+**Vấn đề.** 4/7 lệnh phase khác tên stage nó làm; `/aw-plan` làm stage `breakdown` còn stage `plan`
+do `/aw-intake` làm. Summary đếm "Bước x/6" lệch số stage `00`–`07`.
+
+**Hướng (người đã chốt).** Lệnh `/aw-<stage>`; deploy vẫn tuỳ chọn; lệnh con (nếu có) dùng `-`, không
+dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi tiết: spec SP31.
+
+**Cần quyết.** Spec § 5: đổi tên tới `aw check`/`aw ship` không; lệnh con duyệt hay tham số
+`/aw-approvals <stage>`; chuyển tiếp chữ `plan` đổi nghĩa; dạng số trong summary.
 
 ## Việc nhỏ (không thành dự án con)
 
