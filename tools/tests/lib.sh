@@ -160,8 +160,7 @@ viet_spec() {
   - [ ] mở y thấy a
 
 ### REQ-002 — b
-- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)
-- Assumption: y
+- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001)
 - Priority: `should`
 - Acceptance criteria:
   - [ ] mở y thấy b
@@ -202,7 +201,7 @@ EOF
 
 ## Questions
 
-### REQ-002 — b
+### Q-001 — hỏi b
 - **Assumption:** y
 - **Blocking:** `non-blocking`   <!-- blocking | review-blocking | non-blocking -->
 - **Status:** `open`   <!-- open | answered -->

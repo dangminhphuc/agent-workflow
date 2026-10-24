@@ -52,7 +52,7 @@
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
 | SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
-| SP20 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | đang làm | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp20-open-question-ma-rieng-design.md) | | |
+| SP20 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp20-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -119,17 +119,6 @@ báo chuyển tiếp. Glob của `conventions.md` giữ nghĩa cũ (spec SP8).
 **Cần quyết.** Luật `BR-` đã nâng mang mẫu nghĩa cũ (suy từ `Expected files` lúc `aw rule promote`, khớp ở
 `tools/lib/knowledge.sh`): cảnh báo hay chuyển đổi khi đọc. Chỉ làm sau khi bản có cảnh báo chuyển tiếp
 đã phát hành và người dùng có thời gian sửa plan.
-
-### SP20 — Open question có mã riêng `Q-NNN`
-
-**Vấn đề.** `open-questions.md` lặp lại `spec.md`: mỗi open question mang mã và tiêu đề của một REQ,
-`Assumption` nằm ở cả hai file, đổi một REQ chép lại cả REQ đó, một câu hỏi đụng nhiều REQ phải ghi
-nhiều mục.
-
-**Hướng.** Mã riêng `Q-NNN`; quan hệ câu hỏi ↔ REQ chỉ khai ở `Source:` của REQ, máy suy ngược;
-`Assumption` chỉ ở câu hỏi; dạng cũ `### REQ-NNN` vẫn đọc được. Chi tiết: [spec](specs/2026-10-23-sp20-open-question-ma-rieng-design.md).
-
-**Đã quyết.** Bốn điểm ở spec § 7 (2026-10-24). Còn lại: plan → implement.
 
 ### SP19 — Bước A đợt 2
 

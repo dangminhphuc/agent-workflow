@@ -479,8 +479,13 @@ chữ. Confluence/Jira máy không đọc được: câu trích chỉ giúp bạ
 thì `/aw-design` (không có design: `/aw-plan`) chỉ **cảnh báo** — xem lại REQ, sửa qua `/aw-clarify`
 nếu cần.
 
-**`open-questions.md` quyết định *agent đang đoán gì* và đoán sai thì tốn bao nhiêu.** Mỗi open question:
-nguồn nói gì, câu hỏi, hỏi ai, giả định tạm, *If wrong, redo*, và **mức `Blocking`**:
+**`open-questions.md` quyết định *agent đang đoán gì* và đoán sai thì tốn bao nhiêu.** Mỗi open question
+là một mục `### Q-NNN — <câu hỏi ngắn>` (đánh số riêng, không theo số REQ): nguồn nói gì, câu hỏi, hỏi ai,
+giả định tạm, *If wrong, redo*, và **mức `Blocking`**. Một câu hỏi có thể phủ nhiều REQ; REQ trỏ tới câu
+hỏi bằng dòng `Source: [OPEN-QUESTION] → [open-questions.md § Q-NNN](…)`, và mỗi REQ đứng trên tối đa
+một câu hỏi. Quan hệ chỉ ghi ở phía spec — câu hỏi không liệt kê REQ, giả định không chép vào REQ;
+`aw pending` in sẵn câu hỏi nào phủ REQ nào. Việc làm trước bản này có mục dạng cũ `### REQ-NNN`: vẫn
+đọc được, `aw check spec` chỉ in một dòng cảnh báo.
 
 | `Blocking` | Khi nào | Chặn |
 |---|---|---|
@@ -500,7 +505,8 @@ File này **luôn tồn tại**; không có open question thì ghi "No open ques
 
 **Máy chặn khi:** REQ không có nguồn, thiếu tiêu chí chấp nhận/`Priority`; REQ có nguồn mà thiếu
 `Quote`, hay câu trích `[FILE]` không có trong file nguồn; mục bắt buộc để rỗng;
-mâu thuẫn tự phân xử; `open-questions.md` lệch với spec (mục mồ côi, trạng thái lệch); bugfix thiếu
+mâu thuẫn tự phân xử; `open-questions.md` lệch với spec (câu hỏi còn mở mà không REQ nào trỏ tới, mã
+trùng, trạng thái lệch); bugfix thiếu
 `Reproduction`; refactor có REQ hành vi mới, hoặc REQ preserve không có test bảo vệ **có sẵn trên base**.
 
 ### Utility command — `/aw-clarify`: chốt việc chờ người
@@ -516,8 +522,9 @@ bỏ tick, bạn tick lại. Chưa trả lời được → agent soạn tin nh�
 
 **Không đồng ý một REQ đã có nguồn** (agent hiểu nguồn khác bạn, tiêu chí sai, `Priority` sai) →
 `/aw-clarify REQ-NNN`. Đừng sửa lặng lẽ: agent ghi việc đổi thành một **open question đã trả lời** trong
-`open-questions.md` (cách hiểu cũ ở `Assumption`, lời bạn nguyên văn ở `Answer`), cho bạn xem dòng sẽ
-sửa, đổi source label REQ thành `[FILE] open-questions.md § REQ-NNN`, bỏ tick spec. Nhờ vậy lời bạn thành
+`open-questions.md` — một mục `Q-NNN` chỉ có `Question` ("REQ-NNN nên hiểu là X hay Y?") và lời bạn
+nguyên văn ở `Answer`, không chép lại REQ (cách hiểu cũ nằm trong preview và lịch sử git) — cho bạn xem
+dòng sẽ sửa, đổi source label REQ thành `[FILE] open-questions.md § Q-NNN`, bỏ tick spec. Nhờ vậy lời bạn thành
 nguồn của REQ, và `aw check spec` đối chiếu được hai file. Sau đó:
 
 | Đã có | Ảnh hưởng | Việc tiếp |
@@ -745,7 +752,7 @@ Tất cả nằm ở `<worktree>/docs/sdlc/<tên-branch>/` (việc tạo bằng 
 
 **Mục lục và link.** Artifact agent viết có `## Contents` ngay trước heading `##`/`###` đầu
 tiên, và mọi tham chiếu sang artifact khác là link tới mục, vd
-`[open-questions.md § REQ-002](open-questions.md#req-002--kênh-thông-báo)`. Agent không gõ tay:
+`[open-questions.md § Q-002](open-questions.md#q-002--kênh-thông-báo-nào)`. Agent không gõ tay:
 `aw toc <thư-mục-feature>` sinh mục lục và tính anchor. Sửa heading bằng tay thì chạy lại
 `aw toc`; checker chặn khi mục lục lệch heading hay link trỏ vào mục không có.
 

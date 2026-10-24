@@ -4,7 +4,8 @@
 - Roadmap § SP20 · Đổi quyết định "open question mang mã REQ" ở `docs/kien-truc.md` § Giả định chưa xác nhận.
 - Interface: `CAP-require-02` (giữ nguyên câu chữ — mỗi open question vẫn có giả định và mức chặn); chỉ
   đổi hình dạng artifact `open-questions`. Không bỏ, không nới capability hay invariant nào.
-- Trạng thái: **đã chốt 4 điểm thiết kế** (§ 7, người chọn theo đề xuất 2026-10-24); bước kế tiếp: plan.
+- Trạng thái: **đã chốt 4 điểm thiết kế** (§ 7, người chọn theo đề xuất 2026-10-24); implement cùng PR,
+  không viết plan (người chọn).
 
 ## 1. Vấn đề
 

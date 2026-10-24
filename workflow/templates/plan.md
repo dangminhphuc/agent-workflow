@@ -26,7 +26,7 @@ based_on: []
 - Depends on: TSK-001
 - Expected files: `<...>`
 - Verify: `<...>`
-- On assumption: **yes** — [open-questions.md § REQ-002](open-questions.md#req-002)
+- On assumption: **yes** — [open-questions.md § Q-001](open-questions.md#q-001)
 - Status: `[ ]`
 
 > **Status:** `[ ]` chưa làm · `[~]` đang làm · `[x]` xong.
