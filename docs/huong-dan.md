@@ -886,8 +886,12 @@ DEC đi ngược một ADR `accepted` phải khai `- Supersedes: ADR-NNNN` — A
 **Chống stale:** diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi →
 implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`.
 
-Hai việc song song cùng nâng ADR có thể trùng số → `aw adr check` chặn ở việc kế tiếp; bạn đổi số và
-chạy lại `aw adr promote`.
+**Hai việc song song cùng nâng ADR.** `aw adr promote` cấp số lớn hơn mọi số trong worktree **và** trên
+base của việc (`origin/<Base>`, fetch trước). Việc kia merge trước mà chiếm số của bạn → implement, review
+và `aw ship create` (so với nhánh đích) chặn, nêu file trên base. Cách sửa: chạy lại
+`aw adr promote <dir> DEC-NNN` — máy cấp số mới, đổi tên file, sửa `superseded by` và bảng chỉ mục. Merge
+base vào nhánh việc mà xung đột ở `README.md` của thư mục ADR: nhận bản nào cũng được, rồi chạy lại
+`aw adr promote` (bảng do máy dựng).
 
 ---
 
