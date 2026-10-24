@@ -11,6 +11,126 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.32]
+
+### Thêm
+- **`aw doctor` cảnh báo dòng exclude rộng cũ** (`/.claude/`, `/.cursor/commands/`, `/.cursor/agents/`) và nói cách xoá; chỉ cảnh báo, không làm doctor thất bại.
+- **`aw knowledge implement` và `aw knowledge review`: ADR, luật `BR-` và tài liệu module được nạp theo phạm vi
+  ở implement và review.** Implement đọc tài liệu liên quan theo `Expected files` của `plan.md`; review đọc
+  theo diff — đúng tập tài liệu review phải ghi verdict ở `## Durable knowledge`. Việc bỏ design (`chore`,
+  bugfix/refactor có `Design: skip`) trước đây không đọc ADR nào, nay vẫn đọc chỉ mục ADR ở implement. Không
+  cần làm gì thêm: các phase tự gọi lệnh. Khớp được cả đường dẫn có dấu (ví dụ `src/thanh-toán/`).
+- **Nhãn input `[ISSUE]` cho issue / PR / MR của GitHub và GitLab.** `aw input` (`/aw-intake`) gán
+  `[ISSUE]` cho URL `github.com/<o>/<r>/issues/N` hay `/pull/N`, URL GitLab `…/-/issues/N` hay
+  `…/-/merge_requests/N` (mọi host, cả GitLab tự host), và URL GitHub Enterprise khi host trùng host
+  của `origin`. Trước đây các URL này thành `[CONFLUENCE]` khi chưa khai `confluence_domains`.
+  `aw check intake` chặn `[ISSUE]` không có URL đúng dạng; `/aw-spec` đọc bằng `gh`/`glab` (hoặc MCP),
+  REQ ghi `Source: [ISSUE] <URL>` kèm `Quote:` bắt buộc; `aw check spec` chặn URL sai dạng, thiếu
+  câu trích, cảnh báo URL không có trong `## Input`. `aw rule promote` / `aw rule check` nhận nguồn
+  `[ISSUE]` (phiên bản lấy ở bảng `## Sources`). Không có khoá `conventions.md` mới; không cần làm gì
+  — `intake.md` cũ vẫn hợp lệ. URL issue đang ghi `[CONFLUENCE]` thì có thể đổi tay sang `[ISSUE]`.
+  Lưu ý: URL issue/PR/MR trên host có trong `confluence_domains` nay cũng thành `[ISSUE]`, không còn
+  `[CONFLUENCE]`.
+  Interface: CAP-plan-01 (intake ghi nguồn dạng máy kiểm), CAP-require-01 (REQ truy về nguồn) —
+  không đổi interface.
+- **`aw journal retro <thư-mục-việc>`: tổng kết cuối việc.** In phần máy (phase, thiết kế, cỡ diff, số lần bị chặn) và danh sách các lần bị chặn đánh số. Với cờ `--nham`, `--phut`, `--vuong`, `--gay-boi`, `--lop` hoặc `--bo-qua` thì ghi một dòng vào `jobs.tsv`; chạy lại thì thay dòng cũ. Bước cuối phase review hỏi người (lần chặn nào nhầm, mất bao nhiêu phút, chỗ nào vướng) và ghi giúp.
+- **Mốc bắt đầu phase (`phases.tsv`).** `aw rules <phase>` chạy trong worktree của việc ghi mốc phase. Không đổi kết quả hay mã thoát của `aw rules`.
+- **Report mới.** Độ chính xác của từng checker, thời gian trung vị từng phase, việc theo loại và cỡ diff, lỗi lọt theo lớp. `aw journal report --version <v>` chỉ tính dòng của một version engine.
+
+### Thay đổi
+- **`.git/info/exclude` chỉ giấu file adapter tự sinh.** Trước đây `aw init` exclude cả `/.claude/` nên skill, subagent, `settings.json` của team phải `git add -f`. Nay Claude Code chỉ exclude `.claude/commands/aw-*.md`, `.claude/agents/{independent-reviewer,spec-checker,design-checker}.md` và `.claude/skills/agent-workflow/`; Cursor thu hẹp tương tự (`commands/aw-*.md`, các subagent sinh ra, skill `agent-workflow`). Không còn cần `-f`. Repo đã init: chạy lại `aw init` (thêm mẫu hẹp), rồi xoá tay dòng `/.claude/` (và `/.cursor/commands/`, `/.cursor/agents/` nếu có) trong `.git/info/exclude`; engine không tự xoá vì file đó là của người dùng.
+- **Open question có mã riêng `Q-NNN`, không còn lặp lại `spec.md`.** Trước đây mỗi mục trong
+  `open-questions.md` mang mã và tiêu đề của một REQ, `Assumption` ghi ở cả hai file, đổi một REQ
+  (`/aw-clarify REQ-NNN`) chép lại cả REQ đó, một câu hỏi đụng nhiều REQ phải ghi nhiều mục. Nay:
+  - mục là `### Q-NNN — <câu hỏi ngắn>`, đánh số riêng; **một câu hỏi phủ được nhiều REQ**, mỗi REQ
+    đứng trên tối đa một câu hỏi;
+  - REQ trỏ tới câu hỏi ở dòng `Source: [OPEN-QUESTION] → [open-questions.md § Q-NNN](…)` — chỉ ở đó;
+    câu hỏi không liệt kê REQ, `aw pending` và cổng mức chặn in sẵn câu hỏi phủ REQ nào;
+  - giả định tạm chỉ ghi ở câu hỏi, REQ không còn dòng `Assumption:`;
+  - đổi một REQ ghi thành một `Q-NNN` đã trả lời chỉ có `Question` + `Answer`;
+  - `plan.md` ghi `On assumption: **yes** — [open-questions.md § Q-NNN](…)`; `aw task reopen <dir> Q-NNN`
+    đưa task đứng trên câu hỏi đó về `[ ]`.
+  - `aw check spec` chặn thêm: câu hỏi còn `open` mà không REQ nào trỏ tới, mã câu hỏi trùng, REQ
+    `[OPEN-QUESTION]` không trỏ tới câu hỏi nào.
+
+  **Việc đang chạy dở không phải làm gì:** mục dạng cũ `### REQ-NNN` và link `§ REQ-NNN` vẫn đọc được
+  như trước, `aw check spec` chỉ in một dòng cảnh báo. Việc mới do `/aw-spec` viết theo dạng mới.
+- **`aw check` chặn frontmatter `based_on` máy không đọc được.** Trước đây `spec.md` / `tdd.md` / `plan.md`
+  có frontmatter sai tập con YAML (viết `based_on: [a, b]`, thụt tab, thiếu dòng `---` đóng) hay mục không
+  phải `<file>@<số>` thì máy đọc ra rỗng và **im lặng bỏ qua** kiểm stale. Giờ mọi `aw check` (spec,
+  design, plan, implement, review) chặn và nêu dòng sai. **Việc đang dở:** ai đã sửa frontmatter bằng tay
+  thì chạy lại `aw based-on …` (lệnh in trong thông báo).
+- **Cảnh báo khi quên `aw based-on`.** Artifact có mà `based_on` thiếu đầu vào bắt buộc (`spec.md` ←
+  `intake.md`; `tdd.md` ← `spec.md`, `open-questions.md`; `plan.md` ← `spec.md`, `tdd.md` trừ khi bỏ
+  design) thì design / plan / implement cảnh báo, review chặn — như artifact lỗi thời.
+- **Mọi dòng nhật ký có cột version engine ở cuối** (`checks`, `failures`, `approvals`, `findings`, `phases`, `jobs`).
+- **`aw journal report` đọc được file export cũ** (không cột version): dòng cũ được coi là version `?`. `aw journal export` thêm hai nguồn `phases` và `jobs`.
+
+### Sửa
+- **Cảnh báo glob rộng (`scope_glob_max_files`) bỏ sót file có dấu trong tên.** `kc_glob_rong` đọc cây Base không tắt `core.quotepath`, nên tên như `tài-liệu/x.txt` bị git trích dạng `"t\303\240i-..."` và không khớp mẫu. Nay đếm đúng.
+- **`aw ship status` / `aw ship sweep` và kiểm kiến thức bền ↔ diff chạy được trên macOS.** `/bin/sh` của
+  macOS (bash 3.2) báo lỗi cú pháp ở hai câu `case` nằm trong `$(…)` (`tools/lib/mr.sh`,
+  `tools/lib/knowledge.sh`) — giờ viết dạng `(pattern)`.
+- **`aw` chạy đúng với awk của macOS.** Mọi script của engine giờ chạy với `LC_ALL=C`: awk đếm theo
+  byte như mawk (bản engine được viết và thử). Trước đó, ở locale UTF-8, awk của macOS cắt chuỗi giữa
+  một ký tự có dấu (`towc: multibyte conversion failure`) — vd `aw check implement` không nhận ra task
+  `Kiểm chứng: thủ công`. Chữ tiếng Việt trong artifact và output không đổi.
+- **Hai việc song song không còn tạo ADR trùng số trên `main`.** `aw adr promote` cấp số lớn hơn mọi số
+  trong worktree và trên base của việc (`origin/<Base>`, fetch trước; không fetch được thì báo và dùng
+  bản đã có). Số của việc đã bị một ADR khác chiếm trên base thì `aw check implement`, `aw check review`
+  và `aw ship create` (so với nhánh đích) **chặn**, nêu file trên base. Cách sửa: chạy lại
+  `aw adr promote <dir> DEC-NNN` — máy cấp số mới, đổi tên file, sửa `superseded by` của ADR bị thay và
+  dựng lại bảng chỉ mục.
+- **`aw conventions check` không còn in ký tự hỏng (`ví d�`)** khi cắt dòng dài trong cảnh báo "còn placeholder"
+  và lỗi "không phải khoá: giá trị". Trước đây dòng bị cắt theo byte nên có thể đứt giữa chữ có dấu; nay bỏ cả
+  ký tự dở. Thêm ca test ở `tools/tests/15-conventions-task.sh`. Không đổi luật, không đổi mã thoát.
+- **`/aw-clarify` không còn ghi một câu hỏi ngược thành câu trả lời.** Khi người dùng gõ vào ô tự nhập một câu hỏi lại (vd "Chi tiết … đang đề cập đến màn hình phải không?") thay vì câu trả lời, agent xử lý như "Chat about this": trả lời kèm trích nguồn nguyên văn, không ghi file, rồi hỏi lại cùng câu bằng lựa chọn. Không chắc đó là câu hỏi hay câu trả lời thì hỏi lại trước khi ghi. Trước đây quy trình coi mọi chữ tự nhập là câu trả lời, nên câu hỏi có thể bị ghi vào `Answer:` và đóng câu hỏi mở. Repo đích nhận thay đổi khi cập nhật engine và build lại lệnh; không cần làm gì thêm.
+
+### Nội bộ
+- Thêm checker LLM hoặc đổi tên file sinh ra thì phải thêm dòng vào `adapters/*/exclude`; test "exclude của adapter" bắt thiếu. Không đổi interface SDLC (adapter).
+- Spec SP25 (`docs/superpowers/specs/2026-10-23-sp25-open-question-ma-rieng-design.md`) ghi lý do và
+  các phương án đã loại.
+- **Một bộ đọc token `Expected files` cho mọi nơi kiểm phạm vi.** Token trong backtick của `plan.md` (dòng `Expected files`, mục `Unplanned`) trước đây được đọc bằng bốn bản awk chép nhau (`kc_pham_vi`, `kc_glob_chuyen_tiep`, `kc_glob_rong` trong `tools/lib/cross-check.sh`, `kt_duong_plan` trong `tools/lib/knowledge.sh`); nay dùng chung `kc_token_plan`, chuẩn bị cho SP18 đổi ngữ nghĩa glob ở một chỗ. Hành vi giữ nguyên: kiểm phạm vi diff và cảnh báo glob chuyển tiếp lấy mọi token (Expected files ở bất kỳ đâu + cột `Extra files` / dòng lẻ của `Unplanned`); cảnh báo glob rộng và `aw knowledge implement` chỉ lấy `Expected files` dưới heading `### TSK-…`. Ca test mới ghim khác biệt này.
+- **SP19 đợt 19b — gắn `CAP-…`/`INV-…` cho 37 luật** của `check-intake`, `check-security`, `check-ship`,
+  `check-conventions`, `aw task` (`tools/unclassified-rules.txt`: 223 → 186 chỗ chưa gắn; `check-security`
+  hết). Không đổi hành vi. 23 chỗ còn lại của các file này không khớp capability nào — chờ người duyệt
+  capability mới. Ca test "gắn thêm id mà quên hạ số" không còn phụ thuộc file nào còn luật chưa gắn.
+- **CI chạy bộ test trên macOS** (job `kiem-tra-macos`: bash 3.2, BSD awk, BSD sed), cạnh job Ubuntu
+  `kiem-tra` (tên giữ nguyên). Helper `thay` của test truyền chuỗi qua `ENVIRON` (BSD awk từ chối
+  `-v` có xuống dòng); `TMP` của test là đường dẫn thật (`/var` → `/private/var` trên macOS). Phần test
+  mới `26-posix-macos.sh` chặn `case` thiếu `(` trong `$(…)` ngay trên Ubuntu.
+- **Sửa workflow `kiem-tra` không parse được sau #96, rồi gỡ bước chẩn đoán tạm.** Bước đó viết
+  `run:` một dòng có `": "` nên YAML không đọc được: mọi lần chạy `kiem-tra` (cả job Ubuntu) thất bại
+  ngay, không job nào chạy. Bước đó đã xong việc (job macOS xanh) nên gỡ hẳn; `AW_TEST_SHOW_FAIL=1`
+  (in output của ca hỏng) giữ lại ở cả hai job.
+- **Bộ test chạy đúng trên bash 3.2 (sh của macOS):** không còn gán biến ngay trước lời gọi hàm
+  (`X=… ham` — bash 3.2 giữ X sau khi hàm chạy, làm hỏng chuỗi ca `aw worktree` phía sau); helper
+  frontmatter của test SP20 truyền chuỗi qua `ENVIRON`. Phần `26-posix-macos.sh` thêm ca chặn
+  `X=… ham` ngay trên Ubuntu.
+- **Spec cho các việc làm được ngay trên roadmap engine:** SP19 phần còn lại (gắn `CAP-…`/`INV-…` cho 223
+  chỗ luật, cột `Serves` của checker LLM, đếm hàm thư viện), SP20 (kiểm frontmatter `based_on` của
+  artifact, siết INV-006), SP21 (CI chạy test trên macOS), SP22 (số ADR không trùng khi hai việc song
+  song), SP23 (dọn nhánh remote). Chỉ có spec, chưa đổi hành vi `aw`; mỗi dự án con chờ người duyệt spec.
+- Roadmap: số liệu bộ test đo lại (1804 ca, 2 phút 41 giây trên 4 luồng); thêm SP24 cho hai nhánh tính
+  năng chưa merge (chờ người quyết lấy hay bỏ).
+- **Spec SP31: tên lệnh theo stage SDLC (nháp).** Lệnh phase sẽ đổi thành `/aw-<stage>` (vd `/aw-intake` → `/aw-plan`, `/aw-plan` → `/aw-breakdown`), số phase lấy theo stage, máy chặn khi lệch. Chưa đổi gì trong engine; spec còn chờ người chốt § 5 (phạm vi đổi tên, lệnh con duyệt, chuyển tiếp chữ `plan`). Xem `docs/superpowers/specs/2026-10-23-sp31-ten-lenh-theo-stage-design.md` và roadmap § SP31.
+- **Spec đợt 7: durable knowledge của repo đích như RAG (SP26–SP30).** Truy xuất theo phạm vi ở implement và
+  review, chunk theo mục và khối ID, chỉ mục kiến thức chung do máy dựng, tìm theo từ khoá, theo liên kết một
+  bước kèm trích nguồn — vẫn tất định, không vector. Spec ở
+  `docs/superpowers/specs/2026-10-23-sp26-30-rag-markdown-design.md`, roadmap thêm SP26–SP30; plan SP26 ở
+  `docs/superpowers/plans/2026-10-24-sp26-knowledge-implement-review.md`. SP26 đã làm; SP27–SP30 mới ở dạng spec.
+- **SP26: `kt_lay` tách trong `tools/lib/knowledge.sh`, ba capability mới.** `CAP-implement-07` và `CAP-design-04`
+  (agent phán xét), `CAP-verify-06` (máy: luật `kt_loi_review` ở `tools/check-review.sh` gắn tag
+  `# giữ: CAP-verify-06`, số luật chưa phân loại 38 → 37); `kt_duong_plan` đọc `test_files` một lần. Test mới `tools/tests/26-knowledge-retrieval.sh`.
+- Tách `aw journal retro` sang `tools/journal-retro.sh`; hàm dùng chung (version, định dạng ô, epoch, trung vị) nằm ở `tools/lib/journal-util.sh`.
+- Test mới `tools/tests/27-journal-retro.sh`.
+- Tài liệu: hướng dẫn đo lường, kiến trúc (điểm yếu 23: thời gian phase và phần người là xấp xỉ), thuật ngữ `retro`.
+- **Roadmap đồng bộ với `main` ngày 2026-10-24.** SP20, SP21, SP22 chuyển `xong` (kèm link PR #94, #96/#99, #95);
+  SP23 `một phần` (số liệu xong, còn xoá nhánh remote); SP9 và SP19 thêm PR #100, #97 và số chỗ luật chưa gắn
+  hiện tại (185). Số liệu bộ test đo lại (1963 ca, 5 phút 23 giây trên 4 luồng). Thêm SP32–SP34 (`exclude` của
+  adapter `claude-code` quá rộng, nhãn nguồn cho URL issue GitHub / GitLab, phát hành các mảnh `changes/` đang tồn)
+  và một việc nhỏ về `substr` cắt giữa ký tự UTF-8 trong `check-conventions.sh`. Chỉ đổi tài liệu.
+
 ## [2026.10.31]
 
 ### Thêm
