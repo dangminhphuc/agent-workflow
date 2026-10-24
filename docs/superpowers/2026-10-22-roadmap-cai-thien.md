@@ -53,9 +53,9 @@
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
 | SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87), [#97](https://github.com/dangminhphuc/agent-workflow/pull/97) (đợt 19b); phần còn lại: [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md) |
 | SP20 | Kiểm frontmatter `based_on` của artifact (INV-006) | 6 | xong | — | Sai dạng chặn mọi nơi; thiếu: cảnh báo trước review, chặn ở review | [spec](specs/2026-10-23-sp20-frontmatter-artifact-design.md) | | | [#94](https://github.com/dangminhphuc/agent-workflow/pull/94) |
-| SP21 | CI chạy test trên macOS (BSD awk/sed) | 6 | xong | — | Bật thành check bắt buộc khi xanh | [spec](specs/2026-10-23-sp21-ci-macos-design.md) | | | [#96](https://github.com/dangminhphuc/agent-workflow/pull/96), [#99](https://github.com/dangminhphuc/agent-workflow/pull/99) |
+| SP21 | CI chạy test trên macOS (BSD awk/sed) | 6 | xong | — | Còn: người bật job macOS thành check bắt buộc (cài đặt GitHub, máy không kiểm được) | [spec](specs/2026-10-23-sp21-ci-macos-design.md) | | | [#96](https://github.com/dangminhphuc/agent-workflow/pull/96), [#99](https://github.com/dangminhphuc/agent-workflow/pull/99) |
 | SP22 | Số ADR không trùng khi hai việc song song | 6 | xong | — | `aw ship create` chặn khi trùng số | [spec](specs/2026-10-23-sp22-so-adr-song-song-design.md) | | | [#95](https://github.com/dangminhphuc/agent-workflow/pull/95) |
-| SP23 | Dọn nhánh remote, số liệu roadmap | 6 | một phần | — | Số liệu test xong; còn xoá nhánh remote (70 nhánh ngoài main, 2026-10-24), người duyệt danh sách trước khi xoá | [spec](specs/2026-10-23-sp23-don-dep-design.md) | | | [#90](https://github.com/dangminhphuc/agent-workflow/pull/90) (số liệu) |
+| SP23 | Dọn nhánh remote, số liệu roadmap | 6 | một phần | — | Số liệu test xong; còn xoá nhánh remote (~70 nhánh ngoài main, 2026-10-24), người duyệt danh sách trước khi xoá | [spec](specs/2026-10-23-sp23-don-dep-design.md) | | | [#90](https://github.com/dangminhphuc/agent-workflow/pull/90) (số liệu) |
 | SP24 | Hai nhánh tính năng chưa merge: làn light + `mr_include_artifacts`, điểm mù nêu story/AC | sau | chặn | — | Lấy lại hay bỏ | | | |
 | SP25 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp25-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
 | SP26 | Durable knowledge: truy xuất theo phạm vi ở implement, review | 7 | xong | — | Chốt: không thêm luật chặn mới ở implement; review chấm verdict đúng tập diff chạm | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § A | [plan](plans/2026-10-24-sp26-knowledge-implement-review.md) | [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) |
@@ -207,7 +207,7 @@ dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi t
 ### SP32 — `exclude` của adapter `claude-code` quá rộng
 
 **Vấn đề.** `adapters/claude-code/exclude` loại cả `/.claude/` khỏi git của repo đích, còn adapter Cursor
-chỉ loại thư mục lệnh, agent, skill và `agent-workflow` do nó sinh. Skill hay `settings.json` của chính
+chỉ loại `commands/`, `agents/` và `skills/agent-workflow/`. Skill hay `settings.json` của chính
 team đặt trong `.claude/` bị bỏ qua, phải `git add -f` mới commit được.
 
 **Hướng.** Liệt kê đường dẫn adapter thật sự sinh ra (như Cursor), không loại cả thư mục. `aw init` chỉ
