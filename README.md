@@ -210,11 +210,12 @@ src/<module>/ARCHITECTURE.md   ràng buộc, quyết định chỉ của module 
   `rules_implement` của `conventions.md` (`aw rules` in ra, review chấm từng file).
 - Mỗi luật một chỗ: phạm vi một module thì đặt cạnh module, nhiều module thì trong `docs/`.
 - **Vì sao code như vậy — ADR** (`docs/adr/`): quyết định DEC-xxx mà người duyệt kèm `- Promote: adr`
-  được `aw adr promote` chép thành ADR ngay trong PR của việc. Phase design đọc chỉ mục và ADR
-  liên quan qua `aw knowledge design`; DEC đi ngược ADR phải ghi `- Supersedes: ADR-NNNN`.
+  được `aw adr promote` chép thành ADR ngay trong PR của việc. Qua `aw knowledge <phase>`: design đọc chỉ mục ADR và
+  ADR khớp `## Existing code`; implement đọc ADR khớp `Expected files` (chỉ đọc chỉ mục khi bỏ design); review đọc
+  các tài liệu mà diff đụng tới. DEC đi ngược ADR phải ghi `- Supersedes: ADR-NNNN`.
 - **Business rule** (`docs/product/rules/<miền>.md`): REQ là bất biến nghiệp vụ, người duyệt spec
   kèm `- Promote: BR-<MIỀN>-NNN`, được `aw rule promote` chép thành khối `### BR-…` (nguồn có phiên
-  bản). Phase spec đọc luật active qua `aw knowledge spec`; test gắn `covers: BR-…` như với REQ.
+  bản). Phase spec, design, implement, review đọc luật active qua `aw knowledge <phase>`; test gắn `covers: BR-…` như với REQ.
 - **Chống stale**: diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi
   → implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`
   (`pass | updated | not applicable`).
@@ -365,6 +366,10 @@ AW_TEST_JOBS=1 sh tools/run-tests.sh      # số phần chạy cùng lúc (mặc
 
 Ca kiểm nằm trong `tools/tests/NN-<tên>.sh` (helper + fixture: `tools/tests/lib.sh`); mỗi phần chạy
 độc lập nên `run-tests.sh` chạy song song rồi cộng tổng. Ca mới thêm vào phần cùng chủ đề.
+
+CI (`.github/workflows/kiem-tra.yml`) chạy bộ test trên Ubuntu (dash, mawk, GNU sed) và macOS (bash 3.2
+làm `sh`, BSD awk/sed). Muốn thử gần giống macOS trên Linux: cài `original-awk` (one-true-awk) rồi chạy
+với `awk` trỏ sang nó trên `PATH`.
 
 Cuối output có dòng `Thời gian từng phần` (chậm nhất trước). Phần nào chạy từ 30 giây trở lên và
 gấp hơn 2 lần trung bình các phần còn lại thì có dòng `CẢNH BÁO … nên tách`. Vì các phần chạy song

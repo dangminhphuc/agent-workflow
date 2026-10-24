@@ -31,7 +31,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `input` | The sources spec reads: `## Input` of `intake.md` | |
 | `source label` | `[CONFLUENCE]`, `[JIRA]`, `[FILE]`, `[INCIDENT]`, `[INFERRED]`, `[OPEN-QUESTION]`, `[HUMAN]` | nhãn nguồn |
 | `Quote` | Source sentences copied verbatim under a REQ's `Source:`, one `> …` line each | |
-| `open question` | Something the source does not say; agent assumes, human answers: `open-questions.md` | điểm mù |
+| `open question` | Something the source does not say; agent assumes, human answers: `### Q-NNN` in `open-questions.md`, covering one or more REQs | điểm mù |
 | `Blocking` | Level of an open question: `blocking`, `review-blocking`, `non-blocking` | mức chặn |
 | `Risk` | `high \| normal` in `spec.md`; `high` → design Mode 2 | |
 | `Mode 1` | Design: agent writes every DEC-xxx, human approves | |

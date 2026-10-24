@@ -145,18 +145,18 @@ tk_dang_do() {
   tk_ds "$1/plan.md" | awk -F'|' '$2 == "~" { print $1 " còn ở trạng thái đang làm dở `[~]`" }'
 }
 
-# tk_phu <plan.md> <REQ-NNN|DEC-NNN> -> task chịu ảnh hưởng khi mã đó đổi, mỗi dòng "TSK-NNN|<s>".
-# REQ: dòng "Covers" hoặc "On assumption" nhắc mã; DEC: dòng "Based on". So nguyên mã
-# (REQ-01 không khớp REQ-010).
+# tk_phu <plan.md> <REQ-NNN|DEC-NNN|Q-NNN> -> task chịu ảnh hưởng khi mã đó đổi, mỗi dòng "TSK-NNN|<s>".
+# REQ: dòng "Covers" hoặc "On assumption" nhắc mã; DEC: dòng "Based on"; Q (câu hỏi): dòng
+# "On assumption". So nguyên mã (REQ-01 không khớp REQ-010; Q-001 không khớp REQ-001).
 tk_phu() {
   [ -f "$1" ] || return 0
   awk -v ma="$2" '
     function co_ma(s,   m) {
-      while (match(s, /(REQ|DEC)-[0-9]+/)) { m = substr(s, RSTART, RLENGTH); if (m == ma) return 1; s = substr(s, RSTART + RLENGTH) }
+      while (match(s, /(REQ|DEC|Q)-[0-9]+/)) { m = substr(s, RSTART, RLENGTH); if (m == ma) return 1; s = substr(s, RSTART + RLENGTH) }
       return 0
     }
     function xuat() { if (id != "" && trung) print id "|" st }
-    BEGIN { truong = (ma ~ /^REQ-/) ? "(Covers|On assumption)" : "Based on" }
+    BEGIN { truong = (ma ~ /^REQ-/) ? "(Covers|On assumption)" : (ma ~ /^Q-/) ? "On assumption" : "Based on" }
     { sub(/\r$/, "") }
     /^##[ \t]/ && !/^###/ { xuat(); id = ""; next }
     /^###[ \t]+TSK-[0-9]+/ { xuat(); match($0, /TSK-[0-9]+/); id = substr($0, RSTART, RLENGTH); st = "?"; trung = 0; next }

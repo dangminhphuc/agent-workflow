@@ -50,3 +50,8 @@ invariants:
 - Rule: a task is marked done only by the machine, after its verification step passes or a record of manual verification is given.
 - Judged by: machine
 - Artifact: task-evidence
+
+### CAP-implement-07 — Durable knowledge in scope of the planned files is retrieved before building
+- Rule: the set of durable-knowledge documents is computed by the machine from the task plan's files, not chosen by the agent, and is read before the first task starts.
+- Judged by: agent
+- Artifact: change

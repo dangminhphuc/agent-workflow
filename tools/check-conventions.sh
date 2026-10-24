@@ -144,21 +144,26 @@ done
 
 case "$(gt mr_platform)" in
   ""|github|gitlab) ;;
+  # giữ: CAP-deploy-01
   *) loi "mr_platform \"$(gt mr_platform)\" — chỉ nhận github hoặc gitlab (trống = đoán từ origin)" ;;
 esac
 
 BP=$(gt branch_patterns)
 for cap in $(gt type_by_prefix); do
   tt=${cap%%=*}; lt=${cap#*=}
+  # giữ: CAP-plan-01
   case "$cap" in *=*) ;; *) loi "type_by_prefix: \"$cap\" không có dạng tiền-tố=loại"; continue ;; esac
+  # giữ: CAP-plan-01
   [ -n "$tt" ] || { loi "type_by_prefix: \"$cap\" thiếu tiền tố"; continue; }
   case " $LOAI_HOP_LE " in
     *" $lt "*) ;;
+    # giữ: CAP-plan-01
     *) loi "type_by_prefix: loại \"$lt\" không hợp lệ (có: $LOAI_HOP_LE)"; continue ;;
   esac
   if [ -n "$BP" ]; then
     set -f
     # shellcheck disable=SC2086
+    # giữ: CAP-plan-01
     khop_glob "${tt}vi-du" $BP || loi "type_by_prefix: branch \"${tt}<mô-tả>\" không khớp branch_patterns — aw feature sẽ không nhận ra việc loại $lt"
     set +f
   fi
@@ -177,6 +182,7 @@ re_dung jira_key_regex awk
 re_dung skipped_test_regex grep
 
 SG=$(gt scope_glob_max_files)
+# giữ: CAP-implement-05
 case "$SG" in ""|*[!0-9]*) [ -z "$SG" ] || loi "scope_glob_max_files \"$SG\" — số nguyên ≥ 0 (0 = tắt cảnh báo glob rộng)" ;; esac
 
 CHINH=$(wt_chinh "$MT_REPO" 2>/dev/null) || CHINH=$MT_REPO
@@ -193,6 +199,7 @@ fi
 BB=$(gt base_branch)
 if [ -n "$BB" ] && ! git -C "$MT_REPO" rev-parse --verify --quiet "refs/heads/$BB" >/dev/null &&
    ! git -C "$MT_REPO" rev-parse --verify --quiet "refs/remotes/origin/$BB" >/dev/null; then
+  # giữ: CAP-plan-01
   loi "base_branch \"$BB\" không có trong repo (cả local lẫn origin)"
 fi
 

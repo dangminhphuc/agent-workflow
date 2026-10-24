@@ -1,7 +1,7 @@
-# Spec: SP20 — Tên lệnh theo stage SDLC
+# Spec: SP31 — Tên lệnh theo stage SDLC
 
 - Ngày: 2026-10-23 · Branch: `claude/keen-fermi-2le5x4`
-- Roadmap § SP20 · Nguồn: lượt đánh giá "slash command phase so với SDLC stage" ngày 2026-10-23.
+- Roadmap § SP31 · Nguồn: lượt đánh giá "slash command phase so với SDLC stage" ngày 2026-10-23.
 - Trạng thái: **nháp — §1–§4 người đã chốt, §5 chờ người chốt** trước khi viết plan.
 - Interface: không đổi capability/invariant; `check-sdlc.sh` thêm luật cấu trúc (§4). Riêng §5.3,
   §5.5 đổi interface nếu được chọn.
@@ -45,7 +45,7 @@ Summary phase đếm "Bước 1/6 … 6/6, Bước 7 (tuỳ chọn)" trong khi s
 ## 2. Deploy vẫn tuỳ chọn (chốt)
 
 - `/aw-deploy` giữ `required: false` + `when:`; stage `deploy` giữ "tuỳ" trong ma trận job type.
-- `CAP-deploy-03` (rollback) **không** làm trong SP20 (đề xuất ở §5.3).
+- `CAP-deploy-03` (rollback) **không** làm trong SP31 (đề xuất ở §5.3).
 
 ## 3. Lệnh con kiểu `aw-{stage}-approve` / `aw-{stage}:approve` (đánh giá — chờ chốt ở §5.2)
 
@@ -119,14 +119,14 @@ không phải token.
   - `CHANGELOG` mục `Thay đổi`, chữ đậm: ai có script/CI gọi `aw check plan` phải sửa.
 
 ### 5.4 Rollback (`CAP-deploy-03`)
-- **Đề xuất:** không làm trong SP20 (deploy còn tuỳ chọn). Chỉ sửa `note` stage `deploy` ở
+- **Đề xuất:** không làm trong SP31 (deploy còn tuỳ chọn). Chỉ sửa `note` stage `deploy` ở
   `workflow.yaml`: bỏ "release, tag, triển khai" (đã `out_of_scope` qua `CAP-deploy-02`), còn
   "Rollback chưa làm". Rollback thành dự án con riêng khi deploy thành bắt buộc.
 
 ### 5.5 Lệnh tiện ích làm hộ stage
 - `/aw-approvals` tick ô mà `CAP-require-03`, `CAP-design-03` cần; `/aw-clarify` đóng vòng
   `CAP-require-02`; `/aw-refactor` là đầu vào stage `plan`. `check-sdlc.sh` không thấy phần này.
-- **Đề xuất:** ngoài SP20. Ghi lý do trong `docs/kien-truc.md` § Interface SDLC; nếu sau này cần thì
+- **Đề xuất:** ngoài SP31. Ghi lý do trong `docs/kien-truc.md` § Interface SDLC; nếu sau này cần thì
   thêm khoá chỉ-tham-khảo `supports: [CAP-…]` (không tính vào trạng thái stage) — dự án con riêng.
 
 ### 5.6 Dạng số trong summary
@@ -134,10 +134,10 @@ không phải token.
   `Bước 2/8 · …` (đếm từ 1, quen với người dùng hơn).
 
 ### 5.7 Operate và breakdown không duyệt
-- `CAP-operate-02`: giữ như SP16 (gap, `[INCIDENT]` đã có) — ngoài SP20.
+- `CAP-operate-02`: giữ như SP16 (gap, `[INCIDENT]` đã có) — ngoài SP31.
 - `breakdown` → `implement` không có người duyệt (`INV-005` chỉ gắn `require`, `design`): đúng ý đồ vì
   task truy về DEC đã duyệt (`INV-001`, `INV-002`). **Đề xuất:** thêm một câu lý do vào
-  `docs/kien-truc.md` trong PR SP20, không đổi luật.
+  `docs/kien-truc.md` trong PR SP31, không đổi luật.
 
 ## 6. Tài liệu đi kèm (khi implement)
 

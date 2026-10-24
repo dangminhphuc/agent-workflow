@@ -48,6 +48,8 @@ Open work: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` (the only todo lis
 
 - POSIX sh + awk + sed + git only: no bashisms, Node, Python, jq. ERE without `{n}` (mawk).
   Multi-file awk: `FILENAME == ARGV[i]`, never `FNR==1`.
+- CI also runs macOS (bash 3.2 as `sh`, BSD awk/sed): multi-line or `\`-bearing strings go to awk via
+  `ENVIRON`, never `-v`; a `case` inside `$(…)` writes `(pattern)` (`tools/tests/26-posix-macos.sh`).
 - YAML: only the subset `tools/lib/md.sh` parses (`k: v`, `k:` + `  - item`, `k: []`).
 - Every script declares result labels via `kq_khai` (`tools/lib/result.sh`); prompts/docs refer to
   labels, not exit codes.

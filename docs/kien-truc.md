@@ -209,8 +209,9 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
 - **Lệnh kiểm nằm trong git (`make test`), `config.sh` chỉ trỏ tới.** Chép lệnh vào `config.sh`
   (ngoài git, mỗi máy một bản) thì local và CI lệch dần: local xanh mà pipeline chặn. Target mẫu
   chưa khai thoát mã 1 — "quên khai" không bao giờ thành xanh, đúng như `TEST_CMD` trống.
-- `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn; cách nạp theo phạm vi diff
-  là bước sau.
+- `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn. Tài liệu bền theo phạm vi: `aw knowledge
+  implement` lọc theo `Expected files` của `plan.md`, `aw knowledge review` lọc theo diff — cùng tập tài liệu
+  review phải chấm verdict.
 
 ### `/aw-bootstrap`: dựng bản đồ một lần cho repo có sẵn
 
@@ -250,12 +251,14 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
   (plan → spec): truy được về Jira/Confluence. Máy dựng lại ADR từ DEC và so (bỏ `Date`, `Status`):
   sửa ADR bằng tay, hay DEC đổi sau khi nâng, đều chặn ở implement và review — chính xác nên chặn.
 - **`Scope` bắt buộc**: không có phạm vi thì `aw knowledge` không biết ADR nào liên quan việc nào,
-  và cross-check stale (bước sau) không có dữ liệu.
+  và cross-check stale (§ Cross-check stale) không có dữ liệu.
 - **Không xoá ADR**: thay bằng `Status: superseded by NNNN`; người đọc sau vẫn thấy vì sao từng làm
   khác. Chỉ mục `README.md` dựng lại từ các file (giữ phần người viết phía trên bảng).
 - **`aw knowledge` tách khỏi `aw rules`**: `rules` nghĩa là "đọc hết, review chấm từng file"; kiến
   thức bền lọc theo phạm vi (đường dẫn trong `## Existing code`) — trộn vào thì bảng `## Repo rules`
   phình theo số module. Design gọi hai lần: trước khảo sát (chỉ mục) và sau khi ghi `Existing code`.
+  `aw knowledge` gọi ở spec, design, implement, review. Implement và review không thêm luật chặn: máy không
+  kiểm được agent đã đọc; review chỉ chấm verdict từng tài liệu (CAP-verify-06).
 - Đi ngược ADR mà không khai `Supersedes` máy không phát hiện được (cần hiểu nội dung) → LLM checker
   thiết kế chặn (`trái ADR`).
 
@@ -496,10 +499,26 @@ thoại **là** human gate của open question; dấu vết ở `Answer:` (ai, n
 sửa theo câu trả lời thì bỏ tick, người tick lại — máy không phân biệt "sửa người vừa xác nhận" với
 "sửa người chưa thấy".
 
-**Người đổi REQ đã có nguồn** đi cùng đường open question (`/aw-clarify REQ-NNN`): ghi thành mục `answered`
-trong `open-questions.md` (cách hiểu cũ ở `Assumption`, lời người ở `Answer`), REQ đổi nhãn sang
-`[FILE] open-questions.md § REQ-NNN`. Không thêm source label thứ sáu; checker spec chặn nhãn
-trỏ vào `open-questions.md § REQ-NNN` mà mục đó không có — chính xác nên chặn. Sửa thẳng `spec.md` thì nhãn cũ
+**Câu hỏi có mã riêng (`Q-NNN`), quan hệ ghi ở một phía.** Trước đây mỗi open question mang mã và tiêu
+đề của một REQ, nên `open-questions.md` thành bản sao của spec: `Assumption` ghi ở cả hai file (máy chỉ
+kiểm một bản, hai bản lệch không ai báo), một câu hỏi đụng nhiều REQ phải ghi nhiều mục. Nay câu hỏi đánh
+số riêng; REQ trỏ tới câu hỏi ở dòng `Source:`, và **chỉ ở đó** — máy suy ngược câu hỏi phủ REQ nào
+(`aw pending`, cổng mức chặn in sẵn). Không ghi thêm `Affects:` ở câu hỏi: cả hai phía do cùng agent
+viết cùng lượt, luật đối chiếu hai phía chủ yếu bắt lỗi quên sửa một phía — lỗi do chính việc ghi hai lần
+sinh ra. Một REQ đứng trên tối đa một câu hỏi (giữ "đúng một `Source:`"): REQ nhiều câu hỏi rơi vào trạng
+thái lửng (một đã trả lời, một chưa) và kéo theo viết lại review `pending`, `aw rule promote`, đếm nhãn;
+REQ có hai ẩn số độc lập thì tách REQ. Chỗ lặp duy nhất còn lại là cố ý: `Quote:` của REQ chép lời trong
+`Answer:` để `quote.sh` kiểm câu trích có thật, như mọi nguồn `[FILE]`. Mục dạng cũ `### REQ-NNN` đọc
+được vô thời hạn (link cũ `§ REQ-NNN` chính là "REQ trỏ tới câu hỏi đó", nên luật mới áp dụng y nguyên),
+không có lệnh chuyển đổi: chuyển là sửa spec đã duyệt — hoặc người phải duyệt lại vì engine đổi định
+dạng, hoặc máy tự tính lại approval hash, tức sửa nội dung người đã duyệt rồi coi như vẫn duyệt.
+
+**Người đổi REQ đã có nguồn** đi cùng đường open question (`/aw-clarify REQ-NNN`): ghi thành một mục
+`Q-NNN` `answered` tối giản — chỉ `Question` ("REQ-NNN nên hiểu là X hay Y?") và lời người ở `Answer` —
+REQ đổi nhãn sang `[FILE] open-questions.md § Q-NNN`. Không chép `Source says`/`Assumption` (cách hiểu cũ
+nằm ở git), không file nhật ký riêng (thêm artifact, mục lục, chuỗi `based_on` mà không bắt thêm lỗi nào),
+không trường `Kind` (chưa luật nào cần phân biệt). Không thêm source label thứ sáu; checker spec chặn nhãn
+trỏ vào `open-questions.md § Q-NNN` mà mục đó không có — chính xác nên chặn. Sửa thẳng `spec.md` thì nhãn cũ
 (`[CONFLUENCE]`…) nói dối về nguồn và không máy nào bắt. Thêm/bỏ REQ là đổi phạm vi → `[HUMAN]` trong
 `intake.md`, chạy lại spec. Lan xuống dưới: `based_on` chỉ biết *file* đã đổi, nên `aw task reopen`
 đưa đúng task `Covers`/`On assumption` REQ đó (hay `Based on` DEC đó) về `[ ]` — máy làm, khỏi để agent
@@ -930,7 +949,9 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
 6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng. File của engine đã được `check-sdlc.sh` kiểm
-   (`yaml_kiem`); YAML trong repo đích (frontmatter artifact) thì chưa.
+   (`yaml_kiem`); frontmatter `based_on` của `spec.md`/`tdd.md`/`plan.md` ở repo đích cũng vậy
+   (`kc_fm_hong`: đọc sai thì chặn ở mọi phase, vì kiểm stale sẽ im lặng). Còn lại: `conventions.md`
+   (đã có `aw conventions check`) và frontmatter tự thêm khoá lạ — máy chỉ đọc khoá nó biết.
 7. **Máy không biết ai tick.** Hook chỉ có khi repo cài và agent có hook; không có hook thì agent tự
    tick vẫn lọt (artifact ngoài git, không có `git blame`). Hook không bắt dấu giả agent tự tính, và
    bỏ nhầm tick nếu người tick đúng lúc lệnh agent đang chạy. Nội dung đổi **trước** lần ghi dấu
@@ -956,9 +977,11 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     trước khi pull bản đã merge, người phải xoá bản chưa track (git từ chối ghi đè).
 17. **Bản hiệu lực làm mới khi script đọc quy ước**: agent mở `.engine/conventions.md` trước mọi
     lệnh `aw` của phiên thì có thể thấy bản cũ (mọi phase đều chạy `aw feature` trước).
-18. **Số ADR cấp lúc nâng, theo thư mục ở worktree**: hai việc song song cùng lấy `0004`; PR merge sau
-    có hai file trùng số (`aw adr check` chặn ở việc kế tiếp) và xung đột ở bảng chỉ mục — người
-    đổi số, chạy lại `aw adr promote`.
+18. **Số ADR cấp lúc nâng**: số nhìn cả worktree lẫn `origin/<Base>`, nên việc đã merge không bị lấy
+    lại số; trùng với base thì implement/review/`aw ship create` chặn và chạy lại `aw adr promote` đổi
+    số. Còn hở: hai PR **cùng mở** vẫn cùng số tới khi một PR merge — PR sau bị chặn ở lần kiểm kế tiếp
+    (sau fetch / merge base), không trước. Bảng chỉ mục vẫn xung đột khi merge base — giải bằng chạy lại
+    `promote`. Không đổi tên ADR sang slug/ngày: hỏng tham chiếu `ADR-NNNN` sẵn có.
 19. **"Đi ngược ADR" chỉ LLM checker thấy** — máy chỉ kiểm `Supersedes` khi DEC tự khai.
     Tương tự, nguồn mới mâu thuẫn với luật `BR-` active chỉ agent spec và người phát hiện.
 20. **PRD đổi sau khi luật đã nâng**: máy không theo dõi Confluence/Jira; phiên bản ghi trong `Source`

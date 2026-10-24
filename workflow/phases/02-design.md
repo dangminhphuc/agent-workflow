@@ -18,6 +18,7 @@ capabilities:
   - CAP-design-01
   - CAP-design-02
   - CAP-design-03
+  - CAP-design-04
 exit_machine:
   - aw check design
 exit_human:

@@ -479,8 +479,13 @@ chữ. Confluence/Jira máy không đọc được: câu trích chỉ giúp bạ
 thì `/aw-design` (không có design: `/aw-plan`) chỉ **cảnh báo** — xem lại REQ, sửa qua `/aw-clarify`
 nếu cần.
 
-**`open-questions.md` quyết định *agent đang đoán gì* và đoán sai thì tốn bao nhiêu.** Mỗi open question:
-nguồn nói gì, câu hỏi, hỏi ai, giả định tạm, *If wrong, redo*, và **mức `Blocking`**:
+**`open-questions.md` quyết định *agent đang đoán gì* và đoán sai thì tốn bao nhiêu.** Mỗi open question
+là một mục `### Q-NNN — <câu hỏi ngắn>` (đánh số riêng, không theo số REQ): nguồn nói gì, câu hỏi, hỏi ai,
+giả định tạm, *If wrong, redo*, và **mức `Blocking`**. Một câu hỏi có thể phủ nhiều REQ; REQ trỏ tới câu
+hỏi bằng dòng `Source: [OPEN-QUESTION] → [open-questions.md § Q-NNN](…)`, và mỗi REQ đứng trên tối đa
+một câu hỏi. Quan hệ chỉ ghi ở phía spec — câu hỏi không liệt kê REQ, giả định không chép vào REQ;
+`aw pending` in sẵn câu hỏi nào phủ REQ nào. Việc làm trước bản này có mục dạng cũ `### REQ-NNN`: vẫn
+đọc được, `aw check spec` chỉ in một dòng cảnh báo.
 
 | `Blocking` | Khi nào | Chặn |
 |---|---|---|
@@ -500,7 +505,8 @@ File này **luôn tồn tại**; không có open question thì ghi "No open ques
 
 **Máy chặn khi:** REQ không có nguồn, thiếu tiêu chí chấp nhận/`Priority`; REQ có nguồn mà thiếu
 `Quote`, hay câu trích `[FILE]` không có trong file nguồn; mục bắt buộc để rỗng;
-mâu thuẫn tự phân xử; `open-questions.md` lệch với spec (mục mồ côi, trạng thái lệch); bugfix thiếu
+mâu thuẫn tự phân xử; `open-questions.md` lệch với spec (câu hỏi còn mở mà không REQ nào trỏ tới, mã
+trùng, trạng thái lệch); bugfix thiếu
 `Reproduction`; refactor có REQ hành vi mới, hoặc REQ preserve không có test bảo vệ **có sẵn trên base**.
 
 ### Utility command — `/aw-clarify`: chốt việc chờ người
@@ -516,8 +522,9 @@ bỏ tick, bạn tick lại. Chưa trả lời được → agent soạn tin nh�
 
 **Không đồng ý một REQ đã có nguồn** (agent hiểu nguồn khác bạn, tiêu chí sai, `Priority` sai) →
 `/aw-clarify REQ-NNN`. Đừng sửa lặng lẽ: agent ghi việc đổi thành một **open question đã trả lời** trong
-`open-questions.md` (cách hiểu cũ ở `Assumption`, lời bạn nguyên văn ở `Answer`), cho bạn xem dòng sẽ
-sửa, đổi source label REQ thành `[FILE] open-questions.md § REQ-NNN`, bỏ tick spec. Nhờ vậy lời bạn thành
+`open-questions.md` — một mục `Q-NNN` chỉ có `Question` ("REQ-NNN nên hiểu là X hay Y?") và lời bạn
+nguyên văn ở `Answer`, không chép lại REQ (cách hiểu cũ nằm trong preview và lịch sử git) — cho bạn xem
+dòng sẽ sửa, đổi source label REQ thành `[FILE] open-questions.md § Q-NNN`, bỏ tick spec. Nhờ vậy lời bạn thành
 nguồn của REQ, và `aw check spec` đối chiếu được hai file. Sau đó:
 
 | Đã có | Ảnh hưởng | Việc tiếp |
@@ -745,7 +752,7 @@ Tất cả nằm ở `<worktree>/docs/sdlc/<tên-branch>/` (việc tạo bằng 
 
 **Mục lục và link.** Artifact agent viết có `## Contents` ngay trước heading `##`/`###` đầu
 tiên, và mọi tham chiếu sang artifact khác là link tới mục, vd
-`[open-questions.md § REQ-002](open-questions.md#req-002--kênh-thông-báo)`. Agent không gõ tay:
+`[open-questions.md § Q-002](open-questions.md#q-002--kênh-thông-báo-nào)`. Agent không gõ tay:
 `aw toc <thư-mục-feature>` sinh mục lục và tính anchor. Sửa heading bằng tay thì chạy lại
 `aw toc`; checker chặn khi mục lục lệch heading hay link trỏ vào mục không có.
 
@@ -759,6 +766,11 @@ open-questions.md ────┘
 
 Sửa file phía trước → file phía sau **stale** → cảnh báo ở implement, chặn ở review. Cách xử lý:
 chạy lại phase sinh ra file stale (agent sẽ cập nhật, không ghi đè).
+
+Frontmatter `based_on` máy không đọc được (viết `[a, b]`, thụt tab, thiếu dòng `---` đóng, mục không
+phải `<file>@<số>`) thì **mọi** `aw check` chặn — nếu không, phần kiểm stale sẽ im lặng cho qua. Thiếu
+đầu vào trong `based_on` (quên `aw based-on`) thì cảnh báo, review chặn. Cả hai cách sửa: chạy lại
+lệnh `aw based-on …` mà thông báo in ra, không sửa frontmatter bằng tay.
 
 **Ngoài job dir, đi vào git qua PR** (§7): `docs/adr/NNNN-….md` (từ DEC-xxx `Promote: adr`) và
 `docs/product/rules/<miền>.md` (từ REQ `Promote: BR-…`).
@@ -875,7 +887,7 @@ Artifact của việc không vào git. Hai thứ **bạn chọn** được đưa
 | Ai quyết nâng | bạn, bằng cách duyệt DEC đó | bạn, bằng cách duyệt spec |
 | Lệnh (implement chạy, không viết tay) | `aw adr promote <dir> DEC-NNN` | `aw rule promote <dir> REQ-NNN` |
 | Ghi vào | `docs/adr/NNNN-<việc>-dec-nnn.md` + chỉ mục `README.md` | `docs/product/rules/<miền>.md` |
-| Việc sau đọc | design (`aw knowledge design`) | spec (`aw knowledge spec`) |
+| Việc sau đọc | design, implement, review (`aw knowledge <phase>`) | spec, design, implement, review (`aw knowledge <phase>`) |
 | Kiểm | `aw adr check` | `aw rule check` |
 
 Nên nâng: quyết định **còn đúng sau việc này**, xuyên module, khó đảo ngược (ADR); bất biến nghiệp vụ,
@@ -886,8 +898,15 @@ DEC đi ngược một ADR `accepted` phải khai `- Supersedes: ADR-NNNN` — A
 **Chống stale:** diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi →
 implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`.
 
-Hai việc song song cùng nâng ADR có thể trùng số → `aw adr check` chặn ở việc kế tiếp; bạn đổi số và
-chạy lại `aw adr promote`.
+Implement đọc theo `Expected files` của `plan.md` (`aw knowledge implement`); review đọc theo diff (`aw knowledge review`),
+đúng tập tài liệu review phải chấm verdict. Việc bỏ design (`chore`, `Design: skip`) vẫn đọc chỉ mục ADR ở implement.
+
+**Hai việc song song cùng nâng ADR.** `aw adr promote` cấp số lớn hơn mọi số trong worktree **và** trên
+base của việc (`origin/<Base>`, fetch trước). Việc kia merge trước mà chiếm số của bạn → implement, review
+và `aw ship create` (so với nhánh đích) chặn, nêu file trên base. Cách sửa: chạy lại
+`aw adr promote <dir> DEC-NNN` — máy cấp số mới, đổi tên file, sửa `superseded by` và bảng chỉ mục. Merge
+base vào nhánh việc mà xung đột ở `README.md` của thư mục ADR: nhận bản nào cũng được, rồi chạy lại
+`aw adr promote` (bảng do máy dựng).
 
 ---
 

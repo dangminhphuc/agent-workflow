@@ -57,6 +57,9 @@ esac
 . "$HERE/lib/mr.sh"
 . "$HERE/lib/adapter.sh"
 . "$HERE/lib/artifact.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/approval-tick.sh"
+. "$HERE/lib/adr.sh"
 . "$HERE/lib/env.sh"
 mt_dat "$HERE"
 CONV="$MT_CONV"; R="$MT_REPO"
@@ -157,6 +160,11 @@ create)
   if [ "$bn" != 0 ]; then
     echo "  ✗ Worktree còn $bn thay đổi chưa commit — MR sẽ thiếu chúng:" >&2
     git -C "$R" status --short -- . "$KTV" | head -5 | sed 's/^/      /' >&2; chua=1
+  fi
+  # Số ADR của việc đã bị ADR khác chiếm trên nhánh đích (vừa fetch): MR sẽ mang hai file cùng số.
+  atb=$(adr_trung_base "$DIR" "refs/remotes/origin/$DICH")
+  if [ -n "$atb" ]; then
+    printf '%s\n' "$atb" | while IFS= read -r l; do echo "  ✗ ADR: $l" >&2; done; chua=1
   fi
   [ "$chua" = 0 ] || exit 1
 

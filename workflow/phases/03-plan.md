@@ -42,7 +42,7 @@ No design phase (`chore`, or `Design: skip` in `spec.md`) → no `tdd.md`: input
    - `Verify:` — command in backticks + what to observe;
    - `Depends on:` if any;
    - small enough to finish in one go without breaking the build on its own.
-2. **Tasks on a temporary assumption:** `On assumption: **yes** — [open-questions.md § REQ-NNN](open-questions.md#req-nnn)`, else `no`.
+2. **Tasks on a temporary assumption:** `On assumption: **yes** — [open-questions.md § Q-NNN](open-questions.md#q-nnn)` (the question the covered REQ's `Source:` points to), else `no`.
 3. **Every REQ is covered by a task or listed in `## Deferred` with a reason.** Prefer deferring `should`; deferring `must` warns — tell the human.
 4. **`## Manual verification`:** REQs that cannot be tested automatically + reason (missing → implement warns, review blocks).
 5. **By work type:**

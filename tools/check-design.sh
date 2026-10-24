@@ -89,6 +89,11 @@ qtl=$(kc_quy_tac_loi "$DIR" design)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $qtl
 EOF
+fmh=$(kc_fm_hong "$DIR")
+# giữ: INV-006
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$fmh
+EOF
 
 # Mục lục và link tới mục (tools/lib/toc.sh).
 tl=$(toc_loi "$DIR" tdd.md design-findings.md)
@@ -252,7 +257,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
 ' "$SPEC" "$TDD" "$PHF"
 ma=$?
 
-cb=$(kc_loi_thoi "$DIR")
+cb=$( { kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; } )
 if [ -n "$cb" ]; then
   echo ""
   echo "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done

@@ -151,6 +151,11 @@ xd=$(kc_dau_xung_dot "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $xd
 EOF
+fmh=$(kc_fm_hong "$DIR")
+# giữ: INV-006
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$fmh
+EOF
 
 # ---- 4d. ADR — DEC "Promote: adr" da nang dung noi dung DEC da duyet (chinh xac nen CHAN) ----
 adl=$(adr_loi_viec "$DIR")
@@ -179,7 +184,7 @@ if [ -n "$gct" ]; then
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""

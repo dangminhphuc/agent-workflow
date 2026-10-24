@@ -30,7 +30,7 @@ The human may also **change a REQ** they disagree with (`/aw-clarify REQ-NNN`, o
 The human sees **one line**:
 
 ```
-Còn 6 việc chờ bạn: 3 đang chặn (REQ-001, REQ-002 chặn /aw-design; FND-003 chặn /aw-plan), 3 chưa chặn. Bắt đầu từ REQ-001.
+Còn 6 việc chờ bạn: 3 đang chặn (Q-001, Q-002 chặn /aw-design; FND-003 chặn /aw-plan), 3 chưa chặn. Bắt đầu từ Q-001.
 ```
 
 Print the full list (id + title + group, one per line) only if the human asks.
@@ -70,7 +70,7 @@ If the choice UI already provides them (e.g. Claude Code) → **do not** add dup
 Example (human-facing text stays Vietnamese):
 
 ```
-REQ-006 · CHẶN REVIEW · 5/9 · 2 quyết định
+Q-004 (REQ-006, REQ-007) · CHẶN REVIEW · 5/9 · 2 quyết định
 Nguồn: Input 1 chỉ nói "chỉ client trong allowlist được gọi"; không nói mã lỗi, không nói route chưa khai.
 Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu quyền chứ không sai key;
   từ chối mặc định để route mới không lọt ra ngoài khi quên khai.
@@ -115,6 +115,7 @@ Order (max 4): `(Đề xuất) <fix>` (what, which section) → 0–1 genuinely 
 - Decided → **write nothing yet**: keep the decision (verbatim words, who, date, the changes it implies) and go to the next item. Close it in one line (`FND-038: sửa theo phương án A — ghi cùng đợt.`), no preview.
 - A later item touching what an earlier decision changes → build on the pending version, not on the file.
 - **"Chat about this":** answer, explain consequences, quote more source — **write no files**. Once clear, ask the same question again as choices (options updated by the discussion). A decision stated in chat → confirm it via choices before recording.
+- **Typed text is a question, not an answer** (asks what a term/screen/option means, asks to confirm your reading, ends in `?`, "phải không", "là gì"…) → handle as "Chat about this": answer it, quoting the source passage verbatim (file + section); not in the documents → say so. **Never** record it as `Answer:` or a rejection reason. Then ask the same question again as choices. Unsure whether it is a question or an answer → ask which, before recording anything.
 
 ## 3. Record — one preview, one write
 
@@ -125,21 +126,21 @@ Write when the queue is done, or earlier when the human says so: stops (`dừng`
 Build every change from all decided items (3a, 3b, section 5), then show **one** preview, grouped by file (`open-questions.md`, `spec.md`, `tdd.md`, findings file), each change tagged with its item id:
 - edited text in `spec.md` / `tdd.md` → before → after (`-` / `+` lines), only the lines that change;
 - new blocks (a DEC-xxx) → `+` lines;
-- bookkeeping (`Answer`, `Status`, `Resolution`, `Blocking`, source label, removed `Assumption`, untick) → one line per item, no diff;
+- bookkeeping (`Answer`, `Status`, `Resolution`, `Blocking`, source label, untick) → one line per item, no diff;
 - same section changed by several items → one combined before → after naming all of them; new DEC-xxx numbered consecutively across the batch.
 
 Then ask once: "ghi như vậy được không?" (agreement in chat is enough). Human corrects some lines → fix only those, show only the corrected parts, ask again. Human withdraws a decision → drop its changes; the item stays `open` for the next run.
 
 ### 3.2 Write
 
-Write everything, then: `aw task reopen <dir> REQ-NNN` once per REQ whose description/criteria changed (no `plan.md` → nothing to do); `aw check spec <dir>` if `spec.md` / `open-questions.md` changed; `aw check design <dir>` if `tdd.md` / findings changed. Paste the real results. Not `[x] ĐẠT` → make the files agree; a fix that changes lines the human confirmed → show that part and ask again.
+Write everything, then: `aw task reopen <dir> Q-NNN` once per question answered differently from its assumption, and `aw task reopen <dir> REQ-NNN` once per REQ whose description/criteria changed (no `plan.md` → nothing to do); `aw check spec <dir>` if `spec.md` / `open-questions.md` changed; `aw check design <dir>` if `tdd.md` / findings changed. Paste the real results. Not `[x] ĐẠT` → make the files agree; a fix that changes lines the human confirmed → show that part and ask again.
 
 ### 3a. Open question — what to write
 
 **Human answered:**
 1. `open-questions.md`: `Answer:` = the human's **verbatim** words + who + date (e.g. `"Hoàn tiền tối đa 30 ngày" — PO, 2026-10-04`); `Status: answered`. Human **picked** an option → verbatim = its label (without `(Đề xuất)`) plus `(chọn từ phương án agent đề xuất)`. Several questions → record each answer.
-2. `spec.md`: change the REQ's source label to `[FILE]` [open-questions.md § REQ-NNN](open-questions.md#req-nnn) (or the source the human named), and its `Quote:` to the `Answer:` words (or that source's sentence), verbatim. Remove that REQ's `Assumption` line.
-3. **Answer differs from the assumption:** edit the description / criteria of **that REQ only** (before → after in the preview). Append `(đã xác nhận sửa REQ-NNN)` to `Answer:`; reopen its tasks (3.2). Same as the assumption → only change the label.
+2. `spec.md`: for **every** REQ whose `Source:` points to the question (`aw pending` lists them), change the source label to `[FILE]` [open-questions.md § Q-NNN](open-questions.md#q-nnn) (or the source the human named), and its `Quote:` to the `Answer:` words (or that source's sentence), verbatim.
+3. **Answer differs from the assumption:** edit the description / criteria of **those REQs only** (before → after in the preview). Append `(đã xác nhận sửa REQ-NNN[, REQ-…])` to `Answer:`; reopen the question's and those REQs' tasks (3.2). Same as the assumption → only change the labels.
 4. Spec was ticked and steps 2–3 change it → **untick** (you may untick, never tick). Remind the human to re-tick in the summary.
 
 **Cannot answer yet:** draft a message to `Ask`, self-contained (readable without the repo): the question, what the documents say, the assumption in use, impact if wrong, which phase is waiting. Show it right away (the human sends it); keep `open`, next item.
@@ -180,11 +181,11 @@ The human disagrees with how the spec reads a source — description, criteria o
 
 1. **Read** the REQ, its `Source:` passage, what depends on it: `tdd.md` (`REQ mapping`, `Based on: DEC-xxx` of those sections), `plan.md` (`Covers: REQ-NNN`).
 2. **Ask** as in 2a. Context: what the source says, what the REQ says now, what must be redone (step 1). Options: the human's change as they stated it, keep the current reading, at most one other reading the source supports.
-3. **`open-questions.md`** (written in 3.2, like everything else) — the REQ's entry; create `### REQ-NNN — <same title as spec>` under `## Questions` if missing (replacing a "No open questions." line):
-   - `Source says` verbatim; `Question`: the reading in dispute; `Ask`: the human; `Assumption`: the previous reading; `If wrong, redo`: what step 1 found;
+3. **`open-questions.md`** (written in 3.2, like everything else): REQ's `Source:` already points to a question (`§ Q-NNN`) that covers **only this REQ** → that entry: move the old answer to `- **Superseded answer:** …`, then write the new `Answer:`. Otherwise (no question, or one shared with other REQs — never rewrite their source) create `### Q-NNN — <short question>` under `## Questions` (next free number; replaces a "No open questions." line) with **only**:
+   - `Question:` `REQ-NNN nên hiểu là <X> hay <Y>?` (the reading in dispute);
    - `Status: answered`; `Answer:` verbatim + who + date + `(đã xác nhận sửa REQ-NNN)`.
-   - Entry already answered → move the old answer to `- **Superseded answer:** …`, then write the new `Answer:`.
-4. **`spec.md`**: before → after of that REQ's lines in the batch preview; edit **that REQ only**; source label → `[FILE]` [open-questions.md § REQ-NNN](open-questions.md#req-nnn), `Quote:` → the new `Answer:` words verbatim. **Untick** the spec.
+   Never copy `Source says`, `Assumption` or REQ text: the old reading stays in the preview and in git.
+4. **`spec.md`**: before → after of that REQ's lines in the batch preview; edit **that REQ only**; source label → `[FILE]` [open-questions.md § Q-NNN](open-questions.md#q-nnn), `Quote:` → the new `Answer:` words verbatim. **Untick** the spec.
 5. After the write: `aw task reopen <dir> REQ-NNN` and `aw check spec <dir>` (3.2) — paste both real results.
 6. Summary (section 4): spec unticked → the human re-ticks. `tdd.md` exists → `/aw-design` updates the sections mapped to REQ-NNN (a DEC-xxx no longer fits → "Reopening a DEC-xxx"), then `/aw-plan`.
 

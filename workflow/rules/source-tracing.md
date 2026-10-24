@@ -14,7 +14,7 @@ Every `### REQ-NNN` in `spec.md` has **exactly one** `Source:` line with one lab
 | `[JIRA]` | Quoted from a Jira issue | Issue key + URL; `Quote:` |
 | `[FILE]` | Quoted from a file in the repo | Path + heading; `Quote:` found in that file |
 | `[INFERRED]` | Technical decision you derived | Reason + the REQ it serves |
-| `[OPEN-QUESTION]` | No source yet, temporary assumption | Entry with the same id in `open-questions.md` |
+| `[OPEN-QUESTION]` | No source yet, temporary assumption | Link to its question: `[open-questions.md § Q-NNN](open-questions.md#q-nnn)` |
 
 No sixth label. Does not fit the five → not a requirement → put it in `open-questions.md`.
 
@@ -45,13 +45,21 @@ The agent proposes `Blocking`, the human approves. Choose by "if the assumption 
 | `review-blocking` | Wrong → part of the code is redone | Flow continues on the assumption; `04-implement` warns, `05-review` blocks |
 | `non-blocking` | Wrong → small fix, may ship first | Nothing; review marks that REQ `pending` |
 
-Answering an open question: write `Answer:`, set `Status: answered`, **and** change the REQ's source label in the spec (e.g. `[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002)) and its `Quote:` to the answer words. The checker blocks if the two files disagree.
+## Question ↔ REQ
+
+- A question is `### Q-NNN — <short question>` in `open-questions.md`, numbered on its own. Old entries `### REQ-NNN` stay readable; new ones use `Q-NNN`.
+- The link lives **only** in the REQ's `Source:` line; never list REQs in the question. The machine derives which REQs a question covers.
+- One question may cover several REQs; a REQ stands on at most one question (exactly one `Source:`).
+- The assumption lives only in the question. Never copy question fields into the REQ, or REQ text into the question.
+
+Answering an open question: write `Answer:`, set `Status: answered`, **and** change the source label of **every** REQ pointing to it (e.g. `[FILE]` [open-questions.md § Q-001](open-questions.md#q-001)) and their `Quote:` to the answer words. The checker blocks if the two files disagree.
 
 ## Common failures
 
 - A REQ's region ends at the next `##`/`###` heading: a `Source:` or criterion under `### Ghi chú` does not count for the REQ above (split a REQ with `####`).
 - An acceptance criterion still `<...>` or inside an HTML comment does not count.
 - A source (`[JIRA]` key, `[CONFLUENCE]` URL, `[FILE]` path) not in `intake.md` `## Input` gets a warning: a real input → add it to intake; otherwise use a source you were given.
-- `open-questions.md` and the spec disagree: `open` ↔ REQ still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and the REQ label was changed.
+- `open-questions.md` and the spec disagree: `open` ↔ every REQ pointing to it still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and no REQ pointing to it is still `[OPEN-QUESTION]`.
+- A question still `open` that no REQ points to — link it from the REQ's `Source:` or delete it.
 - `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` left empty — write "Không có…" / "Không phát hiện mâu thuẫn." instead.
 - `Quote:` not character-for-character: added quotation marks, fixed typos, dropped markdown (`**`, links). Whitespace and line breaks do not count.

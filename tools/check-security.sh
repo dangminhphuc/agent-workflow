@@ -58,6 +58,7 @@ fi
 sai=$(printf '%s\n' "$ds" | awk -F '\t' '$1 == "!" { print $2 }')
 if [ -n "$sai" ]; then
   while IFS= read -r l; do
+    # giữ: CAP-implement-03
     loi "SECURITY_CMDS: dòng \"$l\" sai dạng — cần \"<nhóm>: <lệnh>\", nhóm ∈ {$(echo "$NHOM_BAO_MAT" | sed 's/ /, /g')}"
   done <<EOF
 $sai
@@ -68,6 +69,7 @@ EOF
 fi
 
 for g in secret sast sca; do
+  # giữ: CAP-implement-03
   printf '%s\n' "$ds" | awk -F '\t' -v g="$g" '$1 == g { f = 1 } END { exit !f }' ||
     echo "  [CẢNH BÁO] Không có lệnh nhóm \"$g\" — CI có chạy thì khai vào đây, không thì lỗi chỉ lộ ra ở pipeline"
 done
@@ -87,6 +89,7 @@ while IFS="$tab" read -r g l; do
   m=$?
   cat "$TMP"
   echo "────────────────────────────────────────────────────"
+  # giữ: CAP-implement-03
   if [ "$m" -eq 0 ]; then echo "[$g] XANH"; else echo "[$g] ĐỎ (mã $m)"; n_do=$((n_do + 1)); loi "[$g] \`$l\` trả về mã $m"; fi
   {
     echo ""

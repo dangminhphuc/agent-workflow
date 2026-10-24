@@ -71,7 +71,7 @@ ky_vong 0 "…sửa lại → HỢP LỆ" sh "$LU" check
 # Lời người đã ghi (câu trả lời điểm mù): nguồn [HUMAN] + Quote nguyên văn
 thay "$F/open-questions.md" '- **Status:** `open`' '- **Status:** `answered`
 - **Answer:** PO Lan, 2026-10-05: luôn hiện b'
-sua_spec '- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '- Source: `[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)
+sua_spec '- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '- Source: `[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)
 - Description: luôn hiện b
 - Promote: BR-BILLING-002'
 thay "$F/plan.md" '- Expected files: `src/b.txt`' '- Expected files: `src/b.txt` `docs/product/rules/billing.md`'; ghi_based_on 2>/dev/null
