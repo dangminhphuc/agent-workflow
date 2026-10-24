@@ -26,6 +26,9 @@ dung "/aw-ship: không bắt buộc, có mẫu merge-request.md" sh -c \
   "grep -q 'Required:\*\* no' '$O/.claude/commands/aw-ship.md' && grep -q 'templates/merge-request.md' '$O/.claude/commands/aw-ship.md'"
 dung "skill liệt kê /aw-ship" grep -q '| `/aw-ship` |' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "command có bước xác định feature bằng aw feature" grep -q 'aw feature \$ARGUMENTS' "$O/.claude/commands/aw-design.md"
+dung "command phase ghi mốc bắt đầu: aw feature … --phase <id>" sh -c \
+  "grep -q 'aw feature \$ARGUMENTS --phase spec' '$O/.claude/commands/aw-spec.md' && grep -q 'aw feature --phase intake' '$O/.claude/commands/aw-intake.md'"
+dung "lệnh tiện ích (/aw-clarify) không có --phase" sh -c "! grep -q -- '--phase' '$O/.claude/commands/aw-clarify.md'"
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <dir>`' "$O/.claude/commands/aw-design.md"
 dung "không còn gọi script theo đường dẫn bộ cài cũ" sh -c "! grep -rq '\.quy-trinh\|sh tools/\|\.sh ' '$O/.claude'"
 dung "command design gọi checker LLM" grep -q 'design-checker' "$O/.claude/commands/aw-design.md"
@@ -197,7 +200,7 @@ dung "mọi lệnh có mục tham số của Cursor (<tham-số> chép nguyên v
   "for f in '$O3'/.cursor/commands/*.md; do grep -q '## Command arguments in Cursor' \"\$f\" && grep -q 'copied verbatim' \"\$f\" || exit 1; done"
 dung "/aw-design xác định feature bằng aw feature <tham-số>" grep -qF 'aw feature <tham-số>' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-intake: aw feature không tham số, input đi qua heredoc với <tham-số>" sh -c \
-  "grep -q 'Run \`aw feature\` — \*\*without\*\* the command arguments' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
+  "grep -q 'Run \`aw feature --phase intake\` — \*\*without\*\* the command arguments' '$O3/.cursor/commands/aw-intake.md' && awk '/<<.HET_INPUT.\$/ { getline; print; exit }' '$O3/.cursor/commands/aw-intake.md' | grep -qx '<tham-số>'"
 dung "điều kiện ra máy là aw check <tên>" grep -q '`aw check design <dir>`' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-design gọi subagent checker LLM design-checker" grep -q 'subagent `design-checker`' "$O3/.cursor/commands/aw-design.md"
 dung "/aw-spec gọi subagent checker LLM spec-checker" grep -q 'subagent `spec-checker`' "$O3/.cursor/commands/aw-spec.md"

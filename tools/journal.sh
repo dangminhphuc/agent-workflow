@@ -22,6 +22,7 @@
 # Nội bộ (engine / checker gọi, không dành cho người):
 #   journal.sh _check <checker> <thư-mục-feature> <mã-thoát> <file-output>
 #   journal.sh _findings <thư-mục-feature> <review.md>
+#   journal.sh _phase <thư-mục-worktree> <feature> <phase>   (aw feature --phase; ghi phases.tsv)
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
@@ -40,6 +41,7 @@ bay() { # <chuỗi> -> một dòng, không tab
   printf '%s' "$1" | tr '\t\r\n' '   ' | sed 's/  */ /g; s/^ //; s/ $//'
 }
 gio() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
+may_nay() { bay "${AW_JOURNAL_MACHINE:-$(uname -n 2>/dev/null || echo may)}"; }
 viec() { basename "$(CDPATH= cd -- "$1" 2>/dev/null && pwd || echo "$1")"; }
 
 # ---------------------------------------------------------------- nội bộ
@@ -50,6 +52,13 @@ case "${1:-}" in
     mkdir -p "$JD" 2>/dev/null || exit 0
     dau=$(grep -m1 -E '^[ \t]*\[LỖI\]' "$5" 2>/dev/null | sed 's/^[ \t]*\[LỖI\][ \t]*//')
     printf '%s\t%s\t%s\t%s\t%s\n' "$(gio)" "$(viec "$3")" "$2" "$4" "$(bay "$dau")" >> "$JD/checks.tsv" 2>/dev/null
+    exit 0 ;;
+  _phase)
+    # Mốc bắt đầu phase. Im lặng, luôn thoát 0.
+    [ $# -eq 4 ] || exit 0
+    [ "${AW_JOURNAL:-1}" != 0 ] || exit 0
+    mkdir -p "$JD" 2>/dev/null || exit 0
+    printf '%s\t%s\t%s\t%s\n' "$(gio)" "$(viec "$2")" "$(bay "$3")" "$(bay "$4")" >> "$JD/phases.tsv" 2>/dev/null
     exit 0 ;;
   _findings)
     [ $# -eq 3 ] || exit 0
@@ -124,7 +133,7 @@ fi
 if [ "${1:-}" = export ]; then
   [ $# -eq 2 ] && [ -n "$2" ] || { echo "Dùng: aw journal export <file>" >&2; exit 2; }
   [ -d "$(dirname -- "$2")" ] || { echo "LỖI: thư mục của \"$2\" không có." >&2; exit 2; }
-  may=$(bay "${AW_JOURNAL_MACHINE:-$(uname -n 2>/dev/null || echo may)}")
+  may=$(may_nay)
   {
     for s in checks failures approvals findings; do
       if [ -f "$JD/$s.tsv" ]; then awk -v s="$s" -v m="$may" '{ print s "\t" m "\t" $0 }' "$JD/$s.tsv"; fi

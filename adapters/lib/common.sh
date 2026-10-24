@@ -198,19 +198,22 @@ ds_mau() {
 
 # Buoc 0 cua moi lenh: xac dinh feature. Thu tu branch -> tham so -> hoi la
 # giao dien chung giua cac adapter, nen no nam trong engine (aw feature), khong trong prompt.
-#   buoc_xac_dinh_feature <cách-viết-tham-số> [input] [true = phase có việc ở checkout chính]
+#   buoc_xac_dinh_feature <cách-viết-tham-số> [input] [true = phase có việc ở checkout chính] [phase-id]
+# Có phase-id thì nối ` --phase <id>` vào lệnh aw feature (engine ghi mốc bắt đầu phase).
 buoc_xac_dinh_feature() {
+  _ph=""
+  if [ -n "${4:-}" ]; then _ph=" --phase $4"; fi
   printf '## Step 0 — Feature dir (always first)\n\n'
   printf 'Talk to the human in Vietnamese. Every `aw` command ends with a `Kết quả` block — act on the `[x]` label.\n\n'
   if [ "${2:-}" = "input" ]; then
     # Tham so cua lenh la INPUT, khong phai ten feature: khong truyen vao aw feature,
     # neu khong "/aw-intake JIRA-123" se tao thu muc artifact ten JIRA-123.
-    printf 'Run `aw feature` — **without** the command arguments (they are input, not a feature name):\n\n'
+    printf 'Run `aw feature%s` — **without** the command arguments (they are input, not a feature name):\n\n' "$_ph"
     printf -- '- **ĐÃ XÁC ĐỊNH:** stdout is the feature dir, written `%s` below. Print `Đang làm với: %s` first.\n' "$FD" "$FD"
     printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "Create the worktree" below: agree the work type, `aw worktree new` only **proposes**, the HUMAN picks the base, then `--create --base <ref>`. Write `intake.md` in the new worktree, then stop.\n'
     printf -- '- **CẦN HỎI NGƯỜI:** branch does not match the convention → stop, ask the human. Never invent a name.\n\n'
   else
-    printf 'Run `aw feature %s`:\n\n' "$1"
+    printf 'Run `aw feature %s%s`:\n\n' "$1" "$_ph"
     printf -- '- **ĐÃ XÁC ĐỊNH:** stdout is the feature dir, written `%s` below. Print `Đang làm với: %s` first.\n' "$FD" "$FD"
     if [ "${3:-}" = "true" ]; then
       printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "On the main checkout" below (no feature dir needed). Never change directory yourself.\n'
@@ -401,7 +404,7 @@ sinh_command() {
   _hk ad_dau_lenh "$(ten_lenh "$id")" "$name" "$summary" "$hint"
   canh_bao "$file"
   _hk ad_mo_dau_lenh "$(ten_lenh "$id")" "$hint" "$args"
-  buoc_xac_dinh_feature "$ts" "$args" "$(fm_scalar "$src" runs_on_main_checkout)"
+  buoc_xac_dinh_feature "$ts" "$args" "$(fm_scalar "$src" runs_on_main_checkout)" "$id"
   [ "$args" = "input" ] && buoc_phan_loai_input "$ts"
   if [ "$(fm_scalar "$src" approval_gate)" = "true" ]; then
     buoc_cong_duyet "$id"

@@ -1,7 +1,9 @@
 #!/usr/bin/env sh
 # Xac dinh thu muc artifact cua feature dang lam.
 #
-#   aw feature [ten-feature]
+#   aw feature [ten-feature] [--phase <id>]
+#
+# --phase <id>: ghi moc bat dau phase <id> vao journal (phases.tsv); id phai co trong workflow.yaml.
 #
 # Thu tu (da chot, la giao dien chung giua cac adapter):
 #   0. Dang o checkout CHINH -> ma 6. Worktree la bat buoc: moi viec lam trong
@@ -30,6 +32,25 @@ kq_khai feature.sh \
 . "$HERE/lib/env.sh"
 mt_dat "$HERE"
 CONV="$MT_CONV"
+
+# Tách --phase <id> khỏi tham số vị trí (đứng trước hay sau tên đều được).
+PH=""; ARG1=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --phase)
+      [ -n "${2:-}" ] || { echo "LỖI: --phase cần id phase." >&2; exit 2; }
+      PH=$2; shift 2 ;;
+    *) if [ -z "$ARG1" ]; then ARG1=$1; fi; shift ;;
+  esac
+done
+set -- ${ARG1:+"$ARG1"}
+if [ -n "$PH" ]; then
+  _wy="${AW_ENGINE:-$HERE/..}/workflow.yaml"
+  if ! wf_phases "$_wy" | cut -d'|' -f1 | grep -qxF -- "$PH"; then
+    echo "LỖI: phase \"$PH\" không có trong workflow.yaml." >&2
+    exit 2
+  fi
+fi
 
 # Chữ giữ chỗ của adapter còn nguyên (agent quên chép phần người gõ sau tên lệnh:
 # Cursor <tham-số>, Claude Code $ARGUMENTS) — không được thành tên thư mục việc.
@@ -85,4 +106,7 @@ esac
 TM=$(tm_viec "$MT_REPO" "$ten")
 case "$TM" in "$TM_CU"/*) tu="$tu; việc tạo bằng engine cũ — artifact chỉ ở máy" ;; esac
 echo "Đang làm với: $TM ($tu)" >&2
+if [ -n "$PH" ]; then
+  sh "$HERE/journal.sh" _phase "$MT_REPO" "$(basename "$TM")" "$PH" >/dev/null 2>&1
+fi
 echo "$TM"
