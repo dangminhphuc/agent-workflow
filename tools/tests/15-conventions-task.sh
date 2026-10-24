@@ -18,14 +18,13 @@ ky_vong 0 "aw-engine conventions check" sh "$ROOT/bin/aw-engine" conventions che
 ky_vong 2 "aw-engine conventions <lạ> → SAI THAM SỐ" sh "$ROOT/bin/aw-engine" conventions lam-gi
 # cắt dòng dài theo byte không được để nửa ký tự UTF-8 (LC_ALL=C): chữ có dấu nằm đúng điểm cắt 60 / 50
 cp "$TMP/conv-qu.bak" "$CV"
-tc_pad=$(printf 'a%.0s' $(seq 1 57))
-printf '\n<ví dụ %s ếếếế>\n' "$tc_pad" > "$TMP/tc-ph"
-printf '%s\n' "<${tc_pad}ếếếế>" >> "$CV"
-dung "placeholder cắt giữa chữ có dấu → dòng cảnh báo vẫn là UTF-8 hợp lệ" sh -c "sh '$QU' 2>/dev/null | grep 'còn placeholder — <a' | iconv -f UTF-8 -t UTF-8 >/dev/null"
+tc_a() { awk -v n="$1" 'BEGIN { s = ""; for (i = 0; i < n; i++) s = s "a"; printf "%s", s }'; }
+tc_p58=$(tc_a 58); tc_p47=$(tc_a 47)
+printf '%s\n' "<${tc_p58}ếếếế>" >> "$CV"
+dung "placeholder cắt giữa chữ có dấu (byte 60) → bỏ cả ký tự dở" sh -c "sh '$QU' 2>/dev/null | grep -q 'còn placeholder — <${tc_p58}\$'"
 cp "$TMP/conv-qu.bak" "$CV"
-thay "$CV" 'covers_tag: ' "  $(printf 'a%.0s' $(seq 1 49))ếếếế covers_tag: "
-dung "dòng khối conventions sai dạng cắt giữa chữ có dấu → vẫn UTF-8 hợp lệ" sh -c "sh '$QU' 2>/dev/null | grep 'không phải' | iconv -f UTF-8 -t UTF-8 >/dev/null"
-dung "…và vẫn có dấu … cuối" sh -c "sh '$QU' 2>/dev/null | grep 'không phải' | grep -q '…\$'"
+thay "$CV" 'covers_tag: ' "  ${tc_p47}ếếếế covers_tag: "
+dung "dòng khối sai dạng cắt giữa chữ có dấu (byte 50) → bỏ cả ký tự dở, giữ …" sh -c "sh '$QU' 2>/dev/null | grep -q 'script bỏ qua:   ${tc_p47}…\$'"
 cp "$TMP/conv-qu.bak" "$CV"
 # qu_loi <tên ca> <tìm> <thay> <chuỗi phải có trong output>
 qu_loi() {
