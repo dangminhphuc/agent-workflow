@@ -10,7 +10,7 @@
 #   aw-engine pending <feature-dir>
 #   aw-engine rules <phase>
 #   aw-engine uses <phase>                        skill / subagent của repo mà phase phải gọi
-#   aw-engine knowledge spec|design|implement <feature-dir> kiến thức bền phase phải đọc (luật BR-, ADR, tài liệu module)
+#   aw-engine knowledge spec|design|implement|review <feature-dir> kiến thức bền phase phải đọc (luật BR-, ADR, tài liệu module)
 #   aw-engine adr promote <feature-dir> DEC-NNN | adr check   nâng DEC-xxx đã duyệt thành ADR; kiểm thư mục ADR
 #   aw-engine rule promote <feature-dir> REQ-NNN | rule check   nâng REQ đã duyệt thành luật BR-; kiểm luật
 #   aw-engine conventions check                   kiểm conventions.md sau khi người sửa

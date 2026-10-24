@@ -80,4 +80,19 @@ thay "$F/intake.md" "@ \`$(git -C "$R" rev-parse --short main)\`" '@ `deadbeefde
 ky_vong 0 "implement: Base ghi sha không có trong repo → ĐÃ LIỆT KÊ" sh "$KT" implement "$F"
 dung "implement: Base ghi sha không có trong repo → dùng tiền tố, vẫn in src/ARCHITECTURE.md" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
 
+
+nhom "knowledge review: tài liệu mà diff đụng phạm vi"
+tao_fixture
+kt_fixture
+dung "review: chưa có diff → không in gì" bang "$(sh "$KT" review "$F" 2>/dev/null)" ""
+ky_vong 0 "review: chưa có diff → ĐÃ LIỆT KÊ" sh "$KT" review "$F"
+echo moi-review > "$R/src/a.txt"
+dung "review: diff đụng src/ → đúng tập kt_anh_huong" \
+  bang "$(sh "$KT" review "$F" 2>/dev/null | sort | tr '\n' ' ')" \
+  "docs/adr/0001-x-dec-001.md docs/product/rules/billing.md src/ARCHITECTURE.md "
+mkdir -p "$R/lib"; echo x > "$R/lib/b.txt"
+dung "review: diff đụng lib/ → thêm lib/ARCHITECTURE.md" sh -c "sh '$KT' review '$F' 2>/dev/null | grep -qx 'lib/ARCHITECTURE.md'"
+dung "review: diff đụng lib/ → thêm ADR 0003" sh -c "sh '$KT' review '$F' 2>/dev/null | grep -qx 'docs/adr/0003-x-dec-003.md'"
+dung "review: không trùng dòng" bang "$(sh "$KT" review "$F" 2>/dev/null | sort | uniq -d)" ""
+
 ket_thuc

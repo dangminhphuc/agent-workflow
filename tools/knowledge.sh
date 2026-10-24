@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Liệt kê kiến thức bền của repo đích mà một phase phải đọc.
 #
-#   aw knowledge spec|design|implement <thư-mục-feature>
+#   aw knowledge spec|design|implement|review <thư-mục-feature>
 #
 # spec: mọi file có luật nghiệp vụ active (BR-) — spec đối chiếu yêu cầu mới với luật
 #   đang có; chưa có đường dẫn code để lọc nên in hết.
@@ -17,6 +17,8 @@
 #   ADR accepted, file luật, tài liệu module liên quan như design. Việc có design thì bỏ chỉ mục
 #   ADR (design đã đọc); việc bỏ design (chore, skip) thì in chỉ mục ADR trước. Không có plan.md
 #   hay không có Expected files → chỉ chỉ mục (nếu có).
+# review — tài liệu mà diff của việc đụng phạm vi (cột 1 của kt_anh_huong, đã khử trùng); chưa có diff
+#   → không in gì.
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -37,7 +39,7 @@ kq_khai knowledge.sh \
 . "$HERE/lib/env.sh"
 mt_dat
 
-BL_KIEN_THUC="spec design implement"
+BL_KIEN_THUC="spec design implement review"
 PH="${1:-}"; DIR="${2:-}"
 case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;; esac ||
   { echo "Dùng: aw knowledge <phase> <thư-mục-feature>   (phase: $BL_KIEN_THUC)" >&2; exit 2; }
@@ -46,6 +48,10 @@ case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;
 R=$MT_REPO
 if [ "$PH" = spec ]; then
   luat_ds "$R" "$MT_CONV" | awk -F'|' '$3 == "active" && !t[$1]++ { print $1 }'
+  exit 0
+fi
+if [ "$PH" = review ]; then
+  kt_anh_huong "$DIR" | awk -F"|" '$1 != "" && !t[$1]++ { print $1 }'
   exit 0
 fi
 TM=$(adr_thu_muc "$MT_CONV")
