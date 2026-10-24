@@ -24,6 +24,8 @@ jobs:
         run: sh tools/check-release.sh "origin/$BASE"
 
       - name: Test
+        env:
+          AW_TEST_SHOW_FAIL: 1
         run: sh tools/run-tests.sh
 
   kiem-tra-macos:
@@ -41,4 +43,11 @@ jobs:
           git --version
 
       - name: Test
+        env:
+          AW_TEST_SHOW_FAIL: 1
         run: sh tools/run-tests.sh
+
+      # TẠM (gỡ khi job xanh): output đầy đủ của phần dừng giữa chừng trên macOS.
+      - name: Chẩn đoán 26-posix-macos
+        if: failure()
+        run: sh -x tools/tests/26-posix-macos.sh 2>&1 | tail -60; echo "mã thoát: $?"

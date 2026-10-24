@@ -71,14 +71,16 @@ ky_vong_hai_ly_do() {
   fi
 }
 
+# AW_TEST_SHOW_FAIL=1: ca ky_vong hỏng thì in 15 dòng đầu output của lệnh (CI không có máy để chạy lại tay).
 ky_vong() {
   _mong="$1"; _ten="$2"; shift 2
-  "$@" >/dev/null 2>&1
+  "$@" > "$TMP/kv.out" 2>&1
   _got=$?
   if [ "$_got" = "$_mong" ]; then
     ca_dat "$_ten"
   else
     ca_hong "$_ten — mã thoát $_got, mong đợi $_mong"
+    [ "${AW_TEST_SHOW_FAIL:-}" != 1 ] || sed -n '1,15s/^/        | /p' "$TMP/kv.out"
   fi
 }
 
