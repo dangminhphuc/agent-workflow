@@ -140,7 +140,7 @@ Với mỗi phase của việc, theo thứ tự `phases:` trong `workflow.yaml`:
 
 ### 5. `progress.md`
 
-`tools/status.sh` (đăng ký trong `tools/lib/commands.sh`, `bin/aw-engine`):
+`tools/status.sh` (đăng ký trong `bin/aw-engine` — `commands.sh` chỉ giữ checker):
 
 ```
 aw status <thư-mục-feature>            in bảng ra terminal
@@ -221,8 +221,9 @@ machine	phase	runs	wall_s	active_s	turns	blocked	in	out	cache_read	cache_write	f
   người viết, không cần thoát ký tự.
 
 **Cộng dồn nhiều máy.** `turns.tsv` chỉ ở máy đang chạy; việc làm tiếp ở máy khác (cùng branch) thì
-máy đó không có số liệu cũ. Khối `aw-progress v1` giữ tổng theo (máy, phase): khi sinh lại, dòng của
-**máy này** tính lại từ journal, dòng của máy khác giữ nguyên từ file cũ, rồi cộng. Tên máy như
+máy đó không có số liệu cũ. Khối `aw-progress v1` giữ **sự kiện chuẩn hoá** của việc (bắt đầu phase,
+lượt, check — không đường dẫn, không chữ người viết; định dạng ở plan) kèm tên máy: khi sinh lại, dòng của
+**máy này** lấy lại từ journal, dòng của máy khác giữ nguyên từ file cũ, rồi tính trên cả hai. Tên máy như
 `aw journal export` (`hostname` hoặc `AW_JOURNAL_MACHINE`). Khối sai dạng → bỏ, in cảnh báo, sinh từ
 journal máy này.
 
@@ -258,7 +259,7 @@ squash-merge). Reviewer thấy số liệu qua mô tả MR — § 7.
 | `tools/journal.sh` | `_turn begin\|end\|sub`; export/report hai nguồn mới |
 | `tools/status.sh` (mới) | bảng + `progress.md` + dòng nhắc hook |
 | `tools/ship.sh` | nối `## Progress` vào `mr-description.md` khi tạo MR mới |
-| `tools/lib/commands.sh`, `bin/aw-engine`, `bin/aw` (usage) | đăng ký `aw status`; `aw check` ĐẠT gọi `status.sh --write` trước `ar_commit` |
+| `bin/aw-engine`, `bin/aw` (usage) | đăng ký `aw status`; `aw check` ĐẠT gọi `status.sh --write` trước `ar_commit` |
 | `adapters/lib/common.sh` | bước 0 truyền `--phase <id>` |
 | `adapters/claude-code/README.md` | § Hook: ba hook mới |
 | `adapters/cursor/README.md` | ghi rõ: không đo token, chỉ thời gian đồng hồ |
