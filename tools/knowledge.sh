@@ -57,7 +57,7 @@ fi
 TM=$(adr_thu_muc "$MT_CONV")
 if [ "$PH" = implement ]; then
   if kc_bo_design "$DIR" && [ -f "$R/$TM/README.md" ]; then printf '%s\n' "$TM/README.md"; fi
-  kt_duong_plan "$DIR" | kt_lay "$R" "$MT_CONV"
+  kt_duong_plan "$DIR" "$MT_CONV" | kt_lay "$R" "$MT_CONV"
   exit 0
 fi
 [ -f "$R/$TM/README.md" ] && printf '%s\n' "$TM/README.md"

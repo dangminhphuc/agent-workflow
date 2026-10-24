@@ -167,6 +167,9 @@ bước và bảng `## Knowledge used`.
 - Bộ test trên máy này: 1775 ca, mọi ca đạt, khoảng 5 phút trên 6 luồng. Mục tiêu dưới 3 phút chưa đạt.
   Phần dài nhất `21-sdlc-profiles` (103 giây), rồi `05-review-quality`, `08-adapters`, `23-sdlc-syntax` —
   chưa tới ngưỡng cảnh báo nên tách. Số 3 phút 45 giây sau #81 đo trên 4 luồng, máy khác, không so trực tiếp.
+- Bộ đọc token `Expected files` (dấu backtick) đang có ba bản: `kc_pham_vi` (~dòng 124) và `kc_glob_rong` (~dòng 206)
+  trong `tools/lib/cross-check.sh`, `kt_duong_plan` trong `tools/lib/knowledge.sh`. Gom về một helper trước khi SP18
+  đổi ngữ nghĩa glob. `kc_glob_rong` cũng chưa tắt `core.quotepath` (đường dẫn có dấu) — làm cùng lúc.
 
 ## Không làm
 

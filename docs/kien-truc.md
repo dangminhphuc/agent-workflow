@@ -251,7 +251,7 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
   (plan → spec): truy được về Jira/Confluence. Máy dựng lại ADR từ DEC và so (bỏ `Date`, `Status`):
   sửa ADR bằng tay, hay DEC đổi sau khi nâng, đều chặn ở implement và review — chính xác nên chặn.
 - **`Scope` bắt buộc**: không có phạm vi thì `aw knowledge` không biết ADR nào liên quan việc nào,
-  và cross-check stale (bước sau) không có dữ liệu.
+  và cross-check stale (§ Cross-check stale) không có dữ liệu.
 - **Không xoá ADR**: thay bằng `Status: superseded by NNNN`; người đọc sau vẫn thấy vì sao từng làm
   khác. Chỉ mục `README.md` dựng lại từ các file (giữ phần người viết phía trên bảng).
 - **`aw knowledge` tách khỏi `aw rules`**: `rules` nghĩa là "đọc hết, review chấm từng file"; kiến

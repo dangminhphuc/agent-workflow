@@ -81,6 +81,23 @@ ky_vong 0 "implement: Base ghi sha không có trong repo → ĐÃ LIỆT KÊ" sh
 dung "implement: Base ghi sha không có trong repo → dùng tiền tố, vẫn in src/ARCHITECTURE.md" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
 
 
+
+nhom "knowledge implement: tài liệu module lồng và đường dẫn có dấu"
+tao_fixture
+kt_fixture
+g checkout -q main
+mkdir -p "$R/src/billing" "$R/src/thanh-toán"
+printf '# billing\n' > "$R/src/billing/ARCHITECTURE.md"; echo x > "$R/src/billing/a.txt"
+printf '# ADR-0005: a\n\n- Status: accepted\n- Scope: `src/thanh-toán/*`\n' > "$R/docs/adr/0005-x-dec-005.md"
+echo y > "$R/src/thanh-toán/a.txt"
+g add src docs; g commit -q -m "module long + duong dan co dau"
+g checkout -q -; g merge -q main
+thay "$F/plan.md" '`src/*` `test/*`' '`src/billing/**` `test/*`'
+viet_intake
+dung "implement: ARCHITECTURE.md lồng src/billing/ + token src/billing/** → in" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/billing/ARCHITECTURE.md'"
+thay "$F/plan.md" '`src/billing/**`' '`src/th*/*.txt`'
+dung "implement: đường dẫn có dấu (src/thanh-toán) khớp glob trên cây Base → in ADR" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/adr/0005-x-dec-005.md'"
+
 nhom "knowledge review: tài liệu mà diff đụng phạm vi"
 tao_fixture
 kt_fixture

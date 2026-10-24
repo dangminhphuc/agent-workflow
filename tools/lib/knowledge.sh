@@ -50,7 +50,7 @@ kt_lay() {
   } | awk '!t[$0]++'
 }
 
-# kt_duong_plan <thư-mục-feature> -> đường dẫn suy từ "Expected files:" của plan.md (khử trùng, sắp xếp).
+# kt_duong_plan <thư-mục-feature> <conventions.md> -> đường dẫn suy từ "Expected files:" của plan.md (khử trùng, sắp xếp).
 # Token không glob → chính nó. Token có glob → file trên commit Base khớp mau_ere(token, 0) VÀ tiền tố
 # thư mục trước ký tự glob đầu (bỏ "/" cuối; rỗng thì bỏ). Thiếu sha Base → kc_mb; không có commit →
 # chỉ tiền tố (thư mục mới chưa có trên base vẫn khớp). Bỏ file test, thư mục ADR / luật, thư mục việc.
@@ -60,9 +60,9 @@ kt_duong_plan() {
   [ -n "$_kpsha" ] || _kpsha=$(kc_mb "$1" 2>/dev/null)
   _kptop=$(git_top "$1" 2>/dev/null)
   if [ -n "$_kpsha" ] && [ -n "$_kptop" ] && git -C "$_kptop" cat-file -e "$_kpsha^{commit}" 2>/dev/null; then
-    _kpcay=$(git -C "$_kptop" ls-tree -r --name-only "$_kpsha")
+    _kpcay=$(git -C "$_kptop" -c core.quotepath=off ls-tree -r --name-only "$_kpsha")
   else _kpcay=""; fi
-  _kpadr=$(adr_thu_muc "$MT_CONV"); _kplt=$(luat_thu_muc "$MT_CONV")
+  _kpadr=$(adr_thu_muc "$2"); _kplt=$(luat_thu_muc "$2"); _kptf=$(conv_get "$2" test_files)
   { printf '%s\n' "$_kpcay"; printf '\001\n'; cat "$1/plan.md"; } | awk "$MAU_ERE_AWK"'
     function tien_to(m,   i, c) {
       i = match(m, /[*?[]/); if (i == 0) return m
@@ -88,8 +88,12 @@ kt_duong_plan() {
       _kpp=${_kpp#./}; _kpp=${_kpp%/}
       tm_bo "$_kpp" && continue
       case "$_kpp/" in "$_kpadr"/*|"$_kplt"/*) continue ;; esac
-      kc_khop_khoa "$1" test_files "$_kpp" && continue
-      kc_khop_khoa "$1" test_files "$_kpp/x" && continue
+      if [ -n "$_kptf" ]; then
+        set -f
+        # shellcheck disable=SC2086
+        if khop_glob "$_kpp" $_kptf || khop_glob "$_kpp/x" $_kptf; then set +f; continue; fi
+        set +f
+      fi
       printf '%s\n' "$_kpp"
     done
 }

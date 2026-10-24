@@ -5,6 +5,11 @@
   bugfix/refactor có `Design: skip`) trước đây không đọc ADR nào, nay vẫn đọc chỉ mục ADR ở implement. Không
   cần làm gì thêm: các phase tự gọi lệnh.
 
+### Sửa
+- **`aw knowledge implement` khớp được đường dẫn có dấu** (ví dụ `src/thanh-toán/`): trước đây `git ls-tree` trả
+  tên đã bị trích dẫn nên Scope của ADR không khớp. Đồng thời `kt_duong_plan` đọc `test_files` một lần thay vì mỗi
+  đường dẫn (glob 2000 file: 7 giây → nhanh hơn rõ rệt).
+
 ### Nội bộ
 - **Spec đợt 6: durable knowledge của repo đích như RAG (SP20–SP24).** Truy xuất theo phạm vi ở implement và
   review, chunk theo mục và khối ID, chỉ mục kiến thức chung do máy dựng, tìm theo từ khoá, theo liên kết một
