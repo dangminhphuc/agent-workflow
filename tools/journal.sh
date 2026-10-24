@@ -234,4 +234,64 @@ if [ -s "$JD/findings.tsv" ]; then
 else
   echo "  (chưa có — aw check review ghi khi ĐẠT)"
 fi
+
+# ---- SP9b: độ chính xác checker, thời gian phase, việc theo loại, lỗi lọt (jobs.tsv, phases.tsv).
+# Mục không có dữ liệu in "(chưa có …)" — không lỗi.
+muc() { if [ -n "$1" ]; then printf '%s\n' "$1"; else echo "  (chưa có — $2)"; fi; }
+CHUA_RETRO="aw journal retro sau mỗi việc"
+
+echo ""
+echo "Độ chính xác checker (việc có phần người; lần chặn của việc chưa retro bị loại)"
+DC=$(awk -F'\t' '
+  FILENAME == ARGV[1] {
+    if ($12 != "-" || $11 != "-") co[$2] = 1
+    if ($11 != "-") { k = split($11, a, ","); for (i = 1; i <= k; i++) sai[$2, a[i]] = 1 }
+    next
+  }
+  $4 != 0 {
+    b[$2]++
+    if ($2 in co) { tot[$3]++; if (sai[$2, b[$2]]) w[$3]++ } else loai++
+  }
+  END {
+    for (c in tot) printf "  %-10s %4d lần chặn, %4d nhầm → đúng %3d%%\n", c, tot[c], w[c] + 0, int(100 * (tot[c] - (w[c] + 0)) / tot[c])
+    if (loai > 0) printf "  (%d lần chặn chưa có phần người, không tính)\n", loai
+  }' "$JD/jobs.tsv" "$JD/checks.tsv" 2>/dev/null | sort)
+muc "$DC" "$CHUA_RETRO; cần phần người"
+
+echo ""
+echo "Thời gian phase (trung vị, giây; gồm cả thời gian chờ người)"
+JOBS_F=$JD/jobs.tsv; [ -f "$JOBS_F" ] || JOBS_F=/dev/null
+TP=$(awk -F'\t' "$JU_EPOCH"'
+  FILENAME == ARGV[1] { TR[$2] = $1; next }
+  {
+    if (!(($2 SUBSEP $3) in seen)) { seen[$2, $3] = 1; nv[$2]++; e = nv[$2]; t[$2, e] = $1; p[$2, e] = $3 }
+  }
+  END {
+    for (v in nv) {
+      n = nv[v]
+      for (i = 1; i <= n; i++) ord[i] = i
+      for (i = 1; i <= n; i++) for (j = i + 1; j <= n; j++) if (t[v, ord[j]] < t[v, ord[i]]) { x = ord[i]; ord[i] = ord[j]; ord[j] = x }
+      for (i = 1; i <= n; i++) {
+        if (i < n) t1 = t[v, ord[i + 1]]; else if (v in TR) t1 = TR[v]; else continue
+        d = epoch(t1) - epoch(t[v, ord[i]])
+        if (d >= 0) printf "%s\t%d\n", p[v, ord[i]], d
+      }
+    }
+  }' "$JOBS_F" "$JD/phases.tsv" 2>/dev/null | sort -t "$TAB" -k1,1 -k2,2n | ju_trung_vi |
+  awk -F'\t' '{ printf "  %-10s %4d lần, trung vị %s giây\n", $1, $2, $3 }')
+muc "$TP" "cần phases.tsv và jobs.tsv; $CHUA_RETRO"
+
+echo ""
+echo "Việc theo loại (jobs.tsv)"
+VL=$(awk -F'\t' '{ n[$3]++; if ($5 == "skipped") s[$3]++ } END { for (l in n) printf "  %-10s %d việc, %d bỏ design\n", l, n[l], s[l] + 0 }' "$JD/jobs.tsv" 2>/dev/null | sort)
+VT=$(awk -F'\t' '$6 ~ /^[0-9]+$/ { print $3 ":file\t" $6 } $7 ~ /^[0-9]+$/ { print $3 ":dòng\t" $7 } $12 ~ /^[0-9]+$/ { print $3 ":phút\t" $12 }' "$JD/jobs.tsv" 2>/dev/null |
+  sort -t "$TAB" -k1,1 -k2,2n | ju_trung_vi | awk -F'\t' '{ split($1, k, ":"); printf "  %-10s %s trung vị %s (%d việc)\n", k[1], k[2], $3, $2 }')
+muc "$VL" "$CHUA_RETRO"
+muc "$VT" "$CHUA_RETRO"
+
+echo ""
+echo "Lỗi lọt theo lớp (việc bugfix có khai lớp)"
+LT=$(awk -F'\t' '$3 == "bugfix" && $15 != "-" { n[$15]++ } END { for (c in n) printf "  %-8s %d việc\n", c, n[c] }' "$JD/jobs.tsv" 2>/dev/null | sort)
+muc "$LT" "$CHUA_RETRO; cần bugfix có --lop"
+
 exit 0

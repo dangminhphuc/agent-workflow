@@ -130,16 +130,7 @@ T0=""
 [ $# -gt 0 ] && T0=$(awk -F'\t' -v v="$VIEC" '$2 == v && (m == "" || $1 < m) { m = $1 } END { print m }' "$@")
 GIAY=-
 if [ -n "$T0" ]; then
-  GIAY=$(awk -v a="$T0" -v b="$NOW" '
-    function epoch(s,   y, mo, d, h, mi, se, dm, days) {
-      y = substr(s, 1, 4) + 0; mo = substr(s, 6, 2) + 0; d = substr(s, 9, 2) + 0
-      h = substr(s, 12, 2) + 0; mi = substr(s, 15, 2) + 0; se = substr(s, 18, 2) + 0
-      split("0 31 59 90 120 151 181 212 243 273 304 334", dm, " ")
-      days = 365 * (y - 1970) + int((y - 1969) / 4) - int((y - 1901) / 100) + int((y - 1601) / 400) + dm[mo] + (d - 1)
-      if (mo > 2 && ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0)) days++
-      return days * 86400 + h * 3600 + mi * 60 + se
-    }
-    BEGIN { print epoch(b) - epoch(a) }')
+  GIAY=$(awk -v a="$T0" -v b="$NOW" "$JU_EPOCH"' BEGIN { print epoch(b) - epoch(a) }')
 fi
 
 # Phần người (chỉ khi có cờ).

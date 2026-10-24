@@ -91,4 +91,38 @@ ky_vong 2 "thư mục không có intake.md → SAI THAM SỐ" env AW_REPO="$WT" 
 ky_vong 6 "retro ở checkout chính → thoát 6" env AW_REPO="$R" sh "$NK" retro "$F" --bo-qua
 dung "…checkout chính không ghi" bang "$(wc -l < "$RJ" | tr -d ' ')" 1
 dung "…lệnh sai không ghi đè dòng đã có" awk -F'\t' '$12 == 55' "$RJ"
+
+# ---------------------------------------------------------------- report: mục mới (Task 5)
+nhom "SP9b: report — độ chính xác checker, thời gian phase, việc theo loại, lỗi lọt"
+TAB=$(printf '\t')
+tsv() { _o=""; for _a in "$@"; do _o="$_o$_a$TAB"; done; _o=${_o%"$TAB"}; printf '%s\n' "$_o"; }
+rm -rf "$JD"; mkdir -p "$JD"
+{ tsv 2026-10-24T10:00:00Z feat_a plan 1 "REQ-9 x" "$V"
+  tsv 2026-10-24T10:00:30Z feat_a plan 1 "x" "$V"
+  tsv 2026-10-24T10:00:40Z feat_a spec 0 "" "$V"
+  tsv 2026-10-24T10:00:50Z feat_b spec 1 "y" "$V"
+  tsv 2026-10-24T10:01:00Z feat_b plan 1 "z" "$V"
+  tsv 2026-10-24T10:02:00Z feat_c spec 1 "w" "$V"
+} > "$JD/checks.tsv"
+{ tsv 2026-10-24T10:03:00Z feat_a feature "spec,plan" ran 10 100 "plan:2" 0 180 1 30 - - - "$V"
+  tsv 2026-10-24T10:08:20Z feat_b bugfix spec skipped 2 20 "spec:1" 0 500 - 15 - feat_a verify "$V"
+} > "$JD/jobs.tsv"
+{ tsv 2026-10-24T10:00:00Z feat_a spec "$V"
+  tsv 2026-10-24T10:01:00Z feat_a plan "$V"
+  tsv 2026-10-24T10:00:00Z feat_b spec "$V"
+} > "$JD/phases.tsv"
+OUT_RP=$(sh "$NK" report)
+dung "checker: plan 3 lần chặn, đúng 66% (1 nhầm)" sh -c "printf '%s\n' \"\$1\" | grep -q '^  plan .*66%'" _ "$OUT_RP"
+dung "checker: spec đúng 100%" sh -c "printf '%s\n' \"\$1\" | grep -q '^  spec .*100%'" _ "$OUT_RP"
+dung "checker: lần chặn chưa retro được báo là bị loại" sh -c "printf '%s\n' \"\$1\" | grep -q 'chưa có phần người'" _ "$OUT_RP"
+dung "phase: spec trung vị 280 giây (60 và 500)" sh -c "printf '%s\n' \"\$1\" | grep -q '^  spec .*trung vị 280 giây'" _ "$OUT_RP"
+dung "phase: plan trung vị 120 giây (tới lúc retro)" sh -c "printf '%s\n' \"\$1\" | grep -q '^  plan .*trung vị 120 giây'" _ "$OUT_RP"
+dung "việc: feature 1 việc" sh -c "printf '%s\n' \"\$1\" | grep -q '^  feature .*1 việc'" _ "$OUT_RP"
+dung "việc: bugfix 1 việc, 1 bỏ design" sh -c "printf '%s\n' \"\$1\" | grep -q '^  bugfix .*1 bỏ design'" _ "$OUT_RP"
+dung "việc: file trung vị của feature = 10" sh -c "printf '%s\n' \"\$1\" | grep -q '^  feature .*file trung vị 10'" _ "$OUT_RP"
+dung "lỗi lọt: verify 1 việc" sh -c "printf '%s\n' \"\$1\" | grep -q '^  verify .*1 việc'" _ "$OUT_RP"
+dung "--version 9.9.9: không còn dòng nào" sh -c "sh '$NK' report --version 9.9.9 | grep -q 'chưa có'"
+rm -rf "$JD"
+ky_vong 0 "report khi chưa có nhật ký mục mới → vẫn thoát 0" sh "$NK" report
+dung "…các mục mới in (chưa có …), tối thiểu 4 chỗ" sh -c "sh '$NK' report | awk '/chưa có/ { n++ } END { exit !(n >= 4) }'"
 ket_thuc
