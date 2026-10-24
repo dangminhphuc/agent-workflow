@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+# aw knowledge: lấy kiến thức bền theo đường dẫn (kt_lay).
+# Chạy riêng: sh tools/tests/26-knowledge-retrieval.sh (AW_TEST_VERBOSE=1 in từng ca).
+
+. "$(dirname -- "$0")/lib.sh"
+KT="$T/knowledge.sh"
+
+# kt_fixture — gọi sau bất kỳ tao_fixture nào: đặt kiến thức bền lên main (nằm trên Base:), rồi
+# đưa vào nhánh việc. ADR 0001 accepted src/*, 0002 superseded, 0003 accepted lib/*; tài liệu module
+# src/ + lib/; một luật BR-BILLING-001 active src/*.
+kt_fixture() {
+  g checkout -q main
+  mkdir -p "$R/docs/adr" "$R/docs/product/rules" "$R/lib"
+  for _n in 1:accepted:src 2:superseded\ by\ 0001:src 3:accepted:lib; do
+    _i=${_n%%:*}; _r=${_n#*:}; _st=${_r%:*}; _sc=${_r##*:}
+    printf '# ADR-000%s: a\n\n- Status: %s\n- Scope: `%s/*`\n' "$_i" "$_st" "$_sc" > "$R/docs/adr/000$_i-x-dec-00$_i.md"
+  done
+  . "$T/lib/adr.sh"; adr_lam_chi_muc "$R/docs/adr"
+  printf '# src\n' > "$R/src/ARCHITECTURE.md"; printf '# lib\n' > "$R/lib/ARCHITECTURE.md"
+  cat > "$R/docs/product/rules/billing.md" <<'EOB'
+# Luật billing
+
+### BR-BILLING-001: x
+- Rule: luôn mở được x
+- Scope: `src/*`
+- Source: `[JIRA]` ABC-1 (version: updated 2026-10-01)
+- Status: active
+- Acceptance:
+  - mở x thấy a
+- Origin: `feat_x` § REQ-001
+EOB
+  g add docs src lib; g commit -q -m "kien thuc ben"
+  g checkout -q -; g merge -q main
+  viet_intake
+}
+
+nhom "knowledge design: hồi quy sau khi tách kt_lay"
+tao_fixture
+kt_fixture
+thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
+dung "design: output không đổi (hồi quy)" bang "$(sh "$KT" design "$F" 2>/dev/null | tr '\n' ' ')" \
+  "docs/adr/README.md docs/adr/0001-x-dec-001.md docs/product/rules/billing.md src/ARCHITECTURE.md "
+
+ket_thuc

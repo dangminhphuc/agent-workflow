@@ -27,6 +27,8 @@ kq_khai knowledge.sh \
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
+. "$HERE/lib/cross-check.sh"
+. "$HERE/lib/knowledge.sh"
 . "$HERE/lib/env.sh"
 mt_dat
 
@@ -58,35 +60,5 @@ DD=$( [ -f "$DIR/tdd.md" ] && awk '
   done | sort -u)
 [ -n "$DD" ] || exit 0
 
-# Một file có thể khớp nhiều cách (tài liệu module chứa luật) — in một lần.
-{
-  # ADR accepted có Scope khớp (thư mục: khớp một file giả bên trong nó).
-  adr_ds "$R/$TM" | while IFS= read -r f; do
-    [ "$(adr_truong "$f" Status)" = accepted ] || continue
-    sc=$(adr_truong "$f" Scope); [ -n "$sc" ] || continue
-    printf '%s\n' "$DD" | while IFS= read -r p; do
-      set -f
-      # shellcheck disable=SC2086
-      if khop_glob "$p" $sc || { [ -d "$R/$p" ] && khop_glob "$p/x" $sc; }; then set +f; printf '%s\n' "${f#"$R"/}"; break; fi
-      set +f
-    done
-  done
-
-  # Luật nghiệp vụ active có Scope khớp.
-  printf '%s\n' "$DD" | luat_lien_quan "$R" "$MT_CONV"
-
-  # Tài liệu module: file đã commit khớp knowledge_files, thư mục chứa nó là cha của đường dẫn.
-  KF=$(conv_get "$MT_CONV" knowledge_files); KF=${KF:-*/ARCHITECTURE.md}
-  git -C "$R" ls-files 2>/dev/null | while IFS= read -r f; do
-    tm_bo "$f" && continue
-    set -f
-    # shellcheck disable=SC2086
-    khop_glob "$f" $KF || { set +f; continue; }
-    set +f
-    d=$(dirname "$f")
-    printf '%s\n' "$DD" | while IFS= read -r p; do
-      case "$p/" in "$d"/*) printf '%s\n' "$f"; break ;; esac
-    done
-  done
-} | awk '!t[$0]++'
+printf '%s\n' "$DD" | kt_lay "$R" "$MT_CONV"
 exit 0

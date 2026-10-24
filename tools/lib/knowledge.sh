@@ -12,6 +12,44 @@
 #
 # Cần nạp trước: tools/lib/md.sh, cross-check.sh, sha256.sh, approval-tick.sh, adr.sh, rule.sh
 
+# kt_lay <gốc repo> <conventions.md> -> kiến thức bền liên quan tới các đường dẫn ở stdin
+# (mỗi dòng một, tương đối với gốc repo, có thể chưa tồn tại): ADR accepted có Scope khớp,
+# file có luật active khớp, tài liệu module (knowledge_files) có thư mục là cha của đường dẫn.
+# Đường dẫn là thư mục có thật → khớp thêm "<p>/x". Mỗi file in một lần.
+kt_lay() {
+  _kldd=$(cat)
+  [ -n "$_kldd" ] || return 0
+  _kltm=$(adr_thu_muc "$2")
+  {
+    adr_ds "$1/$_kltm" | while IFS= read -r _klf; do
+      [ "$(adr_truong "$_klf" Status)" = accepted ] || continue
+      _klsc=$(adr_truong "$_klf" Scope); [ -n "$_klsc" ] || continue
+      printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
+        [ -n "$_klp" ] || continue
+        set -f
+        # shellcheck disable=SC2086
+        if khop_glob "$_klp" $_klsc || { [ -d "$1/$_klp" ] && khop_glob "$_klp/x" $_klsc; }; then set +f; printf '%s\n' "${_klf#"$1"/}"; break; fi
+        set +f
+      done
+    done
+
+    printf '%s\n' "$_kldd" | luat_lien_quan "$1" "$2"
+
+    _klkf=$(conv_get "$2" knowledge_files); _klkf=${_klkf:-*/ARCHITECTURE.md}
+    git -C "$1" ls-files 2>/dev/null | while IFS= read -r _klf; do
+      tm_bo "$_klf" && continue
+      set -f
+      # shellcheck disable=SC2086
+      khop_glob "$_klf" $_klkf || { set +f; continue; }
+      set +f
+      _kld=$(dirname "$_klf")
+      printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
+        case "$_klp/" in "$_kld"/*) printf '%s\n' "$_klf"; break ;; esac
+      done
+    done
+  } | awk '!t[$0]++'
+}
+
 # kt_tai_lieu <gốc repo> <conventions.md> -> "<file>|<glob phạm vi…>" mỗi tài liệu
 kt_tai_lieu() {
   _kkf=$(conv_get "$2" knowledge_files); _kkf=${_kkf:-*/ARCHITECTURE.md}
