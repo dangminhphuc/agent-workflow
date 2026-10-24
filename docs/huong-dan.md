@@ -706,6 +706,7 @@ chưa trả lời.
 3. Agent cho bạn xem nguồn → đích, tiêu đề, mô tả; **bạn đồng ý** thì agent chạy `aw ship create`.
    Engine không giữ token: dùng `gh`/`glab` đã đăng nhập; không có thì đẩy branch và đưa bạn link MR
    điền sẵn (mô tả lưu ở `mr-description.md` để bạn dán).
+   Khi tạo MR mới, máy nối thêm mục `## Progress` (bảng tiến độ từ `aw status --table`) vào cuối mô tả.
 4. `aw ship status` theo dõi; ghi `ship.md` (máy ghi, không sửa tay).
 5. **Bạn review và merge trên GitHub/GitLab.** Agent không bao giờ merge, approve, bật auto-merge.
 

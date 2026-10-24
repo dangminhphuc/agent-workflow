@@ -226,6 +226,12 @@ create)
       if (o ~ /^[ \t]*$/ && $0 !~ /^[ \t]*$/) next
       print o
     }' | cat -s | sed '/./,$!d' > "$MO"
+  # Bảng tiến độ (SP20) nối cuối mô tả: máy sinh; lỗi hoặc không có dữ liệu → không chèn, MR vẫn tạo.
+  if bang=$(sh "$HERE/status.sh" "$DIR" --table 2>/dev/null); then
+    if [ -n "$bang" ]; then printf '\n## Progress\n\n%s\n' "$bang" >> "$MO"; fi
+  else
+    echo "CẢNH BÁO: không dựng được bảng tiến độ (aw status --table lỗi) — mô tả MR không có mục ## Progress." >&2
+  fi
 
   # 1. CLI đã đăng nhập: gửi đủ tiêu đề + mô tả.
   if mr_cli "$NT" "$R" >/dev/null; then

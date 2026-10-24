@@ -61,11 +61,26 @@ dung "…không push, không tạo MR" sh -c "[ ! -f '$FG/args' ] && [ -z \"\$(g
 thay "$CFG/conventions.md" 'mr_platform: github' 'mr_platform: gitlab'
 # Không có glab (PATH chỉ có gh giả): server không hỗ trợ push options → push thường + link điền sẵn
 sl() { PATH="$FB:/usr/bin:/bin" FG="$FG" sh "$T/ship.sh" "$@"; }
+# Nhật ký tiến độ của việc (SP20): dòng ship đang chạy → mô tả MR có mục ## Progress.
+mkdir -p "$CFG/journal"
+printf '2026-10-23T07:00:00Z\twt\tfeat_x\tintake\n2026-10-23T09:00:00Z\twt\tfeat_x\tship\n' > "$CFG/journal/phases.tsv"
 SLO=$(sl create "$FS" --target develop 2>&1)
 ky_vong 8 "GitLab, không có glab, server không nhận push options → KHÔNG TẠO ĐƯỢC MR" sl create "$FS" --target develop
 dung "…vẫn push được branch (push thường)" test "$(git -C "$RMS" rev-parse feat_x 2>/dev/null)" = "$(git -C "$WS" rev-parse HEAD)"
 dung "…chỉ cách ghi lại bằng --url" sh -c "printf '%s\n' \"\$1\" | grep -q 'aw ship create .* --target develop --url'" _ "$SLO"
 dung "…mô tả để sẵn ở mr-description.md cho người dán (đã bỏ comment)" sh -c "grep -q '^## Problem' '$FS/mr-description.md' && ! grep -q '<!--' '$FS/mr-description.md'"
+dung "…mô tả có mục ## Progress cuối file: bảng, không Mermaid" sh -c "grep -q '^## Progress\$' '$FS/mr-description.md' && grep -q '^| Phase | Status |' '$FS/mr-description.md' && ! grep -q mermaid '$FS/mr-description.md' && [ \"\$(awk '/^## Progress\$/ { f = 1 } f && /^## / && !/^## Progress\$/ { x = 1 } END { print x + 0 }' '$FS/mr-description.md')\" = 0 ]"
+# status.sh lỗi (bản sao tools/ với status.sh luôn thoát 1): MR vẫn tạo (cùng mã), có CẢNH BÁO, không có mục
+TB="$TMP/tools-status-loi"; cp -R "$T" "$TB"; printf '#!/bin/sh\nexit 1\n' > "$TB/status.sh"
+SLE=$(PATH="$FB:/usr/bin:/bin" FG="$FG" sh "$TB/ship.sh" create "$FS" --target develop 2>&1); KLE=$?
+dung "status.sh lỗi → create vẫn ra mã như cũ (KHÔNG TẠO ĐƯỢC MR do GitLab giả)" bang "$KLE" 8
+dung "…có CẢNH BÁO về bảng tiến độ" sh -c "printf '%s\n' \"\$1\" | grep -q 'CẢNH BÁO: .*tiến độ'" _ "$SLE"
+dung "…mô tả không có ## Progress" sh -c "! grep -q '^## Progress' '$FS/mr-description.md' && grep -q '^## Problem' '$FS/mr-description.md'"
+# journal rỗng → không có mục
+mv "$CFG/journal" "$CFG/journal.cat"
+sl create "$FS" --target develop >/dev/null 2>&1
+dung "journal rỗng → mô tả không có ## Progress" sh -c "! grep -q '^## Progress' '$FS/mr-description.md' && grep -q '^## Problem' '$FS/mr-description.md'"
+mv "$CFG/journal.cat" "$CFG/journal"
 # link điền sẵn: gọi thẳng hàm (origin https giả — không cần mạng)
 LK="$TMP/link-repo"; git init -q "$LK"; git -C "$LK" remote add origin "git@gitlab.example:g/r.git"
 printf '## Problem\n\nmột dòng\n' > "$TMP/mo-ta.md"
@@ -118,6 +133,7 @@ dung "…mô tả gửi đi bỏ dòng tiêu đề và comment của mẫu" sh -
 dung "…branch đã lên origin" test "$(git -C "$RMS" rev-parse feat_x 2>/dev/null)" = "$(git -C "$WS" rev-parse HEAD)"
 dung "…ship.md ghi MR: đích, open, sha đầu branch, URL" grep -qxF "| develop | open | $(git -C "$WS" rev-parse HEAD) | https://github.com/o/r/pull/7 |" "$FS/ship.md"
 ky_vong 5 "create lại cùng đích → ĐÃ CÓ MR ĐANG MỞ, không tạo thêm" sg create "$FS" --target develop
+dung "…đường đã có MR mở không tạo mr-description.md" test ! -e "$FS/mr-description.md"
 dung "…gh pr create chỉ được gọi một lần" test "$(wc -l < "$FG/args" | tr -d ' ')" = 1
 
 ky_vong 3 "status: PR mở → CÒN MR ĐANG MỞ" sg status "$FS"
