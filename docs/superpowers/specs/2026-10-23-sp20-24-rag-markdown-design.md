@@ -2,9 +2,9 @@
 
 - Ngày: 2026-10-23 · Branch: `claude/kind-cray-3yf0ca`
 - Roadmap: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` § SP20–SP24
-- Trạng thái: **đề xuất, chờ người duyệt**. Năm dự án con, mỗi cái một PR (nguyên tắc 4), thứ tự SP20 →
-  SP21 → SP22; SP23, SP24 chờ số liệu SP9. Spec này không đổi code hay interface; capability/invariant
-  mới chỉ thêm vào `sdlc/` trong PR của dự án con tương ứng.
+- Trạng thái: **đã duyệt 2026-10-24** (người chọn mọi phương án "Nghiêng về"). Năm dự án con, mỗi cái một PR
+  (nguyên tắc 4), thứ tự SP20 → SP21 → SP22; SP23, SP24 chờ số liệu SP9. Spec này không đổi code hay
+  interface; capability/invariant mới chỉ thêm vào `sdlc/` trong PR của dự án con tương ứng.
 
 ## 0. Bối cảnh
 
@@ -111,10 +111,10 @@ quy); hai mục khai, diff đụng phạm vi một mục → chỉ ref mục đ�
 **Tài liệu.** `conventions-reference.md` § `knowledge_files` (Scope theo mục); `docs/huong-dan.md` § 7;
 `docs/kien-truc.md` § Cross-check stale; mẫu `review.md` (`File` nhận ref); `docs/thuat-ngu.md` thêm "ref".
 
-**Cần quyết.**
-1. Neo là heading nguyên văn (đọc được, nhưng đổi tên mục là đổi ref) hay slug kiểu GitHub (không ổn
-   định với tiếng Việt trong mawk). **Nghiêng về:** nguyên văn.
-2. Có cho mục `###` khai `Scope` không. **Nghiêng về:** không — chỉ `##`, tránh khối lồng nhau.
+**Đã chốt.**
+1. Neo là heading **nguyên văn** (đọc được; đổi tên mục là đổi ref). Không dùng slug kiểu GitHub vì mawk
+   không chuẩn hoá được tiếng Việt.
+2. Chỉ mục `##` khai được `Scope`, mục `###` thì không, để tránh khối lồng nhau.
 
 ## C. SP22 — Chỉ mục kiến thức chung
 
@@ -147,8 +147,8 @@ liệu, chỉ mục hỏng trên base → không chặn; khoá sai giá trị �
 **Tài liệu.** `conventions.md` + `conventions-reference.md` (khoá mới); `docs/huong-dan.md` § 7;
 `docs/kien-truc.md` (chỉ mục thay bước tìm thô, vì sao không vector); mẫu `AGENTS.md`; `changes/…` `Thêm`.
 
-**Cần quyết.** Mặc định bật (`docs/knowledge-index.md`) nhưng chỉ kiểm khi file có — hay mặc định trống.
-**Nghiêng về:** mặc định có giá trị, kiểm theo file có (không ép repo cũ).
+**Đã chốt.** Khoá có giá trị mặc định `docs/knowledge-index.md`, nhưng máy chỉ kiểm khi file đã có trong
+git, để không ép repo cũ.
 
 ## D. SP23 — Tìm theo từ khoá
 
@@ -185,19 +185,18 @@ ghi quyết định đã dựa vào khối nào, nên review không biết khố
 - **Trích nguồn**: mẫu `tdd.md` thêm `## Knowledge used` — bảng `| Ref | Use | Reason |`, `Use` ∈
   `applied | not relevant` (+ lý do), mỗi ref `aw knowledge design` in ra một dòng. Việc bỏ design: bảng
   cùng dạng trong `plan.md` (`aw knowledge implement`).
-- **Kiểm**: thiếu dòng cho ref đã in → **cảnh báo** ở `aw check design` / `aw check implement`, **chặn** ở
-  `aw check review` (xuyên phase, dễ báo nhầm khi tập đổi giữa các phase — luật warn/block của
-  `AGENTS.md`). Máy không kiểm `applied` đúng — như `## Repo rules`.
+- **Kiểm**: thiếu dòng cho ref đã in → **cảnh báo** ở `aw check design`, `aw check implement` và
+  `aw check review`. Chỉ nâng thành chặn ở review khi số liệu SP9 cho thấy lỗi "có tài liệu đúng mà không
+  dùng" xảy ra thật (dự án con riêng). Máy không kiểm `applied` đúng — như `## Repo rules`.
 
 **Interface.** `CAP-design-04`, `CAP-implement-07` đổi `Judged by: agent` → `machine` (máy kiểm có dòng cho
 mọi ref) — làm chặt, không hạ chuẩn; luật mới gắn `# giữ:` hai id này.
 
 **Test** (`26`, `05-review-quality.sh`): luật nhắc ADR → ADR có trong output, ADR superseded → không;
-không đệ quy hai bước; `tdd.md` thiếu dòng → design cảnh báo, review chặn; đủ dòng → ĐẠT; `not relevant`
-không lý do → chặn ở review.
+không đệ quy hai bước; `tdd.md` thiếu dòng → design, implement, review đều cảnh báo, nhãn vẫn ĐẠT; đủ
+dòng → không cảnh báo; `not relevant` không lý do → cảnh báo.
 
-**Cần quyết.** Chặn ở review hay chỉ cảnh báo cả hai nơi. **Nghiêng về:** chờ số liệu SP9 về tần suất
-"có tài liệu đúng mà không dùng" trước khi chặn.
+**Đã chốt.** Chỉ cảnh báo ở cả ba nơi; chặn ở review chờ số liệu SP9.
 
 ## Không làm
 

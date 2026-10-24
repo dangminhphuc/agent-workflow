@@ -52,11 +52,11 @@
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
 | SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
-| SP20 | Durable knowledge: truy xuất theo phạm vi ở implement, review | 6 | chờ | — | Duyệt spec | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § A | | |
-| SP21 | Durable knowledge: chunk theo mục và khối ID | 6 | chờ | SP20 | Neo heading nguyên văn hay slug | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § B | | |
-| SP22 | Durable knowledge: chỉ mục chung | 6 | chờ | SP21 | Mặc định bật, kiểm khi file có | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § C | | |
+| SP20 | Durable knowledge: truy xuất theo phạm vi ở implement, review | 6 | đang làm | — | Spec đã duyệt; tiếp: plan | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § A | | |
+| SP21 | Durable knowledge: chunk theo mục và khối ID | 6 | chờ | SP20 | Chốt: neo heading nguyên văn, chỉ `##` | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § B | | |
+| SP22 | Durable knowledge: chỉ mục chung | 6 | chờ | SP21 | Chốt: mặc định bật, kiểm khi file có | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § C | | |
 | SP23 | Durable knowledge: tìm theo từ khoá | sau | chặn | SP22, số liệu SP9 | Có đáng làm không | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § D | | |
-| SP24 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP22, số liệu SP9 | Chặn ở review hay chỉ cảnh báo | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § E | | |
+| SP24 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP22, số liệu SP9 | Chốt: chỉ cảnh báo; chặn chờ số liệu SP9 | [spec](specs/2026-10-23-sp20-24-rag-markdown-design.md) § E | | |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -153,7 +153,7 @@ A truy xuất theo `Expected files` / diff ở implement, review; B ref `<file>#
 C chỉ mục `docs/knowledge-index.md` máy dựng, lệch thì chặn; D `aw knowledge find`; E theo liên kết một
 bước và bảng `## Knowledge used`.
 
-**Cần quyết.** Duyệt spec; các "Cần quyết" trong từng mục của spec.
+**Đã chốt (2026-10-24).** Spec đã duyệt, mọi phương án "Nghiêng về" được chọn (spec ghi ở từng mục **Đã chốt**).
 
 ## Việc nhỏ (không thành dự án con)
 
