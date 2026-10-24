@@ -67,4 +67,17 @@ tao_fixture chore chore_v
 kt_fixture
 dung "implement chore: dòng đầu là chỉ mục ADR" bang "$(sh "$KT" implement "$F" 2>/dev/null | head -1)" "docs/adr/README.md"
 
+nhom "knowledge implement: mở rộng glob qua cây Base (ls-tree) và Base hỏng"
+tao_fixture
+kt_fixture
+printf '# ADR-0004: a\n\n- Status: accepted\n- Scope: `src/a.txt`\n' > "$R/docs/adr/0004-x-dec-004.md"
+thay "$F/plan.md" '`src/*` `test/*`' '`src/a*.txt` `test/*`'
+dung "implement: glob khớp file có trên Base (ls-tree) → in ADR Scope một file" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/adr/0004-x-dec-004.md'"
+thay "$F/plan.md" '`src/a*.txt`' '`src/zz*.txt`'
+dung "implement: glob không khớp file nào trên Base → tiền tố src không khớp ADR Scope một file" sh -c "! sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/adr/0004-x-dec-004.md'"
+thay "$F/plan.md" '`src/zz*.txt`' '`src/*` `test/*`'
+thay "$F/intake.md" "@ \`$(git -C "$R" rev-parse --short main)\`" '@ `deadbeefdeadbeef`'
+ky_vong 0 "implement: Base ghi sha không có trong repo → ĐÃ LIỆT KÊ" sh "$KT" implement "$F"
+dung "implement: Base ghi sha không có trong repo → dùng tiền tố, vẫn in src/ARCHITECTURE.md" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
+
 ket_thuc
