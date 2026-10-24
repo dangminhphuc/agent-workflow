@@ -64,9 +64,9 @@
 | SP29 | Durable knowledge: tìm theo từ khoá | sau | chặn | SP28, số liệu SP9 | Có đáng làm không | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § D | | |
 | SP30 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP28, số liệu SP9 | Chốt: chỉ cảnh báo; chặn chờ số liệu SP9 | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § E | | |
 | SP31 | Tên lệnh theo stage SDLC (`/aw-<stage>`, đánh số khớp stage) | sau | chặn | — | §5 của spec: phạm vi đổi tên, lệnh con duyệt, chuyển tiếp `plan`, dạng số | [spec](specs/2026-10-23-sp31-ten-lenh-theo-stage-design.md) | | |
-| SP32 | `adapters/claude-code/exclude` hẹp lại (không loại cả `/.claude/`) | sau | chờ | — | Loại những đường dẫn nào; repo đích đã init phải làm gì | | | |
-| SP33 | Nhãn nguồn cho URL issue GitHub / GitLab trong `aw input` | sau | chờ | — | Thêm nhãn mới hay dùng nhãn có sẵn; cách khai miền | | | |
-| SP34 | Phát hành các mảnh `changes/` đang tồn trước khi chạy SP9 | sau | chờ | — | Người chủ engine chọn thời điểm phát hành | | | |
+| SP32 | `adapters/claude-code/exclude` hẹp lại (không loại cả `/.claude/`) | sau | xong | — | Chốt: exclude đúng tên file sinh ra; aw doctor cảnh báo dòng cũ | | | [#103](https://github.com/dangminhphuc/agent-workflow/pull/103) |
+| SP33 | Nhãn nguồn cho URL issue GitHub / GitLab trong `aw input` | sau | xong | — | Chốt: nhãn mới `[ISSUE]`, không thêm khoá conventions | | | [#104](https://github.com/dangminhphuc/agent-workflow/pull/104) |
+| SP34 | Phát hành các mảnh `changes/` đang tồn trước khi chạy SP9 | sau | xong | — | — | | | bản 2026.10.32 |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -204,38 +204,6 @@ dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi t
 **Cần quyết.** Spec § 5: đổi tên tới `aw check`/`aw ship` không; lệnh con duyệt hay tham số
 `/aw-approvals <stage>`; chuyển tiếp chữ `plan` đổi nghĩa; dạng số trong summary.
 
-### SP32 — `exclude` của adapter `claude-code` quá rộng
-
-**Vấn đề.** `adapters/claude-code/exclude` loại cả `/.claude/` khỏi git của repo đích, còn adapter Cursor
-chỉ loại `commands/`, `agents/` và `skills/agent-workflow/`. Skill hay `settings.json` của chính
-team đặt trong `.claude/` bị bỏ qua, phải `git add -f` mới commit được.
-
-**Hướng.** Liệt kê đường dẫn adapter thật sự sinh ra (như Cursor), không loại cả thư mục. `aw init` chỉ
-thêm dòng còn thiếu vào `.git/info/exclude`, nên repo đã init cần chạy lại để nhận dòng mới.
-
-**Cần quyết.** Danh sách đường dẫn; dòng `/.claude/` cũ trong `.git/info/exclude` của repo đích có gỡ không.
-
-### SP33 — Nhãn nguồn cho URL issue GitHub / GitLab
-
-**Vấn đề.** `aw input` (`tools/input.sh`) chỉ có `[JIRA]`, `[CONFLUENCE]`, `[FILE]`. Khi `conventions.md` chưa khai
-`confluence_domains`, mọi URL không phải Jira (kể cả issue GitHub / GitLab) thành `[CONFLUENCE]`, kèm cảnh báo.
-Không có nhãn nào nói đúng "issue của git host".
-
-**Hướng.** Nhận ra URL issue GitHub / GitLab và gán nhãn riêng (hoặc khai miền như `confluence_domains`);
-thêm nhãn thì sửa cùng lúc `check-intake.sh`, `check-spec.sh`, `approval.sh`, template và test.
-
-**Cần quyết.** Nhãn mới hay dùng nhãn có sẵn; khai miền hay nhận theo mẫu URL.
-
-### SP34 — Phát hành các mảnh `changes/` đang tồn
-
-**Vấn đề.** `main` đang giữ 11 mảnh `changes/` chưa phát hành; bản mới nhất là 2026.10.31, nên repo đích
-đang dùng engine thiếu các thay đổi đó (SP9b, SP19b, SP20–SP22 trong số đó). Chạy thật (SP9) trên bản cũ thì số liệu không phản
-ánh engine hiện tại.
-
-**Hướng.** Phát hành theo README § Chạy test và phát hành trước khi chạy SP9.
-
-**Cần quyết.** Thời điểm phát hành; có chờ thêm SP nào không.
-
 ## Việc nhỏ (không thành dự án con)
 
 Đụng phần nào thì làm phần đó, không cần spec:
@@ -247,8 +215,6 @@ thêm nhãn thì sửa cùng lúc `check-intake.sh`, `check-spec.sh`, `approval.
   (lần đo 2026-10-23: 1804 ca, 2 phút 41 giây, `main` 8824ded; hai lần có thể đo trên máy khác nhau nên không
   so trực tiếp, cần đo lại trên CI). Phần dài nhất `05-review-quality` (69 giây). Theo dõi; tách phần khi
   xuất hiện `CẢNH BÁO … nên tách`.
-- **`tools/check-conventions.sh` dòng 90 và 259 cắt chuỗi bằng `substr`** dưới `LC_ALL=C` (đếm byte), nên có
-  thể cắt giữa ký tự UTF-8 trong cảnh báo (`…`, chữ có dấu). Cắt theo dòng/từ, hoặc bỏ cắt.
 
 - `aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea —
   các URL đó vẫn rơi về `[CONFLUENCE]`/`[HUMAN]`; thêm dạng vào `la_issue` (`tools/input.sh`) + checker khi cần.
