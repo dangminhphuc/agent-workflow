@@ -41,7 +41,7 @@
 | SP6 | Tốc độ engine và test | 3 | xong | — | — | [spec](specs/2026-10-22-sp6-7-toc-do-yaml-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP7 | Parser YAML báo lỗi | 3 | xong | — | — | [spec](specs/2026-10-22-sp6-7-toc-do-yaml-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP8 | Glob `**` (bước 1: chuyển tiếp) | 3 | xong | SP3 | Chốt: đổi có chuyển tiếp, chỉ glob của plan.md | [spec](specs/2026-10-22-sp8-glob-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
-| SP9 | Chạy thật + gom nhật ký | 4 | một phần | SP3, SP4 | Chạy thật: người làm | [spec](specs/2026-10-22-sp9-11-12-design.md) (chỉ công cụ) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) (công cụ) |
+| SP9 | Chạy thật + gom nhật ký | 4 | một phần | SP3, SP4 | Chạy thật: người làm | [spec](specs/2026-10-22-sp9-11-12-design.md) (chỉ công cụ) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) (công cụ), [#100](https://github.com/dangminhphuc/agent-workflow/pull/100) (đo lường journal) |
 | SP10 | Đường tắt cho việc nhỏ | 4 | một phần | số liệu SP9 | A xong (#81); B / C chờ số liệu SP9 | [spec](specs/2026-10-22-dot-2-design.md) § B | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81) |
 | SP11 | Gỡ adapter `planned` | 4 | xong | — | Chốt: gỡ planned | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
 | SP12 | Bước A đợt 1 — gắn luật checker vào CAP/INV | sau | xong | SP1, SP2 | — | [spec](specs/2026-10-22-sp9-11-12-design.md) | [plan](plans/2026-10-22-sp2-sp12.md) | [#79](https://github.com/dangminhphuc/agent-workflow/pull/79) |
@@ -51,11 +51,11 @@
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | một phần | — | Nhãn `[INCIDENT]` xong; capability vẫn human vì stage operate | | | [#86](https://github.com/dangminhphuc/agent-workflow/pull/86) |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
-| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87); phần còn lại: [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md) |
-| SP20 | Kiểm frontmatter `based_on` của artifact (INV-006) | 6 | đang làm | — | Sai dạng chặn mọi nơi; thiếu: cảnh báo trước review, chặn ở review | [spec](specs/2026-10-23-sp20-frontmatter-artifact-design.md) | | |
-| SP21 | CI chạy test trên macOS (BSD awk/sed) | 6 | đang làm | — | Bật thành check bắt buộc khi xanh | [spec](specs/2026-10-23-sp21-ci-macos-design.md) | | |
-| SP22 | Số ADR không trùng khi hai việc song song | 6 | đang làm | — | `aw ship create` chặn khi trùng số | [spec](specs/2026-10-23-sp22-so-adr-song-song-design.md) | | |
-| SP23 | Dọn nhánh remote, số liệu roadmap | 6 | đang làm | — | Người duyệt danh sách nhánh trước khi xoá | [spec](specs/2026-10-23-sp23-don-dep-design.md) | | |
+| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87), [#97](https://github.com/dangminhphuc/agent-workflow/pull/97) (đợt 19b); phần còn lại: [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md) |
+| SP20 | Kiểm frontmatter `based_on` của artifact (INV-006) | 6 | xong | — | Sai dạng chặn mọi nơi; thiếu: cảnh báo trước review, chặn ở review | [spec](specs/2026-10-23-sp20-frontmatter-artifact-design.md) | | | [#94](https://github.com/dangminhphuc/agent-workflow/pull/94) |
+| SP21 | CI chạy test trên macOS (BSD awk/sed) | 6 | xong | — | Còn: người bật job macOS thành check bắt buộc (cài đặt GitHub, máy không kiểm được) | [spec](specs/2026-10-23-sp21-ci-macos-design.md) | | | [#96](https://github.com/dangminhphuc/agent-workflow/pull/96), [#99](https://github.com/dangminhphuc/agent-workflow/pull/99) |
+| SP22 | Số ADR không trùng khi hai việc song song | 6 | xong | — | `aw ship create` chặn khi trùng số | [spec](specs/2026-10-23-sp22-so-adr-song-song-design.md) | | | [#95](https://github.com/dangminhphuc/agent-workflow/pull/95) |
+| SP23 | Dọn nhánh remote, số liệu roadmap | 6 | một phần | — | Số liệu test xong; còn xoá nhánh remote (~70 nhánh ngoài main, 2026-10-24), người duyệt danh sách trước khi xoá | [spec](specs/2026-10-23-sp23-don-dep-design.md) | | | [#90](https://github.com/dangminhphuc/agent-workflow/pull/90) (số liệu) |
 | SP24 | Hai nhánh tính năng chưa merge: làn light + `mr_include_artifacts`, điểm mù nêu story/AC | sau | chặn | — | Lấy lại hay bỏ | | | |
 | SP25 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp25-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
 | SP26 | Durable knowledge: truy xuất theo phạm vi ở implement, review | 7 | xong | — | Chốt: không thêm luật chặn mới ở implement; review chấm verdict đúng tập diff chạm | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § A | [plan](plans/2026-10-24-sp26-knowledge-implement-review.md) | [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) |
@@ -64,6 +64,9 @@
 | SP29 | Durable knowledge: tìm theo từ khoá | sau | chặn | SP28, số liệu SP9 | Có đáng làm không | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § D | | |
 | SP30 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP28, số liệu SP9 | Chốt: chỉ cảnh báo; chặn chờ số liệu SP9 | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § E | | |
 | SP31 | Tên lệnh theo stage SDLC (`/aw-<stage>`, đánh số khớp stage) | sau | chặn | — | §5 của spec: phạm vi đổi tên, lệnh con duyệt, chuyển tiếp `plan`, dạng số | [spec](specs/2026-10-23-sp31-ten-lenh-theo-stage-design.md) | | |
+| SP32 | `adapters/claude-code/exclude` hẹp lại (không loại cả `/.claude/`) | sau | chờ | — | Loại những đường dẫn nào; repo đích đã init phải làm gì | | | |
+| SP33 | Nhãn nguồn cho URL issue GitHub / GitLab trong `aw input` | sau | chờ | — | Thêm nhãn mới hay dùng nhãn có sẵn; cách khai miền | | | |
+| SP34 | Phát hành các mảnh `changes/` đang tồn trước khi chạy SP9 | sau | chờ | — | Người chủ engine chọn thời điểm phát hành | | | |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -79,6 +82,7 @@ ADR — nên đi trước; SP29, SP30 thêm luật nên chờ số liệu SP9 (n
 
 - Công cụ đã có: `aw journal export <file>`, `aw journal report <file>…`.
 - Công cụ xong ở [SP9b](specs/2026-10-24-sp9b-journal-do-luong-design.md): cột version, `phases.tsv`, `aw journal retro` (`jobs.tsv`), report mới (độ chính xác checker, thời gian phase, việc theo loại, lỗi lọt, `--version`).
+  Đã merge ở [#100](https://github.com/dangminhphuc/agent-workflow/pull/100).
   Còn lại: chạy thật trên 1–2 repo, người làm; SP10 chờ số liệu này.
 - Còn lại (người làm): 1–2 repo đích, 2–4 tuần. Số liệu: việc theo loại, thời gian phase, số lần người
   can thiệp, checker chặn đúng / chặn nhầm.
@@ -140,7 +144,7 @@ báo chuyển tiếp. Glob của `conventions.md` giữ nghĩa cũ (spec SP8).
 ### SP19 — Bước A đợt 2
 
 **Vấn đề.** SP12 gắn `# giữ: CAP-…/INV-…` cho 41 chỗ; `check-sdlc.sh` chặn id không có và capability
-`machine` được nhận mà không luật nào khai. Còn ~200 chỗ chặn/cảnh báo chưa có id, `Category` của
+`machine` được nhận mà không luật nào khai. Còn nhiều chỗ chặn/cảnh báo chưa có id (`tools/unclassified-rules.txt`, nay 185), `Category` của
 `workflow/checkers/*.md` chưa gắn, luật mồ côi chưa bị chặn, dòng "Interface: …" trong PR vẫn khai tay.
 
 **Đã làm (#81):** luật mới phải gắn `# giữ:` — `tools/unclassified-rules.txt` đếm chỗ luật chưa gắn
@@ -156,7 +160,7 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 (chia đợt 19b–19g, mỗi đợt một PR).
 
 **Đợt 19b:** gắn 37 chỗ (`check-intake`, `check-security`, `check-ship`, `check-conventions`, `task.sh`;
-223 → 186). 23 chỗ còn lại của các file đó không khớp id nào — chờ người duyệt capability mới (mô tả PR
+223 → 186, [#97](https://github.com/dangminhphuc/agent-workflow/pull/97); đếm lại 2026-10-24: 185). 23 chỗ còn lại của các file đó không khớp id nào — chờ người duyệt capability mới (mô tả PR
 đợt 19b): khoá engine ghim (`Engine:`), `Goal:` của intake, mục lục (`toc_loi`), hình thức
 `conventions.md` (khoá bắt buộc, thư mục tri thức, `worktree_dir`, regex), WIP=1 và dừng sau N lần đỏ
 của `aw task`, tiêu đề MR (độ dài, mã Jira).
@@ -200,6 +204,38 @@ dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi t
 **Cần quyết.** Spec § 5: đổi tên tới `aw check`/`aw ship` không; lệnh con duyệt hay tham số
 `/aw-approvals <stage>`; chuyển tiếp chữ `plan` đổi nghĩa; dạng số trong summary.
 
+### SP32 — `exclude` của adapter `claude-code` quá rộng
+
+**Vấn đề.** `adapters/claude-code/exclude` loại cả `/.claude/` khỏi git của repo đích, còn adapter Cursor
+chỉ loại `commands/`, `agents/` và `skills/agent-workflow/`. Skill hay `settings.json` của chính
+team đặt trong `.claude/` bị bỏ qua, phải `git add -f` mới commit được.
+
+**Hướng.** Liệt kê đường dẫn adapter thật sự sinh ra (như Cursor), không loại cả thư mục. `aw init` chỉ
+thêm dòng còn thiếu vào `.git/info/exclude`, nên repo đã init cần chạy lại để nhận dòng mới.
+
+**Cần quyết.** Danh sách đường dẫn; dòng `/.claude/` cũ trong `.git/info/exclude` của repo đích có gỡ không.
+
+### SP33 — Nhãn nguồn cho URL issue GitHub / GitLab
+
+**Vấn đề.** `aw input` (`tools/input.sh`) chỉ có `[JIRA]`, `[CONFLUENCE]`, `[FILE]`. Khi `conventions.md` chưa khai
+`confluence_domains`, mọi URL không phải Jira (kể cả issue GitHub / GitLab) thành `[CONFLUENCE]`, kèm cảnh báo.
+Không có nhãn nào nói đúng "issue của git host".
+
+**Hướng.** Nhận ra URL issue GitHub / GitLab và gán nhãn riêng (hoặc khai miền như `confluence_domains`);
+thêm nhãn thì sửa cùng lúc `check-intake.sh`, `check-spec.sh`, `approval.sh`, template và test.
+
+**Cần quyết.** Nhãn mới hay dùng nhãn có sẵn; khai miền hay nhận theo mẫu URL.
+
+### SP34 — Phát hành các mảnh `changes/` đang tồn
+
+**Vấn đề.** `main` đang giữ 11 mảnh `changes/` chưa phát hành; bản mới nhất là 2026.10.31, nên repo đích
+đang dùng engine thiếu các thay đổi đó (SP9b, SP19b, SP20–SP22 trong số đó). Chạy thật (SP9) trên bản cũ thì số liệu không phản
+ánh engine hiện tại.
+
+**Hướng.** Phát hành theo README § Chạy test và phát hành trước khi chạy SP9.
+
+**Cần quyết.** Thời điểm phát hành; có chờ thêm SP nào không.
+
 ## Việc nhỏ (không thành dự án con)
 
 Đụng phần nào thì làm phần đó, không cần spec:
@@ -207,10 +243,12 @@ dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi t
 - **`check-sdlc.sh` ~1,6 giây mỗi lần** (trước ~2 giây). `cap_co`, `cap_stage`, id invariant, phase theo
   stage, `skippable: false` và requires của stage tra chuỗi tính một lần. Phần còn lại là đọc frontmatter
   từng file và quét `# giữ:`.
-- Bộ test (đo 2026-10-23, `main` 8824ded): 1804 ca, mọi ca đạt, 2 phút 41 giây trên 4 luồng — mục tiêu
-  dưới 3 phút đạt trên máy này; theo dõi tiếp trên CI. Phần dài nhất `23-sdlc-syntax` (36 giây), rồi
-  `21-sdlc-profiles`, `15-conventions-task`, `08-adapters` (~34 giây) — chưa tới ngưỡng cảnh báo nên tách.
-  Số cũ (1775 ca, ~5 phút trên 6 luồng) đo trên máy khác, không so trực tiếp.
+- Bộ test (đo 2026-10-24, `main` dac429d): 1963 ca, 5 phút 23 giây trên 4 luồng — vượt mục tiêu dưới 3 phút
+  (lần đo 2026-10-23: 1804 ca, 2 phút 41 giây, `main` 8824ded; hai lần có thể đo trên máy khác nhau nên không
+  so trực tiếp, cần đo lại trên CI). Phần dài nhất `05-review-quality` (69 giây). Theo dõi; tách phần khi
+  xuất hiện `CẢNH BÁO … nên tách`.
+- **`tools/check-conventions.sh` dòng 90 và 259 cắt chuỗi bằng `substr`** dưới `LC_ALL=C` (đếm byte), nên có
+  thể cắt giữa ký tự UTF-8 trong cảnh báo (`…`, chữ có dấu). Cắt theo dòng/từ, hoặc bỏ cắt.
 
 ## Không làm
 
