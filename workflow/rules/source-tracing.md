@@ -12,11 +12,12 @@ Every `### REQ-NNN` in `spec.md` has **exactly one** `Source:` line with one lab
 |---|---|---|
 | `[CONFLUENCE]` | Quoted from a Confluence page | Page URL + heading; `Quote:` |
 | `[JIRA]` | Quoted from a Jira issue | Issue key + URL; `Quote:` |
+| `[ISSUE]` | Quoted from a GitHub/GitLab issue, PR or MR | Issue/PR/MR URL (`…/issues/N`, `…/pull/N`, `…/-/merge_requests/N`); `Quote:` |
 | `[FILE]` | Quoted from a file in the repo | Path + heading; `Quote:` found in that file |
 | `[INFERRED]` | Technical decision you derived | Reason + the REQ it serves |
 | `[OPEN-QUESTION]` | No source yet, temporary assumption | Link to its question: `[open-questions.md § Q-NNN](open-questions.md#q-nnn)` |
 
-No sixth label. Does not fit the five → not a requirement → put it in `open-questions.md`.
+No seventh label. Does not fit the six → not a requirement → put it in `open-questions.md`.
 
 `Quote:` = the source sentences **verbatim**, one `> …` line each, right under `Source:`:
 
@@ -58,7 +59,7 @@ Answering an open question: write `Answer:`, set `Status: answered`, **and** cha
 
 - A REQ's region ends at the next `##`/`###` heading: a `Source:` or criterion under `### Ghi chú` does not count for the REQ above (split a REQ with `####`).
 - An acceptance criterion still `<...>` or inside an HTML comment does not count.
-- A source (`[JIRA]` key, `[CONFLUENCE]` URL, `[FILE]` path) not in `intake.md` `## Input` gets a warning: a real input → add it to intake; otherwise use a source you were given.
+- A source (`[JIRA]` key, `[CONFLUENCE]` or `[ISSUE]` URL, `[FILE]` path) not in `intake.md` `## Input` gets a warning: a real input → add it to intake; otherwise use a source you were given.
 - `open-questions.md` and the spec disagree: `open` ↔ every REQ pointing to it still `[OPEN-QUESTION]`; `answered` ↔ has `Answer` and no REQ pointing to it is still `[OPEN-QUESTION]`.
 - A question still `open` that no REQ points to — link it from the REQ's `Source:` or delete it.
 - `## Constraints & dependencies`, `## Out of scope`, `## Source conflicts` left empty — write "Không có…" / "Không phát hiện mâu thuẫn." instead.

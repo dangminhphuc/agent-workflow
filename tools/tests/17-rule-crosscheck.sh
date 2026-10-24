@@ -68,6 +68,12 @@ thay "$LF" '- Status: active' '- Status: superseded by BR-KHAC-009'
 ky_vong 1 "rule check: superseded by luật không có → KHÔNG HỢP LỆ" sh "$LU" check
 thay "$LF" '- Status: superseded by BR-KHAC-009' '- Status: active'
 ky_vong 0 "…sửa lại → HỢP LỆ" sh "$LU" check
+thay "$LF" '- Source: `[JIRA]` ABC-1 (version: updated 2026-10-01)' '- Source: `[ISSUE]` https://github.com/o/r/issues/12 (version: updated 2026-10-01)'
+ky_vong 0 "rule check: Source [ISSUE] có phiên bản → HỢP LỆ" sh "$LU" check
+thay "$LF" '- Source: `[ISSUE]`' '- Source: `[BRD]`'
+ky_vong 1 "rule check: Source nhãn lạ → KHÔNG HỢP LỆ" sh "$LU" check
+thay "$LF" '- Source: `[BRD]` https://github.com/o/r/issues/12' '- Source: `[JIRA]` ABC-1'
+ky_vong 0 "…trả lại [JIRA] → HỢP LỆ" sh "$LU" check
 # Lời người đã ghi (câu trả lời điểm mù): nguồn [HUMAN] + Quote nguyên văn
 thay "$F/open-questions.md" '- **Status:** `open`' '- **Status:** `answered`
 - **Answer:** PO Lan, 2026-10-05: luôn hiện b'

@@ -10,14 +10,15 @@
 #            mục `Q-NNN` còn open mà không REQ nào trỏ tới; mã câu hỏi trùng. Dạng cũ `### REQ-NNN`: cảnh báo.
 #            "Design:" khác required | skip; skip ngoài bugfix/refactor hoặc khi Risk khác normal;
 #            chore ghi required.
-#            REQ nguồn [CONFLUENCE] [JIRA] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
+#            REQ nguồn [CONFLUENCE] [JIRA] [ISSUE] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
 #            [FILE]: câu trích không có trong file nguồn (tools/lib/quote.sh) — với --entry chỉ
 #            cảnh báo: nguồn đổi sau khi viết spec không phải lỗi của phase sau.
 #            open-questions.md / refactor-requests.md: mục ở cấp cũ "## REQ-/RFR-" (phải "###");
 #            RFR sai dạng (không đúng 3 chữ số) hay trùng.
-#            [JIRA] không có mã khớp jira_key_regex; [INFERRED] không ghi lý do.
+#            [JIRA] không có mã khớp jira_key_regex; [ISSUE] không có URL issue / PR / MR;
+#            [INFERRED] không ghi lý do.
 #            spec-findings.md thiếu, hoặc còn phát hiện Severity block chưa fixed / rejected: <lý do>.
-# Cảnh báo:  nguồn [JIRA]/[CONFLUENCE]/[FILE] không có trong "## Input" của intake.md;
+# Cảnh báo:  nguồn [JIRA]/[CONFLUENCE]/[ISSUE]/[FILE] không có trong "## Input" của intake.md;
 #            "Risk: normal" mà spec có từ khoá high_risk_keywords (conventions.md).
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -134,6 +135,10 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     if (t == "JIRA") {
       if (!match(x, "(^|[^A-Za-z0-9])(" mj ")")) return ""
       p = substr(x, RSTART, RLENGTH); sub(/^[^A-Za-z0-9]/, "", p); return p
+    }
+    if (t == "ISSUE") {          # URL issue / PR / MR, bỏ query/fragment — như khoá của input.sh
+      if (!match(x, /https?:\/\/[^ \t)>]+/)) return ""
+      p = substr(x, RSTART, RLENGTH); sub(/[?#].*$/, "", p); sub(/\/+$/, "", p); return p
     }
     if (t == "CONFLUENCE") {
       if (!match(x, /https?:\/\/[^ \t)>]+/)) return ""
@@ -262,9 +267,9 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
     if (match(x, /(^|[^A-Za-z0-9])(Q|REQ)-[0-9]+/)) {
       q = substr(x, RSTART, RLENGTH); sub(/^[^A-Z]/, "", q)
       if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"### " q "\"")
-    } else if (x !~ /\[(CONFLUENCE|JIRA|FILE)\]/) {
+    } else if (x !~ /\[(CONFLUENCE|JIRA|ISSUE|FILE)\]/) {
       loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § Q-NNN](open-questions.md#q-nnn)) hoặc nguồn đã chốt " \
-          "([CONFLUENCE] [JIRA] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
+          "([CONFLUENCE] [JIRA] [ISSUE] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
     }
     next
   }
@@ -304,7 +309,7 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
   }
 
   END {
-    hop_le["CONFLUENCE"]=1; hop_le["JIRA"]=1; hop_le["FILE"]=1
+    hop_le["CONFLUENCE"]=1; hop_le["JIRA"]=1; hop_le["ISSUE"]=1; hop_le["FILE"]=1
     hop_le["INFERRED"]=1;   hop_le["OPEN-QUESTION"]=1
     mc_hop_le["blocking"]=1; mc_hop_le["review-blocking"]=1; mc_hop_le["non-blocking"]=1
 
@@ -372,20 +377,23 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       }
       if (!(t in hop_le)) {
         loi(c ": nhãn [" t "] không hợp lệ. Chỉ chấp nhận: " \
-            "[CONFLUENCE] [JIRA] [FILE] [INFERRED] [OPEN-QUESTION]")
+            "[CONFLUENCE] [JIRA] [ISSUE] [FILE] [INFERRED] [OPEN-QUESTION]")
         continue
       }
       x = bo_nhan(nguon[c])
       if (t == "INFERRED" && (x == "" || x ~ /^<.*>$/))
         loi(c ": nguồn [INFERRED] không ghi lý do — ghi lý do kỹ thuật và REQ nó phục vụ (vd \"index cho REQ-002\").")
-      if (t == "JIRA" && x !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)"))
+      # giữ: CAP-require-01
+      if (t == "ISSUE" && x !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests)\/[0-9]+([^0-9A-Za-z]|$)/)
+        loi(c ": nguồn [ISSUE] không có URL issue / PR / MR (…/issues/N, …/pull/N, …/-/merge_requests/N) — " x)
+      else if (t == "JIRA" && x !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)"))
         loi(c ": nguồn [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " x)
-      else if (co_intake && (t == "CONFLUENCE" || t == "JIRA" || t == "FILE")) {
+      else if (co_intake && (t == "CONFLUENCE" || t == "JIRA" || t == "ISSUE" || t == "FILE")) {
         d = dinh_danh(t, x)
         if (d != "" && d != "intake.md" && d != "open-questions.md" && !co_trong_input(t, d))
           canh_bao(c ": nguồn " d " không có trong \"## Input\" của intake.md — đúng là đầu vào thì thêm vào intake, không thì kiểm lại nguồn")
       }
-      if (t == "CONFLUENCE" || t == "JIRA" || t == "FILE") {
+      if (t == "CONFLUENCE" || t == "JIRA" || t == "ISSUE" || t == "FILE") {
         if (!(c in so_cau))
           loi(c ": nguồn [" t "] thiếu câu trích — thêm \"- Quote:\" và chép nguyên văn câu nguồn vào các dòng \"> …\" ngay dưới. " \
               "Người duyệt so REQ với câu gốc ngay trong spec.")

@@ -409,7 +409,8 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 ### Phase 00 — `/aw-intake`: tiếp nhận việc
 
 - **Chạy ở:** main checkout (tạo việc mới), hoặc trong worktree (thêm input).
-- **Lệnh:** `/aw-intake <input…>` — tham số là danh sách input: mã Jira, URL Confluence, đường dẫn
+- **Lệnh:** `/aw-intake <input…>` — tham số là danh sách input: mã Jira, URL Confluence, URL issue/PR/MR
+  GitHub hay GitLab (nhãn `[ISSUE]`), đường dẫn
   file, hoặc lời bạn nói. Ví dụ: `/aw-intake ABC-123 https://wiki.cty.vn/pages/123`.
 - **Đọc → ghi:** input → `intake.md`.
 
@@ -421,7 +422,7 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 | `Base` | nhánh/commit việc rẽ ra | mọi checker so diff với base này |
 | `Engine` | version engine | mọi `aw check` của việc chạy đúng version này |
 | `Goal` | một câu mục tiêu | — |
-| `## Input` | danh sách nguồn duy nhất được đọc | mọi REQ sau này phải truy về đây. Sự cố: `[INCIDENT] <định danh>`, không bắt buộc |
+| `## Input` | danh sách nguồn duy nhất được đọc | mọi REQ sau này phải truy về đây. Issue/PR/MR GitHub, GitLab: `[ISSUE] <URL>`. Sự cố: `[INCIDENT] <định danh>`, không bắt buộc |
 
 **Việc của bạn:**
 
@@ -432,7 +433,7 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 3. Xác nhận danh sách input, và lời bạn được chép **nguyên văn**.
 4. Chạy lệnh chuẩn bị máy in ra (`WORKTREE_SETUP_CMD`), rồi **mở phiên mới trong worktree**.
 
-**Máy chặn khi:** thiếu job type/input/`Base`/`Engine`; `[JIRA]` không khớp `jira_key_regex`; `[INCIDENT]` thiếu định danh hoặc còn chỗ giữ chỗ.
+**Máy chặn khi:** thiếu job type/input/`Base`/`Engine`; `[JIRA]` không khớp `jira_key_regex`; `[ISSUE]` không có URL dạng `…/issues/N`, `…/pull/N`, `…/-/merge_requests/N`; `[INCIDENT]` thiếu định danh hoặc còn chỗ giữ chỗ.
 Job type lệch tiền tố branch → intake chỉ cảnh báo, **review chặn** (sửa loại hoặc `aw rename`).
 
 Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — chỉ nối thêm. Xoá input: sửa tay.
@@ -459,11 +460,11 @@ Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — ch�
 | `Design: required \| skip` | `skip` → **bỏ design**: chỉ bugfix/refactor nhỏ, `Risk: normal`, không có lựa chọn kỹ thuật; plan đi thẳng từ spec | design, plan |
 | `Approved by human` | **cổng**: design (không có design: plan) bị chặn tới khi tick | design/plan |
 
-Source label của REQ: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định **kỹ
+Source label của REQ: `[CONFLUENCE]`, `[JIRA]`, `[ISSUE]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định **kỹ
 thuật** hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói, đang dùng giả định tạm). Phép thử: BA/PO có
 thể nói "không, ý tôi khác" không? Có → phải là `[OPEN-QUESTION]`, không được `[INFERRED]`.
 
-REQ có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` phải có **câu trích nguyên văn** ngay dưới `Source:` —
+REQ có nguồn `[CONFLUENCE]` `[JIRA]` `[ISSUE]` `[FILE]` phải có **câu trích nguyên văn** ngay dưới `Source:` —
 "nguồn nói gì" (`Quote`) tách khỏi "agent hiểu thế nào" (`Description`), bạn so hai thứ ngay trong spec:
 
 ```markdown
@@ -475,7 +476,7 @@ REQ có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` phải có **câu trích nguyê
 
 Với `[FILE]` (kể cả lời bạn ghi trong `intake.md` hay câu trả lời trong `open-questions.md`) máy kiểm
 từng câu trích **có thật trong file** — khoảng trắng, xuống dòng không tính, còn lại phải đúng từng
-chữ. Confluence/Jira máy không đọc được: câu trích chỉ giúp bạn đọc. File nguồn đổi sau khi viết spec
+chữ. Confluence/Jira/issue máy không đọc được: câu trích chỉ giúp bạn đọc. File nguồn đổi sau khi viết spec
 thì `/aw-design` (không có design: `/aw-plan`) chỉ **cảnh báo** — xem lại REQ, sửa qua `/aw-clarify`
 nếu cần.
 

@@ -14,7 +14,7 @@ repo_rules: spec
 
 You review `spec.md` **with a clean context** — you never saw the reasoning behind it.
 
-Compare each requirement's description and acceptance criteria **only** against its `Quote` and against `[HUMAN]` text in `intake.md`. Do not re-read `[FILE]`, `[JIRA]`, or `[CONFLUENCE]`. Do not look for requirements the sources never mentioned.
+Compare each requirement's description and acceptance criteria **only** against its `Quote` and against `[HUMAN]` text in `intake.md`. Do not re-read `[FILE]`, `[JIRA]`, `[ISSUE]`, or `[CONFLUENCE]`. Do not look for requirements the sources never mentioned.
 
 ## You may only BLOCK, never APPROVE
 
@@ -38,7 +38,7 @@ Compare each requirement's description and acceptance criteria **only** against 
 ## Do not
 
 - Edit `spec.md` or `open-questions.md`.
-- Re-open `[FILE]` / `[JIRA]` / `[CONFLUENCE]` to hunt for a missed requirement.
+- Re-open `[FILE]` / `[JIRA]` / `[ISSUE]` / `[CONFLUENCE]` to hunt for a missed requirement.
 - Judge style, spelling, formatting.
 - Write "no issues" / "passes" anywhere.
 

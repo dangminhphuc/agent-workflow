@@ -53,6 +53,15 @@ URL GitHub vẫn lọt. Quyết trên **cả chuỗi**: một từ không nhận
 tách từng từ sẽ thành input rác và mất câu gốc. Chạy lại chỉ **gộp thêm**; `spec.md` ghi
 `based_on: intake.md` nên input mới làm spec stale.
 
+**Issue/PR/MR là nhãn riêng `[ISSUE]`**, không phải `[CONFLUENCE]`: trước đây chưa khai
+`confluence_domains` thì URL issue GitHub cũng thành `[CONFLUENCE]` và spec đi đọc bằng MCP Atlassian.
+Máy nhận theo **dạng đường dẫn**, không thêm khoá `conventions.md`: `…/-/(issues|merge_requests)/N`
+là đường riêng của GitLab nên nhận ở mọi host (cả GitLab tự host); `/<o>/<r>/(issues|pull)/N` thì
+quá chung, chỉ nhận ở `github.com` hoặc host của `origin` (GitHub Enterprise) — host khác rơi về
+luật cũ. URL issue trên host có trong `confluence_domains` cũng thành `[ISSUE]` (xét trước). Khoá so trùng là URL bỏ query/fragment (một issue, nhiều link comment = một nguồn).
+Checker (`intake`, `spec`) chỉ kiểm dạng URL; host chỉ được xét ở `tools/input.sh`. Nhãn đã qua máy gán, người sửa tay
+chịu trách nhiệm phần còn lại.
+
 **Nguồn sự thật của job type** là `intake.md`. Tiền tố branch chỉ gợi ý; lệch thì review chặn,
 không có ngoại lệ "ghi lý do" (ngoại lệ dễ ghi hơn sửa, tiền tố sẽ mất nghĩa). `aw rename` đổi
 branch, thư mục artifact, worktree trong một lệnh.
@@ -272,7 +281,7 @@ gỡ worktree là nó vào `archive/` của một máy. ADR đưa phần còn đ
 - **Người quyết trong REQ**: `- Promote: BR-<MIỀN>-NNN` nằm dưới approval hash spec. ID, file đích
   (`<knowledge_rules_dir>/<miền>.md`), nội dung đều lấy từ artifact đã duyệt — lệnh không có tham số
   `--id`, `--file` cho agent tự chọn. ID trùng luật của việc khác → spec chặn.
-- **Nguồn bền, có phiên bản**: `[JIRA]`/`[CONFLUENCE]` lấy phiên bản ở bảng `## Sources` của spec;
+- **Nguồn bền, có phiên bản**: `[JIRA]`/`[CONFLUENCE]`/`[ISSUE]` lấy phiên bản ở bảng `## Sources` của spec;
   `[FILE]` lấy sha commit cuối của file. Lời người (`intake.md`, câu trả lời trong `open-questions.md`)
   là trạng thái của việc, sẽ mất — nên ghi `[HUMAN]` và **chép nguyên văn** vào `Quote:`; phiên bản là
   ngày trong câu trả lời, không có thì approval hash spec. `[INFERRED]`/`[OPEN-QUESTION]` không nâng được:
@@ -419,7 +428,7 @@ artifact khác là link có anchor tới đúng mục.
 ### Câu trích nguyên văn của REQ
 
 Phase spec bảo agent trích câu nguồn trước khi diễn giải, nhưng không có chỗ ghi thì bước đó không để
-lại dấu vết: người duyệt phải tự mở nguồn để so. Nên REQ có nguồn `[CONFLUENCE]` `[JIRA]` `[FILE]` có
+lại dấu vết: người duyệt phải tự mở nguồn để so. Nên REQ có nguồn `[CONFLUENCE]` `[JIRA]` `[ISSUE]` `[FILE]` có
 `- Quote:` + các dòng `> …` — "nguồn nói gì" tách khỏi "agent hiểu thế nào" (`Description`).
 
 - **Bắt buộc, không tuỳ chọn.** Tuỳ chọn thì agent bỏ, và người không phân biệt được "không có câu
@@ -947,7 +956,7 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 2. **"clean context" không cưỡng chế được ở agent không có subagent** — lùi về lời dặn người.
 3. **Checker máy kiểm hình thức và file phát hiện, không đọc lại nguồn.** Mọi REQ có nhãn ≠ REQ đúng với BRD.
    Câu trích `[FILE]` máy kiểm được có thật trong nguồn. Checker LLM của spec đối chiếu mô tả và tiêu chí
-   với `Quote` và lời `[HUMAN]` (không mở lại `[FILE]`/`[JIRA]`/`[CONFLUENCE]`); máy chỉ chặn khi thiếu
+   với `Quote` và lời `[HUMAN]` (không mở lại `[FILE]`/`[JIRA]`/`[ISSUE]`/`[CONFLUENCE]`); máy chỉ chặn khi thiếu
    `spec-findings.md` hoặc còn `block` chưa xử lý. Đừng nhầm "qua hết checker" với "làm đúng".
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.

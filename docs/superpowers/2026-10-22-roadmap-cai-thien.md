@@ -253,6 +253,8 @@ thêm nhãn thì sửa cùng lúc `check-intake.sh`, `check-spec.sh`, `approval.
 - **`tools/check-conventions.sh` dòng 90 và 259 cắt chuỗi bằng `substr`** dưới `LC_ALL=C` (đếm byte), nên có
   thể cắt giữa ký tự UTF-8 trong cảnh báo (`…`, chữ có dấu). Cắt theo dòng/từ, hoặc bỏ cắt.
 
+- `aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea —
+  các URL đó vẫn rơi về `[CONFLUENCE]`/`[HUMAN]`; thêm dạng vào `la_issue` (`tools/input.sh`) + checker khi cần.
 ## Không làm
 
 | Việc | Lý do | Xét lại khi |

@@ -12,6 +12,7 @@
 #   - [INCIDENT] cùng dạng [FILE]: phải có định danh, không chỗ giữ chỗ. Không bắt buộc.
 #   - [HUMAN] không kèm nguyên văn.
 #   - [JIRA] mà định danh không có mã khớp jira_key_regex (conventions.md).
+#   - [ISSUE] không có URL issue / PR / MR (GitHub, GitLab).
 #   - Thiếu dòng "Base:" dạng `<ref>` @ `<sha>` (worktree-new.sh in ra), hoặc sha
 #     không phải tổ tiên của HEAD. Checker phía sau so diff với base này — base
 #     sai thì phạm vi diff, test bảo vệ, tái hiện lỗi đều kiểm trên nền sai.
@@ -90,7 +91,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     cho_nv = 0
   }
   BEGIN { n_loi = n_base; n = split(loai_hl, a, " "); for (i = 1; i <= n; i++) hl[a[i]] = 1
-          nhan["CONFLUENCE"]=1; nhan["JIRA"]=1; nhan["FILE"]=1; nhan["HUMAN"]=1; nhan["INCIDENT"]=1 }
+          nhan["CONFLUENCE"]=1; nhan["JIRA"]=1; nhan["FILE"]=1; nhan["HUMAN"]=1; nhan["INCIDENT"]=1; nhan["ISSUE"]=1 }
   { sub(/\r$/, "") }
 
   !co_loai && /^[ \t]*-[ \t]+\*\*Type:\*\*/ { co_loai = 1; loai = gia_tri($0) }
@@ -108,7 +109,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     # giữ: CAP-plan-01
     if (t == "INFERRED") { loi("Input #" n_in ": [INFERRED] không được là input — input chỉ là tài liệu hoặc lời người dùng nguyên văn"); next }
     # giữ: CAP-plan-01
-    if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | FILE | HUMAN | INCIDENT)"); next }
+    if (!(t in nhan))  { loi("Input #" n_in ": nhãn [" t "] không hợp lệ (CONFLUENCE | JIRA | ISSUE | FILE | HUMAN | INCIDENT)"); next }
     gsub(/<!--.*-->/, "", rest); gsub(/^[`* \t]+|[ \t]+$/, "", rest)
     if (t == "HUMAN" && (rest == "" || rest ~ /^<.*>$/)) cho_nv = 1
     # giữ: CAP-plan-01
@@ -118,6 +119,8 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     else if (t != "HUMAN" && (rest ~ /<[^>]*>/ || rest ~ /\((URL|https?:\/\/…)\)/)) loi("Input #" n_in ": [" t "] còn chỗ giữ chỗ chưa điền — " rest)
     # giữ: CAP-plan-01
     else if (t == "JIRA" && rest !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)")) loi("Input #" n_in ": [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " rest)
+    # giữ: CAP-plan-01
+    else if (t == "ISSUE" && rest !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests)\/[0-9]+([^0-9A-Za-z]|$)/) loi("Input #" n_in ": [ISSUE] không có URL issue / PR / MR (…/issues/N, …/pull/N, …/-/merge_requests/N) — " rest)
     dem[t]++
     next
   }

@@ -62,6 +62,14 @@ thay "$F/intake.md" '`[INCIDENT]`' '`[INCIDENT]` <mã sự cố>'
 ky_vong_ly_do 1 "chặn [INCIDENT] còn chỗ giữ chỗ" "…đúng lý do" 'chỗ giữ chỗ' sh "$CHK" "$F"
 viet_intake
 
+thay "$F/intake.md" '`[JIRA]` ABC-1' '`[ISSUE]` https://github.com/o/r/issues/12'
+ky_vong 0 "[ISSUE] URL issue GitHub thì cho qua" sh "$CHK" "$F"
+thay "$F/intake.md" 'https://github.com/o/r/issues/12' '[#3](https://git.cty.vn/g/r/-/merge_requests/3)'
+ky_vong 0 "[ISSUE] link markdown tới MR GitLab thì cho qua" sh "$CHK" "$F"
+thay "$F/intake.md" '[#3](https://git.cty.vn/g/r/-/merge_requests/3)' 'https://github.com/o/r'
+ky_vong_ly_do 1 "chặn [ISSUE] không có URL issue / PR / MR" "…đúng lý do" '\[ISSUE\] không có URL issue' sh "$CHK" "$F"
+viet_intake
+
 # spec ghi based_on intake.md: gop them input -> spec loi thoi, review chan
 sh "$T/based-on.sh" "$F" spec.md intake.md >/dev/null 2>&1
 ky_vong 0 "spec ghi based_on intake.md vẫn qua check-spec" sh "$T/check-spec.sh" "$F"

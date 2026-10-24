@@ -89,7 +89,7 @@ if [ "$CONG" = spec ]; then
     idx == 1 && /^##[ \t]/ { cur = ""; sec = ($0 ~ /^##[ \t]+Out of scope/) ? "npv" : ""; next }
     idx == 1 && /^###[ \t]/ { cur = ""; next }
     idx == 1 && cur != "" && /^[-*][ \t]*\*{0,2}Source[^:]*:/ && !(cur in nhan) {
-      if (match($0, /\[(CONFLUENCE|JIRA|FILE|INFERRED|OPEN-QUESTION)\]/)) { nhan[cur] = substr($0, RSTART + 1, RLENGTH - 2); dem[nhan[cur]]++ }
+      if (match($0, /\[(CONFLUENCE|JIRA|ISSUE|FILE|INFERRED|OPEN-QUESTION)\]/)) { nhan[cur] = substr($0, RSTART + 1, RLENGTH - 2); dem[nhan[cur]]++ }
     }
     idx == 1 && sec == "npv" && $0 !~ /^[ \t]*$/ { v = ra($0); if (v != "" && v !~ /^</) npv[++n_npv] = v }
     idx == 2 && /^###[ \t]+(Q|REQ)-[0-9]+/ { match($0, /(Q|REQ)-[0-9]+/); q = substr($0, RSTART, RLENGTH); oq[++n_oq] = q; tt[q] = "open"; mc[q] = "?"; next }
@@ -119,8 +119,8 @@ if [ "$CONG" = spec ]; then
              (mo_chan == "" ? "" : " — mục \"blocking\" phải trả lời qua /aw-clarify trước:" mo_chan)
       print ""
       t = ""
-      split("FILE JIRA CONFLUENCE INFERRED OPEN-QUESTION", lb, " ")
-      for (i = 1; i <= 5; i++) if (dem[lb[i]]) t = t (t == "" ? "" : " · ") "[" lb[i] "] " dem[lb[i]]
+      split("FILE JIRA CONFLUENCE ISSUE INFERRED OPEN-QUESTION", lb, " ")
+      for (i = 1; i <= 6; i++) if (dem[lb[i]]) t = t (t == "" ? "" : " · ") "[" lb[i] "] " dem[lb[i]]
       print "Spec có " n " yêu cầu" (t == "" ? "" : ": " t)
     }
   ' "$SPEC" "$OQF"

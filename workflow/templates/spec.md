@@ -16,12 +16,13 @@ based_on: []
 ## Sources
 
 <!-- Phiên bản: Confluence = số version của page; Jira = thời điểm `updated` của issue;
-[FILE] = sha commit đã đọc. Nguồn đổi sau đó thì so phiên bản để biết spec có bị `stale` không. -->
+[ISSUE] = thời điểm `updated` của issue/PR/MR; [FILE] = sha commit đã đọc. Nguồn đổi sau đó thì so phiên bản để biết spec có bị `stale` không. -->
 
 | # | Type | Identifier | Version | Read on |
 |---|---|---|---|---|
 | 1 | Confluence | [Tên page](URL) | v12 | YYYY-MM-DD |
 | 2 | Jira | [ABC-123](URL) | updated YYYY-MM-DDTHH:MM | YYYY-MM-DD |
+| 3 | Issue | [o/r#12](URL) | updated YYYY-MM-DDTHH:MM | YYYY-MM-DD |
 
 ## Context
 
@@ -42,7 +43,7 @@ based_on: []
 <!-- Source, Quote, Priority, Type, Protected by, Target phải nằm ngay dưới "### REQ-NNN".
 Heading "###" khác (vd "### Ghi chú") đóng vùng REQ; muốn chia nhỏ một REQ thì dùng "####".
 Mỗi REQ có ít nhất một tiêu chí chấp nhận dạng "- [ ] …" — checker chặn nếu thiếu.
-Quote: nguồn [CONFLUENCE] [JIRA] [FILE] bắt buộc — chép NGUYÊN VĂN câu nguồn, mỗi câu một dòng "> …"
+Quote: nguồn [CONFLUENCE] [JIRA] [ISSUE] [FILE] bắt buộc — chép NGUYÊN VĂN câu nguồn, mỗi câu một dòng "> …"
 (không thêm ngoặc kép). [FILE]: máy kiểm từng câu có trong file (khoảng trắng, xuống dòng không tính). -->
 
 ### REQ-001 — <tiêu đề ngắn>
@@ -64,7 +65,7 @@ Quote: nguồn [CONFLUENCE] [JIRA] [FILE] bắt buộc — chép NGUYÊN VĂN c�
   - [ ] <...>
 
 <!-- Luật bền (tuỳ chọn, NGƯỜI quyết bằng cách duyệt spec): REQ là bất biến nghiệp vụ còn đúng
-sau việc này (không phải chi tiết màn hình), nguồn bền ([JIRA] [CONFLUENCE] [FILE], hay lời người
+sau việc này (không phải chi tiết màn hình), nguồn bền ([JIRA] [CONFLUENCE] [ISSUE] [FILE], hay lời người
 đã ghi trong intake.md / open-questions.md) → thêm dưới REQ:
 - Promote: BR-<MIỀN>-NNN       vd BR-BILLING-003; 04-implement chép REQ thành luật (aw rule promote) -->
 
@@ -101,7 +102,7 @@ Không có gì thì ghi "Không có." — checker chặn mục rỗng. -->
 ## Source conflicts
 
 <!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § Q-NNN](open-questions.md#q-nnn)`, hoặc trỏ tới
-nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
+nguồn đã chốt (`[JIRA]` hay `[ISSUE]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
 Agent không tự phân xử mâu thuẫn nghiệp vụ — checker chặn. -->
 
 | Source A says | Source B says | Resolution |

@@ -276,6 +276,25 @@ dung "stdin: nguyên văn giữ dấu nháy, \$, backtick, nhiều dòng" bang "
   > Sửa \"phí\" khi \$amount < 0 — xem ${BT}x${BT}
   > dòng hai"
 
+
+# [ISSUE]: issue / PR / MR của GitHub, GitLab (cả GitLab tự host: đường "/-/issues/N")
+dung "issue GitHub → [ISSUE]" bang "$(ra 'https://github.com/o/r/issues/12')" "- ${BT}[ISSUE]${BT} https://github.com/o/r/issues/12"
+dung "PR GitHub → [ISSUE]" bang "$(ra 'https://github.com/o/r/pull/5')" "- ${BT}[ISSUE]${BT} https://github.com/o/r/pull/5"
+dung "issue gitlab.com → [ISSUE]" bang "$(ra 'https://gitlab.com/g/r/-/issues/3')" "- ${BT}[ISSUE]${BT} https://gitlab.com/g/r/-/issues/3"
+dung "MR GitLab tự host (nhóm con) → [ISSUE]" bang "$(ra 'https://git.cty.vn/g/sub/r/-/merge_requests/7')" "- ${BT}[ISSUE]${BT} https://git.cty.vn/g/sub/r/-/merge_requests/7"
+dung "…không kèm cảnh báo confluence_domains" sh -c "! printf '%s' \"\$1\" | grep -q confluence_domains" _ "$(loi 'https://github.com/o/r/issues/12')"
+dung "cùng issue khác #comment / query → một dòng" bang "$(ra 'https://github.com/o/r/issues/12 https://github.com/o/r/issues/12#issuecomment-1 https://github.com/o/r/issues/12?x=1' | wc -l | tr -d ' ')" 1
+dung "trang repo GitHub (không phải issue) không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://github.com/o/r')"
+dung "github.com/o/r/issues (không số) không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://github.com/o/r/issues')"
+dung "miền giả github.com.evil.com không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://github.com.evil.com/o/r/issues/1')"
+U9=$(git -C "$R9" remote get-url origin)
+git -C "$R9" remote set-url origin "git@ghe.cty.vn:o/r.git"
+dung "GitHub Enterprise: host trùng host của origin → [ISSUE]" bang "$(ra 'https://ghe.cty.vn/o/r/issues/4')" "- ${BT}[ISSUE]${BT} https://ghe.cty.vn/o/r/issues/4"
+git -C "$R9" remote set-url origin "https://ghe.cty.vn/o/r.git"
+dung "…origin dạng https cũng nhận" bang "$(ra 'https://ghe.cty.vn/o/r/pull/4')" "- ${BT}[ISSUE]${BT} https://ghe.cty.vn/o/r/pull/4"
+git -C "$R9" remote set-url origin "$U9"
+dung "host lạ dạng /o/r/issues/N (không phải origin) không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://ghe.cty.vn/o/r/issues/4')"
+
 # --skip: chay lai /aw-intake = gop them
 cat > "$TMP/intake-cu.md" <<'HET'
 - **Type:** `feature`
@@ -285,6 +304,7 @@ cat > "$TMP/intake-cu.md" <<'HET'
 
 - `[JIRA]` [ABC-123](https://x.atlassian.net/browse/ABC-123)
 - `[FILE]` ./docs/a.md
+- `[ISSUE]` https://github.com/o/r/issues/9
 - `[HUMAN]`
   > sửa phí   hoàn tiền
   > bị âm
@@ -295,6 +315,7 @@ dung "…URL …/browse/ABC-123 trùng với ABC-123 đã có → stdout rỗng"
 dung "--skip: lời người dùng đã có (khác khoảng trắng / xuống dòng) → bỏ" test -z "$(ra --skip "$TMP/intake-cu.md" 'sửa phí hoàn tiền bị âm')"
 dung "--skip: lời người dùng mới thì vẫn in" bang "$(ra --skip "$TMP/intake-cu.md" 'thêm xuất CSV' | tail -1)" "  > thêm xuất CSV"
 ky_vong 2 "--skip trỏ tới file không có → SAI CÁCH GỌI" pl --skip "$TMP/khong-co.md" "ABC-1"
+dung "--skip: [ISSUE] đã có (khác #fragment) → bỏ" test -z "$(ra --skip "$TMP/intake-cu.md" 'https://github.com/o/r/issues/9#x')"
 
 # ---------------------------------------------------------------- doi ten feature
 nhom "aw rename (rename-feature.sh)"
