@@ -247,9 +247,6 @@ thêm nhãn thì sửa cùng lúc `check-intake.sh`, `check-spec.sh`, `approval.
   (lần đo 2026-10-23: 1804 ca, 2 phút 41 giây, `main` 8824ded; hai lần có thể đo trên máy khác nhau nên không
   so trực tiếp, cần đo lại trên CI). Phần dài nhất `05-review-quality` (69 giây). Theo dõi; tách phần khi
   xuất hiện `CẢNH BÁO … nên tách`.
-- Bộ đọc token `Expected files` (dấu backtick) đang có ba bản: `kc_pham_vi` (~dòng 164) và `kc_glob_rong` (~dòng 242)
-  trong `tools/lib/cross-check.sh`, `kt_duong_plan` trong `tools/lib/knowledge.sh`. Gom về một helper trước khi SP18
-  đổi ngữ nghĩa glob. `kc_glob_rong` cũng chưa tắt `core.quotepath` (đường dẫn có dấu) — làm cùng lúc.
 - **`tools/check-conventions.sh` dòng 90 và 259 cắt chuỗi bằng `substr`** dưới `LC_ALL=C` (đếm byte), nên có
   thể cắt giữa ký tự UTF-8 trong cảnh báo (`…`, chữ có dấu). Cắt theo dòng/từ, hoặc bỏ cắt.
 

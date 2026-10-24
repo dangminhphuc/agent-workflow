@@ -63,7 +63,9 @@ kt_duong_plan() {
     _kpcay=$(git -C "$_kptop" -c core.quotepath=off ls-tree -r --name-only "$_kpsha")
   else _kpcay=""; fi
   _kpadr=$(adr_thu_muc "$2"); _kplt=$(luat_thu_muc "$2"); _kptf=$(conv_get "$2" test_files)
-  { printf '%s\n' "$_kpcay"; printf '\001\n'; cat "$1/plan.md"; } | awk "$MAU_ERE_AWK"'
+  # chỉ token "Expected files" dưới heading task (kc_token_plan: loại E, task khác rỗng), bỏ cột loại + task
+  { printf '%s\n' "$_kpcay"; printf '\001\n'; kc_token_plan "$1/plan.md" | awk -F '\t' '$1 == "E" && $2 != ""' | cut -f3-; } \
+    | awk "$MAU_ERE_AWK"'
     function tien_to(m,   i, c) {
       i = match(m, /[*?[]/); if (i == 0) return m
       c = substr(m, 1, i - 1); if (c !~ /\//) return ""
@@ -71,18 +73,12 @@ kt_duong_plan() {
     }
     !pl && $0 == "\001" { pl = 1; next }
     !pl { if ($0 != "") cay[++nc] = $0; next }
-    { sub(/\r$/, "") }
-    /^###[ \t]/ { t = match($0, /TSK-[0-9]+/); next }
-    /^##[ \t]/ { t = 0; next }
-    t && /^[ \t]*-[ \t]*\**Expected files\**:/ {
-      s = $0
-      while (match(s, /`[^`]+`/)) {
-        m = substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH)
-        if (m !~ /[*?[]/) { print m; continue }
-        pre = tien_to(m); if (pre != "") print pre
-        re = mau_ere(m, 0)
-        for (i = 1; i <= nc; i++) if (cay[i] ~ re && (pre == "" || index(cay[i], pre "/") == 1)) print cay[i]
-      }
+    {
+      m = $0
+      if (m !~ /[*?[]/) { print m; next }
+      pre = tien_to(m); if (pre != "") print pre
+      re = mau_ere(m, 0)
+      for (i = 1; i <= nc; i++) if (cay[i] ~ re && (pre == "" || index(cay[i], pre "/") == 1)) print cay[i]
     }' | sort -u | while IFS= read -r _kpp; do
       [ -n "$_kpp" ] || continue
       _kpp=${_kpp#./}; _kpp=${_kpp%/}
