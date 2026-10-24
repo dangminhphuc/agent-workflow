@@ -50,4 +50,7 @@ jobs:
       # TẠM (gỡ khi job xanh): output đầy đủ của phần dừng giữa chừng trên macOS.
       - name: Chẩn đoán 26-posix-macos
         if: failure()
-        run: sh -x tools/tests/26-posix-macos.sh 2>&1 | tail -60; echo "mã thoát: $?"
+        run: |
+          sh -x tools/tests/26-posix-macos.sh > "$RUNNER_TEMP/26.out" 2>&1
+          echo "ma thoat $?"
+          tail -60 "$RUNNER_TEMP/26.out"
