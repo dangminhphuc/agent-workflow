@@ -28,7 +28,7 @@ kq_khai guard.sh \
 . "$HERE/lib/env.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
-MT_BO_QU=1 mt_dat
+MT_BO_QU=1; mt_dat; unset MT_BO_QU   # không "X=… hàm": bash 3.2 giữ X sau lời gọi hàm
 
 PHA="${1:-}"
 case "$PHA" in pre|post) ;; *) echo "Dùng: aw guard pre|post" >&2; exit 3 ;; esac

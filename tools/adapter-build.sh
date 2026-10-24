@@ -19,6 +19,7 @@
 # để thấy worktree thiếu bộ lệnh của một agent, hay bộ lệnh cũ hơn engine.
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+LC_ALL=C; export LC_ALL   # ngữ nghĩa byte như mawk — lý do: tools/lib/result.sh
 ENG="${AW_ENGINE:-$(CDPATH= cd -- "$HERE/.." && pwd)}"
 . "$HERE/lib/adapter.sh"
 . "$HERE/lib/md.sh"

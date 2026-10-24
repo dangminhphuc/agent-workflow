@@ -22,6 +22,12 @@
 # kq_don <lệnh>: việc dọn dẹp chạy trước khi in (thay cho trap EXIT riêng —
 # một script chỉ có một trap EXIT).
 
+# Engine viết theo ngữ nghĩa byte của mawk: length/substr/index đếm byte, tolower chỉ đổi ASCII.
+# awk khác ở locale UTF-8 đếm theo ký tự (gawk) hoặc lỗi "towc: multibyte conversion failure" khi
+# substr cắt giữa ký tự (awk của macOS) — chạy với LC_ALL=C thì mọi máy cùng một nghĩa. Chữ
+# tiếng Việt vẫn đi qua nguyên byte. Mọi script của tools/ nạp file này trước khi chạy gì khác.
+LC_ALL=C; export LC_ALL
+
 KQ_TEN=""; KQ_DS=""; KQ_DON=""
 
 kq_khai() {

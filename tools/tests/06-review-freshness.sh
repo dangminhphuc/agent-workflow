@@ -82,7 +82,7 @@ sh "$T/check-security.sh" "$F" >/dev/null 2>&1
 # ---- Frontmatter based_on đọc sai thì kiểm lỗi thời im lặng (INV-006) — sai dạng chặn mọi nơi
 nhom "frontmatter based_on (kc_fm_hong, kc_based_on_thieu)"
 cp "$F/plan.md" "$TMP/plan-fm.bak"
-fm_dat() { awk -v fm="$1" 'BEGIN { printf "%s", fm } f { print } NR > 1 && $0 == "---" { f = 1 }' "$TMP/plan-fm.bak" > "$F/plan.md"; }
+fm_dat() { FM_MOI="$1" awk 'BEGIN { printf "%s", ENVIRON["FM_MOI"] } f { print } NR > 1 && $0 == "---" { f = 1 }' "$TMP/plan-fm.bak" > "$F/plan.md"; }
 fm_dat '---
 based_on: [spec.md@1]
 ---
