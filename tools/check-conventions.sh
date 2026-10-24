@@ -70,7 +70,19 @@ khoa_mau() {
 BIET=" $(khoa_mau "$MAU" | tr '\n' ' ')$(printf 'rules_%s ' $BL_QUY_TAC)$(printf 'uses_%s ' $BL_QUY_TAC)"
 
 # ---- cấu trúc: khối, từng dòng, khoá lạ, khoá trùng ----
-CT=$(awk -v biet="$BIET" '
+# Cắt theo byte (LC_ALL=C) nhưng không để lại nửa ký tự UTF-8: nếu điểm cắt rơi giữa ký tự thì bỏ cả ký tự dở.
+AWK_CAT='
+function cat_chu(s, n,   t, c, i) {
+  if (!_ok) { _ok = 1; for (i = 128; i < 256; i++) _o[sprintf("%c", i)] = i }
+  if (length(s) <= n) return s
+  t = substr(s, 1, n); c = substr(s, n + 1, 1)
+  if (!(c in _o) || _o[c] >= 192) return t
+  while (length(t) > 0 && (substr(t, length(t), 1) in _o) && _o[substr(t, length(t), 1)] < 192) t = substr(t, 1, length(t) - 1)
+  if (length(t) > 0 && (substr(t, length(t), 1) in _o)) t = substr(t, 1, length(t) - 1)
+  return t
+}
+'
+CT=$(awk -v biet="$BIET" "$AWK_CAT"'
   { sub(/\r$/, "") }
   /^```conventions[ \t]*$/ {
     n_khoi++
@@ -87,7 +99,7 @@ CT=$(awk -v biet="$BIET" '
     else da[k] = NR
     next
   }
-  { s = $0; if (length(s) > 50) s = substr(s, 1, 50) "…"
+  { s = $0; if (length(s) > 50) s = cat_chu(s, 50) "…"
     print "dòng " NR ": không phải \"khoá: giá trị\" (khoá viết sát đầu dòng, chữ thường) — script bỏ qua: " s }
   END {
     if (n_khoi == 0) print "không có khối ```conventions — script không đọc được khoá nào"
@@ -251,12 +263,12 @@ if [ -n "$DS" ]; then
   fi
 fi
 
-NG=$(awk '
+NG=$(awk "$AWK_CAT"'
   { sub(/\r$/, "") }
   /^```conventions[ \t]*$/ { inb = 1; next }
   inb == 1 { if (/^```/) inb = 0; next }
   /^###[ \t]+Merge request[ \t]*$/ { mr = 1 }
-  /^<[^!]/ || /Chưa định nghĩa/ || /<[0-9]+>/ || /<[^<>|]+\|[^<>]+>/ { print "dòng " NR ": còn placeholder — " substr($0, 1, 60) }
+  /^<[^!]/ || /Chưa định nghĩa/ || /<[0-9]+>/ || /<[^<>|]+\|[^<>]+>/ { print "dòng " NR ": còn placeholder — " cat_chu($0, 60) }
   END { if (!mr) print "thiếu mục \"### Merge request\" — /aw-ship dùng mục này cho tiêu đề, mô tả MR" }
 ' "$CHINH_F")
 [ -n "$NG" ] && { printf '%s\n' "$NG" | while IFS= read -r l; do echo "  ! $l"; done; n_c=$((n_c + $(printf '%s\n' "$NG" | grep -c .))); }
