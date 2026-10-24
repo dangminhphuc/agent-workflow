@@ -4,7 +4,7 @@
 - Roadmap § SP20 · Đổi quyết định "open question mang mã REQ" ở `docs/kien-truc.md` § Giả định chưa xác nhận.
 - Interface: `CAP-require-02` (giữ nguyên câu chữ — mỗi open question vẫn có giả định và mức chặn); chỉ
   đổi hình dạng artifact `open-questions`. Không bỏ, không nới capability hay invariant nào.
-- Trạng thái: **đề xuất, chờ người duyệt** (§ 7 là những điểm cần quyết trước khi viết plan).
+- Trạng thái: **đã chốt 4 điểm thiết kế** (§ 7, người chọn theo đề xuất 2026-10-24); bước kế tiếp: plan.
 
 ## 1. Vấn đề
 
@@ -64,8 +64,10 @@ toàn bộ phần bỏ lặp của A nằm trong thiết kế này (§ 3.2, § 3
 - REQ chưa chốt: `- Source: \`[OPEN-QUESTION]\` → [open-questions.md § Q-001](open-questions.md#q-001)`.
   **Không còn dòng `Assumption:`** dưới REQ (template, phase spec, `clarify.md` § 3a bước 2 "Remove
   that REQ's Assumption line" bỏ theo).
-- Mỗi REQ vẫn đúng **một** `Source:` (luật cũ, `rules/source-tracing.md`). Một REQ đứng trên hai câu
-  hỏi → tách REQ, hoặc gộp hai câu hỏi thành một (§ 7, điểm 2).
+- Mỗi REQ vẫn đúng **một** `Source:` (luật cũ, `rules/source-tracing.md`), nên đứng trên tối đa một
+  `Q-NNN`; một `Q-NNN` phủ được nhiều REQ (§ 7, điểm 2). Phase spec, bước 7, thêm: "Two independent
+  unknowns (different `Ask` or `Blocking`) → split the REQ; never merge them into one question." Máy
+  không kiểm "độc lập" (không đo được); LLM checker spec kiểm nếu sau này thấy lỗi này thật.
 - Đã trả lời: nhãn `[FILE]` [open-questions.md § Q-001](open-questions.md#q-001), `Quote:` = lời trong
   `Answer:` (giữ chỗ lặp số 3 — có lý do). Nhiều REQ cùng trích một câu trả lời là hợp lệ.
 - `## Source conflicts`, cột `Resolution`: trỏ `[open-questions.md § Q-NNN](open-questions.md#q-nnn)`.
@@ -88,7 +90,10 @@ Thay các luật hiện có theo mã REQ bằng luật theo mã Q (cùng mức c
 ### 3.4 Đổi một REQ đã có nguồn (`/aw-clarify REQ-NNN`)
 
 Ghi thành một `Q-NNN` mới, `Status: answered` ngay khi tạo, **chỉ** `Question` (cách hiểu đang tranh
-chấp), `Answer` (+ `(đã xác nhận sửa REQ-NNN)`), `Superseded answer` nếu có. Không chép `Source says`,
+chấp, viết dạng "REQ-NNN nên hiểu là X hay Y?" để người đọc phân biệt với câu hỏi thường — quy ước
+chữ, máy không kiểm), `Answer` (+ `(đã xác nhận sửa REQ-NNN)`), `Superseded answer` nếu có. Không
+thêm trường `Kind`: chưa luật nào cần phân biệt hai loại. Mục này không bao giờ `open` nên không vào
+hàng đợi `aw pending` và không được đếm là "còn mở" ở cổng duyệt. Không chép `Source says`,
 `Assumption`: cách hiểu cũ nằm ở `Quote`/`Description` cũ trong lịch sử git và ở preview của batch.
 REQ đổi nhãn sang `[FILE] … § Q-NNN` như hiện tại. Không tạo file nhật ký riêng: thêm file là thêm
 artifact, template, mục lục, chuỗi `based_on` — không đổi lại gì so với một mục `answered`.
@@ -112,10 +117,14 @@ artifact, template, mục lục, chuỗi `based_on` — không đổi lại gì 
 Repo đích đang chạy dở có `### REQ-NNN` trong `open-questions.md` và nhãn `§ REQ-NNN` trong spec/plan.
 
 - **Đọc dạng cũ** (`AGENTS.md` § Language: đổi tên thứ người thấy thì giữ tên cũ đọc được): mục
-  `### REQ-NNN` được hiểu là câu hỏi mã `REQ-NNN` phủ đúng REQ đó; mọi luật ở § 3.3 áp dụng như với
-  `Q-NNN`. Không chặn.
+  `### REQ-NNN` là câu hỏi có mã `REQ-NNN`. Gần như miễn phí nhờ quan hệ suy từ phía spec (§ 3.1):
+  link cũ `§ REQ-NNN` trong `Source:` của REQ chính là "REQ trỏ tới câu hỏi đó", nên mọi luật ở § 3.3
+  áp dụng y nguyên, không nhánh riêng. Code chỉ cần nhận mã `(Q|REQ)-[0-9][0-9][0-9]` và kiểm không
+  trùng trong file. Không chặn.
 - **Cảnh báo** ở `aw check spec`: "dạng cũ — việc mới dùng `### Q-NNN`" (một dòng, không mỗi mục một
-  dòng). Không có lệnh chuyển đổi tự động ở bản đầu (§ 7, điểm 3).
+  dòng).
+- **Giữ dạng cũ đọc được vô thời hạn**: một việc có thể dở dang vài tháng, giá giữ là một mẫu regex.
+- **Không có lệnh chuyển đổi** (§ 7, điểm 3).
 - Việc mới (`/aw-spec` chạy với engine mới) viết `Q-NNN`. Trong cùng một file được phép trộn: chỉ
   cần mã không trùng.
 
@@ -161,14 +170,25 @@ Thêm ca vào đúng phần cùng chủ đề (`AGENTS.md` § Verify), mỗi lu�
 - Không thêm source label; không cho một REQ nhiều `Source:`.
 - Không có lệnh chuyển đổi artifact cũ (§ 3.6) ở bản này.
 
-## 7. Cần người quyết trước khi viết plan
+## 7. Đã quyết (2026-10-24, người chọn theo đề xuất)
 
-1. **Quan hệ Q ↔ REQ khai ở phía spec (suy ngược, không có `Affects`)** — đề xuất. Phương án khác:
-   khai `Affects:` ở mục Q và để link ở REQ — dễ đọc file câu hỏi riêng lẻ hơn, nhưng là hai chỗ ghi
-   một quan hệ, máy phải đối chiếu.
-2. **Một REQ chỉ đứng trên một Q** (giữ "đúng một `Source:`") — đề xuất. Phương án khác: cho REQ nhắc
-   nhiều Q ở dòng phụ — mềm hơn nhưng nhãn nguồn hết còn một nghĩa.
-3. **Chuyển tiếp: đọc dạng cũ + một dòng cảnh báo, chưa có lệnh chuyển đổi** — đề xuất. Phương án
-   khác: thêm `aw migrate open-questions <dir>` đổi mã và mọi link (spec, plan, tdd) — sạch hơn nhưng
-   sửa artifact đã duyệt, làm mất tick spec (approval hash) và `based_on` của việc đang chạy.
-4. **Đổi REQ là một `Q-` answered tối giản, không file nhật ký riêng** — đề xuất (§ 3.4).
+1. **Quan hệ Q ↔ REQ chỉ khai ở phía spec, máy suy ngược; không có `Affects`.**
+   - Loại "ghi cả hai phía" (`Affects:` + link): cả hai phía do cùng agent viết cùng lượt, luật đối
+     chiếu chủ yếu bắt lỗi quên sửa một phía — lỗi do chính việc ghi hai lần sinh ra (như `Assumption`).
+   - Loại "chỉ `Affects:`": REQ mất link tới giả định của nó, trái luật tham chiếu có anchor.
+   - Giá phải trả: chỗ cần danh sách REQ của một Q đọc thêm `spec.md` (`pending.sh` vốn đã đọc;
+     `kc_diem_mu` in kèm REQ là tuỳ chọn).
+2. **Một REQ đứng trên tối đa một Q; một Q phủ được nhiều REQ.**
+   - Loại "REQ nhiều Q": REQ rơi vào trạng thái lửng (một Q đã trả lời, một chưa), phải viết lại luật
+     "đúng một `Source:`", review `pending`, `aw rule promote`, đếm nhãn ở cổng duyệt, mức chặn của REQ.
+   - REQ hai ẩn số độc lập thường là REQ chưa đủ nhỏ → tách (dòng hướng dẫn ở § 3.2).
+3. **Chuyển tiếp: đọc dạng cũ vô thời hạn + một dòng cảnh báo; không lệnh chuyển đổi.**
+   - Loại `aw migrate`: sửa spec làm approval hash mất hiệu lực (người duyệt lại vì engine đổi định
+     dạng), `tdd.md`/`plan.md` stale; tự tính lại hash là máy sửa nội dung người đã duyệt rồi coi như
+     vẫn duyệt — trái `CAP-require-03`.
+   - Loại "chặn dạng cũ": phá việc đang chạy.
+4. **Đổi REQ là một `Q-` answered tối giản; không file nhật ký riêng, không trường `Kind`.**
+   - Loại `req-changes.md`: thêm template, `TOC_ART`, parse ở `check-spec.sh`, danh sách nguồn lời
+     người (`rule.sh`, `check-spec.sh`), chuỗi `based_on` của `tdd.md`, `outputs` phase spec — không
+     chỗ nào bắt thêm lỗi.
+   - Phân biệt với câu hỏi thường bằng quy ước viết `Question:` (§ 3.4).

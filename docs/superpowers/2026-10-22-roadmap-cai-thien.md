@@ -52,7 +52,7 @@
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
 | SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
-| SP20 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | đang làm | — | 4 điểm ở spec § 7 | [spec](specs/2026-10-23-sp20-open-question-ma-rieng-design.md) | | |
+| SP20 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | đang làm | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp20-open-question-ma-rieng-design.md) | | |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -129,7 +129,7 @@ nhiều mục.
 **Hướng.** Mã riêng `Q-NNN`; quan hệ câu hỏi ↔ REQ chỉ khai ở `Source:` của REQ, máy suy ngược;
 `Assumption` chỉ ở câu hỏi; dạng cũ `### REQ-NNN` vẫn đọc được. Chi tiết: [spec](specs/2026-10-23-sp20-open-question-ma-rieng-design.md).
 
-**Cần quyết.** Bốn điểm ở spec § 7, trước khi viết plan.
+**Đã quyết.** Bốn điểm ở spec § 7 (2026-10-24). Còn lại: plan → implement.
 
 ### SP19 — Bước A đợt 2
 
