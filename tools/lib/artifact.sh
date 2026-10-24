@@ -31,7 +31,7 @@ ar_goc() {
 }
 
 # ar_commit <thư-mục-việc> <message> [đường-dẫn-thêm (tương đối gốc)...]
-# Không có gì đổi, việc kiểu cũ, hay đã gỡ trước MR: không làm gì (mã 0).
+# Không có gì đổi, chỉ progress.md đổi, việc kiểu cũ, hay đã gỡ trước MR: không làm gì (mã 0).
 # Mã 1: git từ chối — thông báo của git ở stderr.
 ar_commit() {
   _ag=$(ar_goc "$1") || return 0
@@ -45,6 +45,12 @@ ar_commit() {
   al_ghi_exclude "" "" "$_ag" >/dev/null
   git -C "$_ag" add -f -A -- "$_ar" "$@" || return 1
   git -C "$_ag" diff --cached --quiet -- "$_ar" "$@" && return 0
+  # Chỉ progress.md đổi (aw check lại, mỗi lần thêm một sự kiện): không commit riêng — tránh commit
+  # nhiễu; file vẫn ở đĩa và đi cùng commit artifact thật kế tiếp. Bỏ stage để commit code không cuốn theo.
+  if [ "$(git -C "$_ag" -c core.quotepath=off diff --cached --name-only -- "$_ar" "$@")" = "$_ar/progress.md" ]; then
+    git -C "$_ag" reset -q -- "$_ar/progress.md" >/dev/null 2>&1
+    return 0
+  fi
   # Chỉ các đường dẫn này: phần người đã stage cho commit code không bị cuốn theo.
   git -C "$_ag" commit -q --no-verify -m "$_am" -- "$_ar" "$@" || return 1
   AR_DA_COMMIT=1

@@ -36,8 +36,6 @@ done
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/progress.sh"
 
-TM=$(mktemp "${TMPDIR:-/tmp}/aw-status.XXXXXX" 2>/dev/null) || { TM="${TMPDIR:-/tmp}/aw-status.$$"; : > "$TM" || exit 2; }
-kq_don 'rm -f "$TM"'
 canh_bao() {
   if [ "$TD_CANH_BAO" = 1 ]; then
     echo "CẢNH BÁO: khối aw-progress v1 trong $D/progress.md sai dạng — bỏ qua, chỉ tính journal máy này." >&2
@@ -46,12 +44,21 @@ canh_bao() {
 case "$CHE" in
   table) td_md_bang "$D"; canh_bao; exit 0 ;;
   write)
-    # Dựng hết trước rồi mới ghi: khối của máy khác đọc từ chính progress.md cũ.
-    td_md_file "$D" > "$TM"; canh_bao
-    if ! cat "$TM" > "$D/progress.md"; then echo "LỖI: không ghi được $D/progress.md." >&2; exit 1; fi
-    echo "Đã ghi $D/progress.md"
+    # Dựng hết vào file tạm cùng thư mục (khối của máy khác đọc từ chính progress.md cũ), rồi mv.
+    # Sinh lỗi → không đụng progress.md cũ: mất nó là mất số liệu của máy khác.
+    PM="$D/progress.md"; TW="$D/.progress.md.tmp.$$"
+    kq_don 'rm -f "$TW"'
+    if [ -d "$PM" ]; then echo "LỖI: $PM là thư mục — không ghi được." >&2; exit 1; fi
+    if ! td_md_file "$D" > "$TW" || [ ! -s "$TW" ]; then
+      canh_bao; echo "LỖI: không sinh được nội dung $PM — giữ nguyên file cũ." >&2; exit 1
+    fi
+    canh_bao
+    if ! mv -f "$TW" "$PM"; then echo "LỖI: không ghi được $PM." >&2; exit 1; fi
+    echo "Đã ghi $PM"
     exit 0 ;;
 esac
+TM=$(mktemp "${TMPDIR:-/tmp}/aw-status.XXXXXX" 2>/dev/null) || { TM="${TMPDIR:-/tmp}/aw-status.$$"; : > "$TM" || exit 2; }
+kq_don 'rm -f "$TM"'
 td_tinh "$D" > "$TM"
 canh_bao
 

@@ -87,7 +87,7 @@ td_tinh() {
   _td_ds=$(wf_phases "$_td_wy" | cut -d'|' -f1 | tr '\n' ' ')
   _td_bo=0
   if kc_bo_design "$1"; then _td_bo=1; fi
-  _td_tm=$(mktemp "${TMPDIR:-/tmp}/aw-td.XXXXXX" 2>/dev/null) || { _td_tm="${TMPDIR:-/tmp}/aw-td.$$"; : > "$_td_tm" || return 1; }
+  _td_tm=$(mktemp "${TMPDIR:-/tmp}/aw-td.XXXXXX" 2>/dev/null) || { _td_tm="${TMPDIR:-/tmp}/aw-td.$$"; true > "$_td_tm" 2>/dev/null || return 1; }
   td_su_kien "$1" > "$_td_tm"
   awk -F'\t' -v OFS='\t' -v ds="$_td_ds" -v bo="$_td_bo" '
     function ep(s,  y, m, d) {
@@ -157,7 +157,7 @@ td_tinh() {
       ms = ""; for (i = 1; i <= nm; i++) ms = ms (i > 1 ? "," : "") dm[i]
       print "M", hien, cuoi, ms, (n > 0 ? 1 : 0), (co_luot ? 1 : 0)
     }
-  ' "$_td_tm"
+  ' "$_td_tm" || { rm -f "$_td_tm"; return 1; }
   rm -f "$_td_tm"
 }
 
@@ -249,15 +249,17 @@ END {
 
 # _td_md <che: bang|file> <dir>
 _td_md() {
-  _td_mm=$(mktemp "${TMPDIR:-/tmp}/aw-tdm.XXXXXX" 2>/dev/null) || { _td_mm="${TMPDIR:-/tmp}/aw-tdm.$$"; : > "$_td_mm" || return 1; }
+  _td_mm=$(mktemp "${TMPDIR:-/tmp}/aw-tdm.XXXXXX" 2>/dev/null) || { _td_mm="${TMPDIR:-/tmp}/aw-tdm.$$"; true > "$_td_mm" 2>/dev/null || return 1; }
   _td_ms="$_td_mm.sk"
-  td_tinh "$2" > "$_td_mm"
+  td_tinh "$2" > "$_td_mm" || { rm -f "$_td_mm"; return 1; }
   _td_cb=$TD_CANH_BAO
-  if [ "$1" = file ]; then td_su_kien "$2" | LC_ALL=C sort > "$_td_ms"; else : > "$_td_ms"; fi
+  if [ "$1" = file ]; then td_su_kien "$2" | LC_ALL=C sort > "$_td_ms"; else true > "$_td_ms"; fi
   TD_CANH_BAO=$_td_cb
   awk -F'\t' -v che="$1" -v viec="$(basename "$(CDPATH= cd -- "$2" 2>/dev/null && pwd || echo "$2")")" \
     "$TD_AWK_DD$TD_AWK_MD" "$_td_mm" "$_td_ms"
+  _td_kq=$?
   rm -f "$_td_mm" "$_td_ms"
+  return $_td_kq
 }
 td_md_bang() { _td_md bang "$1"; }
 td_md_file() { _td_md file "$1"; }

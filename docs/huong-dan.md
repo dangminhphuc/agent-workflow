@@ -988,8 +988,9 @@ aw status <dir> --write     # ghi <dir>/progress.md (bảng, biểu đồ Gantt 
 aw status <dir> --table     # chỉ bảng Markdown, để dán vào chỗ khác
 ```
 
-- Mỗi lần `aw check` ĐẠT, máy tự sinh lại `progress.md` và commit cùng artifact. Giữa hai lần check,
-  xem bằng `aw status <dir>`. Sinh file lỗi thì check vẫn ĐẠT, chỉ in `CẢNH BÁO`.
+- Mỗi lần `aw check` ĐẠT, máy tự sinh lại `progress.md` và commit cùng artifact. Check lại mà chỉ
+  `progress.md` đổi thì không commit riêng: file đi cùng commit artifact kế tiếp. Giữa hai lần check,
+  xem bằng `aw status <dir>`. Sinh file lỗi thì check vẫn ĐẠT, chỉ in `CẢNH BÁO`, file cũ giữ nguyên.
 - Làm tiếp việc ở máy khác: số liệu của máy cũ nằm trong khối `<!-- aw-progress v1 … -->` cuối
   `progress.md`, máy mới giữ nguyên và cộng vào. Đừng sửa tay khối này; sai dạng thì máy bỏ cả khối,
   chỉ tính nhật ký máy đang chạy.

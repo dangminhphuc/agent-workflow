@@ -103,8 +103,14 @@ case "$LENH" in
     if [ "$_ma" = 0 ]; then
       . "$T/lib/md.sh"; . "$T/lib/adapter.sh"; . "$T/lib/artifact.sh"
       # Tiến độ (tools/status.sh) đi cùng commit artifact; lỗi không đổi kết quả chấm.
+      # stderr của status.sh: chỉ chuyển dòng CẢNH BÁO/LỖI (vd khối aw-progress sai dạng), không
+      # chuyển khối "Kết quả" của nó — output của aw check chỉ có một khối Kết quả.
       if [ "${AW_JOURNAL:-1}" != 0 ]; then
-        sh "$T/status.sh" "$1" --write >/dev/null 2>&1 || echo "CẢNH BÁO: không sinh được $1/progress.md — chạy aw status $1 --write để xem lỗi." >&2
+        _td_e="${TMPDIR:-/tmp}/aw-td-e.$$"
+        if sh "$T/status.sh" "$1" --write >/dev/null 2>"$_td_e"; then _td_ok=1; else _td_ok=""; fi
+        grep -E '^(CẢNH BÁO|LỖI)' "$_td_e" >&2
+        [ -n "$_td_ok" ] || echo "CẢNH BÁO: không sinh được $1/progress.md — chạy aw status $1 --write để xem lỗi." >&2
+        rm -f "$_td_e"
       fi
       AR_DA_COMMIT=""
       if ar_commit "$1" "chore(sdlc): $(basename "$1") $ten"; then

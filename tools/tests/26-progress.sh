@@ -228,7 +228,6 @@ ky_vong 0 "aw status qua wrapper → XONG" awd "$W26" status docs/sdlc/feat_x
 dung "…in Phase hiện tại: plan (từ aw feature --phase plan ở trên)" sh -c "cd '$W26' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' status docs/sdlc/feat_x 2>&1 | grep -q 'Phase hiện tại: plan'"
 
 
-
 # ---------------------------------------------------------------- progress.md
 nhom "progress.md (aw status --write, --table) và aw check ĐẠT"
 # Cùng dữ liệu C1/D1 ở trên. PM = progress.md của ca.
@@ -312,6 +311,27 @@ viet_intake
 ky_vong 0 "aw check intake ĐẠT (worktree) → mã 0" awd "$W26" check intake docs/sdlc/feat_x
 dung "…progress.md có trong commit artifact" sh -c "git -C '$W26' show --stat --format= HEAD | grep -q 'docs/sdlc/feat_x/progress.md'"
 dung "…progress.md có intake ✓ done" grep -q '^| intake | ✓ done |' "$F/progress.md"
+H26=$(git -C "$W26" rev-parse HEAD)
+awd "$W26" check intake docs/sdlc/feat_x >/dev/null 2>&1
+dung "check lại, artifact không đổi → HEAD không đổi (không commit chỉ progress.md)" bang "$(git -C "$W26" rev-parse HEAD)" "$H26"
+dung "…progress.md trên đĩa đã cập nhật (khác bản đã commit)" sh -c "! git -C '$W26' show HEAD:docs/sdlc/feat_x/progress.md | cmp -s - '$F/progress.md'"
+dung "…không để progress.md staged" bang "$(git -C "$W26" diff --cached --name-only)" ""
+printf '\n<!-- ghi chú -->\n' >> "$F/intake.md"
+ky_vong 0 "đổi artifact + check → ĐẠT" awd "$W26" check intake docs/sdlc/feat_x
+dung "…một commit mới gồm intake.md và progress.md" sh -c "[ \"\$(git -C '$W26' rev-parse HEAD~1)\" = '$H26' ] && git -C '$W26' show --name-only --format= HEAD | grep -qx docs/sdlc/feat_x/intake.md && git -C '$W26' show --name-only --format= HEAD | grep -qx docs/sdlc/feat_x/progress.md"
+dung "…progress.md đã commit = bản trên đĩa" sh -c "git -C '$W26' show HEAD:docs/sdlc/feat_x/progress.md | cmp -s - '$F/progress.md'"
+# Khối sai dạng: aw check chuyển CẢNH BÁO của status.sh, không chuyển khối Kết quả của nó.
+cp "$F/progress.md" "$TMP/pm26.bak"
+awk -v d="$(tsv 'turns|may-khac|thiếu-cột')" '{ print } $0 == "<!-- aw-progress v1" { print d }' "$TMP/pm26.bak" > "$F/progress.md"
+awd "$W26" check intake docs/sdlc/feat_x > "$TMP/ck2.out" 2>&1; _ma=$?
+dung "khối sai dạng + aw check ĐẠT → mã 0, stderr có CẢNH BÁO … sai dạng" sh -c "test $_ma = 0 && grep -q 'CẢNH BÁO: khối aw-progress v1 .* sai dạng' '$TMP/ck2.out'"
+dung "…không lẫn khối Kết quả của status.sh" sh -c "! grep -q 'Kết quả: status.sh' '$TMP/ck2.out'"
+# Sinh lỗi (TMPDIR không tồn tại → td_tinh không tạo được file tạm): giữ nguyên file cũ.
+cp "$F/progress.md" "$TMP/pm26.truoc"
+env AW_REPO="$W26" AW_CONFIG="$R26/.git/agent-workflow" TMPDIR="$TMP/khong-co-tmp" sh "$AWE" status "$F" --write > "$TMP/st26.out" 2>&1; _ma=$?
+dung "sinh lỗi → status --write mã 1 (KHÔNG GHI ĐƯỢC)" sh -c "test $_ma = 1 && grep -q '\[x\] KHÔNG GHI ĐƯỢC' '$TMP/st26.out'"
+dung "…progress.md cũ giữ nguyên từng byte" cmp -s "$F/progress.md" "$TMP/pm26.truoc"
+dung "…không để lại file tạm" sh -c "! ls -A '$F' | grep -q '^\.progress'"
 rm -f "$F/progress.md"; mkdir "$F/progress.md"
 awd "$W26" check intake docs/sdlc/feat_x > "$TMP/ck.out" 2>&1; _ma=$?
 dung "status.sh hỏng (progress.md là thư mục) → check vẫn mã 0" bang "$_ma" 0
