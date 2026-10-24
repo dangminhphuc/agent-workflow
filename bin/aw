@@ -37,6 +37,7 @@
 #   aw ready <feature-dir> [--no-test]     worktree sẵn sàng chưa (test xanh trên base…), bước tiếp
 #   aw task start|done|next <feature-dir> [TSK-NNN] [--manual "<bằng chứng>"]   trạng thái task do máy giữ
 #   aw journal [report [<file export>…]] | aw journal add <layer> "<mô tả>" | aw journal export <file>   nhật ký thất bại của harness
+#   aw status <feature-dir>                tiến độ từng phase: trạng thái, thời gian, lượt, check chặn, token (từ journal)
 #   aw guard pre|post                      hook gác ô duyệt — xem adapters/claude-code/README.md, adapters/cursor/README.md
 #   aw approval design|plan <feature-dir>  cổng duyệt khi vào phase (lệnh /aw-design, /aw-plan gọi)
 #   aw approvals [--global]               mọi ô duyệt chờ người, kèm link tới artifact (lệnh /aw-approvals gọi)
@@ -461,7 +462,7 @@ case "$LENH" in
     _v=$(version_theo_viec "${2:-}") || exit $?
     chuyen "$_v" check "$@" ;;
   # questions: tên cũ của pending — engine 2026.10.6 (việc đã ghim version đó) chỉ biết tên này.
-  pending|questions|based-on|toc)
+  pending|questions|based-on|toc|status)
     can_repo
     _v=$(version_theo_viec "${1:-}") || exit $?
     chuyen "$_v" "$LENH" "$@" ;;

@@ -112,4 +112,119 @@ payload "$TMP/p8.json" s8 "$TR7"
 ky_vong 0 "AW_JOURNAL=0 → mã 0" env AW_JOURNAL=0 AW_HOME="$AWHD" AW_ENGINE_DIR="$ROOT" sh -c "cd '$W26' && sh '$ROOT/bin/aw' journal _turn end < '$TMP/p8.json'"
 dung "…không ghi" bang "$(tdong)" "$N"
 
+
+# ---------------------------------------------------------------- td_tinh + aw status
+nhom "td_tinh, td_su_kien, aw status (tiến độ từng phase)"
+# Mỗi ca một AW_CONFIG riêng (journal riêng), thư mục việc riêng; giờ cố định.
+# tdl <cfg> <lệnh…> — chạy hàm thư viện như status.sh (md.sh, cross-check.sh, progress.sh)
+tdl() { _c=$1; shift; (AW_CONFIG=$_c AW_JOURNAL_MACHINE=may-a HERE="$T"; export AW_CONFIG AW_JOURNAL_MACHINE
+  . "$T/lib/md.sh"; . "$T/lib/cross-check.sh"; . "$T/lib/progress.sh"; "$@"); }
+# tst <cfg> <tham-số…> — aw-engine status với AW_REPO/AW_CONFIG của ca
+tst() { _c=$1; shift; AW_REPO="$TMP" AW_CONFIG=$_c AW_JOURNAL_MACHINE=may-a sh "$AWE" status "$@"; }
+# viec_moi <cfg> <tên> <loại> — tạo thư mục việc có intake.md, in đường dẫn
+viec_moi() { mkdir -p "$1/journal" "$1/v/$2"
+  printf -- '- **Type:** %s\n- **Engine:** %s\n' "$3" "$VDEV" > "$1/v/$2/intake.md"; printf '%s\n' "$1/v/$2"; }
+tsv() { printf '%s\n' "$@" | tr '|' '\t'; }
+
+C1="$TMP/td1"; D1=$(viec_moi "$C1" feat_p chore)
+tsv '2026-10-23T07:00:00Z|wt|feat_p|intake' '2026-10-23T07:30:00Z|wt|feat_p|spec' \
+    '2026-10-23T08:05:00Z|wt2|khac|spec' '2026-10-23T09:40:00Z|wt|feat_p|plan' > "$C1/journal/phases.tsv"
+tsv '2026-10-23T07:25:00Z|feat_p|intake|0|' '2026-10-23T08:00:00Z|feat_p|spec|1|thiếu REQ' \
+    '2026-10-23T08:10:00Z|khac|spec|1|x' '2026-10-23T08:30:00Z|feat_p|spec|1|y' \
+    '2026-10-23T09:35:00Z|feat_p|spec|0|' > "$C1/journal/checks.tsv"
+tsv '2026-10-23T07:01:00Z|2026-10-23T07:07:00Z|wt|feat_p|intake|s1|main|360|80000|5000|300000|40000' \
+    '2026-10-23T07:31:00Z|2026-10-23T07:49:00Z|wt|feat_p|spec|s1|main|1080|200000|20000|1000000|80000' \
+    '2026-10-23T09:00:00Z|2026-10-23T09:00:00Z|wt|feat_p|spec|s1|subagent|0|40000|1000|200000|10000' \
+    '2026-10-23T08:11:00Z|2026-10-23T08:12:00Z|wt2|khac|spec|s2|main|60|9|9|9|9' \
+    '2026-10-23T09:41:00Z|2026-10-23T09:50:00Z|wt|feat_p|plan|s1|main|540|120000|9000|600000|30000' > "$C1/journal/turns.tsv"
+tdl "$C1" td_tinh "$D1" > "$TMP/td1.out" 2>&1
+# pdong <file> <phase> — dòng P của phase, tab → |
+pdong() { awk -F'\t' -v p="$2" '$1 == "P" && $2 == p' "$1" | tr '\t' '|'; }
+dung "intake done: active 360, wall 1800, 1 lượt, 0 chặn, token" bang "$(pdong "$TMP/td1.out" intake)" "P|intake|done|360|1800|1|0|80000|5000|300000|40000"
+dung "spec done: wall = plan_start − spec_start, 2 chặn, token cộng subagent" bang "$(pdong "$TMP/td1.out" spec)" "P|spec|done|1080|7800|1|2|240000|21000|1200000|90000"
+dung "design skipped (chore), mọi ô rỗng" bang "$(pdong "$TMP/td1.out" design)" "P|design|skipped||||||||"
+dung "plan active: wall tới sự kiện cuối" bang "$(pdong "$TMP/td1.out" plan)" "P|plan|active|540|600|1|0|120000|9000|600000|30000"
+dung "implement pending" bang "$(pdong "$TMP/td1.out" implement)" "P|implement|pending||||||||"
+dung "dòng P theo thứ tự workflow.yaml" bang "$(awk -F'\t' '$1 == "P" { printf "%s ", $2 }' "$TMP/td1.out")" "intake spec design plan implement review ship "
+dung "2 dòng B spec (epoch check chặn)" bang "$(awk -F'\t' '$1 == "B"' "$TMP/td1.out" | tr '\t' '|' | tr '\n' ' ')" "B|spec|1792742400 B|spec|1792744200 "
+dung "dòng R mỗi lần chạy" bang "$(awk -F'\t' '$1 == "R"' "$TMP/td1.out" | tr '\t' '|' | tr '\n' ' ')" "R|intake|1792738800|1792740600|done R|spec|1792740600|1792748400|done R|plan|1792748400|1792749000|active "
+dung "dòng M: phase hiện tại, sự kiện cuối, máy, có mốc, có lượt" bang "$(awk -F'\t' '$1 == "M"' "$TMP/td1.out" | tr '\t' '|')" "M|plan|2026-10-23T09:50:00Z|may-a|1|1"
+tst "$C1" "$D1" > "$TMP/st1.out" 2>&1; _ma=$?
+dung "aw status → mã 0" bang "$_ma" 0
+dung "…in ĐẠT, đang làm, bỏ qua, chưa" sh -c "grep -q 'ĐẠT' '$TMP/st1.out' && grep -q 'đang làm' '$TMP/st1.out' && grep -q 'bỏ qua' '$TMP/st1.out' && grep -q 'chưa' '$TMP/st1.out'"
+dung "…Phase hiện tại: plan" grep -q 'Phase hiện tại: plan' "$TMP/st1.out"
+dung "…số đã định dạng (2h10m, 1.2M, 80k)" sh -c "grep -q '2h10m' '$TMP/st1.out' && grep -q '1.2M' '$TMP/st1.out' && grep -q '80k' '$TMP/st1.out'"
+dung "…nhãn XONG" grep -q '\[x\] XONG' "$TMP/st1.out"
+dung "…không nhắc cài hook" sh -c "! grep -q 'Chưa ghi được lượt nào' '$TMP/st1.out'"
+ky_vong 2 "aw status cờ lạ → SAI THAM SỐ" tst "$C1" "$D1" --la
+ky_vong 2 "aw status thiếu thư mục → SAI THAM SỐ" tst "$C1"
+ky_vong 2 "aw status thư mục không có → SAI THAM SỐ" tst "$C1" "$TMP/khong-co"
+
+C2="$TMP/td2"; D2=$(viec_moi "$C2" feat_q feature)
+tdl "$C2" td_tinh "$D2" > "$TMP/td2.out" 2>&1
+dung "không journal: mọi phase pending, ô rỗng" bang "$(awk -F'\t' '$1 == "P" { print $3 "|" $4 $5 $6 $7 $8 $9 $10 $11 }' "$TMP/td2.out" | sort -u)" "pending|"
+dung "…M rỗng, không mốc, không lượt" bang "$(awk -F'\t' '$1 == "M"' "$TMP/td2.out" | tr '\t' '|')" "M||||0|0"
+tst "$C2" "$D2" > "$TMP/st2.out" 2>&1; _ma=$?
+dung "…aw status mã 0, ô —" sh -c "test $_ma = 0 && grep -q '—' '$TMP/st2.out'"
+dung "…không nhắc cài hook" sh -c "! grep -q 'Chưa ghi được lượt nào' '$TMP/st2.out'"
+
+C3="$TMP/td3"; D3=$(viec_moi "$C3" feat_c feature)
+tsv '2026-10-01T07:25:00Z|feat_c|intake|0|' '2026-10-01T08:00:00Z|feat_c|spec|1|x' > "$C3/journal/checks.tsv"
+tdl "$C3" td_tinh "$D3" > "$TMP/td3.out" 2>&1
+dung "việc cũ (chỉ checks.tsv): intake done, wall rỗng" bang "$(pdong "$TMP/td3.out" intake)" "P|intake|done||||||||"
+dung "…spec pending (chỉ có check chặn)" bang "$(pdong "$TMP/td3.out" spec | cut -d'|' -f3)" "pending"
+tst "$C3" "$D3" > "$TMP/st3.out" 2>&1
+dung "…aw status không nhắc cài hook" sh -c "! grep -q 'Chưa ghi được lượt nào' '$TMP/st3.out'"
+
+C4="$TMP/td4"; D4=$(viec_moi "$C4" feat_h feature)
+tsv '2026-10-23T07:00:00Z|wt|feat_h|intake' > "$C4/journal/phases.tsv"
+tst "$C4" "$D4" > "$TMP/st4.out" 2>&1
+dung "có mốc, không lượt main → dòng · Chưa ghi được lượt nào" grep -q '^· Chưa ghi được lượt nào' "$TMP/st4.out"
+tsv '2026-10-23T07:01:00Z|2026-10-23T07:02:00Z|wt|feat_h|intake|s1|subagent|0||||' > "$C4/journal/turns.tsv"
+tst "$C4" "$D4" > "$TMP/st4.out" 2>&1
+dung "…lượt subagent không tính là lượt main → vẫn nhắc" grep -q 'Chưa ghi được lượt nào' "$TMP/st4.out"
+tsv '2026-10-23T07:03:00Z|2026-10-23T07:04:00Z|wt|feat_h|intake|s1|main|60||||' >> "$C4/journal/turns.tsv"
+tst "$C4" "$D4" > "$TMP/st4.out" 2>&1
+dung "có 1 lượt main, token rỗng → không nhắc" sh -c "! grep -q 'Chưa ghi được lượt nào' '$TMP/st4.out'"
+dung "…token rỗng → ô rỗng, lượt 1" bang "$(tdl "$C4" td_tinh "$D4" | awk -F'\t' '$1 == "P" && $2 == "intake"' | tr '\t' '|')" "P|intake|active|60|240|1|0||||"
+
+C5="$TMP/td5"; D5=$(viec_moi "$C5" feat_m feature)
+tsv '2026-10-23T07:00:00Z|wt|feat_m|intake' > "$C5/journal/phases.tsv"
+{ echo '# Progress'; echo '<!-- aw-progress v1'
+  tsv 'phases|may-b|2026-10-22T06:00:00Z|intake' \
+      'turns|may-b|2026-10-22T06:01:00Z|2026-10-22T06:05:00Z|intake|main|240|10|2|3|4' \
+      'checks|may-b|2026-10-22T06:10:00Z|intake|1' \
+      'phases|may-a|2026-10-01T00:00:00Z|ship'
+  echo '-->'; } > "$D5/progress.md"
+tdl "$C5" td_su_kien "$D5" > "$TMP/sk5.out" 2>&1
+dung "td_su_kien: sự kiện máy này từ journal" grep -qx "$(tsv 'phases|may-a|2026-10-23T07:00:00Z|intake')" "$TMP/sk5.out"
+dung "…dòng máy khác từ khối aw-progress" bang "$(grep -c 'may-b' "$TMP/sk5.out")" 3
+dung "…bỏ dòng của máy này trong khối" sh -c "! grep -q 'ship' '$TMP/sk5.out'"
+dung "…lượt main chỉ ở máy khác → có lượt" bang "$(tdl "$C5" td_tinh "$D5" | awk -F'\t' '$1 == "M"' | tr '\t' '|')" "M|intake|2026-10-23T07:00:00Z|may-a,may-b|1|1"
+tst "$C5" "$D5" > "$TMP/st5.out" 2>&1
+dung "…aw status không nhắc cài hook" sh -c "! grep -q 'Chưa ghi được lượt nào' '$TMP/st5.out'"
+{ echo '<!-- aw-progress v1'; tsv 'phases|may-b|2026-10-22T06:00:00Z|intake' 'turns|may-b|thiếu-cột'; echo '-->'; } > "$D5/progress.md"
+tdcb() { td_su_kien "$1" > "$TMP/sk5b.out"; echo "$TD_CANH_BAO"; }
+dung "khối sai dạng → TD_CANH_BAO=1" bang "$(tdl "$C5" tdcb "$D5" 2>/dev/null)" 1
+dung "…bỏ cả khối (không dòng may-b)" sh -c "! grep -q 'may-b' '$TMP/sk5b.out'"
+dung "…vẫn có sự kiện journal máy này" grep -q 'may-a' "$TMP/sk5b.out"
+tst "$C5" "$D5" > "$TMP/st5.out" 2>&1; _ma=$?
+dung "…aw status cảnh báo, vẫn XONG" sh -c "test $_ma = 0 && grep -q 'CẢNH BÁO' '$TMP/st5.out'"
+
+dung "td_tg 7800 = 2h10m" bang "$(tdl "$C5" td_tg 7800)" "2h10m"
+dung "td_tg 1500 = 25m" bang "$(tdl "$C5" td_tg 1500)" "25m"
+dung "td_tg 40 = 40s" bang "$(tdl "$C5" td_tg 40)" "40s"
+dung "td_tg 7200 = 2h" bang "$(tdl "$C5" td_tg 7200)" "2h"
+dung "td_tg rỗng = —" bang "$(tdl "$C5" td_tg '')" "—"
+dung "td_tk 1234567 = 1.2M" bang "$(tdl "$C5" td_tk 1234567)" "1.2M"
+dung "td_tk 82400 = 82k" bang "$(tdl "$C5" td_tk 82400)" "82k"
+dung "td_tk 999 = 999" bang "$(tdl "$C5" td_tk 999)" "999"
+dung "td_tk rỗng = —" bang "$(tdl "$C5" td_tk '')" "—"
+dung "may_nay = AW_JOURNAL_MACHINE qua bay" bang "$(tdl "$C5" may_nay)" "may-a"
+dung "progress.sh nạp không cần md.sh, không in gì" bang "$(sh -c '. "$1/lib/progress.sh"' x "$T" 2>&1)" ""
+
+mkdir -p "$W26/docs/sdlc/feat_x"
+ky_vong 0 "aw status qua wrapper → XONG" awd "$W26" status docs/sdlc/feat_x
+dung "…in Phase hiện tại: plan (từ aw feature --phase plan ở trên)" sh -c "cd '$W26' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' status docs/sdlc/feat_x 2>&1 | grep -q 'Phase hiện tại: plan'"
+
 ket_thuc

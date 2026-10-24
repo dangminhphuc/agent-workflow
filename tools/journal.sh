@@ -38,11 +38,8 @@ NGUONG_LAP=2
 JD="$AW_CONFIG/journal"
 TAB=$(printf '\t')
 
-bay() { # <chuỗi> -> một dòng, không tab
-  printf '%s' "$1" | tr '\t\r\n' '   ' | sed 's/  */ /g; s/^ //; s/ $//'
-}
+. "$HERE/lib/progress.sh"   # bay, may_nay
 gio() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
-may_nay() { bay "${AW_JOURNAL_MACHINE:-$(uname -n 2>/dev/null || echo may)}"; }
 viec() { basename "$(CDPATH= cd -- "$1" 2>/dev/null && pwd || echo "$1")"; }
 
 # ---------------------------------------------------------------- nội bộ

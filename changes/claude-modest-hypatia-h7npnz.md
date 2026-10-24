@@ -1,3 +1,6 @@
+### Thêm
+- **`aw status <thư-mục-feature>`** — in tiến độ từng phase của việc: trạng thái (ĐẠT / đang làm / bỏ qua / chưa), thời gian tương tác, thời gian đồng hồ, số lượt, số check chặn, token. Số liệu suy từ nhật ký (`phases.tsv`, `turns.tsv`, `checks.tsv`), không do agent tự khai; việc bắt đầu trước SP20 vẫn hiện phase đã ĐẠT. Có mốc bắt đầu phase mà chưa ghi được lượt nào → một dòng nhắc cài hook Claude Code.
+
 ### Nội bộ
 - **Spec SP20 — file tiến độ của việc** (`docs/superpowers/specs/2026-10-23-sp20-tien-do-phase-design.md`). Đề xuất `progress.md` trong thư mục việc (bảng + Gantt + biểu đồ token bằng Mermaid), `aw status`, hook Claude Code ghi thời gian tương tác và token theo phase, bảng tiến độ tự chèn vào mô tả MR, và dòng nhắc khi chưa ghi được lượt nào. Kèm plan 7 task (`docs/superpowers/plans/2026-10-23-sp20-tien-do-phase.md`). Chưa có code; người dùng `aw` chưa bị ảnh hưởng.
 - **SP20 task 1 — mốc bắt đầu phase.** `aw feature` nhận thêm `--phase <id>` (id phải có trong `workflow.yaml`, sai → TÊN KHÔNG HỢP LỆ) và ghi một dòng `phases.tsv` vào nhật ký (`AW_JOURNAL=0` thì không ghi). Lệnh phase do adapter sinh ra tự thêm `--phase <id>`; lệnh tiện ích không thêm. Chưa có gì hiển thị cho người dùng; các task sau dùng mốc này để tính thời gian từng phase.
