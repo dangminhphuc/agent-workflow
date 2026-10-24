@@ -1,2 +1,8 @@
 # Đường dẫn adapter này sinh ra trong repo đích — aw init thêm vào .git/info/exclude.
-/.claude/
+# Không exclude cả /.claude/: team hay commit .claude/skills, .claude/agents, .claude/settings.json.
+# Thêm checker LLM hay lệnh mới (tên khác) → thêm dòng ở đây (test 08 "exclude của adapter" bắt thiếu).
+/.claude/commands/aw-*.md
+/.claude/agents/independent-reviewer.md
+/.claude/agents/spec-checker.md
+/.claude/agents/design-checker.md
+/.claude/skills/agent-workflow/

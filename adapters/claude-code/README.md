@@ -7,7 +7,7 @@ aw adapter build claude-code [--out <thư-mục>] [--force]
 ```
 
 Thường không gọi trực tiếp — `aw init` và `aw worktree new … --create` gọi nó. File sinh ra nằm
-trong `.claude/` (khai ở [`exclude`](exclude), `aw init` thêm vào `.git/info/exclude`). File
+trong `.claude/`; chỉ đúng các đường dẫn sinh ra bị exclude (khai ở [`exclude`](exclude): `commands/aw-*.md`, subagent `independent-reviewer` và `*-checker`, `skills/agent-workflow/`; `aw init` thêm vào `.git/info/exclude`). Skill, subagent, `settings.json` của team trong `.claude/` vẫn hiện trong git status, commit không cần `-f`. Repo init từ bản cũ còn dòng `/.claude/`: `aw doctor` báo, xoá dòng đó. File
 `.claude/` git đang theo dõi thì bỏ qua. `--out` trỏ vào repo agent-workflow bị từ chối.
 
 Việc sinh dùng chung `adapters/lib/common.sh`; file này chỉ khai hook

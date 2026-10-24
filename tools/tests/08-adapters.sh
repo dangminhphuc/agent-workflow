@@ -439,6 +439,10 @@ mkdir -p "$TMP/ex-cursor/.cursor/skills/cua-team"; printf 'x\n' > "$TMP/ex-curso
 dung "cursor: không giấu file team commit (.cursor/rules, hooks.json, skill khác)" bang \
   "$(git -C "$TMP/ex-cursor" status --porcelain --untracked-files=all | LC_ALL=C sort | tr '\n' '|')" \
   "?? .cursor/hooks.json|?? .cursor/rules/team.mdc|?? .cursor/skills/cua-team/SKILL.md|"
+mkdir -p "$TMP/ex-cursor/.cursor/commands" "$TMP/ex-cursor/.cursor/agents"; printf x > "$TMP/ex-cursor/.cursor/commands/cua-team.md"; printf x > "$TMP/ex-cursor/.cursor/agents/cua-team.md"
+dung "cursor: lệnh và subagent của team (tên khác file sinh ra) không bị giấu" sh -c "git -C '$TMP/ex-cursor' status --porcelain --untracked-files=all | grep -q '^?? .cursor/commands/cua-team.md$' && git -C '$TMP/ex-cursor' status --porcelain --untracked-files=all | grep -q '^?? .cursor/agents/cua-team.md$'"
+RC="$TMP/ex-claude-code"; mkdir -p "$RC/.claude/skills/go-senior" "$RC/.claude/agents" "$RC/.claude/commands"; printf x > "$RC/.claude/skills/go-senior/SKILL.md"; printf x > "$RC/.claude/agents/db-migrator.md"; printf x > "$RC/.claude/commands/cua-team.md"; printf '{}\n' > "$RC/.claude/settings.json"
+dung "claude-code: skill, subagent, lệnh, settings.json của team hiện trong git status (không cần add -f)" bang "$(git -C "$RC" status --porcelain --untracked-files=all | LC_ALL=C sort | tr '\n' '|')" "?? .claude/agents/db-migrator.md|?? .claude/commands/cua-team.md|?? .claude/settings.json|?? .claude/skills/go-senior/SKILL.md|"
 
 # ---------------------------------------------------------------- khong cai vao engine
 nhom "không cài vào chính engine"

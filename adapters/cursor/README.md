@@ -9,8 +9,8 @@ aw adapter build cursor [--out <thư-mục>] [--force]
 Thường bạn không gọi trực tiếp: khai `ADAPTER="cursor"` (hay `"claude-code cursor"`
 cho team dùng cả hai) trong `config.sh`, rồi `aw init` (ở main checkout) và
 `aw worktree new … --create` (ở worktree mới) sẽ gọi nó. Mọi file sinh ra nằm trong
-các đường dẫn khai ở file [`exclude`](exclude): `/.cursor/commands/`,
-`/.cursor/agents/`, `/.cursor/skills/agent-workflow/`. Adapter **không** exclude cả
+các đường dẫn khai ở file [`exclude`](exclude): `/.cursor/commands/aw-*.md`,
+`/.cursor/agents/<tên subagent sinh ra>.md`, `/.cursor/skills/agent-workflow/`. Adapter **không** exclude cả
 `/.cursor/`, vì team hay commit `.cursor/rules/`, `.cursor/hooks.json`, `.cursor/mcp.json`.
 File trong `.cursor/` mà git đang theo dõi thì adapter bỏ qua.
 
