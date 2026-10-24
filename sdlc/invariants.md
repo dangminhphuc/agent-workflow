@@ -42,9 +42,9 @@ quotes: `` `tools/tests/NN-x.sh` "case", "case" ``. Each named case must exist i
 
 ### INV-006 — Output is built from the current version of its input
 - Rule: each artifact records hashes of the inputs it was built from, and they match those inputs; the implement stage warns, the verify stage blocks.
-- Engine: frontmatter `based_on`.
+- Engine: frontmatter `based_on`, written by `aw based-on`; frontmatter the machine cannot read blocks in every stage (it would silence the hash check); missing inputs warn like stale ones.
 - Enforced by: `tools/lib/cross-check.sh` `tools/check-review.sh`
-- Tested by: `tools/tests/06-review-freshness.sh` "CỔNG CUỐI: chặn artifact lỗi thời"
+- Tested by: `tools/tests/06-review-freshness.sh` "CỔNG CUỐI: chặn artifact lỗi thời", "chặn based_on viết kiểu [a, b] ở plan", "chặn mục based_on không phải <file>@<số> ở implement", "…review chặn"
 
 ### INV-007 — Bugfix: the reproduction test fails on the unfixed code
 - Rule: the machine runs the reproduction test before any production code changes and records it failing; the implement and verify stages block without that record. After the fix, verify blocks unless the command recorded as passing is that same command; implement only warns.

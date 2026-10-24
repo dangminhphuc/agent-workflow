@@ -211,6 +211,7 @@ tao_fixture chore chore_v
 for c in spec plan implement review; do
   ky_vong 0 "chore đầy đủ (không có tdd.md) qua check-$c.sh" sh "$T/check-$c.sh" "$F"
 done
+dung "chore: plan.md không có tdd.md trong based_on thì không cảnh báo thiếu" sh -c "! sh '$T/check-implement.sh' '$F' | grep -q 'based_on thiếu'"
 ky_vong 1 "chore chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
 
 thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'

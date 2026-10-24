@@ -83,8 +83,11 @@ vi_pham "luật mới không gắn # giữ: → chặn" "tools/check-plan.sh: "
 dung "…nêu số chưa gắn và số cho phép" grep -q 'luật chưa gắn "# giữ:" (cho phép [0-9]* trong tools/unclassified-rules.txt)' "$TMP/ra"
 moi; printf '\n# giữ: CAP-breakdown-01\nloi "luật mới đã gắn id"\n' >> "$E/tools/check-plan.sh"
 ky_vong 0 "luật mới có # giữ: ngay trên → ĐẠT" sh "$SC" "$E"
-moi; awk '/SECURITY_CMDS: dòng/ && !d { print "    # giữ: CAP-implement-03"; d = 1 } { print }' "$E/tools/check-security.sh" > "$E/x" && mv "$E/x" "$E/tools/check-security.sh"
-vi_pham "gắn thêm id mà quên hạ số cho phép → chặn" "tools/unclassified-rules.txt: tools/check-security.sh cho phép"
+# Số cho phép lớn hơn số còn chưa gắn (như vừa gắn thêm id mà quên hạ) — dòng đầu danh sách, không
+# phụ thuộc file nào còn luật chưa gắn (các đợt gắn id hạ dần danh sách).
+moi; DS_F=$(awk 'NR == 1 { print $1 }' "$DS")
+awk 'NR == 1 { $2 = $2 + 1 } { print }' "$DS" > "$E/x" && mv "$E/x" "$DS"
+vi_pham "gắn thêm id mà quên hạ số cho phép → chặn" "tools/unclassified-rules.txt: $DS_F cho phép"
 moi; awk '$1 != "tools/check-ship.sh"' "$DS" > "$E/x" && mv "$E/x" "$DS"
 vi_pham "file có luật chưa gắn mà không có trong danh sách → chặn" "tools/check-ship.sh: "
 moi; printf 'tools/check-khong-co.sh 3\n' >> "$DS"

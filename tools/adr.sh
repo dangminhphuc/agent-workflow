@@ -79,12 +79,27 @@ case "$SS" in
   *) tu_choi "$D: Supersedes \"$SS\" — dạng ADR-NNNN" ;;
 esac
 VIEC=$(basename "$DIR")
-CU=$(adr_cua_d "$D_ADR" "$VIEC" "$D")
-if [ -n "$CU" ]; then SO=$(basename "$CU" | cut -c1-4)
-else SO=$(adr_so_moi "$D_ADR"); fi
+# Số cấp nhìn cả base của việc (origin/<Base>, fetch trước): việc song song đã merge số nào thì
+# không lấy lại số đó. ADR của việc giữ số, trừ khi số đã bị ADR khác chiếm trên base.
+BASE_TEN=$(intake_base_dong "$DIR" | awk '{ print $1 }')
+if [ -n "$BASE_TEN" ]; then
+  git -C "$MT_REPO" fetch -q origin "${BASE_TEN#origin/}" 2>/dev/null ||
+    echo "  (không fetch được origin — dùng thông tin đã có)"
+fi
+REF=$(adr_ref_viec "$DIR")
+CU=$(adr_cua_d "$D_ADR" "$VIEC" "$D"); SO_TRUOC=""
+if [ -n "$CU" ]; then
+  SO=$(basename "$CU" | cut -c1-4)
+  TRUNG=""
+  [ -z "$REF" ] || TRUNG=$(adr_trung_ref "$MT_REPO" "$REF" "$TM" "$(basename "$CU")" | sed -n 1p)
+  if [ -n "$TRUNG" ]; then
+    SO_TRUOC=$SO; SO=$(adr_so_moi "$D_ADR" "$MT_REPO" "$REF" "$TM")
+    echo "  đổi số  $SO_TRUOC → $SO ($SO_TRUOC đã có trên ${REF#refs/remotes/}: $TRUNG)"
+  fi
+else SO=$(adr_so_moi "$D_ADR" "$MT_REPO" "$REF" "$TM"); fi
 if [ -n "$SO_CU" ] && [ -n "${F_CU:-}" ]; then
   case "$(adr_truong "$F_CU" Status)" in
-    accepted|"superseded by $SO") ;;
+    accepted|"superseded by $SO"|"superseded by ${SO_TRUOC:-$SO}") ;;
     *) tu_choi "$SS đã \"$(adr_truong "$F_CU" Status)\" — chỉ thay được ADR accepted" ;;
   esac
 fi

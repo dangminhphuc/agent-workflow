@@ -134,6 +134,48 @@ dung "knowledge design: chưa có đường dẫn trong Existing code → chỉ 
 thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
 dung "…có đường dẫn → thêm ADR accepted khớp Scope, tài liệu module cha; bỏ ADR đã bị thay, module khác" bang "$(sh "$KT" design "$F" 2>/dev/null | tr '\n' ' ')" "docs/adr/README.md docs/adr/0002-feat_x-dec-002.md src/ARCHITECTURE.md "
 ky_vong 2 "knowledge phase chưa hỗ trợ → SAI THAM SỐ" sh "$KT" plan "$F"
+
+# Hai việc song song: việc khác đã merge ADR cùng số lên base (main) — máy cấp số mới, chặn trước merge.
+nhom "ADR: số không trùng với base khi hai việc chạy song song"
+# len_main <tên file> — commit một ADR lên main mà không đổi worktree (như việc khác vừa merge)
+len_main() {
+  _b=$(printf '# ADR-%s: viec khac\n\n- Status: accepted\n' "$(printf '%s' "$1" | cut -c1-4)" | git -C "$R" hash-object -w --stdin)
+  _i="$TMP/idx-main"; rm -f "$_i"
+  GIT_INDEX_FILE=$_i git -C "$R" read-tree main
+  GIT_INDEX_FILE=$_i git -C "$R" update-index --add --cacheinfo "100644,$_b,docs/adr/$1"
+  _c=$(GIT_INDEX_FILE=$_i git -C "$R" -c user.name=t -c user.email=t@t commit-tree "$(GIT_INDEX_FILE=$_i git -C "$R" write-tree)" -p main -m "adr $1")
+  git -C "$R" update-ref refs/heads/main "$_c"
+}
+len_main 0002-feat_y-dec-001.md
+ky_vong_ly_do 1 "review: số ADR đã bị việc khác chiếm trên base → KHÔNG ĐẠT" "…nêu số, file trên base và lệnh sửa" \
+  'ADR: 0002-feat_x-dec-002.md: số 0002 đã có trên main (0002-feat_y-dec-001.md) — chạy lại: aw adr promote' sh "$T/check-review.sh" "$F"
+dung "…implement cũng chặn đúng lý do" sh -c "sh '$T/check-implement.sh' '$F' 2>/dev/null | grep -q 'số 0002 đã có trên main'"
+ky_vong_hai_ly_do 0 "promote lại khi số bị chiếm → ĐÃ NÂNG, đổi số" "…in đổi số và báo không fetch được origin" \
+  'đổi số  0002 → 0003 (0002 đã có trên main: 0002-feat_y-dec-001.md)' 'không fetch được origin' sh "$AD" promote "$F" DEC-002
+A3="$R/docs/adr/0003-feat_x-dec-002.md"
+dung "…file cũ mất, heading, ADR bị thay và chỉ mục theo số mới" sh -c "test ! -e '$R/docs/adr/0002-feat_x-dec-002.md' && grep -qx '# ADR-0003: đổi chỗ lưu' '$A3' && grep -qx -- '- Status: superseded by 0003' '$A1' && grep -qF '| [0003](0003-feat_x-dec-002.md)' '$R/docs/adr/README.md'"
+dung "…hết lỗi trùng số ở implement" sh -c "! sh '$T/check-implement.sh' '$F' 2>/dev/null | grep -q 'đã có trên'"
+len_main 0003-feat_x-dec-002.md
+ky_vong 0 "base đã có chính ADR của việc (cùng tên) → promote giữ số" sh "$AD" promote "$F" DEC-002
+dung "…không đổi số" test -f "$A3"
+len_main 0004-feat_z-dec-001.md
+thay "$F/tdd.md" '## Data model' '### DEC-003 — thêm chỉ mục
+- Author: `agent`
+- Choice: index
+- Promote: adr
+- Scope: `src/*`
+- [x] **Approved by human**
+
+## Data model'
+ky_vong 0 "promote DEC mới → ĐÃ NÂNG" sh "$AD" promote "$F" DEC-003
+dung "…số mới lớn hơn mọi số trong worktree và trên base (0005)" test -f "$R/docs/adr/0005-feat_x-dec-003.md"
+# aw ship create gọi adr_trung_base với nhánh đích vừa fetch (refs/remotes/origin/<đích>), không phải Base.
+g branch dich main; len_main 0005-feat_w-dec-001.md
+dung "adr_trung_base theo ref tường minh: chỉ nhánh có ADR cùng số mới bị báo" sh -c "
+  . '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/sha256.sh'; . '$T/lib/approval-tick.sh'; . '$T/lib/adr.sh'
+  adr_trung_base '$F' refs/heads/main | grep -q '0005-feat_x-dec-003.md: số 0005 đã có trên refs/heads/main (0005-feat_w-dec-001.md)' &&
+  [ -z \"\$(adr_trung_base '$F' refs/heads/dich)\" ]"
+dung "aw ship create chặn trùng số ADR với nhánh đích trên origin" grep -q 'adr_trung_base "$DIR" "refs/remotes/origin/$DICH"' "$T/ship.sh"
 tao_fixture
 
 ket_thuc

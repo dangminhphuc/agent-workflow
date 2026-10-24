@@ -12,6 +12,9 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 PHAN=$(basename -- "$0" .sh)
 TMP="${TMPDIR:-/tmp}/aw-run-tests.$PHAN.$$"
 mkdir -p "$TMP"
+# Đường dẫn thật: engine in đường dẫn qua pwd -P / git rev-parse; TMPDIR của macOS (/var/folders/…)
+# là symlink tới /private/var/…, ca so chuỗi đường dẫn sẽ lệch nếu giữ bản qua symlink.
+TMP=$(CDPATH= cd -- "$TMP" && pwd -P)
 . "$ROOT/tools/lib/result.sh"
 kq_khai "tests/$PHAN.sh" "0=MỌI CA ĐẠT" "1=CÓ CA HỎNG — xem các dòng FAIL phía trên"
 kq_don 'rm -rf "$TMP"'
@@ -68,14 +71,16 @@ ky_vong_hai_ly_do() {
   fi
 }
 
+# AW_TEST_SHOW_FAIL=1: ca ky_vong hỏng thì in 15 dòng đầu output của lệnh (CI không có máy để chạy lại tay).
 ky_vong() {
   _mong="$1"; _ten="$2"; shift 2
-  "$@" >/dev/null 2>&1
+  "$@" > "$TMP/kv.out" 2>&1
   _got=$?
   if [ "$_got" = "$_mong" ]; then
     ca_dat "$_ten"
   else
     ca_hong "$_ten — mã thoát $_got, mong đợi $_mong"
+    [ "${AW_TEST_SHOW_FAIL:-}" != 1 ] || sed -n '1,15s/^/        | /p' "$TMP/kv.out"
   fi
 }
 
@@ -91,8 +96,9 @@ bang() { test "$1" = "$2"; }
 # thay <file> <tu> <thanh> — thay chuoi co dinh, khong dung regex
 thay() {
   # Tìm tiếp trên phần CHƯA xét, để chuỗi thay chứa chuỗi tìm không lặp vô hạn.
-  # Chuỗi tìm nhiều dòng: đọc cả file thành một bản ghi.
-  awk -v a="$2" -v b="$3" 'BEGIN { RS = "\001" } {
+  # Chuỗi tìm nhiều dòng: đọc cả file thành một bản ghi. Chuỗi đi qua ENVIRON, không qua -v:
+  # BSD awk (macOS) từ chối -v có xuống dòng, và -v diễn giải "\".
+  TH_A="$2" TH_B="$3" awk 'BEGIN { RS = "\001"; a = ENVIRON["TH_A"]; b = ENVIRON["TH_B"] } {
     s = $0; o = ""
     while ((i = index(s, a)) > 0) { o = o substr(s, 1, i-1) b; s = substr(s, i+length(a)) }
     printf "%s", o s

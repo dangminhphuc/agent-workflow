@@ -17,5 +17,5 @@
   như trước, `aw check spec` chỉ in một dòng cảnh báo. Việc mới do `/aw-spec` viết theo dạng mới.
 
 ### Nội bộ
-- Spec SP20 (`docs/superpowers/specs/2026-10-23-sp20-open-question-ma-rieng-design.md`) ghi lý do và
+- Spec SP25 (`docs/superpowers/specs/2026-10-23-sp25-open-question-ma-rieng-design.md`) ghi lý do và
   các phương án đã loại.

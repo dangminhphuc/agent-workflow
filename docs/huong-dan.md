@@ -767,6 +767,11 @@ open-questions.md ────┘
 Sửa file phía trước → file phía sau **stale** → cảnh báo ở implement, chặn ở review. Cách xử lý:
 chạy lại phase sinh ra file stale (agent sẽ cập nhật, không ghi đè).
 
+Frontmatter `based_on` máy không đọc được (viết `[a, b]`, thụt tab, thiếu dòng `---` đóng, mục không
+phải `<file>@<số>`) thì **mọi** `aw check` chặn — nếu không, phần kiểm stale sẽ im lặng cho qua. Thiếu
+đầu vào trong `based_on` (quên `aw based-on`) thì cảnh báo, review chặn. Cả hai cách sửa: chạy lại
+lệnh `aw based-on …` mà thông báo in ra, không sửa frontmatter bằng tay.
+
 **Ngoài job dir, đi vào git qua PR** (§7): `docs/adr/NNNN-….md` (từ DEC-xxx `Promote: adr`) và
 `docs/product/rules/<miền>.md` (từ REQ `Promote: BR-…`).
 
@@ -893,8 +898,12 @@ DEC đi ngược một ADR `accepted` phải khai `- Supersedes: ADR-NNNN` — A
 **Chống stale:** diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi →
 implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`.
 
-Hai việc song song cùng nâng ADR có thể trùng số → `aw adr check` chặn ở việc kế tiếp; bạn đổi số và
-chạy lại `aw adr promote`.
+**Hai việc song song cùng nâng ADR.** `aw adr promote` cấp số lớn hơn mọi số trong worktree **và** trên
+base của việc (`origin/<Base>`, fetch trước). Việc kia merge trước mà chiếm số của bạn → implement, review
+và `aw ship create` (so với nhánh đích) chặn, nêu file trên base. Cách sửa: chạy lại
+`aw adr promote <dir> DEC-NNN` — máy cấp số mới, đổi tên file, sửa `superseded by` và bảng chỉ mục. Merge
+base vào nhánh việc mà xung đột ở `README.md` của thư mục ADR: nhận bản nào cũng được, rồi chạy lại
+`aw adr promote` (bảng do máy dựng).
 
 ---
 

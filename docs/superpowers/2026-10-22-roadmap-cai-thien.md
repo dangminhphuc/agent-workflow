@@ -51,8 +51,13 @@
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | một phần | — | Nhãn `[INCIDENT]` xong; capability vẫn human vì stage operate | | | [#86](https://github.com/dangminhphuc/agent-workflow/pull/86) |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
-| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
-| SP20 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp20-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
+| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87); phần còn lại: [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md) |
+| SP20 | Kiểm frontmatter `based_on` của artifact (INV-006) | 6 | đang làm | — | Sai dạng chặn mọi nơi; thiếu: cảnh báo trước review, chặn ở review | [spec](specs/2026-10-23-sp20-frontmatter-artifact-design.md) | | |
+| SP21 | CI chạy test trên macOS (BSD awk/sed) | 6 | đang làm | — | Bật thành check bắt buộc khi xanh | [spec](specs/2026-10-23-sp21-ci-macos-design.md) | | |
+| SP22 | Số ADR không trùng khi hai việc song song | 6 | đang làm | — | `aw ship create` chặn khi trùng số | [spec](specs/2026-10-23-sp22-so-adr-song-song-design.md) | | |
+| SP23 | Dọn nhánh remote, số liệu roadmap | 6 | đang làm | — | Người duyệt danh sách nhánh trước khi xoá | [spec](specs/2026-10-23-sp23-don-dep-design.md) | | |
+| SP24 | Hai nhánh tính năng chưa merge: làn light + `mr_include_artifacts`, điểm mù nêu story/AC | sau | chặn | — | Lấy lại hay bỏ | | | |
+| SP25 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp25-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -135,6 +140,29 @@ của từng file (223 chỗ), chỉ được giảm; mỗi `# giữ:` phủ đ�
 **Đã làm thêm.** `sh tools/check-sdlc.sh --suy <file>…` in các id `# giữ:` trong những file đó (đưa
 danh sách file của diff). Id không có thì chặn. Không tự viết `# giữ:`.
 
+**Spec phần còn lại:** [2026-10-23-sp19-gan-id-con-lai-design.md](specs/2026-10-23-sp19-gan-id-con-lai-design.md)
+(chia đợt 19b–19g, mỗi đợt một PR).
+
+**Đợt 19b:** gắn 37 chỗ (`check-intake`, `check-security`, `check-ship`, `check-conventions`, `task.sh`;
+223 → 186). 23 chỗ còn lại của các file đó không khớp id nào — chờ người duyệt capability mới (mô tả PR
+đợt 19b): khoá engine ghim (`Engine:`), `Goal:` của intake, mục lục (`toc_loi`), hình thức
+`conventions.md` (khoá bắt buộc, thư mục tri thức, `worktree_dir`, regex), WIP=1 và dừng sau N lần đỏ
+của `aw task`, tiêu đề MR (độ dài, mã Jira).
+
+### SP24 — Hai nhánh tính năng chưa merge
+
+**Vấn đề.** Hai nhánh không có PR, tính năng chưa có trên `main`, rẽ từ `main` cũ (12–13/10):
+`claude/light-lane-mr-artifacts` — bugfix `Lane: light` bỏ design, `light_lane_max_files`, và
+`mr_include_artifacts` đính `spec.md`/`tdd.md` vào mô tả MR (chữa `kien-truc.md` điểm yếu 10);
+`claude/tender-mccarthy-3fxmrt` — mỗi điểm mù trong `open-questions.md` bắt buộc `User story:` và
+`Acceptance criteria:`.
+
+**Hướng.** Lấy lại thì làm lại trên `main` hiện tại (không merge thẳng), mỗi phần một dự án con. Làn light
+trùng phương án C của SP10 — xét cùng SP10 khi có số liệu SP9. `mr_include_artifacts` và điểm mù story/AC
+độc lập, làm được ngay.
+
+**Cần quyết.** Lấy phần nào, bỏ phần nào; bỏ thì xoá nhánh (SP23).
+
 ## Việc nhỏ (không thành dự án con)
 
 Đụng phần nào thì làm phần đó, không cần spec:
@@ -142,9 +170,10 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 - **`check-sdlc.sh` ~1,6 giây mỗi lần** (trước ~2 giây). `cap_co`, `cap_stage`, id invariant, phase theo
   stage, `skippable: false` và requires của stage tra chuỗi tính một lần. Phần còn lại là đọc frontmatter
   từng file và quét `# giữ:`.
-- Bộ test trên máy này: 1775 ca, mọi ca đạt, khoảng 5 phút trên 6 luồng. Mục tiêu dưới 3 phút chưa đạt.
-  Phần dài nhất `21-sdlc-profiles` (103 giây), rồi `05-review-quality`, `08-adapters`, `23-sdlc-syntax` —
-  chưa tới ngưỡng cảnh báo nên tách. Số 3 phút 45 giây sau #81 đo trên 4 luồng, máy khác, không so trực tiếp.
+- Bộ test (đo 2026-10-23, `main` 8824ded): 1804 ca, mọi ca đạt, 2 phút 41 giây trên 4 luồng — mục tiêu
+  dưới 3 phút đạt trên máy này; theo dõi tiếp trên CI. Phần dài nhất `23-sdlc-syntax` (36 giây), rồi
+  `21-sdlc-profiles`, `15-conventions-task`, `08-adapters` (~34 giây) — chưa tới ngưỡng cảnh báo nên tách.
+  Số cũ (1775 ca, ~5 phút trên 6 luồng) đo trên máy khác, không so trực tiếp.
 
 ## Không làm
 

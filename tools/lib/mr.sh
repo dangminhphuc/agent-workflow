@@ -200,9 +200,10 @@ sm_cap_nhat() {
   _su_nt=$(sm_gia_tri "$2" Platform); _su_b=$(sm_gia_tri "$2" Branch)
   _su_ft=$(sed -n '1s/^# Ship — //p' "$2")
   _su_moi=$(sm_dong "$2" | while IFS='|' read -r _d _s _h _u; do
+    # "(" mở đầu pattern: bash 3.2 (sh của macOS) đọc ")" của pattern trong $(…) là dấu đóng $(.
     case "$_s" in
-      merged) ;;   # MR bị đóng còn mở lại được — hỏi lại
-      *)
+      (merged) ;;   # MR bị đóng còn mở lại được — hỏi lại
+      (*)
         _x=$(mr_xem "$1" "$_su_nt" "$_u"); _xm=$?
         if [ "$_xm" = 0 ]; then
           _s=${_x%% *}; _n=${_x#* }; [ -n "$_n" ] && [ "$_n" != "$_x" ] && _h=$_n

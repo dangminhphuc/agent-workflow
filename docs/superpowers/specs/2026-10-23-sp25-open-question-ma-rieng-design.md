@@ -1,7 +1,7 @@
-# Spec: SP20 — Open question có mã riêng (`Q-NNN`)
+# Spec: SP25 — Open question có mã riêng (`Q-NNN`)
 
 - Ngày: 2026-10-23 · Branch: `claude/compassionate-volta-3q04nv`
-- Roadmap § SP20 · Đổi quyết định "open question mang mã REQ" ở `docs/kien-truc.md` § Giả định chưa xác nhận.
+- Roadmap § SP25 · Đổi quyết định "open question mang mã REQ" ở `docs/kien-truc.md` § Giả định chưa xác nhận.
 - Interface: `CAP-require-02` (giữ nguyên câu chữ — mỗi open question vẫn có giả định và mức chặn); chỉ
   đổi hình dạng artifact `open-questions`. Không bỏ, không nới capability hay invariant nào.
 - Trạng thái: **đã chốt 4 điểm thiết kế** (§ 7, người chọn theo đề xuất 2026-10-24); implement cùng PR,
@@ -161,7 +161,7 @@ Thêm ca vào đúng phần cùng chủ đề (`AGENTS.md` § Verify), mỗi lu�
   một phía"), `docs/huong-dan.md` (clarify, đổi REQ), `docs/thuat-ngu.md` (`Q-NNN`), README nếu có ví
   dụ; `changes/<branch>.md` mục `Thay đổi` (người dùng `aw` thấy: dạng mới của `open-questions.md`,
   việc cũ vẫn đọc được).
-- Roadmap: SP20 → `xong` sau khi merge.
+- Roadmap: SP25 → `xong` sau khi merge.
 
 ## 6. Ngoài phạm vi
 

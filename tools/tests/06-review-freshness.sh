@@ -79,4 +79,59 @@ thay "$F/security-results.md" '- Kết quả: **XANH**' '- Kết quả: **ĐỎ*
 ky_vong 1 "chặn security-results.md không XANH" sh "$CHK" "$F"
 sh "$T/check-security.sh" "$F" >/dev/null 2>&1
 
+# ---- Frontmatter based_on đọc sai thì kiểm lỗi thời im lặng (INV-006) — sai dạng chặn mọi nơi
+nhom "frontmatter based_on (kc_fm_hong, kc_based_on_thieu)"
+cp "$F/plan.md" "$TMP/plan-fm.bak"
+fm_dat() { awk -v fm="$1" 'BEGIN { printf "%s", fm } f { print } NR > 1 && $0 == "---" { f = 1 }' "$TMP/plan-fm.bak" > "$F/plan.md"; }
+fm_dat '---
+based_on: [spec.md@1]
+---
+'
+ky_vong_ly_do 1 "chặn based_on viết kiểu [a, b] ở plan" "…đúng lý do: nêu dòng frontmatter" 'plan.md: frontmatter dòng 2' sh "$T/check-plan.sh" "$F"
+ky_vong 1 "…và chặn ở review" sh "$CHK" "$F"
+fm_dat "---
+based_on:
+	- spec.md@1
+---
+"
+ky_vong_ly_do 1 "chặn frontmatter thụt bằng tab" "…đúng lý do: thụt tab" 'plan.md: frontmatter dòng 3: thụt lề bằng tab' sh "$T/check-plan.sh" "$F"
+fm_dat '---
+based_on:
+  - spec.md@1
+'
+ky_vong_ly_do 1 "chặn frontmatter thiếu dòng --- đóng" "…đúng lý do: thiếu --- đóng" 'plan.md: frontmatter thiếu dòng --- đóng' sh "$T/check-plan.sh" "$F"
+fm_dat '---
+based_on:
+  - spec.md
+  - tdd.md@abc
+---
+'
+ky_vong_hai_ly_do 1 "chặn mục based_on không phải <file>@<số> ở implement" "…đúng lý do: cả hai mục sai dạng" \
+  'based_on "spec.md" sai dạng' 'based_on "tdd.md@abc" sai dạng' sh "$T/check-implement.sh" "$F"
+fm_dat '---
+based_on: []
+---
+'
+ky_vong_ly_do 0 "quên aw based-on: implement chỉ cảnh báo" "…đúng lý do: nêu đầu vào thiếu và lệnh ghi" \
+  'plan.md: based_on thiếu spec.md tdd.md — chạy: aw based-on' sh "$T/check-implement.sh" "$F"
+ghi_tree_review
+ky_vong_ly_do 1 "…review chặn" "…đúng lý do: cảnh báo chưa xử lý" 'Cảnh báo chưa xử lý — plan.md: based_on thiếu' sh "$CHK" "$F"
+cp "$TMP/plan-fm.bak" "$F/plan.md"
+sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
+ky_vong 0 "frontmatter do aw based-on ghi thì cho qua" sh "$CHK" "$F"
+dung "…và implement không in cảnh báo based_on" sh -c "! sh '$T/check-implement.sh' '$F' | grep -q 'based_on'"
+sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
+
+# kc_dau_vao là một nguồn với bước "Record inputs" của phase — hai nơi không được lệch.
+dau_vao_khop() {
+  for _p in 01-spec 02-design 03-plan; do
+    _l=$(grep -o 'aw based-on <dir> [^`]*' "$ROOT/workflow/phases/$_p.md" | sed -n 1p)
+    # shellcheck disable=SC2086
+    set -- $_l; _a=$4; shift 4
+    # shellcheck disable=SC2046
+    [ "$*" = "$(echo $(. "$T/lib/md.sh"; . "$T/lib/cross-check.sh"; kc_dau_vao "$F" "$_a"))" ] || return 1
+  done
+}
+dung "kc_dau_vao khớp lệnh aw based-on trong 01-spec, 02-design, 03-plan" dau_vao_khop
+
 ket_thuc

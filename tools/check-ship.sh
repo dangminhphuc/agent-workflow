@@ -37,6 +37,7 @@ REVIEW="$DIR/review.md"
 n=0
 loi() { n=$((n + 1)); echo "  [LỖI] $1"; }
 
+# giữ: CAP-deploy-01
 sh "$HERE/check-review.sh" "$DIR" >/dev/null 2>&1 ||
   loi "Đầu vào chưa đạt: aw check review không ĐẠT — chạy nó để xem chi tiết."
 
@@ -47,6 +48,7 @@ $tl
 EOF
 
 nb=$(awk '{ sub(/\r$/, "") } /^###[ \t]+\[Blocker\]/ && !/<tiêu đề>/' "$REVIEW" | wc -l | tr -d ' ')
+# giữ: CAP-deploy-01
 [ "$nb" = 0 ] || loi "review.md còn $nb finding [Blocker] — không được merge. Sửa ở /aw-implement rồi chạy lại /aw-review."
 
 # Nội dung đã bỏ comment HTML (kể cả comment nhiều dòng)
@@ -63,11 +65,14 @@ than=$(awk '{ sub(/\r$/, "") }
 tieu_de=$(printf '%s\n' "$than" | awk 'NF { print; exit }')
 case "$tieu_de" in
   "# "*) tieu_de=${tieu_de#\# } ;;
+  # giữ: CAP-deploy-01
   *) loi "Dòng đầu của merge-request.md phải là \"# <tiêu đề MR>\"."; tieu_de="" ;;
 esac
+# giữ: CAP-deploy-01
 case "$tieu_de" in *"<"*">"*) loi "Tiêu đề còn chữ giữ chỗ: \"$tieu_de\"." ;; esac
 
 for m in Problem Changes "External Impact" "Out of Scope" Deployment Testing "Open Questions"; do
+  # giữ: CAP-deploy-01
   printf '%s\n' "$than" | grep -q "^## $m[ \t]*\$" ||
     loi "Thiếu mục \"## $m\" — mục không áp dụng thì ghi \"None\", không xoá."
 done
@@ -77,6 +82,7 @@ for m in Problem Changes Testing; do
     /^## / { trong = 0 }
     trong && NF { c++ }
     END { print c + 0 }')
+  # giữ: CAP-deploy-01
   [ "$nd" != 0 ] || loi "Mục \"## $m\" để trống — bắt buộc có nội dung."
 done
 
@@ -91,6 +97,7 @@ gc=$(printf '%s\n' "$than" | awk -v mau="$MAU" '
     }
   }
   { for (k in g) if (index($0, k)) { print NR ": " k; break } }' | head -5)
+# giữ: CAP-deploy-01
 [ -z "$gc" ] || loi "Còn chữ giữ chỗ của mẫu — điền hoặc ghi \"None\": $(printf '%s\n' "$gc" | tr '\n' ';' | sed 's/;$//; s/;/; /g')"
 
 # ---- cảnh báo

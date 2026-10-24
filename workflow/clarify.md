@@ -115,6 +115,7 @@ Order (max 4): `(Đề xuất) <fix>` (what, which section) → 0–1 genuinely 
 - Decided → **write nothing yet**: keep the decision (verbatim words, who, date, the changes it implies) and go to the next item. Close it in one line (`FND-038: sửa theo phương án A — ghi cùng đợt.`), no preview.
 - A later item touching what an earlier decision changes → build on the pending version, not on the file.
 - **"Chat about this":** answer, explain consequences, quote more source — **write no files**. Once clear, ask the same question again as choices (options updated by the discussion). A decision stated in chat → confirm it via choices before recording.
+- **Typed text is a question, not an answer** (asks what a term/screen/option means, asks to confirm your reading, ends in `?`, "phải không", "là gì"…) → handle as "Chat about this": answer it, quoting the source passage verbatim (file + section); not in the documents → say so. **Never** record it as `Answer:` or a rejection reason. Then ask the same question again as choices. Unsure whether it is a question or an answer → ask which, before recording anything.
 
 ## 3. Record — one preview, one write
 
