@@ -39,4 +39,26 @@ dung "--version không có file: lọc nhật ký của máy này" bang "$(sh "$
 printf '2026-10-24T01:00:00Z\tfeat_x\tspec\t%s\n' "$V" > "$CFG/journal/phases.tsv"
 ky_vong 0 "export có nguồn phases" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/pha.tsv"
 dung "…dòng phases có tên nguồn và máy" sh -c "awk -F'\t' '\$1 == \"phases\" && \$2 == \"may-a\"' '$TMP/pha.tsv' | grep -q ."
+
+# ---------------------------------------------------------------- mốc phase (Task 3)
+nhom "SP9b: aw rules ghi mốc phase vào phases.tsv (trong worktree của việc)"
+PH="$JD/phases.tsv"
+WT="$TMP/wt-feat-z"
+g worktree add -q -b feat_z "$WT" main
+rm -f "$PH"
+env AW_REPO="$WT" sh "$AWE" rules spec > "$TMP/rules-aw.txt"; ma_aw=$?
+sh "$T/rules.sh" spec > "$TMP/rules-goc.txt"; ma_goc=$?
+dung "aw rules spec trong worktree việc thoát 0" bang "$ma_aw" 0
+dung "…stdout giống hệt rules.sh gọi trực tiếp" cmp -s "$TMP/rules-aw.txt" "$TMP/rules-goc.txt"
+dung "…mã thoát giống hệt rules.sh gọi trực tiếp" bang "$ma_aw" "$ma_goc"
+dung "phases.tsv: đúng một dòng cho spec" sh -c "awk -F'\t' '\$3 == \"spec\"' '$PH' | wc -l | grep -q '^ *1\$'"
+dung "…cột việc = tên thư mục việc" sh -c "awk -F'\t' '\$2 == \"feat_z\"' '$PH' | grep -q ."
+dung "…cột version = VERSION engine" sh -c "awk -F'\t' -v v='$V' '\$4 == v' '$PH' | grep -q ."
+n1=$(wc -l < "$PH" | tr -d ' ')
+ky_vong 2 "aw rules phase lạ → SAI THAM SỐ, không ghi" env AW_REPO="$WT" sh "$AWE" rules khong-co
+dung "…không thêm dòng" bang "$(wc -l < "$PH" | tr -d ' ')" "$n1"
+AW_JOURNAL=0 env AW_REPO="$WT" sh "$AWE" rules implement >/dev/null 2>&1
+dung "AW_JOURNAL=0 → không ghi phases.tsv" bang "$(wc -l < "$PH" | tr -d ' ')" "$n1"
+ky_vong 0 "aw rules ở checkout chính vẫn thoát 0" sh "$AWE" rules spec
+dung "…checkout chính không ghi phases.tsv" bang "$(wc -l < "$PH" | tr -d ' ')" "$n1"
 ket_thuc

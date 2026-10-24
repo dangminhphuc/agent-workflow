@@ -45,6 +45,13 @@ viec() { basename "$(CDPATH= cd -- "$1" 2>/dev/null && pwd || echo "$1")"; }
 
 # ---------------------------------------------------------------- nội bộ
 case "${1:-}" in
+  _phase)
+    # Mốc bắt đầu phase (aw rules): việc suy như aw feature; ngoài việc thì không ghi. Không bao giờ làm hỏng lệnh rules.
+    [ $# -eq 2 ] || exit 0
+    mkdir -p "$JD" 2>/dev/null || exit 0
+    dir=$(sh "$HERE/feature.sh" 2>/dev/null) || exit 0
+    printf '%s\t%s\t%s\t%s\n' "$(gio)" "$(basename "$dir")" "$2" "$(jv_version "$HERE")" >> "$JD/phases.tsv" 2>/dev/null
+    exit 0 ;;
   _check)
     # Không bao giờ làm hỏng lệnh check: mọi lỗi ở đây im lặng.
     [ $# -eq 5 ] || exit 0

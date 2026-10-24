@@ -113,7 +113,9 @@ case "$LENH" in
   feature)   can_repo; exec sh "$T/feature.sh" "$@" ;;
   input)     can_repo; exec sh "$T/input.sh" "$@" ;;
   pending)   can_repo; exec sh "$T/pending.sh" "$@" ;;
-  rules)     can_repo; exec sh "$T/rules.sh" "$@" ;;
+  rules)     can_repo; sh "$T/rules.sh" "$@"; _ma=$?
+    if [ "$_ma" = 0 ] && [ "${AW_JOURNAL:-1}" != 0 ]; then sh "$T/journal.sh" _phase "$1" >/dev/null 2>&1; fi
+    exit "$_ma" ;;
   uses)      can_repo; exec sh "$T/uses.sh" "$@" ;;
   knowledge) can_repo; exec sh "$T/knowledge.sh" "$@" ;;
   adr)       can_repo; exec sh "$T/adr.sh" "$@" ;;
