@@ -22,6 +22,7 @@
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
+. "$HERE/lib/journal-util.sh"
 
 if [ "${1:-}" = tick ]; then
   kq_khai approvals.sh \
@@ -72,7 +73,7 @@ if [ "${1:-}" = tick ]; then
   [ "$TT" = approved ] || { echo "KHÔNG TICK: sau khi ghi, $KHOA vẫn là \"$TT\"." >&2; exit 1; }
   # Nhật ký: lỗi ở đây không làm hỏng lệnh.
   if mkdir -p "$AW_CONFIG/journal" 2>/dev/null; then
-    printf '%s\t%s\t%s\t%s\t%s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$(basename "$DIR")" "$KHOA" "$HASH" "aw approvals tick" \
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$(basename "$DIR")" "$KHOA" "$HASH" "aw approvals tick" "$(jv_version "$HERE")" \
       >> "$AW_CONFIG/journal/approvals.tsv" 2>/dev/null
   fi
   echo "Đã duyệt $KHOA ($(basename "$DIR")) — $F"

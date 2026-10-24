@@ -17,7 +17,7 @@
 #   aw-engine ready <feature-dir> [--no-test]       worktree sẵn sàng chưa, bước tiếp là gì
 #   aw-engine task start|done|next <feature-dir> [TSK-NNN] [--manual "<bằng chứng>"]
 #   aw-engine task reopen <feature-dir> <REQ-NNN|DEC-NNN>
-#   aw-engine journal [report [<file>…]] | journal add <layer> <mô tả> [--feature <dir>] | journal export <file>
+#   aw-engine journal [report [<file>…]] | journal add <layer> <mô tả> [--feature <dir>] | journal export <file> | journal retro <dir> [...]
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine toc <feature-dir> [artifact...]      mục lục ## Contents + anchor link của artifact
 #   aw-engine rename <new-branch>
@@ -113,7 +113,9 @@ case "$LENH" in
   feature)   can_repo; exec sh "$T/feature.sh" "$@" ;;
   input)     can_repo; exec sh "$T/input.sh" "$@" ;;
   pending)   can_repo; exec sh "$T/pending.sh" "$@" ;;
-  rules)     can_repo; exec sh "$T/rules.sh" "$@" ;;
+  rules)     can_repo; sh "$T/rules.sh" "$@"; _ma=$?
+    if [ "$_ma" = 0 ] && [ "${AW_JOURNAL:-1}" != 0 ]; then sh "$T/journal.sh" _phase "$1" >/dev/null 2>&1; fi
+    exit "$_ma" ;;
   uses)      can_repo; exec sh "$T/uses.sh" "$@" ;;
   knowledge) can_repo; exec sh "$T/knowledge.sh" "$@" ;;
   adr)       can_repo; exec sh "$T/adr.sh" "$@" ;;

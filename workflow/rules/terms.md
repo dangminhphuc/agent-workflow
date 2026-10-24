@@ -63,6 +63,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `DỪNG` | `aw task` label: `MAX_RED_RUNS` red runs in a row; report to the human | |
 | `KẸT` | `aw task` label: every remaining task waits on a dependency; report to the human | |
 | `harness journal` | `aw journal`: agent mistakes no checker caught | nhật ký harness |
+| `retro` | `aw journal retro`: end-of-job summary written to `jobs.tsv`; human part (wrong blocks, minutes) entered by the human | tổng kết cuối việc |
 | `engine` | Checkers, phases, templates, adapters, cached in `~/.agent-workflow/engine/<V>/` | |
 | `wrapper` | `aw` installed once per machine; picks the version, verifies, dispatches | |
 | `pinned version` | `Engine: <V>` in `intake.md`; every check of the job runs it | version ghim |

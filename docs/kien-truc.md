@@ -583,6 +583,9 @@ làm `tdd.md` stale). LLM checker mới chỉ cần ghi `<id>-findings.md` đún
   verify | state | model` — `model` là lớp cuối, đổi model là lựa chọn đắt nhất), `findings.tsv`
   (finding theo `Category` khi review đạt). Loại lặp ở ≥ 2 việc → `[GỢI Ý]` nâng thành luật máy;
   máy không tự thêm luật vì luật sai chặn mọi việc sau.
+  Mỗi dòng có cột version engine ở cuối. `phases.tsv` ghi mốc bắt đầu mỗi phase (lúc `aw rules` chạy trong việc);
+  `jobs.tsv` là một dòng mỗi việc do `aw journal retro` ghi: phần máy (phase, thiết kế, cỡ diff, lần bị chặn) và phần người
+  (lần chặn nhầm, phút, lỗi lọt). Thời gian phase là xấp xỉ, gồm cả thời gian chờ người; phần người do người khai.
 
 ## Quy tắc riêng của repo
 
@@ -998,3 +1001,5 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     Profile cũng vậy: checker biết engine *cho phép* bỏ design với bugfix, không biết
     việc bỏ đó có hợp lý không; invariant theo loại chỉ ghi phần máy giữ ("test đỏ"), phần người
     phán ("đỏ vì đúng bug", "không đổi assertion") vẫn chỉ nằm ở review.
+
+23. **Thời gian phase và phần người là xấp xỉ.** Mốc phase là lúc `aw rules` chạy, nên thời gian chờ người nằm trong phase trước và không tách được. Phần người (lần chặn nhầm, phút, lỗi lọt) do người khai khi `aw journal retro` chạy; có thể quên hoặc lệch. Đọc số trong `aw journal report` như xu hướng, không như đo chính xác.

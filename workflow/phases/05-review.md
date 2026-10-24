@@ -98,6 +98,10 @@ Verdict: `pass` / `finding` (+ `file:line`, **and** a Lens 3 finding) / `not app
 | `perf` | Read `perf.md`, judge the performance REQ by the numbers, allowing for noise |
 | `chore` | The `patch \| minor` level in "Dependency upgrades" is right (major = separate refactor) |
 
+## After the human confirms the conclusion
+
+Run `aw journal retro <dir>` in the worktree. It prints the machine part (phases, design, diff size, blocked checks) and the numbered list of blocked checks. Show the list to the human and ask: which blocks were wrong (`#n`), how many minutes the job took the human, the one thing that got in the way, and — `bugfix` only — which PR or job caused the bug and which layer let it through. Record the answers with `aw journal retro <dir> --nham <n,…> --phut <n> [--vuong "<one line>"] [--gay-boi <job|PR> --lop <layer>]`; if the human does not answer, `--bo-qua`. Never invent the answers.
+
 ## Forbidden
 
 - "Looks fine" reviews — not going through every `REQ-NNN` = not run.

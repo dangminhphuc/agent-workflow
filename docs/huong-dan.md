@@ -203,10 +203,10 @@ commit, hoặc bạn phải giải thích "vì sao" cho người review. Rủi r
 rồi quen tay bỏ luôn với việc lớn — khi phân vân, dùng `aw`.
 
 **Đo để quyết đường tắt sau này.** Engine chưa có đường tắt cho việc nhỏ (gộp phase cho `chore` hay một
-loại việc mới) vì chưa có số liệu. Mỗi người chạy `aw journal export <file>` định kỳ; gom bằng
-`aw journal report <file>…` để biết bao nhiêu việc là `chore` / diff nhỏ và checker chặn ở đâu
-([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP10).
-
+loại việc mới) vì chưa có số liệu. Sau mỗi việc đã được người xác nhận review, agent chạy `aw journal retro <thư-mục-việc>`
+và hỏi bạn: lần chặn nào nhầm, việc mất bao nhiêu phút, chỗ nào vướng nhất (bugfix thì thêm: lỗi do việc nào gây ra, lớp nào lọt).
+Định kỳ mỗi người chạy `aw journal export <file>`; gom bằng `aw journal report <file>…` để xem độ chính xác từng checker,
+thời gian từng phase, việc theo loại và lỗi lọt theo lớp ([roadmap engine](superpowers/2026-10-22-roadmap-cai-thien.md), SP9b, SP10).
 ---
 
 ## 2. Cài đặt và cấu hình target repo
@@ -989,7 +989,8 @@ Agent làm sai mà không checker nào bắt → ghi lại để team biết har
 aw journal add <task|context|env|verify|state|model> "<sai gì, ở đâu, harness thiếu gì>"
 aw journal          # tổng hợp: checker trượt ở đâu, loại lỗi lặp lại
 aw journal export <file>                    # xuất nhật ký máy này ra một TSV (nguồn, máy, cột gốc) để gom
-aw journal report <file> [<file>…]          # tổng hợp trên các file export của nhiều máy
+aw journal report [--version <v>] [<file>…] # tổng hợp; --version chỉ tính dòng của một version engine
+aw journal retro <thư-mục-việc> [--nham …] [--phut n] …   # tổng kết cuối việc: phần máy + lần bị chặn; có cờ thì ghi jobs.tsv
 ```
 
 Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành luật máy. Máy không tự thêm luật.
@@ -1034,7 +1035,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw adr check` · `aw rule check` | kiểm ADR · luật nghiệp vụ |
 | `aw rules <phase>` · `aw uses <phase>` | xem luật/skill khai cho phase |
 | `aw adapter build [a,b] [--force]` | sinh lại lệnh cho agent |
-| `aw journal` · `aw journal add <lớp> "…"` · `aw journal export <file>` · `aw journal report <file>…` | harness journal; export / report trên file để gom nhiều máy |
+| `aw journal` · `aw journal add <lớp> "…"` · `aw journal retro <thư-mục-việc>` · `aw journal export <file>` · `aw journal report <file>…` | harness journal; retro tổng kết cuối việc; export / report trên file để gom nhiều máy |
 
 `<dir>` là thư mục artifact của việc: `docs/sdlc/<tên-branch>`.
 

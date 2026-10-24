@@ -78,6 +78,8 @@ ADR — nên đi trước; SP29, SP30 thêm luật nên chờ số liệu SP9 (n
 ### SP9 — Chạy thật + gom nhật ký
 
 - Công cụ đã có: `aw journal export <file>`, `aw journal report <file>…`.
+- Công cụ xong ở [SP9b](specs/2026-10-24-sp9b-journal-do-luong-design.md): cột version, `phases.tsv`, `aw journal retro` (`jobs.tsv`), report mới (độ chính xác checker, thời gian phase, việc theo loại, lỗi lọt, `--version`).
+  Còn lại: chạy thật trên 1–2 repo, người làm; SP10 chờ số liệu này.
 - Còn lại (người làm): 1–2 repo đích, 2–4 tuần. Số liệu: việc theo loại, thời gian phase, số lần người
   can thiệp, checker chặn đúng / chặn nhầm.
 - Kết quả: báo cáo ở `docs/` làm đầu vào SP10, SP17 và thứ tự các dự án con còn lại.
