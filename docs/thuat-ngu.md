@@ -92,6 +92,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `Security reviewer` | Tên **người** đã rà bảo mật, bắt buộc khi diff đụng `sensitive_code`. Agent không bao giờ điền |
 | `DỪNG` / `KẸT` | Nhãn của `aw task`: đỏ liên tiếp `MAX_RED_RUNS` lần / `task` còn lại đều chờ phụ thuộc. Agent báo người, không thử mò |
 | `harness journal` *(trước: nhật ký harness)* | `aw journal`: ghi lại lỗi agent làm mà không checker nào bắt, để biết harness thiếu luật ở đâu |
+| `retro` *(tổng kết cuối việc)* | `aw journal retro`: ghi phần máy và phần người của một việc vào `jobs.tsv` sau khi review đã được người xác nhận; phần người (lần chặn nhầm, phút) do người khai |
 
 ## Cài đặt và môi trường
 
