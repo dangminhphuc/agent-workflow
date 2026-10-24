@@ -17,7 +17,7 @@
 #   aw-engine ready <feature-dir> [--no-test]       worktree sẵn sàng chưa, bước tiếp là gì
 #   aw-engine task start|done|next <feature-dir> [TSK-NNN] [--manual "<bằng chứng>"]
 #   aw-engine task reopen <feature-dir> <REQ-NNN|DEC-NNN>
-#   aw-engine journal [report [<file>…]] | journal add <layer> <mô tả> [--feature <dir>] | journal export <file>
+#   aw-engine journal [report [<file>…]] | journal add <layer> <mô tả> [--feature <dir>] | journal export <file> | journal retro <dir> [...]
 #   aw-engine based-on <feature-dir> <artifact> <input>...
 #   aw-engine toc <feature-dir> [artifact...]      mục lục ## Contents + anchor link của artifact
 #   aw-engine rename <new-branch>

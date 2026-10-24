@@ -3,6 +3,7 @@
 #
 #   aw journal [report]                         tổng hợp
 #   aw journal add <layer> "<mô tả>" [--feature <thư-mục-feature>]
+#   aw journal retro <thư-mục-việc> [--nham …] [--phut n] …   tổng kết cuối việc → jobs.tsv (tools/journal-retro.sh)
 #
 # Bốn nguồn, lưu ở $AW_CONFIG/journal/ (dùng chung mọi worktree của bản clone,
 # không commit):
@@ -27,9 +28,10 @@
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
-. "$HERE/lib/journal-version.sh"
+. "$HERE/lib/journal-util.sh"
 
 LOP_HOP_LE="task context env verify state model"
+export LOP_HOP_LE
 # Một loại finding lặp ở ít nhất chừng này việc khác nhau thì gợi ý nâng thành luật.
 NGUONG_LAP=2
 
@@ -37,9 +39,6 @@ NGUONG_LAP=2
 JD="$AW_CONFIG/journal"
 TAB=$(printf '\t')
 
-bay() { # <chuỗi> -> một dòng, không tab
-  printf '%s' "$1" | tr '\t\r\n' '   ' | sed 's/  */ /g; s/^ //; s/ $//'
-}
 gio() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 viec() { basename "$(CDPATH= cd -- "$1" 2>/dev/null && pwd || echo "$1")"; }
 
@@ -142,6 +141,7 @@ if [ "${1:-}" = export ]; then
   exit 0
 fi
 
+case "${1:-}" in retro) shift; exec sh "$HERE/journal-retro.sh" "$@" ;; esac
 # ---------------------------------------------------------------- report
 case "${1:-report}" in report) ;; *) echo "Dùng: aw journal [report [<file export>…]] | aw journal add <layer> \"<mô tả>\" | aw journal export <file>" >&2; exit 2 ;; esac
 [ $# -gt 0 ] && shift

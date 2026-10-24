@@ -61,4 +61,34 @@ AW_JOURNAL=0 env AW_REPO="$WT" sh "$AWE" rules implement >/dev/null 2>&1
 dung "AW_JOURNAL=0 → không ghi phases.tsv" bang "$(wc -l < "$PH" | tr -d ' ')" "$n1"
 ky_vong 0 "aw rules ở checkout chính vẫn thoát 0" sh "$AWE" rules spec
 dung "…checkout chính không ghi phases.tsv" bang "$(wc -l < "$PH" | tr -d ' ')" "$n1"
+
+# ---------------------------------------------------------------- aw journal retro (Task 4)
+nhom "SP9b: aw journal retro"
+RJ="$JD/jobs.tsv"
+printf 'x\n' > "$WT/zz.txt"; git -C "$WT" add zz.txt; git -C "$WT" commit -qm "việc z"
+thay "$F/plan.md" '`REQ-002`' '`REQ-999`'
+sh "$AWE" check plan "$F" >/dev/null 2>&1
+thay "$F/plan.md" '`REQ-999`' '`REQ-002`'
+rm -f "$RJ"
+ky_vong 0 "retro không cờ → XONG" env AW_REPO="$WT" sh "$NK" retro "$F"
+dung "…in lần bị chặn đánh số #1" sh -c "env AW_REPO='$WT' sh '$NK' retro '$F' | grep -q '#1'"
+dung "…không ghi jobs.tsv" bang "$(test -f "$RJ" && echo co || echo khong)" khong
+ky_vong 0 "retro --bo-qua" env AW_REPO="$WT" sh "$NK" retro "$F" --bo-qua
+dung "…jobs.tsv đúng một dòng" bang "$(wc -l < "$RJ" | tr -d ' ')" 1
+dung "…nhầm, phút, vướng, gây bởi, lọt lớp = -" sh -c "awk -F'\t' '\$11 == \"-\" && \$12 == \"-\" && \$13 == \"-\" && \$14 == \"-\" && \$15 == \"-\"' '$RJ' | grep -q ."
+dung "…phần máy: file = 1, dòng = 1 (commit trong worktree)" sh -c "awk -F'\t' '\$6 == 1 && \$7 == 1' '$RJ' | grep -q ."
+dung "…cột version là cột cuối" sh -c "awk -F'\t' -v v='$V' '\$NF == v' '$RJ' | grep -q ."
+ky_vong 0 "retro --nham 1 --phut 40" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 1 --phut 40
+ky_vong 0 "retro --nham 1 --phut 55 (chạy lại)" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 1 --phut 55
+dung "…chạy lại thay dòng, không nhân đôi" bang "$(wc -l < "$RJ" | tr -d ' ')" 1
+dung "…phút = 55, nhầm = 1" sh -c "awk -F'\t' '\$11 == 1 && \$12 == 55' '$RJ' | grep -q ."
+ky_vong 2 "--nham 9 (không có lần chặn số 9) → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 9 --phut 1
+ky_vong 2 "--phut abc → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --phut abc
+ky_vong 2 "--lop mood → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --gay-boi ABC-1 --lop mood
+ky_vong 2 "--gay-boi với việc không phải bugfix → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --gay-boi ABC-1 --lop task
+ky_vong 2 "--bo-qua cùng --phut → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --bo-qua --phut 3
+ky_vong 2 "thư mục không có intake.md → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$TMP/khong-co"
+ky_vong 6 "retro ở checkout chính → thoát 6" env AW_REPO="$R" sh "$NK" retro "$F" --bo-qua
+dung "…checkout chính không ghi" bang "$(wc -l < "$RJ" | tr -d ' ')" 1
+dung "…lệnh sai không ghi đè dòng đã có" awk -F'\t' '$12 == 55' "$RJ"
 ket_thuc

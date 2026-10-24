@@ -5,3 +5,8 @@ jv_version() {
   _jv=$(tr -d ' \r\n' < "$1/../VERSION" 2>/dev/null)
   printf '%s\n' "${_jv:-?}"
 }
+
+# bay <chuỗi> -> một dòng, không tab (ô của TSV nhật ký).
+bay() {
+  printf '%s' "$1" | tr '\t\r\n' '   ' | sed 's/  */ /g; s/^ //; s/ $//'
+}

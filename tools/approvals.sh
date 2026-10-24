@@ -22,7 +22,7 @@
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
-. "$HERE/lib/journal-version.sh"
+. "$HERE/lib/journal-util.sh"
 
 if [ "${1:-}" = tick ]; then
   kq_khai approvals.sh \
