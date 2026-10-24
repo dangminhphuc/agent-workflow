@@ -142,6 +142,7 @@ if [ "$LENH" = start ]; then
     [ "$sd" = x ] || chua="$chua $d"
   done
   if [ -n "$chua" ]; then
+    # giữ: CAP-breakdown-01
     echo "TỪ CHỐI: $TASK phụ thuộc$chua — chưa [x]." >&2; exit 1
   fi
   tk_dat "$PLAN" "$TASK" "~" || { echo "LỖI: không ghi được ô Status của $TASK." >&2; exit 1; }
@@ -169,13 +170,17 @@ done
 case "$st" in
   "~") ;;
   x) echo "$TASK đã [x] — chạy lại để làm mới bằng chứng." ;;
+  # giữ: CAP-implement-06
   *) echo "TỪ CHỐI: $TASK chưa bắt đầu — chạy: aw task start $DIR $TASK" >&2; exit 1 ;;
 esac
 VF=$(tk_verify "$PLAN" "$TASK")
 if [ -n "$CO_MANUAL" ]; then
+  # giữ: CAP-implement-06
   [ -z "$VF" ] || { echo "TỪ CHỐI: Verify của $TASK có lệnh \`$VF\` — máy chạy được thì không kiểm chứng thủ công." >&2; exit 1; }
+  # giữ: CAP-implement-06
   case "$MANUAL" in ""|*"<"*">"*) echo "TỪ CHỐI: --manual cần bằng chứng cụ thể (đã làm gì, thấy gì)." >&2; exit 1 ;; esac
 elif [ -z "$VF" ]; then
+  # giữ: CAP-implement-06
   echo "TỪ CHỐI: dòng Verify của $TASK không có lệnh trong backtick." >&2
   echo "  Kiểm được bằng lệnh: sửa plan.md thành \"Verify: \`<lệnh>\` → <kết quả>\"." >&2
   echo "  Chỉ kiểm được bằng tay: aw task done $DIR $TASK --manual \"<đã làm gì, thấy gì>\"" >&2
