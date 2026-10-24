@@ -930,7 +930,9 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 4. **Mode 2 dựa vào nhãn `Risk` đúng** — người cho qua `normal` sai thì neo quay lại.
 5. **Hash cả file báo cả thay đổi vô hại** — nên chỉ cảnh báo, và người có thể quen tay bỏ qua.
 6. **Tập con YAML dễ vỡ** — sai cú pháp trả về rỗng. File của engine đã được `check-sdlc.sh` kiểm
-   (`yaml_kiem`); YAML trong repo đích (frontmatter artifact) thì chưa.
+   (`yaml_kiem`); frontmatter `based_on` của `spec.md`/`tdd.md`/`plan.md` ở repo đích cũng vậy
+   (`kc_fm_hong`: đọc sai thì chặn ở mọi phase, vì kiểm stale sẽ im lặng). Còn lại: `conventions.md`
+   (đã có `aw conventions check`) và frontmatter tự thêm khoá lạ — máy chỉ đọc khoá nó biết.
 7. **Máy không biết ai tick.** Hook chỉ có khi repo cài và agent có hook; không có hook thì agent tự
    tick vẫn lọt (artifact ngoài git, không có `git blame`). Hook không bắt dấu giả agent tự tính, và
    bỏ nhầm tick nếu người tick đúng lúc lệnh agent đang chạy. Nội dung đổi **trước** lần ghi dấu

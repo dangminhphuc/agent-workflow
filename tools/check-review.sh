@@ -97,6 +97,11 @@ moi=$( { kc_ket_qua_cu "$DIR" "$KQ" "aw check implement $DIR"; kc_ket_qua_cu "$D
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<MOI
 $moi
 MOI
+fmh=$(kc_fm_hong "$DIR")
+# giữ: INV-006
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<FMH
+$fmh
+FMH
 # ADR: DEC "Promote: adr" đã nâng đúng nội dung DEC đã duyệt; thư mục ADR đúng hình thức.
 adl=$(adr_loi_viec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "ADR: $l"; done <<ADR
@@ -117,7 +122,7 @@ for t in $(tk_pham_vi_chua_giai_trinh "$DIR" "$REVIEW"); do
   loi_truoc "Lens 2: $t có cảnh báo phạm vi trong task-results.md — giải trình ở \"Task scope warnings\" (lý do chấp nhận, hoặc đã khai Unplanned)"
 done
 
-cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
+cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
 # bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.
 if [ "$(kc_loai "$DIR")" = "bugfix" ]; then

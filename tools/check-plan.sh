@@ -100,6 +100,11 @@ qtl=$(kc_quy_tac_loi "$DIR" plan)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
 $qtl
 EOF
+fmh=$(kc_fm_hong "$DIR")
+# giữ: INV-006
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+$fmh
+EOF
 
 # Trạng thái duyệt từng DEC-xxx — thư viện chung (tick + dấu duyệt khớp nội dung).
 DTT=""
@@ -281,7 +286,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
 ' "$SPEC" "$TDD" "$PLAN"
 ma=$?
 
-cb=$( { kc_loi_thoi "$DIR"; kc_glob_rong "$DIR"; } )
+cb=$( { kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_glob_rong "$DIR"; } )
 if [ -n "$cb" ]; then
   echo ""
   echo "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
