@@ -45,6 +45,60 @@ kc_loi_thoi() {
   done
 }
 
+# kc_fm_hong <thư-mục-feature>
+# Frontmatter của spec.md / tdd.md / plan.md đọc sai thì fm_list trả rỗng và kc_loi_thoi im lặng:
+# thiếu dòng --- đóng, ngoài tập con YAML, mục based_on không phải <file>@<số> -> một dòng mỗi lỗi.
+# giữ: INV-006
+kc_fm_hong() {
+  for _a in spec.md tdd.md plan.md; do
+    _f="$1/$_a"
+    [ -f "$_f" ] || continue
+    _dong=$(awk '{ sub(/\r$/, "") } NR == 1 && $0 != "---" { print "khong"; exit } NR > 1 && $0 == "---" { print "du"; exit }' "$_f")
+    case "$_dong" in
+      khong) continue ;;
+      du) ;;
+      *) [ -s "$_f" ] || continue
+         echo "$_a: frontmatter thiếu dòng --- đóng — chạy lại aw based-on, không sửa tay"; continue ;;
+    esac
+    yaml_kiem "$_f" fm | while IFS= read -r _l; do echo "$_a: frontmatter $_l — chạy lại aw based-on, không sửa tay"; done
+    fm_list "$_f" based_on | while IFS= read -r _b; do
+      _n=${_b%@*}; _h=${_b##*@}; _sai=0
+      case "$_b" in *@*) ;; *) _sai=1 ;; esac
+      case "$_n" in ''|*@*) _sai=1 ;; esac
+      case "$_h" in ''|*[!0-9]*) _sai=1 ;; esac
+      [ "$_sai" = 0 ] || echo "$_a: based_on \"$_b\" sai dạng <file>@<hash> — chạy lại aw based-on, không sửa tay"
+    done
+  done
+}
+
+# kc_dau_vao <thư-mục-feature> <artifact> -> đầu vào based_on bắt buộc, một file một dòng.
+# Cùng bước "Record inputs" của workflow/phases/01-spec.md, 02-design.md, 03-plan.md (test so hai nơi).
+kc_dau_vao() {
+  case "$2" in
+    spec.md) echo intake.md ;;
+    tdd.md) printf 'spec.md\nopen-questions.md\n' ;;
+    plan.md) echo spec.md; kc_bo_design "$1" || echo tdd.md ;;
+  esac
+}
+
+# kc_based_on_thieu <thư-mục-feature>
+# Artifact có mà based_on thiếu đầu vào bắt buộc đang có trong thư mục (quên chạy aw based-on)
+# -> kc_loi_thoi không có gì để kiểm. Cảnh báo giữa flow, review chặn (như lỗi thời).
+# giữ: INV-006
+kc_based_on_thieu() {
+  for _a in spec.md tdd.md plan.md; do
+    [ -f "$1/$_a" ] || continue
+    _co=$(fm_list "$1/$_a" based_on | sed 's/@.*//')
+    _thieu=""; _du="$_a"
+    for _in in $(kc_dau_vao "$1" "$_a"); do
+      [ -f "$1/$_in" ] || continue
+      _du="$_du $_in"
+      printf '%s\n' "$_co" | grep -qxF "$_in" || _thieu="$_thieu $_in"
+    done
+    [ -z "$_thieu" ] || echo "$_a: based_on thiếu${_thieu} — chạy: aw based-on $1 $_du"
+  done
+}
+
 # kc_test_yc <thư-mục-feature>
 # REQ nào chưa có test gắn tag, chưa ghi "Manual verification", chưa ở "Deferred".
 # giữ: INV-003
