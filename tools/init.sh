@@ -9,7 +9,7 @@
 #                               ước (như trước); đã commit thì chỉ ghi đè khoá máy
 #   $AW_CONFIG/config.sh        lệnh kiểm thử, adapter… — NGƯỜI sửa, không ghi đè
 #   .git/info/exclude           /.agent-workflow/, /docs/sdlc/ + đường dẫn adapter sinh ra
-#   <AW_REPO>/.claude/…         adapter sinh lệnh cho agent (bị exclude) — một bộ
+#   <AW_REPO>/.claude/…         phần adapter sinh ra (bị exclude, không cả thư mục) — một bộ
 #                               cho mỗi adapter khai trong ADAPTER (vd .claude/ + .cursor/)
 #
 #   aw-engine init [--adapter <id>[,<id>…]] [--test-cmd "<lệnh>"] [--force] [--from-legacy]

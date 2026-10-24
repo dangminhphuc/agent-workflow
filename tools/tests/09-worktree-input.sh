@@ -131,7 +131,6 @@ ky_vong 0 "doctor: dòng /.claude/ cũ trong exclude → chỉ cảnh báo, khô
 dung "…cảnh báo nêu dòng cũ và cách xoá" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q '! info/exclude còn dòng cũ /.claude/ .*Xoá dòng đó'"
 ky_vong 0 "init lại không tự sửa exclude của người dùng" awd "$R10" init
 grep -vxF /.claude/ "$R10/.git/info/exclude" > "$R10/.git/exclude.tmp"; mv "$R10/.git/exclude.tmp" "$R10/.git/info/exclude"
-sed -i '\|^/.claude/$|d' "$R10/.git/info/exclude"
 dung "…liệt kê từng adapter của worktree" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q '✓ cursor (engine $VDEV)'"
 
 W10=$(awd "$R10" worktree new feature hai-agent --create --base main 2>/dev/null)

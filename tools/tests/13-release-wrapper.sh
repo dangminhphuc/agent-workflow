@@ -140,7 +140,7 @@ dung "…ghi version, checksums, config.sh vào .git/agent-workflow/; quy ước
   "grep -qx 2099.1.1 '$C7/version' && grep -q ' agent-workflow-2099.1.1.tar.gz' '$C7/checksums' && [ -f '$R7/docs/agent-workflow/conventions.md' ] && [ ! -f '$C7/conventions.md' ] && grep -q 'TEST_CMD=\"true\"' '$C7/config.sh'"
 dung "…engine vào cache theo version, có dấu sha256" sh -c "[ -f '$AWH/engine/2099.1.1/bin/aw-engine' ] && [ -s '$AWH/engine/2099.1.1/.aw-sha256' ]"
 dung "…sha ghim khớp SHA256SUMS của bản phát hành" sh -c "grep -qF \"\$(awk '\$2 == \"agent-workflow-2099.1.1.tar.gz\" { print \$1 }' '$MIR/2099.1.1/SHA256SUMS')\" '$C7/checksums'"
-dung "…exclude /.agent-workflow/ và /.claude/" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qxF '/.claude/commands/aw-*.md' '$R7/.git/info/exclude'"
+dung "…exclude /.agent-workflow/ và mẫu hẹp /.claude/commands/aw-*.md" sh -c "grep -qx '/.agent-workflow/' '$R7/.git/info/exclude' && grep -qxF '/.claude/commands/aw-*.md' '$R7/.git/info/exclude'"
 dung "…sinh adapter ở checkout chính" test -f "$R7/.claude/commands/aw-intake.md"
 dung "…không có commit nào vào base" bang "$(git -C "$R7" rev-parse HEAD)" "$GOC7"
 dung "…file sinh ra không lọt vào git status — chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R7' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
