@@ -102,7 +102,7 @@ LC_ALL=C awk -F'\t' -v viec="$(basename "$(CDPATH= cd -- "$D" && pwd)")" "$TD_AW
     print ""
     print "Tương tác = tổng thời gian các lượt (prompt → agent dừng). Đồng hồ = từ lúc bắt đầu phase tới khi phase kế tiếp bắt đầu (phase đang làm: tới sự kiện cuối)."
     if (moc == 1 && luot == 0)
-      print "· Chưa ghi được lượt nào — chỉ có thời gian đồng hồ. Trên Claude Code, cài hook theo adapters/claude-code/README.md § Hook."
+      print "· Chưa ghi được lượt nào — chỉ có thời gian đồng hồ. Trên Claude Code, cài hook theo adapters/claude-code/README.md § Hook đo lượt và token."
   }
 ' "$TM"
 exit 0

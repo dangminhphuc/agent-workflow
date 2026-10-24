@@ -635,6 +635,30 @@ Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đ
   `PreToolUse` chặn cứng được nhưng phải ghi `settings.json` của target repo và dễ chặn nhầm lượt
   sau của cùng lệnh — không làm.
 
+## Tiến độ của việc
+
+Một việc đi qua nhiều phase, nhiều phiên, đôi khi nhiều máy; người cần biết nó đang ở đâu và tốn bao nhiêu.
+`aw status <dir>` in bảng, `progress.md` trong thư mục việc giữ bản có Gantt và pie (Mermaid), mục
+`## Progress` trong mô tả MR mang bảng tới reviewer.
+
+- **Số liệu suy từ journal, agent không khai.** Mốc bắt đầu phase (`aw feature --phase`, lệnh phase do
+  adapter sinh tự thêm), lượt và token (hook Claude Code), kết quả check (`checks.tsv`). Agent tự khai
+  thì sai và không kiểm được; máy ghi thì lệch ít hơn và đối chiếu được.
+- **Token chỉ có trên Claude Code**, vì chỉ ở đó hook đưa đường dẫn transcript để đọc `usage`. Agent khác
+  vẫn có mốc phase và thời gian đồng hồ; thiếu lượt thì `aw status` nhắc cài hook (chỉ khi đã có mốc phase
+  mà chưa có lượt nào, nên việc bắt đầu trước SP20 không bị nhắc).
+- **Ghi lúc `aw check` ĐẠT, không mỗi lượt.** Ghi mỗi lượt sinh commit nhiễu; giữa hai check, `aw status`
+  cho số mới nhất. Check lại mà chỉ `progress.md` đổi thì không commit riêng: file đi cùng commit artifact
+  kế tiếp. Ghi bằng file tạm rồi `mv`; sinh lỗi chỉ cảnh báo, file cũ giữ nguyên, check vẫn ĐẠT.
+- **Khối `aw-progress v1` giữ sự kiện thô đã chuẩn hoá** (phases, turns, checks, kèm tên máy), không
+  giữ tổng. Làm tiếp ở máy khác: máy mới đọc khối của máy cũ, cộng với journal của mình, dựng lại trạng
+  thái và Gantt; khối của máy chưa có journal ở đây không bị xoá. Sự kiện không chứa đường dẫn, session
+  hay chữ người viết nên không thể chứa `-->` làm vỡ chú thích.
+- **Cảnh báo chuyển tiếp.** `status.sh --write` in cảnh báo (vd không đọc được khối cũ) và `aw check`
+  chuyển nguyên văn `CẢNH BÁO` ra cho người, thay vì nuốt.
+- **Wall** tính tới khi phase kế tiếp bắt đầu (phase cuối: tới sự kiện cuối, không tới "bây giờ") để
+  sinh lại file không đổi số khi không có gì mới.
+
 ## Interface SDLC
 
 Phase nói engine **làm thế nào**; không chỗ nào nói một quy trình phát triển **phải có gì**, nên
@@ -975,3 +999,9 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     Profile cũng vậy: checker biết engine *cho phép* bỏ design với bugfix, không biết
     việc bỏ đó có hợp lý không; invariant theo loại chỉ ghi phần máy giữ ("test đỏ"), phần người
     phán ("đỏ vì đúng bug", "không đổi assertion") vẫn chỉ nằm ở review.
+23. **Định dạng transcript của Claude Code không phải API công khai.** Hook `aw journal _turn` đọc
+    `usage` từ file đó; Claude Code đổi định dạng thì token không đếm được (mốc phase và số lượt vẫn có)
+    cho tới khi sửa parser. Payload hook không có `transcript_path` (agent khác) thì không ghi gì.
+24. **Token dedup giữ `usage` đầu tiên thấy theo `message.id`.** Transcript lặp cùng `message.id` qua
+    nhiều dòng khi stream tách khối nội dung; đếm một lần tránh gấp đôi, nhưng `output_tokens` của khối
+    sau có thể lớn hơn bản đầu, nên tổng token ra có thể hụt.

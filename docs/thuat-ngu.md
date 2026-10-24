@@ -92,6 +92,10 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `Security reviewer` | Tên **người** đã rà bảo mật, bắt buộc khi diff đụng `sensitive_code`. Agent không bao giờ điền |
 | `DỪNG` / `KẸT` | Nhãn của `aw task`: đỏ liên tiếp `MAX_RED_RUNS` lần / `task` còn lại đều chờ phụ thuộc. Agent báo người, không thử mò |
 | `harness journal` *(trước: nhật ký harness)* | `aw journal`: ghi lại lỗi agent làm mà không checker nào bắt, để biết harness thiếu luật ở đâu |
+| **lượt** (turn) | Một vòng từ lúc người gửi prompt tới lúc agent dừng; hook Claude Code ghi vào `turns.tsv` |
+| **Active** *(thời gian tương tác)* | Tổng thời gian các lượt chính của một phase (prompt → agent dừng), không tính lúc chờ người |
+| **Wall** *(thời gian đồng hồ)* | Từ lúc phase bắt đầu tới khi phase kế tiếp bắt đầu (phase đang làm: tới sự kiện cuối); gồm cả lúc chờ |
+| **progress.md** | File máy sinh trong thư mục việc: bảng tiến độ từng phase, Gantt, pie token (Mermaid); xem `aw status` |
 
 ## Cài đặt và môi trường
 

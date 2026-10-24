@@ -288,7 +288,7 @@ tst "$C9" "$D9" --write >/dev/null 2>&1
 dung "không token → không khối pie" sh -c "! grep -q '^pie' '$D9/progress.md'"
 dung "…vẫn có gantt" grep -qx 'gantt' "$D9/progress.md"
 dung "không lượt main → > Chưa ghi được lượt nào ngay dưới bảng (trước mermaid)" sh -c "awk '/^\\| \\*\\*Total\\*\\*/{ t = NR } /^> Chưa ghi được lượt nào/{ n = NR } /^\`\`\`mermaid/ && !m { m = NR } END { exit !(t && n > t && n < m) }' '$D9/progress.md'"
-dung "…nhắc cột Wall và § Hook" sh -c "grep -q 'chỉ có cột Wall' '$D9/progress.md' && grep -qF '\`adapters/claude-code/README.md\` § Hook' '$D9/progress.md'"
+dung "…nhắc cột Wall và § Hook" sh -c "grep -q 'chỉ có cột Wall' '$D9/progress.md' && grep -qF '\`adapters/claude-code/README.md\` § Hook đo lượt và token' '$D9/progress.md'"
 dung "…giữa bảng và lời nhắc chỉ có dòng trống / chú thích" sh -c "awk '/^\\| \\*\\*Total\\*\\*/{ t = 1; next } t && /^> /{ exit 0 } t && !/^\$/ && !/^<!--.*-->\$/{ exit 1 }' '$D9/progress.md'"
 
 # --table

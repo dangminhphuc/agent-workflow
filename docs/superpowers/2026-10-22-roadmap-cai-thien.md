@@ -52,7 +52,7 @@
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
 | SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87) |
-| SP20 | File tiến độ của việc: phase, thời gian tương tác, token | 4 | đang làm | — | Chốt: Markdown + Mermaid, file trong thư mục việc, token chỉ Claude Code, bảng vào mô tả MR, nhắc hook suy từ dữ liệu | [spec](specs/2026-10-23-sp20-tien-do-phase-design.md) | [plan](plans/2026-10-23-sp20-tien-do-phase.md) | |
+| SP20 | File tiến độ của việc: phase, thời gian tương tác, token | 4 | đang làm | — | Chốt: Markdown + Mermaid, file trong thư mục việc, token chỉ Claude Code, bảng vào mô tả MR, nhắc hook suy từ dữ liệu | [spec](specs/2026-10-23-sp20-tien-do-phase-design.md) | [plan](plans/2026-10-23-sp20-tien-do-phase.md) | PR chưa mở |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -62,7 +62,7 @@ sau đều làm đúng một yêu cầu sai.
 
 ### SP9 — Chạy thật + gom nhật ký
 
-- Công cụ đã có: `aw journal export <file>`, `aw journal report <file>…`.
+- Công cụ đã có: `aw journal export <file>`, `aw journal report <file>…`; thời gian phase, token: có công cụ (SP20).
 - Còn lại (người làm): 1–2 repo đích, 2–4 tuần. Số liệu: việc theo loại, thời gian phase, số lần người
   can thiệp, checker chặn đúng / chặn nhầm.
 - Kết quả: báo cáo ở `docs/` làm đầu vào SP10, SP17 và thứ tự các dự án con còn lại.
@@ -138,7 +138,7 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 ### SP20 — File tiến độ của việc
 
 - Spec: [specs/2026-10-23-sp20-tien-do-phase-design.md](specs/2026-10-23-sp20-tien-do-phase-design.md).
-- Plan: [plans/2026-10-23-sp20-tien-do-phase.md](plans/2026-10-23-sp20-tien-do-phase.md) (7 task). Còn lại: người duyệt plan + chọn cách thực thi → implement.
+- Plan: [plans/2026-10-23-sp20-tien-do-phase.md](plans/2026-10-23-sp20-tien-do-phase.md) (7 task). Đã làm: cả 7 task (`aw status`, `progress.md`, hook `aw journal _turn`/`_phase`, mục `## Progress` trong MR, `aw journal export/report` thêm phase và token). Còn lại: người rà PR, kiểm Mermaid trên GitHub, merge.
 - Cho SP9 số liệu "thời gian phase" và token mà nhật ký hiện chưa ghi.
 
 ## Việc nhỏ (không thành dự án con)

@@ -311,6 +311,7 @@ cho việc rẽ khỏi base **sau khi** PR quy ước được merge.
 | `aw check <tên> <thư-mục-feature>` | Machine checker: `intake spec design plan implement review repro perf security ship` |
 | `aw task next\|start\|done <thư-mục-feature> [TSK-NNN]` | Trạng thái task do máy giữ |
 | `aw task reopen <thư-mục-feature> <REQ-NNN\|DEC-NNN>` | REQ vừa đổi / DEC-xxx mở lại: chỉ task phủ nó về `[ ]` |
+| `aw status <thư-mục-feature> [--write\|--table]` | Tiến độ từng phase (thời gian tương tác / đồng hồ, lượt, check chặn, token); `--write` ghi `progress.md` |
 | `aw journal` · `aw journal add <lớp> "<mô tả>"` · `aw journal export <file>` · `aw journal report <file>…` | harness journal: checker trượt ở đâu, loại lỗi lặp lại; export / report trên file để gom nhiều máy |
 | `aw worktree new\|status\|remove …` | Đề xuất / tạo / dọn worktree |
 | `aw ship targets\|create\|status\|sweep …` | Gửi MR/PR, theo dõi, dọn việc đã merge |

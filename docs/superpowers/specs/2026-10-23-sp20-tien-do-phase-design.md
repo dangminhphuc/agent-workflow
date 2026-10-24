@@ -123,8 +123,8 @@ Ba hook, người tự thêm vào `.claude/settings.json` cạnh `aw guard` (ada
 
 Với mỗi phase của việc, theo thứ tự `phases:` trong `workflow.yaml`:
 
-- **Lần chạy** = các khoảng từ một dòng `phases.tsv` tới dòng `phases.tsv` kế tiếp của cùng worktree
-  (bất kể phase nào), hoặc tới bây giờ.
+- **Lần chạy** = các khoảng từ một dòng `phases.tsv` tới dòng `phases.tsv` kế tiếp của cùng việc (feature)
+  (bất kể phase nào; sắp theo từng việc, không theo worktree), hoặc tới bây giờ.
 - **Đồng hồ** = tổng độ dài các lần chạy của phase đó; lần chạy cuối của việc đang mở thì tính tới
   sự kiện cuối cùng (không tới "bây giờ", để sinh lại file không đổi số khi không có gì mới — § 5).
 - **Tương tác** = tổng `seconds` các lượt `main` gắn phase đó.
@@ -147,12 +147,12 @@ aw status <thư-mục-feature>            in bảng ra terminal
 aw status <thư-mục-feature> --write    ghi <thư-mục-feature>/progress.md
 ```
 
-Nhãn (`kq_khai`): `0=XONG` (đã in bảng; `--write`: đã ghi `progress.md`), `2=SAI THAM SỐ`. Không có dữ liệu journal nào →
+Nhãn (`kq_khai`): `0=XONG` (đã in bảng; `--write`: đã ghi `progress.md`), `1=KHÔNG GHI ĐƯỢC` (`--write` không ghi được file), `2=SAI THAM SỐ`. Không có dữ liệu journal nào →
 vẫn in/ghi (mọi ô `—`), không lỗi (XONG).
 
 `aw check <phase>` ĐẠT: gọi `status.sh --write` **trước** `ar_commit` (`bin/aw-engine`), để
 `progress.md` đi cùng commit artifact `chore(sdlc): …`. Lỗi sinh file → cảnh báo, không đổi kết quả
-check. Không ghi sau mỗi lượt (tránh commit nhiễu; giữa hai check, xem bằng `aw status`).
+check. Check lại mà chỉ `progress.md` đổi thì không tạo commit riêng (file đi cùng commit artifact kế tiếp). Ghi bằng file tạm rồi `mv`; lỗi thì giữ file cũ. Không ghi sau mỗi lượt (tránh commit nhiễu; giữa hai check, xem bằng `aw status`).
 
 Nội dung — artifact nên heading, tên trường, tên cột, enum tiếng Anh; câu giải thích tiếng Việt
 (`AGENTS.md` § Language). Dữ liệu máy đọc trong khối chú thích:
@@ -175,10 +175,10 @@ Nội dung — artifact nên heading, tên trường, tên cột, enum tiếng A
 | ship | · pending | | | | | | | | |
 | **Total** | | 33m | 3h15m | 20 | 2 | 442k | 36k | 2.1M | 160k |
 
-<!-- Active = tổng thời gian các lượt (prompt → agent dừng). Wall = từ lúc bắt đầu phase tới ĐẠT. -->
+<!-- Active = tổng thời gian các lượt (prompt → agent dừng). Wall = từ lúc bắt đầu phase tới khi phase kế tiếp bắt đầu (phase đang làm: tới sự kiện cuối). -->
 
 > Chưa ghi được lượt nào — chỉ có cột Wall. Trên Claude Code, cài hook theo
-> `adapters/claude-code/README.md` § Hook.   ← chỉ có khi điều kiện Y đúng, xem dưới
+> `adapters/claude-code/README.md` § Hook đo lượt và token.   ← chỉ có khi điều kiện Y đúng, xem dưới
 
 ```mermaid
 gantt

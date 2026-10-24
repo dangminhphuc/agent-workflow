@@ -215,7 +215,7 @@ END {
   if (moc == 1 && luot == 0) {
     print ""
     print "> Chưa ghi được lượt nào — chỉ có cột Wall. Trên Claude Code, cài hook theo"
-    print "> `adapters/claude-code/README.md` § Hook."
+    print "> `adapters/claude-code/README.md` § Hook đo lượt và token."
   }
   if (nr > 0) {
     print ""
