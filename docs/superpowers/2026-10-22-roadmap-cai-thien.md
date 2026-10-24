@@ -250,8 +250,6 @@ thêm nhãn thì sửa cùng lúc `check-intake.sh`, `check-spec.sh`, `approval.
 - Bộ đọc token `Expected files` (dấu backtick) đang có ba bản: `kc_pham_vi` (~dòng 164) và `kc_glob_rong` (~dòng 242)
   trong `tools/lib/cross-check.sh`, `kt_duong_plan` trong `tools/lib/knowledge.sh`. Gom về một helper trước khi SP18
   đổi ngữ nghĩa glob. `kc_glob_rong` cũng chưa tắt `core.quotepath` (đường dẫn có dấu) — làm cùng lúc.
-- **`tools/check-conventions.sh` dòng 90 và 259 cắt chuỗi bằng `substr`** dưới `LC_ALL=C` (đếm byte), nên có
-  thể cắt giữa ký tự UTF-8 trong cảnh báo (`…`, chữ có dấu). Cắt theo dòng/từ, hoặc bỏ cắt.
 
 ## Không làm
 
