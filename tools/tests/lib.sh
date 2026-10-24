@@ -91,8 +91,9 @@ bang() { test "$1" = "$2"; }
 # thay <file> <tu> <thanh> — thay chuoi co dinh, khong dung regex
 thay() {
   # Tìm tiếp trên phần CHƯA xét, để chuỗi thay chứa chuỗi tìm không lặp vô hạn.
-  # Chuỗi tìm nhiều dòng: đọc cả file thành một bản ghi.
-  awk -v a="$2" -v b="$3" 'BEGIN { RS = "\001" } {
+  # Chuỗi tìm nhiều dòng: đọc cả file thành một bản ghi. Chuỗi đi qua ENVIRON, không qua -v:
+  # BSD awk (macOS) từ chối -v có xuống dòng, và -v diễn giải "\".
+  TH_A="$2" TH_B="$3" awk 'BEGIN { RS = "\001"; a = ENVIRON["TH_A"]; b = ENVIRON["TH_B"] } {
     s = $0; o = ""
     while ((i = index(s, a)) > 0) { o = o substr(s, 1, i-1) b; s = substr(s, i+length(a)) }
     printf "%s", o s
