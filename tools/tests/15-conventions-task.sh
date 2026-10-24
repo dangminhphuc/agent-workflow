@@ -16,6 +16,17 @@ dung "…cảnh báo placeholder còn trong Team conventions" sh -c "sh '$QU' 2>
 ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$QU" x
 ky_vong 0 "aw-engine conventions check" sh "$ROOT/bin/aw-engine" conventions check
 ky_vong 2 "aw-engine conventions <lạ> → SAI THAM SỐ" sh "$ROOT/bin/aw-engine" conventions lam-gi
+# cắt dòng dài theo byte không được để nửa ký tự UTF-8 (LC_ALL=C): chữ có dấu nằm đúng điểm cắt 60 / 50
+cp "$TMP/conv-qu.bak" "$CV"
+tc_pad=$(printf 'a%.0s' $(seq 1 57))
+printf '\n<ví dụ %s ếếếế>\n' "$tc_pad" > "$TMP/tc-ph"
+printf '%s\n' "<${tc_pad}ếếếế>" >> "$CV"
+dung "placeholder cắt giữa chữ có dấu → dòng cảnh báo vẫn là UTF-8 hợp lệ" sh -c "sh '$QU' 2>/dev/null | grep 'còn placeholder — <a' | iconv -f UTF-8 -t UTF-8 >/dev/null"
+cp "$TMP/conv-qu.bak" "$CV"
+thay "$CV" 'covers_tag: ' "  $(printf 'a%.0s' $(seq 1 49))ếếếế covers_tag: "
+dung "dòng khối conventions sai dạng cắt giữa chữ có dấu → vẫn UTF-8 hợp lệ" sh -c "sh '$QU' 2>/dev/null | grep 'không phải' | iconv -f UTF-8 -t UTF-8 >/dev/null"
+dung "…và vẫn có dấu … cuối" sh -c "sh '$QU' 2>/dev/null | grep 'không phải' | grep -q '…\$'"
+cp "$TMP/conv-qu.bak" "$CV"
 # qu_loi <tên ca> <tìm> <thay> <chuỗi phải có trong output>
 qu_loi() {
   cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" "$2" "$3"
