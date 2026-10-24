@@ -254,4 +254,52 @@ viet_plan; ghi_based_on; them_task_sua '- Fixes: `RVW-001`' '[ ]'
 ky_vong 0 "Fixes trỏ finding có tiêu đề '### 1. [Should fix] RVW-001 — …' → ĐẠT" sh "$CHK" "$F"
 viet_plan; ghi_based_on; viet_review
 
+
+# ---------------------------------------------------------------- bộ đọc token Expected files
+# Ba nơi đọc token backtick của plan.md (kc_pham_vi, kc_glob_rong, kt_duong_plan) dùng chung một
+# bộ đọc; ca dưới ghim hành vi riêng của từng nơi trên cùng một plan.
+nhom "bộ đọc token Expected files (kc_pham_vi / kc_glob_rong / kt_duong_plan)"
+TR="$TMP/tok-repo"; TF="$TR/.agent-workflow/tok"
+mkdir -p "$TF" "$TR/src" "$TR/tài-liệu" "$TR/ngoai"
+gt() { git -C "$TR" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
+gt init -q; gt checkout -q -b main
+for _p in src/a.txt src/b.txt tài-liệu/x.txt tài-liệu/y.txt ngoai/z.txt ngoai/w.txt; do printf 'x\n' > "$TR/$_p"; done
+gt add src tài-liệu ngoai; gt commit -q -m goc; gt checkout -q -b tok
+mkdir -p "$TR/.git/agent-workflow"
+sed 's/^scope_glob_max_files: 30/scope_glob_max_files: 1/' "$ROOT/workflow/templates/conventions.md" > "$TR/.git/agent-workflow/conventions.md"
+printf -- '- **Base:** `main` @ `%s`\n' "$(git -C "$TR" rev-parse main)" > "$TF/intake.md"
+cat > "$TF/plan.md" <<'EOF'
+# Plan — tok
+
+## Tasks
+
+- Expected files: `ngoai/*`
+
+### TSK-001 — a
+- Expected files: `src/*` `tài-liệu/*`
+
+#### chi tiết
+- Expected files: `src/**`
+
+### Ghi chú
+- Expected files: `ngoai/**`
+
+## Unplanned
+
+| Task | What came up | Extra files | Resolution |
+|---|---|---|---|
+| TSK-001 | `bo/qua.txt` | `them/*.txt` | ok |
+
+- `le/x.txt`
+EOF
+mkdir -p "$TR/them" "$TR/bo" "$TR/le"
+for _p in ngoai/n.txt them/a.txt bo/qua.txt le/x.txt khac.txt; do printf 'y\n' > "$TR/$_p"; done
+tok_goi() { AW_REPO="$TR" AW_CONFIG="$TR/.git/agent-workflow" sh -c ". '$T/lib/result.sh'; . '$T/lib/md.sh'; . '$T/lib/adr.sh'; . '$T/lib/rule.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/knowledge.sh'; $1" 2>/dev/null | tr '\n' '|'; }
+dung "kc_pham_vi: Expected files mọi nơi + Unplanned (cột Extra files, dòng lẻ) là mẫu được phép" \
+  bang "$(tok_goi "kc_pham_vi '$TF'" | sed 's/: thay đổi ngoài phạm vi[^|]*//g')" "bo/qua.txt|khac.txt|"
+dung "kc_glob_rong: chỉ Expected files dưới heading TSK (#### giữ task); đường dẫn có dấu vẫn đếm" \
+  bang "$(tok_goi "kc_glob_rong '$TF'")" "TSK-001: \`src/*\` khớp 2 file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: 1)|TSK-001: \`tài-liệu/*\` khớp 2 file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: 1)|TSK-001: \`src/**\` khớp 2 file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: 1)|"
+dung "kt_duong_plan: chỉ Expected files dưới heading TSK, mở rộng glob qua cây Base" \
+  bang "$(tok_goi "kt_duong_plan '$TF' '$TR/.git/agent-workflow/conventions.md'")" "src|src/a.txt|src/b.txt|tài-liệu|tài-liệu/x.txt|tài-liệu/y.txt|"
+
 ket_thuc

@@ -211,9 +211,6 @@ dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi t
   dưới 3 phút đạt trên máy này; theo dõi tiếp trên CI. Phần dài nhất `23-sdlc-syntax` (36 giây), rồi
   `21-sdlc-profiles`, `15-conventions-task`, `08-adapters` (~34 giây) — chưa tới ngưỡng cảnh báo nên tách.
   Số cũ (1775 ca, ~5 phút trên 6 luồng) đo trên máy khác, không so trực tiếp.
-- Bộ đọc token `Expected files` (dấu backtick) đang có ba bản: `kc_pham_vi` (~dòng 124) và `kc_glob_rong` (~dòng 206)
-  trong `tools/lib/cross-check.sh`, `kt_duong_plan` trong `tools/lib/knowledge.sh`. Gom về một helper trước khi SP18
-  đổi ngữ nghĩa glob. `kc_glob_rong` cũng chưa tắt `core.quotepath` (đường dẫn có dấu) — làm cùng lúc.
 
 ## Không làm
 

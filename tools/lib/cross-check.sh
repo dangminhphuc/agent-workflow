@@ -157,6 +157,26 @@ kc_test_yc() {
   rm -f "$_ds" "$_ds.files"
 }
 
+# kc_token_plan <plan.md> -> token trong backtick của plan.md, mỗi dòng "<loại>\t<task>\t<token>":
+#   E = dòng "- Expected files:" ở bất kỳ đâu; <task> = TSK-… của heading "### " gần nhất trong cùng
+#       mục "## " (rỗng nếu heading đó không có TSK, hay chưa có heading "### ").
+#   U = mục "## Unplanned" (trừ dòng Expected files): hàng bảng → chỉ cột "Extra files" (cột 3;
+#       backtick ở cột khác là lời kể), dòng khác (cả heading "### ") → cả dòng.
+# Một bộ đọc cho mọi nơi đọc mẫu phạm vi: kc_pham_vi, kc_glob_chuyen_tiep (E + U, mọi task),
+# kc_glob_rong, kt_duong_plan (chỉ E có task).
+kc_token_plan() {
+  awk '
+    function ra(k, s) { while (match(s, /`[^`]+`/)) { print k "\t" t "\t" substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) } }
+    { sub(/\r$/, "") }
+    /^##[ \t]+Unplanned/ { un = 1; t = ""; next }
+    /^###[ \t]/ { t = ""; if (match($0, /TSK-[0-9]+/)) t = substr($0, RSTART, RLENGTH); if (un) ra("U", $0); next }
+    /^##[ \t]/ { un = 0; t = ""; next }
+    /^[ \t]*-[ \t]*\**Expected files\**:/ { ra("E", $0); next }
+    un && /^\|/ { split($0, c, "|"); ra("U", c[4]); next }
+    un { ra("U", $0) }
+  ' "$1"
+}
+
 # kc_pham_vi <thư-mục-feature>
 # File thay đổi so với base của việc mà không nằm trong "Expected files" hay
 # "Unplanned" của plan.md, và không thuộc danh sách bỏ qua.
@@ -171,17 +191,7 @@ kc_pham_vi() {
   _bo=$(conv_get "$_conv" ignored_files)
 
   # Mẫu được phép: token trong backtick ở dòng "Expected files:" và mục "Unplanned".
-  _cho=$(awk '
-    { sub(/\r$/, "") }
-    /^##[ \t]+Unplanned/ { ps=1; next }
-    /^##[ \t]/           { ps=0 }
-    ps==1 || /^[ \t]*-[ \t]*\**Expected files\**:/ {
-      s=$0
-      # hàng bảng Unplanned: chỉ cột "Extra files" là mẫu được phép (backtick ở cột khác là lời kể)
-      if (ps==1 && $0 ~ /^\|/) { split($0, c, "|"); s=c[4] }
-      while (match(s, /`[^`]+`/)) { print substr(s, RSTART+1, RLENGTH-2); s=substr(s, RSTART+RLENGTH) }
-    }
-  ' "$_d/plan.md")
+  _cho=$(kc_token_plan "$_d/plan.md" | cut -f3-)
 
   set -f
   { git -C "$_top" diff --name-only "$_mb"; git -C "$_top" ls-files --others --exclude-standard; } \
@@ -210,16 +220,13 @@ kc_glob_chuyen_tiep() {
       [ -n "$_gc_f" ] || continue
       tm_bo "$_gc_f" && continue
       printf '%s\n' "$_gc_f"
-    done | awk "$MAU_ERE_AWK"'
-    function them(s) { while (match(s, /`[^`]+`/)) { m++; mau[m] = substr(s, RSTART + 1, RLENGTH - 2); cu[m] = mau_ere(mau[m], 0); moi[m] = mau_ere(mau[m], 1); s = substr(s, RSTART + RLENGTH) } }
-    # plan.md (đọc trước, không qua file tạm): mẫu ở "Expected files" và cột "Extra files" của "Unplanned"
-    FILENAME == ARGV[1] {
-      sub(/\r$/, "")
-      if ($0 ~ /^##[ \t]+Unplanned/) { un = 1; next }
-      if ($0 ~ /^##[ \t]/ && $0 !~ /^###/) un = 0
-      if (un && $0 ~ /^\|/) { split($0, c, "|"); them(c[4]) }
-      else if (un || $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/) them($0)
-      next
+    done | KC_TOK=$(kc_token_plan "$1/plan.md") awk "$MAU_ERE_AWK"'
+    # mẫu: mọi token của kc_token_plan (Expected files + Unplanned)
+    BEGIN {
+      k = split(ENVIRON["KC_TOK"], d, "\n")
+      for (i = 1; i <= k; i++) { if (d[i] == "") continue
+        s = substr(d[i], 3); s = substr(s, index(s, "\t") + 1)
+        m++; mau[m] = s; cu[m] = mau_ere(s, 0); moi[m] = mau_ere(s, 1) }
     }
     {
       khop_moi = 0; dau = 0
@@ -231,7 +238,7 @@ kc_glob_chuyen_tiep() {
         if (ch == "*" && substr(p, j + 1, 1) == "*") { g = g "**"; j++ } else if (ch == "*") g = g "**"; else g = g ch
       }
       printf "`%s` chỉ khớp `%s` nhờ * vượt thư mục — bản sau * không qua /; viết `%s`\n", $0, p, g
-    }' "$1/plan.md" -
+    }'
 }
 
 # kc_glob_rong <thư-mục-feature>
@@ -250,20 +257,18 @@ kc_glob_rong() {
   [ -n "$_gr_sha" ] || return 0
   _gr_top=$(git_top "$1") || return 0
   git -C "$_gr_top" cat-file -e "$_gr_sha^{commit}" 2>/dev/null || return 0
-  git -C "$_gr_top" ls-tree -r --name-only "$_gr_sha" | awk -v n="$_gr_n" "$MAU_ERE_AWK"'
-    FILENAME == ARGV[1] {
-      sub(/\r$/, "")
-      if ($0 ~ /^###[ \t]/) { t = ""; if (match($0, /TSK-[0-9]+/)) t = substr($0, RSTART, RLENGTH); next }
-      if ($0 ~ /^##[ \t]/) { t = ""; next }
-      if (t != "" && $0 ~ /^[ \t]*-[ \t]*\**Expected files\**:/) {
-        s = $0
-        while (match(s, /`[^`]+`/)) { m++; tk[m] = t; mau[m] = substr(s, RSTART + 1, RLENGTH - 2); re[m] = mau_ere(mau[m], 0); s = substr(s, RSTART + RLENGTH) }
-      }
-      next
+  git -C "$_gr_top" -c core.quotepath=off ls-tree -r --name-only "$_gr_sha" \
+    | KC_TOK=$(kc_token_plan "$1/plan.md") awk -v n="$_gr_n" "$MAU_ERE_AWK"'
+    # chỉ mẫu "Expected files" dưới heading task (kc_token_plan: loại E, task khác rỗng)
+    BEGIN {
+      k = split(ENVIRON["KC_TOK"], d, "\n")
+      for (i = 1; i <= k; i++) { if (substr(d[i], 1, 2) != "E\t") continue
+        s = substr(d[i], 3); j = index(s, "\t"); if (j < 2) continue
+        m++; tk[m] = substr(s, 1, j - 1); mau[m] = substr(s, j + 1); re[m] = mau_ere(mau[m], 0) }
     }
     { for (i = 1; i <= m; i++) if ($0 ~ re[i]) dem[i]++ }
     END { for (i = 1; i <= m; i++) if (dem[i] + 0 > n + 0) printf "%s: `%s` khớp %d file trên base — thu hẹp mẫu (ngưỡng scope_glob_max_files: %d)\n", tk[i], mau[i], dem[i], n }
-  ' "$1/plan.md" -
+  '
 }
 
 # ------------------------------------------------------------------ theo loại việc
