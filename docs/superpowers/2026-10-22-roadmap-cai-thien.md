@@ -142,6 +142,12 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 **Spec phần còn lại:** [2026-10-23-sp19-gan-id-con-lai-design.md](specs/2026-10-23-sp19-gan-id-con-lai-design.md)
 (chia đợt 19b–19g, mỗi đợt một PR).
 
+**Đợt 19b:** gắn 37 chỗ (`check-intake`, `check-security`, `check-ship`, `check-conventions`, `task.sh`;
+223 → 186). 23 chỗ còn lại của các file đó không khớp id nào — chờ người duyệt capability mới (mô tả PR
+đợt 19b): khoá engine ghim (`Engine:`), `Goal:` của intake, mục lục (`toc_loi`), hình thức
+`conventions.md` (khoá bắt buộc, thư mục tri thức, `worktree_dir`, regex), WIP=1 và dừng sau N lần đỏ
+của `aw task`, tiêu đề MR (độ dài, mã Jira).
+
 ### SP24 — Hai nhánh tính năng chưa merge
 
 **Vấn đề.** Hai nhánh không có PR, tính năng chưa có trên `main`, rẽ từ `main` cũ (12–13/10):
