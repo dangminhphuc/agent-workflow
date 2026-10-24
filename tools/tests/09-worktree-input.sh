@@ -61,7 +61,10 @@ ky_vong 2 "từ chối mô tả không phải chữ thường ASCII" awd "$R9" w
 ky_vong 2 "--create thiếu --base → từ chối (agent không tự chọn base)" awd "$R9" worktree new bugfix phi-hoan-tien --create
 ky_vong 2 "--base không kèm --create → từ chối" awd "$R9" worktree new bugfix phi-hoan-tien --base main
 ky_vong 2 "từ chối ref không tồn tại" awd "$R9" worktree new bugfix phi-hoan-tien --create --base khong-co
-AW_WORKTREE_DIR='.worktrees/{ten}' ky_vong 2 "từ chối worktree nằm trong repo" awd "$R9" worktree new bugfix phi-hoan-tien
+# Gán rồi unset, không "X=… ky_vong": bash 3.2 (sh của macOS) giữ biến gán trước lời gọi hàm.
+AW_WORKTREE_DIR='.worktrees/{ten}'; export AW_WORKTREE_DIR
+ky_vong 2 "từ chối worktree nằm trong repo" awd "$R9" worktree new bugfix phi-hoan-tien
+unset AW_WORKTREE_DIR
 dung "AW_WORKTREE_DIR ghi đè vị trí theo máy" sh -c "cd '$R9' && AW_WORKTREE_DIR='$TMP/rieng/{repo}/{ten}' AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new bugfix phi-hoan-tien 2>/dev/null | grep -qF '$TMP/rieng/repo9/fix_phi-hoan-tien'"
 
 GOC9=$(git -C "$R9" rev-parse main)

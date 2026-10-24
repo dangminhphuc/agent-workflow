@@ -57,4 +57,18 @@ dung "…không báo case có \"(\", case ngoài \$(…), chữ case trong chu�
 dung "mã engine không có case thiếu \"(\" trong \$(…)" bang \
   "$(cd "$ROOT" && awk -f "$TMP/do-case.awk" tools/*.sh tools/lib/*.sh bin/aw bin/aw-engine adapters/lib/*.sh adapters/*/build.sh)" ""
 
+nhom "gán biến trước lời gọi hàm (bash 3.2)"
+# "X=1 ham" — dash khôi phục X sau khi hàm chạy xong, bash 3.2 (sh của macOS) giữ X lại: mọi lệnh
+# sau thấy giá trị lạ. Viết "X=1; ham; unset X". Lệnh ngoài ("X=1 awk …") không bị.
+gan_truoc_ham() {
+  _ds=$(cd "$ROOT" && grep -hoE "^[[:space:]]*[a-z_][a-z0-9_]*\(\)" "$@" | tr -d '() \t' | sort -u | tr '\n' '|' | sed 's/|$//')
+  (cd "$ROOT" && grep -nE "(^|[;&|][[:space:]]*)([A-Z_][A-Z0-9_]*=(\"[^\"]*\"|'[^']*'|[^ ;]*)[[:space:]]+)+($_ds)([[:space:]]|\$)" "$@" |
+    grep -vE '^[^:]*:[0-9]+:[[:space:]]*#|^[^:]*:[0-9]+:[A-Z_]+="[^"]*"$')
+}
+printf 'ham() { :; }\nX=1 ham\nY=2 awk 1 /dev/null\nZ=3; ham\n' > "$TMP/gan.sh"
+dung "bộ dò bắt \"X=1 hàm\", không bắt lệnh ngoài hay \"X=1; hàm\"" bang "$(ROOT=$TMP; gan_truoc_ham gan.sh)" "2:X=1 ham"
+# shellcheck disable=SC2046
+dung "mã engine và test không gán biến trước lời gọi hàm" bang \
+  "$(gan_truoc_ham tools/*.sh tools/lib/*.sh tools/tests/*.sh bin/aw bin/aw-engine adapters/lib/*.sh adapters/*/build.sh)" ""
+
 ket_thuc
