@@ -179,6 +179,34 @@ rm -f "$LQ/open-questions.md"
 ky_vong 2 "thiếu open-questions.md → THIẾU ĐẦU VÀO" sh "$CHK" "$LQ"
 tao_fixture
 ky_vong 3 "fixture: chỉ có điểm mù không chặn" sh "$CHK" "$F"
+# Câu hỏi Q-NNN phủ nhiều REQ: danh sách REQ và Priority suy từ dòng Source của spec
+LQ2="$TMP/lq2"; rm -rf "$LQ2"; mkdir -p "$LQ2"
+cat > "$LQ2/spec.md" <<'EOF'
+### REQ-001 — a
+- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001)
+- Priority: `should`
+### REQ-002 — b
+- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001)
+- Priority: `must`
+### REQ-003 — c
+- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-002](open-questions.md#q-002)
+- Priority: `should`
+EOF
+cat > "$LQ2/open-questions.md" <<'EOF'
+# Open questions
+
+### Q-002 — chỉ REQ nên có
+- **Blocking:** `non-blocking`
+- **Status:** `open`
+
+### Q-001 — phủ hai REQ
+- **Blocking:** `non-blocking`
+- **Status:** `open`
+EOF
+printf '### TSK-001\n- On assumption: **yes** — [open-questions.md § Q-001](open-questions.md#q-001)\n' > "$LQ2/plan.md"
+dung "câu hỏi phủ hai REQ: in danh sách REQ suy từ spec" sh -c "sh '$CHK' '$LQ2' 2>/dev/null | grep -q 'REQ: REQ-001, REQ-002 · Ask: ? · Priority: must · Task on assumption: 1 (TSK-001)'"
+dung "…Priority must khi một REQ là must → xếp trước câu hỏi chỉ có REQ should" \
+  bang "$(sh "$CHK" "$LQ2" 2>/dev/null | sed -n 's/^  [0-9][0-9]*\. \(Q-[0-9]*\).*/\1/p' | tr '\n' ' ')" "Q-001 Q-002 "
 
 # Phát hiện checker LLM chen vào hàng đợi theo phase bị chặn.
 cat > "$LQ/open-questions.md" <<'EOF'

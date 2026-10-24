@@ -128,7 +128,8 @@ kt_anh_huong() {
   printf '%s\n' "$_kds" | while IFS='|' read -r _kf _ksc; do
     [ -n "$_kf" ] || continue
     _kvd=$(printf '%s\n' "$_kdoi" | while IFS= read -r _kp; do
-      case "$_kp" in "$_kad"/*|"$_kld"/*) continue ;; esac
+      # "(" mở đầu pattern: bash 3.2 (sh của macOS) đọc ")" của pattern trong $(…) là dấu đóng $(.
+      case "$_kp" in ("$_kad"/*|"$_kld"/*) continue ;; esac
       printf '%s\n' "$_kds" | awk -F'|' -v p="$_kp" '$1 == p { f = 1 } END { exit !f }' && continue
       set -f
       # shellcheck disable=SC2086

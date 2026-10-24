@@ -74,7 +74,7 @@ moi; sed 's/$/\r/' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/
 ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
 
 
-nhom "capability kiến thức bền (SP20)"
+nhom "capability kiến thức bền (SP26)"
 for c in implement-07:04-implement:implement design-04:02-design:design verify-06:05-verify:review; do
   id="CAP-${c%%:*}"; r="${c#*:}"; st="${r%%:*}"; ph="${r#*:}"
   dung "$id có trong stage $st và phase $ph nhận" sh -c "grep -q '^### $id — ' '$ROOT/sdlc/stages/$st.md' && grep -q '^  - $id\$' '$ROOT/workflow/phases/'*-$ph.md"

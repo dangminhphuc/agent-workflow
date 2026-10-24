@@ -1,4 +1,4 @@
-# SP20 — `aw knowledge implement|review` Implementation Plan
+# SP26 — `aw knowledge implement|review` Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -10,7 +10,7 @@
 
 **Tech Stack:** POSIX sh + awk + sed + git (`AGENTS.md` § Code).
 
-**Spec:** `docs/superpowers/specs/2026-10-23-sp20-24-rag-markdown-design.md` § A
+**Spec:** `docs/superpowers/specs/2026-10-23-sp26-30-rag-markdown-design.md` § A
 
 ## Global Constraints
 
@@ -193,9 +193,9 @@ Text phase (tiếng Anh, chép đúng):
 **Files:**
 - Modify: `docs/huong-dan.md:878` (bảng § 7, dòng "Việc sau đọc": ADR → `design, implement, review`; BR → `spec, design, implement, review`) và đoạn dưới bảng một câu: việc bỏ design vẫn đọc chỉ mục ADR ở implement.
 - Modify: `docs/kien-truc.md:212` (thay "cách nạp theo phạm vi diff là bước sau" bằng: `aw knowledge implement` theo `Expected files`, `aw knowledge review` theo diff — cùng tập review chấm verdict), `:258` (`aw knowledge` gọi ở spec, design, implement, review; implement và review không có luật chặn mới vì máy không kiểm được agent đã đọc).
-- Modify: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` (dòng SP20: `xong`, cột Plan link file này, cột PR).
+- Modify: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` (dòng SP26: `xong`, cột Plan link file này, cột PR).
 - Create: `changes/<branch>.md` — `### Thêm`: `aw knowledge implement` / `review`, ai được lợi (`chore`, `Design: skip` giờ đọc ADR); `### Nội bộ`: `kt_lay`, ba capability, tag `CAP-verify-06`.
 
 - [ ] **Step 1: Sửa các file trên.**
 - [ ] **Step 2: Chạy** `sh tools/check-release.sh` → ĐẠT (mảnh changelog đúng dạng); `sh tools/run-tests.sh` → `MỌI CA ĐẠT` (docs có thể bị test grep).
-- [ ] **Step 3: Commit** — `Docs SP20`; PR mô tả: `Interface: CAP-implement-07, CAP-design-04, CAP-verify-06`.
+- [ ] **Step 3: Commit** — `Docs SP26`; PR mô tả: `Interface: CAP-implement-07, CAP-design-04, CAP-verify-06`.

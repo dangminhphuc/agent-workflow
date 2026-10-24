@@ -6,9 +6,10 @@
 #   aw task done  <thư-mục-feature> <TSK-NNN>       chạy lệnh Verify; XANH thì [~] -> [x]
 #   aw task done  <thư-mục-feature> <TSK-NNN> --manual "<bằng chứng>"
 #                                                task mà Verify không có lệnh (thủ công)
-#   aw task reopen <thư-mục-feature> <REQ-NNN|DEC-NNN>
-#                                                người vừa đổi REQ / mở lại DEC: task phủ REQ đó
-#                                                (Covers, On assumption) hay dựa trên DEC đó
+#   aw task reopen <thư-mục-feature> <REQ-NNN|DEC-NNN|Q-NNN>
+#                                                người vừa đổi REQ / mở lại DEC / trả lời khác giả định:
+#                                                task phủ REQ đó (Covers, On assumption), dựa trên DEC đó
+#                                                (Based on), hay đứng trên câu hỏi đó (On assumption)
 #                                                (Based on) về [ ] — chỉ đúng các task ấy
 #
 # `done` chạy lệnh trong cặp backtick đầu tiên của dòng "Verify" ở gốc repo, ghi
@@ -39,7 +40,7 @@ kq_khai task.sh \
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/task.sh"
 
-dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [TSK-NNN] [--manual \"<bằng chứng>\"] · aw task reopen <thư-mục-feature> <REQ-NNN|DEC-NNN>" >&2; exit 2; }
+dung() { echo "Dùng: aw task next|start|done <thư-mục-feature> [TSK-NNN] [--manual \"<bằng chứng>\"] · aw task reopen <thư-mục-feature> <REQ-NNN|DEC-NNN|Q-NNN>" >&2; exit 2; }
 
 LENH="${1:-}"; DIR="${2:-}"; TASK="${3:-}"
 case "$LENH" in next|start|done|reopen) ;; *) dung ;; esac
@@ -70,7 +71,7 @@ kq_khong_muc() {
 # Trước kiểm plan.md: đổi REQ khi chưa có plan là chuyện thường — không có task nào phải làm lại.
 if [ "$LENH" = reopen ]; then
   [ $# -eq 3 ] || dung
-  case "$TASK" in REQ-[0-9]*|DEC-[0-9]*) ;; *) dung ;; esac
+  case "$TASK" in REQ-[0-9]*|DEC-[0-9]*|Q-[0-9]*) ;; *) dung ;; esac
   if [ ! -f "$PLAN" ]; then echo "Chưa có plan.md — không task nào phải làm lại vì $TASK."; exit 0; fi
   ds=$(tk_phu "$PLAN" "$TASK")
   if [ -z "$ds" ]; then echo "Không task nào trong plan.md phủ $TASK — không có gì để làm lại."; exit 0; fi
@@ -142,6 +143,7 @@ if [ "$LENH" = start ]; then
     [ "$sd" = x ] || chua="$chua $d"
   done
   if [ -n "$chua" ]; then
+    # giữ: CAP-breakdown-01
     echo "TỪ CHỐI: $TASK phụ thuộc$chua — chưa [x]." >&2; exit 1
   fi
   tk_dat "$PLAN" "$TASK" "~" || { echo "LỖI: không ghi được ô Status của $TASK." >&2; exit 1; }
@@ -169,13 +171,17 @@ done
 case "$st" in
   "~") ;;
   x) echo "$TASK đã [x] — chạy lại để làm mới bằng chứng." ;;
+  # giữ: CAP-implement-06
   *) echo "TỪ CHỐI: $TASK chưa bắt đầu — chạy: aw task start $DIR $TASK" >&2; exit 1 ;;
 esac
 VF=$(tk_verify "$PLAN" "$TASK")
 if [ -n "$CO_MANUAL" ]; then
+  # giữ: CAP-implement-06
   [ -z "$VF" ] || { echo "TỪ CHỐI: Verify của $TASK có lệnh \`$VF\` — máy chạy được thì không kiểm chứng thủ công." >&2; exit 1; }
+  # giữ: CAP-implement-06
   case "$MANUAL" in ""|*"<"*">"*) echo "TỪ CHỐI: --manual cần bằng chứng cụ thể (đã làm gì, thấy gì)." >&2; exit 1 ;; esac
 elif [ -z "$VF" ]; then
+  # giữ: CAP-implement-06
   echo "TỪ CHỐI: dòng Verify của $TASK không có lệnh trong backtick." >&2
   echo "  Kiểm được bằng lệnh: sửa plan.md thành \"Verify: \`<lệnh>\` → <kết quả>\"." >&2
   echo "  Chỉ kiểm được bằng tay: aw task done $DIR $TASK --manual \"<đã làm gì, thấy gì>\"" >&2

@@ -37,6 +37,7 @@ dung "lệnh /aw-clarify hỏi bằng AskUserQuestion, có Chat about this" sh -
 dung "…lựa chọn là phương án đã phân tích, (Đề xuất) đứng đầu nhãn" sh -c \
   "grep -q 'Think before asking' '$O/.claude/commands/aw-clarify.md' && grep -q 'starts with.*(Đề xuất)' '$O/.claude/commands/aw-clarify.md'"
 dung "…không chiếm chỗ options bằng lối Chat/tự nhập có sẵn của tool" grep -q 'Chat about this' "$O/.claude/commands/aw-clarify.md"
+dung "…chữ tự nhập là câu hỏi ngược thì xử lý như Chat, không ghi thành Answer" grep -qF '**Typed text is a question, not an answer**' "$O/.claude/commands/aw-clarify.md"
 dung "lệnh /aw-clarify dẫn phân xử phát hiện checker LLM" grep -q 'design-findings.md' "$O/.claude/commands/aw-clarify.md"
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Asking choice questions' '$O/.claude/commands/aw-import.md'"
 dung "/aw-intake hỏi lựa chọn bằng AskUserQuestion: loại việc, tên, base, nguyên văn [HUMAN]" sh -c \
@@ -216,6 +217,7 @@ dung "…luôn có lối tự nhập và Chat about this (tool không chắc t�
   "grep -q 'Hoặc gõ câu trả lời khác / hỏi lại để trao đổi về câu này' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Chat about this' '$O3/.cursor/commands/aw-clarify.md'"
 dung "…(Đề xuất) đứng đầu nhãn, phân tích trước khi hỏi" sh -c \
   "grep -q 'starts with.*(Đề xuất)' '$O3/.cursor/commands/aw-clarify.md' && grep -q 'Think before asking' '$O3/.cursor/commands/aw-clarify.md'"
+dung "…chữ tự nhập là câu hỏi ngược thì xử lý như Chat (Cursor)" grep -qF '**Typed text is a question, not an answer**' "$O3/.cursor/commands/aw-clarify.md"
 dung "…lệnh không khai choice_ui thì không có" sh -c "! grep -q 'Asking choice questions' '$O3/.cursor/commands/aw-import.md' && ! grep -q 'Asking choice questions' '$TMP/out1/.claude/commands/aw-import.md'"
 dung "/aw-design, /aw-plan có cổng duyệt aw approval + hộp xác nhận Cursor" sh -c \
   "grep -q 'aw approval design' '$O3/.cursor/commands/aw-design.md' && grep -q 'aw approval plan' '$O3/.cursor/commands/aw-plan.md' && grep -q '### Confirmation box in Cursor' '$O3/.cursor/commands/aw-plan.md'"

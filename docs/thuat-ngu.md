@@ -60,7 +60,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `input` | Nguồn duy nhất spec được đọc: mã Jira, URL Confluence, file, hoặc lời người. Liệt kê ở `## Input` của `intake.md` |
 | `source label` *(trước: nhãn nguồn)* | Mỗi REQ ghi nguồn: `[CONFLUENCE]`, `[JIRA]`, `[FILE]` (trích từ nguồn), `[INFERRED]` (quyết định kỹ thuật hiển nhiên), `[OPEN-QUESTION]` (nguồn chưa nói). Lời người trong `intake.md` mang nhãn `[HUMAN]`. Sự cố mang nhãn `[INCIDENT]` kèm định danh — không bắt buộc |
 | `Quote` *(câu trích)* | Câu nguồn chép **nguyên văn** dưới `Source:` của REQ (`[CONFLUENCE]` `[JIRA]` `[FILE]`), mỗi câu một dòng `> …`. Với `[FILE]` máy kiểm câu có thật trong file |
-| `open question` *(trước: điểm mù)* | Chỗ nguồn chưa nói mà agent phải giả định tạm. Ghi trong `open-questions.md` theo REQ: câu hỏi, hỏi ai, giả định, *If wrong, redo*, `Blocking` |
+| `open question` *(trước: điểm mù)* | Chỗ nguồn chưa nói mà agent phải giả định tạm. Ghi trong `open-questions.md`, mỗi câu hỏi một mã `Q-NNN` (dạng cũ: `REQ-NNN`), phủ được nhiều REQ: câu hỏi, hỏi ai, giả định, *If wrong, redo*, `Blocking`. REQ trỏ tới câu hỏi ở dòng `Source:` |
 | `Blocking` *(trước: mức chặn)* | Mức của một `open question`: `blocking` (chặn design), `review-blocking` (chạy tiếp, review chặn), `non-blocking` (không chặn, REQ ghi `pending`). Agent đề xuất, người duyệt |
 | `Risk` | `high \| normal` trong `spec.md`. `high` → design chạy `Mode 2` |
 | `Mode 1` / `Mode 2` | Chế độ của phase design. `Mode 1`: agent viết mọi DEC-xxx, người duyệt. `Mode 2` (`Risk: high`): **người phác DEC-xxx trước** (`Author: human`), agent chỉ phản biện — tránh người neo vào phương án của agent |

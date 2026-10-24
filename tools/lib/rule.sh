@@ -129,8 +129,10 @@ luat_nguon() {
         intake.md|open-questions.md)
           _lh=$(dy_quet "$_lS" spec | awk -F'|' '$1 == "O" { print $4; exit }')
           if [ "$_lp" = open-questions.md ]; then
-            _lq=$(awk -v yc="$2" '
-              { sub(/\r$/, "") } /^(#|##|###)[ \t]/ { t = (index($0, yc) > 0); next }
+            # Mục câu hỏi mà nhãn trỏ tới (§ Q-NNN; dạng cũ § REQ-NNN), không có thì cùng mã REQ.
+            _lma=$(printf '%s\n' "$_lcon" | awk '{ if (match($0, /open-questions\.md[^)]*(Q|REQ)-[0-9]+/)) { p = substr($0, RSTART, RLENGTH); sub(/^open-questions\.md/, "", p); match(p, /(Q|REQ)-[0-9]+/); print substr(p, RSTART, RLENGTH) } }')
+            _lq=$(awk -v yc="${_lma:-$2}" '
+              { sub(/\r$/, "") } /^(#|##|###)[ \t]/ { t = 0; if (match($0, /(Q|REQ)-[0-9]+/)) t = (substr($0, RSTART, RLENGTH) == yc); next }
               t && /Answer[^:]*:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/\*\*/, "", s); gsub(/<!--.*-->/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }' "$1/open-questions.md")
           else
             _lq=$(awk '{ sub(/\r$/, "") } /^##[ \t]+Input/ { t = 1; next } /^##/ { t = 0 } t && /\[HUMAN\]/ { h = 1; next } t && h && /^[ \t]*>/ { s = $0; sub(/^[ \t]*>[ \t]*/, "", s); gsub(/<!--.*-->/, "", s); sub(/[ \t]+$/, "", s); o = o (o == "" ? "" : " ") s; next } t && h && /^[ \t]*-/ { h = 0 } END { print o }' "$1/intake.md")

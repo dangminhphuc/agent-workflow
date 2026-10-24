@@ -1,9 +1,9 @@
-# Spec: SP20–SP24 — Durable knowledge của repo đích như RAG (không vector)
+# Spec: SP26–SP30 — Durable knowledge của repo đích như RAG (không vector)
 
 - Ngày: 2026-10-23 · Branch: `claude/kind-cray-3yf0ca`
-- Roadmap: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` § SP20–SP24
+- Roadmap: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` § SP26–SP30
 - Trạng thái: **đã duyệt 2026-10-24** (người chọn mọi phương án "Nghiêng về"). Năm dự án con, mỗi cái một PR
-  (nguyên tắc 4), thứ tự SP20 → SP21 → SP22; SP23, SP24 chờ số liệu SP9. Spec này không đổi code hay
+  (nguyên tắc 4), thứ tự SP26 → SP27 → SP28; SP29, SP30 chờ số liệu SP9. Spec này không đổi code hay
   interface; capability/invariant mới chỉ thêm vào `sdlc/` trong PR của dự án con tương ứng.
 
 ## 0. Bối cảnh
@@ -28,7 +28,7 @@ stale lẫn verdict review mất chỗ bám (cùng một `Scope` cho cả ba). G
 mục thay vì cả file; kiến thức không gắn đường dẫn tìm được qua chỉ mục; repo chưa dùng tính năng mới
 chạy y như cũ.
 
-## A. SP20 — Truy xuất theo phạm vi ở implement và review
+## A. SP26 — Truy xuất theo phạm vi ở implement và review
 
 **Vấn đề.** `aw knowledge` chỉ có `spec|design` (`tools/knowledge.sh`). Implement chỉ biết tài liệu bị đụng
 qua cảnh báo stale *sau khi* sửa; việc bỏ design không đọc ADR nào.
@@ -77,7 +77,7 @@ theo phạm vi diff là bước sau") và § ADR (`aw knowledge` gọi ở bốn
 
 **Cần quyết.** Không có — đề xuất làm trước.
 
-## B. SP21 — Chunk theo mục và khối ID
+## B. SP27 — Chunk theo mục và khối ID
 
 **Vấn đề.** Một `ARCHITECTURE.md` lớn bị nạp cả file khi việc chỉ đụng một file con; cross-check stale
 cũng ở mức file, nên một module lớn sinh verdict cho mọi việc chạm nó.
@@ -106,7 +106,7 @@ cũng ở mức file, nên một module lớn sinh verdict cho mọi việc ch�
 **Test** (`26-knowledge-retrieval.sh`, `17-rule-crosscheck.sh`): tài liệu không khai mục → ref như cũ (hồi
 quy); hai mục khai, diff đụng phạm vi một mục → chỉ ref mục đó, cảnh báo stale chỉ cho mục đó; verdict
 `updated` khi diff sửa file nhưng ngoài khối → chặn, trong khối → ĐẠT; `show` neo không có → SAI THAM SỐ;
-`show <file>` bỏ mục đã khai; heading trùng trong một file → `aw knowledge check` (SP22) báo, `show` lấy mục đầu.
+`show <file>` bỏ mục đã khai; heading trùng trong một file → `aw knowledge check` (SP28) báo, `show` lấy mục đầu.
 
 **Tài liệu.** `conventions-reference.md` § `knowledge_files` (Scope theo mục); `docs/huong-dan.md` § 7;
 `docs/kien-truc.md` § Cross-check stale; mẫu `review.md` (`File` nhận ref); `docs/thuat-ngu.md` thêm "ref".
@@ -116,7 +116,7 @@ quy); hai mục khai, diff đụng phạm vi một mục → chỉ ref mục đ�
    không chuẩn hoá được tiếng Việt.
 2. Chỉ mục `##` khai được `Scope`, mục `###` thì không, để tránh khối lồng nhau.
 
-## C. SP22 — Chỉ mục kiến thức chung
+## C. SP28 — Chỉ mục kiến thức chung
 
 **Vấn đề.** Kiến thức không gắn đường dẫn (luật xuyên module, quyết định toàn repo) chỉ tìm được nếu agent
 đọc hết; chỉ mục hiện chỉ có ADR.
@@ -132,7 +132,7 @@ quy); hai mục khai, diff đụng phạm vi một mục → chỉ ref mục đ�
 - `aw adr promote`, `aw rule promote` dựng lại chỉ mục nếu file có (như ADR README).
 - **Kiểm** (`aw knowledge check`, gọi trong `aw check implement` và `aw check review` khi diff đụng tài liệu
   kiến thức hoặc chính chỉ mục): bảng lệch với dựng lại → **chặn** (máy dựng, so chính xác — luật "precise →
-  block"). Kèm: heading trùng trong một tài liệu có mục khai `Scope` (SP21). Chỉ mục hỏng sẵn trên base mà
+  block"). Kèm: heading trùng trong một tài liệu có mục khai `Scope` (SP27). Chỉ mục hỏng sẵn trên base mà
   diff không đụng → không chặn (như hình thức thư mục ADR).
 - Phase: `01-spec`, `02-design` đọc chỉ mục trước (thay chỉ mục ADR khi chỉ mục chung có); `aw knowledge
   design|implement` in `knowledge_index` thay `<adr>/README.md` khi có.
@@ -150,7 +150,7 @@ liệu, chỉ mục hỏng trên base → không chặn; khoá sai giá trị �
 **Đã chốt.** Khoá có giá trị mặc định `docs/knowledge-index.md`, nhưng máy chỉ kiểm khi file đã có trong
 git, để không ép repo cũ.
 
-## D. SP23 — Tìm theo từ khoá
+## D. SP29 — Tìm theo từ khoá
 
 **Vấn đề.** Spec chưa có đường dẫn code nên `aw knowledge spec` in mọi file luật active; repo nhiều miền
 thì phình. Kiến thức không gắn đường dẫn chỉ tìm được nhờ chỉ mục đọc hết.
@@ -166,14 +166,14 @@ thì phình. Kiến thức không gắn đường dẫn chỉ tìm được nh�
 
 **Interface.** `CAP-require-04 — Requirements are checked against the active business rules they may
 contradict`; Judged by: agent (checker LLM spec — SP13 — chấm mâu thuẫn). Engine đã làm phần "in hết";
-nhận capability ngay ở SP23.
+nhận capability ngay ở SP29.
 
 **Test** (`26`): `find` khớp heading/Summary/Keywords, xếp hạng đúng, giới hạn 10, `--all`; từ có dấu khớp
 đúng dạng viết; `spec` dưới ngưỡng in như cũ, trên ngưỡng in chỉ mục; khoá sai giá trị bị báo.
 
 **Cần quyết.** Chỉ làm khi số liệu SP9 cho thấy repo thật có nhiều luật hơn agent đọc nổi (nguyên tắc 3).
 
-## E. SP24 — Theo liên kết một bước, trích nguồn
+## E. SP30 — Theo liên kết một bước, trích nguồn
 
 **Vấn đề.** Một khối hay trỏ tới khối khác (luật nhắc ADR, ADR thay ADR) mà agent không được đưa; không ai
 ghi quyết định đã dựa vào khối nào, nên review không biết khối được lấy có được dùng không.

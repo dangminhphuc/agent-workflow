@@ -37,7 +37,7 @@ rm -f "$R/README.md"
 
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" còn mở chỉ CẢNH BÁO ở implement" sh "$CHK" "$F"
-dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*REQ-002: open question mức \"review-blocking\"'"
+dung "…nhưng có in cảnh báo điểm mù" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*Q-001 (REQ-002): open question mức \"review-blocking\"'"
 viet_spec; ghi_based_on
 
 printf 'Ghi chú: REQ-002 còn một Điểm mù.\n' > "$F/ghi-chu.md"

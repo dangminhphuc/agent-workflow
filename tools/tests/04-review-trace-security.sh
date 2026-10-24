@@ -38,10 +38,10 @@ mv "$F/review.md.bak" "$F/review.md"
 
 # Điểm mù: "không chặn" còn mở thì giao được (REQ chờ xác nhận); "chặn review" thì không
 thay "$F/open-questions.md" '`non-blocking`' '`review-blocking`'; ghi_based_on
-ky_vong_ly_do 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" "…đúng lý do: điểm mù REQ-002" 'REQ-002: open question mức "review-blocking"' sh "$CHK" "$F"
+ky_vong_ly_do 1 "CỔNG CUỐI: chặn điểm mù \"chặn review\" còn mở" "…đúng lý do: điểm mù Q-001 (REQ-002)" 'Q-001 (REQ-002): open question mức "review-blocking"' sh "$CHK" "$F"
 thay "$F/open-questions.md" '`open`' '`answered`'
 printf -- '- **Answer:** "đúng như giả định" — PO, 2026-10-04\n' >> "$F/open-questions.md"
-thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002--b)' '`[FILE]` [open-questions.md § REQ-002](open-questions.md#req-002--b)
+thay "$F/spec.md" '`[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)' '`[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)
 - Quote: > "đúng như giả định" — PO, 2026-10-04'
 duyet_lai "$F/spec.md"; ghi_based_on
 ky_vong 0 "điểm mù \"chặn review\" đã trả lời thì cho qua" sh "$CHK" "$F"

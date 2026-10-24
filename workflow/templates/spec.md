@@ -57,10 +57,9 @@ Quote: nguồn [CONFLUENCE] [JIRA] [FILE] bắt buộc — chép NGUYÊN VĂN c�
 
 ### REQ-002 — <tiêu đề ngắn>
 
-- Source: `[OPEN-QUESTION]` → [open-questions.md § REQ-002](open-questions.md#req-002)
+- Source: `[OPEN-QUESTION]` → [open-questions.md § Q-001](open-questions.md#q-001)   <!-- giả định tạm ghi ở câu hỏi, không chép vào đây -->
 - Priority: `must`
-- Description: <...>
-- Assumption: <đang hiểu thế nào để đi tiếp>
+- Description: <viết theo giả định tạm của Q-001>
 - Acceptance criteria:
   - [ ] <...>
 
@@ -101,7 +100,7 @@ Không có gì thì ghi "Không có." — checker chặn mục rỗng. -->
 
 ## Source conflicts
 
-<!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § REQ-NNN](open-questions.md#req-nnn)`, hoặc trỏ tới
+<!-- Cột "Resolution" CHỈ được: trỏ tới `open question` `[open-questions.md § Q-NNN](open-questions.md#q-nnn)`, hoặc trỏ tới
 nguồn đã chốt (`[JIRA]` comment của PO, `[CONFLUENCE]` page mới hơn, `[FILE]` …).
 Agent không tự phân xử mâu thuẫn nghiệp vụ — checker chặn. -->
 

@@ -286,7 +286,7 @@ ky_vong 0 "reopen DEC-001 → XONG" sh "$TK" reopen "$F" DEC-001
 dung "…TSK-001 (Based on DEC-001) về [ ], TSK-002 giữ [x]" sh -c "[ '$(tk_st TSK-001)' = ' ' ] && [ '$(tk_st TSK-002)' = x ]"
 viet_plan
 thay "$F/plan.md" '- Covers: `REQ-001`' '- Covers: `REQ-001`
-- On assumption: **yes** — [open-questions.md § REQ-002](open-questions.md#req-002--b)'
+- On assumption: **yes** — [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)'
 thay "$F/plan.md" '- Covers: `REQ-002`
 - Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt` → có file
@@ -294,8 +294,15 @@ thay "$F/plan.md" '- Covers: `REQ-002`
 - Expected files: `src/b.txt`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[~]`'
-ky_vong 0 "reopen REQ theo cả On assumption, và task đang [~]" sh "$TK" reopen "$F" REQ-002
-dung "…TSK-001, TSK-002 đều về [ ]" sh -c "[ '$(tk_st TSK-001)' = ' ' ] && [ '$(tk_st TSK-002)' = ' ' ]"
+ky_vong 0 "reopen câu hỏi Q-001 theo On assumption" sh "$TK" reopen "$F" Q-001
+dung "…TSK-001 (On assumption Q-001) về [ ], TSK-002 giữ [~]" sh -c "[ '$(tk_st TSK-001)' = ' ' ] && [ '$(tk_st TSK-002)' = '~' ]"
+ky_vong 0 "reopen REQ, task đang [~]" sh "$TK" reopen "$F" REQ-002
+dung "…TSK-002 về [ ]" bang "$(tk_st TSK-002)" " "
+viet_plan
+thay "$F/plan.md" '- Covers: `REQ-001`' '- Covers: `REQ-001`
+- On assumption: **yes** — § REQ-001'
+ky_vong 0 "reopen Q-001 không khớp \"REQ-001\" (khớp nguyên mã)" sh "$TK" reopen "$F" Q-001
+dung "…TSK-001 giữ [x]" bang "$(tk_st TSK-001)" "x"
 viet_plan
 ky_vong 0 "reopen mã không task nào phủ (khớp nguyên mã, REQ-00 ≠ REQ-001) → không đổi gì" sh "$TK" reopen "$F" REQ-00
 dung "…plan.md giữ nguyên [x]" sh -c "[ '$(tk_st TSK-001)' = x ] && [ '$(tk_st TSK-002)' = x ]"
