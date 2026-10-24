@@ -5,9 +5,10 @@
   `Kiểm chứng: thủ công`. Chữ tiếng Việt trong artifact và output không đổi.
 
 ### Nội bộ
-- **Sửa workflow `kiem-tra` không parse được sau #96.** Bước chẩn đoán tạm của job macOS viết
+- **Sửa workflow `kiem-tra` không parse được sau #96, rồi gỡ bước chẩn đoán tạm.** Bước đó viết
   `run:` một dòng có `": "` nên YAML không đọc được: mọi lần chạy `kiem-tra` (cả job Ubuntu) thất bại
-  ngay, không job nào chạy. Giờ viết dạng khối `run: |`.
+  ngay, không job nào chạy. Bước đó đã xong việc (job macOS xanh) nên gỡ hẳn; `AW_TEST_SHOW_FAIL=1`
+  (in output của ca hỏng) giữ lại ở cả hai job.
 - **Bộ test chạy đúng trên bash 3.2 (sh của macOS):** không còn gán biến ngay trước lời gọi hàm
   (`X=… ham` — bash 3.2 giữ X sau khi hàm chạy, làm hỏng chuỗi ca `aw worktree` phía sau); helper
   frontmatter của test SP20 truyền chuỗi qua `ENVIRON`. Phần `26-posix-macos.sh` thêm ca chặn
