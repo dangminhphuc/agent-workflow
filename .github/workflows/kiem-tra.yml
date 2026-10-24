@@ -1,6 +1,10 @@
 # Kiểm PR trước khi merge: test hồi quy + version nhất quán. PR đổi VERSION là một
 # bản phát hành — merge vào main thì workflow release tự tạo tag + Release, nên
 # version phải đúng ngay ở PR (tag chưa có, bin/aw và CHANGELOG khớp).
+#
+# Hai job: Ubuntu (dash, mawk, GNU sed) và macOS (bash 3.2 ở chế độ POSIX, BSD awk, BSD sed) —
+# engine hứa POSIX sh + awk + sed, người dùng aw chạy trên cả hai. Không cài gawk/coreutils trên
+# macOS: mất ý nghĩa của job. Job riêng (không matrix) để tên check "kiem-tra" giữ nguyên.
 name: kiem-tra
 
 on:
@@ -20,4 +24,30 @@ jobs:
         run: sh tools/check-release.sh "origin/$BASE"
 
       - name: Test
+        env:
+          AW_TEST_SHOW_FAIL: 1
         run: sh tools/run-tests.sh
+
+  kiem-tra-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Công cụ
+        run: |
+          ls -l /bin/sh /private/var/select/sh 2>/dev/null || true
+          awk --version 2>/dev/null || awk -W version 2>/dev/null || true
+          sed --version 2>/dev/null || echo "sed: BSD"
+          git --version
+
+      - name: Test
+        env:
+          AW_TEST_SHOW_FAIL: 1
+        run: sh tools/run-tests.sh
+
+      # TẠM (gỡ khi job xanh): output đầy đủ của phần dừng giữa chừng trên macOS.
+      - name: Chẩn đoán 26-posix-macos
+        if: failure()
+        run: sh -x tools/tests/26-posix-macos.sh 2>&1 | tail -60; echo "mã thoát: $?"
