@@ -12,6 +12,9 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 PHAN=$(basename -- "$0" .sh)
 TMP="${TMPDIR:-/tmp}/aw-run-tests.$PHAN.$$"
 mkdir -p "$TMP"
+# Đường dẫn thật: engine in đường dẫn qua pwd -P / git rev-parse; TMPDIR của macOS (/var/folders/…)
+# là symlink tới /private/var/…, ca so chuỗi đường dẫn sẽ lệch nếu giữ bản qua symlink.
+TMP=$(CDPATH= cd -- "$TMP" && pwd -P)
 . "$ROOT/tools/lib/result.sh"
 kq_khai "tests/$PHAN.sh" "0=MỌI CA ĐẠT" "1=CÓ CA HỎNG — xem các dòng FAIL phía trên"
 kq_don 'rm -rf "$TMP"'
