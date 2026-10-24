@@ -1002,6 +1002,11 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 23. **Định dạng transcript của Claude Code không phải API công khai.** Hook `aw journal _turn` đọc
     `usage` từ file đó; Claude Code đổi định dạng thì token không đếm được (mốc phase và số lượt vẫn có)
     cho tới khi sửa parser. Payload hook không có `transcript_path` (agent khác) thì không ghi gì.
-24. **Token dedup giữ `usage` đầu tiên thấy theo `message.id`.** Transcript lặp cùng `message.id` qua
-    nhiều dòng khi stream tách khối nội dung; đếm một lần tránh gấp đôi, nhưng `output_tokens` của khối
-    sau có thể lớn hơn bản đầu, nên tổng token ra có thể hụt.
+24. **Token gộp theo `message.id` lấy max từng ô `usage`** qua các dòng stream cùng id (không gấp đôi,
+    không hụt `output_tokens` tăng dần) — đúng chừng nào Claude Code còn ghi `usage` của cả message
+    trên mỗi dòng.
+25. **Máy trong khối `aw-progress` là hostname** (hoặc `AW_JOURNAL_MACHINE`). Dòng của "máy này" luôn
+    bị bỏ và dựng lại từ nhật ký của bản clone đang chạy, nên hai máy trùng hostname, hai bản clone trên
+    một máy, hoặc clone lại (nhật ký mới, rỗng) làm mất số liệu của bản kia ở lần `aw check` ĐẠT kế
+    tiếp, không cảnh báo. Hiện chỉ có cách đặt `AW_JOURNAL_MACHINE` riêng cho từng bản clone; id sinh một
+    lần cho mỗi bản clone nằm trong roadmap § Việc nhỏ.

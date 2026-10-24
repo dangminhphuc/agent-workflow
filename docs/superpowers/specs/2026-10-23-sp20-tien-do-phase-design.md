@@ -57,7 +57,7 @@ Không làm:
 | cột | ví dụ |
 |---|---|
 | `ts` (UTC ISO, như `checks.tsv`) | `2026-10-23T07:10:00Z` |
-| `worktree` (git top) | `/home/u/repo-wt/feat-otp` |
+| `worktree` (basename của git top, `viec`) | `feat-otp` |
 | `feature` (`viec`, như `checks.tsv`) | `feat_login-otp` |
 | `phase` | `spec` |
 
@@ -83,6 +83,10 @@ Chỉ ghi **số**, không chép nội dung transcript.
   HỢP LỆ`). Khi kết quả là `ĐÃ XÁC ĐỊNH` thì ghi một dòng `phases.tsv`; mã khác không ghi. Lỗi ghi im
   lặng (như `journal.sh _check`). Không có `--phase` → hành vi như cũ (`aw feature` còn được gọi ngoài
   lệnh phase).
+- Intake: `/aw-intake` thường chạy ở checkout chính, nơi `aw feature --phase` trả `ĐANG Ở CHECKOUT CHÍNH`
+  và không ghi. Mốc bắt đầu intake do `aw worktree new --create` ghi (`journal.sh _phase <worktree mới>
+  <feature> intake`) khi tạo xong worktree. Lượt của phiên ở checkout chính không gắn được vào việc
+  (`-`), nên intake thường chỉ có Wall, không Active/token — trừ khi chạy lại `/aw-intake` trong worktree.
 - Mỗi lần chạy lệnh phase là một dòng. Một phase chạy nhiều phiên (mở lại sau khi nghỉ, làm lại sau
   review) → nhiều dòng; § 4 gộp.
 
@@ -93,26 +97,30 @@ Ba hook, người tự thêm vào `.claude/settings.json` cạnh `aw guard` (ada
 
 | sự kiện | lệnh |
 |---|---|
-| `UserPromptSubmit` | `aw journal _turn begin` |
-| `Stop` | `aw journal _turn end` |
-| `SubagentStop` | `aw journal _turn sub` |
+| `UserPromptSubmit` | `aw journal _turn begin >/dev/null 2>&1 || true` |
+| `Stop` | `aw journal _turn end >/dev/null 2>&1 || true` |
+| `SubagentStop` | `aw journal _turn sub >/dev/null 2>&1 || true` |
 
 `journal.sh _turn`:
 
 - Đọc payload JSON từ stdin bằng `sed` (không jq): `session_id`, `transcript_path`, `cwd`,
   `agent_transcript_path` (subagent). Thiếu trường cần → thoát 0, không ghi.
 - **Không in gì ra stdout, luôn thoát 0**: stdout của `UserPromptSubmit` bị chèn vào ngữ cảnh agent;
-  mã khác 0 làm hỏng lượt. Mọi lỗi im lặng.
+  mã khác 0 làm hỏng lượt. Mọi lỗi im lặng. Điều này chỉ đúng với engine có `_turn`: `aw journal` chạy
+  bằng engine bản clone đang ghim, engine cũ thoát 2 (lệnh lạ) — với Claude Code mã 2 ở
+  `UserPromptSubmit` chặn và xoá prompt, ở `Stop` thì agent không dừng được. Vì vậy lệnh hook ở bảng trên
+  bọc `>/dev/null 2>&1 || true`: vô hại với mọi engine và mọi trạng thái của wrapper.
 - `begin`: ghi `ts` vào `journal/.turn/<session>`.
 - `end`: đọc transcript **từ vị trí đã đọc lần trước** (byte offset lưu cùng file `.turn/<session>`,
   `tail -c +N`) tới cuối; awk cộng `input_tokens`, `output_tokens`, `cache_read_input_tokens`,
   `cache_creation_input_tokens` của dòng `"type":"assistant"`, **khử trùng theo `message.id`** (một
-  message có thể xuất hiện nhiều dòng với cùng `usage`). Ghi dòng `turns.tsv`, cập nhật offset.
+  message có thể xuất hiện nhiều dòng; `output_tokens` có thể tăng dần → lấy max từng ô theo id). Ghi
+  dòng `turns.tsv`, cập nhật offset.
   Thiếu `begin` (hook cài giữa lượt) → `seconds` rỗng, token vẫn ghi.
 - `sub`: như `end` trên `agent_transcript_path`, đọc cả file, `kind=subagent`. Token của subagent
   (vd review) nằm ở transcript riêng, không có trong transcript chính.
-- Gắn phase: `worktree` = git top của `cwd`; phase = dòng `phases.tsv` mới nhất của worktree đó có
-  `ts` ≤ `ts_end`. Không có → `-`.
+- Gắn phase: `worktree` = basename của git top của `cwd` (như `phases.tsv`); phase = dòng `phases.tsv`
+  mới nhất của worktree đó có `ts` ≤ `ts_end`. Không có → `-`.
 - Thời gian chạy hook phải nhỏ: chỉ đọc phần transcript mới, không quét lại cả file.
 - Định dạng transcript không phải API công khai: trường thiếu → token rỗng, không vỡ. Test dùng
   transcript mẫu (fixture); đổi định dạng thì sửa awk + fixture.
@@ -166,14 +174,14 @@ Nội dung — artifact nên heading, tên trường, tên cột, enum tiếng A
 
 | Phase | Status | Active | Wall | Turns | Blocked checks | Tokens in | Tokens out | Cache read | Cache write |
 |---|---|---|---|---|---|---|---|---|---|
-| intake | ✓ done | 6m | 25m | 4 | 0 | 82k | 6k | 310k | 40k |
+| intake | ✓ done | | 25m | | 0 | | | | |
 | spec | ✓ done | 18m | 2h10m | 11 | 2 | 240k | 21k | 1.2M | 90k |
 | design | — skipped | | | | | | | | |
 | plan | ▶ active | 9m | 40m | 5 | 0 | 120k | 9k | 600k | 30k |
 | implement | · pending | | | | | | | | |
 | review | · pending | | | | | | | | |
 | ship | · pending | | | | | | | | |
-| **Total** | | 33m | 3h15m | 20 | 2 | 442k | 36k | 2.1M | 160k |
+| **Total** | | 27m | 3h15m | 16 | 2 | 360k | 30k | 1.8M | 120k |
 
 <!-- Active = tổng thời gian các lượt (prompt → agent dừng). Wall = từ lúc bắt đầu phase tới khi phase kế tiếp bắt đầu (phase đang làm: tới sự kiện cuối). -->
 
@@ -196,16 +204,23 @@ gantt
 
 ```mermaid
 pie title Tokens by phase (k, in + out)
-  "intake" : 88
   "spec" : 261
   "plan" : 129
 ```
 
 <!-- aw-progress v1
-machine	phase	runs	wall_s	active_s	turns	blocked	in	out	cache_read	cache_write	first_ts	last_ts
-… một dòng mỗi (máy, phase) …
+checks	laptop-a	2026-10-23T07:34:00Z	intake	0
+checks	laptop-a	2026-10-23T07:50:00Z	spec	1
+phases	laptop-a	2026-10-23T07:10:00Z	intake
+phases	laptop-a	2026-10-23T07:35:00Z	spec
+turns	laptop-a	2026-10-23T07:36:00Z	2026-10-23T07:47:00Z	spec	main	660	52000	4100	310000	20000
 -->
 ````
+
+Khối `aw-progress v1` giữ sự kiện thô, không phải tổng: mỗi dòng một sự kiện chuẩn hoá (`phases`, `turns`,
+`checks` — cột như `tools/lib/progress.sh`) của mọi máy, không header, sắp `LC_ALL=C` (ví dụ trên chỉ trích
+vài dòng). Dòng khác dạng → khối sai dạng. Intake trong ví dụ chỉ có Wall: `/aw-intake` chạy ở checkout
+chính (§ 2).
 
 - **Gantt**: mỗi lần chạy một thanh (`done` nếu đã ĐẠT, `active` nếu đang làm); mỗi check chặn một
   milestone `crit`. Thấy được khoảng chờ người giữa các phase và phase nào bị chặn nhiều.
@@ -236,6 +251,10 @@ squash-merge). Reviewer thấy số liệu qua mô tả MR — § 7.
 - `export`: thêm nguồn `phases`, `turns` (cùng cột `source`, `machine` như SP9).
 - `report`: thêm mục "Thời gian và token theo phase" — trung vị và tổng của tương tác, đồng hồ, token
   theo phase, trên mọi việc trong nhật ký (hoặc trong các file export). Đây là số liệu SP9 cần.
+  Đồng hồ (Wall) mỗi việc tính từ `phases.tsv` như § 4: một lần chạy kéo dài tới mốc bắt đầu kế tiếp
+  của cùng việc, hoặc tới sự kiện cuối của việc (`phases`, `checks`, `turns`). Có `phases` mà không có
+  `turns` (Cursor, chưa cài hook) thì mục vẫn có Wall; ô tương tác, token ghi `—`. Trên file export,
+  việc là (máy, feature).
 
 ### 7. Bảng tiến độ trong mô tả MR (lựa chọn B)
 

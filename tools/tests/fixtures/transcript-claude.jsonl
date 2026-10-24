@@ -3,4 +3,5 @@
 {"type":"assistant","message":{"id":"msg_01AAA","role":"assistant","usage":{"input_tokens":3,"cache_creation_input_tokens":120,"cache_read_input_tokens":4000,"output_tokens":55}},"timestamp":"2026-10-23T10:00:06.000Z"}
 {"type":"user","message":{"role":"user","content":"tiếp"},"timestamp":"2026-10-23T10:00:07.000Z"}
 {"type":"assistant","message":{"id":"msg_01BBB","role":"assistant","usage":{"input_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":4120,"output_tokens":200}},"timestamp":"2026-10-23T10:00:20.000Z"}
+{"type":"assistant","message":{"id":"msg_01BBB","role":"assistant","usage":{"input_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":4120,"output_tokens":260}},"timestamp":"2026-10-23T10:00:21.000Z"}
 {"type":"system","subtype":"turn_duration","durationMs":20000}

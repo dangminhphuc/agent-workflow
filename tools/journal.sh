@@ -96,13 +96,21 @@ case "${1:-}" in
         function trich(re) { if (match($0, re)) return substr($0, RSTART, RLENGTH); return "" }
         function so(k,   t) { t = trich("\"" k "\"[ ]*:[ ]*[0-9]+"); if (t == "") return 0; sub(/^[^:]*:[ ]*/, "", t); return t + 0 }
         /"type"[ ]*:[ ]*"assistant"/ {
+          # Streaming ghi nhiều dòng cùng message.id, output_tokens tăng dần: lấy max mỗi ô theo id.
           id = trich("\"id\"[ ]*:[ ]*\"msg_[^\"]*\"")
-          if (id != "" && (id in thay)) next
-          thay[id] = 1
-          vao += so("input_tokens"); ra += so("output_tokens")
-          cd += so("cache_read_input_tokens"); cg += so("cache_creation_input_tokens"); co = 1
+          a = so("input_tokens"); b = so("output_tokens")
+          c = so("cache_read_input_tokens"); d = so("cache_creation_input_tokens"); co = 1
+          if (id == "") { vao += a; ra += b; cd += c; cg += d; next }
+          ids[id] = 1
+          if (a > mv[id] + 0) mv[id] = a
+          if (b > mr[id] + 0) mr[id] = b
+          if (c > md[id] + 0) md[id] = c
+          if (d > mg[id] + 0) mg[id] = d
         }
-        END { if (co) print vao "\t" ra "\t" cd "\t" cg; else print "\t\t\t" }')
+        END {
+          for (id in ids) { vao += mv[id]; ra += mr[id]; cd += md[id]; cg += mg[id] }
+          if (co) print vao + 0 "\t" ra + 0 "\t" cd + 0 "\t" cg + 0; else print "\t\t\t"
+        }')
       wt=$(git -C "${cwd:-.}" rev-parse --show-toplevel 2>/dev/null)
       w=-; ft=-; ph=-
       if [ -n "$wt" ]; then
@@ -227,8 +235,14 @@ if [ $# -gt 0 ]; then
     BEGIN { cot["checks"] = 5; cot["failures"] = 4; cot["approvals"] = 5; cot["findings"] = 5; cot["phases"] = 4; cot["turns"] = 12 }
     ($1 in cot) && NF == cot[$1] + 2 {
       s = $1; m = $2; sub(/^[^\t]*\t[^\t]*\t/, "")
-      # turns: gắn máy vào worktree để hai máy trùng tên worktree vẫn là hai việc
-      if (s == "turns") { n = split($0, a, "\t"); a[3] = m "/" a[3]; $0 = a[1]; for (i = 2; i <= n; i++) $0 = $0 "\t" a[i] }
+      # gắn máy vào worktree, feature để hai máy trùng tên vẫn là hai việc (mục thời gian theo phase)
+      if (s == "turns" || s == "phases" || s == "checks") {
+        n = split($0, a, "\t")
+        if (s == "turns") { a[3] = m "/" a[3]; a[4] = m "/" a[4] }
+        else if (s == "phases") { a[2] = m "/" a[2]; a[3] = m "/" a[3] }
+        else a[2] = m "/" a[2]
+        $0 = a[1]; for (i = 2; i <= n; i++) $0 = $0 "\t" a[i]
+      }
       print > (d "/" s ".tsv"); next }
     { bo++ }
     END { print bo + 0 }' "$@")
@@ -289,27 +303,60 @@ fi
 
 echo ""
 echo "Thời gian và token theo phase"
-if [ -s "$JD/turns.tsv" ]; then
-  # active mỗi việc = tổng seconds lượt main; trung vị trên các việc; token cộng mọi lượt.
-  awk -F'\t' "$TD_AWK_DD"'
-    $5 == "-" || $5 == "" { next }
-    {
-      p = $5; j = $3 "|" $4
+if [ -s "$JD/turns.tsv" ] || [ -s "$JD/phases.tsv" ]; then
+  # Việc = cột feature (file export: máy/feature). Active mỗi việc = tổng seconds lượt main.
+  # Wall mỗi việc = tổng các lần chạy: từ một mốc bắt đầu tới mốc kế tiếp của cùng việc, hoặc tới
+  # sự kiện cuối của việc (phases, checks, turns) — như td_tinh. Mỗi nhật ký ghi nối theo giờ nên
+  # không cần sắp. Trung vị trên các việc có số liệu đó; token cộng mọi lượt.
+  _p=/dev/null; _c=/dev/null; _t=/dev/null
+  if [ -f "$JD/phases.tsv" ]; then _p="$JD/phases.tsv"; fi
+  if [ -f "$JD/checks.tsv" ]; then _c="$JD/checks.tsv"; fi
+  if [ -f "$JD/turns.tsv" ]; then _t="$JD/turns.tsv"; fi
+  awk -F'\t' -v fp="$_p" -v fc="$_c" -v ft="$_t" "$TD_AWK_DD"'
+    function iso(s) { return s ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]Z$/ }
+    function moc(j, s) { if (iso(s) && s > cuoi[j]) cuoi[j] = s }
+    function them(p, j) {
       if (!(p in vt)) { vt[p] = 1; ord[++np] = p }
-      if (!((p, j) in jv)) { jv[p, j] = 1; nj[p]++; ja[p, nj[p]] = j }
+      if (!((p, j) in jv)) { jv[p, j] = 1; nj[p]++ }
+    }
+    function trung(n,  k, x, q) {   # trung vị của v[1..n] (sắp tại chỗ)
+      for (k = 2; k <= n; k++) { x = v[k]; q = k - 1; while (q >= 1 && v[q] > x) { v[q + 1] = v[q]; q-- } v[q + 1] = x }
+      return (n % 2) ? v[(n + 1) / 2] : int((v[n / 2] + v[n / 2 + 1]) / 2)
+    }
+    { sub(/\r$/, "") }
+    FILENAME == fp {
+      if (!iso($1) || $3 == "" || $3 == "-" || $4 == "") next
+      nb++; bj[nb] = $3; bt[nb] = $1; bp[nb] = $4; moc($3, $1); next
+    }
+    FILENAME == fc { moc($2, $1); next }
+    FILENAME == ft {
+      moc($4, $1); moc($4, $2)
+      if ($5 == "-" || $5 == "") next
+      p = $5; j = $4; them(p, j); co_t[p] = 1
+      if (!((p, j) in av)) { av[p, j] = 1; na[p]++; ja[p, na[p]] = j }
       if ($7 == "main" && $8 ~ /^[0-9]+$/) ac[p, j] += $8
       if ($9 ~ /^[0-9]+$/) vao[p] += $9
       if ($10 ~ /^[0-9]+$/) ra[p] += $10
     }
     END {
-      for (i = 1; i <= np; i++) {
-        p = ord[i]; n = nj[p]; tong = 0
-        for (k = 1; k <= n; k++) { v[k] = ac[p, ja[p, k]] + 0; tong += v[k] }
-        for (k = 2; k <= n; k++) { x = v[k]; q = k - 1; while (q >= 1 && v[q] > x) { v[q + 1] = v[q]; q-- } v[q + 1] = x }
-        if (n % 2) tv = v[(n + 1) / 2]; else tv = int((v[n / 2] + v[n / 2 + 1]) / 2)
-        printf "  %-10s %3d việc, active tổng %s, trung vị %s, token vào %s / ra %s\n", p, n, td_tg(tong), td_tg(tv), td_tk(vao[p] + 0), td_tk(ra[p] + 0)
+      for (i = nb; i >= 1; i--) {   # ngược: mốc kế tiếp của cùng việc đã biết
+        j = bj[i]; p = bp[i]; b = td_ep(bt[i])
+        k = (j in sau) ? sau[j] : td_ep(cuoi[j]); sau[j] = b
+        if (k < b) k = b
+        if (!((p, j) in wv)) { wv[p, j] = 1; nw[p]++; jw[p, nw[p]] = j }
+        wl[p, j] += k - b
       }
-    }' "$JD/turns.tsv"
+      for (i = 1; i <= nb; i++) them(bp[i], bj[i])
+      for (i = 1; i <= np; i++) {
+        p = ord[i]
+        n = na[p]; tong = 0; for (k = 1; k <= n; k++) { v[k] = ac[p, ja[p, k]] + 0; tong += v[k] }
+        if (n > 0) { a_t = tong; a_m = trung(n) } else { a_t = ""; a_m = "" }
+        n = nw[p]; tong = 0; for (k = 1; k <= n; k++) { v[k] = wl[p, jw[p, k]] + 0; tong += v[k] }
+        if (n > 0) { w_t = tong; w_m = trung(n) } else { w_t = ""; w_m = "" }
+        tv = co_t[p] ? vao[p] + 0 : ""; tr = co_t[p] ? ra[p] + 0 : ""
+        printf "  %-10s %3d việc, active tổng %s, trung vị %s, wall tổng %s, trung vị %s, token vào %s / ra %s\n", p, nj[p], td_tg(a_t), td_tg(a_m), td_tg(w_t), td_tg(w_m), td_tk(tv), td_tk(tr)
+      }
+    }' "$_p" "$_c" "$_t"
 else
   echo "  chưa có dữ liệu"
 fi

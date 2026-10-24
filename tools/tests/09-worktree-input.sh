@@ -77,6 +77,7 @@ W5="$TMP/repo9.wt/fix_phi-hoan-tien"
 dung "…worktree ở đúng chỗ, đúng branch" test "$(git -C "$W5" rev-parse --abbrev-ref HEAD 2>/dev/null)" = "fix_phi-hoan-tien"
 dung "…branch không có upstream (git push trơn không đẩy lên nhánh gốc)" sh -c "! git -C '$W5' rev-parse --abbrev-ref '@{upstream}' 2>/dev/null"
 dung "…checkout chính vẫn đứng ở main" test "$(git -C "$R9" rev-parse --abbrev-ref HEAD)" = "main"
+dung "…ghi mốc bắt đầu intake cho worktree mới (phases.tsv)" sh -c "awk -F'\t' '\$2 == \"fix_phi-hoan-tien\" && \$3 == \"fix_phi-hoan-tien\" && \$4 == \"intake\"' '$R9/.git/agent-workflow/journal/phases.tsv' | grep -q ."
 dung "…in dòng Base và Engine để chép vào intake.md" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore in-base --create --base main 2>&1 >/dev/null | grep -q '\*\*Base:\*\* \`main\` @ \`' && git -C '$R9' worktree list | grep -q chore_in-base"
 dung "…dòng Engine đúng version engine" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore in-engine --create --base main 2>&1 >/dev/null | grep -qx '  - \*\*Engine:\*\* $VDEV'"
 dung "…stdout chỉ là đường dẫn worktree" bang "$(awd "$R9" worktree new chore in-stdout --create --base main 2>/dev/null)" "$TMP/repo9.wt/chore_in-stdout"
@@ -297,8 +298,18 @@ mkdir -p "$W7/.agent-workflow/fix_sai-loai"; printf 'x\n' > "$W7/.agent-workflow
 mkdir -p "$TMP/repo9.wt/feat_khac"
 ky_vong 2 "từ chối khi thư mục worktree đích đã tồn tại" awd "$W7" rename feat_khac
 dung "…và không đổi gì" sh -c "[ -d '$W7' ] && git -C '$R9' rev-parse --verify --quiet refs/heads/fix_sai-loai"
+# Nhật ký tiến độ của việc trước khi đổi tên: mốc intake, một lượt, intake ĐẠT.
+J9="$R9/.git/agent-workflow/journal"
+awd "$W7" feature --phase intake >/dev/null 2>&1
+G9=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+printf '%s\t%s\tfix_sai-loai\tfix_sai-loai\tintake\ts9\tmain\t60\t1\t2\t3\t4\n' "$G9" "$G9" >> "$J9/turns.tsv"
+printf '%s\tfix_sai-loai\tintake\t0\t\n' "$G9" >> "$J9/checks.tsv"
+printf '%s\tviec-khac\tintake\t0\t\n' "$G9" >> "$J9/checks.tsv"
 ky_vong 0 "đổi tên thành công (chạy trong worktree)" awd "$W7" rename feat_dung-loai
 W8="$TMP/repo9.wt/feat_dung-loai"
+dung "…nhật ký phases/turns/checks theo tên mới, không còn tên cũ" sh -c "! grep -q 'fix_sai-loai' '$J9/phases.tsv' '$J9/turns.tsv' '$J9/checks.tsv' && awk -F'\t' '\$3 == \"feat_dung-loai\"' '$J9/turns.tsv' | cut -f4 | grep -qx feat_dung-loai && awk -F'\t' '\$4 == \"intake\"' '$J9/phases.tsv' | cut -f2,3 | grep -qx 'feat_dung-loai	feat_dung-loai'"
+dung "…dòng của việc khác giữ nguyên" grep -q '	viec-khac	intake	0	' "$J9/checks.tsv"
+dung "…aw status sau khi đổi tên: intake vẫn ✓ done" sh -c "cd '$W8' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' status .agent-workflow/feat_dung-loai --table 2>/dev/null | grep -q '^| intake | ✓ done |'"
 dung "branch đã đổi tên" sh -c "git -C '$R9' rev-parse --verify --quiet refs/heads/feat_dung-loai && ! git -C '$R9' rev-parse --verify --quiet refs/heads/fix_sai-loai"
 dung "worktree dời sang tên mới, cùng thư mục cha" sh -c "[ ! -e '$W7' ] && [ \"\$(git -C '$W8' rev-parse --abbrev-ref HEAD)\" = feat_dung-loai ]"
 dung "thư mục artifact dời theo" sh -c "[ -f '$W8/.agent-workflow/feat_dung-loai/intake.md' ] && [ ! -d '$W8/.agent-workflow/fix_sai-loai' ]"

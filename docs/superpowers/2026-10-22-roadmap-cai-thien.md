@@ -151,6 +151,9 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 - Bộ test trên máy này: 1775 ca, mọi ca đạt, khoảng 5 phút trên 6 luồng. Mục tiêu dưới 3 phút chưa đạt.
   Phần dài nhất `21-sdlc-profiles` (103 giây), rồi `05-review-quality`, `08-adapters`, `23-sdlc-syntax` —
   chưa tới ngưỡng cảnh báo nên tách. Số 3 phút 45 giây sau #81 đo trên 4 luồng, máy khác, không so trực tiếp.
+- **Id máy theo bản clone thay cho hostname** (SP20): sinh một lần vào `$AW_CONFIG/machine-id`, dùng làm
+  mặc định của `may_nay` khi không có `AW_JOURNAL_MACHINE` — hai máy trùng hostname, hai bản clone trên một
+  máy hay clone lại không còn xoá số liệu của nhau trong khối `aw-progress` (`docs/kien-truc.md` điểm yếu 25).
 
 ## Không làm
 

@@ -979,9 +979,10 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 
 ### Xem tiến độ của việc
 
-Mỗi lệnh phase ghi mốc bắt đầu phase vào nhật ký máy này; `aw check` ghi lần chấm. Từ đó máy suy ra,
-cho từng phase: trạng thái, thời gian tương tác, thời gian đồng hồ, số lượt, số lần check chặn, token.
-Agent không tự khai số nào.
+Mỗi lệnh phase chạy trong worktree ghi mốc bắt đầu phase vào nhật ký máy này; `aw check` ghi lần
+chấm. Intake thường chạy ở checkout chính, nên mốc bắt đầu intake do `aw worktree new --create` ghi
+khi tạo worktree. Từ đó máy suy ra, cho từng phase: trạng thái, thời gian tương tác, thời gian đồng
+hồ, số lượt, số lần check chặn, token. Agent không tự khai số nào.
 
 ```sh
 aw status <dir>             # bảng tiến độ ra terminal
@@ -995,9 +996,16 @@ aw status <dir> --table     # chỉ bảng Markdown, để dán vào chỗ khác
 - Làm tiếp việc ở máy khác: số liệu của máy cũ nằm trong khối `<!-- aw-progress v1 … -->` cuối
   `progress.md`, máy mới giữ nguyên và cộng vào. Đừng sửa tay khối này; sai dạng thì máy bỏ cả khối,
   chỉ tính nhật ký máy đang chạy.
-- Số lượt và token chỉ có trên Claude Code, khi đã cài ba hook `aw journal _turn …` theo
-  [`adapters/claude-code/README.md` § Hook đo lượt và token](../adapters/claude-code/README.md#hook-đo-lượt-và-token).
-  Chưa cài thì chỉ có cột Wall (thời gian đồng hồ), và `progress.md` có một dòng nhắc.
+- Số lượt và token chỉ có trên Claude Code, khi đã cài ba hook `aw journal _turn … >/dev/null 2>&1 || true` theo
+  [`adapters/claude-code/README.md` § Hook đo lượt và token](../adapters/claude-code/README.md#hook-đo-lượt-và-token)
+  (giữ phần bọc: bản clone chưa nâng engine không có `_turn`, thoát 2 và chặn prompt).
+  Chưa cài thì chỉ có cột Wall (thời gian đồng hồ), và `progress.md` có một dòng nhắc. Intake chạy ở
+  checkout chính thì lượt và token của intake không gắn được vào việc (chỉ có Wall).
+- Máy được nhận ra bằng hostname. Hai máy trùng hostname (tên mặc định, devcontainer), hoặc một máy có
+  hai bản clone cùng làm một việc: đặt `AW_JOURNAL_MACHINE` một giá trị riêng cho mỗi bản clone
+  (profile shell khi mỗi máy một bản clone; hai bản clone trên một máy thì đặt theo thư mục, vd
+  `.envrc` của direnv). Không đặt thì `aw check` ĐẠT ở bản này xoá số liệu của bản kia trong khối
+  `aw-progress`.
 - `AW_JOURNAL=0`: không ghi nhật ký, `aw check` không sinh `progress.md`.
 
 ---

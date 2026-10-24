@@ -65,6 +65,18 @@ if ! git -C "$WT" worktree move "$WT" "$WT_MOI"; then
   echo "LỖI: git không dời được worktree — đã hoàn tác branch và thư mục artifact." >&2
   exit 2
 fi
+# Nhật ký tiến độ (phases/turns/checks) gắn theo tên worktree và tên việc: đổi theo, không thì
+# aw status mất lịch sử của việc. Im lặng, không bao giờ làm hỏng lệnh đổi tên.
+nk_doi() { # <file> <cột worktree, 0 = không có> <cột feature>
+  [ -f "$1" ] || return 0
+  awk -F'\t' -v OFS='\t' -v cw="$2" -v cf="$3" -v wc="$(basename "$WT")" -v fc="$TEN_CU" -v m="$TM_MOI" '
+    { if (cw > 0 && $cw == wc) $cw = m; if ($cf == fc) $cf = m; print }' "$1" > "$1.$$" &&
+    mv -f "$1.$$" "$1" || rm -f "$1.$$"
+}
+if [ -n "${AW_CONFIG:-}" ]; then
+  { nk_doi "$AW_CONFIG/journal/phases.tsv" 2 3; nk_doi "$AW_CONFIG/journal/turns.tsv" 3 4
+    nk_doi "$AW_CONFIG/journal/checks.tsv" 0 2; } >/dev/null 2>&1 || true
+fi
 # Thư mục việc đang trong git: commit việc dời (cả xoá chỗ cũ) — lỗi chỉ báo.
 if [ -d "$WT_MOI/$ART/$TM_MOI" ]; then
   set --; [ -z "$(git -C "$WT_MOI" ls-files -- "$ART/$TEN_CU")" ] || set -- "$ART/$TEN_CU"

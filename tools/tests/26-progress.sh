@@ -65,7 +65,7 @@ ky_vong 0 "begin: mã 0" hook begin "$P1"
 dung "end: stdout rỗng" bang "$(hook end "$P1")" ""
 dung "begin+end → 1 dòng" bang "$(tdong)" 1
 dung "…feature=feat_x, phase=plan, kind=main" bang "$(cot 1 4,5,7)" "feat_x|plan|main"
-dung "…token = tổng fixture (message.id trùng tính một lần)" bang "$(cot 1 9-12)" "4|255|8120|120"
+dung "…token = tổng fixture (message.id lặp: lấy max mỗi ô, tính một lần)" bang "$(cot 1 9-12)" "4|315|8120|120"
 dung "…seconds là số ≥ 0" sh -c "sed -n 1p '$TT' | cut -f8 | grep -Eq '^[0-9]+\$'"
 dung "…ts_begin, ts_end là giờ UTC ISO" sh -c "sed -n 1p '$TT' | cut -f1,2 | tr '\t' '\n' | grep -Ec '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\$' | grep -qx 2"
 
@@ -80,7 +80,7 @@ dung "transcript ngắn hơn offset → đọc lại từ đầu" bang "$(cot 3 
 P2="$TMP/p2.json"; payload "$P2" s2 "$ROOT/tools/tests/fixtures/transcript-claude.jsonl"
 hook end "$P2" >/dev/null
 dung "end không có begin → seconds rỗng" bang "$(cot 4 8)" ""
-dung "…ts_begin rỗng, token vẫn có" bang "$(cot 4 1,9-12)" "|4|255|8120|120"
+dung "…ts_begin rỗng, token vẫn có" bang "$(cot 4 1,9-12)" "|4|315|8120|120"
 
 SUBT="$TMP/sub.jsonl"; printf '%s\n' '{"type":"assistant","message":{"id":"msg_01SUB","role":"assistant","usage":{"input_tokens":5,"cache_creation_input_tokens":6,"cache_read_input_tokens":7,"output_tokens":8}}}' > "$SUBT"
 P3="$TMP/p3.json"; payload "$P3" s1 "$TR" "$SUBT"

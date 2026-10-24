@@ -176,6 +176,8 @@ git -C "$MT_REPO" worktree add -q --no-track -b "$TEN" "$DUONG" "$GOC" || { echo
 sha=$(git -C "$MT_REPO" rev-parse --short=10 "$GOC")
 
 echo "Đã tạo worktree $DUONG (branch $TEN, base $GOC @ $sha)" >&2
+# Mốc bắt đầu intake: /aw-intake chạy ở checkout chính, nơi aw feature --phase không ghi được.
+sh "$HERE/journal.sh" _phase "$DUONG" "$TEN_TM" intake >/dev/null 2>&1 || true
 
 # Adapter cho worktree mới — file sinh ra nằm trong đường dẫn đã exclude (aw init).
 # Stdout của build chuyển sang stderr: stdout của script này chỉ là đường dẫn.

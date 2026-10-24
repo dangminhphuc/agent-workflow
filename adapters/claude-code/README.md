@@ -121,19 +121,23 @@ mặc định cổng chặn đặt ở cuối phase):
 ## Hook đo lượt và token
 
 Tuỳ chọn, thêm cạnh hook `aw guard` trong `.claude/settings.json`: ghi thời gian và token của từng lượt
-vào nhật ký (`turns.tsv`) để `aw status` hiện tiến độ từng phase. Cả ba hook không in gì ra stdout và
-luôn thoát 0, nên không làm phiền agent.
+vào nhật ký (`turns.tsv`) để `aw status` hiện tiến độ từng phase.
 
 ```json
 {
   "hooks": {
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "aw journal _turn begin" }] }],
-    "Stop": [{ "hooks": [{ "type": "command", "command": "aw journal _turn end" }] }],
-    "SubagentStop": [{ "hooks": [{ "type": "command", "command": "aw journal _turn sub" }] }]
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "aw journal _turn begin >/dev/null 2>&1 || true" }] }],
+    "Stop": [{ "hooks": [{ "type": "command", "command": "aw journal _turn end >/dev/null 2>&1 || true" }] }],
+    "SubagentStop": [{ "hooks": [{ "type": "command", "command": "aw journal _turn sub >/dev/null 2>&1 || true" }] }]
   }
 }
 ```
 
+- Giữ nguyên phần `>/dev/null 2>&1 || true`. Engine có `_turn` tự không in gì và luôn thoát 0, nhưng
+  `aw journal` chạy bằng engine mà bản clone đang ghim: bản clone chưa nâng engine (chưa có `_turn`)
+  sẽ thoát 2, và với Claude Code mã 2 ở `UserPromptSubmit` chặn và xoá prompt, ở `Stop` thì agent không
+  dừng được. `settings.json` thường được commit, nên đồng đội chưa nâng engine (hoặc máy chưa cài `aw`)
+  cũng chạy hook này. Phần bọc làm hook vô hại với mọi engine và mọi trạng thái của wrapper.
 - `begin` đặt mốc giờ; `end` cộng token của các dòng transcript mới kể từ lần trước (mỗi `message.id`
   tính một lần) và ghi một dòng gắn với phase hiện tại của worktree; `sub` ghi lượt của subagent
   (token từ `agent_transcript_path`, không có thời gian riêng vì đã nằm trong lượt chính).

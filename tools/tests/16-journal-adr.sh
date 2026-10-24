@@ -47,6 +47,15 @@ printf '2026-10-01T10:00:00Z\tw1\tf1\tplan\n2026-10-01T11:00:00Z\tw2\tf2\tplan\n
 sh "$NK" report > "$TMP/nk-tr"
 dung "report trực tiếp: phase plan 2 việc, active tổng 8m, trung vị 4m, token 125/245" sh -c "awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tr' | grep -E '^ +plan +2 việc.*8m.*4m.*125.*245'"
 dung "…phase build 1 việc" sh -c "awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tr' | grep -E '^ +build +1 việc.*10s'"
+# Wall mỗi việc: từ mốc bắt đầu tới mốc kế tiếp của cùng việc, hoặc tới sự kiện cuối của việc.
+# f1: 10:00 → 10:06:00 (lượt cuối) = 6m; f2: 11:00 → 12:00:10 = 1h → tổng 1h6m, trung vị 33m.
+dung "…phase plan có Wall: tổng 1h6m, trung vị 33m" sh -c "awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tr' | grep -E '^ +plan +2 việc.*wall tổng 1h6m, trung vị 33m'"
+dung "…phase build không có mốc bắt đầu → Wall —" sh -c "awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tr' | grep -E '^ +build .*wall tổng —, trung vị —'"
+mv "$JD/turns.tsv" "$TMP/nk-turns.bak"; cp "$JD/checks.tsv" "$TMP/nk-checks.bak"
+printf '2026-10-01T10:30:00Z\tf1\tplan\t0\t\n2026-10-01T11:20:00Z\tf2\tplan\t1\tx\n' >> "$JD/checks.tsv"
+sh "$NK" report > "$TMP/nk-tw"
+dung "có phases, không turns → vẫn có Wall (không ghi chưa có dữ liệu)" sh -c "awk '/^Thời gian và token theo phase/ { m = 1; next } m' '$TMP/nk-tw' | grep -E '^ +plan +2 việc.*wall tổng 50m, trung vị 25m' && ! grep -q 'chưa có dữ liệu' '$TMP/nk-tw'"
+mv "$TMP/nk-turns.bak" "$JD/turns.tsv"; mv "$TMP/nk-checks.bak" "$JD/checks.tsv"
 ky_vong 0 "export có phases/turns" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/nk-a.tsv"
 dung "…dòng phases, máy" sh -c "grep -c '^phases	may-a	' '$TMP/nk-a.tsv' | grep -qx 2"
 dung "…dòng turns, máy" sh -c "grep -c '^turns	may-a	' '$TMP/nk-a.tsv' | grep -qx 5"

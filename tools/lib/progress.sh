@@ -29,7 +29,8 @@ bay() { # <chuỗi> -> một dòng, không tab
 }
 may_nay() { bay "${AW_JOURNAL_MACHINE:-$(uname -n 2>/dev/null || echo may)}"; }
 
-# Hàm awk định dạng — dùng chung cho td_tg, td_tk và bảng của status.sh.
+# Hàm awk định dạng — dùng chung cho td_tg, td_tk và bảng của status.sh; td_ep (giờ ISO → epoch,
+# như ep() của td_tinh) cho aw journal report.
 TD_AWK_DD='
 function td_tg(s,  m, h) {
   if (s !~ /^[0-9]+$/) return "—"
@@ -43,6 +44,12 @@ function td_tk(n,  k) {
   n += 0; if (n < 1000) return n ""
   k = int(n / 1000 + 0.5); if (k < 1000) return k "k"
   return sprintf("%.1fM", n / 1000000)
+}
+function td_ep(s,  y, m, d) {
+  y = substr(s, 1, 4) + 0; m = substr(s, 6, 2) + 0; d = substr(s, 9, 2) + 0
+  if (m <= 2) { y--; m += 12 }
+  return ((365*y + int(y/4) - int(y/100) + int(y/400) + int((153*(m-3)+2)/5) + d - 719469) * 86400 \
+          + substr(s, 12, 2)*3600 + substr(s, 15, 2)*60 + substr(s, 18, 2))
 }'
 
 td_tg() { awk -v v="$1" "$TD_AWK_DD"' BEGIN { print td_tg(v) }'; }
