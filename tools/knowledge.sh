@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Liệt kê kiến thức bền của repo đích mà một phase phải đọc.
 #
-#   aw knowledge spec|design <thư-mục-feature>
+#   aw knowledge spec|design|implement <thư-mục-feature>
 #
 # spec: mọi file có luật nghiệp vụ active (BR-) — spec đối chiếu yêu cầu mới với luật
 #   đang có; chưa có đường dẫn code để lọc nên in hết.
@@ -12,6 +12,11 @@
 #     đó, và file khớp knowledge_files (mặc định */ARCHITECTURE.md) nằm ở thư mục cha
 #     của đường dẫn đó — phạm vi của tài liệu module là thư mục chứa nó.
 #   - file có luật active mà Scope khớp đường dẫn đó.
+# implement — đường dẫn suy từ "Expected files:" của plan.md (file có thật trên commit Base khớp
+#   mẫu + tiền tố thư mục của mẫu, nên thư mục mới vẫn khớp; bỏ file test, thư mục ADR / luật):
+#   ADR accepted, file luật, tài liệu module liên quan như design. Việc có design thì bỏ chỉ mục
+#   ADR (design đã đọc); việc bỏ design (chore, skip) thì in chỉ mục ADR trước. Không có plan.md
+#   hay không có Expected files → chỉ chỉ mục (nếu có).
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -32,7 +37,7 @@ kq_khai knowledge.sh \
 . "$HERE/lib/env.sh"
 mt_dat
 
-BL_KIEN_THUC="spec design"
+BL_KIEN_THUC="spec design implement"
 PH="${1:-}"; DIR="${2:-}"
 case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;; esac ||
   { echo "Dùng: aw knowledge <phase> <thư-mục-feature>   (phase: $BL_KIEN_THUC)" >&2; exit 2; }
@@ -44,6 +49,11 @@ if [ "$PH" = spec ]; then
   exit 0
 fi
 TM=$(adr_thu_muc "$MT_CONV")
+if [ "$PH" = implement ]; then
+  if kc_bo_design "$DIR" && [ -f "$R/$TM/README.md" ]; then printf '%s\n' "$TM/README.md"; fi
+  kt_duong_plan "$DIR" | kt_lay "$R" "$MT_CONV"
+  exit 0
+fi
 [ -f "$R/$TM/README.md" ] && printf '%s\n' "$TM/README.md"
 
 # Đường dẫn có thật trong repo, ghi ở mục "## Existing code" của tdd.md.

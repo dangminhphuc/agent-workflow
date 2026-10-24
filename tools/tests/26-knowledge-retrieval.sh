@@ -41,4 +41,30 @@ thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
 dung "design: output không đổi (hồi quy)" bang "$(sh "$KT" design "$F" 2>/dev/null | tr '\n' ' ')" \
   "docs/adr/README.md docs/adr/0001-x-dec-001.md docs/product/rules/billing.md src/ARCHITECTURE.md "
 
+
+nhom "knowledge implement: kiến thức bền theo Expected files"
+tao_fixture
+kt_fixture
+dung "implement: Expected files src/* → ADR Scope src/*, luật, ARCHITECTURE cha; không ADR superseded/lib" \
+  bang "$(sh "$KT" implement "$F" 2>/dev/null | tr '\n' ' ')" \
+  "docs/adr/0001-x-dec-001.md docs/product/rules/billing.md src/ARCHITECTURE.md "
+dung "implement: feature (có design) → không in chỉ mục ADR" sh -c "! sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/adr/README.md'"
+thay "$F/plan.md" '`src/*` `test/*`' '`src/moi/**` `test/*`'
+dung "implement: thư mục mới chưa có trên base → vẫn khớp qua tiền tố" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
+thay "$F/plan.md" '`src/moi/**` `test/*`' '`test/*` `docs/adr/*`'
+thay "$F/plan.md" '`src/b.txt`' '`test/b.test.js`'
+dung "implement: chỉ file test và thư mục ADR → không in gì" bang "$(sh "$KT" implement "$F" 2>/dev/null)" ""
+thay "$F/plan.md" '`test/*` `docs/adr/*`' '`src/*` `test/*`'
+thay "$F/plan.md" '`test/b.test.js`' '`src/b.txt`'
+thay "$F/intake.md" "@ \`$(git -C "$R" rev-parse --short main)\`" ''
+dung "implement: Base thiếu sha → vẫn in src/ARCHITECTURE.md" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
+rm -f "$F/plan.md"
+ky_vong 0 "implement: không có plan.md → ĐÃ LIỆT KÊ" sh "$KT" implement "$F"
+dung "implement: không có plan.md → không in gì" bang "$(sh "$KT" implement "$F" 2>/dev/null)" ""
+
+nhom "knowledge implement: chore bỏ design thì in chỉ mục ADR trước"
+tao_fixture chore chore_v
+kt_fixture
+dung "implement chore: dòng đầu là chỉ mục ADR" bang "$(sh "$KT" implement "$F" 2>/dev/null | head -1)" "docs/adr/README.md"
+
 ket_thuc

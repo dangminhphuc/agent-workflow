@@ -50,6 +50,50 @@ kt_lay() {
   } | awk '!t[$0]++'
 }
 
+# kt_duong_plan <thư-mục-feature> -> đường dẫn suy từ "Expected files:" của plan.md (khử trùng, sắp xếp).
+# Token không glob → chính nó. Token có glob → file trên commit Base khớp mau_ere(token, 0) VÀ tiền tố
+# thư mục trước ký tự glob đầu (bỏ "/" cuối; rỗng thì bỏ). Thiếu sha Base → kc_mb; không có commit →
+# chỉ tiền tố (thư mục mới chưa có trên base vẫn khớp). Bỏ file test, thư mục ADR / luật, thư mục việc.
+kt_duong_plan() {
+  [ -f "$1/plan.md" ] || return 0
+  _kpsha=$(intake_base_dong "$1" | awk '{ print $2 }')
+  [ -n "$_kpsha" ] || _kpsha=$(kc_mb "$1" 2>/dev/null)
+  _kptop=$(git_top "$1" 2>/dev/null)
+  if [ -n "$_kpsha" ] && [ -n "$_kptop" ] && git -C "$_kptop" cat-file -e "$_kpsha^{commit}" 2>/dev/null; then
+    _kpcay=$(git -C "$_kptop" ls-tree -r --name-only "$_kpsha")
+  else _kpcay=""; fi
+  _kpadr=$(adr_thu_muc "$MT_CONV"); _kplt=$(luat_thu_muc "$MT_CONV")
+  { printf '%s\n' "$_kpcay"; printf '\001\n'; cat "$1/plan.md"; } | awk "$MAU_ERE_AWK"'
+    function tien_to(m,   i, c) {
+      i = match(m, /[*?[]/); if (i == 0) return m
+      c = substr(m, 1, i - 1); if (c !~ /\//) return ""
+      sub(/\/[^\/]*$/, "", c); return c
+    }
+    !pl && $0 == "\001" { pl = 1; next }
+    !pl { if ($0 != "") cay[++nc] = $0; next }
+    { sub(/\r$/, "") }
+    /^###[ \t]/ { t = match($0, /TSK-[0-9]+/); next }
+    /^##[ \t]/ { t = 0; next }
+    t && /^[ \t]*-[ \t]*\**Expected files\**:/ {
+      s = $0
+      while (match(s, /`[^`]+`/)) {
+        m = substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH)
+        if (m !~ /[*?[]/) { print m; continue }
+        pre = tien_to(m); if (pre != "") print pre
+        re = mau_ere(m, 0)
+        for (i = 1; i <= nc; i++) if (cay[i] ~ re && (pre == "" || index(cay[i], pre "/") == 1)) print cay[i]
+      }
+    }' | sort -u | while IFS= read -r _kpp; do
+      [ -n "$_kpp" ] || continue
+      _kpp=${_kpp#./}; _kpp=${_kpp%/}
+      tm_bo "$_kpp" && continue
+      case "$_kpp/" in "$_kpadr"/*|"$_kplt"/*) continue ;; esac
+      kc_khop_khoa "$1" test_files "$_kpp" && continue
+      kc_khop_khoa "$1" test_files "$_kpp/x" && continue
+      printf '%s\n' "$_kpp"
+    done
+}
+
 # kt_tai_lieu <gốc repo> <conventions.md> -> "<file>|<glob phạm vi…>" mỗi tài liệu
 kt_tai_lieu() {
   _kkf=$(conv_get "$2" knowledge_files); _kkf=${_kkf:-*/ARCHITECTURE.md}
