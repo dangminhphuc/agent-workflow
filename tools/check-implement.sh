@@ -190,8 +190,7 @@ if [ -n "$gct" ]; then
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-# giữ: CAP-verify-06
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; kt_canh_bao_muc "$DIR"; } )
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""
@@ -200,6 +199,15 @@ if [ -n "$cb" ]; then
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Mỗi cảnh báo đã ghi cách sửa — sửa luôn, đừng để tới review."
 fi
+# Heading trùng trong tài liệu kiến thức: ref chỉ trỏ mục đầu.
+ktw=$(kt_canh_bao_muc "$DIR")
+if [ -n "$ktw" ]; then
+  echo ""
+  n_cb=$((n_cb + $(printf '%s\n' "$ktw" | wc -l | tr -d ' ')))
+  # giữ: CAP-verify-06
+  printf '%s\n' "$ktw" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+fi
+
 td=$(kc_tu_dich "$DIR")
 if [ -n "$td" ]; then
   echo ""
