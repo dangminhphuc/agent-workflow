@@ -59,7 +59,7 @@
 | SP24 | Hai nhánh tính năng chưa merge: làn light + `mr_include_artifacts`, điểm mù nêu story/AC | sau | chặn | — | Lấy lại hay bỏ | | | |
 | SP25 | Open question có mã riêng `Q-NNN` (bỏ lặp với spec.md) | sau | xong | — | Chốt 4 điểm ở spec § 7 (theo đề xuất) | [spec](specs/2026-10-23-sp25-open-question-ma-rieng-design.md) | — (người chọn bỏ plan) | [#92](https://github.com/dangminhphuc/agent-workflow/pull/92) |
 | SP26 | Durable knowledge: truy xuất theo phạm vi ở implement, review | 7 | xong | — | Chốt: không thêm luật chặn mới ở implement; review chấm verdict đúng tập diff chạm | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § A | [plan](plans/2026-10-24-sp26-knowledge-implement-review.md) | [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) |
-| SP27 | Durable knowledge: chunk theo mục và khối ID | 7 | đang làm | SP26 | Chốt: neo heading nguyên văn, chỉ `##`; thêm 5 điểm (spec § B, 2026-10-25) | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § B | [plan](plans/2026-10-25-sp27-knowledge-theo-muc.md) | |
+| SP27 | Durable knowledge: chunk theo mục và khối ID | 7 | xong | SP26 | Chốt: neo heading nguyên văn, chỉ `##`; thêm 5 điểm (spec § B, 2026-10-25) | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § B | [plan](plans/2026-10-25-sp27-knowledge-theo-muc.md) | [#107](https://github.com/dangminhphuc/agent-workflow/pull/107) |
 | SP28 | Durable knowledge: chỉ mục chung | 7 | chờ | SP27 | Chốt: mặc định bật, kiểm khi file có | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § C | | |
 | SP29 | Durable knowledge: tìm theo từ khoá | sau | chặn | SP28, số liệu SP9 | Có đáng làm không | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § D | | |
 | SP30 | Durable knowledge: liên kết một bước, trích nguồn | sau | chặn | SP28, số liệu SP9 | Chốt: chỉ cảnh báo; chặn chờ số liệu SP9 | [spec](specs/2026-10-23-sp26-30-rag-markdown-design.md) § E | | |
@@ -191,7 +191,7 @@ bước và bảng `## Knowledge used`.
 
 **Đã chốt (2026-10-24).** Spec đã duyệt, mọi phương án "Nghiêng về" được chọn (spec ghi ở từng mục **Đã chốt**).
 
-**Tiến độ.** SP26 xong ở [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) (`aw knowledge implement` / `review`). SP27–SP30 còn lại.
+**Tiến độ.** SP26 xong ở [#93](https://github.com/dangminhphuc/agent-workflow/pull/93) (`aw knowledge implement` / `review`), SP27 ở [#107](https://github.com/dangminhphuc/agent-workflow/pull/107) (ref `<file>#<neo>`, `aw knowledge show`). SP28–SP30 còn lại.
 
 ### SP31 — Tên lệnh theo stage SDLC
 

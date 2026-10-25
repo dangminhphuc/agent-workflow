@@ -20,3 +20,4 @@
   và cây làm việc, heading chứa `|` bị chặn, verdict `updated` ngoài khối cảnh báo ở implement / chặn ở
   review.
 - Plan SP27: `docs/superpowers/plans/2026-10-25-sp27-knowledge-theo-muc.md` (5 task); roadmap SP27 → `đang làm`.
+- Roadmap: SP27 → `xong` (#107).
