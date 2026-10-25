@@ -112,7 +112,7 @@ qua `show`. Tài liệu không khai mục nào → ref `<file>`, output như cũ
 **Interfaces:**
 - Consumes: `kt_muc` (đọc `-` cho bản trên `Base:`), `kt_tai_lieu` (Task 2).
 - Produces: `kt_dong_doi <thư-mục-feature> <file>` → số dòng (trên cây làm việc) diff thêm/sửa, từ
-  `git diff -U0 <base> -- <file>`; dòng xoá ghi số dòng kề sau nó.
+  `git diff -U0 <base> -- <file>`; hunk chỉ xoá (`+c,0`) ghi cả dòng `c` (kề trước) và `c+1` (kề sau); `c = 0` chỉ ghi 1.
 - Produces: `kt_anh_huong` giữ dạng `<ref>|<0|1>|<file đổi trong phạm vi>`; tập ref = hợp ref trên cây làm
   việc và ref trên `Base:` (Đã chốt 5). Cột 2 của `<file>#<neo>` = 1 khi: khối có ở cả hai bên và
   `kt_dong_doi` có dòng trong dải; hoặc neo chỉ có ở một bên (đổi tên / thêm / xoá). Ref `<file>` giữ nghĩa

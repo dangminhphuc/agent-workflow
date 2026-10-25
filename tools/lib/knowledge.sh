@@ -190,14 +190,15 @@ kt_tai_lieu() {
 }
 
 # kt_dong_doi <thư-mục-feature> <file> -> số dòng (trên cây làm việc) mà diff so với merge-base thêm/sửa,
-# từ "git diff -U0"; hunk chỉ xoá ghi số dòng kề sau chỗ xoá.
+# từ "git diff -U0"; hunk chỉ xoá ("+c,0") ghi cả dòng kề trước (c) và kề sau (c+1) — xoá dòng cuối khối
+# vẫn tính cho khối đó; c = 0 chỉ ghi 1.
 kt_dong_doi() {
   _kdt=$(kc_top "$1") || return 0
   _kdm=$(kc_mb "$1") || return 0
   git -C "$_kdt" -c core.quotepath=off diff -U0 "$_kdm" -- "$2" 2>/dev/null | awk '
     /^@@/ {
       s = $3; sub(/^\+/, "", s); n = split(s, a, ","); c = a[1] + 0; d = (n > 1 ? a[2] + 0 : 1)
-      if (d == 0) print c + 1; else for (i = c; i < c + d; i++) print i
+      if (d == 0) { if (c > 0) print c; print c + 1 } else for (i = c; i < c + d; i++) print i
     }'
 }
 

@@ -156,6 +156,18 @@ dung "luật: sửa khối BR-BILLING-002 → 002|1, 001|0" sh -c "
   o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'billing.md#BR-BILLING-002|1' && printf '%s' \"\$o\" | grep -q 'billing.md#BR-BILLING-001|0'"
 dung "kt_dong_doi: dòng sửa trong billing.md" bang "$(sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/knowledge.sh'; kt_dong_doi '$F' docs/product/rules/billing.md")" "9"
 
+nhom "knowledge: xoá dòng cuối khối"
+ks_fixture
+g checkout -q main
+mkdir -p "$R/src/pay"; echo x > "$R/src/pay/x.txt"
+g add src docs; g commit -q -m "kien thuc ben"
+g checkout -q feat_x; g merge -q main
+echo y >> "$R/src/pay/x.txt"
+awk 'NR != 10' "$R/src/ARCHITECTURE.md" > "$TMP/a.t"; mv "$TMP/a.t" "$R/src/ARCHITECTURE.md"
+awk 'NR != 7' "$R/docs/product/rules/billing.md" > "$TMP/b.t"; mv "$TMP/b.t" "$R/docs/product/rules/billing.md"
+dung "xoá dòng cuối của ## Thanh toán → #Thanh toán|1" sh -c "o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'src/ARCHITECTURE.md#Thanh toán|1'"
+dung "xoá dòng cuối khối BR-BILLING-001 → 001|1" sh -c "o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'billing.md#BR-BILLING-001|1'"
+
 nhom "knowledge: phase sinh ra dùng aw knowledge show"
 dung "workflow/phases: spec, design, implement, review nhắc aw knowledge show" sh -c "
   for p in 01-spec 02-design 04-implement 05-review; do grep -q 'aw knowledge show' \"$T/../workflow/phases/\$p.md\" || exit 1; done"
