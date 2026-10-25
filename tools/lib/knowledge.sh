@@ -69,7 +69,8 @@ kt_phan_con() {
 # kt_lay <gốc repo> <conventions.md> -> kiến thức bền liên quan tới các đường dẫn ở stdin
 # (mỗi dòng một, tương đối với gốc repo, có thể chưa tồn tại): ADR accepted có Scope khớp,
 # file có luật active khớp, tài liệu module (knowledge_files) có thư mục là cha của đường dẫn.
-# Đường dẫn là thư mục có thật → khớp thêm "<p>/x". Mỗi file in một lần.
+# Đường dẫn là thư mục có thật → khớp thêm "<p>/x". In ref: "<file>" (ADR, tài liệu module có đường dẫn
+# trong thư mục), "<file>#<neo>" (mục khai Scope khớp), "<file>#<BR-ID>" (luật active khớp). Mỗi ref một lần.
 kt_lay() {
   _kldd=$(cat)
   [ -n "$_kldd" ] || return 0
@@ -87,7 +88,16 @@ kt_lay() {
       done
     done
 
-    printf '%s\n' "$_kldd" | luat_lien_quan "$1" "$2"
+    luat_ds "$1" "$2" | while IFS='|' read -r _klf _klid _klst _klsc; do
+      [ "$_klst" = active ] && [ -n "$_klsc" ] || continue
+      printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
+        [ -n "$_klp" ] || continue
+        set -f
+        # shellcheck disable=SC2086
+        if khop_glob "$_klp" $_klsc || { [ -d "$1/$_klp" ] && khop_glob "$_klp/x" $_klsc; }; then set +f; printf '%s#%s\n' "$_klf" "$_klid"; break; fi
+        set +f
+      done
+    done
 
     _klkf=$(conv_get "$2" knowledge_files); _klkf=${_klkf:-*/ARCHITECTURE.md}
     git -C "$1" ls-files 2>/dev/null | while IFS= read -r _klf; do
@@ -96,6 +106,15 @@ kt_lay() {
       # shellcheck disable=SC2086
       khop_glob "$_klf" $_klkf || { set +f; continue; }
       set +f
+      kt_muc "$1/$_klf" | while IFS='	' read -r _klneo _kla _klb _klg; do
+        printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
+          [ -n "$_klp" ] || continue
+          set -f
+          # shellcheck disable=SC2086
+          if khop_glob "$_klp" $_klg || { [ -d "$1/$_klp" ] && khop_glob "$_klp/x" $_klg; }; then set +f; printf '%s#%s\n' "$_klf" "$_klneo"; break; fi
+          set +f
+        done
+      done
       _kld=$(dirname "$_klf")
       printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
         case "$_klp/" in "$_kld"/*) printf '%s\n' "$_klf"; break ;; esac
@@ -148,22 +167,26 @@ kt_duong_plan() {
     done
 }
 
-# kt_tai_lieu <gốc repo> <conventions.md> -> "<file>|<glob phạm vi…>" mỗi tài liệu
+# kt_tai_lieu <gốc repo> <conventions.md> -> "<ref>|<glob phạm vi…>": tài liệu module (mục khai Scope →
+# "<file>#<neo>|<glob mục>" mỗi mục, cộng "<file>|<thư mục>/*"), ADR "<file>|<Scope>", luật "<file>#<BR-ID>|<Scope>".
 kt_tai_lieu() {
   _kkf=$(conv_get "$2" knowledge_files); _kkf=${_kkf:-*/ARCHITECTURE.md}
   git -C "$1" ls-files --cached --others --exclude-standard 2>/dev/null | while IFS= read -r _kf; do
     tm_bo "$_kf" && continue
     set -f
     # shellcheck disable=SC2086
-    if khop_glob "$_kf" $_kkf; then set +f; printf '%s|%s/*\n' "$_kf" "$(dirname "$_kf")"; else set +f; fi
+    if khop_glob "$_kf" $_kkf; then
+      set +f
+      kt_muc "$1/$_kf" | while IFS='	' read -r _kneo _kda _kcu _kg; do printf '%s#%s|%s\n' "$_kf" "$_kneo" "$_kg"; done
+      printf '%s|%s/*\n' "$_kf" "$(dirname "$_kf")"
+    else set +f; fi
   done
   _ktm=$(adr_thu_muc "$2")
   adr_ds "$1/$_ktm" | while IFS= read -r _kf; do
     [ "$(adr_truong "$_kf" Status)" = accepted ] || continue
     _ksc=$(adr_truong "$_kf" Scope); [ -n "$_ksc" ] && printf '%s|%s\n' "${_kf#"$1"/}" "$_ksc"
   done
-  luat_ds "$1" "$2" | awk -F'|' '$3 == "active" && $4 != "" { if (!($1 in s)) thu[++n] = $1; s[$1] = s[$1] " " $4 }
-    END { for (i = 1; i <= n; i++) { v = s[thu[i]]; sub(/^ /, "", v); print thu[i] "|" v } }'
+  luat_ds "$1" "$2" | awk -F'|' '$3 == "active" && $4 != "" { print $1 "#" $2 "|" $4 }'
 }
 
 # kt_anh_huong <thư-mục-feature> -> "<tài liệu>|<1 nếu tài liệu đổi trong diff, 0 nếu không>|<file đổi trong phạm vi>"
@@ -180,14 +203,14 @@ kt_anh_huong() {
     _kvd=$(printf '%s\n' "$_kdoi" | while IFS= read -r _kp; do
       # "(" mở đầu pattern: bash 3.2 (sh của macOS) đọc ")" của pattern trong $(…) là dấu đóng $(.
       case "$_kp" in ("$_kad"/*|"$_kld"/*) continue ;; esac
-      printf '%s\n' "$_kds" | awk -F'|' -v p="$_kp" '$1 == p { f = 1 } END { exit !f }' && continue
+      printf '%s\n' "$_kds" | awk -F'|' -v p="$_kp" '{ x = $1; sub(/#.*/, "", x) } x == p { f = 1 } END { exit !f }' && continue
       set -f
       # shellcheck disable=SC2086
       if khop_glob "$_kp" $_ksc; then set +f; printf '%s\n' "$_kp"; break; fi
       set +f
     done)
     [ -n "$_kvd" ] || continue
-    if printf '%s\n' "$_kdoi" | grep -qxF "$_kf"; then printf '%s|1|%s\n' "$_kf" "$_kvd"
+    if printf '%s\n' "$_kdoi" | grep -qxF "${_kf%%#*}"; then printf '%s|1|%s\n' "$_kf" "$_kvd"
     else printf '%s|0|%s\n' "$_kf" "$_kvd"; fi
   done
 }
@@ -220,7 +243,7 @@ kt_loi_review() {
     return 0
   fi
   printf '%s\n' "$_kah" | while IFS='|' read -r _kf _kd _kvd; do
-    _kdong=$(printf '%s\n' "$_kbang" | awk -F '	' -v f="$_kf" '$1 == f { print; exit }')
+    _kdong=$(printf '%s\n' "$_kbang" | awk -F '	' -v f="$_kf" -v g="${_kf%%#*}" '$1 == f || $1 == g { print; exit }')
     _kkl=$(printf '%s' "$_kdong" | cut -f2); _kly=$(printf '%s' "$_kdong" | cut -f3)
     case "$_kkl" in
       "") echo "durable knowledge \"$_kf\": không có verdict trong \"## Durable knowledge\" (diff đụng $_kvd)" ;;

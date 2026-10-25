@@ -47,7 +47,7 @@ Do each task in `plan.md` per `tdd.md`, **without leaving scope**. The typical f
 
 ## Loop
 
-**Before the first task:** `aw knowledge implement <dir>` — read every file it prints.
+**Before the first task:** `aw knowledge implement <dir>` — `aw knowledge show` every ref it prints.
 
 ```
 aw ready <dir>

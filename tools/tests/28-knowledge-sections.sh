@@ -81,4 +81,33 @@ ks_fixture
 printf '\n## Thanh toán\n- Scope: `src/dup/*`\nbản hai\n' >> "$R/src/ARCHITECTURE.md"
 dung "show: lấy mục đầu" sh -c "o=\$(sh '$KT' show 'src/ARCHITECTURE.md#Thanh toán' 2>/dev/null); printf '%s\n' \"\$o\" | grep -q 'src/pay' && ! printf '%s\n' \"\$o\" | grep -q 'bản hai'"
 
+nhom "knowledge: phát ref (design / spec)"
+ks_fixture
+printf '\n### BR-BILLING-003: ba\n- Rule: cũ\n- Scope: `src/*`\n- Status: deprecated\n' >> "$R/docs/product/rules/billing.md"
+mkdir -p "$R/src/pay" "$R/src/b"; echo x > "$R/src/pay/x.txt"; echo x > "$R/src/b/y.txt"
+g add -A; g commit -q -m "kien thuc ben"
+ks_design() { thay "$F/tdd.md" 'Module src/a.' "Module \`$1\`."; sh "$KT" design "$F" 2>/dev/null; thay "$F/tdd.md" "Module \`$1\`." 'Module src/a.'; }
+O=$(ks_design src/pay/x.txt)
+dung "design src/pay/x.txt: ref mục Thanh toán + file + luật 001/002" bang "$(printf '%s\n' "$O" | sort | tr '\n' ' ')" \
+  "docs/product/rules/billing.md#BR-BILLING-001 docs/product/rules/billing.md#BR-BILLING-002 src/ARCHITECTURE.md src/ARCHITECTURE.md#Thanh toán "
+dung "design: luật deprecated không in" sh -c "! printf '%s\n' '$O' | grep -q BR-BILLING-003"
+dung "design: mỗi ref một lần" bang "$(printf '%s\n' "$O" | sort | uniq -d)" ""
+O=$(ks_design src/b/y.txt)
+dung "design src/b/y.txt: có #Mục #2, không #Thanh toán" sh -c "printf '%s\n' '$O' | grep -qx 'src/ARCHITECTURE.md#Mục #2' && ! printf '%s\n' '$O' | grep -q 'Thanh toán'"
+dung "spec: ref từng luật active, không dòng file trần, không deprecated" \
+  bang "$(sh "$KT" spec "$F" 2>/dev/null | tr '\n' ' ')" "docs/product/rules/billing.md#BR-BILLING-001 docs/product/rules/billing.md#BR-BILLING-002 "
+
+nhom "knowledge: tài liệu không khai mục → như cũ"
+ks_fixture
+printf '# Kiến trúc src\n\nKhông có mục khai Scope.\n' > "$R/src/ARCHITECTURE.md"
+g add -A; g commit -q -m "kien thuc ben"
+mkdir -p "$R/src/pay"; echo x > "$R/src/pay/x.txt"; g add -A; g commit -q -m x
+thay "$F/tdd.md" 'Module src/a.' 'Module `src/pay/x.txt`.'
+dung "design: tài liệu không khai mục → chỉ src/ARCHITECTURE.md trần (byte như trước)" \
+  bang "$(sh "$KT" design "$F" 2>/dev/null | grep -v billing | tr '\n' ' ')" "src/ARCHITECTURE.md "
+
+nhom "knowledge: phase sinh ra dùng aw knowledge show"
+dung "workflow/phases: spec, design, implement, review nhắc aw knowledge show" sh -c "
+  for p in 01-spec 02-design 04-implement 05-review; do grep -q 'aw knowledge show' \"$T/../workflow/phases/\$p.md\" || exit 1; done"
+
 ket_thuc

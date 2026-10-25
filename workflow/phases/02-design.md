@@ -67,7 +67,7 @@ Mode 2 prevents anchoring on the agent's option. Never edit the human's D; write
 
 ## Steps
 
-1. **Survey existing code before designing.** `aw knowledge design <dir>` first (ADR index), read every file it prints. Find where similar problems are solved; record modules to touch and conventions to follow in `## Existing code`. Then run `aw knowledge design <dir>` again to get the ADRs and module docs (`ARCHITECTURE.md`) for what you touch.
+1. **Survey existing code before designing.** `aw knowledge design <dir>` first (ADR index), `aw knowledge show` every ref it prints. Find where similar problems are solved; record modules to touch and conventions to follow in `## Existing code`. Then run `aw knowledge design <dir>` again to get the ADRs and module docs (`ARCHITECTURE.md`) for what you touch.
 2. **State DEC-xxx.** Every choice someone could make differently — especially hard to reverse (many call sites, data migration, external interface): problem, ≥ 2 options + trade-offs, choice, `Author`, `- [ ] **Approved by human**` **unticked**. Obvious points need no D; zero DEC is allowed.
    - A DEC going against an `accepted` ADR: say so and add `- Supersedes: ADR-NNNN` (needs `- Promote: adr`). Never silently diverge from an ADR.
    - A DEC that stays true after this job (cross-module, hard to reverse): propose `- Promote: adr` + `- Scope: <glob>`. `04-implement` copies it to an ADR once approved.

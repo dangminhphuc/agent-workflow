@@ -90,9 +90,9 @@ ky_vong 1 "spec của việc khác dùng ID đã có → KHÔNG ĐẠT" sh "$SK"
 dung "…nêu ID đã có" sh -c "sh '$SK' '$F2' | grep -q 'BR-BILLING-001 đã có trong docs/product/rules/billing.md'"
 rm -rf "$F2"
 # aw knowledge: spec in mọi file có luật active; design lọc theo Scope
-dung "knowledge spec: in file có luật active" bang "$(sh "$KT" spec "$F" 2>/dev/null)" "docs/product/rules/billing.md"
+dung "knowledge spec: ref luật active, không dòng file trần" bang "$(sh "$KT" spec "$F" 2>/dev/null | tr "\n" " ")" "$(sh "$KT" spec "$F" 2>/dev/null | grep "billing.md#BR-" | tr "\n" " ")"
 thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
-dung "knowledge design: luật active có Scope khớp Existing code" sh -c "sh '$KT' design '$F' 2>/dev/null | grep -qx 'docs/product/rules/billing.md'"
+dung "knowledge design: luật active có Scope khớp Existing code" sh -c "sh '$KT' design '$F' 2>/dev/null | grep -qx 'docs/product/rules/billing.md#BR-BILLING-001'"
 thay "$F/tdd.md" 'Module `src/a.txt`.' 'Module `test/a.test.js`.'
 dung "…Scope không khớp → không in" sh -c "! sh '$KT' design '$F' 2>/dev/null | grep -q 'billing.md'"
 tao_fixture
@@ -112,7 +112,7 @@ printf '# Business rules — kho\n\n### BR-KHO-001: y\n- Rule: y\n- Scope: `src/
 g add src/ARCHITECTURE.md lib/ARCHITECTURE.md docs/adr docs/product; g commit -q -m "kien thuc ben"
 g checkout -q feat_x; g merge -q main
 kt_ah() { sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/sha256.sh'; . '$T/lib/approval-tick.sh'; . '$T/lib/adr.sh'; . '$T/lib/quote.sh'; . '$T/lib/rule.sh'; . '$T/lib/knowledge.sh'; kt_anh_huong '$F'" | cut -d'|' -f1,2 | sort | tr '\n' ' '; }
-dung "tài liệu bị diff ảnh hưởng: module cha, ADR và file luật có Scope khớp; bỏ module khác" bang "$(kt_ah)" "docs/adr/0001-cu.md|0 docs/product/rules/kho.md|0 src/ARCHITECTURE.md|0 "
+dung "tài liệu bị diff ảnh hưởng: module cha, ADR và file luật có Scope khớp; bỏ module khác" bang "$(kt_ah)" "docs/adr/0001-cu.md|0 docs/product/rules/kho.md#BR-KHO-001|0 src/ARCHITECTURE.md|0 "
 ky_vong 0 "implement: tài liệu có thể lỗi thời → vẫn ĐẠT (chỉ cảnh báo)" sh "$HT" "$F"
 dung "…cảnh báo nêu tài liệu và file đổi" sh -c "sh '$HT' '$F' 2>/dev/null | grep -q 'CẢNH BÁO.*diff đụng src/a.txt (phạm vi của src/ARCHITECTURE.md) mà src/ARCHITECTURE.md không đổi'"
 dung "…không nêu tài liệu module khác" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -q 'lib/ARCHITECTURE.md'"

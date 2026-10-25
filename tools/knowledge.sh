@@ -4,7 +4,8 @@
 #   aw knowledge spec|design|implement|review <thư-mục-feature>
 #   aw knowledge show <ref>…     (ref = <file> hoặc <file>#<neo>; chạy ở gốc repo)
 #
-# spec: mọi file có luật nghiệp vụ active (BR-) — spec đối chiếu yêu cầu mới với luật
+# Mọi dòng in ra là ref: <file> hoặc <file>#<neo> (mục "##" khai Scope, hoặc ID luật BR-…).
+# spec: mọi luật nghiệp vụ active (BR-), mỗi luật một ref — spec đối chiếu yêu cầu mới với luật
 #   đang có; chưa có đường dẫn code để lọc nên in hết.
 # design — in (mỗi dòng một đường dẫn tương đối với gốc repo):
 #   - chỉ mục ADR (<knowledge_adr_dir>/README.md) — luôn, để thấy quyết định đã có
@@ -71,7 +72,7 @@ case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;
 
 R=$MT_REPO
 if [ "$PH" = spec ]; then
-  luat_ds "$R" "$MT_CONV" | awk -F'|' '$3 == "active" && !t[$1]++ { print $1 }'
+  luat_ds "$R" "$MT_CONV" | awk -F'|' '$3 == "active" && !t[$1 "#" $2]++ { print $1 "#" $2 }'
   exit 0
 fi
 if [ "$PH" = review ]; then
