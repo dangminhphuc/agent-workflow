@@ -124,7 +124,7 @@ dung "…nêu thiếu mục" sh -c "sh '$RS' '$F' 2>/dev/null | grep -q 'thiếu
 dk_review() { viet_review; printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; ghi_tree_review; }
 DK_DU='| `src/ARCHITECTURE.md` | pass | |
 | `docs/adr/0001-cu.md` | pass | |
-| `docs/product/rules/kho.md` | not applicable | đổi chữ, không đổi luật kho |'
+| `docs/product/rules/kho.md#BR-KHO-001` | not applicable | đổi chữ, không đổi luật kho |'
 dk_review "$DK_DU"
 ky_vong 0 "review: mỗi tài liệu bị ảnh hưởng có verdict hợp lệ → ĐẠT" sh "$RS" "$F"
 dk_review "$(printf '%s\n' "$DK_DU" | grep -v 'docs/adr')"

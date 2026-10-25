@@ -106,6 +106,56 @@ thay "$F/tdd.md" 'Module src/a.' 'Module `src/pay/x.txt`.'
 dung "design: tài liệu không khai mục → chỉ src/ARCHITECTURE.md trần (byte như trước)" \
   bang "$(sh "$KT" design "$F" 2>/dev/null | grep -v billing | tr '\n' ' ')" "src/ARCHITECTURE.md "
 
+nhom "knowledge: cross-check stale theo ref"
+ks_fixture
+g checkout -q main
+mkdir -p "$R/src/pay" "$R/src/b"; echo x > "$R/src/pay/x.txt"; echo x > "$R/src/b/y.txt"
+g add src docs; g commit -q -m "kien thuc ben"
+g checkout -q feat_x; g merge -q main
+echo y >> "$R/src/pay/x.txt"
+A="$R/src/ARCHITECTURE.md"; HT="$T/check-implement.sh"; RS="$T/check-review.sh"
+ks_ah() { sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/sha256.sh'; . '$T/lib/approval-tick.sh'; . '$T/lib/adr.sh'; . '$T/lib/quote.sh'; . '$T/lib/rule.sh'; . '$T/lib/knowledge.sh'; kt_anh_huong '$F'" | cut -d'|' -f1,2 | sort | tr '\n' ' '; }
+dung "kt_anh_huong: diff đụng src/pay → có #Thanh toán|0, không #Mục #2" sh -c "
+  o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'src/ARCHITECTURE.md#Thanh toán|0' && ! printf '%s' \"\$o\" | grep -q 'Mục #2'"
+dung "implement: cảnh báo stale cho #Thanh toán, câu theo khối" sh -c "sh '$HT' '$F' 2>/dev/null | grep -qF 'diff đụng src/pay/x.txt (phạm vi của src/ARCHITECTURE.md#Thanh toán) mà khối src/ARCHITECTURE.md#Thanh toán không đổi'"
+dung "implement: không cảnh báo #Mục #2" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -qF 'Mục #2'"
+ks_rv() { sh "$HT" "$F" >/dev/null 2>&1; viet_review; printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n%s\n' "$1" >> "$F/review.md"; toc_f review.md; ghi_tree_review; }
+KS_DU='| `src/ARCHITECTURE.md` | pass | |
+| `src/ARCHITECTURE.md#Thanh toán` | updated | |
+| `docs/product/rules/billing.md#BR-BILLING-001` | pass | |
+| `docs/product/rules/billing.md#BR-BILLING-002` | pass | |'
+thay "$A" 'Chi tiết mục hai.' 'Chi tiết mục hai, sửa.'
+ks_rv "$KS_DU"
+ky_vong 1 "review: sửa dòng trong ## Mục #2, #Thanh toán ghi updated → KHÔNG ĐẠT" sh "$RS" "$F"
+dung "…câu updated theo khối" sh -c "sh '$RS' '$F' 2>/dev/null | grep -qF 'verdict \"updated\" nhưng diff không đổi dòng nào trong khối này'"
+thay "$A" 'Chi tiết mục hai, sửa.' 'Chi tiết mục hai.'
+thay "$A" 'Luồng thanh toán.' 'Luồng thanh toán mới.'
+ks_rv "$KS_DU"
+ky_vong 0 "review: sửa dòng trong ## Thanh toán → ĐẠT" sh "$RS" "$F"
+ks_rv "$(printf '%s\n' "$KS_DU" | grep -v 'Thanh toán')"
+ky_vong 1 "review: chỉ ghi file trần cho ref có neo → KHÔNG ĐẠT (verdict file không phủ mục)" sh "$RS" "$F"
+thay "$A" 'Luồng thanh toán mới.' 'Luồng thanh toán.'
+echo y >> "$R/src/b/y.txt"
+thay "$A" 'Chi tiết mục hai.' 'Chi tiết mục hai, cuối.'
+dung "mục cuối file, sửa dòng cuối → #Mục #2|1, #Thanh toán|0" sh -c "
+  o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'src/ARCHITECTURE.md#Mục #2|1' && printf '%s' \"\$o\" | grep -q 'src/ARCHITECTURE.md#Thanh toán|0'"
+ks_rv '| `src/ARCHITECTURE.md` | pass | |
+| `src/ARCHITECTURE.md#Thanh toán` | pass | |
+| `src/ARCHITECTURE.md#Mục #2` | updated | |
+| `docs/product/rules/billing.md#BR-BILLING-001` | pass | |
+| `docs/product/rules/billing.md#BR-BILLING-002` | pass | |'
+ky_vong 0 "review: mục cuối file sửa dòng cuối, updated → ĐẠT" sh "$RS" "$F"
+thay "$A" 'Chi tiết mục hai, cuối.' 'Chi tiết mục hai.'
+thay "$A" '## Thanh toán ' '## Thanh toán 2'
+dung "đổi tên heading → cả #Thanh toán và #Thanh toán 2 cần verdict, cả hai cột đổi = 1" sh -c "
+  o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'src/ARCHITECTURE.md#Thanh toán|1' && printf '%s' \"\$o\" | grep -q 'src/ARCHITECTURE.md#Thanh toán 2|1'"
+awk '/^## Thanh toán/ { b = 1 } /^## Mục/ { b = 0 } !b' "$A" > "$A.t"; mv "$A.t" "$A"
+dung "xoá hẳn mục → ref cũ vẫn cần verdict, cột đổi = 1" sh -c "o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'src/ARCHITECTURE.md#Thanh toán|1'"
+thay "$R/docs/product/rules/billing.md" '- Rule: luật hai' '- Rule: luật hai mới'
+dung "luật: sửa khối BR-BILLING-002 → 002|1, 001|0" sh -c "
+  o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'billing.md#BR-BILLING-002|1' && printf '%s' \"\$o\" | grep -q 'billing.md#BR-BILLING-001|0'"
+dung "kt_dong_doi: dòng sửa trong billing.md" bang "$(sh -c ". '$T/lib/md.sh'; . '$T/lib/cross-check.sh'; . '$T/lib/knowledge.sh'; kt_dong_doi '$F' docs/product/rules/billing.md")" "9"
+
 nhom "knowledge: phase sinh ra dùng aw knowledge show"
 dung "workflow/phases: spec, design, implement, review nhắc aw knowledge show" sh -c "
   for p in 01-spec 02-design 04-implement 05-review; do grep -q 'aw knowledge show' \"$T/../workflow/phases/\$p.md\" || exit 1; done"

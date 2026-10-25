@@ -294,17 +294,3 @@ luat_loi_hinh_thuc() {
   done
 }
 
-# luat_lien_quan <gốc repo> <conventions.md> <đường dẫn…(stdin)> -> file có luật active khớp
-luat_lien_quan() {
-  _ldd=$(cat)
-  luat_ds "$1" "$2" | while IFS='|' read -r _lf _lid _lst _lsc; do
-    [ "$_lst" = active ] || continue
-    printf '%s\n' "$_ldd" | while IFS= read -r _lp; do
-      [ -n "$_lp" ] || continue
-      set -f
-      # shellcheck disable=SC2086
-      if khop_glob "$_lp" $_lsc || { [ -d "$1/$_lp" ] && khop_glob "$_lp/x" $_lsc; }; then set +f; printf '%s\n' "$_lf"; break; fi
-      set +f
-    done
-  done | awk '!t[$0]++'
-}

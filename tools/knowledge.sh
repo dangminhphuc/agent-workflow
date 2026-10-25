@@ -31,7 +31,7 @@
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai knowledge.sh \
-  "0=ĐÃ LIỆT KÊ — đọc từng file in ra (không in gì = repo chưa có durable knowledge liên quan)" \
+  "0=ĐÃ LIỆT KÊ — đọc từng ref in ra bằng aw knowledge show (không in gì = repo chưa có durable knowledge liên quan)" \
   "2=SAI THAM SỐ"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"
