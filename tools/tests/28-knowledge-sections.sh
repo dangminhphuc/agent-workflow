@@ -195,4 +195,17 @@ sed 's/^## Tổng quan$/## Tổng quan | phụ/' "$TMP/arch.orig" > "$A"
 dung "| trong heading mục KHÔNG khai Scope: không lỗi vì rule này" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -qF 'có ký tự |'"
 cp "$TMP/arch.orig" "$A"
 
+nhom "knowledge: heading luật lệch dấu cách / dấu hai chấm"
+ks_fixture
+g checkout -q main
+mkdir -p "$R/src/pay"; echo x > "$R/src/pay/x.txt"
+sed 's/^### BR-BILLING-001: một$/###  BR-BILLING-001 : một/' "$R/docs/product/rules/billing.md" > "$TMP/b.t"; mv "$TMP/b.t" "$R/docs/product/rules/billing.md"
+g add src docs; g commit -q -m "kien thuc ben"
+g checkout -q feat_x; g merge -q main
+echo y >> "$R/src/pay/x.txt"
+dung "show: ### BR-BILLING-001 : một → tìm thấy khối" sh -c "cd '$F' && sh '$KT' show docs/product/rules/billing.md#BR-BILLING-001 2>/dev/null | grep -qF 'luật một'"
+thay "$R/docs/product/rules/billing.md" '- Rule: luật hai' '- Rule: luật hai mới'
+dung "diff sửa khối 002 → 001|0, 002|1 (heading lệch vẫn nhận ra)" sh -c "
+  o='$(ks_ah)'; printf '%s' \"\$o\" | grep -q 'billing.md#BR-BILLING-001|0' && printf '%s' \"\$o\" | grep -q 'billing.md#BR-BILLING-002|1'"
+
 ket_thuc

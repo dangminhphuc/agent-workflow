@@ -38,11 +38,12 @@ kt_muc() {
 kt_khoi() {
   KT_NEO="$2" awk '
     function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    function br(l,   s) { if (l !~ /^###[ \t]+BR-/) return ""; s = l; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); return s }
     BEGIN { neo = ENVIRON["KT_NEO"]; luat = (neo ~ /^BR-/) }
     { sub(/\r$/, "") }
     trong && (/^#[ \t]/ || /^##[ \t]/ || (luat && /^###[ \t]/)) { exit }
     !trong && !da {
-      if (luat ? index($0, "### " neo ":") == 1 : ($0 ~ /^##[ \t]/ && trim(substr($0, 3)) == neo)) { trong = 1; da = 1 }
+      if (luat ? br($0) == neo : ($0 ~ /^##[ \t]/ && trim(substr($0, 3)) == neo)) { trong = 1; da = 1 }
     }
     trong { print; n++ }
     END { exit (n > 0 ? 0 : 1) }
@@ -206,11 +207,12 @@ kt_dong_doi() {
 kt_dai() {
   KT_NEO="$2" awk '
     function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    function br(l,   s) { if (l !~ /^###[ \t]+BR-/) return ""; s = l; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); return s }
     BEGIN { neo = ENVIRON["KT_NEO"]; luat = (neo ~ /^BR-/) }
     { sub(/\r$/, "") }
     trong && (/^#[ \t]/ || /^##[ \t]/ || (luat && /^###[ \t]/)) { cuoi = NR - 1; trong = 0 }
     !trong && !da {
-      if (luat ? index($0, "### " neo ":") == 1 : ($0 ~ /^##[ \t]/ && trim(substr($0, 3)) == neo)) { trong = 1; da = 1; dau = NR }
+      if (luat ? br($0) == neo : ($0 ~ /^##[ \t]/ && trim(substr($0, 3)) == neo)) { trong = 1; da = 1; dau = NR }
     }
     END { if (da) print dau " " (trong ? NR : cuoi) }
   ' "$1"
@@ -232,14 +234,7 @@ kt_tai_lieu_base() {
     if [ -n "$_kbm" ]; then
       git -C "$1" show "$3:$_kbf" | kt_muc - | while IFS='	' read -r _kbn _kba _kbb _kbg; do printf '%s#%s|%s\n' "$_kbf" "$_kbn" "$_kbg"; done
     fi
-    git -C "$1" show "$3:$_kbf" | awk -v f="$_kbf" '
-      function xong() { if (id != "" && st == "active" && sc != "") print f "#" id "|" sc; id = "" }
-      { sub(/\r$/, "") }
-      /^###[ \t]+BR-/ { xong(); s = $0; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); id = s; st = ""; sc = ""; next }
-      /^##/ { xong(); next }
-      id != "" && /^[-*][ \t]*Status:/ { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); st = v }
-      id != "" && /^[-*][ \t]*Scope:/  { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); sc = v }
-      END { xong() }'
+    git -C "$1" show "$3:$_kbf" | luat_khoi_dong "$_kbf" - | awk -F'|' '$3 == "active" && $4 != "" { r = $1 "#" $2; sub(/^[^|]*\|[^|]*\|[^|]*\|/, ""); print r "|" $0 }'
   done
 }
 

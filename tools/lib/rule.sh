@@ -54,18 +54,24 @@ luat_tep() {
   done
 }
 
+# luat_khoi_dong <tên hiển thị> <file|-> -> "<tên>|<ID>|<Status>|<Scope>" cho mọi khối luật (file hoặc stdin)
+luat_khoi_dong() {
+  LK_F="$1" awk '
+    function xong() { if (id != "") print f "|" id "|" st "|" sc; id = "" }
+    BEGIN { f = ENVIRON["LK_F"] }
+    { sub(/\r$/, "") }
+    /^###[ \t]+BR-/ { xong(); s = $0; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); id = s; st = ""; sc = ""; next }
+    /^##/ { xong(); next }
+    id != "" && /^[-*][ \t]*Status:/ { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); st = v }
+    id != "" && /^[-*][ \t]*Scope:/  { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); sc = v }
+    END { xong() }
+  ' "$2"
+}
+
 # luat_ds <gốc repo> <conventions.md> -> "<file>|<ID>|<Status>|<Scope>" cho mọi khối luật
 luat_ds() {
   luat_tep "$1" "$2" | while IFS= read -r _lf; do
-    awk -v f="$_lf" '
-      function xong() { if (id != "") print f "|" id "|" st "|" sc; id = "" }
-      { sub(/\r$/, "") }
-      /^###[ \t]+BR-/ { xong(); s = $0; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); id = s; st = ""; sc = ""; next }
-      /^##/ { xong(); next }
-      id != "" && /^[-*][ \t]*Status:/ { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); st = v }
-      id != "" && /^[-*][ \t]*Scope:/  { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); sc = v }
-      END { xong() }
-    ' "$1/$_lf"
+    luat_khoi_dong "$_lf" "$1/$_lf"
   done
 }
 
