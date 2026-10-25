@@ -115,6 +115,15 @@ quy); hai mục khai, diff đụng phạm vi một mục → chỉ ref mục đ�
 1. Neo là heading **nguyên văn** (đọc được; đổi tên mục là đổi ref). Không dùng slug kiểu GitHub vì mawk
    không chuẩn hoá được tiếng Việt.
 2. Chỉ mục `##` khai được `Scope`, mục `###` thì không, để tránh khối lồng nhau.
+3. Heading trùng trong một file: `show` lấy mục đầu; SP27 **cảnh báo** ngay, SP28 (`aw knowledge check`)
+   nâng thành chặn.
+4. Verdict cũ ở mức file không phủ ref có neo: mỗi ref cần verdict riêng. Việc đang dở lúc nâng bản bị ảnh
+   hưởng — ghi `Thay đổi` trong changelog.
+5. Tập ref tính trên cả `Base:` và cây làm việc, rồi gộp: mục đổi tên hiện cả tên cũ và tên mới, nên cần
+   verdict (khớp "heading đổi tên coi như đổi").
+6. Heading của mục khai `Scope` chứa `|` → chặn (làm vỡ bảng `## Durable knowledge`). Ký tự khác giữ nguyên
+   văn; neo là phần sau `#` **đầu tiên** của ref.
+7. Verdict `updated` của ref có neo mà diff không đổi dòng trong khối: cảnh báo ở implement, chặn ở review.
 
 ## C. SP28 — Chỉ mục kiến thức chung
 
