@@ -39,7 +39,7 @@ EOA
 - Status: active
 EOB
 }
-# ks_chay <lệnh show…> — chạy show ở fixture, stdout.
+# ks_show <ref…> — chạy show ở fixture, stdout.
 ks_show() { sh "$KT" show "$@" 2>/dev/null; }
 # ks_muc <file> — chạy kt_muc.
 ks_muc() { ( . "$T/lib/knowledge.sh"; kt_muc "$1" ); }

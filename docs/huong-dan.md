@@ -899,6 +899,16 @@ DEC đi ngược một ADR `accepted` phải khai `- Supersedes: ADR-NNNN` — A
 **Chống stale:** diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi →
 implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`.
 
+**Đọc theo mục (ref).** `aw knowledge spec|design|implement|review` in danh sách **ref**: `<file>` hoặc
+`<file>#<neo>`, neo là nguyên văn heading `##` hay ID luật; luật in dạng `<file>#BR-…`. Một mục của tài
+liệu module có phạm vi riêng khi dòng không trống đầu tiên dưới heading `##` là `- Scope: <glob>`. Đọc
+nội dung: `aw knowledge show <ref>…`.
+
+Ở `## Durable knowledge` của `review.md`, cột `File` ghi ref. Verdict mức file **không** phủ ref có neo,
+nên việc đang dở khi nâng cấp phải ghi lại verdict, kể cả dòng file luật trần. `updated` ở ref có neo đòi
+diff đổi dòng bên trong khối (implement cảnh báo, review chặn); mục bị đổi tên hay xoá cũng cần verdict.
+Heading `##` trùng chỉ cảnh báo; heading mục có `Scope` chứa `|` bị chặn.
+
 Implement đọc theo `Expected files` của `plan.md` (`aw knowledge implement`); review đọc theo diff (`aw knowledge review`),
 đúng tập tài liệu review phải chấm verdict. Việc bỏ design (`chore`, `Design: skip`) vẫn đọc chỉ mục ADR ở implement.
 

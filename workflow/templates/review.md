@@ -62,6 +62,8 @@ Verdict hợp lệ: `pass` / `partial` / `fail` / `pending`.
 
 <!-- Mỗi tài liệu `aw check implement` / `aw check review` báo bị diff đụng phạm vi (tài liệu
      module, ADR, file luật BR-) một dòng — thiếu là máy chặn. Không có: xoá mục này.
+     Cột File nhận ref `<file>` hay `<file>#<neo>` đúng như `aw knowledge review` in; verdict mức file
+     không phủ ref có neo. `updated` ở ref có neo: diff phải đổi dòng bên trong khối đó.
      Verdict: pass (đã đọc, vẫn đúng) | updated (đã sửa trong diff) | not applicable (kèm lý do). -->
 
 | File | Verdict | Reason |

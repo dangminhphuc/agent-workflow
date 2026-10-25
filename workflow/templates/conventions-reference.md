@@ -172,6 +172,12 @@ chứa nó: `aw knowledge design` in file đó khi `## Existing code` của `tdd
 nằm trong thư mục ấy; `aw knowledge implement` khi `Expected files` của `plan.md` nằm trong thư mục ấy;
 `aw knowledge review` khi diff của việc đụng thư mục ấy.
 
+**Scope theo mục.** Dòng `- Scope: <glob>` là dòng không trống đầu tiên dưới một heading `##` của file
+này thì mục đó có phạm vi riêng (thay vì phạm vi cả file). Lệnh `aw knowledge` khi đó in **ref** của
+mục: `<file>#<neo>`, neo = nguyên văn heading `##` hoặc ID `BR-…`. Đọc nội dung bằng
+`aw knowledge show <ref>…`. Heading `##` trùng trong một file chỉ cảnh báo; heading của mục có
+`Scope` mà chứa `|` thì bị chặn (làm vỡ bảng verdict).
+
 ## Repo rules
 
 ### `rules_<phase>`
