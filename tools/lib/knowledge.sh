@@ -12,6 +12,60 @@
 #
 # Cần nạp trước: tools/lib/md.sh, cross-check.sh, sha256.sh, approval-tick.sh, adr.sh, rule.sh
 
+# kt_muc <file|-> -> mỗi mục "##" khai Scope một dòng: "<neo>\t<dòng đầu>\t<dòng cuối>\t<glob…>".
+# Neo = heading đã bỏ "## " và khoảng trắng hai đầu. Scope = dòng không trống đầu tiên dưới heading.
+# Mục kéo tới heading "#"/"##" kế tiếp, hoặc hết file. "-" đọc stdin.
+kt_muc() {
+  awk '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    function xong(c) { if (neo != "" && co) print neo "\t" dau "\t" c "\t" glob; neo = ""; co = 0 }
+    { sub(/\r$/, "") }
+    /^#[ \t]/ || /^##[ \t]/ {
+      xong(NR - 1)
+      if ($0 ~ /^##[ \t]/) { neo = trim(substr($0, 3)); dau = NR; cho = 1; glob = ""; co = 0 }
+      next
+    }
+    neo != "" && cho && $0 !~ /^[ \t]*$/ {
+      cho = 0
+      if ($0 ~ /^[ \t]*-[ \t]*Scope:/) { g = $0; sub(/^[ \t]*-[ \t]*Scope:/, "", g); gsub(/`/, "", g); glob = trim(g); gsub(/[ \t]+/, " ", glob); co = 1 }
+    }
+    END { xong(NR) }
+  ' "$1"
+}
+
+# kt_khoi <file|-> <neo> -> in khối; mã 1 khi không có. Neo "BR-…": heading "### BR-…:" tới heading "#"…"###"
+# kế tiếp; neo khác: heading "##" khớp nguyên văn (đã trim), mục trùng lấy mục đầu, tới heading "#"/"##" kế tiếp.
+kt_khoi() {
+  KT_NEO="$2" awk '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    BEGIN { neo = ENVIRON["KT_NEO"]; luat = (neo ~ /^BR-/) }
+    { sub(/\r$/, "") }
+    trong && (/^#[ \t]/ || /^##[ \t]/ || (luat && /^###[ \t]/)) { exit }
+    !trong && !da {
+      if (luat ? index($0, "### " neo ":") == 1 : ($0 ~ /^##[ \t]/ && trim(substr($0, 3)) == neo)) { trong = 1; da = 1 }
+    }
+    trong { print; n++ }
+    END { exit (n > 0 ? 0 : 1) }
+  ' "$1"
+}
+
+# kt_phan_con <file|-> -> in file trừ các khối mà kt_muc liệt kê (giữ nguyên từng byte phần còn lại).
+kt_phan_con() {
+  awk '
+    function xa() { if (!co) for (i = 1; i <= m; i++) print buf[i]; m = 0; co = 0 }
+    { raw = $0; sub(/\r$/, "") }
+    /^#[ \t]/ || /^##[ \t]/ {
+      xa(); trongmuc = ($0 ~ /^##[ \t]/); cho = trongmuc
+      buf[++m] = raw; next
+    }
+    {
+      if (trongmuc && cho && $0 !~ /^[ \t]*$/) { cho = 0; if ($0 ~ /^[ \t]*-[ \t]*Scope:/) co = 1 }
+      buf[++m] = raw
+    }
+    END { xa() }
+  ' "$1"
+}
+
 # kt_lay <gốc repo> <conventions.md> -> kiến thức bền liên quan tới các đường dẫn ở stdin
 # (mỗi dòng một, tương đối với gốc repo, có thể chưa tồn tại): ADR accepted có Scope khớp,
 # file có luật active khớp, tài liệu module (knowledge_files) có thư mục là cha của đường dẫn.

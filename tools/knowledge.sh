@@ -2,6 +2,7 @@
 # Liệt kê kiến thức bền của repo đích mà một phase phải đọc.
 #
 #   aw knowledge spec|design|implement|review <thư-mục-feature>
+#   aw knowledge show <ref>…     (ref = <file> hoặc <file>#<neo>; chạy ở gốc repo)
 #
 # spec: mọi file có luật nghiệp vụ active (BR-) — spec đối chiếu yêu cầu mới với luật
 #   đang có; chưa có đường dẫn code để lọc nên in hết.
@@ -19,6 +20,9 @@
 #   hay không có Expected files → chỉ chỉ mục (nếu có).
 # review — tài liệu mà diff của việc đụng phạm vi (cột 1 của kt_anh_huong, đã khử trùng); chưa có diff
 #   → không in gì.
+# show — in từng ref, mỗi khối mở bằng dòng "==> <ref> <==". <file>#<neo>: một mục "##" của tài liệu
+#   module (neo = heading) hoặc một luật (neo = ID BR-…). <file> của tài liệu có mục khai Scope: phần
+#   ngoài các mục đó. Ref sai → SAI THAM SỐ, chưa in gì.
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -41,8 +45,28 @@ mt_dat
 
 BL_KIEN_THUC="spec design implement review"
 PH="${1:-}"; DIR="${2:-}"
+if [ "$PH" = show ]; then
+  shift
+  [ $# -gt 0 ] || { echo "Dùng: aw knowledge show <file>[#<neo>]…" >&2; exit 2; }
+  for _ref in "$@"; do
+    _f=${_ref%%#*}; _neo=""
+    case "$_ref" in *"#"*) _neo=${_ref#*#} ;; esac
+    if [ -z "$_f" ] || [ ! -f "$MT_REPO/$_f" ] || { case "$_ref" in *"#"*) ! kt_khoi "$MT_REPO/$_f" "$_neo" >/dev/null ;; (*) false ;; esac; }; then
+      echo "LỖI: ref không tồn tại: $_ref" >&2; exit 2
+    fi
+  done
+  for _ref in "$@"; do
+    _f=${_ref%%#*}
+    printf '==> %s <==\n' "$_ref"
+    case "$_ref" in
+      *"#"*) kt_khoi "$MT_REPO/$_f" "${_ref#*#}" ;;
+      (*) if [ -n "$(kt_muc "$MT_REPO/$_f")" ]; then kt_phan_con "$MT_REPO/$_f"; else cat "$MT_REPO/$_f"; fi ;;
+    esac
+  done
+  exit 0
+fi
 case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;; esac ||
-  { echo "Dùng: aw knowledge <phase> <thư-mục-feature>   (phase: $BL_KIEN_THUC)" >&2; exit 2; }
+  { echo "Dùng: aw knowledge <phase> <thư-mục-feature>   (phase: $BL_KIEN_THUC)   |   aw knowledge show <ref>…" >&2; exit 2; }
 [ -d "$DIR" ] || { echo "LỖI: không có thư mục $DIR" >&2; exit 2; }
 
 R=$MT_REPO
