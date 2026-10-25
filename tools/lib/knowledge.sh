@@ -12,10 +12,66 @@
 #
 # Cần nạp trước: tools/lib/md.sh, cross-check.sh, sha256.sh, approval-tick.sh, adr.sh, rule.sh
 
+# kt_muc <file|-> -> mỗi mục "##" khai Scope một dòng: "<neo>\t<dòng đầu>\t<dòng cuối>\t<glob…>".
+# Neo = heading đã bỏ "## " và khoảng trắng hai đầu. Scope = dòng không trống đầu tiên dưới heading.
+# Mục kéo tới heading "#"/"##" kế tiếp, hoặc hết file. "-" đọc stdin.
+kt_muc() {
+  awk '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    function xong(c) { if (neo != "" && co) print neo "\t" dau "\t" c "\t" glob; neo = ""; co = 0 }
+    { sub(/\r$/, "") }
+    /^#[ \t]/ || /^##[ \t]/ {
+      xong(NR - 1)
+      if ($0 ~ /^##[ \t]/) { neo = trim(substr($0, 3)); dau = NR; cho = 1; glob = ""; co = 0 }
+      next
+    }
+    neo != "" && cho && $0 !~ /^[ \t]*$/ {
+      cho = 0
+      if ($0 ~ /^[ \t]*-[ \t]*Scope:/) { g = $0; sub(/^[ \t]*-[ \t]*Scope:/, "", g); gsub(/`/, "", g); glob = trim(g); gsub(/[ \t]+/, " ", glob); co = 1 }
+    }
+    END { xong(NR) }
+  ' "$1"
+}
+
+# kt_khoi <file|-> <neo> -> in khối; mã 1 khi không có. Neo "BR-…": heading "### BR-…:" tới heading "#"…"###"
+# kế tiếp; neo khác: heading "##" khớp nguyên văn (đã trim), mục trùng lấy mục đầu, tới heading "#"/"##" kế tiếp.
+kt_khoi() {
+  KT_NEO="$2" awk '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    function br(l,   s) { if (l !~ /^###[ \t]+BR-/) return ""; s = l; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); return s }
+    BEGIN { neo = ENVIRON["KT_NEO"]; luat = (neo ~ /^BR-/) }
+    { sub(/\r$/, "") }
+    trong && (/^#[ \t]/ || /^##[ \t]/ || (luat && /^###[ \t]/)) { exit }
+    !trong && !da {
+      if (luat ? br($0) == neo : ($0 ~ /^##[ \t]/ && trim(substr($0, 3)) == neo)) { trong = 1; da = 1 }
+    }
+    trong { print; n++ }
+    END { exit (n > 0 ? 0 : 1) }
+  ' "$1"
+}
+
+# kt_phan_con <file|-> -> in file trừ các khối mà kt_muc liệt kê (giữ nguyên từng byte phần còn lại).
+kt_phan_con() {
+  awk '
+    function xa() { if (!co) for (i = 1; i <= m; i++) print buf[i]; m = 0; co = 0 }
+    { raw = $0; sub(/\r$/, "") }
+    /^#[ \t]/ || /^##[ \t]/ {
+      xa(); trongmuc = ($0 ~ /^##[ \t]/); cho = trongmuc
+      buf[++m] = raw; next
+    }
+    {
+      if (trongmuc && cho && $0 !~ /^[ \t]*$/) { cho = 0; if ($0 ~ /^[ \t]*-[ \t]*Scope:/) co = 1 }
+      buf[++m] = raw
+    }
+    END { xa() }
+  ' "$1"
+}
+
 # kt_lay <gốc repo> <conventions.md> -> kiến thức bền liên quan tới các đường dẫn ở stdin
 # (mỗi dòng một, tương đối với gốc repo, có thể chưa tồn tại): ADR accepted có Scope khớp,
 # file có luật active khớp, tài liệu module (knowledge_files) có thư mục là cha của đường dẫn.
-# Đường dẫn là thư mục có thật → khớp thêm "<p>/x". Mỗi file in một lần.
+# Đường dẫn là thư mục có thật → khớp thêm "<p>/x". In ref: "<file>" (ADR, tài liệu module có đường dẫn
+# trong thư mục), "<file>#<neo>" (mục khai Scope khớp), "<file>#<BR-ID>" (luật active khớp). Mỗi ref một lần.
 kt_lay() {
   _kldd=$(cat)
   [ -n "$_kldd" ] || return 0
@@ -33,7 +89,16 @@ kt_lay() {
       done
     done
 
-    printf '%s\n' "$_kldd" | luat_lien_quan "$1" "$2"
+    luat_ds "$1" "$2" | while IFS='|' read -r _klf _klid _klst _klsc; do
+      [ "$_klst" = active ] && [ -n "$_klsc" ] || continue
+      printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
+        [ -n "$_klp" ] || continue
+        set -f
+        # shellcheck disable=SC2086
+        if khop_glob "$_klp" $_klsc || { [ -d "$1/$_klp" ] && khop_glob "$_klp/x" $_klsc; }; then set +f; printf '%s#%s\n' "$_klf" "$_klid"; break; fi
+        set +f
+      done
+    done
 
     _klkf=$(conv_get "$2" knowledge_files); _klkf=${_klkf:-*/ARCHITECTURE.md}
     git -C "$1" ls-files 2>/dev/null | while IFS= read -r _klf; do
@@ -42,6 +107,15 @@ kt_lay() {
       # shellcheck disable=SC2086
       khop_glob "$_klf" $_klkf || { set +f; continue; }
       set +f
+      kt_muc "$1/$_klf" | while IFS='	' read -r _klneo _kla _klb _klg; do
+        printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
+          [ -n "$_klp" ] || continue
+          set -f
+          # shellcheck disable=SC2086
+          if khop_glob "$_klp" $_klg || { [ -d "$1/$_klp" ] && khop_glob "$_klp/x" $_klg; }; then set +f; printf '%s#%s\n' "$_klf" "$_klneo"; break; fi
+          set +f
+        done
+      done
       _kld=$(dirname "$_klf")
       printf '%s\n' "$_kldd" | while IFS= read -r _klp; do
         case "$_klp/" in "$_kld"/*) printf '%s\n' "$_klf"; break ;; esac
@@ -94,54 +168,125 @@ kt_duong_plan() {
     done
 }
 
-# kt_tai_lieu <gốc repo> <conventions.md> -> "<file>|<glob phạm vi…>" mỗi tài liệu
+# kt_tai_lieu <gốc repo> <conventions.md> -> "<ref>|<glob phạm vi…>": tài liệu module (mục khai Scope →
+# "<file>#<neo>|<glob mục>" mỗi mục, cộng "<file>|<thư mục>/*"), ADR "<file>|<Scope>", luật "<file>#<BR-ID>|<Scope>".
 kt_tai_lieu() {
   _kkf=$(conv_get "$2" knowledge_files); _kkf=${_kkf:-*/ARCHITECTURE.md}
   git -C "$1" ls-files --cached --others --exclude-standard 2>/dev/null | while IFS= read -r _kf; do
     tm_bo "$_kf" && continue
     set -f
     # shellcheck disable=SC2086
-    if khop_glob "$_kf" $_kkf; then set +f; printf '%s|%s/*\n' "$_kf" "$(dirname "$_kf")"; else set +f; fi
+    if khop_glob "$_kf" $_kkf; then
+      set +f
+      kt_muc "$1/$_kf" | while IFS='	' read -r _kneo _kda _kcu _kg; do printf '%s#%s|%s\n' "$_kf" "$_kneo" "$_kg"; done
+      printf '%s|%s/*\n' "$_kf" "$(dirname "$_kf")"
+    else set +f; fi
   done
   _ktm=$(adr_thu_muc "$2")
   adr_ds "$1/$_ktm" | while IFS= read -r _kf; do
     [ "$(adr_truong "$_kf" Status)" = accepted ] || continue
     _ksc=$(adr_truong "$_kf" Scope); [ -n "$_ksc" ] && printf '%s|%s\n' "${_kf#"$1"/}" "$_ksc"
   done
-  luat_ds "$1" "$2" | awk -F'|' '$3 == "active" && $4 != "" { if (!($1 in s)) thu[++n] = $1; s[$1] = s[$1] " " $4 }
-    END { for (i = 1; i <= n; i++) { v = s[thu[i]]; sub(/^ /, "", v); print thu[i] "|" v } }'
+  luat_ds "$1" "$2" | awk -F'|' '$3 == "active" && $4 != "" { print $1 "#" $2 "|" $4 }'
 }
 
-# kt_anh_huong <thư-mục-feature> -> "<tài liệu>|<1 nếu tài liệu đổi trong diff, 0 nếu không>|<file đổi trong phạm vi>"
+# kt_dong_doi <thư-mục-feature> <file> -> số dòng (trên cây làm việc) mà diff so với merge-base thêm/sửa,
+# từ "git diff -U0"; hunk chỉ xoá ("+c,0") ghi cả dòng kề trước (c) và kề sau (c+1) — xoá dòng cuối khối
+# vẫn tính cho khối đó; c = 0 chỉ ghi 1.
+kt_dong_doi() {
+  _kdt=$(kc_top "$1") || return 0
+  _kdm=$(kc_mb "$1") || return 0
+  git -C "$_kdt" -c core.quotepath=off diff -U0 "$_kdm" -- "$2" 2>/dev/null | awk '
+    /^@@/ {
+      s = $3; sub(/^\+/, "", s); n = split(s, a, ","); c = a[1] + 0; d = (n > 1 ? a[2] + 0 : 1)
+      if (d == 0) { if (c > 0) print c; print c + 1 } else for (i = c; i < c + d; i++) print i
+    }'
+}
+
+# kt_dai <file|-> <neo> -> "<dòng đầu> <dòng cuối>" của khối (như kt_khoi); không có thì không in gì.
+kt_dai() {
+  KT_NEO="$2" awk '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    function br(l,   s) { if (l !~ /^###[ \t]+BR-/) return ""; s = l; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); return s }
+    BEGIN { neo = ENVIRON["KT_NEO"]; luat = (neo ~ /^BR-/) }
+    { sub(/\r$/, "") }
+    trong && (/^#[ \t]/ || /^##[ \t]/ || (luat && /^###[ \t]/)) { cuoi = NR - 1; trong = 0 }
+    !trong && !da {
+      if (luat ? br($0) == neo : ($0 ~ /^##[ \t]/ && trim(substr($0, 3)) == neo)) { trong = 1; da = 1; dau = NR }
+    }
+    END { if (da) print dau " " (trong ? NR : cuoi) }
+  ' "$1"
+}
+
+# kt_tai_lieu_base <gốc repo> <conventions.md> <sha> -> "<ref>|<glob>" của các mục khai Scope (tài liệu module)
+# và luật active trên commit <sha> — để mục / luật bị đổi tên hay xoá trong diff vẫn cần verdict.
+kt_tai_lieu_base() {
+  _kbkf=$(conv_get "$2" knowledge_files); _kbkf=${_kbkf:-*/ARCHITECTURE.md}; _kblt=$(luat_thu_muc "$2")
+  git -C "$1" -c core.quotepath=off ls-tree -r --name-only "$3" 2>/dev/null | while IFS= read -r _kbf; do
+    tm_bo "$_kbf" && continue
+    _kbm=""; _kbl=""
+    set -f
+    # shellcheck disable=SC2086
+    khop_glob "$_kbf" $_kbkf && _kbm=1
+    set +f
+    case "$_kbf" in "$_kblt"/*.md) _kbl=1 ;; esac
+    [ -n "$_kbm$_kbl" ] || continue
+    if [ -n "$_kbm" ]; then
+      git -C "$1" show "$3:$_kbf" | kt_muc - | while IFS='	' read -r _kbn _kba _kbb _kbg; do printf '%s#%s|%s\n' "$_kbf" "$_kbn" "$_kbg"; done
+    fi
+    git -C "$1" show "$3:$_kbf" | luat_khoi_dong "$_kbf" - | awk -F'|' '$3 == "active" && $4 != "" { r = $1 "#" $2; sub(/^[^|]*\|[^|]*\|[^|]*\|/, ""); print r "|" $0 }'
+  done
+}
+
+# kt_anh_huong <thư-mục-feature> -> "<ref>|<0|1>|<file đổi trong phạm vi>". Tập ref = ref trên cây làm việc
+# hợp ref trên merge-base. Cột 2: ref "<file>" → 1 khi file đổi; ref "<file>#<neo>" → 1 khi khối có ở cả
+# hai bên và diff đổi dòng trong khối (kt_dong_doi), hoặc neo chỉ có ở một bên (đổi tên / thêm / xoá).
 kt_anh_huong() {
   _kr=$(kc_top "$1") || return 0
   _kc=$(qu_hieu_luc "${AW_REPO:-$_kr}")
   _kdoi=$(kc_doi "$1" 2>/dev/null | awk -F'\t' '{ print (NF > 2 ? $3 : $2) }') || return 0
   [ -n "$_kdoi" ] || return 0
+  _kmb=$(kc_mb "$1" 2>/dev/null)
   _kad=$(adr_thu_muc "$_kc"); _kld=$(luat_thu_muc "$_kc")
-  _kds=$(kt_tai_lieu "$_kr" "$_kc")
+  _kds=$({ kt_tai_lieu "$_kr" "$_kc"; [ -n "$_kmb" ] && kt_tai_lieu_base "$_kr" "$_kc" "$_kmb"; } | awk -F'|' '!t[$1]++')
   [ -n "$_kds" ] || return 0
   printf '%s\n' "$_kds" | while IFS='|' read -r _kf _ksc; do
     [ -n "$_kf" ] || continue
     _kvd=$(printf '%s\n' "$_kdoi" | while IFS= read -r _kp; do
       # "(" mở đầu pattern: bash 3.2 (sh của macOS) đọc ")" của pattern trong $(…) là dấu đóng $(.
       case "$_kp" in ("$_kad"/*|"$_kld"/*) continue ;; esac
-      printf '%s\n' "$_kds" | awk -F'|' -v p="$_kp" '$1 == p { f = 1 } END { exit !f }' && continue
+      printf '%s\n' "$_kds" | awk -F'|' -v p="$_kp" '{ x = $1; sub(/#.*/, "", x) } x == p { f = 1 } END { exit !f }' && continue
       set -f
       # shellcheck disable=SC2086
       if khop_glob "$_kp" $_ksc; then set +f; printf '%s\n' "$_kp"; break; fi
       set +f
     done)
     [ -n "$_kvd" ] || continue
-    if printf '%s\n' "$_kdoi" | grep -qxF "$_kf"; then printf '%s|1|%s\n' "$_kf" "$_kvd"
-    else printf '%s|0|%s\n' "$_kf" "$_kvd"; fi
+    _kff=${_kf%%#*}; _kd=0
+    case "$_kf" in
+      (*"#"*)
+        _kneo=${_kf#*#}
+        _kdw=""; [ -f "$_kr/$_kff" ] && _kdw=$(kt_dai "$_kr/$_kff" "$_kneo")
+        _kdb=""; [ -n "$_kmb" ] && _kdb=$(git -C "$_kr" show "$_kmb:$_kff" 2>/dev/null | kt_dai - "$_kneo")
+        if [ -z "$_kdw" ] || [ -z "$_kdb" ]; then _kd=1
+        else
+          _ka=${_kdw% *}; _kb=${_kdw#* }
+          kt_dong_doi "$1" "$_kff" | awk -v a="$_ka" -v b="$_kb" '$1 >= a + 0 && $1 <= b + 0 { f = 1 } END { exit !f }' && _kd=1
+        fi ;;
+      (*) printf '%s\n' "$_kdoi" | grep -qxF "$_kff" && _kd=1 ;;
+    esac
+    printf '%s|%s|%s\n' "$_kf" "$_kd" "$_kvd"
   done
 }
 
-# kt_canh_bao <thư-mục-feature> -> cảnh báo (implement): tài liệu bị ảnh hưởng mà không đổi
+# kt_canh_bao <thư-mục-feature> -> cảnh báo (implement): ref bị ảnh hưởng mà không đổi
 kt_canh_bao() {
   kt_anh_huong "$1" | while IFS='|' read -r _kf _kd _kvd; do
-    [ "$_kd" = 0 ] && echo "durable knowledge có thể stale: diff đụng $_kvd (phạm vi của $_kf) mà $_kf không đổi — cập nhật nó, hoặc review ghi verdict ở \"## Durable knowledge\""
+    [ "$_kd" = 0 ] || continue
+    case "$_kf" in
+      (*"#"*) echo "durable knowledge có thể stale: diff đụng $_kvd (phạm vi của $_kf) mà khối $_kf không đổi — cập nhật nó, hoặc review ghi verdict ở \"## Durable knowledge\"" ;;
+      (*) echo "durable knowledge có thể stale: diff đụng $_kvd (phạm vi của $_kf) mà $_kf không đổi — cập nhật nó, hoặc review ghi verdict ở \"## Durable knowledge\"" ;;
+    esac
   done
 }
 
@@ -166,12 +311,12 @@ kt_loi_review() {
     return 0
   fi
   printf '%s\n' "$_kah" | while IFS='|' read -r _kf _kd _kvd; do
-    _kdong=$(printf '%s\n' "$_kbang" | awk -F '	' -v f="$_kf" '$1 == f { print; exit }')
+    _kdong=$(printf '%s\n' "$_kbang" | KT_REF="$_kf" awk -F '	' '$1 == ENVIRON["KT_REF"] { print; exit }')
     _kkl=$(printf '%s' "$_kdong" | cut -f2); _kly=$(printf '%s' "$_kdong" | cut -f3)
     case "$_kkl" in
       "") echo "durable knowledge \"$_kf\": không có verdict trong \"## Durable knowledge\" (diff đụng $_kvd)" ;;
       pass) ;;
-      updated) [ "$_kd" = 1 ] || echo "durable knowledge \"$_kf\": verdict \"updated\" nhưng diff không đổi file này" ;;
+      updated) [ "$_kd" = 1 ] || case "$_kf" in (*"#"*) echo "durable knowledge \"$_kf\": verdict \"updated\" nhưng diff không đổi dòng nào trong khối này" ;; (*) echo "durable knowledge \"$_kf\": verdict \"updated\" nhưng diff không đổi file này" ;; esac ;;
       "not applicable") case "$_kly" in ""|"<"*">") echo "durable knowledge \"$_kf\": verdict \"not applicable\" mà thiếu lý do" ;; esac ;;
       *) echo "durable knowledge \"$_kf\": verdict \"$_kkl\" không hợp lệ. Chỉ chấp nhận: pass / updated / not applicable" ;;
     esac
@@ -194,6 +339,50 @@ kt_luat_chua_test() {
       # shellcheck disable=SC2086
       if khop_glob "$_kp" $_ksc; then set +f; echo "$_kid ($_kf): diff đụng $_kp trong phạm vi luật mà chưa test nào gắn tag covers $_kid"; break; fi
       set +f
+    done
+  done
+}
+
+# kt_tai_lieu_quet <thư-mục-feature> -> tài liệu module (knowledge_files) cần quét vệ sinh mục: file của ref trong
+# kt_anh_huong, cộng mọi tài liệu module nằm trong diff (heading có "|" làm vỡ định dạng "ref|…" nên không
+# thể chỉ dựa vào ref đã parse). Đường dẫn tương đối gốc repo, mỗi file một lần, chỉ file còn tồn tại.
+kt_tai_lieu_quet() {
+  _kr=$(kc_top "$1") || return 0
+  _kc=$(qu_hieu_luc "${AW_REPO:-$_kr}")
+  _kqkf=$(conv_get "$_kc" knowledge_files); _kqkf=${_kqkf:-*/ARCHITECTURE.md}
+  { kt_anh_huong "$1" | cut -d'|' -f1 | sed 's/#.*//'
+    kc_doi "$1" 2>/dev/null | awk -F'\t' '{ print (NF > 2 ? $3 : $2) }'
+  } | awk 'NF && !t[$0]++' | while IFS= read -r _kqf; do
+    [ -f "$_kr/$_kqf" ] || continue
+    tm_bo "$_kqf" && continue
+    set -f
+    # shellcheck disable=SC2086
+    if khop_glob "$_kqf" $_kqkf; then set +f; printf '%s\n' "$_kqf"; else set +f; fi
+  done
+}
+
+# kt_canh_bao_muc <thư-mục-feature> -> cảnh báo (implement): tài liệu có hai mục "##" cùng heading.
+kt_canh_bao_muc() {
+  _kr=$(kc_top "$1") || return 0
+  kt_tai_lieu_quet "$1" | while IFS= read -r _kf; do
+    awk '
+      function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+      { sub(/\r$/, "") }
+      /^##[ \t]/ { h = trim(substr($0, 3)); if (c[h]++ == 1) print h }
+    ' "$_kr/$_kf" | while IFS= read -r _kh; do
+      echo "$_kf: hai mục \"## $_kh\" — ref $_kf#$_kh chỉ trỏ mục đầu; đổi tên một mục"
+    done
+  done
+}
+
+# kt_loi_muc <thư-mục-feature> -> lỗi: mục khai "- Scope:" có "|" trong heading (làm vỡ bảng "## Durable knowledge").
+kt_loi_muc() {
+  _kr=$(kc_top "$1") || return 0
+  kt_tai_lieu_quet "$1" | while IFS= read -r _kf; do
+    kt_muc "$_kr/$_kf" | cut -f1 | while IFS= read -r _kh; do
+      case "$_kh" in
+        (*"|"*) echo "$_kf: heading \"## $_kh\" có ký tự | — làm vỡ bảng \"## Durable knowledge\"; đổi tên mục" ;;
+      esac
     done
   done
 }

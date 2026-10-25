@@ -66,6 +66,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `Mode 1` / `Mode 2` | Chế độ của phase design. `Mode 1`: agent viết mọi DEC-xxx, người duyệt. `Mode 2` (`Risk: high`): **người phác DEC-xxx trước** (`Author: human`), agent chỉ phản biện — tránh người neo vào phương án của agent |
 | `Design: skip` | Bugfix/refactor nhỏ (`Risk: normal`, không có lựa chọn kỹ thuật) bỏ phase design; plan đi thẳng từ spec. Chore luôn bỏ design |
 | `Promote` | Người đánh dấu một DEC-xxx (`- Promote: adr`) hay REQ (`- Promote: BR-…`) để đưa vào git của `target repo` thành `durable knowledge` |
+| `ref` | Cách trỏ tới một khối `durable knowledge`: `<file>` hoặc `<file>#<neo>` (neo = nguyên văn heading `##` hay ID `BR-…`). `aw knowledge` in ref, `aw knowledge show <ref>` đọc khối, cột `File` của `## Durable knowledge` ghi ref |
 | `durable knowledge` *(trước: kiến thức bền)* | Thứ còn đúng sau khi `job` xong và nằm trong git của `target repo`: `conventions.md`, ADR, `business rule`, `ARCHITECTURE.md` của module. Đối lập với *trạng thái của job* (artifact, chỉ ở máy) |
 
 ## Kiểm và duyệt

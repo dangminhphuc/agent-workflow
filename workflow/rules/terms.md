@@ -38,6 +38,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `Mode 2` | Design: human drafts DEC-xxx first, agent only critiques | |
 | `Design: skip` | Small bugfix/refactor skips design; plan works from spec | |
 | `Promote` | Human marks a DEC-xxx or REQ to become durable knowledge | |
+| `ref` | Pointer to a durable-knowledge block: `<file>` or `<file>#<anchor>` (anchor = verbatim `##` heading or `BR-…` id) | |
 | `durable knowledge` | What stays true after the job, in the target repo's git: conventions, ADR, BR-, `ARCHITECTURE.md` | kiến thức bền |
 | `machine checker` | `aw check <name>`: exact checks, machine exit of a phase | checker máy |
 | `LLM checker` | Clean-context subagent that writes findings; may only block, never pass | checker llm |

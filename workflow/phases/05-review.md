@@ -56,7 +56,7 @@ Go through **every** `REQ-NNN`: which code satisfies it, verdict `pass` / `fail`
 
 **Repo rules** (`aw rules review` — every `rules_*` file plus every `uses_*` skill / subagent file, all phases combined): one row per file in `## Repo rules`: `pass` / `violation` (+ `file:line`, add a Lens 3 finding) / `not applicable` (+ reason). Code following an approved DEC-xxx that breaks a rule → `not applicable`, name the DEC.
 
-**Durable knowledge**: read them first — `aw knowledge review <dir>` prints the set the checker grades (`aw check review` lists them). One row per document in `## Durable knowledge`: `pass` (read it, still true) / `updated` (changed in this diff) / `not applicable` (+ reason). A doc the change makes wrong and nobody updated → `Should fix` in Lens 3.
+**Durable knowledge**: read them first — `aw knowledge review <dir>` prints the set the checker grades (`aw check review` lists them); `aw knowledge show` every ref it prints. One row per document in `## Durable knowledge`: `pass` (read it, still true) / `updated` (changed in this diff) / `not applicable` (+ reason). A doc the change makes wrong and nobody updated → `Should fix` in Lens 3.
 
 ### 3. Quality (`## Lens 3 — Quality`)
 Correctness bugs, reuse of what exists, needless complexity. Each finding `### [Blocker|Should fix|Nit] <title>`:

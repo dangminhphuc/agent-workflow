@@ -39,7 +39,7 @@ tao_fixture
 kt_fixture
 thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
 dung "design: output không đổi (hồi quy)" bang "$(sh "$KT" design "$F" 2>/dev/null | tr '\n' ' ')" \
-  "docs/adr/README.md docs/adr/0001-x-dec-001.md docs/product/rules/billing.md src/ARCHITECTURE.md "
+  "docs/adr/README.md docs/adr/0001-x-dec-001.md docs/product/rules/billing.md#BR-BILLING-001 src/ARCHITECTURE.md "
 
 
 nhom "knowledge implement: kiến thức bền theo Expected files"
@@ -47,7 +47,7 @@ tao_fixture
 kt_fixture
 dung "implement: Expected files src/* → ADR Scope src/*, luật, ARCHITECTURE cha; không ADR superseded/lib" \
   bang "$(sh "$KT" implement "$F" 2>/dev/null | tr '\n' ' ')" \
-  "docs/adr/0001-x-dec-001.md docs/product/rules/billing.md src/ARCHITECTURE.md "
+  "docs/adr/0001-x-dec-001.md docs/product/rules/billing.md#BR-BILLING-001 src/ARCHITECTURE.md "
 dung "implement: feature (có design) → không in chỉ mục ADR" sh -c "! sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/adr/README.md'"
 thay "$F/plan.md" '`src/*` `test/*`' '`src/moi/**` `test/*`'
 dung "implement: thư mục mới chưa có trên base → vẫn khớp qua tiền tố" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
@@ -106,7 +106,7 @@ ky_vong 0 "review: chưa có diff → ĐÃ LIỆT KÊ" sh "$KT" review "$F"
 echo moi-review > "$R/src/a.txt"
 dung "review: diff đụng src/ → đúng tập kt_anh_huong" \
   bang "$(sh "$KT" review "$F" 2>/dev/null | sort | tr '\n' ' ')" \
-  "docs/adr/0001-x-dec-001.md docs/product/rules/billing.md src/ARCHITECTURE.md "
+  "docs/adr/0001-x-dec-001.md docs/product/rules/billing.md#BR-BILLING-001 src/ARCHITECTURE.md "
 mkdir -p "$R/lib"; echo x > "$R/lib/b.txt"
 dung "review: diff đụng lib/ → thêm lib/ARCHITECTURE.md" sh -c "sh '$KT' review '$F' 2>/dev/null | grep -qx 'lib/ARCHITECTURE.md'"
 dung "review: diff đụng lib/ → thêm ADR 0003" sh -c "sh '$KT' review '$F' 2>/dev/null | grep -qx 'docs/adr/0003-x-dec-003.md'"

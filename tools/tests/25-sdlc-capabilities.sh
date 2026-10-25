@@ -88,6 +88,8 @@ moi; thay "$E/workflow/phases/"*-implement.md "  - CAP-implement-07
 vi_pham "phase implement bỏ nhận CAP-implement-07 → chặn" "stage implement: suy ra partial nhưng khối sdlc: không có note"
 moi; thay "$E/tools/check-review.sh" "# giữ: CAP-verify-06
 " ""
+thay "$E/tools/check-implement.sh" "# giữ: CAP-verify-06
+" ""
 vi_pham "CAP-verify-06 machine mà luật không gắn # giữ → chặn" "CAP-verify-06: Judged by machine, phase review nhận, nhưng không luật checker nào khai"
 # --suy: id mà diff đã gắn, không tự gắn
 nhom "--suy"

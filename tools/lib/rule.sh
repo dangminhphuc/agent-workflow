@@ -54,18 +54,24 @@ luat_tep() {
   done
 }
 
+# luat_khoi_dong <tên hiển thị> <file|-> -> "<tên>|<ID>|<Status>|<Scope>" cho mọi khối luật (file hoặc stdin)
+luat_khoi_dong() {
+  LK_F="$1" awk '
+    function xong() { if (id != "") print f "|" id "|" st "|" sc; id = "" }
+    BEGIN { f = ENVIRON["LK_F"] }
+    { sub(/\r$/, "") }
+    /^###[ \t]+BR-/ { xong(); s = $0; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); id = s; st = ""; sc = ""; next }
+    /^##/ { xong(); next }
+    id != "" && /^[-*][ \t]*Status:/ { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); st = v }
+    id != "" && /^[-*][ \t]*Scope:/  { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); sc = v }
+    END { xong() }
+  ' "$2"
+}
+
 # luat_ds <gốc repo> <conventions.md> -> "<file>|<ID>|<Status>|<Scope>" cho mọi khối luật
 luat_ds() {
   luat_tep "$1" "$2" | while IFS= read -r _lf; do
-    awk -v f="$_lf" '
-      function xong() { if (id != "") print f "|" id "|" st "|" sc; id = "" }
-      { sub(/\r$/, "") }
-      /^###[ \t]+BR-/ { xong(); s = $0; sub(/^###[ \t]+/, "", s); sub(/[: \t].*$/, "", s); id = s; st = ""; sc = ""; next }
-      /^##/ { xong(); next }
-      id != "" && /^[-*][ \t]*Status:/ { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); st = v }
-      id != "" && /^[-*][ \t]*Scope:/  { v = $0; sub(/^[^:]*:[ \t]*/, "", v); gsub(/`/, "", v); sc = v }
-      END { xong() }
-    ' "$1/$_lf"
+    luat_khoi_dong "$_lf" "$1/$_lf"
   done
 }
 
@@ -294,17 +300,3 @@ luat_loi_hinh_thuc() {
   done
 }
 
-# luat_lien_quan <gốc repo> <conventions.md> <đường dẫn…(stdin)> -> file có luật active khớp
-luat_lien_quan() {
-  _ldd=$(cat)
-  luat_ds "$1" "$2" | while IFS='|' read -r _lf _lid _lst _lsc; do
-    [ "$_lst" = active ] || continue
-    printf '%s\n' "$_ldd" | while IFS= read -r _lp; do
-      [ -n "$_lp" ] || continue
-      set -f
-      # shellcheck disable=SC2086
-      if khop_glob "$_lp" $_lsc || { [ -d "$1/$_lp" ] && khop_glob "$_lp/x" $_lsc; }; then set +f; printf '%s\n' "$_lf"; break; fi
-      set +f
-    done
-  done | awk '!t[$0]++'
-}

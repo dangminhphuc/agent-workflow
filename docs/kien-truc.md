@@ -310,6 +310,10 @@ liệu sai không, nhưng biết diff có đụng **phạm vi** của tài liệ
   không kiểm verdict đúng — như `## Repo rules`; tài liệu sai mà không ai sửa là finding của Lens 3.
 - Luật active trong phạm vi diff chưa có test `covers:` chỉ cảnh báo ở implement, không thành điều
   kiện review: thiếu test cho luật cũ không phải lỗi của việc này.
+- Mịn đến từng mục (SP27): mục `##` có `- Scope:` thành ref `<file>#<neo>` với phạm vi riêng; luật là
+  `<file>#BR-…`. Tập ref gộp từ `Base:` và cây làm việc. Verdict mức file không phủ ref có neo (verdict
+  rộng che mất mục đã lệch). `updated` ở ref có neo đòi diff đổi dòng trong khối — cảnh báo ở implement,
+  chặn ở review. Heading trùng chỉ cảnh báo (chặn là việc của SP28); `|` trong heading bị chặn vì vỡ bảng.
 - Hình thức thư mục ADR chỉ chặn việc có nâng ADR: thư mục hỏng sẵn trên base không được chặn mọi việc.
 
 ## Hai loại điều kiện ra

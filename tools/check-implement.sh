@@ -166,6 +166,12 @@ lvl=$(luat_loi_viec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi "Luật: $l"; done <<EOF
 $lvl
 EOF
+# Tài liệu kiến thức: heading mục khai Scope có "|" làm vỡ bảng verdict (chính xác nên CHẶN).
+ktm=$(kt_loi_muc "$DIR")
+# giữ: CAP-verify-06
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$ktm
+EOF
 
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----
 chan=$(kc_chan_theo_loai "$DIR")
@@ -193,6 +199,15 @@ if [ -n "$cb" ]; then
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Mỗi cảnh báo đã ghi cách sửa — sửa luôn, đừng để tới review."
 fi
+# Heading trùng trong tài liệu kiến thức: ref chỉ trỏ mục đầu.
+ktw=$(kt_canh_bao_muc "$DIR")
+if [ -n "$ktw" ]; then
+  echo ""
+  n_cb=$((n_cb + $(printf '%s\n' "$ktw" | wc -l | tr -d ' ')))
+  # giữ: CAP-verify-06
+  printf '%s\n' "$ktw" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+fi
+
 td=$(kc_tu_dich "$DIR")
 if [ -n "$td" ]; then
   echo ""
