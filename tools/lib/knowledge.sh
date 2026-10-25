@@ -347,3 +347,47 @@ kt_luat_chua_test() {
     done
   done
 }
+
+# kt_tai_lieu_quet <thư-mục-feature> -> tài liệu module (knowledge_files) cần quét vệ sinh mục: file của ref trong
+# kt_anh_huong, cộng mọi tài liệu module nằm trong diff (heading có "|" làm vỡ định dạng "ref|…" nên không
+# thể chỉ dựa vào ref đã parse). Đường dẫn tương đối gốc repo, mỗi file một lần, chỉ file còn tồn tại.
+kt_tai_lieu_quet() {
+  _kr=$(kc_top "$1") || return 0
+  _kc=$(qu_hieu_luc "${AW_REPO:-$_kr}")
+  _kqkf=$(conv_get "$_kc" knowledge_files); _kqkf=${_kqkf:-*/ARCHITECTURE.md}
+  { kt_anh_huong "$1" | cut -d'|' -f1 | sed 's/#.*//'
+    kc_doi "$1" 2>/dev/null | awk -F'\t' '{ print (NF > 2 ? $3 : $2) }'
+  } | awk 'NF && !t[$0]++' | while IFS= read -r _kqf; do
+    [ -f "$_kr/$_kqf" ] || continue
+    tm_bo "$_kqf" && continue
+    set -f
+    # shellcheck disable=SC2086
+    if khop_glob "$_kqf" $_kqkf; then set +f; printf '%s\n' "$_kqf"; else set +f; fi
+  done
+}
+
+# kt_canh_bao_muc <thư-mục-feature> -> cảnh báo (implement): tài liệu có hai mục "##" cùng heading.
+kt_canh_bao_muc() {
+  _kr=$(kc_top "$1") || return 0
+  kt_tai_lieu_quet "$1" | while IFS= read -r _kf; do
+    awk '
+      function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+      { sub(/\r$/, "") }
+      /^##[ \t]/ { h = trim(substr($0, 3)); if (c[h]++ == 1) print h }
+    ' "$_kr/$_kf" | while IFS= read -r _kh; do
+      echo "$_kf: hai mục \"## $_kh\" — ref $_kf#$_kh chỉ trỏ mục đầu; đổi tên một mục"
+    done
+  done
+}
+
+# kt_loi_muc <thư-mục-feature> -> lỗi: mục khai "- Scope:" có "|" trong heading (làm vỡ bảng "## Durable knowledge").
+kt_loi_muc() {
+  _kr=$(kc_top "$1") || return 0
+  kt_tai_lieu_quet "$1" | while IFS= read -r _kf; do
+    kt_muc "$_kr/$_kf" | cut -f1 | while IFS= read -r _kh; do
+      case "$_kh" in
+        (*"|"*) echo "$_kf: heading \"## $_kh\" có ký tự | — làm vỡ bảng \"## Durable knowledge\"; đổi tên mục" ;;
+      esac
+    done
+  done
+}

@@ -166,6 +166,12 @@ lvl=$(luat_loi_viec "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi "Luật: $l"; done <<EOF
 $lvl
 EOF
+# Tài liệu kiến thức: heading mục khai Scope có "|" làm vỡ bảng verdict (chính xác nên CHẶN).
+ktm=$(kt_loi_muc "$DIR")
+# giữ: CAP-verify-06
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$ktm
+EOF
 
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----
 chan=$(kc_chan_theo_loai "$DIR")
@@ -184,7 +190,8 @@ if [ -n "$gct" ]; then
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
+# giữ: CAP-verify-06
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; kt_canh_bao_muc "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""

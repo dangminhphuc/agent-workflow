@@ -112,7 +112,7 @@ while IFS= read -r l; do [ -n "$l" ] && loi_truoc "Luật: $l"; done <<LUAT
 $lvl
 LUAT
 # Kiến thức bền bị diff ảnh hưởng: mỗi tài liệu một verdict ở "## Durable knowledge".
-ktl=$(kt_loi_review "$DIR" "$REVIEW")
+ktl=$( { kt_loi_review "$DIR" "$REVIEW"; kt_loi_muc "$DIR"; } )
 # giữ: CAP-verify-06
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KT
 $ktl

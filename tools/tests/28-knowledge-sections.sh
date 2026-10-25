@@ -172,4 +172,27 @@ nhom "knowledge: phase sinh ra dùng aw knowledge show"
 dung "workflow/phases: spec, design, implement, review nhắc aw knowledge show" sh -c "
   for p in 01-spec 02-design 04-implement 05-review; do grep -q 'aw knowledge show' \"$T/../workflow/phases/\$p.md\" || exit 1; done"
 
+nhom "knowledge: vệ sinh mục (heading trùng, | trong heading)"
+ks_fixture
+g checkout -q main
+mkdir -p "$R/src/pay"; echo x > "$R/src/pay/x.txt"
+g add src docs; g commit -q -m "kien thuc ben"
+g checkout -q feat_x; g merge -q main
+echo y >> "$R/src/pay/x.txt"
+A="$R/src/ARCHITECTURE.md"; HT="$T/check-implement.sh"; RS="$T/check-review.sh"
+cp "$A" "$TMP/arch.orig"
+printf '\n## Thanh toán\nbản hai\n' >> "$A"
+dung "heading trùng: implement cảnh báo đúng câu" sh -c "sh '$HT' '$F' 2>/dev/null | grep -qF 'src/ARCHITECTURE.md: hai mục \"## Thanh toán\" — ref src/ARCHITECTURE.md#Thanh toán chỉ trỏ mục đầu; đổi tên một mục'"
+dung "heading trùng: không phải lỗi" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -F '[LỖI]' | grep -qF 'hai mục'"
+cp "$TMP/arch.orig" "$A"
+sed 's/^## Thanh toán $/## Thanh toán | nợ/' "$TMP/arch.orig" > "$A"
+dung "| trong heading mục có Scope: implement lỗi đúng câu" sh -c "sh '$HT' '$F' 2>/dev/null | grep -F '[LỖI]' | grep -qF 'src/ARCHITECTURE.md: heading \"## Thanh toán | nợ\" có ký tự | — làm vỡ bảng \"## Durable knowledge\"; đổi tên mục'"
+ky_vong 1 "| trong heading mục có Scope: implement KHÔNG ĐẠT" sh "$HT" "$F"
+sh "$HT" "$F" >/dev/null 2>&1; viet_review; toc_f review.md; ghi_tree_review
+dung "| trong heading mục có Scope: review lỗi đúng câu" sh -c "sh '$RS' '$F' 2>/dev/null | grep -F '[LỖI]' | grep -qF 'heading \"## Thanh toán | nợ\" có ký tự |'"
+ky_vong 1 "| trong heading mục có Scope: review KHÔNG ĐẠT" sh "$RS" "$F"
+sed 's/^## Tổng quan$/## Tổng quan | phụ/' "$TMP/arch.orig" > "$A"
+dung "| trong heading mục KHÔNG khai Scope: không lỗi vì rule này" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -qF 'có ký tự |'"
+cp "$TMP/arch.orig" "$A"
+
 ket_thuc
