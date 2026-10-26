@@ -424,8 +424,8 @@ artifact khác là link có anchor tới đúng mục.
 - **Một lượt, không phải sau từng lần sửa.** `aw toc` làm cả thư mục trong một lần chạy, nên
   `general.md` §6 đòi chạy **một lần** khi viết xong artifact, không chạy sau từng file.
 - **Lỗi sửa được ngay trong một lượt.** Mỗi dòng `[LỖI]` nêu file, số dòng và dạng đúng (anchor nào,
-  mã không có heading nào, hay còn chỗ giữ chỗ); mọi lỗi in hết một lượt, không dừng ở lỗi đầu.
-  Vòng sửa–chạy lặp lại chỉ còn khi thật sự phải đổi nội dung.
+  mã không có heading nào, nhiều mục cùng mã, hay còn chỗ giữ chỗ); mọi lỗi in hết một lượt, không
+  dừng ở lỗi đầu. Vòng sửa–chạy lặp lại chỉ còn khi thật sự phải đổi nội dung.
 - **Chặn, không cảnh báo.** Kiểm chính xác: mục lục khớp heading hay không, anchor có trong file đích
   hay không — không có báo nhầm. Checker phase chặn trên artifact đầu ra của chính nó; link sang
   artifact phase trước có thể gãy khi file đó đổi heading sau này, nên `review` chặn lại trên mọi
