@@ -418,7 +418,14 @@ artifact khác là link có anchor tới đúng mục.
 - **Máy sinh, không để agent gõ.** Anchor tính như GitHub / VS Code (chữ thường gồm cả chữ Việt,
   bỏ dấu câu, dấu cách thành `-`, trùng thì `-1`): `### REQ-001 — Đăng nhập` → `#req-001--đăng-nhập`.
   Agent gõ tay thì sai một dấu là link chết. `aw toc` sinh mục lục và mở rộng anchor rút gọn
-  (`#req-001` → anchor đầy đủ) khi chỉ khớp một heading; agent chỉ cần viết mã.
+  (`#req-001` → anchor đầy đủ) khi chỉ khớp một heading; agent chỉ cần viết mã. Heading đổi chữ
+  sau khi link đã viết cũng vậy: anchor cũ mang mã (`req-001--chữ-cũ`) nên máy mở rộng lại theo mã,
+  người viết không phải sửa tay từng link hay chạy `sed`.
+- **Một lượt, không phải sau từng lần sửa.** `aw toc` làm cả thư mục trong một lần chạy, nên
+  `general.md` §6 đòi chạy **một lần** khi viết xong artifact, không chạy sau từng file.
+- **Lỗi sửa được ngay trong một lượt.** Mỗi dòng `[LỖI]` nêu file, số dòng và dạng đúng (anchor nào,
+  mã không có heading nào, hay còn chỗ giữ chỗ); mọi lỗi in hết một lượt, không dừng ở lỗi đầu.
+  Vòng sửa–chạy lặp lại chỉ còn khi thật sự phải đổi nội dung.
 - **Chặn, không cảnh báo.** Kiểm chính xác: mục lục khớp heading hay không, anchor có trong file đích
   hay không — không có báo nhầm. Checker phase chặn trên artifact đầu ra của chính nó; link sang
   artifact phase trước có thể gãy khi file đó đổi heading sau này, nên `review` chặn lại trên mọi

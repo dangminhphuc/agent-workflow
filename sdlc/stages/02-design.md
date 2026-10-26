@@ -10,6 +10,7 @@ exit: both
 invariants:
   - INV-005
   - INV-006
+  - INV-012
 ---
 
 # Stage: design

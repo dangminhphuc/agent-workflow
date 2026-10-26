@@ -188,11 +188,13 @@ ds_doc() {
     }'
 }
 
-# ds_mau <file nguồn> — mẫu của các output (không ghi chú) có mẫu trong workflow/templates/, một dòng.
+# ds_mau <file nguồn> — mẫu của các output (không ghi chú) có mẫu trong workflow/templates/,
+# một dòng. In đường dẫn trong repo đích ($DOCS/templates/…) để agent đọc được ngay,
+# không phải đoán chỗ cất mẫu.
 ds_mau() {
   fm_list "$1" outputs | while IFS= read -r _o; do
     case "$_o" in *" ("*) continue ;; esac   # ghi chú = cập nhật hay máy ghi, không theo mẫu
-    case "$_o" in *.md) if [ -f "$ROOT/workflow/templates/$_o" ]; then printf '`templates/%s` ' "$_o"; fi ;; esac
+    case "$_o" in *.md) if [ -f "$ROOT/workflow/templates/$_o" ]; then printf '`%s/templates/%s` ' "$DOCS" "$_o"; fi ;; esac
   done | sed 's/ $//; s/` `/`, `/g'
 }
 
@@ -508,7 +510,7 @@ ad_sinh() {
       printf 'You are an independent reviewer: you have NEVER seen this code or the reasoning behind it. Do not guess the author'"'"'s intent; only compare the code with the approved spec and design. Write `review.md` in Vietnamese.\n\n'
       printf 'The caller passes the feature dir, written `%s` below (e.g. `%s/feat_tao-todo`); missing → stop and ask.\n\n' "$FD" "$ART"
       printf -- '- **Reads:** %s\n' "$(ds_doc inputs "$REV_SRC")"
-      printf -- '- **Writes:** `%s/review.md` per `templates/review.md`, then run `aw check review %s` and paste the real result.\n\n' "$FD" "$FD"
+      printf -- '- **Writes:** `%s/review.md` per `%s/templates/review.md`, then run `aw check review %s` and paste the real result.\n\n' "$FD" "$DOCS" "$FD"
       doc_truoc "" review
       buoc_cong_cu_repo review
       printf -- '---\n'

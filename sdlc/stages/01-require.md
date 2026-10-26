@@ -10,6 +10,7 @@ exit: both
 skippable: false
 invariants:
   - INV-005
+  - INV-012
 ---
 
 # Stage: require

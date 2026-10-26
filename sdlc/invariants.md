@@ -76,3 +76,9 @@ quotes: `` `tools/tests/NN-x.sh` "case", "case" ``. Each named case must exist i
 - Engine: conventions key `production_code`; plan section "Dependency upgrades".
 - Enforced by: `tools/lib/cross-check.sh` `tools/check-implement.sh`
 - Tested by: `tools/tests/12-perf-guard-chore.sh` "chore đụng code production thì chặn", "chore nâng dependency không khai thì chặn", "nâng major không được là chore"
+
+### INV-012 — The machine keeps a pointer to another document's section correct
+- Rule: a document that points at a section of another document points at a section that exists; when that section is renamed the tool repairs the pointer, and every fault the tool cannot repair is reported with its location and the form that would be correct — all faults in one pass, so one repair round is enough.
+- Engine: `tools/lib/toc.sh` — `aw toc` sinh `## Contents`, mở rộng anchor rút gọn và mở rộng lại anchor theo mã của mục khi heading đổi chữ; lỗi còn lại in kèm file, số dòng và dạng đúng.
+- Enforced by: `tools/lib/toc.sh` `tools/check-spec.sh` `tools/check-review.sh`
+- Tested by: `tools/tests/01-fixture-engine-toc.sh` "heading đổi → aw toc một lượt, ĐÃ KHỚP", "link trong cùng file cũng được sửa, một lượt", "link tới mã không có → còn chặn sau một lượt aw toc", "chỗ giữ chỗ chưa điền → lỗi nêu rõ là chỗ giữ chỗ", "hai lỗi dạng ở hai file → in hết một lượt"
