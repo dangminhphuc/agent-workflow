@@ -208,31 +208,61 @@ done
 for f in "$E"/sdlc/stages/[0-9]*.md; do
   [ -f "$f" ] || continue
   i=$((i + 1)); ten=${f##*/}; ten=${ten%.md}; ten=${ten#*-}
-  id=$(fm_scalar "$f" id)
+  awk '
+    BEGIN { fm = 0; inl = 0; cur = "" }
+    FNR == 1 { sub(/\r$/, ""); fm = ($0 == "---") ? 1 : 0; inl = 0; cur = ""; next }
+    fm == 1 && $0 == "---" { fm = 2; next }
+    fm != 1 { next }
+    {
+      sub(/\r$/, "")
+      if (inl && $0 ~ /^[ \t]+-[ \t]+/) { v = $0; sub(/^[ \t]+-[ \t]+/, "", v); sub(/[ \t]+$/, "", v); print cur "=" v; next }
+      inl = 0
+      k = $0; sub(/:.*/, "", k); sub(/^[ ]*/, "", k)
+      if (k == "id") { v = $0; sub(/^[A-Za-z_][A-Za-z0-9_]*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v); if (v == "[]" || v == "{}") v = ""; print "id=" v; next }
+      if (k == "purpose") { v = $0; sub(/^[A-Za-z_][A-Za-z0-9_]*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v); if (v == "[]" || v == "{}") v = ""; print "purpose=" v; next }
+      if (k == "exit") { v = $0; sub(/^[A-Za-z_][A-Za-z0-9_]*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v); if (v == "[]" || v == "{}") v = ""; print "exit=" v; next }
+      if (k == "skippable") { v = $0; sub(/^[A-Za-z_][A-Za-z0-9_]*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v); if (v == "[]" || v == "{}") v = ""; print "skippable=" v; next }
+      if (k == "requires" || k == "provides" || k == "invariants") { cur = k; inl = ($0 ~ /^[A-Za-z_][A-Za-z0-9_]*:[ \t]*$/) ? 1 : 0; next }
+    }
+  ' "$f" > "$W/dmp"
+  id=""; purpose=""; ex=""; sk=""; reqs=""; provs=""; invs=""
+  while IFS= read -r l; do
+    k=${l%%=*}; v=${l#*=}
+    case "$k" in
+      id) id=$v ;;
+      purpose) purpose=$v ;;
+      exit) ex=$v ;;
+      skippable) sk=$v ;;
+      requires) reqs="${reqs:+$reqs
+}$v" ;;
+      provides) provs="${provs:+$provs
+}$v" ;;
+      invariants) invs="${invs:+$invs
+}$v" ;;
+    esac
+  done < "$W/dmp"
   if [ "$id" != "$ten" ]; then
     loi "sdlc/stages/${f##*/}: id \"$id\" lệch tên file (cần \"$ten\")."; id=$ten
   fi
-  [ -n "$(fm_scalar "$f" purpose)" ] || loi "stage $id: thiếu purpose."
-  ex=$(fm_scalar "$f" exit)
+  [ -n "$purpose" ] || loi "stage $id: thiếu purpose."
   case "$ex" in
     machine|human|both) ;;
     *) loi "stage $id: exit \"$ex\" — chỉ nhận machine | human | both." ;;
   esac
-  fm_list "$f" requires > "$W/r"
+  if [ -n "$reqs" ]; then printf '%s\n' "$reqs" > "$W/r"; else : > "$W/r"; fi
   while IFS= read -r t; do
     [ -n "$t" ] || continue
     echo "$id|$t" >> "$W/sreq"
     awk -F'|' -v t="$t" '$2 == t' "$W/prov" | grep -q . \
       || loi "stage $id: requires \"$t\" — không stage nào trước nó provides."
   done < "$W/r"
-  fm_list "$f" provides > "$W/p"
+  if [ -n "$provs" ]; then printf '%s\n' "$provs" > "$W/p"; else : > "$W/p"; fi
   [ -s "$W/p" ] || loi "stage $id: thiếu provides."
   while IFS= read -r t; do if [ -n "$t" ]; then echo "$id|$t" >> "$W/prov"; fi; done < "$W/p"
-  for inv in $(fm_list "$f" invariants); do
+  for inv in $invs; do
     inv_co "$inv" \
       || loi "stage $id: invariant $inv không có trong sdlc/invariants.md."
   done
-  sk=$(fm_scalar "$f" skippable)
   case "$sk" in
     ""|true) sk=true ;;
     false) ;;
@@ -420,11 +450,15 @@ done < "$W/oos"
 # chặn / cảnh báo, trong tools/check-*.sh, tools/lib/*.sh, tools/task.sh (bước A, đợt 1: chỉ chiều ngược —
 # capability machine được nhận phải có luật khai nó; luật chưa khai id thì chưa chặn).
 : > "$W/giu"
-for f in "$E"/tools/check-*.sh "$E"/tools/lib/*.sh "$E"/tools/task.sh; do
-  [ -f "$f" ] || continue
-  awk -v f="${f#"$E"/}" '{ sub(/\r$/, "") }
-    /^[ \t]*# giữ:/ { s = $0; while (match(s, /CAP-[a-z]+-[0-9][0-9]|INV-[0-9]+/)) { print f "|" substr(s, RSTART, RLENGTH); s = substr(s, RSTART + RLENGTH) } }' "$f" >> "$W/giu"
-done
+awk -v e="$E" '
+  FNR == 1 { bn = FILENAME; sub(/^.*\//, "", bn) }
+  bn != "check-sdlc.sh" && bn != "check-release.sh" && /^[ \t]*# giữ:/ {
+    s = $0; sub(/^[ \t]*# giữ:[ \t]*/, "", s)
+    n = split(s, a, /[, \t]+/)
+    f = FILENAME; if (index(f, e "/") == 1) f = substr(f, length(e) + 2)
+    for (i = 1; i <= n; i++) if (a[i] != "") print f "|" a[i]
+  }
+' "$E"/tools/check-*.sh "$E"/tools/lib/*.sh "$E"/tools/task.sh > "$W/giu"
 while IFS='|' read -r f id; do
   case "$id" in
     CAP-*) cap_co "$id" ;;
