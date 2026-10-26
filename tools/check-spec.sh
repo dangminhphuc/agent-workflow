@@ -15,7 +15,7 @@
 #            cảnh báo: nguồn đổi sau khi viết spec không phải lỗi của phase sau.
 #            open-questions.md / refactor-requests.md: mục ở cấp cũ "## REQ-/RFR-" (phải "###");
 #            RFR sai dạng (không đúng 3 chữ số) hay trùng.
-#            [JIRA] không có mã khớp jira_key_regex; [ISSUE] không có URL issue / PR / MR;
+#            [JIRA] không có mã khớp jira_key_regex; [ISSUE] không có URL issue / PR / MR / work item;
 #            [INFERRED] không ghi lý do.
 #            spec-findings.md thiếu, hoặc còn phát hiện Severity block chưa fixed / rejected: <lý do>.
 # Cảnh báo:  nguồn [JIRA]/[CONFLUENCE]/[ISSUE]/[FILE] không có trong "## Input" của intake.md;
@@ -384,8 +384,8 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
       if (t == "INFERRED" && (x == "" || x ~ /^<.*>$/))
         loi(c ": nguồn [INFERRED] không ghi lý do — ghi lý do kỹ thuật và REQ nó phục vụ (vd \"index cho REQ-002\").")
       # giữ: CAP-require-01
-      if (t == "ISSUE" && x !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests)\/[0-9]+([^0-9A-Za-z]|$)/)
-        loi(c ": nguồn [ISSUE] không có URL issue / PR / MR (…/issues/N, …/pull/N, …/-/merge_requests/N) — " x)
+      if (t == "ISSUE" && x !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests|work_items)\/[0-9]+([^0-9A-Za-z]|$)/)
+        loi(c ": nguồn [ISSUE] không có URL issue / PR / MR / work item (…/issues/N, …/pull/N, …/-/merge_requests/N, …/-/work_items/N) — " x)
       else if (t == "JIRA" && x !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)"))
         loi(c ": nguồn [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " x)
       else if (co_intake && (t == "CONFLUENCE" || t == "JIRA" || t == "ISSUE" || t == "FILE")) {

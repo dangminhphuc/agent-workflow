@@ -253,6 +253,12 @@ dung "…URL có trong Input (bỏ anchor) → không cảnh báo" sh -c "! sh '
 viet_intake
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[FILE]` [open-questions.md § Q-001](open-questions.md#q-001--hỏi-b)'
 dung "[FILE] trỏ open-questions.md của việc → không cảnh báo nguồn ngoài intake" sh -c "! sh '$CHK' '$F' | grep -qF 'không có trong \"## Input\"'"
+viet_intake; viet_spec
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[ISSUE]` [#12](https://gitlab.com/g/r/-/work_items/3#note_2)'
+viet_intake; thay "$F/intake.md" '- `[JIRA]` ABC-1' '- `[ISSUE]` https://gitlab.com/g/r/-/work_items/3'
+ky_vong 0 "[ISSUE] work item GitLab + Quote → cho qua" sh "$CHK" "$F"
+viet_intake; viet_spec
+
 # [ISSUE]: issue / PR / MR GitHub, GitLab — cần URL đúng dạng và Quote; so Input theo URL bỏ #comment
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[ISSUE]` [#12](https://github.com/o/r/issues/12#issuecomment-5)'
 thay "$F/intake.md" '- `[JIRA]` ABC-1' '- `[JIRA]` ABC-1

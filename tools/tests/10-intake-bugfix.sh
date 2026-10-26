@@ -68,6 +68,8 @@ thay "$F/intake.md" 'https://github.com/o/r/issues/12' '[#3](https://git.cty.vn/
 ky_vong 0 "[ISSUE] link markdown tới MR GitLab thì cho qua" sh "$CHK" "$F"
 thay "$F/intake.md" '[#3](https://git.cty.vn/g/r/-/merge_requests/3)' 'https://github.com/o/r'
 ky_vong_ly_do 1 "chặn [ISSUE] không có URL issue / PR / MR" "…đúng lý do" '\[ISSUE\] không có URL issue' sh "$CHK" "$F"
+thay "$F/intake.md" 'https://github.com/o/r' 'https://gitlab.com/g/r/-/work_items/3'
+ky_vong 0 "[ISSUE] work item GitLab thì cho qua" sh "$CHK" "$F"
 viet_intake
 
 # spec ghi based_on intake.md: gop them input -> spec loi thoi, review chan

@@ -281,6 +281,8 @@ dung "stdin: nguyên văn giữ dấu nháy, \$, backtick, nhiều dòng" bang "
 dung "issue GitHub → [ISSUE]" bang "$(ra 'https://github.com/o/r/issues/12')" "- ${BT}[ISSUE]${BT} https://github.com/o/r/issues/12"
 dung "PR GitHub → [ISSUE]" bang "$(ra 'https://github.com/o/r/pull/5')" "- ${BT}[ISSUE]${BT} https://github.com/o/r/pull/5"
 dung "issue gitlab.com → [ISSUE]" bang "$(ra 'https://gitlab.com/g/r/-/issues/3')" "- ${BT}[ISSUE]${BT} https://gitlab.com/g/r/-/issues/3"
+dung "issue gitlab.com work_items → [ISSUE]" bang "$(ra 'https://gitlab.com/g/r/-/work_items/3')" "- ${BT}[ISSUE]${BT} https://gitlab.com/g/r/-/work_items/3"
+dung "work item gitlab.com (nhóm con) → [ISSUE]" bang "$(ra 'https://git.cty.vn/g/sub/r/-/work_items/7')" "- ${BT}[ISSUE]${BT} https://git.cty.vn/g/sub/r/-/work_items/7"
 dung "MR GitLab tự host (nhóm con) → [ISSUE]" bang "$(ra 'https://git.cty.vn/g/sub/r/-/merge_requests/7')" "- ${BT}[ISSUE]${BT} https://git.cty.vn/g/sub/r/-/merge_requests/7"
 dung "…không kèm cảnh báo confluence_domains" sh -c "! printf '%s' \"\$1\" | grep -q confluence_domains" _ "$(loi 'https://github.com/o/r/issues/12')"
 dung "cùng issue khác #comment / query → một dòng" bang "$(ra 'https://github.com/o/r/issues/12 https://github.com/o/r/issues/12#issuecomment-1 https://github.com/o/r/issues/12?x=1' | wc -l | tr -d ' ')" 1

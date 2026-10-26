@@ -12,7 +12,7 @@ Every `### REQ-NNN` in `spec.md` has **exactly one** `Source:` line with one lab
 |---|---|---|
 | `[CONFLUENCE]` | Quoted from a Confluence page | Page URL + heading; `Quote:` |
 | `[JIRA]` | Quoted from a Jira issue | Issue key + URL; `Quote:` |
-| `[ISSUE]` | Quoted from a GitHub/GitLab issue, PR or MR | Issue/PR/MR URL (`…/issues/N`, `…/pull/N`, `…/-/merge_requests/N`); `Quote:` |
+| `[ISSUE]` | Quoted from a GitHub/GitLab issue, PR, MR or work item | Issue/PR/MR/work-item URL (`…/issues/N`, `…/pull/N`, `…/-/merge_requests/N`, `…/-/work_items/N`); `Quote:` |
 | `[FILE]` | Quoted from a file in the repo | Path + heading; `Quote:` found in that file |
 | `[INFERRED]` | Technical decision you derived | Reason + the REQ it serves |
 | `[OPEN-QUESTION]` | No source yet, temporary assumption | Link to its question: `[open-questions.md § Q-NNN](open-questions.md#q-nnn)` |
