@@ -12,7 +12,7 @@
 #   - [INCIDENT] cùng dạng [FILE]: phải có định danh, không chỗ giữ chỗ. Không bắt buộc.
 #   - [HUMAN] không kèm nguyên văn.
 #   - [JIRA] mà định danh không có mã khớp jira_key_regex (conventions.md).
-#   - [ISSUE] không có URL issue / PR / MR (GitHub, GitLab).
+#   - [ISSUE] không có URL issue / PR / MR / work item (GitHub, GitLab).
 #   - Thiếu dòng "Base:" dạng `<ref>` @ `<sha>` (worktree-new.sh in ra), hoặc sha
 #     không phải tổ tiên của HEAD. Checker phía sau so diff với base này — base
 #     sai thì phạm vi diff, test bảo vệ, tái hiện lỗi đều kiểm trên nền sai.
@@ -120,7 +120,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     # giữ: CAP-plan-01
     else if (t == "JIRA" && rest !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)")) loi("Input #" n_in ": [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " rest)
     # giữ: CAP-plan-01
-    else if (t == "ISSUE" && rest !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests)\/[0-9]+([^0-9A-Za-z]|$)/) loi("Input #" n_in ": [ISSUE] không có URL issue / PR / MR (…/issues/N, …/pull/N, …/-/merge_requests/N) — " rest)
+    else if (t == "ISSUE" && rest !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests|work_items)\/[0-9]+([^0-9A-Za-z]|$)/) loi("Input #" n_in ": [ISSUE] không có URL issue / PR / MR / work item (…/issues/N, …/pull/N, …/-/merge_requests/N, …/-/work_items/N) — " rest)
     dem[t]++
     next
   }

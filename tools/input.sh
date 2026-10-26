@@ -88,12 +88,12 @@ HOST_GOC=$(git -C "$TOP" remote get-url origin 2>/dev/null | awk '{
   else exit
   sub(/^.*@/, "", s); sub(/:.*$/, "", s); print tolower(s) }')
 
-# la_issue <url đã bỏ query/fragment, bỏ "/" cuối> -> 0 nếu là issue / PR / MR:
-#   GitLab (mọi host, cả nhóm con): …/<nhóm>/<repo>/-/(issues|merge_requests)/N
+# la_issue <url đã bỏ query/fragment, bỏ "/" cuối> -> 0 nếu là issue / PR / MR / work item:
+#   GitLab (mọi host, cả nhóm con): …/<nhóm>/<repo>/-/(issues|merge_requests|work_items)/N
 #   GitHub: github.com hoặc host của origin, /<o>/<r>/(issues|pull)/N
 la_issue() {
   printf '%s\n' "$1" | awk -v hg="$HOST_GOC" '{
-    if ($0 ~ /^https?:\/\/[^\/]+\/([^\/]+\/)+-\/(issues|merge_requests)\/[0-9]+$/) exit 0
+    if ($0 ~ /^https?:\/\/[^\/]+\/([^\/]+\/)+-\/(issues|merge_requests|work_items)\/[0-9]+$/) exit 0
     if ($0 !~ /^https?:\/\/[^\/]+\/[^\/]+\/[^\/]+\/(issues|pull)\/[0-9]+$/) exit 1
     h = $0; sub(/^https?:\/\//, "", h); sub(/\/.*$/, "", h); h = tolower(h)
     exit !(h == "github.com" || (hg != "" && h == hg)) }'

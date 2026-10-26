@@ -433,7 +433,7 @@ Mỗi mục dưới có: **chạy ở đâu**, **đọc → ghi**, **artifact qu
 3. Xác nhận danh sách input, và lời bạn được chép **nguyên văn**.
 4. Chạy lệnh chuẩn bị máy in ra (`WORKTREE_SETUP_CMD`), rồi **mở phiên mới trong worktree**.
 
-**Máy chặn khi:** thiếu job type/input/`Base`/`Engine`; `[JIRA]` không khớp `jira_key_regex`; `[ISSUE]` không có URL dạng `…/issues/N`, `…/pull/N`, `…/-/merge_requests/N`; `[INCIDENT]` thiếu định danh hoặc còn chỗ giữ chỗ.
+**Máy chặn khi:** thiếu job type/input/`Base`/`Engine`; `[JIRA]` không khớp `jira_key_regex`; `[ISSUE]` không có URL dạng `…/issues/N`, `…/pull/N`, `…/-/merge_requests/N`, `…/-/work_items/N`; `[INCIDENT]` thiếu định danh hoặc còn chỗ giữ chỗ.
 Job type lệch tiền tố branch → intake chỉ cảnh báo, **review chặn** (sửa loại hoặc `aw rename`).
 
 Thêm input sau: chạy lại `/aw-intake <input mới>` trong worktree — chỉ nối thêm. Xoá input: sửa tay.
