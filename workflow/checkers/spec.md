@@ -44,4 +44,4 @@ Compare each requirement's description and acceptance criteria **only** against 
 
 ## Output
 
-`spec-findings.md` per `templates/spec-findings.md`, written in Vietnamese. One `### FND-NNN` per finding under `## Findings`, always `Resolution: open`. Rerun → **overwrite** the file (old findings still valid are written again; resolved ones dropped). No findings → still write the file with the single item `No blocking findings.` (the file existing = the checker ran). Then run `aw toc <dir> spec-findings.md`.
+`spec-findings.md` per `templates/spec-findings.md`, written in Vietnamese. One `### FND-NNN` per finding under `## Findings`, always `Resolution: open`. Rerun → **overwrite** the file (old findings still valid are written again; resolved ones dropped). No findings → still write the file with the single item `No blocking findings.` (the file existing = the checker ran). Do **not** run `aw toc` here — the phase runs it once over all artifacts.

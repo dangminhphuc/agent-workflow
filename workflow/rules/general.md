@@ -37,7 +37,7 @@ Work that belongs to another phase: record it in that phase's artifact, do not d
 - Headings by level, no skipped levels. One idea per item; parallel ideas → list or table.
 - Short sentences, plain words. No hedging, no repetition, no explaining the obvious.
 - Writing from a template: delete its guidance comments (`<!-- … -->`) and the optional blocks you do not use. Never touch `<!-- approval-hash: … -->`.
-- **Table of contents — MANDATORY:** an artifact with `##`/`###` headings has `## Contents` before the first of them, linking every `##`/`###` heading in order. Never write it by hand: after every edit run `aw toc <dir>` (before `aw based-on`) and fix what it prints.
+- **Table of contents — MANDATORY:** an artifact with `##`/`###` headings has `## Contents` before the first of them, linking every `##`/`###` heading in order. Never write it by hand. Run `aw toc <dir>` **once**, after the last artifact edit of the session (before `aw based-on`), not after each file: one run regenerates every contents list, expands the short anchors and repairs the links whose heading changed. Fix everything it prints, then run it again — `ĐÃ KHỚP` is the only pass. Its `[LỖI]` lines name the file, the line and the correct form.
 - **IDs:** `<PREFIX>-NNN` — `REQ`, `DEC`, `FND`, `TSK`, `RFR`, exactly 3 digits, numbered consecutively per artifact (`REQ-001`, `REQ-002`). Durable knowledge keeps `BR-<DOMAIN>-NNN` and `ADR-NNNN`.
 - **References to another artifact are links to the section — MANDATORY:** `[spec.md § REQ-001](spec.md#req-001)`, never plain `spec.md § REQ-001` nor a link to the file alone. A short anchor (`#req-001`, `#dec-001`, `#tsk-002`) is enough — `aw toc` expands it to the heading's full anchor.
 

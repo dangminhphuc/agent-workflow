@@ -754,8 +754,11 @@ Tất cả nằm ở `<worktree>/docs/sdlc/<tên-branch>/` (việc tạo bằng 
 **Mục lục và link.** Artifact agent viết có `## Contents` ngay trước heading `##`/`###` đầu
 tiên, và mọi tham chiếu sang artifact khác là link tới mục, vd
 `[open-questions.md § Q-002](open-questions.md#q-002--kênh-thông-báo-nào)`. Agent không gõ tay:
-`aw toc <thư-mục-feature>` sinh mục lục và tính anchor. Sửa heading bằng tay thì chạy lại
-`aw toc`; checker chặn khi mục lục lệch heading hay link trỏ vào mục không có.
+`aw toc <thư-mục-feature>` sinh mục lục, tính anchor, và sửa luôn link của mục vừa đổi tên
+(đổi tên heading không bắt phải dò từng link). Một lần chạy phủ hết thư mục, nên agent chạy
+**một lần** khi viết xong, không chạy sau từng file. Dòng `[LỖI]` nêu file, số dòng và dạng
+đúng để sửa trong một lượt; còn `CÒN LINK SAI` là còn phải sửa, chỉ `ĐÃ KHỚP` là xong. Checker
+chặn khi mục lục lệch heading hay link trỏ vào mục không có.
 
 **Chuỗi phụ thuộc và stale.** Mỗi artifact ghi `based_on` (hash cả file đầu vào, do
 `aw based-on` ghi):

@@ -67,6 +67,7 @@
 | SP32 | `adapters/claude-code/exclude` hẹp lại (không loại cả `/.claude/`) | sau | xong | — | Chốt: exclude đúng tên file sinh ra; aw doctor cảnh báo dòng cũ | | | [#103](https://github.com/dangminhphuc/agent-workflow/pull/103) |
 | SP33 | Nhãn nguồn cho URL issue GitHub / GitLab trong `aw input` | sau | xong | — | Chốt: nhãn mới `[ISSUE]`, không thêm khoá conventions | | | [#104](https://github.com/dangminhphuc/agent-workflow/pull/104) |
 | SP34 | Phát hành các mảnh `changes/` đang tồn trước khi chạy SP9 | sau | xong | — | — | | | bản 2026.10.32 |
+| SP35 | Viết artifact đúng dạng ngay lần đầu (bớt vòng sửa–`aw toc`) | sau | một phần | số liệu SP9 (đo token, REQ-006) | Chốt: INV-012 thay cho capability mới; đo sau | [spec](specs/2026-10-26-spec-dung-dang-lan-dau-design.md) | | [#109](https://github.com/dangminhphuc/agent-workflow/pull/109) |
 
 Đợt 5 (kiểm nội dung) đi trước SP19 theo nguyên tắc 1. SP13 không chờ số liệu SP9: REQ diễn giải sai
 nguồn là rủi ro đã biết (`docs/kien-truc.md` § Những chỗ thiết kế này yếu, mục 3), sai ở đây mọi phase
@@ -203,6 +204,20 @@ dùng `:`; số phase lấy từ stage, `check-sdlc.sh` chặn khi lệch. Chi t
 
 **Cần quyết.** Spec § 5: đổi tên tới `aw check`/`aw ship` không; lệnh con duyệt hay tham số
 `/aw-approvals <stage>`; chuyển tiếp chữ `plan` đổi nghĩa; dạng số trong summary.
+
+### SP35 — Viết artifact đúng dạng ngay lần đầu
+
+**Vấn đề.** Phase spec viết artifact trước khi đọc kỹ template, rồi dò dạng bằng `aw toc`
+3–4 lượt, có khi sửa link bằng `sed` — gấp 2–3 lần token cần thiết.
+
+**Hướng (đã làm, đợt 1).** `INV-012`: một lượt `aw toc` là xong — máy mở rộng lại anchor theo mã
+khi heading đổi chữ, lỗi dạng in kèm file, số dòng và dạng đúng, mọi lỗi in cùng một lượt; phase
+body và lệnh sinh ra bắt agent chép khung template trước khi viết, `aw toc` chạy một lần ở cuối
+(xem `docs/kien-truc.md` § Mục lục và link tới mục).
+
+**Còn lại (REQ-006, chờ số liệu SP9).** Đếm số lần gọi `aw toc` trong một phiên spec vào journal và
+so token trước/sau trên cùng bộ feature mẫu — mục tiêu ≤ 1/3, ít nhất ≤ 1/2. Cùng mẫu này có thể áp
+cho phase design, plan (dự án con riêng khi có số liệu).
 
 ## Việc nhỏ (không thành dự án con)
 

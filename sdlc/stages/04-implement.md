@@ -14,6 +14,7 @@ exit: machine
 skippable: false
 invariants:
   - INV-003
+  - INV-012
 ---
 
 # Stage: implement

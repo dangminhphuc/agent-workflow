@@ -8,6 +8,10 @@
 #   - Link tới một artifact trong TOC_ART phải có "#anchor" trỏ tới mục có thật
 #     trong file đó; link "#anchor" trỏ tới mục có thật trong chính file.
 #   - Tham chiếu "<artifact>.md § <mục>" phải là link, không là chữ trơn.
+#   - `aw toc` (toc_ghi) còn SỬA link hỏng do heading đổi chữ: anchor mang mã ID
+#     (req-001--chữ-cũ) được mở rộng lại theo mã, nên một lượt `aw toc` là xong,
+#     agent không phải dò hay chạy sed qua nhiều vòng. Lỗi còn lại (toc_loi) in kèm
+#     dạng đúng và số dòng để sửa một lần.
 #
 # Anchor tính như GitHub / VS Code (github-slugger): bỏ thẻ HTML và phần "(url)"
 # của link, chữ thường (ASCII + chữ Việt), bỏ dấu câu (trừ "-" "_"), mỗi dấu cách
@@ -26,6 +30,7 @@ TOC_ART="intake.md spec.md open-questions.md spec-findings.md tdd.md design-find
 #                      toc_sach = dòng đã bỏ HTML comment
 #   toc_slug(s)        anchor của chữ heading (chưa khử trùng)
 #   toc_duy_nhat(s)    khử trùng anchor trong file hiện tại
+#   toc_ma(a)          mã ID mở đầu anchor ("req-001--dang-nhap" → "req-001"), hoặc ""
 #   toc_thuong(s)      chữ thường ASCII + chữ Việt
 TOC_AWK='
   function toc_khoi_tao(   hoa, thuong, i) {
@@ -60,6 +65,15 @@ TOC_AWK='
     while (s in toc_da) { toc_da[g]++; s = g "-" toc_da[g] }
     toc_da[s] = 0
     return s
+  }
+  function toc_ma(a) {                          # mã ID mở đầu anchor: req-001--dang-nhap → req-001
+    if (!match(a, /^[a-z]+-[0-9]+/)) return ""
+    return substr(a, RSTART, RLENGTH)
+  }
+  function toc_tim_ma(f, ma,   n, k, a, d) {    # anchor duy nhất của file f bắt đầu bằng mã ma ("" nếu không hoặc hai)
+    n = split(ds_slug[f], a, " "); d = ""
+    for (k = 1; k <= n; k++) if (a[k] == ma || index(a[k], ma "-") == 1) { if (d != "") return ""; d = a[k] }
+    return d
   }
   function toc_dong(s,   t, i, r, j, n) {
     toc_chu = ""; toc_sach = ""
@@ -105,6 +119,7 @@ toc_chi_muc() {
 
 # toc_loi <thư-mục-feature> <artifact>... -> mỗi vi phạm một dòng "<artifact>: <lý do>".
 # Không in gì = sạch. Artifact không có file thì bỏ qua (checker phase tự chặn thiếu file).
+# giữ: INV-012
 toc_loi() {
   __tl_d="$1"; shift
   __tl_cm="${TMPDIR:-/tmp}/aw-toc.$$"
@@ -127,10 +142,14 @@ toc_loi() {
       }
       FNR == 1 { toc_moi_file() }
       function loi(m) { print ten ": " m }
-      function tim_ma(f, ma,   n, k, a, d) {          # anchor duy nhất bắt đầu bằng mã (vd req-002)
-        n = split(ds_slug[f], a, " "); d = ""
-        for (k = 1; k <= n; k++) if (a[k] == ma || index(a[k], ma "-") == 1) { if (d != "") return ""; d = a[k] }
-        return d
+      function vi_tri() { return " (dòng " FNR ")" }      # vị trí lỗi trong artifact
+      function chu_dang(f, a,   ma, d) {             # dạng đúng của link sai — in kèm lỗi
+        if (a ~ /^</) return " — còn chỗ giữ chỗ: điền anchor mục thật (vd " f "#req-001) rồi chạy aw toc"
+        ma = toc_ma(toc_thuong(a))
+        if (ma == "") return " — chạy aw toc, hoặc sửa theo heading"
+        d = toc_tim_ma(f, ma)
+        if (d == "") return " — " f " không có heading nào mã " toupper(ma) ": sửa link hoặc viết lại heading"
+        return " — dạng đúng là mục #" d " (chạy aw toc để sửa link)"
       }
       {
         n = toc_dong($0)
@@ -153,16 +172,16 @@ toc_loi() {
           if (dich ~ /^[A-Za-z][A-Za-z0-9+.-]*:/) continue
           if (dich ~ /^#/) {
             a = substr(dich, 2)
-            if (!((ten, a) in co)) loi("link \"#" a "\" không trỏ tới mục nào trong file — chạy aw toc, hoặc sửa theo heading")
+            if (!((ten, a) in co)) loi("link \"#" a "\" không trỏ tới mục nào trong file" chu_dang(ten, a) vi_tri())
             continue
           }
           f = dich; a = ""
           if (index(f, "#")) { a = substr(f, index(f, "#") + 1); f = substr(f, 1, index(f, "#") - 1) }
           sub(/^\.\//, "", f)
           if (!(f in la_art)) continue
-          if (!(f in co_file)) { loi("link tới " f " nhưng thư mục feature chưa có file này"); continue }
-          if (a == "") { loi("link tới " f " phải trỏ tới mục, dạng " f "#<anchor> (vd [" f " § REQ-001](" f "#req-001) rồi chạy aw toc)"); continue }
-          if (!((f, a) in co)) loi("link \"" f "#" a "\" không trỏ tới mục nào của " f " — chạy aw toc, hoặc sửa theo heading")
+          if (!(f in co_file)) { loi("link tới " f " nhưng thư mục feature chưa có file này" vi_tri()); continue }
+          if (a == "") { loi("link tới " f " phải trỏ tới mục, dạng " f "#<anchor> (vd [" f " § REQ-001](" f "#req-001) rồi chạy aw toc)" vi_tri()); continue }
+          if (!((f, a) in co)) loi("link \"" f "#" a "\" không trỏ tới mục nào của " f chu_dang(f, a) vi_tri())
         }
         # Tham chiếu chữ trơn "<artifact>.md § <mục>" (ngoài link)
         y = x
@@ -181,7 +200,7 @@ toc_loi() {
           if (!gap) continue
           goi_y = ""
           if (match(sau, /^[A-Z]+-[0-9]+/)) {
-            m = substr(sau, RSTART, RLENGTH); a = tim_ma(f, tolower(m))
+            m = substr(sau, RSTART, RLENGTH); a = toc_tim_ma(f, tolower(m))
             if (a != "") goi_y = " — viết thành [" f " § " m "](" f "#" a ")"
           }
           if (goi_y == "") goi_y = " — viết thành [" f " § <mục>](" f "#<anchor>)"
@@ -209,6 +228,7 @@ toc_loi() {
 # toc_ghi <thư-mục-feature> <artifact> -> viết lại mục "## Contents" theo heading và mở
 # rộng anchor rút gọn (spec.md#req-001 → spec.md#req-001--đăng-nhập) khi chỉ khớp một mục.
 # Chỉ ghi khi nội dung đổi; in tên file nếu đã ghi.
+# giữ: INV-012
 toc_ghi() {
   __tg_d="$1"; __tg_a="$2"; __tg_f="$1/$2"
   [ -f "$__tg_f" ] || return 0
@@ -240,11 +260,16 @@ toc_ghi() {
       }
       print ""; trong = 1; da_in = 1
     }
-    function mo_rong(f, a,   n, k, s, d, t) {     # anchor đầy đủ, hoặc a nếu không chắc
+    function mo_rong(f, a,   n, k, s, d, t, ma) {     # anchor đầy đủ, hoặc a nếu không chắc
       if ((f, a) in co) return a
       t = toc_thuong(a); if ((f, t) in co) return t
       n = split(ds_slug[f], s, " "); d = ""
       for (k = 1; k <= n; k++) if (index(s[k], t "-") == 1) { if (d != "") return a; d = s[k] }
+      if (d != "") return d
+      # Anchor cũ sau khi heading đổi chữ (req-001--chữ-cũ): mở rộng theo mã ID, agent
+      # không phải tự sửa từng link hay chạy sed. Mã không chỉ đúng một mục → giữ nguyên.
+      ma = toc_ma(t); if (ma == "") return a
+      d = toc_tim_ma(f, ma)
       return d == "" ? a : d
     }
     {
@@ -259,13 +284,15 @@ toc_ghi() {
       if (n == 2 || n == 3) khoi()
       if (n == 0) {
         # mở rộng anchor trong link: ](file.md#a) / ](#a)
+        # RSTART/RLENGTH lưu ngay sau match: mo_rong gọi match/sub bên trong, hai biến này bị đặt lại.
         x = dong; o = ""
         while (match(x, /\]\([^)#]*#[^)]*\)/)) {
-          d = substr(x, RSTART + 2, RLENGTH - 3)
+          vt = RSTART; dc = RLENGTH
+          d = substr(x, vt + 2, dc - 3)
           f = substr(d, 1, index(d, "#") - 1); a = substr(d, index(d, "#") + 1); g = f; sub(/^\.\//, "", g)
           if (g == "") g = ten
           if ((g in la_art) && a !~ /[ \t"]/) d = f "#" mo_rong(g, a)
-          o = o substr(x, 1, RSTART + 1) d ")"; x = substr(x, RSTART + RLENGTH)
+          o = o substr(x, 1, vt + 1) d ")"; x = substr(x, vt + dc)
         }
         dong = o x
       }

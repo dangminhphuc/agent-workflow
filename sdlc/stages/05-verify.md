@@ -16,6 +16,7 @@ skippable: false
 invariants:
   - INV-004
   - INV-006
+  - INV-012
 ---
 
 # Stage: verify

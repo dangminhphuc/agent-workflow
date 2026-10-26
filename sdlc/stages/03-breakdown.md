@@ -11,6 +11,7 @@ skippable: false
 invariants:
   - INV-001
   - INV-002
+  - INV-012
 ---
 
 # Stage: breakdown

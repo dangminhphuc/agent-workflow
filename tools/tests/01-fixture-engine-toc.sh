@@ -114,6 +114,29 @@ thay "$F/plan.md" '- Covers: `REQ-001`' '- Covers: `REQ-001`
 ky_vong 0 "plan có link Design tới mục có thật → ĐẠT" sh "$T/check-plan.sh" "$F"
 thay "$F/tdd.md" '## Data model' '## Data'
 ky_vong_ly_do 1 "review chặn link sang mục không còn (heading đích đổi tên)" "…đúng lý do" 'plan.md: link "tdd.md#data-model" không trỏ tới mục nào' sh "$T/check-review.sh" "$F"
+
+# ---------------------------------------------------------------- một lượt sửa là xong (INV-012)
+nhom "aw toc: một lượt sửa là xong (INV-012)"
+# heading đổi chữ sau khi link đã viết: máy mở rộng lại theo mã ID, agent không sửa tay
+viet_spec; thay "$F/open-questions.md" '### Q-001 — hỏi b' '### Q-001 — hỏi khách có hoàn tiền'
+ky_vong 0 "heading đổi → aw toc một lượt, ĐÃ KHỚP" sh "$TOC" "$F" spec.md open-questions.md
+dung "…sửa link khác file theo mã ID" grep -qF '(open-questions.md#q-001--hỏi-khách-có-hoàn-tiền)' "$F/spec.md"
+viet_spec
+printf -- '\n- Liên quan: [REQ-001 — a](#req-001--a)\n' >> "$F/spec.md"
+thay "$F/spec.md" '### REQ-001 — a' '### REQ-001 — đăng nhập'
+ky_vong 0 "link trong cùng file cũng được sửa, một lượt" sh "$TOC" "$F" spec.md open-questions.md
+dung "…anchor nội file thành chữ heading mới" grep -qF '(#req-001--đăng-nhập)' "$F/spec.md"
+# mã ID không chỉ đúng một mục thì không đoán: giữ link, báo lỗi kèm dạng đúng
+viet_spec; thay "$F/spec.md" '(open-questions.md#q-001--hỏi-b)' '(open-questions.md#q-009)'
+ky_vong_hai_ly_do 1 "link tới mã không có → còn chặn sau một lượt aw toc" "…nêu mã và số dòng" \
+  'không có heading nào mã Q-009' '(dòng ' sh "$TOC" "$F" spec.md
+printf -- '- Location: [spec.md § <mục>](spec.md#<anchor>)\n' >> "$F/spec-findings.md"
+ky_vong_ly_do 1 "chỗ giữ chỗ chưa điền → lỗi nêu rõ là chỗ giữ chỗ" "…kèm số dòng" 'còn chỗ giữ chỗ' sh "$TOC" "$F" spec-findings.md
+# mọi lỗi dạng in hết một lượt, không dừng ở lỗi đầu
+viet_spec; thay "$F/spec.md" '(open-questions.md#q-001--hỏi-b)' '(open-questions.md#q-009)'
+awk '/^## Contents$/ { bo = 1; next } bo && /^## / { bo = 0 } !bo' "$F/open-questions.md" > "$TMP/oq2.md" && mv "$TMP/oq2.md" "$F/open-questions.md"
+ky_vong_hai_ly_do 1 "hai lỗi dạng ở hai file → in hết một lượt" "…link chết và thiếu mục lục" \
+  'link "open-questions.md#q-009" không trỏ tới mục nào' 'open-questions.md: thiếu mục "## Contents"' sh "$CHK" "$F"
 tao_fixture
 
 # ---------------------------------------------------------------- glob của plan.md (khop_duong: ** qua /, * không)

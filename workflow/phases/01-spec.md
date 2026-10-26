@@ -52,6 +52,8 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 
 ## Steps
 
+**Shape first, one pass.** Before writing, read `templates/spec.md`, `templates/open-questions.md`, `templates/spec-findings.md` and start every artifact by copying that template's skeleton — never from memory, never retyping a field name. Write the artifacts first and run `aw toc <dir>` **once**, at the end (`rules/general.md` §6) — not after each file.
+
 1. **Read every source fully.** Record exact identifiers and the **version** read (Confluence page version, Jira or `[ISSUE]` `updated`, `[FILE]` commit sha) in `## Sources`.
 2. **Active business rules:** `aw knowledge spec <dir>` — `aw knowledge show` every ref it prints (`<file>#BR-…`). A source contradicting an active rule → a `## Source conflicts` row or an `[OPEN-QUESTION]`; never pick a side.
 3. **Quote requirement sentences verbatim** into each REQ's `Quote:` before interpreting — separate "what the source says" (`Quote`) from "how we read it" (`Description`). Copy character for character; never paraphrase or add quotation marks.
@@ -79,7 +81,8 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 12. **Leave `- [ ] **Approved by human**` unticked**; any content edit unticks it. Spec edited after the human ticked → the human re-approves: reads the change and deletes `<!-- approval-hash: … -->` (keeps the tick), or re-ticks.
     - The human disagrees with an existing REQ → `/aw-clarify REQ-NNN` records the change as an answered open question; do not silently rewrite the REQ.
 13. **Run the LLM checker** → `spec-findings.md`. It compares description and acceptance criteria to `Quote` and `[HUMAN]` text only. Fix what you agree with (`Resolution: fixed`); the human arbitrates the rest via `/aw-clarify` before ticking.
-14. **Record inputs:** `aw based-on <dir> spec.md intake.md`.
+14. **`aw toc <dir>`** — the one run of this phase, now that all three artifacts exist; fix every `[LỖI]` it prints, then **`aw check spec`**.
+15. **Record inputs:** `aw based-on <dir> spec.md intake.md`.
 
 ## By work type
 
