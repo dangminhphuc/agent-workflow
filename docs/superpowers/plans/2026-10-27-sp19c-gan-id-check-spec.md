@@ -42,9 +42,9 @@
 
 ## Các bước
 
-1. [ ] Viết ca test mới: entry check — `02-spec.sh`: "chặn khi intake.md không qua aw check intake" (INV-005 giờ nêu check-spec).
-2. [ ] Gắn 59 tag theo bảng trên (một tag phủ đúng một chỗ luật ngay dưới).
-3. [ ] `sdlc/invariants.md`: INV-005 `Enforced by` thêm `tools/check-spec.sh`.
-4. [ ] `sh tools/check-sdlc.sh --dem-luat` → `tools/check-spec.sh` còn 1; sửa `tools/unclassified-rules.txt` (60 → 1).
-5. [ ] `sh tools/check-sdlc.sh` → ĐẠT; `sh tools/run-tests.sh` → MỌI CA ĐẠT.
-6. [ ] Roadmap: dòng SP19 ghi đợt 19c; changes mảnh `Nội bộ`.
+1. [x] Viết ca test mới: entry check — `02-spec.sh`: "chặn khi intake.md không qua aw check intake" (INV-005 giờ nêu check-spec).
+2. [x] Gắn 59 tag theo bảng trên (một tag phủ đúng một chỗ luật ngay dưới).
+3. [x] `sdlc/invariants.md`: INV-005 `Enforced by` thêm `tools/check-spec.sh`.
+4. [x] `sh tools/check-sdlc.sh --dem-luat` → `tools/check-spec.sh` còn 1; sửa `tools/unclassified-rules.txt` (60 → 1).
+5. [x] `sh tools/check-sdlc.sh` → PASS; `sh tools/run-tests.sh` → ALL PASS (2125 ca).
+6. [x] Roadmap: dòng SP19 ghi đợt 19c; changes mảnh `Nội bộ`.
