@@ -111,7 +111,7 @@ khoá có giá trị mặc định nhưng máy chỉ kiểm khi file đã có tr
 - Produces: `aw knowledge index` (chạy ở gốc repo `MT_REPO`): dựng lại theo khoá, in đường dẫn file;
   khoá tắt → `SAI THAM SỐ` (nhãn + mã như nhánh `show` dùng cho SAI THAM SỐ).
 
-- [ ] **Step 1: Viết test** (`29-knowledge-index.sh`): fixture repo có 1 ADR, 1 file luật hai khối
+- [x] **Step 1: Viết test** (`29-knowledge-index.sh`): fixture repo có 1 ADR, 1 file luật hai khối
   (`BR-A-001` active, `BR-A-002` deprecated), 1 tài liệu module hai mục khai `Scope` (một mục có
   `- Summary:`) + một mục không khai. Ca:
   - `kt_chi_muc_du` in đúng số hàng, đúng thứ tự Kind rồi Ref; cột `Summary` đúng nguồn (tiêu đề ADR /
@@ -125,12 +125,12 @@ khoá có giá trị mặc định nhưng máy chỉ kiểm khi file đã có tr
     ở Task 1 chỉ thấy `aw knowledge index` dùng `docs/knowledge-index.md`);
   - khoá khai trống → SAI THAM SỐ (khoá tắt); khoá khai đường dẫn khác (`docs/trang-tri.md`) → dùng
     đường dẫn đó.
-- [ ] **Step 2:** `sh tools/tests/29-knowledge-index.sh` → ca mới KHÔNG ĐẠT.
-- [ ] **Step 3:** Viết `kt_chi_muc_du`, `kt_chi_muc_lai`, nhánh `index`; khai nhãn kq mới của
+- [x] **Step 2:** `sh tools/tests/29-knowledge-index.sh` → ca mới KHÔNG ĐẠT.
+- [x] **Step 3:** Viết `kt_chi_muc_du`, `kt_chi_muc_lai`, nhánh `index`; khai nhãn kq mới của
   `knowledge.sh` (theo `kq_khai`).
-- [ ] **Step 4:** Phần 29 ĐẠT; `sh tools/run-tests.sh 26-knowledge-retrieval 28-knowledge-sections`
+- [x] **Step 4:** Phần 29 ĐẠT; `sh tools/run-tests.sh 26-knowledge-retrieval 28-knowledge-sections`
   vẫn ĐẠT (hồi quy sau khi thêm key đọc).
-- [ ] **Step 5:** Commit `feat(knowledge): aw knowledge index — dựng bảng chỉ mục chung`.
+- [x] **Step 5:** Commit `feat(knowledge): aw knowledge index — dựng bảng chỉ mục chung`.
 
 ### Task 2: Truy xuất đọc chỉ mục
 
@@ -149,14 +149,14 @@ khoá có giá trị mặc định nhưng máy chỉ kiểm khi file đã có tr
   `docs/knowledge-index.md` (đường dẫn theo khoá), thay dòng `<adr>/README.md`; file không có →
   đầu ra byte như cũ (chỉ mục ADR).
 
-- [ ] **Step 1: Viết test**: fixture có chỉ mục → `design`/`implement` in `docs/knowledge-index.md`,
+- [x] **Step 1: Viết test**: fixture có chỉ mục → `design`/`implement` in `docs/knowledge-index.md`,
   không in `README.md` của thư mục ADR; fixture không có chỉ mục → đầu ra không đổi byte nào (ca hồi
   quy); phase `01-spec`, `02-design` sinh text nhắc đọc chỉ mục chung (grep như `08-adapters`).
-- [ ] **Step 2:** Phần 26, 29 → ca mới KHÔNG ĐẠT.
-- [ ] **Step 3:** Sửa nhánh `design`/`implement` của `knowledge.sh`; sửa hai phase.
-- [ ] **Step 4:** `sh tools/run-tests.sh 26-knowledge-retrieval 28-knowledge-sections 29-knowledge-index
+- [x] **Step 2:** Phần 26, 29 → ca mới KHÔNG ĐẠT.
+- [x] **Step 3:** Sửa nhánh `design`/`implement` của `knowledge.sh`; sửa hai phase.
+- [x] **Step 4:** `sh tools/run-tests.sh 26-knowledge-retrieval 28-knowledge-sections 29-knowledge-index
   08-adapters` → ĐẠT.
-- [ ] **Step 5:** Commit `feat(knowledge): phase đọc chỉ mục chung thay chỉ mục ADR khi file có`.
+- [x] **Step 5:** Commit `feat(knowledge): phase đọc chỉ mục chung thay chỉ mục ADR khi file có`.
 
 ### Task 3: `aw knowledge check` + gắn vào checker
 
@@ -178,21 +178,21 @@ khoá có giá trị mặc định nhưng máy chỉ kiểm khi file đã có tr
   `knowledge_files`); diff không đụng → không kiểm, ĐẠT (kể cả chỉ mục hỏng trên `Base:`). Không có
   thư mục feature → chỉ so bảng với dựng lại (chạy một mình trong CI, như `aw adr check`).
 
-- [ ] **Step 1: Viết test**: dựng chỉ mục đúng → `aw check implement` ĐẠT, `aw check review` ĐẠT; sửa
+- [x] **Step 1: Viết test**: dựng chỉ mục đúng → `aw check implement` ĐẠT, `aw check review` ĐẠT; sửa
   tay một hàng cột `Summary` → cả hai checker KHÔNG ĐẠT, câu lỗi nói đúng file chỉ mục; xoá hàng của
   tài liệu mới thêm → KHÔNG ĐẠT; xoá hẳn tài liệu mà chỉ mục còn hàng → KHÔNG ĐẠT; đổi tên heading
   mục → hàng `Ref` cũ thành lệch → chặn cho tới khi dựng lại; heading trùng → cả hai checker KHÔNG
   ĐẠT, cảnh báo cũ `kt_canh_bao_muc` của implement vẫn in (giữ như cũ); diff không đụng tài liệu gì →
   chỉ mục hỏng sẵn trên `Base:` không chặn; không có file chỉ mục → không kiểm (ca hồi quy ĐẠT);
   `aw knowledge check` một mình: feature hợp lệ → ĐẠT, feature lệch → KHÔNG ĐẠT.
-- [ ] **Step 2:** Phần 29 → KHÔNG ĐẠT.
-- [ ] **Step 3:** Viết hai hàm + nhánh `check`; gắn `# giữ: CAP-implement-07`,
+- [x] **Step 2:** Phần 29 → KHÔNG ĐẠT.
+- [x] **Step 3:** Viết hai hàm + nhánh `check`; gắn `# giữ: CAP-implement-07`,
   `# giữ: CAP-verify-06, INV-013` trên chỗ gom lỗi mới; `sh tools/check-sdlc.sh` → ĐẠT (lỗi id chưa
   gắn thì chạy `--dem-luat`, gắn đúng id).
-- [ ] **Step 4:** Phần 29 ĐẠT; các part checker implement/review cũ vẫn ĐẠT:
+- [x] **Step 4:** Phần 29 ĐẠT; các part checker implement/review cũ vẫn ĐẠT:
   `sh tools/run-tests.sh 05-review-quality 09-implement-quality` (tên part xem lại `ls tools/tests/`
   khi làm — chọn part checker implement/review).
-- [ ] **Step 5:** Commit `feat(knowledge): aw knowledge check — bảng lệch dựng lại chặn`.
+- [x] **Step 5:** Commit `feat(knowledge): aw knowledge check — bảng lệch dựng lại chặn`.
 
 ### Task 4: Promote dựng lại chỉ mục; khoá conventions; bootstrap; mẫu AGENTS.md
 
@@ -214,17 +214,17 @@ khoá có giá trị mặc định nhưng máy chỉ kiểm khi file đã có tr
 - Produces: `aw conventions check` báo lỗi cho `knowledge_index` sai dạng; không khai, trống, hay
   đúng dạng → không báo.
 
-- [ ] **Step 1: Viết test**: có chỉ mục + promote DEC-NNN → hàng ADR mới; có chỉ mục + promote REQ →
+- [x] **Step 1: Viết test**: có chỉ mục + promote DEC-NNN → hàng ADR mới; có chỉ mục + promote REQ →
   hàng `rule` mới; không có chỉ mục + promote → không tạo file nào; `conventions.md` khai
   `knowledge_index: docs/knowledge-index.md` → `aw conventions check` ĐẠT; khai không phải `.md`
   (vd `docs/knowledge-index`) → KHÔNG ĐẠT với câu báo khoá.
-- [ ] **Step 2:** Phần 29 + part conventions → KHÔNG ĐẠT (part conventions xem
+- [x] **Step 2:** Phần 29 + part conventions → KHÔNG ĐẠT (part conventions xem
   `grep -rln 'conventions' tools/tests/ | head` khi làm).
-- [ ] **Step 3:** Sửa `tools/adr.sh`, `tools/rule.sh`, `tools/check-conventions.sh`,
+- [x] **Step 3:** Sửa `tools/adr.sh`, `tools/rule.sh`, `tools/check-conventions.sh`,
   `workflow/bootstrap.md`, mẫu AGENTS.md; gắn `# giữ: CAP-implement-07, INV-013` (hoặc capability của
   `aw conventions check` — xem `# giữ:` kề trên các khoá khác trong `check-conventions.sh`).
-- [ ] **Step 4:** Phần 29 + part conventions + `01-adrs` (ADR promote) → ĐẠT.
-- [ ] **Step 5:** Commit `feat(knowledge): promote dựng lại chỉ mục; khoá knowledge_index kiểm dạng`.
+- [x] **Step 4:** Phần 29 + part conventions + `01-adrs` (ADR promote) → ĐẠT.
+- [x] **Step 5:** Commit `feat(knowledge): promote dựng lại chỉ mục; khoá knowledge_index kiểm dạng`.
 
 ### Task 5: INV-013, tài liệu, roadmap, hoàn tất
 
@@ -243,13 +243,13 @@ khoá có giá trị mặc định nhưng máy chỉ kiểm khi file đã có tr
   § C thành INV-013 — SP35 chiếm id cũ)
 - Modify: roadmap — dòng SP28 trạng thái `đang làm`, cột Plan trỏ file này
 
-- [ ] **Step 1:** Sửa `sdlc/` trước; `sh tools/check-sdlc.sh` → ĐẠT (invariant mới nhận, stage mới
+- [x] **Step 1:** Sửa `sdlc/` trước; `sh tools/check-sdlc.sh` → ĐẠT (invariant mới nhận, stage mới
   khai); test mapping/trạng thái (`22-*`, `24-*`) — sửa ca nào khớp chuỗi đã đổi
   (`grep -rn 'INV-012' tools/tests sdlc` và so ca khai danh sách invariant).
-- [ ] **Step 2:** Sửa tài liệu còn lại; grep test đọc chuỗi đã đổi (`grep -rn 'README.md' tools/tests/`
+- [x] **Step 2:** Sửa tài liệu còn lại; grep test đọc chuỗi đã đổi (`grep -rn 'README.md' tools/tests/`
   chỗ đầu ra `aw knowledge design|implement`) và sửa cùng commit.
-- [ ] **Step 3:** `git fetch origin && git merge origin/main`; `sh tools/run-tests.sh` → `MỌI CA ĐẠT`,
+- [x] **Step 3:** `git fetch origin && git merge origin/main`; `sh tools/run-tests.sh` → `MỌI CA ĐẠT`,
   không part nào in `nên tách`; `sh tools/check-sdlc.sh` → ĐẠT.
-- [ ] **Step 4:** Commit `docs(knowledge): chỉ mục chung — invariants, hướng dẫn, kiến trúc, changes`;
+- [x] **Step 4:** Commit `docs(knowledge): chỉ mục chung — invariants, hướng dẫn, kiến trúc, changes`;
   push; mở PR (spec + plan + code), dòng "Interface: INV-013 (mới); CAP-implement-07,
   CAP-verify-06 (Rule không đổi)".
