@@ -489,3 +489,62 @@ kt_chi_muc_lai() {
     kt_chi_muc_du "$1" "$2"
   } > "$_kclf.tam.$$" && mv "$_kclf.tam.$$" "$_kclf"
 }
+
+# kt_chi_muc_kiem <gốc repo> <conventions.md> <thư-mục-feature> -> lỗi, mỗi dòng một; không lỗi
+# hoặc khoá tắt → không in gì. Có thư mục feature: chỉ kiểm khi diff đụng file chỉ mục hay tài
+# liệu kiến thức (thư mục ADR, thư mục luật, file khớp knowledge_files) — không đụng thì bỏ qua,
+# kể cả chỉ mục hỏng sẵn trên Base. Không có thư mục: kiểm luôn (chạy một mình, như aw adr check),
+# file chỉ mục chưa có thì bỏ qua (repo chưa tham gia). Lỗi: file chỉ mục thiếu; bảng lệch dựng
+# lại (<file> so <dựng lại>); hai mục "##" cùng heading trong một file khớp knowledge_files.
+kt_chi_muc_kiem() {
+  _kck="$1"; _kckv="$2"; _kckf3="$3"
+  _kckpk=$(kt_chi_muc_khoa "$_kckv"); _kckd=${_kckpk%|*}; _kckt=${_kckpk#*|}
+  [ "$_kckt" = "0" ] && [ -n "$_kckd" ] || return 0
+  if [ -n "$_kckf3" ]; then
+    _kckdoi=$(kc_doi "$_kckf3" 2>/dev/null | awk -F'\t' '{ print (NF > 2 ? $3 : $2) }')
+    [ -n "$_kckdoi" ] || return 0
+    _kckadr=$(adr_thu_muc "$_kckv"); _kckld=$(luat_thu_muc "$_kckv")
+    _kckkf=$(conv_get "$_kckv" knowledge_files); _kckkf=${_kckkf:-*/ARCHITECTURE.md}
+    _kcktc=""
+    printf '%s\n' "$_kckdoi" | grep -qxF "$_kckd" && _kcktc=1
+    if [ -z "$_kcktc" ]; then
+      _kcktc=$(printf '%s\n' "$_kckdoi" | awk -v adr="$_kckadr/" -v lua="$_kckld/" '
+        { p = $0; sub(/\r$/, "", p); if (index(p, adr) == 1 || index(p, lua) == 1) { print 1; exit } }')
+    fi
+    if [ -z "$_kcktc" ]; then
+      _kcktc=$(printf '%s\n' "$_kckdoi" | while IFS= read -r _kckp; do
+        set -f
+        # shellcheck disable=SC2086
+        if khop_glob "$_kckp" $_kckkf; then set +f; printf '1\n'; break; fi
+        set +f
+      done)
+    fi
+    [ -n "$_kcktc" ] || return 0
+  fi
+  # Chỉ kiểm khi file chỉ mục đã commit (khoá bật nhưng file chưa có trong git → repo chưa
+  # tham gia, không ép repo cũ).
+  git -C "$_kck" ls-tree -r --name-only HEAD 2>/dev/null | grep -qxF "$_kckd" || return 0
+  _kckfile="$_kck/$_kckd"
+  if [ ! -f "$_kckfile" ]; then
+    [ -n "$_kckf3" ] && echo "$_kckd: thiếu file chỉ mục — chạy aw knowledge index"
+  else
+    _kcksau=$(awk '{ sub(/\r$/, "") } /^\| Ref \|/ { co = 1 } co { print }' "$_kckfile")
+    _kckdu=$(kt_chi_muc_du "$_kck" "$_kckv")
+    [ "$_kcksau" = "$_kckdu" ] || echo "$_kckd: bảng chỉ mục lệch dựng lại — chạy aw knowledge index"
+  fi
+  git -C "$_kck" ls-files 2>/dev/null | while IFS= read -r _kckf; do
+    tm_bo "$_kckf" && continue
+    set -f
+    # shellcheck disable=SC2086
+    khop_glob "$_kckf" $_kckkf || { set +f; continue; }
+    set +f
+    [ -f "$_kck/$_kckf" ] || continue
+    awk '
+      function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+      { sub(/\r$/, "") }
+      /^##[ \t]/ { h = trim(substr($0, 3)); if (c[h]++ == 1) print h }
+    ' "$_kck/$_kckf" | while IFS= read -r _kckh; do
+      echo "$_kckf: hai mục \"## $_kckh\" — ref $_kckf#$_kckh chỉ trỏ mục đầu; đổi tên một mục, dựng lại sau"
+    done
+  done
+}

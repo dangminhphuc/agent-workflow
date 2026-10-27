@@ -172,6 +172,12 @@ ktm=$(kt_loi_muc "$DIR")
 while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $ktm
 EOF
+# Chỉ mục kiến thức chung: bảng và heading trùng phải khớp dựng lại (máy dựng, so chính xác nên CHẶN).
+kmc=$(kt_chi_muc_kiem "$(kc_top "$DIR")" "$(qu_hieu_luc "${AW_REPO:-$(kc_top "$DIR")}")" "$DIR")
+# giữ: CAP-implement-07, INV-013
+while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
+$kmc
+EOF
 
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----
 chan=$(kc_chan_theo_loai "$DIR")

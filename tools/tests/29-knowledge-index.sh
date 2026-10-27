@@ -148,7 +148,65 @@ dung "implement: file chỉ mục có trên cây mà chưa commit → không in 
   sh -c "! sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/knowledge-index.md'"
 dung "phase 01-spec đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/01-spec.md"
 dung "phase 02-design đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/02-design.md"
-dung "phase 01-spec đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/01-spec.md"
-dung "phase 02-design đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/02-design.md"
+
+# cm_dien_chimuc — index đã có trong git trên main, merge vào nhánh việc.
+cm_dien_chimuc() {
+  sh "$KT" index >/dev/null 2>&1
+  g checkout -q main
+  sh "$KT" index >/dev/null 2>&1
+  g add docs; g commit -q -m chi-muc
+  g checkout -q -; g merge -q main
+}
+
+nhom "aw knowledge check: chạy một mình"
+tao_fixture; cm_fixture
+ky_vong 0 "check: chưa có file chỉ mục → ĐẠT" sh "$KT" check
+sh "$KT" index >/dev/null 2>&1
+g add docs; g commit -q -m chi-muc
+ky_vong 0 "check: bảng đúng → ĐẠT" sh "$KT" check
+thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
+ky_vong_ly_do 1 "check: sửa tay một hàng → KHÔNG ĐẠT" "check: nêu chạy index để dựng lại" "lệch dựng lại" sh "$KT" check
+ky_vong 0 "check: dựng lại xong kiểm lại → ĐẠT" sh -c "sh '$KT' index >/dev/null 2>&1 && sh '$KT' check"
+rm "$CM_FILE"
+ky_vong 0 "check: file thiếu, chạy một mình → ĐẠT (repo chưa tham gia)" sh "$KT" check
+
+nhom "aw knowledge check: gate theo diff"
+tao_fixture
+_dgc=$(git -C "$R" rev-parse --short main)
+cm_fixture
+# commit một bảng hỏng trên main, merge vào nhánh; diff không tính nó → gate đóng, bảng hỏng bị bỏ qua
+g checkout -q main
+sh "$KT" index >/dev/null 2>&1
+thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
+g add docs; g commit -q -m chi-muc
+g checkout -q -; g merge -q main
+thay "$F/intake.md" "@ \`$_dgc\`" "@ \`$(git -C "$R" rev-parse --short main)\`"
+ky_vong 0 "check <feature>: diff không đụng kiến thức → ĐẠT dù bảng hỏng sẵn trên Base" sh "$KT" check "$F"
+printf 'lỗi hổ l\n' >> "$R/docs/product/rules/billing.md"
+ky_vong 1 "check <feature>: diff đụng file luật → KHÔNG ĐẠT khi bảng hỏng" sh "$KT" check "$F"
+rm "$CM_FILE"
+ky_vong_ly_do 1 "check <feature>: file chỉ mục bị xoá khi diff đụng → KHÔNG ĐẠT" "check <feature>: nêu chạy index để dựng lại" "thiếu file chỉ mục" sh "$KT" check "$F"
+
+nhom "aw check implement / check review qua chỉ mục"
+tao_fixture; cm_fixture
+cm_dien_chimuc
+thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
+toc_f tdd.md
+viet_plan
+ghi_based_on
+ky_vong 0 "check implement: bảng đúng → ĐẠT" sh "$T/check-implement.sh" "$F"
+thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
+ky_vong_ly_do 1 "check implement: bảng tay sửa lệch → KHÔNG ĐẠT" "check implement: nêu lỗi chỉ mục" "lệch dựng lại" sh "$T/check-implement.sh" "$F"
+thay "$CM_FILE" 'trả tiền qua momo' 'trả tiền qua vnpay'
+rm "$CM_FILE"
+ky_vong 1 "check implement: file chỉ mục bị xoá → KHÔNG ĐẠT" sh "$T/check-implement.sh" "$F"
+cm_dien_chimuc
+ky_vong 0 "check implement: bảng đúng lại sau khi dựng → ĐẠT" sh "$T/check-implement.sh" "$F"
+viet_review
+printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n| `docs/adr/0001-quyet-a-dec-001.md` | updated | |\n| `src/ARCHITECTURE.md` | updated | |\n| `src/ARCHITECTURE.md#Thanh toán` | updated | |\n| `src/ARCHITECTURE.md#Mục #2` | updated | |\n| `docs/product/rules/billing.md#BR-BILLING-001` | updated | |\n' >> "$F/review.md"
+toc_f review.md; ghi_tree_review
+ky_vong 0 "check review: mỗi ref có verdict + chỉ mục đúng → ĐẠT" sh "$T/check-review.sh" "$F"
+thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
+ky_vong_ly_do 1 "check review: bảng tay sửa lệch → KHÔNG ĐẠT" "check review: nêu lỗi chỉ mục" "lệch dựng lại" sh "$T/check-review.sh" "$F"
 
 ket_thuc

@@ -30,6 +30,9 @@
 #   docs/knowledge-index.md; khoá khai trống = tắt) từ ADR, luật BR- và mục khai Scope của tài liệu
 #   module: bảng "| Ref | Kind | Scope | Status | Summary |" do máy dựng, phần người viết phía trên
 #   bảng giữ nguyên. In ra đường dẫn file đã dựng. Khoá tắt → SAI THAM SỐ.
+# check [<thư-mục-feature>] — chỉ mục khớp dựng lại: bảng lệch → dòng lỗi, KHÔNG ĐẠT. Có thư mục:
+#   chỉ kiểm khi diff đụng file chỉ mục hay tài liệu kiến thức; không đụng → ĐẠT. Khoá tắt hay file
+#   chưa có → không kiểm.
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -37,7 +40,8 @@
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai knowledge.sh \
-  "0=XONG — stdout là dữ liệu: ref đọc tiếp bằng aw knowledge show; aw knowledge index in đường dẫn file đã dựng" \
+  "0=XONG — stdout là dữ liệu: ref đọc tiếp bằng aw knowledge show; aw knowledge index in đường dẫn file đã dựng; check ĐẠT" \
+  "1=KHÔNG ĐẠT — aw knowledge check thấy chỉ mục lệch dựng lại: chạy aw knowledge index" \
   "2=SAI THAM SỐ"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"
@@ -77,6 +81,17 @@ if [ "$PH" = index ]; then
   [ "$_cmt" = "0" ] && [ -n "$_cmd" ] || { echo "LỖI: khoá knowledge_index khai trống — chỉ mục tắt" >&2; exit 2; }
   kt_chi_muc_lai "$MT_REPO" "$MT_CONV" || { echo "LỖI: không dựng lại được chỉ mục" >&2; exit 2; }
   printf '%s\n' "$_cmd"
+  exit 0
+fi
+if [ "$PH" = check ]; then
+  # Khoá tắt → không kiểm gì (repo chưa tham gia). Err về KHÔNG ĐẠT khi bảng lệch chế độ dựng lại.
+  _kmk=$(kt_chi_muc_khoa "$MT_CONV"); _kmd=${_kmk%|*}; _kmt=${_kmk#*|}
+  [ "$_kmt" = "0" ] || exit 0
+  if [ -n "$DIR" ] && [ "$DIR" != "" ]; then
+    [ -d "$DIR" ] || { echo "LỖI: không có thư mục $DIR" >&2; exit 2; }
+  fi
+  _kmloi=$(kt_chi_muc_kiem "$MT_REPO" "$MT_CONV" "${DIR:-}")
+  if [ -n "$_kmloi" ]; then printf '%s\n' "$_kmloi"; exit 1; fi
   exit 0
 fi
 case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;; esac ||
