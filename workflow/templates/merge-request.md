@@ -70,7 +70,7 @@ None
 ## Testing
 
 <!-- Test chứng minh điều gì, không chỉ tên test.
-     bugfix: test tái hiện ĐỎ trước khi sửa, đỏ đúng vì bug.
+     bugfix: test tái hiện RED trước khi sửa, đỏ đúng vì bug.
      Test cũ bị đổi kỳ vọng: liệt kê riêng và nói vì sao — đó là đổi hành vi. -->
 
 - **Reproduction (red before fix):** <test> — <chứng minh gì>

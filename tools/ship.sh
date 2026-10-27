@@ -22,7 +22,7 @@
 # → link tạo tay điền sẵn; người tạo xong thì ghi lại bằng --url.
 # Engine không merge, không duyệt MR.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 SUB="${1:-}"; [ $# -gt 0 ] && shift
@@ -30,25 +30,25 @@ SUB="${1:-}"; [ $# -gt 0 ] && shift
 case "$SUB" in
   targets)
     kq_khai "aw ship targets" \
-      "0=ĐÃ LIỆT KÊ — stdout là các nhánh đích; NGƯỜI chọn một" \
-      "2=SAI THAM SỐ" \
-      "3=KHÔNG CÓ NHÁNH ĐÍCH — không nhánh nào trên origin khớp mr_target_branches" ;;
+      "0=LISTED — stdout là các nhánh đích; NGƯỜI chọn một" \
+      "2=BAD ARGS" \
+      "3=NO TARGET BRANCH — không nhánh nào trên origin khớp mr_target_branches" ;;
   create)
     kq_khai "aw ship create" \
-      "0=ĐÃ TẠO MR — stdout là URL" \
-      "1=CHƯA ĐỦ ĐIỀU KIỆN — lý do phía trên" \
-      "2=SAI THAM SỐ" \
-      "4=KÉO THEO COMMIT NGOÀI VIỆC — người quyết, xem danh sách phía trên" \
-      "5=ĐÃ CÓ MR ĐANG MỞ — đã push commit mới, không tạo MR thêm; stdout là URL" \
-      "8=KHÔNG TẠO ĐƯỢC MR — đã in link tạo tay điền sẵn; tạo xong ghi lại bằng --url" ;;
+      "0=MR CREATED — stdout là URL" \
+      "1=NOT ELIGIBLE — lý do phía trên" \
+      "2=BAD ARGS" \
+      "4=EXTRA COMMITS — người quyết, xem danh sách phía trên" \
+      "5=MR ALREADY OPEN — đã push commit mới, không tạo MR thêm; stdout là URL" \
+      "8=MR NOT CREATED — đã in link tạo tay điền sẵn; tạo xong ghi lại bằng --url" ;;
   status)
     kq_khai "aw ship status" \
-      "0=ĐÃ MERGE HẾT — dọn từ main checkout: aw ship sweep" \
-      "2=SAI THAM SỐ — hoặc việc chưa có MR (ship.md)" \
-      "3=CÒN MR ĐANG MỞ — chờ review/merge" \
-      "4=CÓ MR BỊ ĐÓNG KHÔNG MERGE — người quyết" \
-      "6=CHƯA RÕ — gh/glab hỏi lỗi, và git không thấy MR đã merge" ;;
-  *) kq_khai "aw ship" "2=SAI THAM SỐ"
+      "0=ALL MERGED — dọn từ main checkout: aw ship sweep" \
+      "2=BAD ARGS — hoặc việc chưa có MR (ship.md)" \
+      "3=MR OPEN — chờ review/merge" \
+      "4=MR CLOSED UNMERGED — người quyết" \
+      "6=UNKNOWN — gh/glab hỏi lỗi, và git không thấy MR đã merge" ;;
+  *) kq_khai "aw ship" "2=BAD ARGS"
      echo "Dùng: aw ship targets|create|status <thư-mục-feature> … | aw ship sweep [<branch>] [--apply]" >&2; exit 2 ;;
 esac
 . "$HERE/lib/md.sh"
@@ -152,7 +152,7 @@ create)
 
   chua=0
   if ! sh "$HERE/check-ship.sh" "$DIR" >/dev/null 2>&1; then
-    echo "  ✗ aw check ship $DIR chưa ĐẠT — chạy nó để xem chi tiết." >&2; chua=1
+    echo "  ✗ aw check ship $DIR chưa PASS — chạy nó để xem chi tiết." >&2; chua=1
   fi
   # Thư mục việc không tính: ar_go bên dưới gỡ nó khỏi branch, bản sửa dở vẫn ở máy.
   KTV=":(top,exclude)$TM_VIEC/$FT"

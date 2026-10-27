@@ -20,8 +20,8 @@ done
 dung "sinh đúng bộ file" test "$du" = 1
 dung "/aw-ship: điều kiện ra máy là aw check ship" grep -q '`aw check ship <dir>`' "$O/.claude/commands/aw-ship.md"
 dung "/aw-ship: ở checkout chính thì làm mục \"Ở checkout chính\", không dừng" sh -c \
-  "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*\"On the main checkout\"' '$O/.claude/commands/aw-ship.md' && ! grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' '$O/.claude/commands/aw-ship.md'"
-dung "…lệnh khác vẫn dừng lại ở checkout chính" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' "$O/.claude/commands/aw-review.md"
+  "grep -q 'ON MAIN CHECKOUT.*\"On the main checkout\"' '$O/.claude/commands/aw-ship.md' && ! grep -q 'ON MAIN CHECKOUT.*stop' '$O/.claude/commands/aw-ship.md'"
+dung "…lệnh khác vẫn dừng lại ở checkout chính" grep -q 'ON MAIN CHECKOUT.*stop' "$O/.claude/commands/aw-review.md"
 dung "/aw-ship: không bắt buộc, có mẫu merge-request.md" sh -c \
   "grep -q 'Required:\*\* no' '$O/.claude/commands/aw-ship.md' && grep -q 'templates/merge-request.md' '$O/.claude/commands/aw-ship.md'"
 dung "skill liệt kê /aw-ship" grep -q '| `/aw-ship` |' "$O/.claude/skills/agent-workflow/SKILL.md"
@@ -65,12 +65,12 @@ dung "mọi lệnh /aw-* chỉ chạy khi người gõ (disable-model-invocation
 dung "skill agent-workflow chỉ chạy khi người gõ" sh -c "sed -n 4p '$O/.claude/skills/agent-workflow/SKILL.md' | grep -qx 'disable-model-invocation: true'"
 dung "skill liệt kê lệnh tiện ích" grep -q '/aw-clarify' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "/aw-bootstrap: ở checkout chính làm mục \"On the main checkout\" (đề xuất worktree), không dừng" sh -c \
-  "grep -q 'ĐANG Ở CHECKOUT CHÍNH.*\"On the main checkout\"' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'aw worktree new chore' '$O/.claude/commands/aw-bootstrap.md'"
+  "grep -q 'ON MAIN CHECKOUT.*\"On the main checkout\"' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'aw worktree new chore' '$O/.claude/commands/aw-bootstrap.md'"
 dung "…dùng mẫu target-repo, không tự tạo luật BR-, có bài kiểm tra phiên mới" sh -c \
   "grep -q 'templates/target-repo/AGENTS.md' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'Writing \`BR-\` blocks' '$O/.claude/commands/aw-bootstrap.md' && grep -q 'Fresh-session test' '$O/.claude/commands/aw-bootstrap.md'"
 dung "skill liệt kê /aw-bootstrap" grep -q '/aw-bootstrap' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "/aw-refactor: review + phản biện rồi chỉ ghi refactor-requests.md; chỉ lệnh intake tiếp theo" sh -c \
-  "grep -q 'refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'Việc refactor riêng' '$O/.claude/commands/aw-refactor.md' && grep -q 'Debate once' '$O/.claude/commands/aw-refactor.md' && grep -q 'Chọn đường đi cho N RFR đang chờ' '$O/.claude/commands/aw-refactor.md' && ! grep -q 'moved:' '$O/.claude/commands/aw-refactor.md' && grep -q 'aw-intake <dir>/refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-refactor.md' && grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' '$O/.claude/commands/aw-refactor.md'"
+  "grep -q 'refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'Việc refactor riêng' '$O/.claude/commands/aw-refactor.md' && grep -q 'Debate once' '$O/.claude/commands/aw-refactor.md' && grep -q 'Chọn đường đi cho N RFR đang chờ' '$O/.claude/commands/aw-refactor.md' && ! grep -q 'moved:' '$O/.claude/commands/aw-refactor.md' && grep -q 'aw-intake <dir>/refactor-requests.md' '$O/.claude/commands/aw-refactor.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-refactor.md' && grep -q 'ON MAIN CHECKOUT.*stop' '$O/.claude/commands/aw-refactor.md'"
 dung "skill liệt kê /aw-refactor" grep -q '/aw-refactor' "$O/.claude/skills/agent-workflow/SKILL.md"
 dung "/aw-approvals: không chạy aw feature, liệt kê rồi chỉ tick mục người chọn Duyệt" sh -c \
   "! grep -q 'Run .aw feature' '$O/.claude/commands/aw-approvals.md' && grep -q 'Needs no feature dir' '$O/.claude/commands/aw-approvals.md' && grep -q 'aw approvals --global' '$O/.claude/commands/aw-approvals.md' && grep -q 'aw approvals tick <dir> <key> <hash>' '$O/.claude/commands/aw-approvals.md' && grep -q 'never .approve all' '$O/.claude/commands/aw-approvals.md' && grep -q 'AskUserQuestion' '$O/.claude/commands/aw-approvals.md'"
@@ -84,11 +84,11 @@ dung "/aw-review chỉ bàn giao cho subagent, không nạp mô tả phase" sh -
 dung "mọi lệnh phase có hợp đồng đầy đủ (không bị set -e cắt giữa chừng)" sh -c \
   "for f in '$O'/.claude/commands/aw-*.md; do tail -1 \"\$f\" | grep -q . || exit 1; grep -q '^## Phase contract\|^## Step 0' \"\$f\" || exit 1; done; grep -q 'Exit — MACHINE' '$O/.claude/commands/aw-implement.md'"
 dung "…intake thì không" sh -c "! grep -q 'aw rules' '$O/.claude/commands/aw-intake.md'"
-dung "mọi lệnh phase kết thúc bằng Kết quả · Cần bạn" sh -c \
-  "for p in intake spec design plan implement review ship; do grep -q 'Cần bạn:' '$O/.claude/commands/aw-'\$p.md || exit 1; done"
+dung "mọi lệnh phase kết thúc bằng Result · Needs you" sh -c \
+  "for p in intake spec design plan implement review ship; do grep -q 'Needs you:' '$O/.claude/commands/aw-'\$p.md || exit 1; done"
 dung "…lệnh tiếp theo theo thứ tự manifest (implement → review, spec có nhánh không design)" sh -c \
-  "grep -q 'Tiếp theo: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Tiếp theo: /aw-design.*chore or .*Design: skip.*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Tiếp theo: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
-dung "…phase cuối không có lệnh tiếp theo" sh -c "! grep -q 'Tiếp theo:' '$O/.claude/commands/aw-ship.md'"
+  "grep -q 'Next: /aw-review' '$O/.claude/commands/aw-implement.md' && grep -q 'Next: /aw-design.*chore or .*Design: skip.*/aw-plan' '$O/.claude/commands/aw-spec.md' && grep -q 'Next: /aw-ship.*(optional)' '$O/.claude/commands/aw-review.md'"
+dung "…phase cuối không có lệnh tiếp theo" sh -c "! grep -q 'Next:' '$O/.claude/commands/aw-ship.md'"
 dung "…subagent rà soát đọc aw rules review" grep -q 'aw rules review' "$O/.claude/agents/independent-reviewer.md"
 dung "…checker LLM soát thiết kế đọc aw rules design" grep -q 'aw rules design' "$O/.claude/agents/design-checker.md"
 dung "…checker LLM soát spec đọc aw rules spec" grep -q 'aw rules spec' "$O/.claude/agents/spec-checker.md"
@@ -243,8 +243,8 @@ sh "$CB" --out "$O3" >/dev/null 2>&1
 dung "build lại xoá lệnh/subagent sinh tự động không còn trong manifest" sh -c "[ ! -e '$O3/.cursor/commands/ideation.md' ] && [ ! -e '$O3/.cursor/agents/cu.md' ]"
 dung "…nhưng giữ lệnh người viết tay" test -f "$O3/.cursor/commands/cua-toi.md"
 ky_vong 2 "từ chối --out nằm trong repo agent-workflow" sh "$CB" --out "$ROOT/adapters"
-ky_vong 2 "thiếu --out → SAI THAM SỐ" sh "$CB"
-ky_vong 2 "tham số lạ → SAI THAM SỐ" sh "$CB" --out "$O3" --khac
+ky_vong 2 "thiếu --out → BAD ARGS" sh "$CB"
+ky_vong 2 "tham số lạ → BAD ARGS" sh "$CB" --out "$O3" --khac
 
 # File .cursor/ git đang theo dõi (team commit lệnh trùng tên): bỏ qua, không đụng
 RT="$TMP/cur-team"; mkdir -p "$RT/.cursor/commands"; git -C "$RT" init -q
@@ -309,9 +309,9 @@ for ad in claude-code cursor; do
   ky_vong 5 "$ad: skill description > 1024 ký tự → SAI CHUẨN" sh "$FAKE/adapters/$ad-dai/build.sh" --out "$TMP/dd-$ad-4"
   dung "$ad: …skill không vào chỗ" test ! -e "$TMP/dd-$ad-4/$goc/skills/agent-workflow/SKILL.md"
   ad_gia "$ad" "$ad-fm" "AD_LENH_FM=gi-do"
-  ky_vong 4 "$ad: AD_LENH_FM khác co|khong → ĐỊNH NGHĨA QUY TRÌNH LỖI" sh "$FAKE/adapters/$ad-fm/build.sh" --out "$TMP/dd-$ad-5"
+  ky_vong 4 "$ad: AD_LENH_FM khác co|khong → PROCESS DEFINITION ERROR" sh "$FAKE/adapters/$ad-fm/build.sh" --out "$TMP/dd-$ad-5"
   ad_gia "$ad" "$ad-thieu" "AD_AGENT_KHOA="
-  ky_vong 4 "$ad: thiếu AD_AGENT_KHOA → ĐỊNH NGHĨA QUY TRÌNH LỖI" sh "$FAKE/adapters/$ad-thieu/build.sh" --out "$TMP/dd-$ad-6"
+  ky_vong 4 "$ad: thiếu AD_AGENT_KHOA → PROCESS DEFINITION ERROR" sh "$FAKE/adapters/$ad-thieu/build.sh" --out "$TMP/dd-$ad-6"
 done
 # Claude Code: frontmatter lệnh phải là YAML hợp lệ
 ad_gia claude-code cc-hint "ad_dau_lenh() { printf -- '---\\\\ndescription: \"%s\"\\\\nargument-hint: %s\\\\n---\\\\n\\\\n' \"\$3\" \"\$4\"; }"
@@ -419,7 +419,7 @@ ky_vong 0 "tools/adapter-build.sh nhận danh sách claude-code,cursor" sh "$T/a
 dung "…ghi dấu build cho từng adapter" bang "$(cat "$TMP/ca-hai-2/.agent-workflow/.adapters" 2>/dev/null)" "claude-code $(cat "$ROOT/VERSION")
 cursor $(cat "$ROOT/VERSION")"
 dung "…cả hai bộ giống hệt khi build riêng" sh -c "diff -r '$TMP/ca-hai-2/.claude' '$DT/claude-code/.claude' && diff -r '$TMP/ca-hai-2/.cursor' '$DT/cursor/.cursor'"
-ky_vong 2 "tools/adapter-build.sh: một id không có → SAI THAM SỐ, không sinh gì" sh "$T/adapter-build.sh" "claude-code khong-co" "$TMP/ca-hai-3"
+ky_vong 2 "tools/adapter-build.sh: một id không có → BAD ARGS, không sinh gì" sh "$T/adapter-build.sh" "claude-code khong-co" "$TMP/ca-hai-3"
 dung "…không sinh adapter nào" sh -c "[ ! -e '$TMP/ca-hai-3/.claude' ] && [ ! -e '$TMP/ca-hai-3/.agent-workflow' ]"
 mkdir -p "$TMP/ca-hai-4/.cursor/commands"; printf '# tự viết\n' > "$TMP/ca-hai-4/.cursor/commands/aw-spec.md"
 ky_vong 3 "một adapter hỏng (file viết tay) → mã của adapter đó" sh "$T/adapter-build.sh" claude-code,cursor "$TMP/ca-hai-4"

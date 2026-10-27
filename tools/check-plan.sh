@@ -18,14 +18,14 @@
 #   - REQ "Promote: BR-…" không có task phủ nó mà "Expected files" gồm file luật đích.
 # Cảnh báo: artifact lỗi thời; REQ "Priority: must" nằm ở "Deferred".
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai check-plan.sh \
-  "0=ĐẠT — được sang phase sau" \
-  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
-  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
+  "0=PASS — được sang phase sau" \
+  "1=FAIL — có vi phạm, sửa trong phase này" \
+  "2=NO INPUT — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"
 . "$HERE/lib/cross-check.sh"
@@ -55,23 +55,23 @@ if kc_bo_design "$DIR"; then
   # Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
   ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
   ma_spec=$?
-  printf '%s\n' "$ra_spec" | grep -F '[CẢNH BÁO]'
+  printf '%s\n' "$ra_spec" | grep -F '[WARN]'
   if [ "$ma_spec" -ne 0 ]; then
     n_loi=1
-    echo "  [LỖI] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
+    echo "  [ERROR] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
   fi
   # Việc có design thì cổng duyệt spec nằm ở design; bỏ design thì nằm ở đây.
   cd_duyet=$(kc_spec_chua_duyet "$DIR")
   if [ -n "$cd_duyet" ]; then
     n_loi=$((n_loi + 1))
-    echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
+    echo "  [ERROR] Đầu vào chưa đạt: $cd_duyet"
   fi
   # Điểm mù mức "blocking" chặn phase ngay sau spec — khi bỏ design là phase này.
   dm=$(kc_diem_mu_mo "$DIR" "blocking")
   if [ -n "$dm" ]; then
     while IFS= read -r l; do
       [ -n "$l" ] || continue
-      n_loi=$((n_loi + 1)); echo "  [LỖI] $l"
+      n_loi=$((n_loi + 1)); echo "  [ERROR] $l"
     done <<EOF
 $dm
 EOF
@@ -82,27 +82,27 @@ else
   done
   if ! sh "$HERE/check-design.sh" "$DIR" >/dev/null 2>&1; then
     n_loi=1
-    echo "  [LỖI] Đầu vào chưa đạt: tdd.md không qua aw check design — chạy nó để xem chi tiết."
+    echo "  [ERROR] Đầu vào chưa đạt: tdd.md không qua aw check design — chạy nó để xem chi tiết."
   fi
 fi
 
 # REQ người chọn nâng thành luật phải có task ghi file luật (tools/lib/rule.sh).
 llk=$(luat_loi_ke_hoach "$DIR")
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $llk
 EOF
 # Mục lục và link tới mục (tools/lib/toc.sh).
 tl=$(toc_loi "$DIR" plan.md)
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $tl
 EOF
 qtl=$(kc_quy_tac_loi "$DIR" plan)
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $qtl
 EOF
 fmh=$(kc_fm_hong "$DIR")
 # giữ: INV-006
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $fmh
 EOF
 
@@ -113,7 +113,7 @@ if [ "$TDD" != /dev/null ]; then
   DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
   # DEC người quyết nâng thành ADR phải có task nâng (tools/lib/adr.sh).
   alk=$(adr_loi_ke_hoach "$DIR")
-  while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+  while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $alk
 EOF
 fi
@@ -124,7 +124,7 @@ RVW=""
   l3 && /^###[ \t]/ && match($0, /\[(Blocker|Should fix|Nit)\][ \t]*RVW-[0-9]+/) { s = substr($0, RSTART, RLENGTH); match(s, /RVW-[0-9]+/); printf " %s", substr(s, RSTART, RLENGTH) }' "$DIR/review.md")
 
 awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
-  function loi(msg) { n_loi++; print "  [LỖI] " msg }
+  function loi(msg) { n_loi++; print "  [ERROR] " msg }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
   function gia_tri(s) { sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); return trim(s) }
   function thu_ma(dong, re, _tmp) {
@@ -277,11 +277,11 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
       if ((c in hoan) && uu_tien[c] != "should")
-        print "  [CẢNH BÁO] " c ": Priority must nhưng nằm ở \"Deferred\" — người duyệt plan phải đồng ý giao thiếu."
+        print "  [WARN] " c ": Priority must nhưng nằm ở \"Deferred\" — người duyệt plan phải đồng ý giao thiếu."
     }
     print ""
-    if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
-    print "ĐẠT — kế hoạch phủ đúng đặc tả theo cả hai chiều, mọi quyết định đã duyệt."
+    if (n_loi > 0) { print "FAIL — " n_loi " vi phạm."; exit 1 }
+    print "PASS — kế hoạch phủ đúng đặc tả theo cả hai chiều, mọi quyết định đã duyệt."
   }
 ' "$SPEC" "$TDD" "$PLAN"
 ma=$?
@@ -289,7 +289,7 @@ ma=$?
 cb=$( { kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_glob_rong "$DIR"; } )
 if [ -n "$cb" ]; then
   echo ""
-  echo "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  echo "$cb" | while IFS= read -r l; do echo "  [WARN] $l"; done
   echo "  (cảnh báo không chặn ở đây; review sẽ chặn nếu còn)"
 fi
 exit $ma

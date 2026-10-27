@@ -48,7 +48,7 @@ vi_pham "nhận đủ capability mà còn note → chặn" "stage deploy: suy ra
 # chiều ngược: nhận đủ + xoá mục khối sdlc: → ĐẠT, stage thành implemented
 awk '/^  - stage: deploy$/ { bo = 1; next } bo && /^    / { next } { bo = 0; print }' "$E/workflow.yaml" > "$E/w" && mv "$E/w" "$E/workflow.yaml"
 printf '# giữ: CAP-deploy-02\n' >> "$E/tools/check-ship.sh"  # capability machine được nhận phải có luật khai nó
-ky_vong 0 "nhận đủ capability + xoá note → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "nhận đủ capability + xoá note → PASS" sh "$SC" "$E"
 dung "…stage deploy thành implemented" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  deploy +implemented +ship'"
 moi; awk '/^capabilities:$/ { print "capabilities: []"; next } !/^  - CAP-/' "$E/workflow/phases/06-ship.md" > "$E/p" && mv "$E/p" "$E/workflow/phases/06-ship.md"
 vi_pham "phase implements mà không nhận capability nào → chặn" "phase ship: implements deploy nhưng không nhận capability nào"

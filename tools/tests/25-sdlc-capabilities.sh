@@ -59,19 +59,19 @@ vi_pham "provides không capability nào trỏ tới → chặn" "stage implemen
 moi; awk '!(/^- Artifact:/ && ++n == 3)' "$E/sdlc/stages/06-deploy.md" > "$E/s" && printf '\n## Notes\n\n- Artifact: delivery\n' >> "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
 vi_pham "Artifact nằm dưới heading khác không tính → chặn" "CAP-deploy-03: thiếu \"- Artifact:\""
 moi; thay "$E/sdlc/stages/01-require.md" '- Artifact: open-questions' '- Artifact:  requirements ,open-questions '
-ky_vong 0 "Artifact nhiều giá trị, có khoảng trắng → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "Artifact nhiều giá trị, có khoảng trắng → PASS" sh "$SC" "$E"
 # dòng Artifact thứ hai không được âm thầm đè dòng đầu (giá trị gõ sai sẽ bị giấu)
 moi; awk '{ print } /^- Artifact:/ && ++n == 1 { print "- Artifact: bogus" }' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
 vi_pham "capability khai Artifact hai dòng → chặn" "CAP-deploy-01: khai \"- Artifact:\" nhiều dòng — gộp vào một dòng, cách nhau dấu phẩy."
 moi; thay "$E/sdlc/stages/06-deploy.md" '  - delivery' '  - delivery  '
-ky_vong 0 "mục provides có khoảng trắng cuối dòng → vẫn ĐẠT" sh "$SC" "$E"
+ky_vong 0 "mục provides có khoảng trắng cuối dòng → vẫn PASS" sh "$SC" "$E"
 # stage thiếu provides: chỉ báo "thiếu provides", không thêm một lỗi Artifact cho mỗi capability
 moi; thay "$E/sdlc/stages/07-operate.md" 'provides:
   - operational-feedback' 'provides: []'
 vi_pham "stage thiếu provides → chặn" "stage operate: thiếu provides"
 dung "…không kèm lỗi Artifact cho từng capability" sh -c "! grep -q 'provides của stage operate' '$TMP/ra'"
 moi; sed 's/$/\r/' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
-ky_vong 0 "file stage CRLF → vẫn ĐẠT" sh "$SC" "$E"
+ky_vong 0 "file stage CRLF → vẫn PASS" sh "$SC" "$E"
 
 
 nhom "capability kiến thức bền (SP26)"
@@ -97,8 +97,8 @@ printf '# giữ: CAP-require-01, INV-007\n# giữ: CAP-require-01\n' > "$TMP/suy
 printf 'CAP-require-01\nINV-007\n' > "$TMP/suy-mong"
 ky_vong 0 "--suy in từng id một lần" sh -c "sh '$SC' --suy '$TMP/suy-a.sh' | cmp -s - '$TMP/suy-mong'"
 printf '# giữ: CAP-khong-co\n' > "$TMP/suy-b.sh"
-ky_vong 1 "--suy id không có → KHÔNG ĐẠT" sh "$SC" --suy "$TMP/suy-b.sh"
-ky_vong 2 "--suy thiếu file → SAI THAM SỐ" sh "$SC" --suy
+ky_vong 1 "--suy id không có → FAIL" sh "$SC" --suy "$TMP/suy-b.sh"
+ky_vong 2 "--suy thiếu file → BAD ARGS" sh "$SC" --suy
 ky_vong 0 "--suy file không có # giữ thì in rỗng" sh -c "printf 'echo x\n' > '$TMP/suy-c.sh'; sh '$SC' --suy '$TMP/suy-c.sh' | cmp -s - /dev/null"
 
 ket_thuc

@@ -45,14 +45,14 @@
 # Canh bao (khong chan): base trong intake.md khong phai nhanh goc / nhanh phat
 # hanh (vd xep chong len branch viec khac) — nguoi xac nhan co chu y.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai check-review.sh \
-  "0=ĐẠT — được sang phase sau" \
-  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
-  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
+  "0=PASS — được sang phase sau" \
+  "1=FAIL — có vi phạm, sửa trong phase này" \
+  "2=NO INPUT — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"
 . "$HERE/lib/cross-check.sh"
@@ -76,7 +76,7 @@ KQBM="$DIR/security-results.md"
 [ -f "$REVIEW" ] || { echo "LỖI: không tìm thấy $REVIEW" >&2; exit 2; }
 
 n_truoc=0
-loi_truoc() { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $1"; }
+loi_truoc() { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $1"; }
 
 if ! sh "$HERE/check-plan.sh" "$DIR" >/dev/null 2>&1; then
   loi_truoc "Đầu vào chưa đạt: plan.md/tdd.md/spec.md không qua aw check plan — chạy nó để xem chi tiết."
@@ -89,8 +89,8 @@ elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
 fi
 if [ ! -f "$KQBM" ]; then
   loi_truoc "Không có security-results.md — chưa quét bảo mật (aw check implement, hoặc aw check security)."
-elif ! grep -q '^- Kết quả: \*\*XANH\*\*' "$KQBM"; then
-  loi_truoc "security-results.md không XANH — còn lệnh quét bảo mật đỏ; CI sẽ chặn đúng chỗ này."
+elif ! grep -q '^- Result: \*\*GREEN\*\*' "$KQBM"; then
+  loi_truoc "security-results.md không GREEN — còn lệnh quét bảo mật đỏ; CI sẽ chặn đúng chỗ này."
 fi
 # Độ mới: bằng chứng phải chạy trên đúng nội dung code đang review.
 moi=$( { kc_ket_qua_cu "$DIR" "$KQ" "aw check implement $DIR"; kc_ket_qua_cu "$DIR" "$KQBM" "aw check security $DIR (hoặc aw check implement)"; } )
@@ -151,7 +151,7 @@ while IFS= read -r l; do
   case "$l" in
     "") ;;
     "review.md dòng "*) loi_truoc "$l" ;;
-    *) echo "  [CẢNH BÁO] $l" ;;
+    *) echo "  [WARN] $l" ;;
   esac
 done <<TD
 $td
@@ -342,12 +342,12 @@ fi
 
 # Base lạ (vd xếp chồng lên branch việc khác): chỉ cảnh báo — người xác nhận có chủ ý.
 cb_base=$(kc_base_la "$DIR")
-[ -z "$cb_base" ] || echo "  [CẢNH BÁO] $cb_base"
+[ -z "$cb_base" ] || echo "  [WARN] $cb_base"
 # Glob plan.md giai đoạn chuyển tiếp (* sắp không qua /): chỉ cảnh báo, không chặn.
-kc_glob_chuyen_tiep "$DIR" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l (chỉ cảnh báo)"; done
+kc_glob_chuyen_tiep "$DIR" | while IFS= read -r l; do echo "  [WARN] $l (chỉ cảnh báo)"; done
 
 awk -v loi_truoc="$n_truoc" '
-  function loi(msg) { n_loi++; print "  [LỖI] " msg }
+  function loi(msg) { n_loi++; print "  [ERROR] " msg }
   BEGIN { n_loi = loi_truoc }
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
 
@@ -414,8 +414,8 @@ awk -v loi_truoc="$n_truoc" '
              ((c in can_hoi) ? "   (đứng trên giả định tạm)" : "")
     }
     print ""
-    if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
-    print "ĐẠT — mọi yêu cầu đều có kết luận rà soát."
+    if (n_loi > 0) { print "FAIL — " n_loi " vi phạm."; exit 1 }
+    print "PASS — mọi yêu cầu đều có kết luận rà soát."
   }
 ' "$SPEC" "$REVIEW"
 ma=$?

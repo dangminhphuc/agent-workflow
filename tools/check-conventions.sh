@@ -28,14 +28,14 @@
 # Không kiểm được: giá trị có đúng Ý ĐỊNH của team không, văn xuôi có rõ không.
 # Chỉ đọc, không sửa gì.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai check-conventions.sh \
-  "0=HỢP LỆ — đọc các dòng ! (nếu có) xem có đúng ý không" \
-  "1=KHÔNG HỢP LỆ — sửa các dòng ✗ trong conventions.md" \
-  "2=SAI THAM SỐ"
+  "0=VALID — đọc các dòng ! (nếu có) xem có đúng ý không" \
+  "1=INVALID — sửa các dòng ✗ trong conventions.md" \
+  "2=BAD ARGS"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"
 . "$HERE/lib/cross-check.sh"

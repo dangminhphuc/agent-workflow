@@ -80,7 +80,7 @@ The main checkout stays on `base_branch` and only runs `/aw-intake`. The agent *
 5. `aw worktree new <type> <description> --create --base <ref>` with **exactly the human's ref**. Copy the printed `Base:` and `Engine:` lines into `intake.md`.
 6. Write `<worktree>/docs/sdlc/<name>/intake.md`, run `aw check intake` on that dir, then **stop**: the human runs the printed prepare command (`WORKTREE_SETUP_CMD`) and opens a **new** session in the worktree for `/aw-spec`.
 
-`ĐÃ CÓ WORKTREE`: create nothing — tell the human to open a session at the printed path and rerun `/aw-intake` there to add input.
+`WORKTREE EXISTS`: create nothing — tell the human to open a session at the printed path and rerun `/aw-intake` there to add input.
 
 `Base:` is what checkers diff against (stacking on another job's branch is allowed; review warns). `Engine:` is the exact engine version every checker of this job runs.
 

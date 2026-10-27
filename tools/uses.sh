@@ -11,14 +11,14 @@
 # Stdout là DỮ LIỆU: mỗi dòng "<mục> <file>" (file tương đối với gốc repo). Không
 # in gì = phase này không gọi gì. Lỗi khai báo in ra stderr.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai uses.sh \
-  "0=ĐÃ LIỆT KÊ — gọi từng mục in ra (không in gì = không có)" \
+  "0=LISTED — gọi từng mục in ra (không in gì = không có)" \
   "1=KHAI SAI — sửa khoá uses_* trong conventions.md, lý do phía trên" \
-  "2=SAI THAM SỐ"
+  "2=BAD ARGS"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"
 . "$HERE/lib/cross-check.sh"
@@ -34,7 +34,7 @@ esac || { echo "Dùng: aw uses <phase>   (phase: $BL_QUY_TAC)" >&2; exit 2; }
 loi=$( { kc_quy_tac_khoa_la "$MT_REPO"; kc_uses_loi "$MT_REPO" "$PH"; } )
 kc_uses "$MT_REPO" "$PH"
 if [ -n "$loi" ]; then
-  printf '%s\n' "$loi" | while IFS= read -r l; do echo "  [LỖI] $l" >&2; done
+  printf '%s\n' "$loi" | while IFS= read -r l; do echo "  [ERROR] $l" >&2; done
   exit 1
 fi
 exit 0

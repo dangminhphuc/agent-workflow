@@ -71,9 +71,9 @@ dung "show luật BR-BILLING-002: có 002, không có 001" sh -c "
   printf '%s\n' \"\$o\" | grep -q 'BR-BILLING-002' && ! printf '%s\n' \"\$o\" | grep -q 'BR-BILLING-001'"
 dung "show file không có mục khai: in nguyên file" sh -c "
   [ \"\$(sh '$KT' show docs/product/rules/billing.md 2>/dev/null | tail -n +2)\" = \"\$(cat '$R/docs/product/rules/billing.md')\" ]"
-ky_vong 2 "show: neo không có → SAI THAM SỐ" sh "$KT" show 'src/ARCHITECTURE.md#Không có'
-ky_vong 2 "show: file không có → SAI THAM SỐ" sh "$KT" show nope.md
-ky_vong 2 "show: không tham số → SAI THAM SỐ" sh "$KT" show
+ky_vong 2 "show: neo không có → BAD ARGS" sh "$KT" show 'src/ARCHITECTURE.md#Không có'
+ky_vong 2 "show: file không có → BAD ARGS" sh "$KT" show nope.md
+ky_vong 2 "show: không tham số → BAD ARGS" sh "$KT" show
 dung "show: một ref sai → không in phần nào" bang "$(sh "$KT" show src/ARCHITECTURE.md 'src/ARCHITECTURE.md#x' 2>/dev/null)" ""
 
 nhom "knowledge show: hai mục cùng heading"
@@ -126,14 +126,14 @@ KS_DU='| `src/ARCHITECTURE.md` | pass | |
 | `docs/product/rules/billing.md#BR-BILLING-002` | pass | |'
 thay "$A" 'Chi tiết mục hai.' 'Chi tiết mục hai, sửa.'
 ks_rv "$KS_DU"
-ky_vong 1 "review: sửa dòng trong ## Mục #2, #Thanh toán ghi updated → KHÔNG ĐẠT" sh "$RS" "$F"
+ky_vong 1 "review: sửa dòng trong ## Mục #2, #Thanh toán ghi updated → FAIL" sh "$RS" "$F"
 dung "…câu updated theo khối" sh -c "sh '$RS' '$F' 2>/dev/null | grep -qF 'verdict \"updated\" nhưng diff không đổi dòng nào trong khối này'"
 thay "$A" 'Chi tiết mục hai, sửa.' 'Chi tiết mục hai.'
 thay "$A" 'Luồng thanh toán.' 'Luồng thanh toán mới.'
 ks_rv "$KS_DU"
-ky_vong 0 "review: sửa dòng trong ## Thanh toán → ĐẠT" sh "$RS" "$F"
+ky_vong 0 "review: sửa dòng trong ## Thanh toán → PASS" sh "$RS" "$F"
 ks_rv "$(printf '%s\n' "$KS_DU" | grep -v 'Thanh toán')"
-ky_vong 1 "review: chỉ ghi file trần cho ref có neo → KHÔNG ĐẠT (verdict file không phủ mục)" sh "$RS" "$F"
+ky_vong 1 "review: chỉ ghi file trần cho ref có neo → FAIL (verdict file không phủ mục)" sh "$RS" "$F"
 thay "$A" 'Luồng thanh toán mới.' 'Luồng thanh toán.'
 echo y >> "$R/src/b/y.txt"
 thay "$A" 'Chi tiết mục hai.' 'Chi tiết mục hai, cuối.'
@@ -144,7 +144,7 @@ ks_rv '| `src/ARCHITECTURE.md` | pass | |
 | `src/ARCHITECTURE.md#Mục #2` | updated | |
 | `docs/product/rules/billing.md#BR-BILLING-001` | pass | |
 | `docs/product/rules/billing.md#BR-BILLING-002` | pass | |'
-ky_vong 0 "review: mục cuối file sửa dòng cuối, updated → ĐẠT" sh "$RS" "$F"
+ky_vong 0 "review: mục cuối file sửa dòng cuối, updated → PASS" sh "$RS" "$F"
 thay "$A" 'Chi tiết mục hai, cuối.' 'Chi tiết mục hai.'
 thay "$A" '## Thanh toán ' '## Thanh toán 2'
 dung "đổi tên heading → cả #Thanh toán và #Thanh toán 2 cần verdict, cả hai cột đổi = 1" sh -c "
@@ -183,14 +183,14 @@ A="$R/src/ARCHITECTURE.md"; HT="$T/check-implement.sh"; RS="$T/check-review.sh"
 cp "$A" "$TMP/arch.orig"
 printf '\n## Thanh toán\nbản hai\n' >> "$A"
 dung "heading trùng: implement cảnh báo đúng câu" sh -c "sh '$HT' '$F' 2>/dev/null | grep -qF 'src/ARCHITECTURE.md: hai mục \"## Thanh toán\" — ref src/ARCHITECTURE.md#Thanh toán chỉ trỏ mục đầu; đổi tên một mục'"
-dung "heading trùng: không phải lỗi" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -F '[LỖI]' | grep -qF 'hai mục'"
+dung "heading trùng: không phải lỗi" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -F '[ERROR]' | grep -qF 'hai mục'"
 cp "$TMP/arch.orig" "$A"
 sed 's/^## Thanh toán $/## Thanh toán | nợ/' "$TMP/arch.orig" > "$A"
-dung "| trong heading mục có Scope: implement lỗi đúng câu" sh -c "sh '$HT' '$F' 2>/dev/null | grep -F '[LỖI]' | grep -qF 'src/ARCHITECTURE.md: heading \"## Thanh toán | nợ\" có ký tự | — làm vỡ bảng \"## Durable knowledge\"; đổi tên mục'"
-ky_vong 1 "| trong heading mục có Scope: implement KHÔNG ĐẠT" sh "$HT" "$F"
+dung "| trong heading mục có Scope: implement lỗi đúng câu" sh -c "sh '$HT' '$F' 2>/dev/null | grep -F '[ERROR]' | grep -qF 'src/ARCHITECTURE.md: heading \"## Thanh toán | nợ\" có ký tự | — làm vỡ bảng \"## Durable knowledge\"; đổi tên mục'"
+ky_vong 1 "| trong heading mục có Scope: implement FAIL" sh "$HT" "$F"
 sh "$HT" "$F" >/dev/null 2>&1; viet_review; toc_f review.md; ghi_tree_review
-dung "| trong heading mục có Scope: review lỗi đúng câu" sh -c "sh '$RS' '$F' 2>/dev/null | grep -F '[LỖI]' | grep -qF 'heading \"## Thanh toán | nợ\" có ký tự |'"
-ky_vong 1 "| trong heading mục có Scope: review KHÔNG ĐẠT" sh "$RS" "$F"
+dung "| trong heading mục có Scope: review lỗi đúng câu" sh -c "sh '$RS' '$F' 2>/dev/null | grep -F '[ERROR]' | grep -qF 'heading \"## Thanh toán | nợ\" có ký tự |'"
+ky_vong 1 "| trong heading mục có Scope: review FAIL" sh "$RS" "$F"
 sed 's/^## Tổng quan$/## Tổng quan | phụ/' "$TMP/arch.orig" > "$A"
 dung "| trong heading mục KHÔNG khai Scope: không lỗi vì rule này" sh -c "! sh '$HT' '$F' 2>/dev/null | grep -qF 'có ký tự |'"
 cp "$TMP/arch.orig" "$A"

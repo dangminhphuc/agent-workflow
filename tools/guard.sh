@@ -15,15 +15,15 @@
 # Giới hạn: agent cố tình tự tính hash rồi ghi dấu giả thì hook không phân biệt
 # được; người tick đúng lúc một lệnh dài của agent đang chạy sẽ bị bỏ tick (tick lại).
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 # Mã 2 là mã "chặn" của hook Claude Code: stderr được đưa lại cho agent đọc.
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai guard.sh \
-  "0=KHÔNG CÓ GÌ PHẢI CHẶN" \
-  "2=ĐÃ BỎ TICK — chỉ người được tick approval checkbox; xem thông báo phía trên" \
-  "3=SAI THAM SỐ"
+  "0=NOTHING TO BLOCK" \
+  "2=UNTICKED — chỉ người được tick approval checkbox; xem thông báo phía trên" \
+  "3=BAD ARGS"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/env.sh"
 . "$HERE/lib/sha256.sh"
@@ -78,7 +78,7 @@ done
 
 [ -s "$BAO" ] || exit 0
 {
-  echo "ĐÃ BỎ TICK approval checkbox — chỉ người được tick, và tick chỉ còn giá trị khi nội dung chưa đổi:"
+  echo "UNTICKED approval checkbox — chỉ người được tick, và tick chỉ còn giá trị khi nội dung chưa đổi:"
   cat "$BAO"
   echo "Agent KHÔNG tick lại. Báo người: mở file, đọc lại phần đó rồi tự tick."
   echo "(Người vừa tick đúng lúc lệnh đang chạy thì chỉ cần tick lại.)"

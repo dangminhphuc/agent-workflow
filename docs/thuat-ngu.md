@@ -16,7 +16,7 @@ nguyên văn lời người hoặc do máy ghi. Cũng không kiểm chữ trong 
 code block, nên viết được `"ô duyệt" là từ dịch` khi mô tả lỗi. Lời agent nói trong chat thì không máy nào kiểm được.
 
 Tên trường, heading trong artifact giữ tiếng Anh vì checker đọc đúng chữ đó. Nhãn `aw` in ra
-(`Kết quả`, `ĐẠT`, `DỪNG`, `KẸT`…) giữ tiếng Việt vì checker và agent khớp đúng chữ.
+(`Result`, `PASS`, `STOP`, `STUCK`…) viết tiếng Anh, ngắn, vì checker và agent khớp đúng chữ (quyết định 2026-10-27, `docs/superpowers/specs/2026-10-27-nhan-tieng-anh-design.md`).
 
 ## Mã định danh
 
@@ -81,7 +81,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `approval hash` *(trước: dấu duyệt)* | `<!-- approval-hash: … -->` máy ghi cạnh ô khi lần đầu thấy tick. Nội dung đổi sau đó → bị chặn tới khi người duyệt lại |
 | `approval guard` *(trước: hook gác ô duyệt)* | `aw guard pre\|post` cài vào hook của agent: bỏ tick mà agent tự đánh |
 | `block` / `warn` *(trước: chặn / cảnh báo)* | Dòng `✗` = vi phạm, phase không đạt. Dòng `!` = cảnh báo: implement cho qua, **review chặn** |
-| Khối `Kết quả` | Khối cuối output của mọi lệnh `aw`, đánh `[x]` vào đúng một nhãn (`ĐẠT`, `KHÔNG ĐẠT`, `THIẾU ĐẦU VÀO`…). Người và agent đọc nhãn, không đọc mã thoát |
+| Khối `Result` | Khối cuối output của mọi lệnh `aw`, đánh `[x]` vào đúng một nhãn (`PASS`, `FAIL`, `NO INPUT`…). Người và agent đọc nhãn, không đọc mã thoát |
 | `entry check` | Đầu mỗi checker chạy lại checker của phase trước trên input — artifact đưa vào từ ngoài vẫn phải hợp lệ |
 | `based_on` | Hash các file đầu vào, ghi ở đầu artifact (`aw based-on`). File đầu vào đổi sau đó → artifact `stale` |
 | `stale` *(trước: lỗi thời)* | Artifact sinh từ bản cũ của đầu vào (spec sửa sau khi có `tdd.md`; code đổi sau `test-results.md`). Implement cảnh báo, review chặn. Sửa: chạy lại phase sinh ra nó |
@@ -92,7 +92,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `Lens 1–4` | Bốn góc của `review.md`: tuân thủ spec, thiết kế và phạm vi, chất lượng, bảo mật |
 | `Blocker` / `Should fix` / `Nit` | Mức finding của review: không được merge / nên sửa / tác giả quyết |
 | `Security reviewer` | Tên **người** đã rà bảo mật, bắt buộc khi diff đụng `sensitive_code`. Agent không bao giờ điền |
-| `DỪNG` / `KẸT` | Nhãn của `aw task`: đỏ liên tiếp `MAX_RED_RUNS` lần / `task` còn lại đều chờ phụ thuộc. Agent báo người, không thử mò |
+| `STOP` / `STUCK` | Nhãn của `aw task`: đỏ liên tiếp `MAX_RED_RUNS` lần / `task` còn lại đều chờ phụ thuộc. Agent báo người, không thử mò |
 | `harness journal` *(trước: nhật ký harness)* | `aw journal`: ghi lại lỗi agent làm mà không checker nào bắt, để biết harness thiếu luật ở đâu |
 | `retro` *(tổng kết cuối việc)* | `aw journal retro`: ghi phần máy và phần người của một việc vào `jobs.tsv` sau khi review đã được người xác nhận; phần người (lần chặn nhầm, phút) do người khai |
 
@@ -108,7 +108,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `main checkout` *(trước: checkout chính)* | Bản clone gốc, luôn đứng ở `base_branch`. Chỉ chạy `/aw-intake`, `/aw-bootstrap`, và dọn ở `/aw-ship` |
 | `worktree` | Thư mục `git worktree` riêng của một `job`, nằm **ngoài** repo (`../<repo>.wt/<tên>`). Mọi phase khác chạy ở đây |
 | `base` | Nhánh/commit `job` rẽ ra, **người chọn**, ghi trong `intake.md`. Mọi checker so diff với điểm rẽ khỏi base |
-| `job dir` *(trước: thư mục việc, <dir>)* | `docs/sdlc/<tên-branch>/` trong `worktree` — chứa artifact của `job`. `aw check` ĐẠT thì commit vào branch của việc; `aw ship create` gỡ khỏi branch trước MR, không vào nhánh đích. Việc tạo bằng engine cũ: `.agent-workflow/<tên-branch>/`, chỉ ở máy |
+| `job dir` *(trước: thư mục việc, <dir>)* | `docs/sdlc/<tên-branch>/` trong `worktree` — chứa artifact của `job`. `aw check` PASS thì commit vào branch của việc; `aw ship create` gỡ khỏi branch trước MR, không vào nhánh đích. Việc tạo bằng engine cũ: `.agent-workflow/<tên-branch>/`, chỉ ở máy |
 | `artifact` | File agent/máy viết ra trong `job dir` (`intake.md`, `spec.md`, `tdd.md`…). Danh sách: [`huong-dan.md` §4](huong-dan.md#4-bản-đồ-artifact) |
 | `conventions.md` | Quy ước của `target repo` (`docs/agent-workflow/conventions.md`), trong git, sửa qua PR. Mỗi `job` đọc bản **tại điểm rẽ khỏi base** |
 | `config.sh` | Cấu hình của từng bản clone (`.git/agent-workflow/config.sh`), không commit: `TEST_CMD`, `SECURITY_CMDS`, `ADAPTER`… |

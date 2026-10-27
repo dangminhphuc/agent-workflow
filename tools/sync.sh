@@ -9,7 +9,7 @@ main() {
   ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
   if [ -f "$ROOT/tools/lib/result.sh" ]; then
     . "$ROOT/tools/lib/result.sh"
-    kq_khai sync.sh "3=ĐÃ BỎ — dùng aw upgrade, làm theo hướng dẫn phía trên"
+    kq_khai sync.sh "3=REMOVED — dùng aw upgrade, làm theo hướng dẫn phía trên"
   fi
   cat <<EOT
 tools/sync.sh đã bỏ từ engine 2026.10.6. Không có gì được đổi.

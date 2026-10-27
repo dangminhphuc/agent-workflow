@@ -47,7 +47,7 @@ Turn the reviewed work into **one MR/PR** to the target branch the human picks, 
 
 ## On the main checkout
 
-Step 0 says **ĐANG Ở CHECKOUT CHÍNH** → do only this section.
+Step 0 says **ON MAIN CHECKOUT** → do only this section.
 
 1. `aw ship sweep` (print only). It sorts each worktree with a `ship.md` into: **dọn được** (all MRs merged), **chờ merge**, **✗ người quyết** (MR closed, unknown, local branch has commits not in the MR).
 2. Print it verbatim. Anything cleanable → ask: clean all, clean one (`<branch>`), or later. Cleaning removes the worktree (artifacts archived) and deletes the local and origin branch — irreversible, so **always ask**.
@@ -65,7 +65,7 @@ Per the template and the "Merge request" section of conventions (team convention
 - Only state what is in artifacts or the diff. Unsure → `Open Questions`. Not applicable → `None`, never delete a section.
 - Content in Vietnamese unless the team convention says otherwise.
 
-Run `aw check ship <dir>` until `[x] ĐẠT`. It also blocks when `aw check review` fails or a `[Blocker]` remains → back to `/aw-implement` + `/aw-review`.
+Run `aw check ship <dir>` until `[x] PASS`. It also blocks when `aw check review` fails or a `[Blocker]` remains → back to `/aw-implement` + `/aw-review`.
 
 ### 2. Human picks the target branch
 
@@ -83,19 +83,19 @@ The engine holds no token; it uses the first route that works: logged-in `gh`/`g
 
 | Result `[x]` | Do |
 |---|---|
-| `ĐÃ TẠO MR` | Give the URL (stdout). "Mô tả CHƯA gửi" → give the content of `mr-description.md` |
-| `ĐÃ CÓ MR ĐANG MỞ` | New commits pushed to the existing MR (description untouched). Give its URL |
-| `CHƯA ĐỦ ĐIỀU KIỆN` | `aw check ship` fails, uncommitted changes remain, or the MR would still carry `docs/sdlc/` files. Never commit unknown changes (that is `/aw-implement`'s job); never `git rm` another job's dir yourself — tell the human |
-| `KÉO THEO COMMIT NGOÀI VIỆC` | Print the commit list. Human decides: other target, new branch + cherry-pick, or accept — `--allow-extra-commits` only when the human says accept |
-| `KHÔNG TẠO ĐƯỢC MR` | Branch pushed. Give the prefilled link; once the human gives the MR link → `aw ship create <dir> --target <branch> --url <link>` |
+| `MR CREATED` | Give the URL (stdout). "Mô tả CHƯA gửi" → give the content of `mr-description.md` |
+| `MR ALREADY OPEN` | New commits pushed to the existing MR (description untouched). Give its URL |
+| `NOT ELIGIBLE` | `aw check ship` fails, uncommitted changes remain, or the MR would still carry `docs/sdlc/` files. Never commit unknown changes (that is `/aw-implement`'s job); never `git rm` another job's dir yourself — tell the human |
+| `EXTRA COMMITS` | Print the commit list. Human decides: other target, new branch + cherry-pick, or accept — `--allow-extra-commits` only when the human says accept |
+| `MR NOT CREATED` | Branch pushed. Give the prefilled link; once the human gives the MR link → `aw ship create <dir> --target <branch> --url <link>` |
 
 ### 4. Follow up
 
 `aw ship status <dir>` updates `ship.md`. Without `gh`/`glab` it infers from git (normal and clean squash merges; closed MRs or squash with conflict fixes → human checks on the web).
 
-- `CÒN MR ĐANG MỞ`: waiting for review. Review asks for changes → `/aw-plan` (Supplement: task with `Fixes: <comment URL>`) → `/aw-implement` → `/aw-review` → `aw ship create … --target <same branch>`.
-- `ĐÃ MERGE HẾT`: tell the human to run this command in a session on the **main checkout** to clean up.
-- `CÓ MR BỊ ĐÓNG KHÔNG MERGE`, `CHƯA RÕ`: report; the human decides.
+- `MR OPEN`: waiting for review. Review asks for changes → `/aw-plan` (Supplement: task with `Fixes: <comment URL>`) → `/aw-implement` → `/aw-review` → `aw ship create … --target <same branch>`.
+- `ALL MERGED`: tell the human to run this command in a session on the **main checkout** to clean up.
+- `MR CLOSED UNMERGED`, `UNKNOWN`: report; the human decides.
 
 ## Forbidden
 

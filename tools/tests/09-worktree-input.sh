@@ -20,23 +20,23 @@ g9 tag khong-co-gi    # base không có gì của quy trình
 awd "$R9" init --version "$VDEV" --test-cmd true >/dev/null 2>&1
 # Repo mới: aw init tạo quy ước trong repo (chưa commit) — aw đọc bản ở checkout chính.
 CV9="$R9/docs/agent-workflow/conventions.md"
-ky_vong 6 "checkout chính → ĐANG Ở CHECKOUT CHÍNH (worktree bắt buộc)" awd "$R9" feature
+ky_vong 6 "checkout chính → ON MAIN CHECKOUT (worktree bắt buộc)" awd "$R9" feature
 ky_vong 6 "…kể cả khi có tham số" awd "$R9" feature feat_abc
-dung "…và in danh sách việc cần làm: mở worktree / chạy /aw-intake" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 | grep -q 'CHECKOUT CHÍNH'"
+dung "…và in danh sách việc cần làm: mở worktree / chạy /aw-intake" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 | grep -q 'ON MAIN CHECKOUT'"
 
 W4="$TMP/repo9.wt/khong-khop"
 g9 worktree add -q -b khong-khop "$W4" main
-ky_vong 3 "trong worktree, branch không khớp, không tham số → CẦN HỎI NGƯỜI" awd "$W4" feature
+ky_vong 3 "trong worktree, branch không khớp, không tham số → ASK HUMAN" awd "$W4" feature
 dung "branch không khớp → lấy tham số" test "$(awd "$W4" feature feat_abc 2>/dev/null)" = "docs/sdlc/feat_abc"
 ky_vong 2 "từ chối tên feature có ../" awd "$W4" feature "../x"
-ky_vong 2 "chữ giữ chỗ <tham-số> của lệnh Cursor chưa thay → TÊN KHÔNG HỢP LỆ" awd "$W4" feature "<tham-số>"
-ky_vong 2 "chữ giữ chỗ \$ARGUMENTS chưa thay → TÊN KHÔNG HỢP LỆ" awd "$W4" feature '$ARGUMENTS'
+ky_vong 2 "chữ giữ chỗ <tham-số> của lệnh Cursor chưa thay → INVALID NAME" awd "$W4" feature "<tham-số>"
+ky_vong 2 "chữ giữ chỗ \$ARGUMENTS chưa thay → INVALID NAME" awd "$W4" feature '$ARGUMENTS'
 dung "…không tạo thư mục việc nào" test ! -e "$W4/.agent-workflow/<tham-số>"
 dung "…stderr bảo agent chép nguyên văn phần người gõ" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature '<tham-số>' 2>&1 | grep -q 'chữ giữ chỗ'"
 git -C "$W4" checkout -q -b feat_them-todo
 dung "branch khớp quy ước → tên branch đầy đủ" test "$(awd "$W4" feature 2>/dev/null)" = "docs/sdlc/feat_them-todo"
 dung "branch khớp thì thắng tham số" test "$(awd "$W4" feature khac 2>/dev/null)" = "docs/sdlc/feat_them-todo"
-dung "in 'Đang làm với:'" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 >/dev/null | grep -q 'Đang làm với: docs/sdlc/feat_them-todo'"
+dung "in 'Working on:'" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 >/dev/null | grep -q 'Working on: docs/sdlc/feat_them-todo'"
 mkdir -p "$W4/.agent-workflow/feat_them-todo"
 dung "việc tạo bằng engine cũ (chỉ có .agent-workflow/<tên>/) → in đường dẫn cũ" test "$(awd "$W4" feature 2>/dev/null)" = ".agent-workflow/feat_them-todo"
 dung "…và nói artifact chỉ ở máy" sh -c "cd '$W4' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' feature 2>&1 >/dev/null | grep -q 'engine cũ — artifact chỉ ở máy'"
@@ -84,7 +84,7 @@ dung "…in dòng Base và Engine để chép vào intake.md" sh -c "cd '$R9' &&
 dung "…dòng Engine đúng version engine" sh -c "cd '$R9' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore in-engine --create --base main 2>&1 >/dev/null | grep -qx '  - \*\*Engine:\*\* $VDEV'"
 dung "…stdout chỉ là đường dẫn worktree" bang "$(awd "$R9" worktree new chore in-stdout --create --base main 2>/dev/null)" "$TMP/repo9.wt/chore_in-stdout"
 dung "…và aw feature trong worktree suy được feature" test "$(awd "$W5" feature 2>/dev/null)" = "docs/sdlc/fix_phi-hoan-tien"
-ky_vong 5 "chạy lại cho việc đã có worktree → ĐÃ CÓ WORKTREE, không tạo gì" awd "$R9" worktree new bugfix phi-hoan-tien
+ky_vong 5 "chạy lại cho việc đã có worktree → WORKTREE EXISTS, không tạo gì" awd "$R9" worktree new bugfix phi-hoan-tien
 dung "…stdout là đường dẫn worktree đã có" test "$(awd "$R9" worktree new bugfix phi-hoan-tien 2>/dev/null)" = "$W5"
 
 # remote: main local chậm hơn origin/main -> ★ origin/main
@@ -108,9 +108,9 @@ R10="$TMP/repo10"; mkdir -p "$R10"
 git -C "$R10" init -q; git -C "$R10" checkout -q -b main
 git -C "$R10" -c user.name=t -c user.email=t@t commit -q --allow-empty -m goc
 GOC10=$(git -C "$R10" rev-parse HEAD); C10="$R10/.git/agent-workflow"
-ky_vong 2 "init --adapter có id không tồn tại → SAI THAM SỐ" awd "$R10" init --version "$VDEV" --adapter claude-code,khong-co
+ky_vong 2 "init --adapter có id không tồn tại → BAD ARGS" awd "$R10" init --version "$VDEV" --adapter claude-code,khong-co
 dung "…không ghi config.sh, không sinh gì" sh -c "[ ! -e '$C10/config.sh' ] && [ ! -e '$R10/.claude' ] && [ ! -e '$R10/.cursor' ]"
-ky_vong 2 "init --adapter rỗng → SAI THAM SỐ" awd "$R10" init --version "$VDEV" --adapter ","
+ky_vong 2 "init --adapter rỗng → BAD ARGS" awd "$R10" init --version "$VDEV" --adapter ","
 ky_vong 0 "aw init --adapter claude-code,cursor" awd "$R10" init --version "$VDEV" --test-cmd true --adapter claude-code,cursor
 dung "…config.sh ghi ADAPTER=\"claude-code cursor\"" grep -qx 'ADAPTER="claude-code cursor"' "$C10/config.sh"
 dung "…exclude có đường dẫn của MỌI adapter" sh -c \
@@ -122,7 +122,7 @@ cursor $VDEV"
 dung "…không commit gì; cây chỉ còn quy ước chờ commit" sh -c "[ \"\$(git -C '$R10' rev-parse HEAD)\" = '$GOC10' ] && [ \"\$(git -C '$R10' status --porcelain --untracked-files=all)\" = '?? docs/agent-workflow/conventions.md' ]"
 ky_vong 0 "init lại: cùng tập adapter, khác thứ tự/cách viết → không coi là đổi" awd "$R10" init --adapter "cursor claude-code"
 dung "…không nhân đôi dòng exclude" bang "$(grep -cxF "/.cursor/agents/spec-checker.md" "$R10/.git/info/exclude")" 1
-ky_vong 2 "init --adapter khác tập trong config.sh → SAI THAM SỐ (sửa config.sh)" awd "$R10" init --adapter cursor
+ky_vong 2 "init --adapter khác tập trong config.sh → BAD ARGS (sửa config.sh)" awd "$R10" init --adapter cursor
 dung "…config.sh giữ nguyên" grep -qx 'ADAPTER="claude-code cursor"' "$C10/config.sh"
 ky_vong 0 "aw doctor: mọi mục ✓ với hai adapter" awd "$R10" doctor
 dung "…doctor không cảnh báo dòng exclude cũ khi chỉ có mẫu hẹp" sh -c "cd '$R10' && ! AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor 2>/dev/null | grep -q dòng cũ"
@@ -156,7 +156,7 @@ ky_vong 0 "aw adapter build (không id) → mọi adapter trong config.sh" awd "
 dung "…sinh lại cả hai, dấu build đúng version" sh -c "[ -f '$W10/.claude/commands/aw-plan.md' ] && [ -f '$W10/.cursor/commands/aw-plan.md' ] && [ \"\$(cat '$W10/.agent-workflow/.adapters')\" = 'claude-code $VDEV
 cursor $VDEV' ]"
 rm -rf "$W10/.cursor"
-ky_vong 2 "aw adapter build claude-code,khong-co → SAI THAM SỐ" awd "$W10" adapter build claude-code,khong-co
+ky_vong 2 "aw adapter build claude-code,khong-co → BAD ARGS" awd "$W10" adapter build claude-code,khong-co
 dung "…không sinh adapter nào" test ! -e "$W10/.cursor"
 awd "$W10" adapter build >/dev/null 2>&1
 rm -f "$W10/.agent-workflow/.adapters"
@@ -173,7 +173,7 @@ W12=$(awd "$R10" worktree new chore bo-trong --create --base main 2>/dev/null)
 dung "ADAPTER bỏ trống → chỉ claude-code (như trước khi có nhiều adapter)" sh -c "[ -f '$W12/.claude/commands/aw-spec.md' ] && [ ! -e '$W12/.cursor' ]"
 sed 's/^ADAPTER=.*/ADAPTER="claude-code khong-co"/' "$TMP/config10.bak" > "$C10/config.sh"
 ky_vong 0 "ADAPTER có id sai → worktree vẫn tạo được" awd "$R10" worktree new chore id-sai --create --base main
-dung "…nhưng cảnh báo rõ, không sinh nửa vời" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore id-sai-2 --create --base main 2>&1 >/dev/null | grep -q 'CẢNH BÁO: ADAPTER=\"claude-code khong-co\"' && [ ! -e '$TMP/repo10.wt/chore_id-sai-2/.claude' ]"
+dung "…nhưng cảnh báo rõ, không sinh nửa vời" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' worktree new chore id-sai-2 --create --base main 2>&1 >/dev/null | grep -q 'WARN: ADAPTER=\"claude-code khong-co\"' && [ ! -e '$TMP/repo10.wt/chore_id-sai-2/.claude' ]"
 ky_vong 1 "doctor: ADAPTER khai id engine không có → ✗" awd "$R10" doctor
 cp "$TMP/config10.bak" "$C10/config.sh"
 dung "…sửa lại thì doctor ✓" sh -c "cd '$R10' && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' doctor >/dev/null 2>&1"
@@ -203,8 +203,8 @@ dung "…cả worktree lẫn branch đều không còn" sh -c "[ ! -e '$W6' ] &&
 
 IN="$R9/.claude/commands/aw-intake.md"
 dung "/aw-intake: tham số là input, không truyền vào aw feature" sh -c "grep -q 'argument-hint: \"\\[mã-issue' '$IN' && ! grep -q 'aw feature \$ARGUMENTS' '$IN'"
-dung "/aw-intake: đang ở checkout chính thì dẫn tới aw worktree new" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*aw worktree new' "$IN"
-dung "lệnh khác: ĐANG Ở CHECKOUT CHÍNH thì dừng lại" grep -q 'ĐANG Ở CHECKOUT CHÍNH.*stop' "$R9/.claude/commands/aw-spec.md"
+dung "/aw-intake: đang ở checkout chính thì dẫn tới aw worktree new" grep -q 'ON MAIN CHECKOUT.*aw worktree new' "$IN"
+dung "lệnh khác: ON MAIN CHECKOUT thì dừng lại" grep -q 'ON MAIN CHECKOUT.*stop' "$R9/.claude/commands/aw-spec.md"
 dung "lệnh khác vẫn nhận tên feature qua tham số" grep -q 'aw feature \$ARGUMENTS' "$R9/.claude/commands/aw-spec.md"
 dung "/aw-intake: tham số đi qua aw input bằng heredoc nguyên văn" sh -c "grep -q 'aw input .*- <<' '$IN' && grep -qx '\$ARGUMENTS' '$IN'"
 dung "aw init chép rules/templates/checkers của engine vào .agent-workflow/.engine/ (bị exclude)" sh -c "[ -f '$R9/.agent-workflow/.engine/templates/spec.md' ] && [ -f '$R9/.agent-workflow/.engine/rules/general.md' ] && grep -qx '$VDEV' '$R9/.agent-workflow/.engine/VERSION'"
@@ -229,25 +229,25 @@ dung "…kèm cảnh báo chưa khai confluence_domains" sh -c "printf '%s' \"\$
 dung "bỏ dấu câu / ngoặc bọc ngoài: (ABC-1), \`docs/a.md\`" bang "$(ra '(ABC-1), `docs/a.md`.')" "- ${BT}[JIRA]${BT} ABC-1
 - ${BT}[FILE]${BT} docs/a.md"
 dung "cùng một nguồn gõ nhiều cách → một dòng" bang "$(ra 'ABC-1 ABC-1 https://x.atlassian.net/browse/ABC-1' | wc -l | tr -d ' ')" 1
-ky_vong 1 "đường dẫn không tồn tại → ĐƯỜNG DẪN KHÔNG TỒN TẠI (không tự đoán)" pl "ABC-1 docs/khong-co.md"
+ky_vong 1 "đường dẫn không tồn tại → PATH NOT FOUND (không tự đoán)" pl "ABC-1 docs/khong-co.md"
 dung "…và không in dòng input nào" test -z "$(ra 'ABC-1 docs/khong-co.md')"
-ky_vong 3 "không có tham số → KHÔNG CÓ THAM SỐ (hỏi người dùng)" pl ""
-ky_vong 3 "tham số chỉ có khoảng trắng / dòng trống → KHÔNG CÓ THAM SỐ" pl "
+ky_vong 3 "không có tham số → NO ARGS (hỏi người dùng)" pl ""
+ky_vong 3 "tham số chỉ có khoảng trắng / dòng trống → NO ARGS" pl "
   "
-ky_vong 4 "câu chữ tự do → LỜI NGƯỜI DÙNG" pl "sửa phí hoàn tiền bị âm ABC-123"
-ky_vong 2 "chữ giữ chỗ <tham-số> còn nguyên → SAI CÁCH GỌI (không thành mục [HUMAN])" pl "<tham-số>"
-ky_vong 2 "chữ giữ chỗ \$ARGUMENTS còn nguyên → SAI CÁCH GỌI" pl '$ARGUMENTS'
+ky_vong 4 "câu chữ tự do → USER WORDS" pl "sửa phí hoàn tiền bị âm ABC-123"
+ky_vong 2 "chữ giữ chỗ <tham-số> còn nguyên → BAD CALL (không thành mục [HUMAN])" pl "<tham-số>"
+ky_vong 2 "chữ giữ chỗ \$ARGUMENTS còn nguyên → BAD CALL" pl '$ARGUMENTS'
 ky_vong 2 "…kể cả có khoảng trắng / dòng trống bao quanh" pl "
   <tham-số>
 "
 dung "…và không in dòng input nào" test -z "$(ra '<tham-số>')"
-ky_vong 4 "câu thật có nhắc chữ <tham-số> vẫn là LỜI NGƯỜI DÙNG" pl "sửa lỗi hiển thị <tham-số> trong trang"
+ky_vong 4 "câu thật có nhắc chữ <tham-số> vẫn là USER WORDS" pl "sửa lỗi hiển thị <tham-số> trong trang"
 # Chạy NGUYÊN VĂN khối aw input do adapter sinh ra, như agent quên thay tham số
 for ad in claude-code cursor; do
   case $ad in claude-code) f="$TMP/doi-chieu-that/claude-code/.claude/commands/aw-intake.md" ;; *) f="$TMP/doi-chieu-that/cursor/.cursor/commands/aw-intake.md" ;; esac
   awk '/^```sh$/ { k = 1; next } k && /^```$/ { exit } k' "$f" | sed 's/^aw input \[--skip [^]]*\] /aw input /' > "$TMP/khoi-input-$ad.sh"
   dung "$ad: khối aw input trong /aw-intake là lệnh chạy được (có heredoc HET_INPUT)" sh -c "grep -q '^aw input - <<.HET_INPUT.\$' '$TMP/khoi-input-$ad.sh' && tail -1 '$TMP/khoi-input-$ad.sh' | grep -qx HET_INPUT"
-  ky_vong 2 "$ad: chạy khối đó khi chưa thay tham số → engine chặn (SAI CÁCH GỌI)" sh -c "cd '$R9' && aw() { AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' \"\$@\"; } && . '$TMP/khoi-input-$ad.sh'"
+  ky_vong 2 "$ad: chạy khối đó khi chưa thay tham số → engine chặn (BAD CALL)" sh -c "cd '$R9' && aw() { AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' \"\$@\"; } && . '$TMP/khoi-input-$ad.sh'"
   sed 's/^<tham-số>$/ABC-123/; s/^\$ARGUMENTS$/ABC-123/' "$TMP/khoi-input-$ad.sh" > "$TMP/khoi-input-$ad-thay.sh"
   dung "$ad: …thay đúng tham số thì ra nhãn [JIRA]" sh -c "cd '$R9' && aw() { AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' \"\$@\"; } && . '$TMP/khoi-input-$ad-thay.sh' 2>/dev/null | grep -q 'JIRA.* ABC-123'"
 done
@@ -316,7 +316,7 @@ ky_vong 0 "--skip: không có gì mới vẫn là NGUỒN" pl --skip "$TMP/intak
 dung "…URL …/browse/ABC-123 trùng với ABC-123 đã có → stdout rỗng" test -z "$(ra --skip "$TMP/intake-cu.md" 'https://x.atlassian.net/browse/ABC-123')"
 dung "--skip: lời người dùng đã có (khác khoảng trắng / xuống dòng) → bỏ" test -z "$(ra --skip "$TMP/intake-cu.md" 'sửa phí hoàn tiền bị âm')"
 dung "--skip: lời người dùng mới thì vẫn in" bang "$(ra --skip "$TMP/intake-cu.md" 'thêm xuất CSV' | tail -1)" "  > thêm xuất CSV"
-ky_vong 2 "--skip trỏ tới file không có → SAI CÁCH GỌI" pl --skip "$TMP/khong-co.md" "ABC-1"
+ky_vong 2 "--skip trỏ tới file không có → BAD CALL" pl --skip "$TMP/khong-co.md" "ABC-1"
 dung "--skip: [ISSUE] đã có (khác #fragment) → bỏ" test -z "$(ra --skip "$TMP/intake-cu.md" 'https://github.com/o/r/issues/9#x')"
 
 # ---------------------------------------------------------------- doi ten feature
@@ -356,7 +356,7 @@ git -C "$RL" add -A; git -C "$RL" -c user.name=t -c user.email=t@t commit -q -m 
 GOCL=$(git -C "$RL" rev-parse HEAD)
 CL="$RL/.git/agent-workflow"
 
-ky_vong 2 "--from-legacy ở repo không có bộ cài cũ → SAI THAM SỐ" sh -c "R=\$(mktemp -d '$TMP/x.XXXX') && git -C \"\$R\" init -q && cd \"\$R\" && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' init --from-legacy --version '$VDEV'"
+ky_vong 2 "--from-legacy ở repo không có bộ cài cũ → BAD ARGS" sh -c "R=\$(mktemp -d '$TMP/x.XXXX') && git -C \"\$R\" init -q && cd \"\$R\" && AW_HOME='$AWHD' AW_ENGINE_DIR='$ROOT' sh '$ROOT/bin/aw' init --from-legacy --version '$VDEV'"
 ky_vong 0 "aw init --from-legacy" awd "$RL" init --from-legacy --version "$VDEV"
 dung "…conventions.md cũ chuyển vào .git/agent-workflow/" cmp -s "$RL/.agent-workflow/conventions.md" "$CL/conventions.md"
 dung "…lệnh trong cau-hinh.sh cũ chuyển sang config.sh" sh -c "grep -qx 'TEST_CMD=\"make test\"' '$CL/config.sh' && grep -qx 'WORKTREE_SETUP_CMD=\"npm ci\"' '$CL/config.sh' && grep -qx 'ADAPTER=\"claude-code\"' '$CL/config.sh'"
@@ -379,7 +379,7 @@ awd "$RL" init >/dev/null 2>&1
 dung "init lại KHÔNG ghi đè config.sh người sửa" grep -q 'npm test' "$CL/config.sh"
 awd "$RL" init --force >/dev/null 2>&1
 dung "KHÔNG ghi đè conventions.md, kể cả --force" grep -q 'của tôi' "$CL/conventions.md"
-ky_vong 2 "init --adapter khác ADAPTER trong config.sh → SAI THAM SỐ" awd "$RL" init --adapter cursor
+ky_vong 2 "init --adapter khác ADAPTER trong config.sh → BAD ARGS" awd "$RL" init --adapter cursor
 
 # ---------------------------------------------------------------- khoi "Ket qua"
 # Nguoi va agent doc NHAN, khong doc ma so: moi script in khoi nay ra stderr.
@@ -387,21 +387,21 @@ nhom "lib/result.sh"
 KQT="$TMP/kq-thu.sh"
 cat > "$KQT" <<EOF
 . "$T/lib/result.sh"
-kq_khai thu.sh "0=ĐẠT" "1=KHÔNG ĐẠT" "2=THIẾU ĐẦU VÀO"
+kq_khai thu.sh "0=PASS" "1=FAIL" "2=NO INPUT"
 kq_don 'echo don >&2'
 echo du-lieu
 exit "\$1"
 EOF
 ky_vong 1 "mã thoát giữ nguyên sau khi in khối" sh "$KQT" 1
-dung "đánh dấu đúng nhãn của lần chạy" sh -c "sh '$KQT' 1 2>&1 >/dev/null | grep -qx '  \[x\] KHÔNG ĐẠT'"
-dung "…các nhãn còn lại để trống" sh -c "o=\$(sh '$KQT' 1 2>&1 >/dev/null); printf '%s\n' \"\$o\" | grep -qx '  \[ \] ĐẠT' && printf '%s\n' \"\$o\" | grep -qx '  \[ \] THIẾU ĐẦU VÀO'"
-dung "mã ngoài danh sách → LỖI NGOÀI DỰ KIẾN" sh -c "sh '$KQT' 9 2>&1 >/dev/null | grep -q '\[x\] LỖI NGOÀI DỰ KIẾN'"
+dung "đánh dấu đúng nhãn của lần chạy" sh -c "sh '$KQT' 1 2>&1 >/dev/null | grep -qx '  \[x\] FAIL'"
+dung "…các nhãn còn lại để trống" sh -c "o=\$(sh '$KQT' 1 2>&1 >/dev/null); printf '%s\n' \"\$o\" | grep -qx '  \[ \] PASS' && printf '%s\n' \"\$o\" | grep -qx '  \[ \] NO INPUT'"
+dung "mã ngoài danh sách → UNEXPECTED ERROR" sh -c "sh '$KQT' 9 2>&1 >/dev/null | grep -q '\[x\] UNEXPECTED ERROR'"
 dung "khối ra stderr, stdout giữ nguyên dữ liệu" bang "$(sh "$KQT" 0 2>/dev/null)" "du-lieu"
 dung "việc dọn dẹp (kq_don) vẫn chạy" sh -c "sh '$KQT' 0 2>&1 >/dev/null | grep -qx don"
-dung "checker thiếu file → [x] THIẾU ĐẦU VÀO" sh -c "AW_REPO='$R9' AW_CONFIG='$R9/.git/agent-workflow' sh '$T/check-plan.sh' '$TMP/khong-co' 2>&1 | grep -q '\[x\] THIẾU ĐẦU VÀO'"
+dung "checker thiếu file → [x] NO INPUT" sh -c "AW_REPO='$R9' AW_CONFIG='$R9/.git/agent-workflow' sh '$T/check-plan.sh' '$TMP/khong-co' 2>&1 | grep -q '\[x\] NO INPUT'"
 dung "checker gọi thẳng, thiếu AW_CONFIG → dừng, không đoán đường dẫn" sh -c "env -u AW_CONFIG sh '$T/check-plan.sh' '$TMP/khong-co' 2>&1 | grep -q 'thiếu AW_CONFIG'"
 dung "tool worktree gọi thẳng, thiếu AW_REPO → dừng" sh -c "env -u AW_REPO -u AW_CONFIG sh '$T/feature.sh' 2>&1 | grep -q 'thiếu AW_REPO'"
-dung "aw feature ở checkout chính → [x] ĐANG Ở CHECKOUT CHÍNH" sh -c "printf '%s' \"\$1\" | grep -q '\[x\] ĐANG Ở CHECKOUT CHÍNH'" _ "$(awd "$R9" feature 2>&1)"
-dung "…stdout không lẫn khối Kết quả" sh -c "! printf '%s' \"\$1\" | grep -q 'Kết quả'" _ "$(awd "$R9" feature 2>/dev/null)"
+dung "aw feature ở checkout chính → [x] ON MAIN CHECKOUT" sh -c "printf '%s' \"\$1\" | grep -q '\[x\] ON MAIN CHECKOUT'" _ "$(awd "$R9" feature 2>&1)"
+dung "…stdout không lẫn khối Result" sh -c "! printf '%s' \"\$1\" | grep -q 'Result'" _ "$(awd "$R9" feature 2>/dev/null)"
 
 ket_thuc

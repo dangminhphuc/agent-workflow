@@ -14,14 +14,14 @@
 # Cảnh báo (không chặn — quy ước tiêu đề là của team, sửa trong conventions.md):
 #   tiêu đề dài hơn 72 ký tự; intake.md có mã Jira mà tiêu đề không có.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai check-ship.sh \
-  "0=ĐẠT — được tạo MR (aw ship create)" \
-  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
-  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
+  "0=PASS — được tạo MR (aw ship create)" \
+  "1=FAIL — có vi phạm, sửa trong phase này" \
+  "2=NO INPUT — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/toc.sh"
@@ -35,11 +35,11 @@ REVIEW="$DIR/review.md"
 [ -f "$MR" ]     || { echo "LỖI: không tìm thấy $MR — viết theo mẫu templates/merge-request.md." >&2; exit 2; }
 
 n=0
-loi() { n=$((n + 1)); echo "  [LỖI] $1"; }
+loi() { n=$((n + 1)); echo "  [ERROR] $1"; }
 
 # giữ: CAP-deploy-01
 sh "$HERE/check-review.sh" "$DIR" >/dev/null 2>&1 ||
-  loi "Đầu vào chưa đạt: aw check review không ĐẠT — chạy nó để xem chi tiết."
+  loi "Đầu vào chưa đạt: aw check review không PASS — chạy nó để xem chi tiết."
 
 # Mục lục và link tới mục (tools/lib/toc.sh).
 tl=$(toc_loi "$DIR" merge-request.md)
@@ -103,17 +103,17 @@ gc=$(printf '%s\n' "$than" | awk -v mau="$MAU" '
 # ---- cảnh báo
 if [ -n "$tieu_de" ]; then
   dai=$(printf '%s' "$tieu_de" | wc -m | tr -d ' ')
-  [ "$dai" -le 72 ] || echo "  [CẢNH BÁO] Tiêu đề dài $dai ký tự (quy ước mặc định: dưới 72)."
+  [ "$dai" -le 72 ] || echo "  [WARN] Tiêu đề dài $dai ký tự (quy ước mặc định: dưới 72)."
   if [ -f "$DIR/intake.md" ]; then
     mj=$(kc_mau_jira "$(kc_conventions "$DIR")")
     ma=$(awk '/`\[JIRA\]`/' "$DIR/intake.md" | grep -oE "$mj" | sort -u)
     if [ -n "$ma" ]; then
       co=""; for k in $ma; do case "$tieu_de" in *"$k"*) co=1 ;; esac; done
-      [ -n "$co" ] || echo "  [CẢNH BÁO] intake.md có mã Jira ($(printf '%s' "$ma" | tr '\n' ' ' | sed 's/ $//')) mà tiêu đề không có."
+      [ -n "$co" ] || echo "  [WARN] intake.md có mã Jira ($(printf '%s' "$ma" | tr '\n' ' ' | sed 's/ $//')) mà tiêu đề không có."
     fi
   fi
 fi
 
 echo ""
-if [ "$n" -gt 0 ]; then echo "KHÔNG ĐẠT — $n vi phạm."; exit 1; fi
-echo "ĐẠT — tiêu đề: $tieu_de"
+if [ "$n" -gt 0 ]; then echo "FAIL — $n vi phạm."; exit 1; fi
+echo "PASS — tiêu đề: $tieu_de"

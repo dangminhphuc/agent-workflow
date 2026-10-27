@@ -8,7 +8,7 @@
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/tools/lib/result.sh"
-kq_khai install.sh "3=ĐÃ BỎ — dùng aw, làm theo hướng dẫn phía trên"
+kq_khai install.sh "3=REMOVED — dùng aw, làm theo hướng dẫn phía trên"
 V=$(cat "$ROOT/VERSION" 2>/dev/null)
 cat <<EOT
 tools/install.sh đã bỏ từ engine 2026.10.6. Không có gì được cài.

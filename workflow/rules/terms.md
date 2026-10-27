@@ -48,7 +48,7 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `approval guard` | `aw guard` hook that unticks approvals the agent made | gác ô duyệt |
 | `block` | `✗` line: violation, the phase does not pass | |
 | `warn` | `!` line: implement lets it pass, review blocks | |
-| `Kết quả` | Last block of every `aw` output; read its `[x]` label, not the exit code | |
+| `Result` | Last block of every `aw` output; read its `[x]` label, not the exit code | |
 | `entry check` | A checker re-runs the previous phase's checker on its input | |
 | `based_on` | Hashes of an artifact's inputs (`aw based-on`) | |
 | `stale` | Artifact built from an older version of its input; rerun the phase that made it | lỗi thời |
@@ -61,8 +61,8 @@ The sentence around a term stays Vietnamese: "REQ-003 còn một `open question`
 | `Should fix` | Review finding: should be fixed | |
 | `Nit` | Review finding: author decides | |
 | `Security reviewer` | Name of the human who reviewed security; the agent never fills it | |
-| `DỪNG` | `aw task` label: `MAX_RED_RUNS` red runs in a row; report to the human | |
-| `KẸT` | `aw task` label: every remaining task waits on a dependency; report to the human | |
+| `STOP` | `aw task` label: `MAX_RED_RUNS` red runs in a row; report to the human | |
+| `STUCK` | `aw task` label: every remaining task waits on a dependency; report to the human | |
 | `harness journal` | `aw journal`: agent mistakes no checker caught | nhật ký harness |
 | `retro` | `aw journal retro`: end-of-job summary written to `jobs.tsv`; human part (wrong blocks, minutes) entered by the human | tổng kết cuối việc |
 | `engine` | Checkers, phases, templates, adapters, cached in `~/.agent-workflow/engine/<V>/` | |

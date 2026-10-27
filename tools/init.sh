@@ -22,19 +22,19 @@
 # Chạy lại an toàn: file đã có thì giữ, exclude thiếu dòng nào thêm dòng đó,
 # adapter sinh lại theo engine đang chạy.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ENG="${AW_ENGINE:-$(CDPATH= cd -- "$HERE/.." && pwd)}"
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai init \
-  "0=ĐÃ INIT — làm theo các bước tiếp theo phía trên" \
-  "2=SAI THAM SỐ" \
-  "3=CÓ FILE VIẾT TAY — không ghi đè; dời file đó đi hoặc dùng --force" \
-  "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow" \
-  "5=SAI CHUẨN AGENT — adapter sinh file không đúng định dạng agent đọc (xem LỖI [<agent>] phía trên); báo lỗi engine" \
-  "9=KHÔNG HỢP LỆ — thiếu AW_REPO/AW_CONFIG, gọi qua aw"
+  "0=INITIALIZED — làm theo các bước tiếp theo phía trên" \
+  "2=BAD ARGS" \
+  "3=HAND-WRITTEN FILE — không ghi đè; dời file đó đi hoặc dùng --force" \
+  "4=PROCESS DEFINITION ERROR — sửa workflow/ trong repo agent-workflow" \
+  "5=BAD AGENT FORMAT — adapter sinh file không đúng định dạng agent đọc (xem LỖI [<agent>] phía trên); báo lỗi engine" \
+  "9=INVALID — thiếu AW_REPO/AW_CONFIG, gọi qua aw"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 . "$HERE/lib/adapter.sh"

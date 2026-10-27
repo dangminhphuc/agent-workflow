@@ -24,7 +24,7 @@ vi_pham() {
 
 nhom "check-sdlc.sh: bản chép engine chưa sửa"
 moi
-ky_vong 0 "bản chép chưa sửa → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "bản chép chưa sửa → PASS" sh "$SC" "$E"
 
 # ---------------------------------------------------------------- điều kiện ra của stage
 nhom "check-sdlc.sh: exit của stage ↔ exit_machine / exit_human của phase"
@@ -63,7 +63,7 @@ vi_pham "\"Tested by\" trỏ tới thứ không phải test → chặn" "INV-001
 moi; thay "$E/sdlc/invariants.md" '- Enforced by: `tools/check-plan.sh`' '- Enforced by: `README.md`'
 vi_pham "\"Enforced by\" trỏ tới thứ không phải checker → chặn" "INV-001: \"Enforced by:\" \`README.md\` không phải tools/check-*.sh hay tools/lib/*.sh"
 
-moi; thay "$E/sdlc/invariants.md" '"check-repro chặn khi test XANH trên code chưa sửa"' '"check-repro chặn ca không có"'
+moi; thay "$E/sdlc/invariants.md" '"check-repro chặn khi test GREEN trên code chưa sửa"' '"check-repro chặn ca không có"'
 vi_pham "\"Tested by\" nêu ca test không có trong file → chặn" "INV-007: ca \"check-repro chặn ca không có\" không có trong tools/tests/10-intake-bugfix.sh"
 moi; thay "$E/sdlc/stages/00-plan.md" 'skippable: false' 'skippable: maybe'
 vi_pham "stage có skippable lạ → chặn" "stage plan: skippable \"maybe\" — chỉ nhận true | false"

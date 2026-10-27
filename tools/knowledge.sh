@@ -35,14 +35,14 @@
 #   chưa có → không kiểm.
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai knowledge.sh \
-  "0=XONG — stdout là dữ liệu: ref đọc tiếp bằng aw knowledge show; aw knowledge index in đường dẫn file đã dựng; check ĐẠT" \
-  "1=KHÔNG ĐẠT — aw knowledge check thấy chỉ mục lệch dựng lại: chạy aw knowledge index" \
-  "2=SAI THAM SỐ"
+  "0=DONE — stdout là dữ liệu: ref đọc tiếp bằng aw knowledge show; aw knowledge index in đường dẫn file đã dựng; check ĐẠT" \
+  "1=FAIL — aw knowledge check thấy chỉ mục lệch dựng lại: chạy aw knowledge index" \
+  "2=BAD ARGS"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"

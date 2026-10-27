@@ -24,18 +24,18 @@
 # TASK_FULL_TEST=1 (config.sh): Verify xanh thì chạy thêm TEST_CMD; đỏ tính như
 # Verify đỏ (giữ [~], tăng đỏ liên tiếp). Mặc định tắt — test lâu thì chỉ chạy ở cuối.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai task.sh \
-  "0=XONG — start: đã đánh [~] · done: Verify XANH, đã đánh [x] · next: stdout là task tiếp · reopen: task bị ảnh hưởng đã về [ ]" \
-  "1=TỪ CHỐI / ĐỎ — lý do phía trên; sửa trong task này rồi chạy lại" \
-  "2=SAI THAM SỐ" \
-  "4=HẾT TASK — mọi task đã [x]: chạy aw check implement" \
-  "5=KẸT — task còn lại đều chờ phụ thuộc chưa xong: xem \"Depends on\" trong plan.md, báo người" \
-  "6=DỪNG — task đỏ liên tiếp tới giới hạn: ghi \"Unplanned\" trong plan.md và báo người, không thử tiếp"
+  "0=DONE — start: đã đánh [~] · done: Verify GREEN, đã đánh [x] · next: stdout là task tiếp · reopen: task bị ảnh hưởng đã về [ ]" \
+  "1=REJECTED / RED — lý do phía trên; sửa trong task này rồi chạy lại" \
+  "2=BAD ARGS" \
+  "4=NO TASKS LEFT — mọi task đã [x]: chạy aw check implement" \
+  "5=STUCK — task còn lại đều chờ phụ thuộc chưa xong: xem \"Depends on\" trong plan.md, báo người" \
+  "6=STOP — task đỏ liên tiếp tới giới hạn: ghi \"Unplanned\" trong plan.md và báo người, không thử tiếp"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/task.sh"
@@ -60,7 +60,7 @@ kq_khong_muc() {
       { trong = 0; print }
     ' "$KQ" | awk '{ l[NR] = $0 } END { n = NR; while (n > 0 && l[n] == "") n--; for (i = 1; i <= n; i++) print l[i] }'
   else
-    echo "# Kết quả kiểm chứng task"
+    echo "# Task verification"
     echo ""
     echo "> File này do \`aw task done\` ghi tự động — không sửa tay."
     echo "> aw check implement chặn task [x] không có mục xanh ở đây."
@@ -135,7 +135,7 @@ if [ "$LENH" = start ]; then
   esac
   khac=$(tk_ds "$PLAN" | awk -F'|' -v t="$TASK" '$2 == "~" && $1 != t { print $1 }' | tr '\n' ' ' | sed 's/ $//')
   if [ -n "$khac" ]; then
-    echo "TỪ CHỐI: $khac đang làm dở [~]. WIP=1 — làm xong (aw task done) trước khi mở task khác." >&2; exit 1
+    echo "REJECTED: $khac đang làm dở [~]. WIP=1 — làm xong (aw task done) trước khi mở task khác." >&2; exit 1
   fi
   chua=""
   for d in $(printf '%s' "$dep" | tr ',' ' '); do
@@ -144,7 +144,7 @@ if [ "$LENH" = start ]; then
   done
   if [ -n "$chua" ]; then
     # giữ: CAP-breakdown-01
-    echo "TỪ CHỐI: $TASK phụ thuộc$chua — chưa [x]." >&2; exit 1
+    echo "REJECTED: $TASK phụ thuộc$chua — chưa [x]." >&2; exit 1
   fi
   tk_dat "$PLAN" "$TASK" "~" || { echo "LỖI: không ghi được ô Status của $TASK." >&2; exit 1; }
   # Commit lúc bắt đầu: done so file đổi từ đây với Expected files của riêng task (cảnh báo phạm vi).
@@ -172,17 +172,17 @@ case "$st" in
   "~") ;;
   x) echo "$TASK đã [x] — chạy lại để làm mới bằng chứng." ;;
   # giữ: CAP-implement-06
-  *) echo "TỪ CHỐI: $TASK chưa bắt đầu — chạy: aw task start $DIR $TASK" >&2; exit 1 ;;
+  *) echo "REJECTED: $TASK chưa bắt đầu — chạy: aw task start $DIR $TASK" >&2; exit 1 ;;
 esac
 VF=$(tk_verify "$PLAN" "$TASK")
 if [ -n "$CO_MANUAL" ]; then
   # giữ: CAP-implement-06
-  [ -z "$VF" ] || { echo "TỪ CHỐI: Verify của $TASK có lệnh \`$VF\` — máy chạy được thì không kiểm chứng thủ công." >&2; exit 1; }
+  [ -z "$VF" ] || { echo "REJECTED: Verify của $TASK có lệnh \`$VF\` — máy chạy được thì không kiểm chứng thủ công." >&2; exit 1; }
   # giữ: CAP-implement-06
-  case "$MANUAL" in ""|*"<"*">"*) echo "TỪ CHỐI: --manual cần bằng chứng cụ thể (đã làm gì, thấy gì)." >&2; exit 1 ;; esac
+  case "$MANUAL" in ""|*"<"*">"*) echo "REJECTED: --manual cần bằng chứng cụ thể (đã làm gì, thấy gì)." >&2; exit 1 ;; esac
 elif [ -z "$VF" ]; then
   # giữ: CAP-implement-06
-  echo "TỪ CHỐI: dòng Verify của $TASK không có lệnh trong backtick." >&2
+  echo "REJECTED: dòng Verify của $TASK không có lệnh trong backtick." >&2
   echo "  Kiểm được bằng lệnh: sửa plan.md thành \"Verify: \`<lệnh>\` → <kết quả>\"." >&2
   echo "  Chỉ kiểm được bằng tay: aw task done $DIR $TASK --manual \"<đã làm gì, thấy gì>\"" >&2
   exit 1
@@ -213,7 +213,7 @@ if [ "$ma" -eq 0 ] && [ "$TASK_FULL_TEST" = 1 ] && [ -n "$TEST_CMD" ]; then
   tail -n 40 "$TMP.tb"
   cat "$TMP.tb" >> "$TMP"; rm -f "$TMP.tb"
   echo "────────────────────────────────────────────────────"
-  if [ "$ma" -eq 0 ]; then NHAN_TB="XANH"; else NHAN_TB="ĐỎ"; fi
+  if [ "$ma" -eq 0 ]; then NHAN_TB="GREEN"; else NHAN_TB="RED"; fi
 fi
 truoc=$(do_lien_tiep "$TASK")
 if [ "$ma" -eq 0 ]; then do_moi=0; else do_moi=$((truoc + 1)); fi
@@ -259,23 +259,23 @@ fi
 
 if [ "$ma" -ne 0 ]; then
   [ "$st" = x ] && tk_dat "$PLAN" "$TASK" "~"
-  if [ "$NHAN_TB" = "ĐỎ" ]; then
-    echo "$TASK: Verify xanh nhưng toàn bộ test ĐỎ (mã $ma) — task này làm hỏng chỗ khác; ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
+  if [ "$NHAN_TB" = "RED" ]; then
+    echo "$TASK: Verify xanh nhưng toàn bộ test RED (mã $ma) — task này làm hỏng chỗ khác; ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
   else
-    echo "$TASK: Verify ĐỎ (mã $ma) — ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
+    echo "$TASK: Verify RED (mã $ma) — ở [~]. Đỏ liên tiếp: $do_moi/$MAX_RED_RUNS."
   fi
   if [ "$do_moi" -ge "$MAX_RED_RUNS" ]; then
-    echo "DỪNG: đỏ $do_moi lần liên tiếp. Ghi vào \"Unplanned\" (đã thử gì, lỗi gì) và báo người — đừng thử tiếp."
+    echo "STOP: đỏ $do_moi lần liên tiếp. Ghi vào \"Unplanned\" (đã thử gì, lỗi gì) và báo người — đừng thử tiếp."
     exit 6
   fi
   exit 1
 fi
 # giữ: CAP-implement-06
 tk_dat "$PLAN" "$TASK" "x" || { echo "LỖI: không ghi được ô Status của $TASK." >&2; exit 1; }
-echo "$TASK: Verify XANH → [x]. Bằng chứng: $KQ"
+echo "$TASK: Verify GREEN → [x]. Bằng chứng: $KQ"
 if [ -n "$pham_vi" ]; then
   printf '%s\n' "$pham_vi" | while IFS= read -r _f; do
-    echo "CẢNH BÁO: $TASK đổi \`$_f\` — ngoài Expected files của $TASK; thuộc task khác hay lạc phạm vi thì ghi vào \"Unplanned\" (cột Task = $TASK) kèm lý do. /aw-review chặn nếu không giải trình."
+    echo "WARN: $TASK đổi \`$_f\` — ngoài Expected files của $TASK; thuộc task khác hay lạc phạm vi thì ghi vào \"Unplanned\" (cột Task = $TASK) kèm lý do. /aw-review chặn nếu không giải trình."
   done
 fi
 [ -n "$CO_MANUAL" ] && echo "  (kiểm chứng thủ công — người rà soát sẽ thấy bằng chứng này)"

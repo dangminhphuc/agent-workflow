@@ -46,14 +46,14 @@
 # Không đăng ký trong tools/lib/commands.sh: bảng đó cho `aw check` trên job dir của target
 # repo; script này kiểm chính repo engine (như tools/check-release.sh), chạy bằng test.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/tools/lib/result.sh"
 kq_khai check-sdlc.sh \
-  "0=ĐẠT — engine tuân thủ interface SDLC" \
-  "1=KHÔNG ĐẠT — xem các dòng LỖI phía trên" \
-  "2=SAI THAM SỐ — thừa tham số, hoặc không phải thư mục engine (thiếu workflow.yaml, sdlc/stages/)"
+  "0=PASS — engine tuân thủ interface SDLC" \
+  "1=FAIL — xem các dòng LỖI phía trên" \
+  "2=BAD ARGS — thừa tham số, hoặc không phải thư mục engine (thiếu workflow.yaml, sdlc/stages/)"
 . "$ROOT/tools/lib/md.sh"
 
 DEM=""; SUY=""
@@ -117,12 +117,12 @@ dem_luat() {
     /^[ \t]*#/ { next }
     /^[ \t]*(function[ \t]+)?(loi|loi_truoc|canh_bao)[ \t]*\(/ && /\{/ && !/(loi|loi_truoc|canh_bao)[ \t]*\([^)]*"/ { next }
     /BEGIN[ \t]*\{[ \t]*n_loi[ \t]*=[ \t]*loi_truoc/ { next }
-    $0 ~ /(^|[^A-Za-z0-9_])(loi|loi_truoc|canh_bao)[ (]/ || index($0, "[LỖI]") || index($0, "[CẢNH BÁO]") ||
-    /(TỪ CHỐI|DỪNG|CẢNH BÁO):/ { if (phu) phu = 0; else n++ }
+    $0 ~ /(^|[^A-Za-z0-9_])(loi|loi_truoc|canh_bao)[ (]/ || index($0, "[ERROR]") || index($0, "[WARN]") ||
+    /(REJECTED|STOP|WARN):/ { if (phu) phu = 0; else n++ }
     END { print n + 0 }' "$1"
 }
 if [ -n "$DEM" ]; then
-  # chỉ in danh sách (dùng để tạo / cập nhật tools/unclassified-rules.txt) — không in khối Kết quả
+  # chỉ in danh sách (dùng để tạo / cập nhật tools/unclassified-rules.txt) — không in khối Result
   trap - EXIT
   tep_luat | while IFS= read -r _f; do _n=$(dem_luat "$E/$_f"); if [ "$_n" -gt 0 ]; then printf '%s %s\n' "$_f" "$_n"; fi; done
   exit 0
@@ -132,7 +132,7 @@ mkdir -p "$W"
 kq_don 'rm -rf "$W"'
 
 n_loi=0
-loi() { echo "  [LỖI] $*"; n_loi=$((n_loi + 1)); }
+loi() { echo "  [ERROR] $*"; n_loi=$((n_loi + 1)); }
 # co <file> <dòng> -> 0 nếu file có đúng dòng đó
 co() { [ -f "$1" ] && grep -qxF -- "$2" "$1"; }
 

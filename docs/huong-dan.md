@@ -45,7 +45,7 @@ máy, và không bao giờ duyệt thay người.
 | Vai trong team | Việc trong quy trình | Lúc nào |
 |---|---|---|
 | **Người cài** (tech lead, DevOps) | `aw init`; `TEST_CMD`, `SECURITY_CMDS` đúng CI; `conventions.md` đúng repo, merge qua PR; cài hook `aw guard`; chạy `/aw-bootstrap` | một lần mỗi repo, mỗi bản clone |
-| **Dev chạy việc** | gõ các lệnh `/aw-*`; chọn job type, base; chạy `WORKTREE_SETUP_CMD`; xử lý khi agent báo `DỪNG`/`KẸT`; chọn nhánh đích khi ship | mọi phase |
+| **Dev chạy việc** | gõ các lệnh `/aw-*`; chọn job type, base; chạy `WORKTREE_SETUP_CMD`; xử lý khi agent báo `STOP`/`STUCK`; chọn nhánh đích khi ship | mọi phase |
 | **Người duyệt spec** (dev, PO/BA, tech lead) | đọc REQ + `Out of scope`; duyệt `Risk`, mức `Blocking`; tick spec | sau `/aw-spec` |
 | **PO / BA** | trả lời open question (dev gửi tin nhắn agent soạn sẵn, rồi ghi câu trả lời qua `/aw-clarify`) | sau `/aw-spec`, bất kỳ lúc nào |
 | **Người duyệt thiết kế** (tech lead, kiến trúc sư) | `Risk: high` → phác DEC-xxx trước; tick **từng** DEC-xxx; phân xử phát hiện `block` của LLM checker; quyết DEC nào nâng thành ADR | `/aw-design` |
@@ -67,7 +67,7 @@ Mỗi phase là một hộp **file vào → file ra**. Phase sau không dựa v�
 - **Mang tài liệu làm bằng tool khác vào giữa quy trình** qua `/aw-import`.
 
 Artifact nằm ở `docs/sdlc/<tên-branch>/` trong worktree của việc, và **được commit vào branch
-của việc** trong lúc làm: mỗi lần `aw check <phase>` ĐẠT (và mỗi lần `/aw-approvals` tick), máy
+của việc** trong lúc làm: mỗi lần `aw check <phase>` PASS (và mỗi lần `/aw-approvals` tick), máy
 commit riêng thư mục đó (`chore(sdlc): <tên-branch> <phase>`). Bạn có lịch sử từng phase, máy khác
 hay phiên mới checkout branch là có đủ artifact.
 
@@ -118,9 +118,9 @@ Mỗi phase có:
 Mỗi lệnh phase kết thúc bằng ba dòng thống nhất — đọc dòng giữa trước:
 
 ```
-Kết quả: …        (máy nói gì)
-Cần bạn: …        (việc của bạn — nếu trống thì không cần gì)
-Tiếp theo: /aw-…  (lệnh nên chạy sau)
+Result: …        (máy nói gì)
+Needs you: …        (việc của bạn — nếu trống thì không cần gì)
+Next: /aw-…  (lệnh nên chạy sau)
 ```
 
 ### 1.5. Khối "Kết quả" của mọi lệnh `aw`
@@ -128,10 +128,10 @@ Tiếp theo: /aw-…  (lệnh nên chạy sau)
 Mọi lệnh `aw` in ở cuối một khối, đánh `[x]` vào đúng một nhãn. **Đọc nhãn, không đọc mã thoát**:
 
 ```
-Kết quả: check-plan.sh
-  [ ] ĐẠT — được sang phase sau
-  [x] KHÔNG ĐẠT — có vi phạm, sửa trong phase này
-  [ ] THIẾU ĐẦU VÀO — chưa có file cần kiểm
+Result: check-plan.sh
+  [ ] PASS — được sang phase sau
+  [x] FAIL — có vi phạm, sửa trong phase này
+  [ ] NO INPUT — chưa có file cần kiểm
 ```
 
 Các dòng phía trên khối có ký hiệu: `✗` vi phạm (chặn), `!` cảnh báo (chưa chặn — nhưng review sẽ
@@ -261,10 +261,10 @@ Sửa `.git/agent-workflow/config.sh` (đường dẫn thật: `$(git rev-parse 
 | Khoá | Bắt buộc | Ý nghĩa | Ví dụ |
 |---|---|---|---|
 | `ADAPTER` | có | Agent team dùng, cách nhau dấu cách | `"claude-code cursor"` |
-| `TEST_CMD` | **có** | Lệnh test — điều kiện ra của implement. Trống = `KHÔNG ĐẠT`, không phải "bỏ qua" | `"make test"` |
+| `TEST_CMD` | **có** | Lệnh test — điều kiện ra của implement. Trống = `FAIL`, không phải "bỏ qua" | `"make test"` |
 | `SECURITY_CMDS` | **có** | Mỗi dòng `<nhóm>: <lệnh>`, nhóm `secret \| sast \| sca \| other`. **Chép đúng lệnh, config, ngưỡng của CI** | xem dưới |
 | `WORKTREE_SETUP_CMD` | nên có | Lệnh chuẩn bị worktree mới — `aw` in ra cho bạn chạy, không tự chạy | `"npm ci"` |
-| `MAX_RED_RUNS` | không | Số lần một task đỏ liên tiếp trước khi máy báo DỪNG (mặc định 3) | `"3"` |
+| `MAX_RED_RUNS` | không | Số lần một task đỏ liên tiếp trước khi máy báo STOP (mặc định 3) | `"3"` |
 | `TASK_FULL_TEST` | không | `1` = `aw task done` chạy thêm `TEST_CMD` sau khi Verify xanh — task làm hỏng task trước lộ ra ngay (mặc định tắt) | `"1"` |
 | `PERF_CMD` | chỉ khi có việc `perf` | Lệnh đo, phải in `RESULT: <số> <đơn vị>` | `"sh bench.sh"` |
 
@@ -395,7 +395,7 @@ Checklist cài đặt cho repo mới:
 - [ ] `SECURITY_CMDS` chép đúng từ pipeline CI
 - [ ] `WORKTREE_SETUP_CMD` khai
 - [ ] `conventions.md`: `base_branch`, `production_code`, `test_files`, `dependency_files`,
-      `sensitive_code` đúng repo; `aw conventions check` HỢP LỆ; đã commit qua PR
+      `sensitive_code` đúng repo; `aw conventions check` VALID; đã commit qua PR
 - [ ] (khuyến nghị) `/aw-bootstrap` đã chạy, PR đã merge
 - [ ] (khuyến nghị) hook `aw guard` đã cài
 
@@ -639,14 +639,14 @@ Agent **không được sửa** các file `*-results.md`, `repro.md`, `perf.md` 
 aw ready <dir>              đầu phiên: test xanh trên base chưa? bước tiếp là gì?
 aw task next <dir>          task kế
 aw task start <dir> TSK-NNN    [ ] → [~]   (chỉ một task [~] một lúc; ghi commit lúc bắt đầu)
-aw task done <dir> TSK-NNN     chạy Verify; chỉ XANH mới [ ] → [x]
+aw task done <dir> TSK-NNN     chạy Verify; chỉ GREEN mới [ ] → [x]
                             (TASK_FULL_TEST=1: chạy thêm toàn bộ test)
                             (cảnh báo file đổi ngoài Expected files của chính task)
 aw task reopen <dir> REQ-NNN|DEC-NNN   REQ vừa đổi / DEC mở lại: task phủ nó về [ ]
 aw check implement <dir>    chạy toàn bộ test + quét bảo mật, ghi *-results.md
 ```
 
-Đỏ liên tiếp `MAX_RED_RUNS` lần → máy báo **DỪNG**: agent ghi `Unplanned` và báo bạn thay vì thử mò.
+Đỏ liên tiếp `MAX_RED_RUNS` lần → máy báo **STOP**: agent ghi `Unplanned` và báo bạn thay vì thử mò.
 Bộ đếm chỉ về 0 khi `aw task done` xanh — sửa tay Status về `[ ]` rồi `aw task start` lại không xoá nó. Bạn đã
 xử lý xong (đổi hướng, sửa plan) và muốn agent thử tiếp: xoá dòng `- Đỏ liên tiếp: N` của task đó trong
 `task-results.md`.
@@ -654,7 +654,7 @@ xử lý xong (đổi hướng, sửa plan) và muốn agent thử tiếp: xoá 
 **Việc của bạn:**
 
 - `aw ready` đỏ trên code chưa sửa → môi trường chưa chuẩn bị hoặc base hỏng: bạn xử lý.
-- Agent báo DỪNG/KẸT hoặc cần đổi `tdd.md`/`spec.md` → quyết định: mở lại DEC-xxx (`/aw-design`), sửa
+- Agent báo STOP/STUCK hoặc cần đổi `tdd.md`/`spec.md` → quyết định: mở lại DEC-xxx (`/aw-design`), sửa
   spec (`/aw-spec`), hay thêm task.
 - Báo nhầm của máy quét → agent ghi bằng chứng vào `Unplanned`; **bạn** quyết định, agent không được
   nới cấu hình quét.
@@ -756,8 +756,8 @@ tiên, và mọi tham chiếu sang artifact khác là link tới mục, vd
 `[open-questions.md § Q-002](open-questions.md#q-002--kênh-thông-báo-nào)`. Agent không gõ tay:
 `aw toc <thư-mục-feature>` sinh mục lục, tính anchor, và sửa luôn link của mục vừa đổi tên
 (đổi tên heading không bắt phải dò từng link). Một lần chạy phủ hết thư mục, nên agent chạy
-**một lần** khi viết xong, không chạy sau từng file. Dòng `[LỖI]` nêu file, số dòng và dạng
-đúng để sửa trong một lượt; còn `CÒN LINK SAI` là còn phải sửa, chỉ `ĐÃ KHỚP` là xong. Checker
+**một lần** khi viết xong, không chạy sau từng file. Dòng `[ERROR]` nêu file, số dòng và dạng
+đúng để sửa trong một lượt; còn `BAD LINKS` là còn phải sửa, chỉ `MATCHED` là xong. Checker
 chặn khi mục lục lệch heading hay link trỏ vào mục không có.
 
 **Chuỗi phụ thuộc và stale.** Mỗi artifact ghi `based_on` (hash cả file đầu vào, do
@@ -973,18 +973,18 @@ và chỉ in lệnh `git rm` để bạn dọn bằng một PR.
 
 | Lệnh | Nhãn | Làm gì |
 |---|---|---|
-| `aw check <phase>` | `ĐẠT` | sang phase sau |
-| | `KHÔNG ĐẠT` | sửa các dòng `✗` **trong phase này** |
-| | `THIẾU ĐẦU VÀO` | chạy phase trước |
-| `aw ready` | `CHƯA SẴN SÀNG` | sửa các dòng `✗` (thường: chưa chạy `WORKTREE_SETUP_CMD`, base đỏ, chưa khai `TEST_CMD`) |
-| `aw approval` | `CHƯA DUYỆT` | đọc tóm tắt, tick ô trong file |
-| `aw pending` | `CÓ VIỆC ĐANG CHẶN` | `/aw-clarify` |
-| `aw task` | `DỪNG` | agent đã đỏ nhiều lần: đọc `Unplanned`, quyết định hướng đi |
-| | `KẸT` | task còn lại chờ phụ thuộc: xem `Depends on` |
-| `aw worktree new` | `ĐÃ CÓ WORKTREE` | mở phiên ở đường dẫn được in |
-| `aw conventions check` | `KHÔNG HỢP LỆ` | sửa dòng `✗` trong `conventions.md` |
-| `aw ship create` | `KÉO THEO COMMIT NGOÀI VIỆC` | chọn đích khác, tạo branch mới + cherry-pick, hoặc chấp nhận |
-| | `KHÔNG TẠO ĐƯỢC MR` | mở link điền sẵn, tạo MR tay, đưa link lại cho agent |
+| `aw check <phase>` | `PASS` | sang phase sau |
+| | `FAIL` | sửa các dòng `✗` **trong phase này** |
+| | `NO INPUT` | chạy phase trước |
+| `aw ready` | `NOT READY` | sửa các dòng `✗` (thường: chưa chạy `WORKTREE_SETUP_CMD`, base đỏ, chưa khai `TEST_CMD`) |
+| `aw approval` | `NOT APPROVED` | đọc tóm tắt, tick ô trong file |
+| `aw pending` | `BLOCKED` | `/aw-clarify` |
+| `aw task` | `STOP` | agent đã đỏ nhiều lần: đọc `Unplanned`, quyết định hướng đi |
+| | `STUCK` | task còn lại chờ phụ thuộc: xem `Depends on` |
+| `aw worktree new` | `WORKTREE EXISTS` | mở phiên ở đường dẫn được in |
+| `aw conventions check` | `INVALID` | sửa dòng `✗` trong `conventions.md` |
+| `aw ship create` | `EXTRA COMMITS` | chọn đích khác, tạo branch mới + cherry-pick, hoặc chấp nhận |
+| | `MR NOT CREATED` | mở link điền sẵn, tạo MR tay, đưa link lại cho agent |
 
 ### Tình huống thường gặp
 
@@ -994,7 +994,7 @@ và chỉ in lệnh `git rm` để bạn dọn bằng một PR.
 | Đã tick mà vẫn bị chặn "nội dung đổi sau khi duyệt" | spec/DEC sửa sau khi tick | đọc chỗ đổi, xoá `<!-- approval-hash: … -->`, giữ tick |
 | Tick bị bỏ mất | hook `aw guard` thấy tick xảy ra lúc agent đang chạy | tick lại khi agent rảnh |
 | `/aw-design` hỏi bạn từng điểm cần quyết thay vì tự viết DEC | `Risk: high` (Mode 2) | trả lời để agent ghi DEC-xxx `Author: human`, hoặc tự viết vào `tdd.md`, hoặc hạ `Risk` nếu thật sự sai (bạn quyết) |
-| implement `KHÔNG ĐẠT` "chưa khai lệnh test/quét" | `TEST_CMD`/`SECURITY_CMDS` trống | khai trong `config.sh` |
+| implement `FAIL` "chưa khai lệnh test/quét" | `TEST_CMD`/`SECURITY_CMDS` trống | khai trong `config.sh` |
 | `aw ready` đỏ trên code chưa sửa | thiếu dependency hoặc base hỏng | chạy `WORKTREE_SETUP_CMD`; base hỏng thì sửa ở việc khác hoặc chọn base khác |
 | review chặn "kết quả không còn mới" | code đổi sau `aw check implement` | chạy lại `aw check implement` (hoặc `aw check security`), rồi review lại |
 | review chặn "job type lệch tiền tố branch" | `Type` khác tiền tố | sửa `Type`, hoặc `aw rename` rồi mở phiên ở đường dẫn mới |
@@ -1073,7 +1073,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | Spec | đọc REQ + `Out of scope`; duyệt `Risk`, mức `Blocking`; **tick spec** |
 | Bất kỳ lúc nào | trả lời open question (`/aw-clarify`), hỏi PO/BA khi cần; duyệt dồn qua `/aw-approvals` |
 | Design | `Risk: high` → phác DEC-xxx trước; **tick từng DEC-xxx**; phân xử finding của LLM checker |
-| Implement | xử lý khi agent báo DỪNG/KẸT, base đỏ, báo nhầm của máy quét |
+| Implement | xử lý khi agent báo STOP/STUCK, base đỏ, báo nhầm của máy quét |
 | Review | xác nhận kết luận; quyết Blocker; **ký Security reviewer** khi đụng code nhạy cảm |
 | Ship | **chọn nhánh đích**, xác nhận nội dung MR, **review và merge**, đồng ý dọn |
 

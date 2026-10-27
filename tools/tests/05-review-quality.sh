@@ -106,7 +106,7 @@ cp "$F/task-results.md" "$TMP/kq-pv.bak"
 awk '{ print } /^## TSK-002/ { print ""; print "- Scope warning: `src/a.txt`" }' "$TMP/kq-pv.bak" > "$F/task-results.md"
 ky_vong_ly_do 1 "task có Scope warning mà Lens 2 không giải trình → chặn" "…đúng lý do" 'Lens 2: TSK-002 có cảnh báo phạm vi trong task-results.md — giải trình ở "Task scope warnings"' sh "$CHK" "$F"
 printf '\n## Lens 2 — Design and scope\n\n- Task scope warnings: TSK-002 sửa src/a.txt của TSK-001 vì bug phát hiện khi làm, đã khai Unplanned\n' >> "$F/review.md"; toc_f review.md; ghi_tree_review
-ky_vong 0 "Lens 2 nhắc tên task trong Task scope warnings → ĐẠT" sh "$CHK" "$F"
+ky_vong 0 "Lens 2 nhắc tên task trong Task scope warnings → PASS" sh "$CHK" "$F"
 cp "$TMP/kq-pv.bak" "$TMP/kq-pv2.bak"
 awk '{ print } /^## TSK-002/ { print ""; print "- Scope warning: `src/a.txt`" }' "$TMP/kq-pv2.bak" > "$F/task-results.md"
 thay "$F/review.md" '- Task scope warnings: TSK-002 sửa' '- Task scope warnings: TSK-0021 sửa'; ghi_tree_review

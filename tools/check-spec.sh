@@ -21,7 +21,7 @@
 # Cảnh báo:  nguồn [JIRA]/[CONFLUENCE]/[ISSUE]/[FILE] không có trong "## Input" của intake.md;
 #            "Risk: normal" mà spec có từ khoá high_risk_keywords (conventions.md).
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/md.sh"
@@ -36,9 +36,9 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/findings.sh"
 . "$HERE/lib/result.sh"
 kq_khai check-spec.sh \
-  "0=ĐẠT — được sang phase sau" \
-  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
-  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
+  "0=PASS — được sang phase sau" \
+  "1=FAIL — có vi phạm, sửa trong phase này" \
+  "2=NO INPUT — chưa có file cần kiểm"
 
 DIR="${1:-.}"
 nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
@@ -61,31 +61,31 @@ fi
 n_truoc=0
 if ! sh "$HERE/check-intake.sh" "$DIR" >/dev/null 2>&1; then
   n_truoc=1
-  echo "  [LỖI] Đầu vào chưa đạt: intake.md không qua aw check intake — chạy nó để xem chi tiết."
+  echo "  [ERROR] Đầu vào chưa đạt: intake.md không qua aw check intake — chạy nó để xem chi tiết."
 fi
 qtl=$(kc_quy_tac_loi "$DIR" spec)
-while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $qtl
 EOF
 # Ô duyệt spec: dạng, vị trí, và nội dung có đổi sau khi người tick không.
 kld=$(kc_loi_duyet "$SPEC" spec)
-while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $kld
 EOF
 # Mục lục và link tới mục (tools/lib/toc.sh).
 tl=$(toc_loi "$DIR" spec.md open-questions.md spec-findings.md)
-while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $tl
 EOF
 # Checker LLM của spec: thiếu file, hoặc block chưa fixed / rejected có lý do (tools/lib/findings.sh).
 sfl=$(ph_loi_chan "$DIR/spec-findings.md")
 # giữ: CAP-require-01
-while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $sfl
 EOF
 # REQ người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/rule.sh.
 lsl=$(luat_loi_spec "$DIR")
-while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $lsl
 EOF
 # refactor-requests.md (/aw-refactor ghi ở phase nào cũng được — phase sau chạy lại spec nên vẫn bắt):
@@ -100,13 +100,13 @@ if [ -f "$DIR/refactor-requests.md" ]; then
       if (c in gap) print "Mã " c " xuất hiện nhiều lần trong refactor-requests.md"
       gap[c] = 1
     }' "$DIR/refactor-requests.md")
-  while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+  while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $rl
 EOF
 fi
 fmh=$(kc_fm_hong "$DIR")
 # giữ: INV-006
-while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $fmh
 EOF
 TT_SPEC=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
@@ -124,8 +124,8 @@ if [ -f "$DIR/intake.md" ]; then set -- "$@" "$DIR/intake.md"; fi
 # Từ khoá đi qua ENVIRON, không qua -v: -v diễn giải "\" trong chuỗi.
 TV_TU_KHOA=$(conv_get "$CONV" high_risk_keywords) \
 awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_spec="${TT_SPEC:-?}" -v mj="$MJ" '
-  function loi(msg) { n_loi++; print "  [LỖI] " msg }
-  function canh_bao(msg) { print "  [CẢNH BÁO] " msg }
+  function loi(msg) { n_loi++; print "  [ERROR] " msg }
+  function canh_bao(msg) { print "  [WARN] " msg }
   BEGIN { n_loi = loi_truoc }
   function bo_nhan(s) {          # phần Source sau nhãn "[X]", bỏ ` và khoảng trắng hai đầu
     sub(/^`*\[[A-Z-]*\]`*/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
@@ -512,9 +512,9 @@ if [ -s "$BV" ]; then
   MB=$(kc_mb "$DIR")
   while IFS="$(printf '\t')" read -r yc f; do
     if [ -z "$MB" ]; then
-      echo "  [LỖI] $yc: không xác định được base để kiểm \"$f\" (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)"; n_bv=$((n_bv + 1))
+      echo "  [ERROR] $yc: không xác định được base để kiểm \"$f\" (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)"; n_bv=$((n_bv + 1))
     elif ! git -C "$DIR" cat-file -e "$MB:$f" 2>/dev/null; then
-      echo "  [LỖI] $yc: \"$f\" không tồn tại trên base của việc — vùng này chưa có test bảo vệ. Viết test thành việc riêng trước, hoặc thu hẹp phạm vi."
+      echo "  [ERROR] $yc: \"$f\" không tồn tại trên base của việc — vùng này chưa có test bảo vệ. Viết test thành việc riêng trước, hoặc thu hẹp phạm vi."
       n_bv=$((n_bv + 1))
     fi
   done < "$BV"
@@ -542,9 +542,9 @@ if [ -s "$QT" ]; then
       continue
     fi
     if [ "$CHE_DO" = entry ]; then
-      echo "  [CẢNH BÁO] $msg. Nguồn đổi sau khi viết spec? Xem lại REQ, sửa spec qua /aw-clarify nếu cần"
+      echo "  [WARN] $msg. Nguồn đổi sau khi viết spec? Xem lại REQ, sửa spec qua /aw-clarify nếu cần"
     else
-      echo "  [LỖI] $msg"; n_qt=$((n_qt + 1))
+      echo "  [ERROR] $msg"; n_qt=$((n_qt + 1))
     fi
   done < "$QT"
 fi
@@ -552,7 +552,7 @@ rm -f "$QT"
 
 echo ""
 if [ "$ma" -ne 0 ] || [ "$n_bv" -gt 0 ] || [ "$n_qt" -gt 0 ]; then
-  echo "KHÔNG ĐẠT."
+  echo "FAIL."
   exit 1
 fi
-echo "ĐẠT — mọi yêu cầu đều truy được về nguồn."
+echo "PASS — mọi yêu cầu đều truy được về nguồn."

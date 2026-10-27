@@ -24,17 +24,17 @@ skill_moi() {
   g add -f ".claude/skills/$1/SKILL.md"
 }
 
-ky_vong 0 "không khai gì → aw uses ĐÃ LIỆT KÊ" sh "$US" implement
+ky_vong 0 "không khai gì → aw uses LISTED" sh "$US" implement
 dung "…stdout rỗng" bang "$(sh "$US" implement 2>/dev/null)" ""
-ky_vong 2 "aw uses thiếu phase → SAI THAM SỐ" sh "$US"
-ky_vong 2 "aw uses phase không có (intake) → SAI THAM SỐ" sh "$US" intake
+ky_vong 2 "aw uses thiếu phase → BAD ARGS" sh "$US"
+ky_vong 2 "aw uses phase không có (intake) → BAD ARGS" sh "$US" intake
 ky_vong 0 "aw-engine uses → đúng script" sh "$AWE" uses implement
 
 # go-senior đã commit trong base (tao_fixture).
 mkdir -p "$R/.cursor/agents"; printf -- '---\nname: db-migrator\ndescription: x\n---\nx\n' > "$R/.cursor/agents/db-migrator.md"
 g add -f .cursor/agents/db-migrator.md
 khai_us implement 'skill:go-senior agent:db-migrator skill:go-senior'
-ky_vong 0 "skill + subagent đã commit → ĐÃ LIỆT KÊ" sh "$US" implement
+ky_vong 0 "skill + subagent đã commit → LISTED" sh "$US" implement
 dung "…in <mục> <file>, bỏ trùng; subagent tìm cả .cursor/" bang "$(sh "$US" implement 2>/dev/null | tr '\n' '|')" \
   "skill:go-senior .claude/skills/go-senior/SKILL.md|agent:db-migrator .cursor/agents/db-migrator.md|"
 dung "…phase khác không thấy" bang "$(sh "$US" spec 2>/dev/null)" ""
@@ -160,7 +160,7 @@ dung "cùng mức + cùng ưu tiên: nhiều task đứng trên giả định h�
 dung "…in tên task đứng trên giả định" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Task on assumption: 2 (TSK-001 TSK-002)'"
 dung "mục đã trả lời không được liệt kê" sh -c "! sh '$CHK' '$LQ' 2>/dev/null | grep -q 'REQ-006'"
 dung "mục chặn đánh dấu ĐANG CHẶN phase kế tiếp" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'REQ-005.*ĐANG CHẶN /aw-implement'"
-dung "khối Kết quả: [x] CÓ VIỆC ĐANG CHẶN" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] CÓ VIỆC ĐANG CHẶN'"
+dung "khối Result: [x] BLOCKED" sh -c "sh '$CHK' '$LQ' 2>&1 | grep -q '\[x\] BLOCKED'"
 thay "$LQ/open-questions.md" '`blocking`
 - **Status:** `open`' '`non-blocking`
 - **Status:** `open`'
@@ -170,13 +170,13 @@ ky_vong 1 "…tới review thì chặn review thành ĐANG CHẶN" sh "$CHK" "$L
 rm -f "$LQ/test-results.md"
 thay "$LQ/open-questions.md" '`review-blocking`' '`toàn bộ thiết kế`'
 ky_vong 1 "mức thiếu/sai (nhãn cũ) → CHƯA PHÂN MỨC, đang chặn spec" sh "$CHK" "$LQ"
-dung "…xếp lên đầu" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -A1 '^\[CHƯA PHÂN MỨC\]' | grep -q '1\. REQ-00'"
+dung "…xếp lên đầu" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -A1 '^\[UNRATED\]' | grep -q '1\. REQ-00'"
 printf '# Open questions\n\nNo open questions.\n' > "$LQ/open-questions.md"
 ky_vong 0 "không còn điểm mù mở, không có phát hiện" sh "$CHK" "$LQ"
 : > "$LQ/open-questions.md"
 ky_vong 0 "open-questions.md 0 byte không làm đọc lệch file" sh "$CHK" "$LQ"
 rm -f "$LQ/open-questions.md"
-ky_vong 2 "thiếu open-questions.md → THIẾU ĐẦU VÀO" sh "$CHK" "$LQ"
+ky_vong 2 "thiếu open-questions.md → NO INPUT" sh "$CHK" "$LQ"
 tao_fixture
 ky_vong 3 "fixture: chỉ có điểm mù không chặn" sh "$CHK" "$F"
 # Câu hỏi Q-NNN phủ nhiều REQ: danh sách REQ và Priority suy từ dòng Source của spec
@@ -259,7 +259,7 @@ dung "xếp: điểm mù chặn → phát hiện Chặn → chặn review → ph
   bang "$(thu_tu_all)" "REQ-005 FND-002 FND-004 REQ-002 FND-001 REQ-001 "
 dung "…phát hiện Chặn đánh dấu ĐANG CHẶN /aw-plan" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'FND-002.*ĐANG CHẶN /aw-plan'"
 dung "…in vị trí + vấn đề của phát hiện" sh -c "sh '$CHK' '$LQ' 2>/dev/null | grep -q 'Problem: chọn gRPC mà không nêu D'"
-dung "phát hiện đã đóng chỉ nằm ở [ĐÃ XỬ LÝ], không đánh số" sh -c \
+dung "phát hiện đã đóng chỉ nằm ở [HANDLED], không đánh số" sh -c \
   "o=\$(sh '$CHK' '$LQ' 2>/dev/null); echo \"\$o\" | grep -q '^  - FND-003' && echo \"\$o\" | grep -q '^  - FND-005' && ! echo \"\$o\" | grep -q '^  [0-9]*\. FND-00[35]'"
 thay "$LQ/open-questions.md" '`blocking`
 - **Status:** `open`' '`non-blocking`

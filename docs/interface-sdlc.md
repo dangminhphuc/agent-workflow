@@ -124,8 +124,8 @@ Hệ quả cần nhớ:
 
 Mọi thay đổi bắt đầu giống nhau: **nêu `CAP-…` / `INV-…` mà thay đổi phục vụ** (đề xuất gửi người
 duyệt và mô tả PR đều có dòng `Interface: …`). Không id nào khớp → sửa interface trước, trong cùng PR.
-Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc bằng `sh tools/check-sdlc.sh` ĐẠT và
-`sh tools/run-tests.sh` → `MỌI CA ĐẠT`.
+Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc bằng `sh tools/check-sdlc.sh` PASS và
+`sh tools/run-tests.sh` → `ALL PASS`.
 
 ### 4.1 Thêm hoặc sửa một luật checker
 
@@ -134,8 +134,8 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
 3. Viết test (đỏ) rồi code checker, như mọi luật (`AGENTS.md` § Verify). Ngay trên khối chặn / cảnh báo, ghi
    chú thích `# giữ: CAP-… [, INV-…]` — capability `machine` được phase nhận mà không luật nào khai thì
    `check-sdlc.sh` chặn; id không có cũng chặn. Mỗi chú thích phủ đúng một chỗ luật ngay dưới nó
-   (trước dòng trống kế tiếp). "Chỗ luật" = gọi `loi` / `loi_truoc` / `canh_bao`, dòng in `[LỖI]` / `[CẢNH BÁO]`,
-   hoặc `TỪ CHỐI:` / `DỪNG:` / `CẢNH BÁO:` (`tools/task.sh`). Luật mới không gắn thì chặn
+   (trước dòng trống kế tiếp). "Chỗ luật" = gọi `loi` / `loi_truoc` / `canh_bao`, dòng in `[ERROR]` / `[WARN]`,
+   hoặc `REJECTED:` / `STOP:` / `WARN:` (`tools/task.sh`). Luật mới không gắn thì chặn
    (số luật chưa gắn của file vượt `tools/unclassified-rules.txt`); gắn id cho luật cũ thì hạ số trong danh
    sách (`sh tools/check-sdlc.sh --dem-luat` in số đúng). `sh tools/check-sdlc.sh --suy <file>…` in
    các id `# giữ:` đã có trong những file đó (id đụng bởi diff) — không tự gắn id mới.
@@ -187,7 +187,7 @@ sai — người duyệt PR là người bắt.
 
 ## 5. Đọc output `check-sdlc.sh`
 
-Chạy `sh tools/check-sdlc.sh`. Output có ba bảng và các dòng `[LỖI]`:
+Chạy `sh tools/check-sdlc.sh`. Output có ba bảng và các dòng `[ERROR]`:
 
 1. **Stage → phase**: stage, trạng thái **suy ra**, phase implement nó.
 2. **Capability còn thiếu (roadmap)**: mỗi stage chưa `implemented`, kèm note, rồi từng capability
@@ -197,7 +197,7 @@ Chạy `sh tools/check-sdlc.sh`. Output có ba bảng và các dòng `[LỖI]`:
 
 Lỗi liên quan capability và trạng thái, và cách sửa:
 
-| `[LỖI]` bắt đầu bằng | Nghĩa | Sửa |
+| `[ERROR]` bắt đầu bằng | Nghĩa | Sửa |
 |---|---|---|
 | `stage X: không có capability` | File stage chưa có `### CAP-X-NN — …` nào | Thêm `## Capabilities` với ít nhất một capability |
 | `stage X: heading capability "…" sai dạng` | Gõ `-` thay vì `—`, thiếu tên, `NN` không đủ hai số, id mang tên stage khác, heading `####` hay `Cap-…` trông như capability, hoặc heading `###` lạ nằm trong `## Capabilities` — máy báo thay vì lờ đi, để capability không biến mất âm thầm | Sửa heading đúng `### CAP-X-NN — <tên>` |

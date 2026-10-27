@@ -59,7 +59,7 @@ thay "$F/plan.md" '`test/b.test.js`' '`src/b.txt`'
 thay "$F/intake.md" "@ \`$(git -C "$R" rev-parse --short main)\`" ''
 dung "implement: Base thiếu sha → vẫn in src/ARCHITECTURE.md" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
 rm -f "$F/plan.md"
-ky_vong 0 "implement: không có plan.md → ĐÃ LIỆT KÊ" sh "$KT" implement "$F"
+ky_vong 0 "implement: không có plan.md → LISTED" sh "$KT" implement "$F"
 dung "implement: không có plan.md → không in gì" bang "$(sh "$KT" implement "$F" 2>/dev/null)" ""
 
 nhom "knowledge implement: chore bỏ design thì in chỉ mục ADR trước"
@@ -77,7 +77,7 @@ thay "$F/plan.md" '`src/a*.txt`' '`src/zz*.txt`'
 dung "implement: glob không khớp file nào trên Base → tiền tố src không khớp ADR Scope một file" sh -c "! sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/adr/0004-x-dec-004.md'"
 thay "$F/plan.md" '`src/zz*.txt`' '`src/*` `test/*`'
 thay "$F/intake.md" "@ \`$(git -C "$R" rev-parse --short main)\`" '@ `deadbeefdeadbeef`'
-ky_vong 0 "implement: Base ghi sha không có trong repo → ĐÃ LIỆT KÊ" sh "$KT" implement "$F"
+ky_vong 0 "implement: Base ghi sha không có trong repo → LISTED" sh "$KT" implement "$F"
 dung "implement: Base ghi sha không có trong repo → dùng tiền tố, vẫn in src/ARCHITECTURE.md" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'src/ARCHITECTURE.md'"
 
 
@@ -102,7 +102,7 @@ nhom "knowledge review: tài liệu mà diff đụng phạm vi"
 tao_fixture
 kt_fixture
 dung "review: chưa có diff → không in gì" bang "$(sh "$KT" review "$F" 2>/dev/null)" ""
-ky_vong 0 "review: chưa có diff → ĐÃ LIỆT KÊ" sh "$KT" review "$F"
+ky_vong 0 "review: chưa có diff → LISTED" sh "$KT" review "$F"
 echo moi-review > "$R/src/a.txt"
 dung "review: diff đụng src/ → đúng tập kt_anh_huong" \
   bang "$(sh "$KT" review "$F" 2>/dev/null | sort | tr '\n' ' ')" \

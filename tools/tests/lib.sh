@@ -16,7 +16,7 @@ mkdir -p "$TMP"
 # là symlink tới /private/var/…, ca so chuỗi đường dẫn sẽ lệch nếu giữ bản qua symlink.
 TMP=$(CDPATH= cd -- "$TMP" && pwd -P)
 . "$ROOT/tools/lib/result.sh"
-kq_khai "tests/$PHAN.sh" "0=MỌI CA ĐẠT" "1=CÓ CA HỎNG — xem các dòng FAIL phía trên"
+kq_khai "tests/$PHAN.sh" "0=ALL PASS" "1=FAILED CASES — xem các dòng FAIL phía trên"
 kq_don 'rm -rf "$TMP"'
 T="$ROOT/tools"
 AWE="$ROOT/bin/aw-engine"

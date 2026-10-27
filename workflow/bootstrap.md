@@ -20,7 +20,7 @@ This is **putting decisive information where it is found**, not writing more doc
 
 ## On the main checkout
 
-Step 0 says **ĐANG Ở CHECKOUT CHÍNH** → only this section; write nothing in the main checkout.
+Step 0 says **ON MAIN CHECKOUT** → only this section; write nothing in the main checkout.
 
 1. Run `aw doctor`, `aw conventions check`, `aw adr check`, `aw rule check`; summarise the labels in 3–5 lines.
 2. Propose a worktree as in `/aw-intake` "Create the worktree": type `chore` (docs, Makefile, CI only), description `agent-knowledge`. `aw worktree new chore agent-knowledge` prints the proposal; show it verbatim; the **human picks the base**; then `--create --base <exact ref>`.
@@ -73,7 +73,7 @@ New decisions go through DEC-xxx + `- Promote: adr` + `aw adr promote`. Here: on
 - <commit / file / versioned link>
 ```
 
-Add a row per ADR to the index `README.md` table `| ADR | Title | Status | Scope |` (`| [NNNN](NNNN-….md) | <title> | accepted | \`<scope>\` |`), keeping text above the table. No evidence for the "why" → **no ADR**, a question in the report. Check: `aw adr check` → HỢP LỆ.
+Add a row per ADR to the index `README.md` table `| ADR | Title | Status | Scope |` (`| [NNNN](NNNN-….md) | <title> | accepted | \`<scope>\` |`), keeping text above the table. No evidence for the "why" → **no ADR**, a question in the report. Check: `aw adr check` → VALID.
 
 After ADRs and `ARCHITECTURE.md` files exist, bootstrap the common knowledge index: create `docs/knowledge-index.md` with `aw knowledge index` (key `knowledge_index`, default path) and commit it — later phases read that one table (spec, design, implement) and the machine keeps it faithful to the documents it lists. Skipped when the human says no (key stays empty = off). Exists already? Run `aw knowledge index` and commit the refresh with the knowledge files.
 

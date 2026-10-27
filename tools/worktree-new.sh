@@ -22,15 +22,15 @@
 # "git push" trơn trong worktree sẽ đẩy thẳng lên main.
 #
 # Stdout: đề xuất (không --create) hoặc đường dẫn worktree (--create).
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai worktree-new.sh \
-  "0=XONG — đã in đề xuất, hoặc đã tạo worktree" \
-  "2=KHÔNG HỢP LỆ — tham số hoặc trạng thái, lý do in phía trên" \
-  "5=ĐÃ CÓ WORKTREE — stdout là đường dẫn, mở phiên ở đó"
+  "0=DONE — đã in đề xuất, hoặc đã tạo worktree" \
+  "2=INVALID — tham số hoặc trạng thái, lý do in phía trên" \
+  "5=WORKTREE EXISTS — stdout là đường dẫn, mở phiên ở đó"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 
@@ -186,9 +186,9 @@ AD=$(al_doc "$CH")
 if al_kiem "$ENG" "$AD" 2>/dev/null; then
   echo "" >&2
   sh "$ENG/tools/adapter-build.sh" "$AD" "$DUONG" >&2 ||
-    echo "CẢNH BÁO: sinh adapter ($AD) vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build" >&2
+    echo "WARN: sinh adapter ($AD) vào worktree thất bại (lý do phía trên). Worktree vẫn dùng được; chạy lại trong đó: aw adapter build" >&2
 else
-  echo "CẢNH BÁO: ADAPTER=\"$AD\" trong config.sh có id engine không có ($(al_co "$ENG")) — worktree không có lệnh cho agent. Sửa config.sh rồi chạy trong worktree: aw adapter build" >&2
+  echo "WARN: ADAPTER=\"$AD\" trong config.sh có id engine không có ($(al_co "$ENG")) — worktree không có lệnh cho agent. Sửa config.sh rồi chạy trong worktree: aw adapter build" >&2
 fi
 echo "" >&2
 echo "Ghi vào intake.md, ngay dưới \"Type\":" >&2
@@ -196,7 +196,7 @@ echo "  - **Base:** \`$GOC\` @ \`$sha\`" >&2
 ev=$(tr -d ' \r\n' < "$HERE/../VERSION" 2>/dev/null)
 [ -n "$ev" ] && echo "  - **Engine:** $ev" >&2
 echo "" >&2
-echo "Tiếp theo:" >&2
+echo "Next:" >&2
 echo "  1. Ghi intake.md vào $DUONG/$ART/$TEN_TM/ rồi chạy trong worktree: aw check intake $ART/$TEN_TM" >&2
 lenh=""; [ -f "$CH" ] && lenh=$(ch_nap "$CH" >/dev/null 2>&1; printf '%s' "${WORKTREE_SETUP_CMD:-}")
 if [ -n "$lenh" ]; then

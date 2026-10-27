@@ -24,9 +24,9 @@ vi_pham() {
 
 # ---------------------------------------------------------------- profile theo job type
 nhom "check-sdlc.sh: profile — một profile cho mỗi job type"
-ky_vong 0 "engine của repo này (profile khớp engine) → ĐẠT" sh "$SC" "$ROOT"
+ky_vong 0 "engine của repo này (profile khớp engine) → PASS" sh "$SC" "$ROOT"
 moi
-ky_vong 0 "bản chép chưa sửa → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "bản chép chưa sửa → PASS" sh "$SC" "$E"
 dung "engine hiện tại: in ma trận job type × stage" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^  chore +chạy +chạy +bỏ +chạy +chạy +chạy +tuỳ +gap'"
 dung "…và loại có thể vắng theo profile" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -q 'bugfix: có thể vắng: design'"
 moi; rm -f "$E/sdlc/profiles/chore.md"

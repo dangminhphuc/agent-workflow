@@ -118,7 +118,7 @@ dung "kt_chi_muc_lai == aw knowledge index (cùng trạng thái, người viết
 nhom "aw knowledge index: khoá tắt"
 tao_fixture; cm_fixture
 thay "$CONV" 'knowledge_index: docs/knowledge-index.md' 'knowledge_index:'
-ky_vong_ly_do 2 "index: khoá khai trống → SAI THAM SỐ" "index: khoá tắt → báo lý do" "SAI THAM SỐ" sh "$KT" index
+ky_vong_ly_do 2 "index: khoá khai trống → BAD ARGS" "index: khoá tắt → báo lý do" "BAD ARGS" sh "$KT" index
 dung "index: khoá tắt → không tạo file" sh -c "! test -f '$CM_FILE'"
 
 nhom "aw knowledge index: khoá trỏ đường dẫn khác"
@@ -167,15 +167,15 @@ cm_dien_chimuc() {
 
 nhom "aw knowledge check: chạy một mình"
 tao_fixture; cm_fixture
-ky_vong 0 "check: chưa có file chỉ mục → ĐẠT" sh "$KT" check
+ky_vong 0 "check: chưa có file chỉ mục → PASS" sh "$KT" check
 sh "$KT" index >/dev/null 2>&1
 g add docs; g commit -q -m chi-muc
-ky_vong 0 "check: bảng đúng → ĐẠT" sh "$KT" check
+ky_vong 0 "check: bảng đúng → PASS" sh "$KT" check
 thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
-ky_vong_ly_do 1 "check: sửa tay một hàng → KHÔNG ĐẠT" "check: nêu chạy index để dựng lại" "lệch dựng lại" sh "$KT" check
-ky_vong 0 "check: dựng lại xong kiểm lại → ĐẠT" sh -c "sh '$KT' index >/dev/null 2>&1 && sh '$KT' check"
+ky_vong_ly_do 1 "check: sửa tay một hàng → FAIL" "check: nêu chạy index để dựng lại" "lệch dựng lại" sh "$KT" check
+ky_vong 0 "check: dựng lại xong kiểm lại → PASS" sh -c "sh '$KT' index >/dev/null 2>&1 && sh '$KT' check"
 rm "$CM_FILE"
-ky_vong 0 "check: file thiếu, chạy một mình → ĐẠT (repo chưa tham gia)" sh "$KT" check
+ky_vong 0 "check: file thiếu, chạy một mình → PASS (repo chưa tham gia)" sh "$KT" check
 
 nhom "aw knowledge check: gate theo diff"
 tao_fixture
@@ -188,11 +188,11 @@ thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
 g add docs; g commit -q -m chi-muc
 g checkout -q -; g merge -q main
 thay "$F/intake.md" "@ \`$_dgc\`" "@ \`$(git -C "$R" rev-parse --short main)\`"
-ky_vong 0 "check <feature>: diff không đụng kiến thức → ĐẠT dù bảng hỏng sẵn trên Base" sh "$KT" check "$F"
+ky_vong 0 "check <feature>: diff không đụng kiến thức → PASS dù bảng hỏng sẵn trên Base" sh "$KT" check "$F"
 printf 'lỗi hổ l\n' >> "$R/docs/product/rules/billing.md"
-ky_vong 1 "check <feature>: diff đụng file luật → KHÔNG ĐẠT khi bảng hỏng" sh "$KT" check "$F"
+ky_vong 1 "check <feature>: diff đụng file luật → FAIL khi bảng hỏng" sh "$KT" check "$F"
 rm "$CM_FILE"
-ky_vong_ly_do 1 "check <feature>: file chỉ mục bị xoá khi diff đụng → KHÔNG ĐẠT" "check <feature>: nêu chạy index để dựng lại" "thiếu file chỉ mục" sh "$KT" check "$F"
+ky_vong_ly_do 1 "check <feature>: file chỉ mục bị xoá khi diff đụng → FAIL" "check <feature>: nêu chạy index để dựng lại" "thiếu file chỉ mục" sh "$KT" check "$F"
 
 nhom "aw check implement / check review qua chỉ mục"
 tao_fixture; cm_fixture
@@ -201,20 +201,20 @@ thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
 toc_f tdd.md
 viet_plan
 ghi_based_on
-ky_vong 0 "check implement: bảng đúng → ĐẠT" sh "$T/check-implement.sh" "$F"
+ky_vong 0 "check implement: bảng đúng → PASS" sh "$T/check-implement.sh" "$F"
 thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
-ky_vong_ly_do 1 "check implement: bảng tay sửa lệch → KHÔNG ĐẠT" "check implement: nêu lỗi chỉ mục" "lệch dựng lại" sh "$T/check-implement.sh" "$F"
+ky_vong_ly_do 1 "check implement: bảng tay sửa lệch → FAIL" "check implement: nêu lỗi chỉ mục" "lệch dựng lại" sh "$T/check-implement.sh" "$F"
 thay "$CM_FILE" 'trả tiền qua momo' 'trả tiền qua vnpay'
 rm "$CM_FILE"
-ky_vong 1 "check implement: file chỉ mục bị xoá → KHÔNG ĐẠT" sh "$T/check-implement.sh" "$F"
+ky_vong 1 "check implement: file chỉ mục bị xoá → FAIL" sh "$T/check-implement.sh" "$F"
 cm_dien_chimuc
-ky_vong 0 "check implement: bảng đúng lại sau khi dựng → ĐẠT" sh "$T/check-implement.sh" "$F"
+ky_vong 0 "check implement: bảng đúng lại sau khi dựng → PASS" sh "$T/check-implement.sh" "$F"
 viet_review
 printf '\n## Durable knowledge\n\n| File | Verdict | Reason |\n|---|---|---|\n| `docs/adr/0001-quyet-a-dec-001.md` | updated | |\n| `src/ARCHITECTURE.md` | updated | |\n| `src/ARCHITECTURE.md#Thanh toán` | updated | |\n| `src/ARCHITECTURE.md#Mục #2` | updated | |\n| `docs/product/rules/billing.md#BR-BILLING-001` | updated | |\n' >> "$F/review.md"
 toc_f review.md; ghi_tree_review
-ky_vong 0 "check review: mỗi ref có verdict + chỉ mục đúng → ĐẠT" sh "$T/check-review.sh" "$F"
+ky_vong 0 "check review: mỗi ref có verdict + chỉ mục đúng → PASS" sh "$T/check-review.sh" "$F"
 thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
-ky_vong_ly_do 1 "check review: bảng tay sửa lệch → KHÔNG ĐẠT" "check review: nêu lỗi chỉ mục" "lệch dựng lại" sh "$T/check-review.sh" "$F"
+ky_vong_ly_do 1 "check review: bảng tay sửa lệch → FAIL" "check review: nêu lỗi chỉ mục" "lệch dựng lại" sh "$T/check-review.sh" "$F"
 
 nhom "aw adr promote / aw rule promote: dựng lại chỉ mục"
 tao_fixture; cm_fixture
@@ -259,12 +259,12 @@ nhom "aw conventions check: khoá knowledge_index"
 tao_fixture
 CO="$T/check-conventions.sh"
 CONV="$R/.git/agent-workflow/conventions.md"
-ky_vong 0 "conventions: mẫu có knowledge_index đúng dạng → ĐẠT" sh "$CO"
+ky_vong 0 "conventions: mẫu có knowledge_index đúng dạng → PASS" sh "$CO"
 thay "$CONV" 'knowledge_index: docs/knowledge-index.md' 'knowledge_index: docs/knowledge-index'
-ky_vong_ly_do 1 "conventions: knowledge_index không kết thúc .md → KHÔNG ĐẠT" "conventions: nêu dạng đúng" "không kết thúc .md" sh "$CO"
+ky_vong_ly_do 1 "conventions: knowledge_index không kết thúc .md → FAIL" "conventions: nêu dạng đúng" "không kết thúc .md" sh "$CO"
 thay "$CONV" 'knowledge_index: docs/knowledge-index' 'knowledge_index: /docs/x.md'
-ky_vong 1 "conventions: knowledge_index tuyệt đối → KHÔNG ĐẠT" sh "$CO"
+ky_vong 1 "conventions: knowledge_index tuyệt đối → FAIL" sh "$CO"
 thay "$CONV" 'knowledge_index: /docs/x.md' 'knowledge_index:'
-ky_vong 0 "conventions: knowledge_index khai trống (tắt) → ĐẠT" sh "$CO"
+ky_vong 0 "conventions: knowledge_index khai trống (tắt) → PASS" sh "$CO"
 
 ket_thuc

@@ -8,9 +8,9 @@ fixture_sau_bao_mat
 # ---------------------------------------------------------------- check-ship (aw check ship)
 nhom "check-ship.sh (aw check ship)"
 SHC="$T/check-ship.sh"
-ky_vong 2 "chưa có merge-request.md → THIẾU ĐẦU VÀO" sh "$SHC" "$F"
+ky_vong 2 "chưa có merge-request.md → NO INPUT" sh "$SHC" "$F"
 viet_mr
-ky_vong 0 "mô tả MR đủ mục, review đạt → ĐẠT" sh "$SHC" "$F"
+ky_vong 0 "mô tả MR đủ mục, review đạt → PASS" sh "$SHC" "$F"
 thay "$F/merge-request.md" '# ABC-1: hiện a và b trên màn hình y' '# <JIRA-KEY>: <verb> <what> <where>'
 ky_vong 1 "tiêu đề còn chữ giữ chỗ → chặn" sh "$SHC" "$F"
 viet_mr; thay "$F/merge-request.md" '## Out of Scope
@@ -26,7 +26,7 @@ viet_mr; thay "$F/merge-request.md" '- **Added:** test/a.test.js — có a và b
 ky_vong 1 "còn chữ giữ chỗ của mẫu ngoài comment → chặn" sh "$SHC" "$F"
 viet_mr; thay "$F/merge-request.md" '# ABC-1: hiện a và b trên màn hình y' '# hiện a và b trên màn hình y'
 ky_vong 0 "tiêu đề thiếu mã Jira của intake → chỉ cảnh báo" sh "$SHC" "$F"
-dung "…có cảnh báo" sh -c "sh '$SHC' '$F' | grep -q 'CẢNH BÁO.*ABC-1'"
+dung "…có cảnh báo" sh -c "sh '$SHC' '$F' | grep -q 'WARN.*ABC-1'"
 viet_mr
 printf '\n## Lens 3 — Quality\n\n### [Blocker] tràn bộ nhớ\n' >> "$F/review.md"
 ky_vong 1 "review.md còn [Blocker] → chặn" sh "$SHC" "$F"
@@ -44,10 +44,10 @@ cp "$CONV" "$TMP/conv-qt.bak"
 # khai_qt <phase> <giá trị> — khai lại từ đầu một khoá rules_<phase>
 khai_qt() { cp "$TMP/conv-qt.bak" "$CONV"; thay "$CONV" "rules_$1:" "rules_$1: $2"; }
 
-ky_vong 0 "không khai gì → aw rules ĐÃ LIỆT KÊ" sh "$QT" implement
+ky_vong 0 "không khai gì → aw rules LISTED" sh "$QT" implement
 dung "…stdout rỗng" bang "$(sh "$QT" implement 2>/dev/null)" ""
-ky_vong 2 "aw rules thiếu phase → SAI THAM SỐ" sh "$QT"
-ky_vong 2 "aw rules phase không có quy tắc (intake) → SAI THAM SỐ" sh "$QT" intake
+ky_vong 2 "aw rules thiếu phase → BAD ARGS" sh "$QT"
+ky_vong 2 "aw rules phase không có quy tắc (intake) → BAD ARGS" sh "$QT" intake
 ky_vong 0 "aw-engine rules → đúng script" sh "$AWE" rules implement
 
 khai_qt implement 'docs/quy-tac.md'

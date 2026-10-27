@@ -81,7 +81,7 @@ Read **only** the inputs listed in `intake.md` (to add a source, add it there fi
 12. **Leave `- [ ] **Approved by human**` unticked**; any content edit unticks it. Spec edited after the human ticked → the human re-approves: reads the change and deletes `<!-- approval-hash: … -->` (keeps the tick), or re-ticks.
     - The human disagrees with an existing REQ → `/aw-clarify REQ-NNN` records the change as an answered open question; do not silently rewrite the REQ.
 13. **Run the LLM checker** → `spec-findings.md`. It compares description and acceptance criteria to `Quote` and `[HUMAN]` text only. Fix what you agree with (`Resolution: fixed`); the human arbitrates the rest via `/aw-clarify` before ticking.
-14. **`aw toc <dir>`** — the one run of this phase, now that all three artifacts exist; fix every `[LỖI]` it prints, then **`aw check spec`**.
+14. **`aw toc <dir>`** — the one run of this phase, now that all three artifacts exist; fix every `[ERROR]` it prints, then **`aw check spec`**.
 15. **Record inputs:** `aw based-on <dir> spec.md intake.md`.
 
 ## By work type

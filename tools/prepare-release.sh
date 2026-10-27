@@ -19,18 +19,18 @@
 # Merge PR vào main là workflow release tự tạo tag + Release (xem README, mục
 # "Chạy test và phát hành").
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/tools/lib/result.sh"
 . "$ROOT/tools/lib/version.sh"
 . "$ROOT/tools/lib/changelog.sh"
 kq_khai prepare-release.sh \
-  "0=ĐÃ CHUẨN BỊ — commit các file đã đổi vào PR (cả các mảnh changes/ đã xoá)" \
-  "2=SAI THAM SỐ" \
-  "3=KHÔNG CÓ GÌ ĐỂ PHÁT HÀNH — không có mảnh changes/*.md, CHANGELOG.md cũng không có \"## [Chưa phát hành]\" có nội dung" \
-  "4=VERSION LỖI — sai dạng YYYY.M.N hoặc tag đã có" \
-  "5=MẢNH CHANGELOG LỖI — xem các dòng LỖI phía trên"
+  "0=PREPARED — commit các file đã đổi vào PR (cả các mảnh changes/ đã xoá)" \
+  "2=BAD ARGS" \
+  "3=NOTHING TO RELEASE — không có mảnh changes/*.md, CHANGELOG.md cũng không có \"## [Chưa phát hành]\" có nội dung" \
+  "4=VERSION ERROR — sai dạng YYYY.M.N hoặc tag đã có" \
+  "5=CHANGELOG FRAGMENT ERROR — xem các dòng LỖI phía trên"
 
 REMOTE="${AW_REMOTE:-origin}"
 [ $# -le 1 ] || { echo "Dùng: sh tools/prepare-release.sh [YYYY.M.N]" >&2; exit 2; }
@@ -39,7 +39,7 @@ REMOTE="${AW_REMOTE:-origin}"
 if TAGS=$(git -C "$ROOT" ls-remote --tags --refs "$REMOTE" 2>/dev/null); then
   TAGS=$(printf '%s\n' "$TAGS" | sed -n 's#.*refs/tags/##p')
 else
-  echo "CẢNH BÁO: không đọc được tag ở remote \"$REMOTE\" — dùng tag ở máy (có thể thiếu tag mới)." >&2
+  echo "WARN: không đọc được tag ở remote \"$REMOTE\" — dùng tag ở máy (có thể thiếu tag mới)." >&2
   TAGS=$(git -C "$ROOT" tag -l)
 fi
 
@@ -70,7 +70,7 @@ IFS=$OIFS
 if [ $# -gt 0 ]; then
   LOI_MANH=$(cl_kiem_manh "$@")
   if [ -n "$LOI_MANH" ]; then
-    printf '%s\n' "$LOI_MANH" | sed 's/^/  [LỖI] changes\//'
+    printf '%s\n' "$LOI_MANH" | sed 's/^/  [ERROR] changes\//'
     exit 5
   fi
 fi

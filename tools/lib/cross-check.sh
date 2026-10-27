@@ -574,7 +574,7 @@ kc_chore_dependency() {
 kc_tai_hien() {
   _t="$1/repro.md"
   if [ ! -f "$_t" ]; then echo "Chưa có repro.md — chạy aw check repro <thư-mục-feature> TRƯỚC khi sửa code"; return 0; fi
-  grep -q 'Mã thoát: `0`' "$_t" && echo "repro.md ghi test XANH trên code chưa sửa — test không tái hiện được lỗi"
+  grep -q 'Mã thoát: `0`' "$_t" && echo "repro.md ghi test GREEN trên code chưa sửa — test không tái hiện được lỗi"
   grep -q 'Mã thoát: `' "$_t" || echo "repro.md không phải do check-repro.sh ghi (thiếu dòng mã thoát)"
 }
 
@@ -972,7 +972,7 @@ kc_chore_sca() {
     kc_khop_khoa "$1" dependency_files "$_p" && echo "$_p"; done)
   [ -n "$_co" ] || return 0
   kc_bm_nhom_xanh "$1/security-results.md" sca ||
-    echo "Diff đụng file dependency nhưng security-results.md không có lệnh nhóm \"sca\" chạy XANH — khai dòng \"sca: <lệnh>\" trong SECURITY_CMDS (giống CI) rồi chạy aw check security"
+    echo "Diff đụng file dependency nhưng security-results.md không có lệnh nhóm \"sca\" chạy GREEN — khai dòng \"sca: <lệnh>\" trong SECURITY_CMDS (giống CI) rồi chạy aw check security"
 }
 
 # kc_tu_dich <thư-mục-feature> — artifact dùng từ dịch thay cho thuật ngữ gốc. Danh sách: cột

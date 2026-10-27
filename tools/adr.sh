@@ -10,19 +10,19 @@
 # nằm trong DEC. Chạy lại an toàn: ADR của cùng việc + DEC giữ số cũ, viết lại nội dung.
 # Không commit gì.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 case "${1:-}" in
   promote) kq_khai adr.sh \
-    "0=ĐÃ NÂNG — ADR và chỉ mục đã ghi trong worktree, commit cùng việc" \
-    "1=TỪ CHỐI — DEC chưa đủ điều kiện, lý do phía trên; không sửa ADR bằng tay" \
-    "2=SAI THAM SỐ" ;;
+    "0=UPGRADED — ADR và chỉ mục đã ghi trong worktree, commit cùng việc" \
+    "1=REJECTED — DEC chưa đủ điều kiện, lý do phía trên; không sửa ADR bằng tay" \
+    "2=BAD ARGS" ;;
   *) kq_khai adr.sh \
-    "0=HỢP LỆ" \
-    "1=KHÔNG HỢP LỆ — sửa các dòng ✗" \
-    "2=SAI THAM SỐ" ;;
+    "0=VALID" \
+    "1=INVALID — sửa các dòng ✗" \
+    "2=BAD ARGS" ;;
 esac
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"

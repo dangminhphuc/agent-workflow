@@ -46,9 +46,9 @@ ad_mo_dau_lenh() {
   printf 'Cursor does not substitute variables: the text typed after `/%s` (hint: `%s`) comes with the message. Below, `<tham-số>` means **exactly that text, copied verbatim** (no summarising, no fixes, no added/removed quotes).\n\n' "$1" "$2"
   printf -- '- Nothing typed: drop `<tham-số>` from `aw …` entirely (`aw feature`, not `aw feature ""`).\n'
   if [ "$3" = "input" ]; then
-    printf -- '- Nothing typed: leave the line inside the `aw input` heredoc empty — the engine returns `KHÔNG CÓ THAM SỐ`.\n'
+    printf -- '- Nothing typed: leave the line inside the `aw input` heredoc empty — the engine returns `NO ARGS`.\n'
   fi
-  printf -- '- **Never** run a command still containing the literal `<tham-số>` (the engine refuses: `SAI CÁCH GỌI` / `TÊN KHÔNG HỢP LỆ`).\n\n'
+  printf -- '- **Never** run a command still containing the literal `<tham-số>` (the engine refuses: `BAD CALL` / `INVALID NAME`).\n\n'
 }
 
 # Mục `aw uses`. POC với cursor-agent (2026-10): không có tool gọi skill theo tên,

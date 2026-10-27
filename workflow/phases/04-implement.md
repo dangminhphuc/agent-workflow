@@ -51,18 +51,18 @@ Do each task in `plan.md` per `tdd.md`, **without leaving scope**. The typical f
 
 ```
 aw ready <dir>
-    CHƯA SẴN SÀNG → stop, tell the human (red tests on untouched code = environment or base broken)
+    NOT READY → stop, tell the human (red tests on untouched code = environment or base broken)
 loop:
   T = aw task next <dir>
-      HẾT TASK   → aw check implement <dir> → ĐẠT: stop, report
-                                              KHÔNG ĐẠT: fix that violation, rerun
-      KẸT, DỪNG  → stop, tell the human
+      NO TASKS LEFT   → aw check implement <dir> → PASS: stop, report
+                                              FAIL: fix that violation, rerun
+      STUCK, STOP  → stop, tell the human
   aw task start <dir> T
   do T — only within T's "Expected files"
   aw task done <dir> T          (no command in Verify: --manual "<what you did, what you saw>")
-      ĐỎ   → fix within T, rerun done
-      DỪNG → record "Unplanned" (what you tried, the error), stop, tell the human
-      XONG → commit T (a scope warning = T changed a file outside its "Expected files": add an "Unplanned" row with Task = T, or revert)
+      RED   → fix within T, rerun done
+      STOP → record "Unplanned" (what you tried, the error), stop, tell the human
+      DONE → commit T (a scope warning = T changed a file outside its "Expected files": add an "Unplanned" row with Task = T, or revert)
 ```
 
 - **Doing T:** tag each test `covers: REQ-NNN`. A REQ not testable automatically → `plan.md` "Manual verification" + reason.
@@ -78,7 +78,7 @@ Every surprise goes to `plan.md` "Unplanned" (task, what came up, extra files in
 |---|---|
 | A file outside T's "Expected files" is unavoidable for T itself | **Continue** |
 | A repo rule asks for work outside T, or contradicts `tdd.md` | **Continue**, without doing what it asks |
-| `DỪNG`, `KẸT`; work not in any task; `tdd.md`/`spec.md`/a DEC-xxx must change (DEC-xxx → `/aw-design`) | **Stop**, tell the human |
+| `STOP`, `STUCK`; work not in any task; `tdd.md`/`spec.md`/a DEC-xxx must change (DEC-xxx → `/aw-design`) | **Stop**, tell the human |
 | An existing test is really wrong; a scan finding is a false positive (+ evidence) | **Stop**, tell the human — they decide |
 
 ## By work type

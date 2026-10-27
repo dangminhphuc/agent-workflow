@@ -39,7 +39,7 @@ sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 # Không test nào gắn tag: danh sách dòng tag rỗng không được làm kiểm chéo câm
 printf '// chua gan tag\n' > "$R/test/a.test.js"
 ky_vong_ly_do 1 "CỔNG CUỐI: chặn khi CHƯA test nào gắn tag covers" "…đúng lý do: REQ chưa có test" 'REQ-002: chưa có test' sh "$CHK" "$F"
-dung "…và implement có in cảnh báo REQ chưa có test" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'CẢNH BÁO.*REQ-001'"
+dung "…và implement có in cảnh báo REQ chưa có test" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'WARN.*REQ-001'"
 printf '// covers: REQ-001, REQ-002\n' > "$R/test/a.test.js"
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1
 
@@ -75,8 +75,8 @@ rm -f "$F/security-results.md"
 ky_vong 1 "chặn khi chưa có security-results.md" sh "$CHK" "$F"
 sh "$T/check-security.sh" "$F" >/dev/null 2>&1
 ky_vong 0 "aw check security ghi lại security-results.md thì cho qua" sh "$CHK" "$F"
-thay "$F/security-results.md" '- Kết quả: **XANH**' '- Kết quả: **ĐỎ**'
-ky_vong 1 "chặn security-results.md không XANH" sh "$CHK" "$F"
+thay "$F/security-results.md" '- Result: **GREEN**' '- Result: **RED**'
+ky_vong 1 "chặn security-results.md không GREEN" sh "$CHK" "$F"
 sh "$T/check-security.sh" "$F" >/dev/null 2>&1
 
 # ---- Frontmatter based_on đọc sai thì kiểm lỗi thời im lặng (INV-006) — sai dạng chặn mọi nơi

@@ -18,9 +18,9 @@ Arguments contain `--global` → `aw approvals --global` (every worktree of this
 
 | Result `[x]` | Do |
 |---|---|
-| `KHÔNG CÒN Ô CHỜ DUYỆT` | One line. Not `--global` → add that `/aw-approvals --global` checks every worktree. Stop |
-| `CÓ Ô CHỜ DUYỆT` | Print stdout **verbatim** in a ```` ```text ```` block (it holds the links), then step 2 |
-| `SAI THAM SỐ` | Report the error, stop |
+| `NONE PENDING` | One line. Not `--global` → add that `/aw-approvals --global` checks every worktree. Stop |
+| `PENDING` | Print stdout **verbatim** in a ```` ```text ```` block (it holds the links), then step 2 |
+| `BAD ARGS` | Report the error, stop |
 
 Items under "Approval checkbox sai dạng/chỗ" cannot be approved here: list them at the end, the job's own phase fixes them.
 
@@ -43,7 +43,7 @@ No `(Đề xuất)` label here: never recommend approving.
 
 | Human picks | Do |
 |---|---|
-| `Duyệt` | Run that item's `duyệt:` line **exactly** (`aw approvals tick <dir> <key> <hash>`). `ĐÃ DUYỆT` → next item. `KHÔNG TICK` → rerun step 1's list, show the item again, ask again. Tool permission denied → not approved, next item |
+| `Duyệt` | Run that item's `duyệt:` line **exactly** (`aw approvals tick <dir> <key> <hash>`). `APPROVED` → next item. `NOT TICKED` → rerun step 1's list, show the item again, ask again. Tool permission denied → not approved, next item |
 | `Chưa duyệt — cần sửa` | Note their reason verbatim; do not edit any artifact here. Next item |
 | `Bỏ qua` | Next item |
 | `Dừng` / anything else | Go to step 3 |

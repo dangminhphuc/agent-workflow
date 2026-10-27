@@ -19,14 +19,14 @@
 #     bằng "git branch -d" — git tự từ chối nếu chưa merge. Squash/rebase merge
 #     git không nhận ra → dừng, NGƯỜI tự quyết "git branch -D". Không đoán "chắc merge rồi".
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai worktree-cleanup.sh \
-  "0=XONG" \
-  "2=SAI THAM SỐ" \
-  "7=BỊ CHẶN — lý do in phía trên"
+  "0=DONE" \
+  "2=BAD ARGS" \
+  "7=BLOCKED — lý do in phía trên"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 
@@ -86,19 +86,19 @@ if [ -z "$XOA" ]; then
   [ -n "$LUU" ] && echo "  chép $TM_VIEC/, $TM_CU/ vào $LUU"
   echo "  git worktree remove $WT   (branch giữ nguyên, không mất commit)"
   echo "  + --delete-branch: git branch -d $TEN   (git tự từ chối nếu chưa merge)"
-  [ "$chan" = 0 ] || { echo ""; echo "Hiện đang BỊ CHẶN — xử lý các mục ✗ trước."; }
+  [ "$chan" = 0 ] || { echo ""; echo "Hiện đang BLOCKED — xử lý các mục ✗ trước."; }
   exit 0
 fi
 
-[ "$chan" = 0 ] || { echo "BỊ CHẶN — không gỡ gì."; exit 7; }
+[ "$chan" = 0 ] || { echo "BLOCKED — không gỡ gì."; exit 7; }
 if [ -n "$LUU" ]; then
   { mkdir -p "$LUU" &&
     { [ ! -d "$WT/$TM_CU" ] || cp -R "$WT/$TM_CU/." "$LUU/"; } &&
-    { [ ! -d "$WT/$TM_VIEC" ] || cp -R "$WT/$TM_VIEC/." "$LUU/"; }; } || { echo "BỊ CHẶN — không chép được artifact vào $LUU, không gỡ gì."; exit 7; }
+    { [ ! -d "$WT/$TM_VIEC" ] || cp -R "$WT/$TM_VIEC/." "$LUU/"; }; } || { echo "BLOCKED — không chép được artifact vào $LUU, không gỡ gì."; exit 7; }
   rm -rf "$LUU/.engine"   # bản chép của engine, không phải artifact
   echo "  copy    $TM_VIEC/, $TM_CU/ → $LUU"
 fi
-git -C "$CHINH" worktree remove "$WT" || { echo "BỊ CHẶN — git từ chối gỡ worktree."; exit 7; }
+git -C "$CHINH" worktree remove "$WT" || { echo "BLOCKED — git từ chối gỡ worktree."; exit 7; }
 git -C "$CHINH" worktree prune
 echo "Đã gỡ worktree $WT"
 [ -n "$CA" ] || exit 0

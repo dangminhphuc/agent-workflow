@@ -9,14 +9,14 @@
 # Chạy trong worktree của việc (không ở checkout chính). Gọi qua journal.sh (dispatch "retro").
 # jobs.tsv: một dòng mỗi việc, chạy lại thì thay dòng cũ. Cột version là cột cuối, như mọi nguồn khác.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai journal-retro.sh \
-  "0=XONG — đã in phần máy, hoặc đã ghi jobs.tsv" \
-  "2=SAI THAM SỐ — xem thông báo phía trên" \
-  "6=ĐANG Ở CHECKOUT CHÍNH — retro chạy trong worktree của việc"
+  "0=DONE — đã in phần máy, hoặc đã ghi jobs.tsv" \
+  "2=BAD ARGS — xem thông báo phía trên" \
+  "6=ON MAIN CHECKOUT — retro chạy trong worktree của việc"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/worktree.sh"
@@ -46,7 +46,7 @@ done
 
 [ -f "$DIR/intake.md" ] || sai "không có $DIR/intake.md — retro chỉ chạy trên thư mục việc."
 if wt_la_chinh "$AWR"; then
-  echo "ĐANG Ở CHECKOUT CHÍNH — retro chạy trong worktree của việc." >&2
+  echo "ON MAIN CHECKOUT — retro chạy trong worktree của việc." >&2
   exit 6
 fi
 

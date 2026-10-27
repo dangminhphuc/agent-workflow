@@ -85,11 +85,11 @@ thiếu hàm vẫn tính là "tái hiện được").
 ### Artifact theo feature, worktree bắt buộc
 
 - Artifact ở `docs/sdlc/<tên-branch>/`, tên branch **đầy đủ** để feat và refactor cùng tên
-  không đè nhau. Agent luôn in `Đang làm với: …` — ghi nhầm feature là lỗi im lặng.
+  không đè nhau. Agent luôn in `Working on: …` — ghi nhầm feature là lỗi im lặng.
 - **Artifact commit vào branch của việc, không bao giờ vào nhánh đích.** Trước đây artifact chỉ ở
   máy (`.agent-workflow/`, bị exclude): mất máy hay gỡ worktree là mất. Mở phiên ở máy khác cũng
   không có. Giờ:
-  - Mỗi `aw check` ĐẠT (và `aw approvals tick`) commit **chỉ** thư mục việc. Lệnh dùng
+  - Mỗi `aw check` PASS (và `aw approvals tick`) commit **chỉ** thư mục việc. Lệnh dùng
     `git add -f`, commit với pathspec để không cuốn phần người đã stage, và `--no-verify`.
     Hook của repo viết cho code: lint-staged định dạng lại artifact thì mất approval hash,
     commit-msg có thể từ chối.
@@ -137,9 +137,9 @@ Bộ cài cũ chép quy trình vào target repo và bắt commit vào nhánh g�
    git và qua PR (mục "Trạng thái của việc và durable knowledge") — lý do trên nhắm vào *cài/nâng cấp
    engine*, còn quy ước của team đi qua review là điều mong muốn.
 2. **Version theo việc** — đồng bộ bộ cài giữa chừng đổi luật mọi việc đang làm. Giờ `intake.md`
-   ghi `Engine:`; mọi `aw check` chạy đúng version đó, không có thì `KHÔNG HỢP LỆ` (chạy tạm bằng
+   ghi `Engine:`; mọi `aw check` chạy đúng version đó, không có thì `INVALID` (chạy tạm bằng
    version khác = chấm theo luật việc đó không được đặt ra). So khớp chính xác, không suy "tương thích".
-3. **Độc lập agent** — luật cứng trong checker (`aw …`, mã thoát + nhãn `Kết quả`); adapter chỉ là
+3. **Độc lập agent** — luật cứng trong checker (`aw …`, mã thoát + nhãn `Result`); adapter chỉ là
    lớp mỏng.
 
 | Mảnh | Vai trò |
@@ -328,7 +328,7 @@ liệu sai không, nhưng biết diff có đụng **phạm vi** của tài liệ
 
 ## Hai loại điều kiện ra
 
-- **MÁY** — lệnh in `Kết quả` `[x] ĐẠT`/`KHÔNG ĐẠT`. Tiêu chí diễn đạt được bằng máy thì **phải**
+- **MÁY** — lệnh in `Result` `[x] PASS`/`FAIL`. Tiêu chí diễn đạt được bằng máy thì **phải**
   để máy kiểm; "agent tự đánh giá là đạt" là chỗ trống có hình dáng tiêu chí.
 - **NGƯỜI** — agent nêu ra và dừng.
 
@@ -433,7 +433,7 @@ artifact khác là link có anchor tới đúng mục.
   người viết không phải sửa tay từng link hay chạy `sed`.
 - **Một lượt, không phải sau từng lần sửa.** `aw toc` làm cả thư mục trong một lần chạy, nên
   `general.md` §6 đòi chạy **một lần** khi viết xong artifact, không chạy sau từng file.
-- **Lỗi sửa được ngay trong một lượt.** Mỗi dòng `[LỖI]` nêu file, số dòng và dạng đúng (anchor nào,
+- **Lỗi sửa được ngay trong một lượt.** Mỗi dòng `[ERROR]` nêu file, số dòng và dạng đúng (anchor nào,
   mã không có heading nào, nhiều mục cùng mã, hay còn chỗ giữ chỗ); mọi lỗi in hết một lượt, không
   dừng ở lỗi đầu. Vòng sửa–chạy lặp lại chỉ còn khi thật sự phải đổi nội dung.
 - **Chặn, không cảnh báo.** Kiểm chính xác: mục lục khớp heading hay không, anchor có trong file đích
@@ -659,7 +659,7 @@ Mỗi lần gọi `/aw-*`, agent nạp file lệnh + những gì lệnh bảo đ
   ở file này.
 - **Agent đọc tiếng Anh, người đọc tiếng Việt.** Cùng một ý, tiếng Việt tốn nhiều token hơn đáng
   kể, nên thân phase, rules, LLM checker và lời dặn adapter viết tiếng Anh. Mọi thứ người thấy giữ
-  tiếng Việt: `name`/`summary`, mẫu artifact, output và nhãn `Kết quả` của `aw`, câu hỏi/lựa chọn
+  tiếng Việt: `name`/`summary`, mẫu artifact, output và nhãn `Result` của `aw`, câu hỏi/lựa chọn
   hiện cho người; agent được dặn nói và viết artifact bằng tiếng Việt. Nhãn của `aw` được nhắc
   nguyên văn trong chữ tiếng Anh như hằng số.
 - **Thuật ngữ giữ tiếng Anh gốc, cả khi câu là tiếng Việt.** Từ dịch ("điểm mù", "cổng người",
@@ -773,8 +773,8 @@ hay "phase `plan`", không nói trống.
 - **Đợt 2: luật mới phải gắn id — danh sách đếm, chỉ được giảm.** Luật cũ chưa gắn quá nhiều (~220 chỗ) để gắn
   hết một lần mà không gắn sai; chặn ngay thì mọi PR đỏ. `tools/unclassified-rules.txt` ghi số chỗ luật chưa
   gắn của từng file: vượt = luật mới không id (chặn), thấp hơn = quên hạ (chặn) — danh sách chỉ đi xuống.
-  "Chỗ luật" đo bằng mẫu dòng (gọi `loi`/`loi_truoc`/`canh_bao`, dòng in `[LỖI]`/`[CẢNH BÁO]`, `TỪ CHỐI:`/
-  `DỪNG:`/`CẢNH BÁO:` của `task.sh`) và mỗi `# giữ:` phủ đúng một chỗ ngay dưới: bản đầu cho phủ tới dòng trống,
+  "Chỗ luật" đo bằng mẫu dòng (gọi `loi`/`loi_truoc`/`canh_bao`, dòng in `[ERROR]`/`[WARN]`, `REJECTED:`/
+  `STOP:`/`WARN:` của `task.sh`) và mỗi `# giữ:` phủ đúng một chỗ ngay dưới: bản đầu cho phủ tới dòng trống,
   nhưng thế là nới ngầm các chú thích cũ (một tag thành phủ cả chục luật khác capability). Đo bằng mẫu không
   chính xác từng luật (dòng chuyển tiếp cảnh báo của thư viện cũng tính), nhưng ổn định và tự kiểm được. Hàm
   thư viện (`tools/lib/`) chưa đếm — ranh giới luật ở đó không đo được bằng mẫu dòng; để phần còn lại của
@@ -803,7 +803,7 @@ hay "phase `plan`", không nói trống.
   `04-implement` cùng implement stage `implement`, nên: `task-plan` là thứ stage tự sinh ra, không khai được
   là `requires` của phần viết code — phụ thuộc "code theo kế hoạch đã duyệt" bị giấu trong stage; INV-001,
   INV-002 (task → REQ, task → DEC) và INV-003 (REQ → test) nằm chung một chỗ; đổi chỗ hai phase trong
-  `workflow.yaml` vẫn ĐẠT vì luật thứ tự chỉ so stage. Tách thì `implement` `requires: task-plan`, mỗi
+  `workflow.yaml` vẫn PASS vì luật thứ tự chỉ so stage. Tách thì `implement` `requires: task-plan`, mỗi
   stage một phase, và đổi chỗ bị chặn. Engine lúc chạy không đổi (`check-implement` vốn đòi `plan.md` qua
   `check-plan`). Tên một từ vì id capability là `CAP-[a-z]+-NN`. `CAP-implement-01` chuyển thành
   `CAP-breakdown-01` (id mang tên stage); `CAP-implement-02`, `-03` giữ id, không đánh số lại. Làm
@@ -817,7 +817,7 @@ hay "phase `plan`", không nói trống.
 - **Không đăng ký trong `tools/lib/commands.sh`.** Bảng đó là `aw check <tên>` chạy trên job dir của
   target repo; `check-sdlc.sh` kiểm chính repo engine, như `check-release.sh`. Test
   `tools/tests/20-sdlc-conformance.sh` (cùng `21-sdlc-profiles.sh`, `22-sdlc-stage-files.sh`, `23-sdlc-syntax.sh`, `24-sdlc-stage-status.sh`, `25-sdlc-capabilities.sh`) chạy nó
-  trên engine hiện tại (phải ĐẠT) và trên bản chép bị làm hỏng từng luật một (phải KHÔNG ĐẠT đúng lý do).
+  trên engine hiện tại (phải PASS) và trên bản chép bị làm hỏng từng luật một (phải FAIL đúng lý do).
 - Người dùng `aw` không thấy gì khác: adapter chỉ đọc khoá frontmatter nó biết, nên `implements` /
   `provides` / `capabilities` không đổi lệnh sinh ra (test đối chiếu adapter vẫn giống hệt). Ngoại lệ có chủ ý: map
   `repro.md`/`perf.md` thành loại artifact buộc `04-implement` liệt kê hai file đó trong `outputs` (chúng
@@ -936,7 +936,7 @@ số, đọc bằng `fm_scalar`.
 3. Artifact mới → mẫu trong `workflow/templates/`.
 4. `implements: <stage>`, `provides:` và `capabilities:` (ít nhất một `CAP-…` của stage đó) trong
    frontmatter (§ Interface SDLC). Stage đổi trạng thái suy ra → sửa `note` của nó trong khối `sdlc:`
-   của `workflow.yaml` (thêm khi `partial`/`gap`, xoá khi `implemented`). `sh tools/check-sdlc.sh` phải ĐẠT.
+   của `workflow.yaml` (thêm khi `partial`/`gap`, xoá khi `implemented`). `sh tools/check-sdlc.sh` phải PASS.
 5. Ca kiểm trong phần cùng chủ đề ở `tools/tests/` (chạy bằng `tools/run-tests.sh`).
 6. Thử: `AW_ENGINE_DIR=<repo này> aw adapter build claude-code` (VERSION khớp target repo).
 
@@ -1026,7 +1026,7 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
 22. **Tuân thủ interface SDLC ≠ chất lượng.** `check-sdlc.sh` chỉ kiểm lời khai có nhất quán: stage
     có phase, loại artifact có file, invariant có checker + test, capability có phase nhận. Nó không
     biết phase làm capability đó tốt không, `note` của `partial` có nói đủ phần thiếu không, hay
-    `Tested by:` có thật sự thử invariant đó. Nhận một capability mà làm hời hợt vẫn ĐẠT — người đọc
+    `Tested by:` có thật sự thử invariant đó. Nhận một capability mà làm hời hợt vẫn PASS — người đọc
     lời khai, không phải máy (bước A gắn luật checker vào capability mới thu hẹp được chỗ này).
     Profile cũng vậy: checker biết engine *cho phép* bỏ design với bugfix, không biết
     việc bỏ đó có hợp lý không; invariant theo loại chỉ ghi phần máy giữ ("test đỏ"), phần người
