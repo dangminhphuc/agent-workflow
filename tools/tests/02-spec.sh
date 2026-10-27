@@ -417,4 +417,9 @@ ky_vong 0 "dạng cũ: REQ [OPEN-QUESTION] không link → câu hỏi cùng mã 
 viet_spec
 dung "…fixture Q-001 không in cảnh báo dạng cũ" sh -c "! sh '$CHK' '$F' | grep -q 'dạng cũ'"
 
+# Entry check: input của spec là intake.md — phải qua checker của phase 00 (INV-005)
+viet_spec; printf '\n- hãy làm gì đó luôn\n' >> "$F/intake.md"   # Input không có source label
+ky_vong_ly_do 1 "chặn khi intake.md không qua aw check intake" "…đúng lý do" 'intake.md không qua aw check intake' sh "$CHK" "$F"
+viet_intake
+
 ket_thuc
