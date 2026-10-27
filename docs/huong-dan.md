@@ -899,6 +899,12 @@ không phải chi tiết màn hình, có nguồn bền (BR). REQ `[INFERRED]`/`[
 
 DEC đi ngược một ADR `accepted` phải khai `- Supersedes: ADR-NNNN` — ADR cũ thành `superseded`.
 
+**Chỉ mục chung.** Khoá `knowledge_index` (mặc định `docs/knowledge-index.md`) bật một bảng chỉ mục
+do máy dựng lại từ ADR, luật `BR-` và các mục `- Scope:` của tài liệu module: `aw knowledge index`.
+Sửa tài liệu là sửa bảng — không sửa bảng bằng tay, dù chỉ chữ `Summary`. Phase đọc bảng trước khi
+khảo sát; file phải commit rồi máy mới kiểm. Diff đụng tài liệu kiến thức hay file chỉ mục mà bảng lệch
+dựng lại → implement, review và `aw knowledge check` chặn, chạy `aw knowledge index` để sửa.
+
 **Chống stale:** diff đụng phạm vi của tài liệu module, ADR hay file luật mà tài liệu không đổi →
 implement cảnh báo; review phải ghi verdict từng tài liệu ở `## Durable knowledge`.
 
@@ -910,10 +916,12 @@ nội dung: `aw knowledge show <ref>…`.
 Ở `## Durable knowledge` của `review.md`, cột `File` ghi ref. Verdict mức file **không** phủ ref có neo,
 nên việc đang dở khi nâng cấp phải ghi lại verdict, kể cả dòng file luật trần. `updated` ở ref có neo đòi
 diff đổi dòng bên trong khối (implement cảnh báo, review chặn); mục bị đổi tên hay xoá cũng cần verdict.
-Heading `##` trùng chỉ cảnh báo; heading mục có `Scope` chứa `|` bị chặn.
 
 Implement đọc theo `Expected files` của `plan.md` (`aw knowledge implement`); review đọc theo diff (`aw knowledge review`),
-đúng tập tài liệu review phải chấm verdict. Việc bỏ design (`chore`, `Design: skip`) vẫn đọc chỉ mục ADR ở implement.
+đúng tập tài liệu review phải chấm verdict. Việc bỏ design (`chore`, `Design: skip`) vẫn đọc chỉ mục ở
+implement (chỉ mục chung khi file đã commit, không thì chỉ mục ADR). Heading `##` trùng chỉ cảnh báo
+trong implement/review; khi repo đã có chỉ mục chung (file đã commit) thì bị chặn, thân `aw knowledge
+check` cũng chặn. Heading mục có `Scope` chứa `|` bị chặn.
 
 **Hai việc song song cùng nâng ADR.** `aw adr promote` cấp số lớn hơn mọi số trong worktree **và** trên
 base của việc (`origin/<Base>`, fetch trước). Việc kia merge trước mà chiếm số của bạn → implement, review
@@ -1047,6 +1055,7 @@ Loại lỗi lặp ở ≥ 2 việc → review in `[GỢI Ý]` nâng thành lu�
 | `aw rename <tên-branch-mới>` | đổi tên việc (branch, worktree, artifact) — chạy trong worktree |
 | `aw ship targets\|create\|status\|sweep …` | MR/PR |
 | `aw adr check` · `aw rule check` | kiểm ADR · luật nghiệp vụ |
+| `aw knowledge index` · `aw knowledge check [<dir>]` | dựng lại chỉ mục kiến thức chung · kiểm bảng khớp dựng lại |
 | `aw rules <phase>` · `aw uses <phase>` | xem luật/skill khai cho phase |
 | `aw adapter build [a,b] [--force]` | sinh lại lệnh cho agent |
 | `aw journal` · `aw journal add <lớp> "…"` · `aw journal retro <thư-mục-việc>` · `aw journal export <file>` · `aw journal report <file>…` | harness journal; retro tổng kết cuối việc; export / report trên file để gom nhiều máy |

@@ -221,6 +221,16 @@ sau khi nâng** (điểm yếu 20). "Phiên mới trả lời được năm câu
 - `ARCHITECTURE.md` của module đi vào phase qua `rules_<phase>` có sẵn. Tài liệu bền theo phạm vi: `aw knowledge
   implement` lọc theo `Expected files` của `plan.md`, `aw knowledge review` lọc theo diff — cùng tập tài liệu
   review phải chấm verdict.
+- **Chỉ mục chung (`knowledge_index`) thay bước tìm thô.** Tài liệu bền rải theo phạm vi thì phase phải
+  tự ghép (chỉ mục ADR, file luật, `ARCHITECTURE.md`) — mỗi chỗ một dạng, agent dễ bỏ sót. Máy dựng
+  một bảng (`aw knowledge index`, từ ADR, luật `BR-`, mục khai `Scope` của `ARCHITECTURE.md`; file
+  `docs/knowledge-index.md`) và giữ nó khớp: lệch dựng lại là chặn khi diff đụng tài liệu (INV-013) —
+  bảng do máy dựng nên so được byte với bản dựng lại, agent không tự tay động được phần bảng. File
+  phải committed thì mới kiểm, nên repo cũ chưa tham gia không bị ép. Vẫn tìm bằng bảng tất định, không
+  vector: kết quả tìm phải lặp lại được để verdict của review và cross-check stale có chỗ bám (mục
+  "Không làm" của roadmap về embedding).
+  Lý do không bỏ chỉ mục ADR `README.md`: `aw adr check` và `aw adr promote` theo bảng đó (cột
+  `[NNNN](file)`); bảng chung trỏ ref để phase đọc, không cần cột link.
 
 ### `/aw-bootstrap`: dựng bản đồ một lần cho repo có sẵn
 

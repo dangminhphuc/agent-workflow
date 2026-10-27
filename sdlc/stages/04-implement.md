@@ -15,6 +15,7 @@ skippable: false
 invariants:
   - INV-003
   - INV-012
+  - INV-013
 ---
 
 # Stage: implement

@@ -117,6 +117,12 @@ ktl=$( { kt_loi_review "$DIR" "$REVIEW"; kt_loi_muc "$DIR"; } )
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KT
 $ktl
 KT
+# Chỉ mục kiến thức chung: bảng và heading trùng phải khớp dựng lại (chính xác nên CHẶN).
+kmc=$(kt_chi_muc_kiem "$(kc_top "$DIR")" "$(qu_hieu_luc "${AW_REPO:-$(kc_top "$DIR")}")" "$DIR")
+# giữ: INV-013
+while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<KM
+$kmc
+KM
 
 # Cảnh báo phạm vi theo task (aw task done ghi "Scope warning") phải được giải trình ở Lens 2.
 for t in $(tk_pham_vi_chua_giai_trinh "$DIR" "$REVIEW"); do

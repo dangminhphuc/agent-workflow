@@ -29,6 +29,7 @@ esac
 . "$HERE/lib/adr.sh"
 . "$HERE/lib/quote.sh"
 . "$HERE/lib/rule.sh"
+. "$HERE/lib/knowledge.sh"
 . "$HERE/lib/env.sh"
 mt_dat
 
@@ -104,6 +105,10 @@ awk -v id="$ID" -v khoi="$KHOI" '
 ' "$MT_REPO/$DICH" > "$MT_REPO/$DICH.tam.$$" && mv "$MT_REPO/$DICH.tam.$$" "$MT_REPO/$DICH"
 rm -f "$KHOI"
 echo "  ghi     $DICH ($ID)"
+CI=$(kt_chi_muc_file "$MT_REPO" "$MT_CONV")
+if [ -n "$CI" ]; then
+  kt_chi_muc_lai "$MT_REPO" "$MT_CONV" && echo "  cập nhật $CI (chỉ mục kiến thức chung)"
+fi
 l=$(luat_loi_hinh_thuc "$MT_REPO" "$MT_CONV")
 if [ -n "$l" ]; then
   printf '%s\n' "$l" | while IFS= read -r x; do echo "  ✗ $x"; done

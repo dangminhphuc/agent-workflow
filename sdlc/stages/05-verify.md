@@ -17,6 +17,7 @@ invariants:
   - INV-004
   - INV-006
   - INV-012
+  - INV-013
 ---
 
 # Stage: verify
