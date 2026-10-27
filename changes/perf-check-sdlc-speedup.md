@@ -1,6 +1,6 @@
 ### Nội bộ
-- **`tools/check-sdlc.sh` nhanh hơn ~2,4 lần** (đo cùng máy, cùng lúc: 2,02s → 0,87s thấp nhất,
-  trung vị 2,23s → 0,93s). Chi phí chính của script là fork process (awk/grep/subshell), không phải
+- **`tools/check-sdlc.sh` nhanh hơn ~2,1 lần** (đo so sánh trực tiếp hai bản trên cùng máy, cùng
+  lúc: ~1,12s → ~0,53s mỗi lượt). Chi phí chính của script là fork process (awk/grep/subshell), không phải
   đọc file; các vòng "một process cho mỗi mục" nhân lên hàng trăm lần mỗi lượt chạy. Nay: một lượt awk
   cho mọi invariant, một lượt awk cho mọi file đếm luật `# giữ:` (`--dem-luat` cũng dùng chung), một
   lượt awk dựng bảng stage ↔ phase, và tra bảng bằng chuỗi `case` trong shell thay `$(grep …)`.

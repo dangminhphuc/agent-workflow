@@ -225,7 +225,7 @@ cho phase design, plan (dự án con riêng khi có số liệu).
 
 Đụng phần nào thì làm phần đó, không cần spec:
 
-- **`check-sdlc.sh` còn ~0,9 giây** (trước ~2,2 giây, đo cùng máy 2026-10-27 ở `perf/check-sdlc-speedup`).
+- **`check-sdlc.sh` còn ~0,5 giây** (trước ~1,1 giây, đo cặp trên cùng máy 2026-10-27 ở `perf/check-sdlc-speedup`).
   Gộp xong: invariant, đếm luật `# giữ:`, bảng stage ↔ phase, frontmatter của phase và profile (`fm_all`),
   tra bảng bằng chuỗi thay `$(grep …)`. Phần còn lại dàn trải: kiểm tập con YAML từng file, đọc
   frontmatter + capability từng file stage, quét `# giữ:` và khối `out_of_scope`.
