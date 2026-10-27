@@ -37,7 +37,7 @@ quotes: `` `tools/tests/NN-x.sh` "case", "case" ``. Each named case must exist i
 ### INV-005 — The next stage consumes only approved output
 - Rule: the requirements and each design decision carry a human approval bound to a hash of their content.
 - Engine: checkbox "Approved by human" with `sha256:` stamp.
-- Enforced by: `tools/check-design.sh` `tools/check-plan.sh` `tools/lib/approval-tick.sh`
+- Enforced by: `tools/check-design.sh` `tools/check-plan.sh` `tools/check-spec.sh` `tools/lib/approval-tick.sh`
 - Tested by: `tools/tests/02-design-plan.sh` "chặn vào design khi người chưa duyệt spec"
 
 ### INV-006 — Output is built from the current version of its input

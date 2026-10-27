@@ -145,7 +145,7 @@ báo chuyển tiếp. Glob của `conventions.md` giữ nghĩa cũ (spec SP8).
 ### SP19 — Bước A đợt 2
 
 **Vấn đề.** SP12 gắn `# giữ: CAP-…/INV-…` cho 41 chỗ; `check-sdlc.sh` chặn id không có và capability
-`machine` được nhận mà không luật nào khai. Còn nhiều chỗ chặn/cảnh báo chưa có id (`tools/unclassified-rules.txt`, nay 185), `Category` của
+`machine` được nhận mà không luật nào khai. Còn nhiều chỗ chặn/cảnh báo chưa có id (`tools/unclassified-rules.txt`, nay 126), `Category` của
 `workflow/checkers/*.md` chưa gắn, luật mồ côi chưa bị chặn, dòng "Interface: …" trong PR vẫn khai tay.
 
 **Đã làm (#81):** luật mới phải gắn `# giữ:` — `tools/unclassified-rules.txt` đếm chỗ luật chưa gắn
@@ -165,6 +165,8 @@ danh sách file của diff). Id không có thì chặn. Không tự viết `# gi
 đợt 19b): khoá engine ghim (`Engine:`), `Goal:` của intake, mục lục (`toc_loi`), hình thức
 `conventions.md` (khoá bắt buộc, thư mục tri thức, `worktree_dir`, regex), WIP=1 và dừng sau N lần đỏ
 của `aw task`, tiêu đề MR (độ dài, mã Jira).
+
+**Đợt 19c:** gắn 59/60 chỗ của `check-spec.sh` (185 → 126, [#118](https://github.com/dangminhphuc/agent-workflow/pull/118); một chỗ `kc_quy_tac_loi` chờ người duyệt capability mới — file `rules_*`/`uses_*` khai ở conventions phải có, mẫu chung của mọi checker). `toc_loi` gắn được INV-012 (mục lục trong danh sách "chờ capability mới" của 19b nay hết cần — INV-012 có từ SP35/#109). INV-005 `Enforced by` thêm `check-spec.sh` (entry check).
 
 ### SP24 — Hai nhánh tính năng chưa merge
 
