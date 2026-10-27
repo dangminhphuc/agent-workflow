@@ -123,4 +123,32 @@ dung "index: file được tạo theo khoá" test -f "$R/docs/trang-tri.md"
 dung "index: nội dung ở đường khác = phần mở đầu + bảng" bang "$(cat "$R/docs/trang-tri.md")" "$CM_INTRO$CM_TABLE"
 dung "index: không tạo file đường mặc định" sh -c "! test -f '$CM_FILE'"
 
+nhom "knowledge design/implement: chỉ mục chung thay chỉ mục ADR"
+tao_fixture; cm_fixture
+thay "$F/tdd.md" 'Module src/a.' 'Module `src/a.txt`.'
+sh "$KT" index 2>/dev/null > /dev/null
+g checkout -q main
+sh "$KT" index 2>/dev/null > /dev/null
+g add docs; g commit -q -m chi-muc
+g checkout -q -; g merge -q main
+dung "design: index file có trong git → in chỉ mục chung, không in README ADR" \
+  sh -c "sh '$KT' design '$F' 2>/dev/null | grep -qx 'docs/knowledge-index.md'"
+dung "design: không in chỉ mục ADR nữa" sh -c "! sh '$KT' design '$F' 2>/dev/null | grep -qx 'docs/adr/README.md'"
+dung "design: vẫn in ADR ref" sh -c "sh '$KT' design '$F' 2>/dev/null | grep -qx 'docs/adr/0001-quyet-a-dec-001.md'"
+tao_fixture chore; cm_fixture
+sh "$KT" index 2>/dev/null > /dev/null
+g checkout -q main
+sh "$KT" index 2>/dev/null > /dev/null
+g add docs; g commit -q -m chi-muc
+g checkout -q -; g merge -q main
+dung "implement: Design skip → in chỉ mục chung" sh -c "sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/knowledge-index.md'"
+tao_fixture feature; cm_fixture
+sh "$KT" index >/dev/null 2>&1
+dung "implement: file chỉ mục có trên cây mà chưa commit → không in chỉ mục chung" \
+  sh -c "! sh '$KT' implement '$F' 2>/dev/null | grep -qx 'docs/knowledge-index.md'"
+dung "phase 01-spec đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/01-spec.md"
+dung "phase 02-design đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/02-design.md"
+dung "phase 01-spec đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/01-spec.md"
+dung "phase 02-design đọc chỉ mục chung" sh -c "grep -q 'knowledge-index' '$ROOT'/workflow/phases/02-design.md"
+
 ket_thuc

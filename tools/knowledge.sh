@@ -9,17 +9,18 @@
 # spec: mọi luật nghiệp vụ active (BR-), mỗi luật một ref — spec đối chiếu yêu cầu mới với luật
 #   đang có; chưa có đường dẫn code để lọc nên in hết.
 # design — in (mỗi dòng một đường dẫn tương đối với gốc repo):
-#   - chỉ mục ADR (<knowledge_adr_dir>/README.md) — luôn, để thấy quyết định đã có
-#     trước khi khảo sát code;
+#   - chỉ mục kiến thức chung (khoá knowledge_index, mặc định docs/knowledge-index.md, file đã
+#     commit) — luôn, để thấy quyết định và luật đã có trước khi khảo sát code; chỉ mục chung
+#     không có → chỉ mục ADR (<knowledge_adr_dir>/README.md);
 #   - khi tdd.md đã có "## Existing code": ADR accepted có Scope khớp đường dẫn ghi ở
 #     đó, và file khớp knowledge_files (mặc định */ARCHITECTURE.md) nằm ở thư mục cha
 #     của đường dẫn đó — phạm vi của tài liệu module là thư mục chứa nó.
 #   - file có luật active mà Scope khớp đường dẫn đó.
 # implement — đường dẫn suy từ "Expected files:" của plan.md (file có thật trên commit Base khớp
 #   mẫu + tiền tố thư mục của mẫu, nên thư mục mới vẫn khớp; bỏ file test, thư mục ADR / luật):
-#   ADR accepted, file luật, tài liệu module liên quan như design. Việc có design thì bỏ chỉ mục
-#   ADR (design đã đọc); việc bỏ design (chore, skip) thì in chỉ mục ADR trước. Không có plan.md
-#   hay không có Expected files → chỉ chỉ mục (nếu có).
+#   ADR accepted, file luật, tài liệu module liên quan như design. Chỉ mục chung (file đã commit)
+#   thay chỉ mục ADR. Việc có design thì bỏ chỉ mục (design đã đọc); việc bỏ design (chore, skip)
+#   thì in chỉ mục trước. Không có plan.md hay không có Expected files → chỉ chỉ mục (nếu có).
 # review — tài liệu mà diff của việc đụng phạm vi (cột 1 của kt_anh_huong, đã khử trùng); chưa có diff
 #   → không in gì.
 # show — in từng ref, mỗi khối mở bằng dòng "==> <ref> <==". <file>#<neo>: một mục "##" của tài liệu
@@ -83,6 +84,7 @@ case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;
 [ -d "$DIR" ] || { echo "LỖI: không có thư mục $DIR" >&2; exit 2; }
 
 R=$MT_REPO
+CM=$(kt_chi_muc_file "$R" "$MT_CONV")
 if [ "$PH" = spec ]; then
   luat_ds "$R" "$MT_CONV" | awk -F'|' '$3 == "active" && !t[$1 "#" $2]++ { print $1 "#" $2 }'
   exit 0
@@ -93,11 +95,13 @@ if [ "$PH" = review ]; then
 fi
 TM=$(adr_thu_muc "$MT_CONV")
 if [ "$PH" = implement ]; then
-  if kc_bo_design "$DIR" && [ -f "$R/$TM/README.md" ]; then printf '%s\n' "$TM/README.md"; fi
+  if [ -n "$CM" ]; then printf '%s\n' "$CM"
+  elif kc_bo_design "$DIR" && [ -f "$R/$TM/README.md" ]; then printf '%s\n' "$TM/README.md"; fi
   kt_duong_plan "$DIR" "$MT_CONV" | kt_lay "$R" "$MT_CONV"
   exit 0
 fi
-[ -f "$R/$TM/README.md" ] && printf '%s\n' "$TM/README.md"
+if [ -n "$CM" ]; then printf '%s\n' "$CM"
+elif [ -f "$R/$TM/README.md" ]; then printf '%s\n' "$TM/README.md"; fi
 
 # Đường dẫn có thật trong repo, ghi ở mục "## Existing code" của tdd.md.
 DD=$( [ -f "$DIR/tdd.md" ] && awk '
