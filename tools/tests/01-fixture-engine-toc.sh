@@ -132,6 +132,15 @@ ky_vong_hai_ly_do 1 "link tới mã không có → còn chặn sau một lượt
   'không có heading nào mã Q-009' '(dòng ' sh "$TOC" "$F" spec.md
 printf -- '- Location: [spec.md § <mục>](spec.md#<anchor>)\n' >> "$F/spec-findings.md"
 ky_vong_ly_do 1 "chỗ giữ chỗ chưa điền → lỗi nêu rõ là chỗ giữ chỗ" "…kèm số dòng" 'còn chỗ giữ chỗ' sh "$TOC" "$F" spec-findings.md
+# hai heading cùng mã: máy không được đoán, và lỗi phải nói đúng — có hai mục, không phải không có
+viet_spec
+printf -- '\n### Q-001 — hỏi thêm\n' >> "$F/open-questions.md"
+thay "$F/spec.md" '(open-questions.md#q-001--hỏi-b)' '(open-questions.md#q-001--chu-cu)'
+ma_amb=0; sh "$TOC" "$F" spec.md open-questions.md > "$TMP/amb.out" 2>&1 || ma_amb=$?
+dung "mã khớp hai heading → vẫn chặn sau một lượt" bang "$ma_amb" 1
+dung "…nêu rõ có hai mục mang mã đó" grep -qF 'có 2 mục mang mã Q-001' "$TMP/amb.out"
+dung "…không nói sai là không có heading nào" sh -c "! grep -q 'không có heading nào' '$TMP/amb.out'"
+dung "…giữ nguyên link để người viết tự chọn mục" grep -qF '(open-questions.md#q-001--chu-cu)' "$F/spec.md"
 # mọi lỗi dạng in hết một lượt, không dừng ở lỗi đầu
 viet_spec; thay "$F/spec.md" '(open-questions.md#q-001--hỏi-b)' '(open-questions.md#q-009)'
 awk '/^## Contents$/ { bo = 1; next } bo && /^## / { bo = 0 } !bo' "$F/open-questions.md" > "$TMP/oq2.md" && mv "$TMP/oq2.md" "$F/open-questions.md"

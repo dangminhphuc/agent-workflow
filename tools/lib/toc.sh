@@ -70,10 +70,12 @@ TOC_AWK='
     if (!match(a, /^[a-z]+-[0-9]+/)) return ""
     return substr(a, RSTART, RLENGTH)
   }
-  function toc_tim_ma(f, ma,   n, k, a, d) {    # anchor duy nhất của file f bắt đầu bằng mã ma ("" nếu không hoặc hai)
-    n = split(ds_slug[f], a, " "); d = ""
-    for (k = 1; k <= n; k++) if (a[k] == ma || index(a[k], ma "-") == 1) { if (d != "") return ""; d = a[k] }
-    return d
+#   toc_tim_ma(f, ma)  anchor của file f bắt đầu bằng mã ma, chỉ khi đúng một mục khớp
+#                      ("" nếu không hoặc nhiều); số mục khớp ở toc_so_khop
+  function toc_tim_ma(f, ma,   n, k, a, d) {
+    n = split(ds_slug[f], a, " "); d = ""; toc_so_khop = 0
+    for (k = 1; k <= n; k++) if (a[k] == ma || index(a[k], ma "-") == 1) { toc_so_khop++; d = a[k] }
+    return toc_so_khop == 1 ? d : ""
   }
   function toc_dong(s,   t, i, r, j, n) {
     toc_chu = ""; toc_sach = ""
@@ -148,6 +150,8 @@ toc_loi() {
         ma = toc_ma(toc_thuong(a))
         if (ma == "") return " — chạy aw toc, hoặc sửa theo heading"
         d = toc_tim_ma(f, ma)
+        if (d == "" && toc_so_khop > 1)
+          return " — " f " có " toc_so_khop " mục mang mã " toupper(ma) ": viết rõ anchor của mục muốn trỏ (máy chỉ sửa được khi mã chỉ một mục)"
         if (d == "") return " — " f " không có heading nào mã " toupper(ma) ": sửa link hoặc viết lại heading"
         return " — dạng đúng là mục #" d " (chạy aw toc để sửa link)"
       }
