@@ -67,6 +67,7 @@ Tên cũ (`YC-`, `D-`, `PH-`, `T-`, `RF-`) chỉ còn ở job chạy bằng engi
 | `Design: skip` | Bugfix/refactor nhỏ (`Risk: normal`, không có lựa chọn kỹ thuật) bỏ phase design; plan đi thẳng từ spec. Chore luôn bỏ design |
 | `Promote` | Người đánh dấu một DEC-xxx (`- Promote: adr`) hay REQ (`- Promote: BR-…`) để đưa vào git của `target repo` thành `durable knowledge` |
 | `ref` | Cách trỏ tới một khối `durable knowledge`: `<file>` hoặc `<file>#<neo>` (neo = nguyên văn heading `##` hay ID `BR-…`). `aw knowledge` in ref, `aw knowledge show <ref>` đọc khối, cột `File` của `## Durable knowledge` ghi ref |
+| chỉ mục chung | Bảng `| Ref | Kind | Scope | Status | Summary |` máy dựng lại (`aw knowledge index`) từ ADR, luật `BR-` và mục khai `Scope` của tài liệu module — khoá `knowledge_index`, mặc định `docs/knowledge-index.md`; quay lại bảng khi `aw adr promote` / `aw rule promote` / khi diff đụng tài liệu kiến thức và bảng lệch dựng lại (INV-013) |
 | `durable knowledge` *(trước: kiến thức bền)* | Thứ còn đúng sau khi `job` xong và nằm trong git của `target repo`: `conventions.md`, ADR, `business rule`, `ARCHITECTURE.md` của module. Đối lập với *trạng thái của job* (artifact, chỉ ở máy) |
 
 ## Kiểm và duyệt
