@@ -75,6 +75,8 @@ New decisions go through DEC-xxx + `- Promote: adr` + `aw adr promote`. Here: on
 
 Add a row per ADR to the index `README.md` table `| ADR | Title | Status | Scope |` (`| [NNNN](NNNN-….md) | <title> | accepted | \`<scope>\` |`), keeping text above the table. No evidence for the "why" → **no ADR**, a question in the report. Check: `aw adr check` → HỢP LỆ.
 
+After ADRs and `ARCHITECTURE.md` files exist, bootstrap the common knowledge index: create `docs/knowledge-index.md` with `aw knowledge index` (key `knowledge_index`, default path) and commit it — later phases read that one table (spec, design, implement) and the machine keeps it faithful to the documents it lists. Skipped when the human says no (key stays empty = off). Exists already? Run `aw knowledge index` and commit the refresh with the knowledge files.
+
 ### 7. Business rules — candidates only
 
 Find business invariants in code and tests (limits, valid states, permissions). **Do not** write `BR-` blocks: they need a versioned source and human approval, and enter through `/aw-spec` (`- Promote: BR-<DOMAIN>-NNN`) in the next job that touches them. List in the report: rule, evidence, proposed domain, who has authority to confirm. Check: `aw rule check` no worse than on the main checkout.

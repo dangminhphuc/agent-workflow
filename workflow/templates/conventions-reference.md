@@ -178,6 +178,20 @@ mục: `<file>#<neo>`, neo = nguyên văn heading `##` hoặc ID `BR-…`. Đọ
 `aw knowledge show <ref>…`. Heading `##` trùng trong một file chỉ cảnh báo; heading của mục có
 `Scope` mà chứa `|` thì bị chặn (làm vỡ bảng verdict).
 
+### `knowledge_index`
+File chỉ mục kiến thức chung, mặc định `docs/knowledge-index.md`. Với file **đã commit**, diff đụng
+tài liệu kiến thức (thư mục ADR, thư mục luật, `knowledge_files`) hay đụng file chỉ mục mà bảng
+lệch dựng lại → checkers chặn. Khoá khai trống = tắt.
+
+- Lệnh máy: `aw knowledge index` — dựng lại bảng `| Ref | Kind | Scope | Status | Summary |`
+  từ ADR, khối luật BR- và mục khai `- Scope:` của `knowledge_files` (tài liệu phần người viết
+  phía trên bảng giữ nguyên). Sửa tài liệu là sửa bảng; không sửa bảng bằng tay.
+- Trong file đó: `Kind` `adr | module | rule`; `Ref` `<file>` (ADR) hoặc `<file>#<neo>`; `Status`
+  của ADR/luật, `module` hằng `active`; `Summary` = tiêu đề ADR / câu đầu của `Rule:` / dòng
+  `- Summary:` (thiếu thì heading). `aw adr promote` và `aw rule promote` dựng lại chỉ mục tự động.
+- Phase đọc: `spec` đọc thêm file này (mọi hàng ADR/module có thể ràng buộc yêu cầu mới);
+  `design`/`implement` in đường dẫn chỉ mục thay chỉ mục ADR `README.md` khi file đã commit.
+
 ## Repo rules
 
 ### `rules_<phase>`

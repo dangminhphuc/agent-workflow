@@ -224,6 +224,21 @@ for k in knowledge_adr_dir knowledge_rules_dir; do
     "$TM_VIEC"|"$TM_VIEC"/*) loi "$k \"$AD\" nằm trong $TM_VIEC/ (artifact của việc, gỡ khỏi branch trước MR) — durable knowledge phải vào nhánh gốc" ;;
   esac
 done
+KI=$(gt knowledge_index)
+case "$KI" in
+  "") ;; # khai trống = tắt
+  *.md)
+    case "$KI" in
+# giữ: INV-013
+      /*|*..*) loi "knowledge_index \"$KI\" phải là đường dẫn tương đối trong repo, không có \"..\"" ;;
+# giữ: INV-013
+      "$TM_CU"*) loi "knowledge_index \"$KI\" nằm trong $TM_CU/ (bị exclude) — durable knowledge phải vào git" ;;
+# giữ: INV-013
+      "$TM_VIEC"|"$TM_VIEC"/*) loi "knowledge_index \"$KI\" nằm trong $TM_VIEC/ — durable knowledge phải vào nhánh gốc" ;;
+    esac ;;
+# giữ: INV-013
+  *) loi "knowledge_index \"$KI\" không kết thúc .md — khai trống = tắt" ;;
+esac
 qt=$(kc_quy_tac_loi "$MT_REPO" review)
 [ -n "$qt" ] && { printf '%s\n' "$qt" | while IFS= read -r l; do echo "  ✗ $l"; done; n_x=$((n_x + $(printf '%s\n' "$qt" | grep -c .))); }
 [ "$n_x" = "$n_truoc" ] && echo "  ✓ giá trị đúng dạng"

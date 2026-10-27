@@ -71,6 +71,8 @@ knowledge_adr_dir: docs/adr
 knowledge_rules_dir: docs/product/rules
 # [default] glob tài liệu module đã commit; phạm vi của mỗi file = thư mục chứa nó
 knowledge_files: */ARCHITECTURE.md
+# [default] file chỉ mục kiến thức chung máy dựng lại (`aw knowledge index`); khai trống = tắt
+knowledge_index: docs/knowledge-index.md
 
 # ── Repo rules (file đã commit, agent đọc qua `aw rules`) ─────────
 # [optional] vd rules_implement = docs/coding-style.md src/api/ARCHITECTURE.md

@@ -28,6 +28,9 @@ esac
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"
 . "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
+. "$HERE/lib/rule.sh"
+. "$HERE/lib/knowledge.sh"
 . "$HERE/lib/env.sh"
 mt_dat
 
@@ -120,6 +123,10 @@ if [ -n "${F_CU:-}" ]; then
 fi
 adr_lam_chi_muc "$D_ADR"
 echo "  ghi     $TM/README.md (chỉ mục)"
+CI=$(kt_chi_muc_file "$MT_REPO" "$MT_CONV")
+if [ -n "$CI" ]; then
+  kt_chi_muc_lai "$MT_REPO" "$MT_CONV" && echo "  cập nhật $CI (chỉ mục kiến thức chung)"
+fi
 l=$(adr_loi_hinh_thuc "$D_ADR")
 if [ -n "$l" ]; then
   printf '%s\n' "$l" | while IFS= read -r x; do echo "  ✗ $x"; done

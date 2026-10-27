@@ -45,7 +45,7 @@ make security   # <quét bảo mật, cùng ngưỡng CI>
 
 ## Decisions
 
-Vì sao code như vậy: <docs/adr/ (chỉ mục: docs/adr/README.md) | None>.
+Vì sao code như vậy: <docs/adr/ (chỉ mục: docs/adr/README.md hoặc docs/knowledge-index.md) | None>.
 Quyết định chỉ của một module: `ARCHITECTURE.md` của module đó.
 
 ## Status
