@@ -49,7 +49,7 @@
 #                  (nhận https://… và file://…)
 #   AW_HOME        mặc định ~/.agent-workflow;  AW_CACHE  mặc định $AW_HOME/engine
 
-AW_WRAPPER_VERSION="2026.10.33"
+AW_WRAPPER_VERSION="2026.10.34"
 AW_PROTOCOL=1
 AW_MIRROR_DEFAULT="https://github.com/dangminhphuc/agent-workflow/releases/download"
 
