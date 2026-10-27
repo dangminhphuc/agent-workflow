@@ -11,23 +11,23 @@
 # mặc định origin). Hai PR cùng lấy một số thì PR merge sau bị chặn ở đây: chạy lại
 # tools/prepare-release.sh để lấy số kế tiếp.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/tools/lib/result.sh"
 . "$ROOT/tools/lib/version.sh"
 . "$ROOT/tools/lib/changelog.sh"
 kq_khai check-release.sh \
-  "0=ĐẠT — version nhất quán" \
-  "1=KHÔNG ĐẠT — xem các dòng LỖI phía trên" \
-  "2=SAI THAM SỐ HOẶC REF"
+  "0=PASS — version nhất quán" \
+  "1=FAIL — xem các dòng LỖI phía trên" \
+  "2=BAD ARGS OR REF"
 
 REMOTE="${AW_REMOTE:-origin}"
 BASE="${1:-}"
 [ $# -le 1 ] || { echo "Dùng: sh tools/check-release.sh [<base-ref>]" >&2; exit 2; }
 
 n_loi=0
-loi() { echo "  [LỖI] $*"; n_loi=$((n_loi + 1)); }
+loi() { echo "  [ERROR] $*"; n_loi=$((n_loi + 1)); }
 
 V=$(tr -d ' \r\n' < "$ROOT/VERSION" 2>/dev/null)
 echo "VERSION: $V"

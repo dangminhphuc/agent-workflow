@@ -19,7 +19,7 @@ Việc sinh nằm trong `adapters/lib/common.sh` (dùng chung với Claude Code)
 Vì vậy hợp đồng phase (Bước 0, cổng duyệt, đọc vào / ghi ra, điều kiện ra, quy tắc
 repo, thân phase) **giống hệt** bản Claude Code — `tools/run-tests.sh` kiểm từng byte.
 
-`--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (`SAI THAM SỐ`).
+`--out` trỏ vào repo agent-workflow hoặc thư mục con của nó sẽ bị từ chối (`BAD ARGS`).
 
 ## Biên dịch ra gì
 
@@ -51,8 +51,8 @@ Cursor không thay biến trong file lệnh (không có `$ARGUMENTS`): chữ ng�
 dặn agent: `<tham-số>` là đúng phần chữ đó, chép nguyên văn; không gõ gì thì bỏ hẳn.
 
 Đây là chỗ yếu hơn Claude Code (máy thay, không phải LLM chép), nên **engine chặn**
-chữ giữ chỗ còn nguyên: `aw feature '<tham-số>'` → `TÊN KHÔNG HỢP LỆ`,
-`aw input` với `<tham-số>` → `SAI CÁCH GỌI`. Agent quên thay thì bị chặn, không tạo
+chữ giữ chỗ còn nguyên: `aw feature '<tham-số>'` → `INVALID NAME`,
+`aw input` với `<tham-số>` → `BAD CALL`. Agent quên thay thì bị chặn, không tạo
 job dir tên `<tham-số>` hay mục `[HUMAN]` rác.
 
 ## Cái gì KHÔNG biên dịch portable được — Cursor xử lý thế nào
@@ -154,7 +154,7 @@ Chưa kiểm trên một phiên Cursor thật — kiểm khi có dịp và ghi l
 
 ## Kết quả
 
-Như Claude Code: khối `Kết quả` cuối output — `ĐÃ SINH`, `SAI THAM SỐ`,
-`CÓ FILE VIẾT TAY`, `ĐỊNH NGHĨA QUY TRÌNH LỖI` (spec nguồn sai, hoặc adapter thiếu hook),
+Như Claude Code: khối `Result` cuối output — `ĐÃ SINH`, `BAD ARGS`,
+`HAND-WRITTEN FILE`, `PROCESS DEFINITION ERROR` (spec nguồn sai, hoặc adapter thiếu hook),
 `SAI CHUẨN Cursor` (file sinh ra không đúng định dạng Cursor đọc — vd lệnh có frontmatter, subagent
 `name` khác tên file; file sai không được ghi — xem [../README.md](../README.md#chuẩn-định-dạng-của-agent)).

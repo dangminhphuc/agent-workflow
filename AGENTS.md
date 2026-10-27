@@ -35,7 +35,7 @@ Open work: `docs/superpowers/2026-10-22-roadmap-cai-thien.md` (the only todo lis
 
 - Read by agents at runtime (phases, `workflow/*.md`, rules, checkers, adapter-generated text):
   English, terse, directives only.
-- Read by humans (README, docs, CHANGELOG, frontmatter `name`/`summary`, `aw` output, `Kết quả`
+- Read by humans (README, docs, CHANGELOG, frontmatter `name`/`summary`, `aw` output, `Result`
   labels): Vietnamese.
 - Templates and artifacts: headings, field names, keywords, enum values are English — new ones
   too. Vietnamese only for body text and placeholders. Checkers match exact strings: renaming one
@@ -123,11 +123,11 @@ or tooling changes. Vietnamese, for a reader who does not read the diff.
 
 ## Verify
 
-- `sh tools/run-tests.sh` must end with label `MỌI CA ĐẠT`.
+- `sh tools/run-tests.sh` must end with label `ALL PASS`.
 - Tests live in `tools/tests/NN-<topic>.sh` (helpers + fixture: `tools/tests/lib.sh`), run in parallel.
   Add a case to the part of the same topic; a part must not depend on another part. While
   iterating: `sh tools/run-tests.sh <part-name>` or `sh tools/tests/<part>.sh`.
-- Output ends with per-part timing. A part your change makes slow (`CẢNH BÁO … nên tách`) → split it
+- Output ends with per-part timing. A part your change makes slow (`WARN … nên tách`) → split it
   at a fixture boundary in the same PR (`docs/kien-truc.md` § Cách thêm một phase).
 - Tests: `ky_vong <code> "<name>" <cmd>`, `dung "<name>" <test>`. Test every checker both ways
   (blocks when it should, passes when it should). Changed text a test greps → fix the test in the same commit.

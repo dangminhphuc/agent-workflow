@@ -29,16 +29,16 @@
 #
 # Stdout: đúng các dòng ghi vào "## Input" (rỗng = không có input mới).
 # Stderr: giải thích, cảnh báo, đề xuất tách thêm.
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai input.sh \
-  "0=NGUỒN — các tham số đều là nguồn (stdout rỗng = không có input mới)" \
-  "1=ĐƯỜNG DẪN KHÔNG TỒN TẠI — hỏi lại người, không tự đoán" \
-  "2=SAI CÁCH GỌI" \
-  "3=KHÔNG CÓ THAM SỐ — hỏi người input" \
-  "4=LỜI NGƯỜI DÙNG — stdout là mục [HUMAN] nguyên văn"
+  "0=SOURCE — các tham số đều là nguồn (stdout rỗng = không có input mới)" \
+  "1=PATH NOT FOUND — hỏi lại người, không tự đoán" \
+  "2=BAD CALL" \
+  "3=NO ARGS — hỏi người input" \
+  "4=USER WORDS — stdout là mục [HUMAN] nguyên văn"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 
@@ -68,7 +68,7 @@ fi
 case "$(printf '%s' "$VAN" | tr -d ' \t\n\r')" in
   '<tham-số>'|'$ARGUMENTS')
     echo "LỖI: tham số là chữ giữ chỗ của lệnh (\"$VAN\"), chưa được thay." >&2
-    echo "  Agent: chép NGUYÊN VĂN phần người gõ sau tên lệnh; người không gõ gì thì để trống (KHÔNG CÓ THAM SỐ)." >&2
+    echo "  Agent: chép NGUYÊN VĂN phần người gõ sau tên lệnh; người không gõ gì thì để trống (NO ARGS)." >&2
     exit 2 ;;
 esac
 
@@ -242,6 +242,6 @@ fi
 
 ra=$(in_nguon "$TMPD/nguon")
 [ -n "$ra" ] && printf '%s\n' "$ra"
-[ "$canh_bao_conf" = 1 ] && echo "CẢNH BÁO: conventions.md chưa khai confluence_domains — mọi URL không phải Jira hay issue được coi là [CONFLUENCE]. Người kiểm lại." >&2
+[ "$canh_bao_conf" = 1 ] && echo "WARN: conventions.md chưa khai confluence_domains — mọi URL không phải Jira hay issue được coi là [CONFLUENCE]. Người kiểm lại." >&2
 [ -z "$ra" ] && echo "Không có input mới." >&2
 exit 0

@@ -37,10 +37,10 @@ Print the full list (id + title + group, one per line) only if the human asks.
 
 | Result `[x]` | Do |
 |---|---|
-| `KHÔNG CÒN VIỆC CHỜ NGƯỜI` | One line (plus the `[ĐÃ XỬ LÝ]` group if any — step 4), stop |
-| `CÓ VIỆC ĐANG CHẶN` | Summary line, go to step 2 |
+| `NOTHING WAITING` | One line (plus the `[HANDLED]` group if any — step 4), stop |
+| `BLOCKED` | Summary line, go to step 2 |
 | `CÒN VIỆC CHỜ NGƯỜI, CHƯA CHẶN` | Summary line, ask with choices "Giải quyết luôn" / "Để sau" |
-| `THIẾU ĐẦU VÀO` | No `spec.md`/`open-questions.md` → run `/aw-spec` first |
+| `NO INPUT` | No `spec.md`/`open-questions.md` → run `/aw-spec` first |
 
 ## 2. Ask one item per turn, in order
 
@@ -89,7 +89,7 @@ Vì sao đề xuất: 403 tách khỏi 401 nên đối tác biết là thiếu q
 
 Order (max 4): `(Đề xuất) <option>` → 1–2 other options (from the source first) → **Chưa trả lời được** (you draft a message to `<Ask>`). Free text also accepts "đổi mức `Blocking` sang …" or "bỏ qua".
 
-`CHƯA PHÂN MỨC` item: the first question picks the level (`blocking`/`review-blocking`/`non-blocking`), the one implied by "If wrong, redo" first as `(Đề xuất)` — then ask for the answer.
+`UNRATED` item: the first question picks the level (`blocking`/`review-blocking`/`non-blocking`), the one implied by "If wrong, redo" first as `(Đề xuất)` — then ask for the answer.
 
 ### 2b. LLM checker finding
 
@@ -133,7 +133,7 @@ Then ask once: "ghi như vậy được không?" (agreement in chat is enough). 
 
 ### 3.2 Write
 
-Write everything, then: `aw task reopen <dir> Q-NNN` once per question answered differently from its assumption, and `aw task reopen <dir> REQ-NNN` once per REQ whose description/criteria changed (no `plan.md` → nothing to do); `aw check spec <dir>` if `spec.md` / `open-questions.md` changed; `aw check design <dir>` if `tdd.md` / findings changed. Paste the real results. Not `[x] ĐẠT` → make the files agree; a fix that changes lines the human confirmed → show that part and ask again.
+Write everything, then: `aw task reopen <dir> Q-NNN` once per question answered differently from its assumption, and `aw task reopen <dir> REQ-NNN` once per REQ whose description/criteria changed (no `plan.md` → nothing to do); `aw check spec <dir>` if `spec.md` / `open-questions.md` changed; `aw check design <dir>` if `tdd.md` / findings changed. Paste the real results. Not `[x] PASS` → make the files agree; a fix that changes lines the human confirmed → show that part and ask again.
 
 ### 3a. Open question — what to write
 
@@ -163,7 +163,7 @@ Write everything, then: `aw task reopen <dir> Q-NNN` once per question answered 
 
 After the write (3.2), rerun `aw pending` (read, do not paste), then say briefly:
 - what still blocks which phase; which questions wait on whom (drafted messages);
-- findings closed but not arbitrated by the human this round (group `[ĐÃ XỬ LÝ]`, usually self-fixed in `/aw-design`): id + one line;
+- findings closed but not arbitrated by the human this round (group `[HANDLED]`, usually self-fixed in `/aw-design`): id + one line;
 - new/edited DEC-xxx awaiting approval; spec just unticked → human re-ticks;
 - artifacts now stale because inputs changed (`tdd.md`, `plan.md`): answer **matches** the assumption → rerun that phase to refresh the input hash; **differs** (or a REQ was changed, section 5) → `/aw-design` redoes what "If wrong, redo" lists, then `/aw-plan`. `tdd.md` just edited for a finding and `plan.md` exists → rerun `/aw-plan`.
 

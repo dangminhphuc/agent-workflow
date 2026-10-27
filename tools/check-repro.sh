@@ -12,15 +12,15 @@
 # Máy chỉ biết test ĐÃ đỏ, không biết nó đỏ ĐÚNG VÌ BUG (hay vì lỗi biên dịch):
 # phần đó người đọc output ở review ("Repro test fails because: …").
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai check-repro.sh \
-  "0=ĐẠT — test tái hiện đỏ trên code chưa sửa, giờ mới được sửa code" \
-  "1=KHÔNG HỢP LỆ — lý do in phía trên" \
-  "2=KHÔNG CHẠY ĐƯỢC — sai job type hoặc thiếu cấu hình"
+  "0=PASS — test tái hiện đỏ trên code chưa sửa, giờ mới được sửa code" \
+  "1=INVALID — lý do in phía trên" \
+  "2=CANNOT RUN — sai job type hoặc thiếu cấu hình"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 
@@ -52,21 +52,21 @@ $DOI
 EOF
 
 if [ -n "$ngoai" ]; then
-  echo "KHÔNG HỢP LỆ — diff đã đụng file ngoài test:$ngoai"
+  echo "INVALID — diff đã đụng file ngoài test:$ngoai"
   echo ""
   echo "Tái hiện phải chạy TRƯỚC khi sửa code. Hoàn tác phần sửa (git stash), chạy lại,"
   echo "rồi mới sửa. repro.md cũ (nếu có) được giữ nguyên."
   exit 1
 fi
 if [ "$n_test" -eq 0 ]; then
-  echo "KHÔNG HỢP LỆ — chưa có file test nào thay đổi. Viết test tái hiện trước."
+  echo "INVALID — chưa có file test nào thay đổi. Viết test tái hiện trước."
   exit 1
 fi
 
 TMP="${TMPDIR:-/tmp}/taihien.$$"
 sh -c "$TEST_CMD" > "$TMP" 2>&1
 ma=$?
-if [ "$ma" -eq 0 ]; then nhan_kt="XANH"; else nhan_kt="ĐỎ"; fi
+if [ "$ma" -eq 0 ]; then nhan_kt="GREEN"; else nhan_kt="RED"; fi
 hash=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null)
 {
   echo "# Tái hiện lỗi"
@@ -76,7 +76,7 @@ hash=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null)
   echo ""
   echo "- Lệnh: \`$TEST_CMD\`"
   echo "- Commit: \`$hash\` (+ thay đổi chưa commit, chỉ gồm file test)"
-  echo "- Kết quả: **$nhan_kt**"
+  echo "- Result: **$nhan_kt**"
   echo "- Mã thoát: \`$ma\` (bằng chứng thô của lệnh)"
   echo "- File thay đổi lúc chạy:"
   printf '%s\n' "$DOI" | awk -F'\t' 'NF { print "  - `" ($3 != "" ? $3 : $2) "`" }'
@@ -91,7 +91,7 @@ echo ""
 echo "Đã ghi $OUT (test $nhan_kt)."
 
 if [ "$ma" -eq 0 ]; then
-  echo "KHÔNG HỢP LỆ — test XANH trên code chưa sửa: nó không tái hiện được lỗi."
+  echo "INVALID — test GREEN trên code chưa sửa: nó không tái hiện được lỗi."
   exit 1
 fi
-echo "ĐẠT — test tái hiện đỏ trên code chưa sửa. Giờ mới được sửa code."
+echo "PASS — test tái hiện đỏ trên code chưa sửa. Giờ mới được sửa code."

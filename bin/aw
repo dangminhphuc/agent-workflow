@@ -62,9 +62,9 @@ AW_MIRROR="${AW_MIRROR:-$AW_MIRROR_DEFAULT}"
 ket_thuc() {
   _m=$1
   {
-    printf '\nKết quả: aw\n'
-    for _d in "0=XONG" "1=CÓ VẤN ĐỀ — các dòng ✗ phía trên" "2=SAI THAM SỐ — xem thông báo phía trên" \
-              "9=KHÔNG HỢP LỆ — không chạy được engine đúng version, lý do phía trên"; do
+    printf '\nResult: aw\n'
+    for _d in "0=DONE" "1=PROBLEMS — các dòng ✗ phía trên" "2=BAD ARGS — xem thông báo phía trên" \
+              "9=INVALID — không chạy được engine đúng version, lý do phía trên"; do
       if [ "${_d%%=*}" = "$_m" ]; then printf '  [x] %s\n' "${_d#*=}"; else printf '  [ ] %s\n' "${_d#*=}"; fi
     done
   } >&2

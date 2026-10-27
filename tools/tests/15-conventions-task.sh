@@ -11,11 +11,11 @@ CH="$CFG/config.sh"; cp "$CH" "$TMP/ch-ss.bak"
 nhom "check-conventions.sh (aw conventions check)"
 QU="$T/check-conventions.sh"; CV="$CFG/conventions.md"; cp "$CV" "$TMP/conv-qu.bak"
 qu_ra() { sh "$QU" 2>/dev/null; }
-ky_vong 0 "mẫu của engine trên fixture → HỢP LỆ" sh "$QU"
+ky_vong 0 "mẫu của engine trên fixture → VALID" sh "$QU"
 dung "…cảnh báo placeholder còn trong Team conventions" sh -c "sh '$QU' 2>/dev/null | grep -q 'còn placeholder'"
-ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$QU" x
+ky_vong 2 "thừa tham số → BAD ARGS" sh "$QU" x
 ky_vong 0 "aw-engine conventions check" sh "$ROOT/bin/aw-engine" conventions check
-ky_vong 2 "aw-engine conventions <lạ> → SAI THAM SỐ" sh "$ROOT/bin/aw-engine" conventions lam-gi
+ky_vong 2 "aw-engine conventions <lạ> → BAD ARGS" sh "$ROOT/bin/aw-engine" conventions lam-gi
 # cắt dòng dài theo byte không được để nửa ký tự UTF-8 (LC_ALL=C): chữ có dấu nằm đúng điểm cắt 60 / 50
 cp "$TMP/conv-qu.bak" "$CV"
 tc_a() { awk -v n="$1" 'BEGIN { s = ""; for (i = 0; i < n; i++) s = s "a"; printf "%s", s }'; }
@@ -29,7 +29,7 @@ cp "$TMP/conv-qu.bak" "$CV"
 # qu_loi <tên ca> <tìm> <thay> <chuỗi phải có trong output>
 qu_loi() {
   cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" "$2" "$3"
-  ky_vong 1 "$1 → KHÔNG HỢP LỆ" sh "$QU"
+  ky_vong 1 "$1 → INVALID" sh "$QU"
   dung "…nêu: $4" sh -c "sh '$QU' 2>/dev/null | grep -qF -- \"\$1\"" _ "$4"
 }
 qu_loi "khoá gõ sai" 'test_files: ' 'test_file: ' 'khoá lạ "test_file"'
@@ -59,20 +59,20 @@ qu_loi "khối chưa đóng" 'uses_review:
 ```' 'uses_review:' 'chưa đóng'
 cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'sensitive_code:
 ' ''
-ky_vong 0 "thiếu khoá có trong mẫu → vẫn HỢP LỆ" sh "$QU"
+ky_vong 0 "thiếu khoá có trong mẫu → vẫn VALID" sh "$QU"
 dung "…cảnh báo thiếu khoá sensitive_code" sh -c "sh '$QU' 2>/dev/null | grep -q '! thiếu khoá sensitive_code'"
 cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'production_code: src/*' 'production_code: app/*'
 dung "production_code không khớp file nào → cảnh báo" sh -c "sh '$QU' 2>/dev/null | grep -q 'production_code \"app/\*\" không khớp file nào'"
 cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'production_code: src/*' 'production_code: src/* test/*'
 dung "file khớp cả test_files lẫn production_code → cảnh báo" sh -c "sh '$QU' 2>/dev/null | grep -q 'khớp cả test_files lẫn production_code'"
 cp "$TMP/conv-qu.bak" "$CV"; thay "$CV" 'mr_platform:' 'mr_platform: bitbucket'
-ky_vong 1 "aw ready: conventions.md sai → CHƯA SẴN SÀNG" sh "$SS" "$F" --no-test
+ky_vong 1 "aw ready: conventions.md sai → NOT READY" sh "$SS" "$F" --no-test
 dung "…nêu lỗi của aw conventions check" sh -c "sh '$SS' '$F' --no-test 2>/dev/null | grep -q 'conventions.md: mr_platform'"
 cp "$TMP/conv-qu.bak" "$CV"
 
 # ---------------------------------------------------------------- quy ước đã commit (qu_hieu_luc)
 nhom "conventions.md trong repo đích + bản clone chỉ ghi đè khoá máy"
-dung "repo chỉ có quy ước ở bản clone → vẫn HỢP LỆ, cảnh báo chưa commit vào repo" sh -c "sh '$QU' 2>/dev/null | grep -q '! quy ước chưa commit vào repo'"
+dung "repo chỉ có quy ước ở bản clone → vẫn VALID, cảnh báo chưa commit vào repo" sh -c "sh '$QU' 2>/dev/null | grep -q '! quy ước chưa commit vào repo'"
 RQ="$TMP/repo-qu"; CQ="$RQ/.git/agent-workflow"; DQ="docs/agent-workflow/conventions.md"
 gq() { git -C "$RQ" -c user.name=t -c user.email=t@t "$@" >/dev/null 2>&1; }
 mkdir -p "$RQ/src" "$RQ/test"; gq init -q; gq checkout -q -b main; mkdir -p "$CQ"
@@ -85,14 +85,14 @@ gq add -A; gq commit -q -m "quy uoc"
 hl() { (AW_REPO="$1"; AW_CONFIG="$CQ"; export AW_REPO AW_CONFIG; . "$T/lib/md.sh"; conv_get "$(qu_hieu_luc "$1")" "$2"); }
 quq() { (cd "$1" && AW_REPO="$1" AW_CONFIG="$CQ" sh "$QU" 2>&1); }
 dung "đọc quy ước đã commit, không cần bản clone" bang "$(hl "$RQ" sensitive_code)" "src/auth/*"
-ky_vong 0 "…aw conventions check → HỢP LỆ" quq "$RQ"
+ky_vong 0 "…aw conventions check → VALID" quq "$RQ"
 dung "…không còn cảnh báo chưa commit" sh -c "! (cd '$RQ' && AW_REPO='$RQ' AW_CONFIG='$CQ' sh '$QU' 2>/dev/null | grep -q 'chưa commit vào repo')"
 printf '```conventions\nworktree_dir: ../wt-rieng/{ten}\n```\n' > "$CQ/conventions.md"
 dung "bản clone ghi đè worktree_dir" bang "$(hl "$RQ" worktree_dir)" "../wt-rieng/{ten}"
 dung "…khoá khác vẫn lấy từ repo" bang "$(hl "$RQ" sensitive_code)" "src/auth/*"
-ky_vong 0 "…aw conventions check → HỢP LỆ" quq "$RQ"
+ky_vong 0 "…aw conventions check → VALID" quq "$RQ"
 printf '```conventions\nworktree_dir: ../wt-rieng/{ten}\nsensitive_code:\n```\n' > "$CQ/conventions.md"
-ky_vong 1 "bản clone khai khoá ngoài khoá máy → KHÔNG HỢP LỆ" quq "$RQ"
+ky_vong 1 "bản clone khai khoá ngoài khoá máy → INVALID" quq "$RQ"
 dung "…nêu khoá đó chỉ được khai trong file đã commit" sh -c "(cd '$RQ' && AW_REPO='$RQ' AW_CONFIG='$CQ' sh '$QU' 2>/dev/null) | grep -qF 'khoá \"sensitive_code\" chỉ được khai trong $DQ'"
 dung "…và không có hiệu lực: sensitive_code vẫn theo repo" bang "$(hl "$RQ" sensitive_code)" "src/auth/*"
 rm -f "$CQ/conventions.md"
@@ -150,11 +150,11 @@ nhom "task.sh (aw task)"
 TK="$T/task.sh"; HT="$T/check-implement.sh"
 dung "next → TSK-002 (stdout)" bang "$(sh "$TK" next "$F" 2>/dev/null)" "TSK-002"
 ky_vong_ly_do 1 "implement chặn task chưa làm [ ]" "…đúng lý do" 'TSK-002 chưa làm' sh "$HT" "$F"
-ky_vong 1 "done khi chưa start → TỪ CHỐI" sh "$TK" done "$F" TSK-002
+ky_vong 1 "done khi chưa start → REJECTED" sh "$TK" done "$F" TSK-002
 ky_vong 0 "start TSK-002 → [~]" sh "$TK" start "$F" TSK-002
 dung "…plan.md ghi [~]" grep -q '^- Status: `\[~\]`' "$F/plan.md"
 ky_vong 0 "start lại task đang [~] → không lỗi" sh "$TK" start "$F" TSK-002
-ky_vong 1 "start task đã [x] → TỪ CHỐI" sh "$TK" start "$F" TSK-001
+ky_vong 1 "start task đã [x] → REJECTED" sh "$TK" start "$F" TSK-001
 thay "$F/plan.md" '- Based on: `DEC-001`
 - Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
@@ -162,15 +162,15 @@ thay "$F/plan.md" '- Based on: `DEC-001`
 - Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[ ]`'
-ky_vong 1 "WIP=1: start task khác khi TSK-002 đang [~] → TỪ CHỐI" sh "$TK" start "$F" TSK-001
+ky_vong 1 "WIP=1: start task khác khi TSK-002 đang [~] → REJECTED" sh "$TK" start "$F" TSK-001
 dung "next ưu tiên task đang [~]" bang "$(sh "$TK" next "$F" 2>/dev/null)" "TSK-002"
 ky_vong 1 "implement chặn task [~]" sh "$HT" "$F"
 ky_vong 0 "done TSK-002, Verify xanh → [x]" sh "$TK" done "$F" TSK-002
 dung "…ghi bằng chứng xanh vào task-results.md" sh -c "grep -q '^## TSK-002' '$F/task-results.md' && awk '/^## TSK-002/{p=1} p && /Mã thoát/{print; exit}' '$F/task-results.md' | grep -q '\`0\`'"
 ky_vong 0 "start TSK-001 sau khi TSK-002 xong" sh "$TK" start "$F" TSK-001
 ky_vong 0 "done TSK-001" sh "$TK" done "$F" TSK-001
-ky_vong 4 "mọi task [x] → next HẾT TASK" sh "$TK" next "$F"
-ky_vong 0 "implement ĐẠT khi mọi task xong bằng máy" sh "$HT" "$F"
+ky_vong 4 "mọi task [x] → next NO TASKS LEFT" sh "$TK" next "$F"
+ky_vong 0 "implement PASS khi mọi task xong bằng máy" sh "$HT" "$F"
 
 viet_plan; ghi_based_on
 mv "$F/task-results.md" "$TMP/kqt.bak"
@@ -192,15 +192,15 @@ ky_vong 1 "done, Verify đỏ → giữ [~]" sh "$TK" done "$F" TSK-002
 dung "…ghi output đỏ thật" grep -q 'VERIFY-DO' "$F/task-results.md"
 dung "…đỏ liên tiếp: 1" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'")" "1"
 ky_vong 1 "đỏ lần 2" sh "$TK" done "$F" TSK-002
-ky_vong 6 "đỏ lần 3 = MAX_RED_RUNS mặc định → DỪNG" sh "$TK" done "$F" TSK-002
-ky_vong 6 "next cũng DỪNG ở task đó" sh "$TK" next "$F"
+ky_vong 6 "đỏ lần 3 = MAX_RED_RUNS mặc định → STOP" sh "$TK" done "$F" TSK-002
+ky_vong 6 "next cũng STOP ở task đó" sh "$TK" next "$F"
 # Bộ đếm đỏ liên tiếp không về 0 chỉ vì start lại (sửa tay Status [ ] rồi start không né được DỪNG)
 thay "$F/plan.md" '- Verify: `echo VERIFY-DO; false` → xanh
 - Status: `[~]`' '- Verify: `echo VERIFY-DO; false` → xanh
 - Status: `[ ]`'
 sh "$TK" start "$F" TSK-002 >/dev/null 2>&1
-dung "start lại sau DỪNG giữ bộ đếm đỏ liên tiếp" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'")" "3"
-ky_vong 6 "…done đỏ lần nữa vẫn DỪNG" sh "$TK" done "$F" TSK-002
+dung "start lại sau STOP giữ bộ đếm đỏ liên tiếp" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'")" "3"
+ky_vong 6 "…done đỏ lần nữa vẫn STOP" sh "$TK" done "$F" TSK-002
 printf 'MAX_RED_RUNS=5\n' >> "$CFG/config.sh"
 ky_vong 0 "MAX_RED_RUNS=5 → next còn cho làm" sh "$TK" next "$F"
 cp "$TMP/ch-ss.bak" "$CFG/config.sh"
@@ -212,26 +212,26 @@ dung "TASK_FULL_TEST tắt: done không chạy TEST_CMD" sh -c "! grep -q 'Toàn
 
 # TASK_FULL_TEST=1: Verify xanh thì chạy thêm TEST_CMD
 printf 'TASK_FULL_TEST=1\nTEST_CMD="echo TOAN-BO-DO; false"\n' >> "$CFG/config.sh"
-ky_vong 1 "TASK_FULL_TEST=1: Verify xanh, toàn bộ test đỏ → ĐỎ" sh "$TK" done "$F" TSK-002
+ky_vong 1 "TASK_FULL_TEST=1: Verify xanh, toàn bộ test đỏ → RED" sh "$TK" done "$F" TSK-002
 dung "…về [~]" grep -q '^- Status: `\[~\]`' "$F/plan.md"
 dung "…ghi output toàn bộ test" grep -q 'TOAN-BO-DO' "$F/task-results.md"
-dung "…ghi dòng Toàn bộ test ĐỎ, tính đỏ liên tiếp" sh -c "grep -q 'Toàn bộ test:.*ĐỎ' '$F/task-results.md' && sh -c \". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'\" | grep -qx 1"
+dung "…ghi dòng Toàn bộ test RED, tính đỏ liên tiếp" sh -c "grep -q 'Toàn bộ test:.*RED' '$F/task-results.md' && sh -c \". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Đỏ liên tiếp'\" | grep -qx 1"
 cp "$TMP/ch-ss.bak" "$CFG/config.sh"
 printf 'TASK_FULL_TEST=1\nTEST_CMD="true"\n' >> "$CFG/config.sh"
 ky_vong 0 "TASK_FULL_TEST=1: Verify và toàn bộ test xanh → [x]" sh "$TK" done "$F" TSK-002
-dung "…ghi dòng Toàn bộ test XANH" grep -q 'Toàn bộ test:.*XANH' "$F/task-results.md"
+dung "…ghi dòng Toàn bộ test GREEN" grep -q 'Toàn bộ test:.*GREEN' "$F/task-results.md"
 cp "$TMP/ch-ss.bak" "$CFG/config.sh"
 
 # Kiểm chứng thủ công
 tk_plan_t2 '- Verify: mở màn hình y thấy b
 - Status: `[~]`'
-ky_vong 1 "Verify không có lệnh, không --manual → TỪ CHỐI" sh "$TK" done "$F" TSK-002
-ky_vong 1 "--manual bằng chứng giữ chỗ → TỪ CHỐI" sh "$TK" done "$F" TSK-002 --manual "<bằng chứng>"
+ky_vong 1 "Verify không có lệnh, không --manual → REJECTED" sh "$TK" done "$F" TSK-002
+ky_vong 1 "--manual bằng chứng giữ chỗ → REJECTED" sh "$TK" done "$F" TSK-002 --manual "<bằng chứng>"
 ky_vong 0 "--manual có bằng chứng → [x]" sh "$TK" done "$F" TSK-002 --manual "mở y, thấy b ở góc phải"
-dung "implement ĐẠT kèm lưu ý task thủ công" sh -c "sh '$HT' '$F' | grep -q 'LƯU Ý.*thủ công: TSK-002'"
+dung "implement PASS kèm lưu ý task thủ công" sh -c "sh '$HT' '$F' | grep -q 'LƯU Ý.*thủ công: TSK-002'"
 tk_plan_t2 '- Verify: `true` → xanh
 - Status: `[~]`'
-ky_vong 1 "--manual khi Verify có lệnh → TỪ CHỐI" sh "$TK" done "$F" TSK-002 --manual "đã xem"
+ky_vong 1 "--manual khi Verify có lệnh → REJECTED" sh "$TK" done "$F" TSK-002 --manual "đã xem"
 
 # Phạm vi theo task: start ghi commit lúc bắt đầu; done cảnh báo file ngoài Expected files của CHÍNH task
 viet_plan; ghi_based_on; rm -f "$F/task-results.md"
@@ -240,15 +240,15 @@ tk_plan_t2 '- Verify: `true` → xanh
 ky_vong 0 "start ghi Started at" sh "$TK" start "$F" TSK-002
 dung "…task-results.md có Started at = HEAD" bang "$(sh -c ". '$T/lib/task.sh'; tk_bc '$F/task-results.md' TSK-002 'Started at'")" "$(git -C "$R" rev-parse HEAD)"
 printf 'x\n' > "$R/src/khac-pv.txt"
-ky_vong 0 "done: file ngoài phần của task (thuộc task khác) → vẫn XONG" sh "$TK" done "$F" TSK-002
-dung "…in CẢNH BÁO phạm vi task" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi \`src/khac-pv.txt\` — ngoài Expected files của TSK-002'"
+ky_vong 0 "done: file ngoài phần của task (thuộc task khác) → vẫn DONE" sh "$TK" done "$F" TSK-002
+dung "…in WARN phạm vi task" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'WARN: TSK-002 đổi \`src/khac-pv.txt\` — ngoài Expected files của TSK-002'"
 dung "…ghi Scope warning vào task-results.md" grep -q '^- Scope warning: `src/khac-pv.txt`' "$F/task-results.md"
 dung "…giữ Started at sau khi done ghi lại mục" sh -c ". '$T/lib/task.sh'; [ -n \"\$(tk_bc '$F/task-results.md' TSK-002 'Started at')\" ]"
 thay "$F/plan.md" '|---|---|---|---|' '|---|---|---|---|
 | TSK-001 | lạc | `src/khac-pv.txt` | giữ |'
-dung "Unplanned của task KHÁC không miễn → vẫn cảnh báo" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi'"
+dung "Unplanned của task KHÁC không miễn → vẫn cảnh báo" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'WARN: TSK-002 đổi'"
 thay "$F/plan.md" '| TSK-001 | lạc |' '| TSK-002 | lạc |'
-dung "file khai ở Unplanned đúng task → hết cảnh báo cho file đó" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi \`src/khac-pv.txt\`'"
+dung "file khai ở Unplanned đúng task → hết cảnh báo cho file đó" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'WARN: TSK-002 đổi \`src/khac-pv.txt\`'"
 dung "…và không còn Scope warning cho file đó" sh -c "! grep -q 'Scope warning: .src/khac-pv.txt' '$F/task-results.md'"
 # Chạy lại done trên task [x] (làm mới bằng chứng) không được gán file của task SAU cho task này
 printf 'x\n' > "$R/src/sau-x.txt"
@@ -261,12 +261,12 @@ thay "$F/plan.md" '|---|---|---|---|' '|---|---|---|---|
 | TSK-002 | lỡ sửa `src/cot-pv.txt` | | giữ |'
 awk '/^### TSK-002/ { t = 1 } t && /^- Status:/ { $0 = "- Status: `[ ]`"; t = 0 } { print }' "$F/plan.md" > "$TMP/p" && mv "$TMP/p" "$F/plan.md"
 sh "$TK" start "$F" TSK-002 >/dev/null 2>&1
-dung "Unplanned: backtick ở cột What came up không miễn file" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO: TSK-002 đổi \`src/cot-pv.txt\`'"
+dung "Unplanned: backtick ở cột What came up không miễn file" sh -c "sh '$TK' done '$F' TSK-002 | grep -q 'WARN: TSK-002 đổi \`src/cot-pv.txt\`'"
 rm -f "$R/src/cot-pv.txt"
 rm -f "$R/src/khac-pv.txt"
 awk '!/^- Started at:/' "$F/task-results.md" > "$TMP/kq" && mv "$TMP/kq" "$F/task-results.md"
 printf 'x\n' > "$R/src/khac-pv.txt"
-dung "task không có Started at (bắt đầu ở bản cũ) → không kiểm phạm vi" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'CẢNH BÁO'"
+dung "task không có Started at (bắt đầu ở bản cũ) → không kiểm phạm vi" sh -c "! sh '$TK' done '$F' TSK-002 | grep -q 'WARN'"
 rm -f "$R/src/khac-pv.txt"
 
 # Phụ thuộc
@@ -275,24 +275,24 @@ thay "$F/plan.md" '- Status: `[x]`' '- Status: `[ ]`'
 thay "$F/plan.md" '- Status: `[x]`' '- Status: `[ ]`'
 thay "$F/plan.md" '- Covers: `REQ-002`' '- Covers: `REQ-002`
 - Depends on: TSK-001'
-ky_vong 1 "start task phụ thuộc chưa [x] → TỪ CHỐI" sh "$TK" start "$F" TSK-002
+ky_vong 1 "start task phụ thuộc chưa [x] → REJECTED" sh "$TK" start "$F" TSK-002
 dung "next chọn TSK-001 trước" bang "$(sh "$TK" next "$F" 2>/dev/null)" "TSK-001"
 thay "$F/plan.md" '- Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[ ]`' '- Expected files: `src/*` `test/*`
 - Verify: `test -f src/a.txt` → có file
 - Status: `[~]`'
-ky_vong 2 "task không có trong plan.md: sai mã → SAI THAM SỐ" sh "$TK" start "$F" X-1
-ky_vong 1 "task không có trong plan.md → TỪ CHỐI" sh "$TK" start "$F" TSK-009
+ky_vong 2 "task không có trong plan.md: sai mã → BAD ARGS" sh "$TK" start "$F" X-1
+ky_vong 1 "task không có trong plan.md → REJECTED" sh "$TK" start "$F" TSK-009
 
 # reopen: người đổi REQ / mở lại DEC → chỉ đúng task bị ảnh hưởng về [ ]
 tk_st() { sh -c ". '$T/lib/task.sh'; tk_dong '$F/plan.md' $1" | cut -d'|' -f2; }
 viet_plan; ghi_based_on
-ky_vong 0 "reopen REQ-002 → XONG" sh "$TK" reopen "$F" REQ-002
+ky_vong 0 "reopen REQ-002 → DONE" sh "$TK" reopen "$F" REQ-002
 dung "…TSK-002 (Covers REQ-002) về [ ]" bang "$(tk_st TSK-002)" " "
 dung "…TSK-001 giữ [x]" bang "$(tk_st TSK-001)" "x"
 viet_plan
-ky_vong 0 "reopen DEC-001 → XONG" sh "$TK" reopen "$F" DEC-001
+ky_vong 0 "reopen DEC-001 → DONE" sh "$TK" reopen "$F" DEC-001
 dung "…TSK-001 (Based on DEC-001) về [ ], TSK-002 giữ [x]" sh -c "[ '$(tk_st TSK-001)' = ' ' ] && [ '$(tk_st TSK-002)' = x ]"
 viet_plan
 thay "$F/plan.md" '- Covers: `REQ-001`' '- Covers: `REQ-001`
@@ -316,8 +316,8 @@ dung "…TSK-001 giữ [x]" bang "$(tk_st TSK-001)" "x"
 viet_plan
 ky_vong 0 "reopen mã không task nào phủ (khớp nguyên mã, REQ-00 ≠ REQ-001) → không đổi gì" sh "$TK" reopen "$F" REQ-00
 dung "…plan.md giữ nguyên [x]" sh -c "[ '$(tk_st TSK-001)' = x ] && [ '$(tk_st TSK-002)' = x ]"
-ky_vong 2 "reopen mã không phải REQ/DEC → SAI THAM SỐ" sh "$TK" reopen "$F" TSK-001
-ky_vong 2 "reopen thiếu mã → SAI THAM SỐ" sh "$TK" reopen "$F"
+ky_vong 2 "reopen mã không phải REQ/DEC → BAD ARGS" sh "$TK" reopen "$F" TSK-001
+ky_vong 2 "reopen thiếu mã → BAD ARGS" sh "$TK" reopen "$F"
 mv "$F/plan.md" "$TMP/plan.bak"
 ky_vong 0 "reopen khi chưa có plan.md → không có gì để làm lại" sh "$TK" reopen "$F" REQ-001
 mv "$TMP/plan.bak" "$F/plan.md"
@@ -326,14 +326,14 @@ viet_plan; ghi_based_on; ghi_bang_chung_task
 # ---------------------------------------------------------------- trạng thái sạch
 nhom "trạng thái sạch (implement/review)"
 sh "$HT" "$F" >/dev/null 2>&1; ghi_tree_review
-ky_vong 0 "fixture sạch → review ĐẠT" sh "$T/check-review.sh" "$F"
+ky_vong 0 "fixture sạch → review PASS" sh "$T/check-review.sh" "$F"
 printf 'moi\n<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> feat\n' > "$R/src/a.txt"
 ky_vong 1 "implement chặn dấu xung đột merge" sh "$HT" "$F"
 dung "…chỉ đúng file:dòng" sh -c "sh '$HT' '$F' | grep -q 'src/a.txt:2: còn dấu xung đột merge'"
 printf 'moi\n' > "$R/src/a.txt"
 printf '// covers: REQ-001, REQ-002\nit.only("a", () => {})\n' > "$R/test/a.test.js"
 ky_vong 0 "test mới .only chỉ CẢNH BÁO ở implement" sh "$HT" "$F"
-dung "…có in cảnh báo" sh -c "sh '$HT' '$F' | grep -q 'CẢNH BÁO.*test/a.test.js: thêm test bị bỏ qua'"
+dung "…có in cảnh báo" sh -c "sh '$HT' '$F' | grep -q 'WARN.*test/a.test.js: thêm test bị bỏ qua'"
 ghi_tree_review
 ky_vong 1 "…review CHẶN" sh "$T/check-review.sh" "$F"
 thay "$F/plan.md" '| Task | What came up | Extra files | Resolution |

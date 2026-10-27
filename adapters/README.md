@@ -2,7 +2,7 @@
 
 Adapter là lớp **mỏng** sinh ra từ `workflow/`. Nó chỉ dịch định nghĩa phase sang
 dạng native của một agent và dặn agent gọi `aw …`. Luật cứng nằm trong checker
-của engine: mã thoát và nhãn `Kết quả` của `aw check <tên>`. Không luật nào dựa
+của engine: mã thoát và nhãn `Result` của `aw check <tên>`. Không luật nào dựa
 vào tính năng riêng của agent.
 
 ## Hợp đồng của một adapter
@@ -37,7 +37,7 @@ Chữ riêng của một agent chỉ được nằm trong hook:
 | `ad_danh_cho` | Một dòng: file dành cho agent nào | "Dành cho Claude Code… không có `AskUserQuestion` → dừng" | "Dành cho Cursor…" |
 | `ad_dau_agent`, `ad_dau_skill` | Frontmatter subagent, skill (có mặc định) | `name`, `description`; skill thêm `disable-model-invocation: true` | như Claude Code |
 
-Thiếu hook bắt buộc → build từ chối (`ĐỊNH NGHĨA QUY TRÌNH LỖI`), không sinh gì.
+Thiếu hook bắt buộc → build từ chối (`PROCESS DEFINITION ERROR`), không sinh gì.
 
 ### Chuẩn định dạng của agent
 
@@ -60,7 +60,7 @@ không tab, không khoá trùng, khoá thuộc danh sách trên; giá trị mở
 subagent, skill có `name` + `description`, `name` = tên file / tên thư mục, dạng `a-z0-9` nối `-`,
 ≤ 64 ký tự; skill: `description` ≤ 1024 ký tự, không `< >`; tên file lệnh cùng dạng; thân không
 rỗng; chỉ ghi vào `commands/<tên>.md`, `agents/<tên>.md`, `skills/<tên>/SKILL.md`. Thiếu biến chuẩn
-→ `ĐỊNH NGHĨA QUY TRÌNH LỖI`. Test: `tools/tests/08-adapters.sh`, mục "chuẩn định dạng của agent".
+→ `PROCESS DEFINITION ERROR`. Test: `tools/tests/08-adapters.sh`, mục "chuẩn định dạng của agent".
 
 **Test đối chiếu** (`tools/tests/08-adapters.sh`, mục "đối chiếu mọi adapter"): build MỌI
 adapter trong `adapters/*/` với `AW_COMPARE=1` — hook in tên của nó thay cho nội

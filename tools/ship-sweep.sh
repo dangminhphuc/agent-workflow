@@ -17,14 +17,14 @@
 #   3. Xoá branch trên origin khi nó còn và trỏ đúng sha đó (GitLab thường đã tự
 #      xoá nhờ --remove-source-branch). Lệch sha → không xoá.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai "aw ship sweep" \
-  "0=XONG — xem từng việc phía trên" \
-  "2=SAI THAM SỐ" \
-  "7=CÓ VIỆC BỊ CHẶN — lý do phía trên; các việc khác vẫn được xử lý"
+  "0=DONE — xem từng việc phía trên" \
+  "2=BAD ARGS" \
+  "7=BLOCKED — lý do phía trên; các việc khác vẫn được xử lý"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 . "$HERE/lib/mr.sh"
@@ -91,7 +91,7 @@ while IFS="$TAB" read -r wt b; do
   fi
 
   if ! sh "$HERE/worktree-cleanup.sh" "$b" --remove >/dev/null 2>"$DS.err"; then
-    echo "    ✗ không gỡ được worktree:"; grep '✗\|LỖI\|BỊ CHẶN' "$DS.err" | sed 's/^ */      /'
+    echo "    ✗ không gỡ được worktree:"; grep '✗\|LỖI\|BLOCKED' "$DS.err" | sed 's/^ */      /'
     chan=1; continue
   fi
   echo "    ✓ đã gỡ worktree (artifact: $AW_CONFIG/archive/)"

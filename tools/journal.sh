@@ -24,7 +24,7 @@
 #   journal.sh _check <checker> <thư-mục-feature> <mã-thoát> <file-output>
 #   journal.sh _findings <thư-mục-feature> <review.md>
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
@@ -55,7 +55,7 @@ case "${1:-}" in
     # Không bao giờ làm hỏng lệnh check: mọi lỗi ở đây im lặng.
     [ $# -eq 5 ] || exit 0
     mkdir -p "$JD" 2>/dev/null || exit 0
-    dau=$(grep -m1 -E '^[ \t]*\[LỖI\]' "$5" 2>/dev/null | sed 's/^[ \t]*\[LỖI\][ \t]*//')
+    dau=$(grep -m1 -E '^[ \t]*\[ERROR\]' "$5" 2>/dev/null | sed 's/^[ \t]*\[ERROR\][ \t]*//')
     printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$(gio)" "$(viec "$3")" "$2" "$4" "$(bay "$dau")" "$(jv_version "$HERE")" >> "$JD/checks.tsv" 2>/dev/null
     exit 0 ;;
   _findings)
@@ -96,8 +96,8 @@ case "${1:-}" in
 esac
 
 kq_khai journal \
-  "0=XONG" \
-  "2=SAI THAM SỐ — xem thông báo phía trên"
+  "0=DONE" \
+  "2=BAD ARGS — xem thông báo phía trên"
 
 # ---------------------------------------------------------------- add
 if [ "${1:-}" = add ]; then
@@ -232,7 +232,7 @@ if [ -s "$JD/findings.tsv" ]; then
   kc=$(awk -F'\t' '$4 == "-"' "$JD/findings.tsv" | wc -l | tr -d ' ')
   [ "$kc" -gt 0 ] && echo "  ($kc finding không có Category)"
 else
-  echo "  (chưa có — aw check review ghi khi ĐẠT)"
+  echo "  (chưa có — aw check review ghi khi PASS)"
 fi
 
 # ---- SP9b: độ chính xác checker, thời gian phase, việc theo loại, lỗi lọt (jobs.tsv, phases.tsv).

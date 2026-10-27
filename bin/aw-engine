@@ -50,8 +50,8 @@ sai() { # <mã> <thông báo...>
   _m=$1; shift
   . "$T/lib/result.sh"
   kq_khai aw \
-    "2=SAI THAM SỐ — xem thông báo phía trên" \
-    "9=KHÔNG HỢP LỆ — engine không chạy được trong trạng thái này, lý do phía trên"
+    "2=BAD ARGS — xem thông báo phía trên" \
+    "9=INVALID — engine không chạy được trong trạng thái này, lý do phía trên"
   for _l in "$@"; do echo "$_l" >&2; done
   exit "$_m"
 }
@@ -106,7 +106,7 @@ case "$LENH" in
       if ar_commit "$1" "chore(sdlc): $(basename "$1") $ten"; then
         [ -z "$AR_DA_COMMIT" ] || echo "Artifact: đã commit $TM_VIEC/$(basename "$1")/ (chore(sdlc): $(basename "$1") $ten)" >&2
       else
-        echo "CẢNH BÁO: không commit được artifact $1 — xem thông báo của git phía trên; commit tay: git add -f $1 && git commit -- $1" >&2
+        echo "WARN: không commit được artifact $1 — xem thông báo của git phía trên; commit tay: git add -f $1 && git commit -- $1" >&2
       fi
     fi
     exit "$_ma" ;;

@@ -10,7 +10,7 @@ nhom "SP9b: mọi nguồn ghi nhật ký có cột version cuối"
 NK="$T/journal.sh"; JD="$CFG/journal"
 V=$(tr -d ' \r\n' < "$ROOT/VERSION")
 rm -rf "$JD"
-ky_vong 0 "aw-engine check plan ĐẠT" sh "$AWE" check plan "$F"
+ky_vong 0 "aw-engine check plan PASS" sh "$AWE" check plan "$F"
 dung "checks.tsv: mỗi dòng 6 cột" sh -c "awk -F'\t' 'NF != 6 { bad = 1 } END { exit bad }' '$JD/checks.tsv'"
 dung "checks.tsv: cột cuối = version engine" sh -c "awk -F'\t' -v v='$V' '\$NF != v { bad = 1 } END { exit bad }' '$JD/checks.tsv'"
 ky_vong 0 "journal add env" sh "$NK" add env "thiếu node_modules trong worktree mới"
@@ -34,7 +34,7 @@ dung "--version = version engine: đếm đủ" bang "$(sh "$NK" report --versio
 dung "--version khác: không còn lần chạy nào" sh -c "sh '$NK' report --version 9.9.9 '$TMP/moi.tsv' | grep -q 'chưa có'"
 dung "--version ? lọc dòng cũ (không version)" bang "$(sh "$NK" report --version '?' "$TMP/cu.tsv" | awk '$1 == "plan" { print $2; exit }')" "$n_moi"
 dung "--version ? bỏ dòng có version thật" sh -c "sh '$NK' report --version '?' '$TMP/moi.tsv' | grep -q 'chưa có'"
-dung "--version không đi kèm giá trị → SAI THAM SỐ" sh -c "! sh '$NK' report --version >/dev/null 2>&1"
+dung "--version không đi kèm giá trị → BAD ARGS" sh -c "! sh '$NK' report --version >/dev/null 2>&1"
 dung "--version không có file: lọc nhật ký của máy này" bang "$(sh "$NK" report --version "$V" | awk '$1 == "plan" { print $2; exit }')" "$(sh "$NK" report | awk '$1 == "plan" { print $2; exit }')"
 printf '2026-10-24T01:00:00Z\tfeat_x\tspec\t%s\n' "$V" > "$CFG/journal/phases.tsv"
 ky_vong 0 "export có nguồn phases" env AW_JOURNAL_MACHINE=may-a sh "$NK" export "$TMP/pha.tsv"
@@ -55,7 +55,7 @@ dung "phases.tsv: đúng một dòng cho spec" sh -c "awk -F'\t' '\$3 == \"spec\
 dung "…cột việc = tên thư mục việc" sh -c "awk -F'\t' '\$2 == \"feat_z\"' '$PH' | grep -q ."
 dung "…cột version = VERSION engine" sh -c "awk -F'\t' -v v='$V' '\$4 == v' '$PH' | grep -q ."
 n1=$(wc -l < "$PH" | tr -d ' ')
-ky_vong 2 "aw rules phase lạ → SAI THAM SỐ, không ghi" env AW_REPO="$WT" sh "$AWE" rules khong-co
+ky_vong 2 "aw rules phase lạ → BAD ARGS, không ghi" env AW_REPO="$WT" sh "$AWE" rules khong-co
 dung "…không thêm dòng" bang "$(wc -l < "$PH" | tr -d ' ')" "$n1"
 AW_JOURNAL=0 env AW_REPO="$WT" sh "$AWE" rules implement >/dev/null 2>&1
 dung "AW_JOURNAL=0 → không ghi phases.tsv" bang "$(wc -l < "$PH" | tr -d ' ')" "$n1"
@@ -70,7 +70,7 @@ thay "$F/plan.md" '`REQ-002`' '`REQ-999`'
 sh "$AWE" check plan "$F" >/dev/null 2>&1
 thay "$F/plan.md" '`REQ-999`' '`REQ-002`'
 rm -f "$RJ"
-ky_vong 0 "retro không cờ → XONG" env AW_REPO="$WT" sh "$NK" retro "$F"
+ky_vong 0 "retro không cờ → DONE" env AW_REPO="$WT" sh "$NK" retro "$F"
 dung "…in lần bị chặn đánh số #1" sh -c "env AW_REPO='$WT' sh '$NK' retro '$F' | grep -q '#1'"
 dung "…không ghi jobs.tsv" bang "$(test -f "$RJ" && echo co || echo khong)" khong
 ky_vong 0 "retro --bo-qua" env AW_REPO="$WT" sh "$NK" retro "$F" --bo-qua
@@ -82,12 +82,12 @@ ky_vong 0 "retro --nham 1 --phut 40" env AW_REPO="$WT" sh "$NK" retro "$F" --nha
 ky_vong 0 "retro --nham 1 --phut 55 (chạy lại)" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 1 --phut 55
 dung "…chạy lại thay dòng, không nhân đôi" bang "$(wc -l < "$RJ" | tr -d ' ')" 1
 dung "…phút = 55, nhầm = 1" sh -c "awk -F'\t' '\$11 == 1 && \$12 == 55' '$RJ' | grep -q ."
-ky_vong 2 "--nham 9 (không có lần chặn số 9) → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 9 --phut 1
-ky_vong 2 "--phut abc → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --phut abc
-ky_vong 2 "--lop mood → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --gay-boi ABC-1 --lop mood
-ky_vong 2 "--gay-boi với việc không phải bugfix → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --gay-boi ABC-1 --lop task
-ky_vong 2 "--bo-qua cùng --phut → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$F" --bo-qua --phut 3
-ky_vong 2 "thư mục không có intake.md → SAI THAM SỐ" env AW_REPO="$WT" sh "$NK" retro "$TMP/khong-co"
+ky_vong 2 "--nham 9 (không có lần chặn số 9) → BAD ARGS" env AW_REPO="$WT" sh "$NK" retro "$F" --nham 9 --phut 1
+ky_vong 2 "--phut abc → BAD ARGS" env AW_REPO="$WT" sh "$NK" retro "$F" --phut abc
+ky_vong 2 "--lop mood → BAD ARGS" env AW_REPO="$WT" sh "$NK" retro "$F" --gay-boi ABC-1 --lop mood
+ky_vong 2 "--gay-boi với việc không phải bugfix → BAD ARGS" env AW_REPO="$WT" sh "$NK" retro "$F" --gay-boi ABC-1 --lop task
+ky_vong 2 "--bo-qua cùng --phut → BAD ARGS" env AW_REPO="$WT" sh "$NK" retro "$F" --bo-qua --phut 3
+ky_vong 2 "thư mục không có intake.md → BAD ARGS" env AW_REPO="$WT" sh "$NK" retro "$TMP/khong-co"
 ky_vong 6 "retro ở checkout chính → thoát 6" env AW_REPO="$R" sh "$NK" retro "$F" --bo-qua
 dung "…checkout chính không ghi" bang "$(wc -l < "$RJ" | tr -d ' ')" 1
 dung "…lệnh sai không ghi đè dòng đã có" awk -F'\t' '$12 == 55' "$RJ"

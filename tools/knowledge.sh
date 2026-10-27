@@ -26,13 +26,13 @@
 #   ngoài các mục đó. Ref sai → SAI THAM SỐ, chưa in gì.
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai knowledge.sh \
-  "0=ĐÃ LIỆT KÊ — đọc từng ref in ra bằng aw knowledge show (không in gì = repo chưa có durable knowledge liên quan)" \
-  "2=SAI THAM SỐ"
+  "0=LISTED — đọc từng ref in ra bằng aw knowledge show (không in gì = repo chưa có durable knowledge liên quan)" \
+  "2=BAD ARGS"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"
 . "$HERE/lib/approval-tick.sh"

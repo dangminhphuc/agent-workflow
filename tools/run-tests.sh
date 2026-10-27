@@ -23,9 +23,9 @@ TMP="${TMPDIR:-/tmp}/aw-run-tests.$$"
 mkdir -p "$TMP"
 . "$ROOT/tools/lib/result.sh"
 kq_khai run-tests.sh \
-  "0=MỌI CA ĐẠT" \
-  "1=CÓ CA HỎNG — xem các dòng FAIL phía trên" \
-  "2=SAI THAM SỐ — không phần test nào khớp tên đã cho"
+  "0=ALL PASS" \
+  "1=FAILED CASES — xem các dòng FAIL phía trên" \
+  "2=BAD ARGS — không phần test nào khớp tên đã cho"
 kq_don 'rm -rf "$TMP"'
 TD="${AW_TEST_DIR:-$ROOT/tools/tests}"
 
@@ -69,7 +69,7 @@ for p in $DS; do
   n_phan=$((n_phan + 1))
   log="$TMP/$p.log"; ma=$(cat "$TMP/$p.ma" 2>/dev/null)
   tong=$(sed -n 's/^Tổng: [0-9]* ca — \([0-9]*\) đạt, \([0-9]*\) hỏng$/\1 \2/p' "$log" 2>/dev/null | tail -1)
-  # Output của phần, trừ dòng Tổng và khối Kết quả sau nó; bỏ dòng trống ở cuối.
+  # Output của phần, trừ dòng Tổng và khối Result sau nó; bỏ dòng trống ở cuối.
   ra=$(awk '/^Tổng: [0-9]+ ca — / { exit } { print }' "$log" 2>/dev/null)
   if [ -n "${AW_TEST_VERBOSE:-}" ]; then printf '\n[tests/%s.sh]\n' "$p"; fi
   if [ -n "$ra" ]; then printf '%s\n' "$ra"; fi
@@ -102,7 +102,7 @@ if [ -s "$TMP/giay" ]; then
       for (i = 1; i <= NR; i++) {
         tb = (s - g[i]) / (NR - 1)
         if (g[i] >= min && g[i] > 2 * tb)
-          printf "  CẢNH BÁO  %s chạy %ds, gấp hơn 2 lần trung bình các phần còn lại (%.0fs) — nên tách (AGENTS.md § Verify)\n", t[i], g[i], tb
+          printf "  WARN  %s chạy %ds, gấp hơn 2 lần trung bình các phần còn lại (%.0fs) — nên tách (AGENTS.md § Verify)\n", t[i], g[i], tb
       }
     }' "$TMP/giay"
 fi

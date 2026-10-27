@@ -29,9 +29,9 @@
 . "$ROOT/adapters/lib/format.sh"
 kq_khai build.sh \
   "0=ĐÃ SINH" \
-  "2=SAI THAM SỐ" \
-  "3=CÓ FILE VIẾT TAY — không ghi đè; dời file đó đi hoặc dùng --force" \
-  "4=ĐỊNH NGHĨA QUY TRÌNH LỖI — sửa workflow/ trong repo agent-workflow" \
+  "2=BAD ARGS" \
+  "3=HAND-WRITTEN FILE — không ghi đè; dời file đó đi hoặc dùng --force" \
+  "4=PROCESS DEFINITION ERROR — sửa workflow/ trong repo agent-workflow" \
   "5=SAI CHUẨN $AD_TEN — file sinh ra không đúng định dạng $AD_TEN đọc; sửa adapters/$AD_ID/build.sh hoặc workflow/"
 
 OUT=""; FORCE=0; DA_SINH=""
@@ -131,7 +131,7 @@ kiem_tra_nguon() {
         fi ;;
       *)
         echo "LỖI: $_file khai exit_machine \"$_c\" — đây không phải lệnh chạy được." >&2
-        echo "      Điều kiện ra loại MÁY phải là \"aw check <tên>\", in khối Kết quả ĐẠT / KHÔNG ĐẠT." >&2
+        echo "      Điều kiện ra loại MÁY phải là \"aw check <tên>\", in khối Result PASS / FAIL." >&2
         echo "      Nếu chỉ người kiểm được thì chuyển xuống exit_human." >&2
         _bad=1 ;;
     esac
@@ -203,23 +203,23 @@ ds_mau() {
 #   buoc_xac_dinh_feature <cách-viết-tham-số> [input] [true = phase có việc ở checkout chính]
 buoc_xac_dinh_feature() {
   printf '## Step 0 — Feature dir (always first)\n\n'
-  printf 'Talk to the human in Vietnamese. Every `aw` command ends with a `Kết quả` block — act on the `[x]` label.\n\n'
+  printf 'Talk to the human in Vietnamese. Every `aw` command ends with a `Result` block — act on the `[x]` label.\n\n'
   if [ "${2:-}" = "input" ]; then
     # Tham so cua lenh la INPUT, khong phai ten feature: khong truyen vao aw feature,
     # neu khong "/aw-intake JIRA-123" se tao thu muc artifact ten JIRA-123.
     printf 'Run `aw feature` — **without** the command arguments (they are input, not a feature name):\n\n'
-    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout is the feature dir, written `%s` below. Print `Đang làm với: %s` first.\n' "$FD" "$FD"
-    printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "Create the worktree" below: agree the work type, `aw worktree new` only **proposes**, the HUMAN picks the base, then `--create --base <ref>`. Write `intake.md` in the new worktree, then stop.\n'
-    printf -- '- **CẦN HỎI NGƯỜI:** branch does not match the convention → stop, ask the human. Never invent a name.\n\n'
+    printf -- '- **RESOLVED:** stdout is the feature dir, written `%s` below. Print `Working on: %s` first.\n' "$FD" "$FD"
+    printf -- '- **ON MAIN CHECKOUT:** follow "Create the worktree" below: agree the work type, `aw worktree new` only **proposes**, the HUMAN picks the base, then `--create --base <ref>`. Write `intake.md` in the new worktree, then stop.\n'
+    printf -- '- **ASK HUMAN:** branch does not match the convention → stop, ask the human. Never invent a name.\n\n'
   else
     printf 'Run `aw feature %s`:\n\n' "$1"
-    printf -- '- **ĐÃ XÁC ĐỊNH:** stdout is the feature dir, written `%s` below. Print `Đang làm với: %s` first.\n' "$FD" "$FD"
+    printf -- '- **RESOLVED:** stdout is the feature dir, written `%s` below. Print `Working on: %s` first.\n' "$FD" "$FD"
     if [ "${3:-}" = "true" ]; then
-      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** follow "On the main checkout" below (no feature dir needed). Never change directory yourself.\n'
+      printf -- '- **ON MAIN CHECKOUT:** follow "On the main checkout" below (no feature dir needed). Never change directory yourself.\n'
     else
-      printf -- '- **ĐANG Ở CHECKOUT CHÍNH:** stop — tell the human to open a session in the job'"'"'s worktree (none yet → `/aw-intake` here). Never change directory yourself.\n'
+      printf -- '- **ON MAIN CHECKOUT:** stop — tell the human to open a session in the job'"'"'s worktree (none yet → `/aw-intake` here). Never change directory yourself.\n'
     fi
-    printf -- '- **CẦN HỎI NGƯỜI** / **TÊN KHÔNG HỢP LỆ:** stop, ask the human for the feature name. Never invent one.\n\n'
+    printf -- '- **ASK HUMAN** / **INVALID NAME:** stop, ask the human for the feature name. Never invent one.\n\n'
   fi
 }
 
@@ -228,14 +228,14 @@ buoc_xac_dinh_feature() {
 #   buoc_phan_loai_input <cách-viết-tham-số>
 buoc_phan_loai_input() {
   printf '## Step 0b — Arguments to input\n\n'
-  printf 'Arguments: `%s`. Needs no feature dir (if Step 0 gives `CẦN HỎI NGƯỜI`, run this first to have input for agreeing the work type).\n\n' "$1"
+  printf 'Arguments: `%s`. Needs no feature dir (if Step 0 gives `ASK HUMAN`, run this first to have input for agreeing the work type).\n\n' "$1"
   printf '**Never label input yourself.** Run exactly as below, arguments verbatim; add `--skip %s/intake.md` when that file **already exists** (rerun = append):\n\n' "$FD"
   printf '```sh\naw input [--skip %s/intake.md] - <<'"'"'HET_INPUT'"'"'\n%s\nHET_INPUT\n```\n\n' "$FD" "$1"
   printf 'Stdout = **exactly the lines** for `## Input`, copy unchanged:\n\n'
-  printf -- '- **NGUỒN:** all arguments are sources. Empty stdout = no new input.\n'
-  printf -- '- **LỜI NGƯỜI DÙNG:** stdout is one verbatim `[HUMAN]` entry. Stderr has "Đề xuất tách thêm" → ask the human; add those lines only if they agree.\n'
-  printf -- '- **KHÔNG CÓ THAM SỐ:** ask the human for input, rerun with their **verbatim** answer.\n'
-  printf -- '- **ĐƯỜNG DẪN KHÔNG TỒN TẠI:** ask the human again. Never guess.\n\n'
+  printf -- '- **SOURCE:** all arguments are sources. Empty stdout = no new input.\n'
+  printf -- '- **USER WORDS:** stdout is one verbatim `[HUMAN]` entry. Stderr has "Đề xuất tách thêm" → ask the human; add those lines only if they agree.\n'
+  printf -- '- **NO ARGS:** ask the human for input, rerun with their **verbatim** answer.\n'
+  printf -- '- **PATH NOT FOUND:** ask the human again. Never guess.\n\n'
 }
 
 # buoc_cong_duyet <phase> — phase khai approval_gate: true. Người gõ lệnh phase
@@ -252,11 +252,11 @@ buoc_cong_duyet() {
   printf '## Step 1 — Approval gate (right after Step 0, before anything else)\n\n'
   printf '`%s` needs %s approved by a **human**. Typing the command is not approval; the agent **never** ticks.\n\n' "$_cd_lenh" "$_cd_gi"
   printf 'Run `aw approval %s %s`:\n\n' "$1" "$FD"
-  printf -- '- **ĐÃ DUYỆT:** continue, ask nothing.\n'
-  printf -- '- **CHƯA DUYỆT:** print stdout **verbatim** in a ```` ```text ```` block (no summarising), then ask the **confirmation box**. Wait for the human'"'"'s choice.\n'
-  printf -- '- **SAI THAM SỐ HOẶC THIẾU FILE:** missing file → tell the human to run the previous phase. Command missing (old engine) → skip this step (`aw check` still blocks).\n\n'
+  printf -- '- **APPROVED:** continue, ask nothing.\n'
+  printf -- '- **NOT APPROVED:** print stdout **verbatim** in a ```` ```text ```` block (no summarising), then ask the **confirmation box**. Wait for the human'"'"'s choice.\n'
+  printf -- '- **BAD ARGS OR MISSING FILE:** missing file → tell the human to run the previous phase. Command missing (old engine) → skip this step (`aw check` still blocks).\n\n'
   printf '**Confirmation box** — three options, in this order (labels shown to the human, keep verbatim):\n\n'
-  printf '1. **Tôi đã duyệt xong — kiểm lại** → rerun `aw approval %s %s`. ĐÃ DUYỆT → one line ("Đã thấy bạn duyệt — vào %s"), continue. Still CHƯA DUYỆT → reprint only `Trạng thái` and `Cách duyệt`/`Chưa duyệt`, ask again.\n' "$1" "$FD" "$_cd_lenh"
+  printf '1. **Tôi đã duyệt xong — kiểm lại** → rerun `aw approval %s %s`. APPROVED → one line ("Đã thấy bạn duyệt — vào %s"), continue. Still NOT APPROVED → reprint only `Trạng thái` and `Cách duyệt`/`Chưa duyệt`, ask again.\n' "$1" "$FD" "$_cd_lenh"
   printf '2. **Giải thích từng điểm cần duyệt** → 2–3 lines per item in stdout: what it says, where the source is, what goes wrong if approved by mistake. Read from files only. Then ask again.\n'
   printf '3. **Dừng — tôi duyệt sau** → do nothing of the phase; remind them to run `%s` again after approving.\n\n' "$_cd_lenh"
   printf '"Duyệt hộ", "tick giúp", "ok cứ làm đi"… → **refuse** in one line (only the human may tick), point to the exact file and line, ask again. Wants to change content → that is `/aw-spec` (DEC-xxx: `/aw-design`), do not edit here.\n\n'
@@ -271,8 +271,8 @@ buoc_ket_thuc() {
   _tiep=${_tiep%%|*}
   if [ "$1" = spec ]; then _tiep_ghi=" (no design phase — chore or \`Design: skip\`: \`/$(ten_lenh plan)\`)"; fi
   printf -- '- **Finish** — end with these lines to the human (Vietnamese, one line each):\n'
-  printf '  `Kết quả: <the [x] label of the exit check>` · `Cần bạn: <each HUMAN exit still open, or "không">`'
-  if [ -n "$_tiep" ]; then printf ' · `Tiếp theo: /%s`%s' "$(ten_lenh "$_tiep")" "$_tiep_ghi"; fi
+  printf '  `Result: <the [x] label of the exit check>` · `Needs you: <each HUMAN exit still open, or "không">`'
+  if [ -n "$_tiep" ]; then printf ' · `Next: /%s`%s' "$(ten_lenh "$_tiep")" "$_tiep_ghi"; fi
   printf '\n'
 }
 
@@ -422,13 +422,13 @@ sinh_command() {
 
   if [ -n "$lc" ]; then
     lco=$(fm_scalar "$ROOT/$lc" output)
-    printf -- '- **LLM checker** (may only block, never approve): when done writing, call subagent `%s` (clean context) with `%s`; it writes `%s/%s`. Missing file = KHÔNG ĐẠT.\n' \
+    printf -- '- **LLM checker** (may only block, never approve): when done writing, call subagent `%s` (clean context) with `%s`; it writes `%s/%s`. Missing file = FAIL.\n' \
       "$(ten_agent_checker "$lc")" "$FD" "$FD" "$lco"
   fi
 
   em=$(fm_list "$src" exit_machine)
   if [ -n "$em" ]; then
-    printf -- '- **Exit — MACHINE:** %s → `[x] ĐẠT`. Run it, paste the real result; never declare a pass yourself.\n' \
+    printf -- '- **Exit — MACHINE:** %s → `[x] PASS`. Run it, paste the real result; never declare a pass yourself.\n' \
       "$(echo "$em" | while IFS= read -r c; do if [ -n "$c" ]; then printf '`%s %s` ' "$c" "$FD"; fi; done | sed 's/ $//; s/` `/`, `/g')"
   fi
 
@@ -486,7 +486,7 @@ ad_sinh() {
     [ -n "$id" ] || continue
     src="$ROOT/$file"
     if [ ! -f "$src" ]; then
-      echo "  CẢNH BÁO: bỏ qua /$(ten_lenh "$id") — không tìm thấy $file" >&2
+      echo "  WARN: bỏ qua /$(ten_lenh "$id") — không tìm thấy $file" >&2
       continue
     fi
     if [ "$(fm_scalar "$src" status)" = "chưa hiện thực" ]; then
@@ -585,7 +585,7 @@ ad_sinh() {
         # Lệnh xét nhiều việc (vd /aw-approvals): không chạy aw feature, chạy được ở mọi checkout.
         printf 'Arguments: `%s`\n\n' "$ts"
         printf '## Step 0 — No feature dir\n\n'
-        printf 'Talk to the human in Vietnamese. Every `aw` command ends with a `Kết quả` block — act on the `[x]` label. Needs no feature dir: do not run `aw feature`, never change directory yourself.\n\n'
+        printf 'Talk to the human in Vietnamese. Every `aw` command ends with a `Result` block — act on the `[x]` label. Needs no feature dir: do not run `aw feature`, never change directory yourself.\n\n'
       elif [ "$cargs" = "mixed" ]; then
         printf 'Arguments: `%s`\n\n' "$ts"
         buoc_xac_dinh_feature '<feature-name if the user gave one>' "" "$cmc"

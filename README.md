@@ -116,14 +116,14 @@ Spec và mỗi DEC-xxx có một ô; bạn duyệt bằng cách đổi `[ ]` th�
 
 ### Kết quả của mọi lệnh `aw`
 
-Mọi script in khối **Kết quả** cuối output, đánh `[x]` vào đúng một nhãn — người và agent đọc
+Mọi script in khối **Result** cuối output, đánh `[x]` vào đúng một nhãn — người và agent đọc
 nhãn, không đọc mã thoát:
 
 ```
-Kết quả: check-plan.sh
-  [ ] ĐẠT — được sang phase sau
-  [x] KHÔNG ĐẠT — có vi phạm, sửa trong phase này
-  [ ] THIẾU ĐẦU VÀO — chưa có file cần kiểm
+Result: check-plan.sh
+  [ ] PASS — được sang phase sau
+  [x] FAIL — có vi phạm, sửa trong phase này
+  [ ] NO INPUT — chưa có file cần kiểm
 ```
 
 ## Cài đặt
@@ -184,7 +184,7 @@ người chạy `aw init --from <url>` (`--force` để lấy đè bản ở má
 thì `--from` bỏ qua `conventions.md` của repo cấu hình (không để hai nguồn sự thật).
 
 **Lệnh test và quét bảo mật** trong `config.sh` là điều kiện ra của `implement` — bỏ trống là
-KHÔNG ĐẠT, không phải "bỏ qua". `SECURITY_CMDS` phải chép **đúng lệnh, config, ngưỡng
+FAIL, không phải "bỏ qua". `SECURITY_CMDS` phải chép **đúng lệnh, config, ngưỡng
 của pipeline CI**.
 Tên khoá trước 2026.10.21 (`LENH_KIEM_THU`, `LENH_KIEM_TRA_BAO_MAT`…) vẫn đọc được; `aw ready` nhắc đổi.
 
@@ -340,7 +340,7 @@ aw init --adapter claude-code,cursor     # hoặc ADAPTER="claude-code cursor" t
 - `aw self-update [<V>]`: nâng chính wrapper (wrapper không tự nâng theo `aw upgrade`); `aw version`
   nhắc khi wrapper cũ hơn engine.
 - `aw upgrade <V>`: tải, ghim sha256, sinh lại adapter. **Việc đang làm không đổi luật** — mọi
-  `aw check` chạy đúng version ở dòng `Engine:` của `intake.md`; không có thì `KHÔNG HỢP LỆ`.
+  `aw check` chạy đúng version ở dòng `Engine:` của `intake.md`; không có thì `INVALID`.
 - Không mạng: `AW_ENGINE_DIR` (engine có sẵn, `VERSION` phải khớp), `AW_MIRROR`
   (`<mirror>/<V>/agent-workflow-<V>.tar.gz` + `SHA256SUMS`, nhận `file://`), `AW_CACHE`.
 - Repo còn `.agent-workflow/.quy-trinh/` của bộ cài cũ: `aw init --from-legacy` — chép cấu hình
@@ -348,7 +348,7 @@ aw init --adapter claude-code,cursor     # hoặc ADAPTER="claude-code cursor" t
 
 ### Artifact trong branch của việc, không vào nhánh đích
 
-`docs/sdlc/<tên-branch>/` được commit vào branch của việc mỗi khi `aw check` ĐẠT.
+`docs/sdlc/<tên-branch>/` được commit vào branch của việc mỗi khi `aw check` PASS.
 `aw ship create` gỡ nó khỏi branch trước khi tạo MR, nên PR chỉ có code. Nếu MR vẫn còn mang file
 trong `docs/sdlc/` (ví dụ thư mục của việc khác khi branch xếp chồng), lệnh chặn. `aw worktree
 remove` (và `aw ship sweep --apply`) chép artifact vào `.git/agent-workflow/archive/<tên>/` trước
@@ -373,7 +373,7 @@ làm `sh`, BSD awk/sed). Muốn thử gần giống macOS trên Linux: cài `ori
 với `awk` trỏ sang nó trên `PATH`.
 
 Cuối output có dòng `Thời gian từng phần` (chậm nhất trước). Phần nào chạy từ 30 giây trở lên và
-gấp hơn 2 lần trung bình các phần còn lại thì có dòng `CẢNH BÁO … nên tách`. Vì các phần chạy song
+gấp hơn 2 lần trung bình các phần còn lại thì có dòng `WARN … nên tách`. Vì các phần chạy song
 song, phần chậm nhất quyết định thời gian của cả bộ test. Cảnh báo không đổi kết quả. Đổi ngưỡng giây:
 `AW_TEST_SLOW_MIN`.
 

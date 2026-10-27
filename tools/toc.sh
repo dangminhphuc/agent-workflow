@@ -8,14 +8,14 @@
 # một dấu là link chết. Chỉ ghi file khi nội dung đổi — chạy lại không làm
 # artifact phía sau lỗi thời (based_on). Chạy TRƯỚC aw based-on.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai toc.sh \
-  "0=ĐÃ KHỚP — mục lục và link trỏ đúng mục" \
-  "1=CÒN LINK SAI — sửa theo danh sách phía trên rồi chạy lại" \
-  "2=SAI THAM SỐ HOẶC THIẾU FILE"
+  "0=MATCHED — mục lục và link trỏ đúng mục" \
+  "1=BAD LINKS — sửa theo danh sách phía trên rồi chạy lại" \
+  "2=BAD ARGS OR MISSING FILE"
 . "$HERE/lib/toc.sh"
 
 [ $# -ge 1 ] || { echo "Dùng: aw toc <thư-mục-feature> [artifact...]" >&2; exit 2; }
@@ -38,7 +38,7 @@ for _a in "$@"; do
 done
 _l=$(toc_loi "$DIR" "$@")
 if [ -n "$_l" ]; then
-  printf '%s\n' "$_l" | while IFS= read -r _d; do echo "  [LỖI] $_d"; done
+  printf '%s\n' "$_l" | while IFS= read -r _d; do echo "  [ERROR] $_d"; done
   exit 1
 fi
 echo "Mục lục và link của $* khớp heading."

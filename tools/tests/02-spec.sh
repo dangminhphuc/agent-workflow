@@ -70,7 +70,7 @@ viet_spec; thay "$CFG/conventions.md" 'high_risk_keywords:' 'high_risk_keywords:
 thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] mở y thấy a sau migration dữ liệu'
 OUT=$(sh "$CHK" "$F"); MA=$?
 dung "Risk normal chứa từ khoá rủi ro → vẫn cho qua" bang "$MA" 0
-dung "…nhưng cảnh báo, nêu từ khoá (không phân biệt hoa thường)" sh -c "printf '%s' \"\$1\" | grep -qF '[CẢNH BÁO] \"Risk: normal\" nhưng spec có từ khoá rủi ro cao (high_risk_keywords): Migration'" _ "$OUT"
+dung "…nhưng cảnh báo, nêu từ khoá (không phân biệt hoa thường)" sh -c "printf '%s' \"\$1\" | grep -qF '[WARN] \"Risk: normal\" nhưng spec có từ khoá rủi ro cao (high_risk_keywords): Migration'" _ "$OUT"
 thay "$F/spec.md" '- **Risk:** `normal`' '- **Risk:** `high`'
 dung "Risk high → không cảnh báo từ khoá" sh -c "! sh '$CHK' '$F' | grep -qF 'high_risk_keywords'"
 viet_spec; thay "$F/spec.md" '  - [ ] mở y thấy a' '  - [ ] mở y thấy a <!-- thanh toán -->'
@@ -242,7 +242,7 @@ dung "…mã có trong Input → không cảnh báo nguồn ngoài intake" sh -c
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` ABC-9'
 OUT=$(sh "$CHK" "$F"); MA=$?
 dung "[JIRA] mã không có trong Input của intake → vẫn cho qua" bang "$MA" 0
-dung "…nhưng cảnh báo, nêu mã" sh -c "printf '%s' \"\$1\" | grep -qF '[CẢNH BÁO] REQ-001: nguồn ABC-9 không có trong \"## Input\" của intake.md'" _ "$OUT"
+dung "…nhưng cảnh báo, nêu mã" sh -c "printf '%s' \"\$1\" | grep -qF '[WARN] REQ-001: nguồn ABC-9 không có trong \"## Input\" của intake.md'" _ "$OUT"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[JIRA]` ABC-10'
 dung "[JIRA] ABC-10 không khớp nhầm ABC-1 trong Input" sh -c "sh '$CHK' '$F' | grep -qF 'nguồn ABC-10 không có trong'"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[CONFLUENCE]` [Trang](https://wiki.x/p/1#muc) § Mục'
@@ -303,7 +303,7 @@ thay "$F/spec.md" '  > cần làm x cho màn hình y' '  > cần làm x cho màn
 ky_vong 1 "…sai một chữ → chặn" sh "$CHK" "$F"
 # Phase sau chạy lại spec (--entry): nguồn đổi sau khi viết spec chỉ cảnh báo
 ky_vong 0 "--entry: câu trích lệch chỉ cảnh báo, không chặn" sh "$CHK" "$F" --entry
-dung "…có dòng cảnh báo" sh -c "sh '$CHK' '$F' --entry | grep -qF '[CẢNH BÁO] REQ-001: câu trích không có trong intake.md'"
+dung "…có dòng cảnh báo" sh -c "sh '$CHK' '$F' --entry | grep -qF '[WARN] REQ-001: câu trích không có trong intake.md'"
 thay "$F/spec.md" '- Quote:
   > cần làm x cho màn hình z
 ' ''; duyet_lai "$F/spec.md"

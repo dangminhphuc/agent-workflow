@@ -8,7 +8,7 @@
 #
 # Khi script thoát (exit, hoặc chạy hết), stderr có:
 #
-#   Kết quả: check-plan.sh
+#   Result: check-plan.sh
 #     [ ] ĐẠT — được sang phase sau
 #     [x] KHÔNG ĐẠT — có vi phạm, sửa trong phase này
 #     [ ] THIẾU ĐẦU VÀO — chưa có file cần kiểm
@@ -43,7 +43,7 @@ kq_in() {
   [ -n "$KQ_DON" ] && eval "$KQ_DON"
   _kq_co=""
   {
-    printf '\nKết quả: %s\n' "$KQ_TEN"
+    printf '\nResult: %s\n' "$KQ_TEN"
     while IFS= read -r _kq_d; do
       [ -n "$_kq_d" ] || continue
       if [ "${_kq_d%%=*}" = "$_kq_ma" ]; then
@@ -54,7 +54,7 @@ kq_in() {
     done <<EOF
 $KQ_DS
 EOF
-    [ -n "$_kq_co" ] || printf '  [x] LỖI NGOÀI DỰ KIẾN — xem thông báo phía trên\n'
+    [ -n "$_kq_co" ] || printf '  [x] UNEXPECTED ERROR — xem thông báo phía trên\n'
   } >&2
   trap - EXIT
   exit "$_kq_ma"

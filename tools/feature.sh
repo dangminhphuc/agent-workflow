@@ -15,15 +15,15 @@
 # viec bat dau bang engine cu (chi co .agent-workflow/<ten-feature>/) thi in duong dan cu.
 # Ten branch co "/" duoc doi thanh "_" de khong tao thu muc long nhau.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai feature.sh \
-  "0=ĐÃ XÁC ĐỊNH — stdout là thư mục feature" \
-  "2=TÊN KHÔNG HỢP LỆ — báo lại người dùng" \
-  "3=CẦN HỎI NGƯỜI — branch không khớp quy ước và không có tham số" \
-  "6=ĐANG Ở CHECKOUT CHÍNH — việc phải làm trong worktree"
+  "0=RESOLVED — stdout là thư mục feature" \
+  "2=INVALID NAME — báo lại người dùng" \
+  "3=ASK HUMAN — branch không khớp quy ước và không có tham số" \
+  "6=ON MAIN CHECKOUT — việc phải làm trong worktree"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/worktree.sh"
 
@@ -41,7 +41,7 @@ case "${1:-}" in
 esac
 
 if wt_la_chinh "$MT_REPO"; then
-  echo "ĐANG Ở CHECKOUT CHÍNH ($(wt_chinh "$MT_REPO")) — quy trình bắt buộc làm trong worktree." >&2
+  echo "ON MAIN CHECKOUT ($(wt_chinh "$MT_REPO")) — quy trình bắt buộc làm trong worktree." >&2
   ds=$(git -C "$MT_REPO" worktree list 2>/dev/null | tail -n +2)
   if [ -n "$ds" ]; then
     echo "  Worktree đang có:" >&2
@@ -84,5 +84,5 @@ esac
 
 TM=$(tm_viec "$MT_REPO" "$ten")
 case "$TM" in "$TM_CU"/*) tu="$tu; việc tạo bằng engine cũ — artifact chỉ ở máy" ;; esac
-echo "Đang làm với: $TM ($tu)" >&2
+echo "Working on: $TM ($tu)" >&2
 echo "$TM"

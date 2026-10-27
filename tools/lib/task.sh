@@ -121,7 +121,7 @@ tk_thieu_bang_chung() {
     if [ -z "$_ma" ]; then
       echo "$_t đánh [x] nhưng không có bằng chứng trong task-results.md — trạng thái chỉ lên [x] bằng: aw task done $1 $_t"
     elif [ "$_ma" != 0 ]; then
-      echo "$_t đánh [x] nhưng lần chạy Verify gần nhất ĐỎ (mã $_ma) — sửa rồi chạy lại: aw task done $1 $_t"
+      echo "$_t đánh [x] nhưng lần chạy Verify gần nhất RED (mã $_ma) — sửa rồi chạy lại: aw task done $1 $_t"
     elif [ "$_l" != "$_v" ]; then
       echo "$_t: lệnh Verify trong plan.md đã đổi sau khi task xong (đã chạy \`$_l\`) — chạy lại: aw task done $1 $_t"
     fi

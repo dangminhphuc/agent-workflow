@@ -30,7 +30,7 @@ GAC="$T/guard.sh"
 co_tick() { grep -q '^- \[x\] \*\*Approved by human' "$F/spec.md"; }
 d_tick() { grep -q '^- \[x\] \*\*Approved by human' "$F/tdd.md"; }
 viet_spec; viet_tdd
-ky_vong 3 "guard sai tham số → SAI THAM SỐ" sh "$GAC" khac
+ky_vong 3 "guard sai tham số → BAD ARGS" sh "$GAC" khac
 
 # Người tick (giữa hai lệnh của agent): pre ghi dấu, post để yên
 ky_vong 0 "pre luôn cho qua" sh "$GAC" pre
@@ -115,9 +115,9 @@ viet_spec; viet_tdd; ghi_based_on
 nhom "approval.sh (aw approval)"
 CD="$T/approval.sh"
 viet_spec; viet_tdd
-ky_vong 2 "approval sai phase → SAI THAM SỐ" sh "$CD" review "$F"
-ky_vong 2 "approval thiếu thư mục → SAI THAM SỐ" sh "$CD" design "$TMP/khong-co"
-ky_vong 0 "spec đã tick → ĐÃ DUYỆT" sh "$CD" design "$F"
+ky_vong 2 "approval sai phase → BAD ARGS" sh "$CD" review "$F"
+ky_vong 2 "approval thiếu thư mục → BAD ARGS" sh "$CD" design "$TMP/khong-co"
+ky_vong 0 "spec đã tick → APPROVED" sh "$CD" design "$F"
 thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
 thay "$F/spec.md" '### REQ-002 — b' '### REQ-003 — log khi từ chối
 - Source: `[INFERRED]` từ REQ-001
@@ -126,7 +126,7 @@ thay "$F/spec.md" '### REQ-002 — b' '### REQ-003 — log khi từ chối
   - [ ] có log
 
 ### REQ-002 — b'
-ky_vong 1 "spec chưa tick → CHƯA DUYỆT" sh "$CD" design "$F"
+ky_vong 1 "spec chưa tick → NOT APPROVED" sh "$CD" design "$F"
 OUT_CD=$(sh "$CD" design "$F" 2>/dev/null)
 dung "…chỉ đúng file và dòng phải tick" sh -c "printf '%s' \"\$1\" | grep -q 'mở .agent-workflow/[^ ]*/spec.md, dòng [0-9]'" _ "$OUT_CD"
 dung "…liệt kê REQ [INFERRED] kèm tên" sh -c "printf '%s' \"\$1\" | grep -q 'REQ-003 — log khi từ chối'" _ "$OUT_CD"
@@ -135,17 +135,17 @@ dung "…nói hệ quả của mức rủi ro (Mode 1/2)" sh -c "printf '%s' \"\
 dung "…đếm điểm mù còn mở theo mức chặn" sh -c "printf '%s' \"\$1\" | grep -q 'Open question còn mở: 1 (blocking: 0 · review-blocking: 0 · non-blocking: 1)'" _ "$OUT_CD"
 dung "…không tự tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
 thay "$F/spec.md" '- [ ] **Approved by human** — đã đọc' '- [x] **Approved by human** — đã đọc'
-ky_vong 0 "người tick xong → ĐÃ DUYỆT (kiểm lại)" sh "$CD" design "$F"
+ky_vong 0 "người tick xong → APPROVED (kiểm lại)" sh "$CD" design "$F"
 thay "$F/spec.md" 'có log' 'có log Warn'
-ky_vong 1 "spec đổi sau duyệt → CHƯA DUYỆT" sh "$CD" design "$F"
+ky_vong 1 "spec đổi sau duyệt → NOT APPROVED" sh "$CD" design "$F"
 dung "…nói rõ đã đổi sau khi duyệt và cách duyệt lại" sh -c "sh '$CD' design '$F' 2>/dev/null | grep -q 'ĐÃ ĐỔI SAU KHI DUYỆT' && sh '$CD' design '$F' 2>/dev/null | grep -q 'xoá \"<!-- approval-hash'"
 viet_spec; viet_tdd
-ky_vong 0 "/aw-plan: mọi DEC đã tick → ĐÃ DUYỆT" sh "$CD" plan "$F"
+ky_vong 0 "/aw-plan: mọi DEC đã tick → APPROVED" sh "$CD" plan "$F"
 thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**
 - Critique (agent): cân nhắc DB'
-ky_vong 1 "/aw-plan: còn DEC chưa tick → CHƯA DUYỆT" sh "$CD" plan "$F"
+ky_vong 1 "/aw-plan: còn DEC chưa tick → NOT APPROVED" sh "$CD" plan "$F"
 OUT_CD=$(sh "$CD" plan "$F" 2>/dev/null)
-dung "…đếm DEC chưa duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'CÒN 1/1 QUYẾT ĐỊNH CHƯA DUYỆT'" _ "$OUT_CD"
+dung "…đếm DEC chưa duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'CÒN 1/1 QUYẾT ĐỊNH NOT APPROVED'" _ "$OUT_CD"
 dung "…tên DEC, dòng, tác giả, lựa chọn, có phản biện" sh -c "printf '%s' \"\$1\" | grep -q 'DEC-001 — lưu ở đâu' && printf '%s' \"\$1\" | grep -q 'dòng [0-9]* · chưa tick' && printf '%s' \"\$1\" | grep -q 'tác giả: agent · Choice: file · có 1 phản biện'" _ "$OUT_CD"
 viet_spec; viet_tdd; ghi_based_on
 
@@ -154,33 +154,33 @@ viet_spec; viet_tdd; ghi_based_on
 nhom "approvals.sh (aw approvals, /aw-approvals)"
 AP="$T/approvals.sh"
 viet_spec; viet_tdd
-ky_vong 0 "mọi ô đã tick → KHÔNG CÒN Ô CHỜ DUYỆT" sh "$AP"
-ky_vong 2 "tham số lạ → SAI THAM SỐ" sh "$AP" --tat-ca
-ky_vong 2 "tick thiếu tham số → SAI THAM SỐ" sh "$AP" tick "$F" spec
-ky_vong 2 "tick khoá lạ → SAI THAM SỐ" sh "$AP" tick "$F" REQ-001 0000000000000000
+ky_vong 0 "mọi ô đã tick → NONE PENDING" sh "$AP"
+ky_vong 2 "tham số lạ → BAD ARGS" sh "$AP" --tat-ca
+ky_vong 2 "tick thiếu tham số → BAD ARGS" sh "$AP" tick "$F" spec
+ky_vong 2 "tick khoá lạ → BAD ARGS" sh "$AP" tick "$F" REQ-001 0000000000000000
 ky_vong 0 "aw-engine approvals → approvals.sh" sh "$AWE" approvals
 thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
-ky_vong 1 "spec chưa tick → CÓ Ô CHỜ DUYỆT" sh "$AP"
+ky_vong 1 "spec chưa tick → PENDING" sh "$AP"
 OUT_AP=$(sh "$AP" 2>/dev/null)
 dung "…link tuyệt đối tới đúng dòng ô duyệt" sh -c "printf '%s' \"\$1\" | grep -q \"^ *$F/spec.md:\$(grep -n 'Approved by human' '$F/spec.md' | cut -d: -f1)\$\"" _ "$OUT_AP"
 dung "…in đúng lệnh tick kèm hash" sh -c "printf '%s' \"\$1\" | grep -q 'duyệt: aw approvals tick $F spec [0-9a-f]\{16\}'" _ "$OUT_AP"
 dung "…liệt kê không tự tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
 H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F spec ||p")
-ky_vong 1 "tick với hash khác bản hiện tại → KHÔNG TICK" sh "$AP" tick "$F" spec 0000000000000000
+ky_vong 1 "tick với hash khác bản hiện tại → NOT TICKED" sh "$AP" tick "$F" spec 0000000000000000
 dung "…file giữ nguyên chưa tick" sh -c "grep -q '^- \[ \] \*\*Approved by human' '$F/spec.md'"
 rm -f "$CFG/journal/approvals.tsv"
-ky_vong 0 "tick với hash người vừa thấy → ĐÃ DUYỆT" sh "$AP" tick "$F" spec "$H_AP"
+ky_vong 0 "tick với hash người vừa thấy → APPROVED" sh "$AP" tick "$F" spec "$H_AP"
 dung "…ô được tick, dấu duyệt = hash đó" grep -q "^- \[x\] \*\*Approved by human.*approval-hash: $H_AP -->" "$F/spec.md"
-ky_vong 0 "…cổng duyệt spec thấy ĐÃ DUYỆT" sh "$CD" design "$F"
+ky_vong 0 "…cổng duyệt spec thấy APPROVED" sh "$CD" design "$F"
 dung "…ghi nhật ký approvals.tsv" grep -q "spec	$H_AP	aw approvals tick" "$CFG/journal/approvals.tsv"
 ky_vong 0 "tick lại mục đã duyệt → không làm gì" sh "$AP" tick "$F" spec "$H_AP"
 thay "$F/spec.md" '### REQ-002 — b' '### REQ-002 — bb'
 OUT_AP=$(sh "$AP" 2>/dev/null)
 dung "spec đổi sau duyệt → liệt kê ĐÃ ĐỔI sau khi duyệt" sh -c "printf '%s' \"\$1\" | grep -q 'ĐÃ ĐỔI sau khi duyệt'" _ "$OUT_AP"
-ky_vong 1 "…tick bằng hash cũ → KHÔNG TICK" sh "$AP" tick "$F" spec "$H_AP"
+ky_vong 1 "…tick bằng hash cũ → NOT TICKED" sh "$AP" tick "$F" spec "$H_AP"
 H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F spec ||p")
-ky_vong 0 "…tick bằng hash bản mới → ĐÃ DUYỆT lại" sh "$AP" tick "$F" spec "$H_AP"
-ky_vong 0 "…cổng duyệt spec thấy ĐÃ DUYỆT" sh "$CD" design "$F"
+ky_vong 0 "…tick bằng hash bản mới → APPROVED lại" sh "$AP" tick "$F" spec "$H_AP"
+ky_vong 0 "…cổng duyệt spec thấy APPROVED" sh "$CD" design "$F"
 viet_spec; viet_tdd
 thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
 OUT_AP=$(sh "$AP" 2>/dev/null)
@@ -189,7 +189,7 @@ H_AP=$(printf '%s\n' "$OUT_AP" | sed -n "s|.*duyệt: aw approvals tick $F DEC-0
 sh "$GAC" pre >/dev/null 2>&1
 sh "$AP" tick "$F" DEC-001 "$H_AP" >/dev/null 2>&1
 ky_vong 0 "tick qua aw approvals tick → aw guard post không bỏ" sh "$GAC" post
-ky_vong 0 "…cổng duyệt plan thấy ĐÃ DUYỆT" sh "$CD" plan "$F"
+ky_vong 0 "…cổng duyệt plan thấy APPROVED" sh "$CD" plan "$F"
 thay "$F/tdd.md" '- [x] **Approved by human**' '- [ ] **Approved by human**'
 sh "$GAC" pre >/dev/null 2>&1
 thay "$F/tdd.md" '- [ ] **Approved by human**' '- [x] **Approved by human**'
@@ -217,7 +217,7 @@ ky_vong 1 "chore chạy design thì bị chặn" sh "$T/check-design.sh" "$F"
 thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
 ky_vong 1 "chore: aw approval plan hỏi duyệt SPEC (không có tdd.md)" sh "$T/approval.sh" plan "$F"
 dung "…đúng cổng spec, không nói Mode" sh -c "sh '$T/approval.sh' plan '$F' 2>/dev/null | grep -q 'vào /aw-plan cần spec' && sh '$T/approval.sh' plan '$F' 2>/dev/null | grep -q 'chore không có design'"
-ky_vong 2 "chore: aw approval design → SAI THAM SỐ" sh "$T/approval.sh" design "$F"
+ky_vong 2 "chore: aw approval design → BAD ARGS" sh "$T/approval.sh" design "$F"
 ky_vong 1 "chore: plan chặn khi người chưa duyệt spec" sh "$T/check-plan.sh" "$F"
 viet_spec; ghi_based_on
 
@@ -240,8 +240,8 @@ thay "$F/plan.md" '| Library | Old → new | Level |
 ky_vong 0 "khai nâng bản vá thì cho qua" sh "$T/check-implement.sh" "$F"
 cp "$CFG/config.sh" "$TMP/ch-chore.bak"
 printf 'TEST_CMD="true"\nSECURITY_CMDS="secret: true\nsast: true"\n' > "$CFG/config.sh"
-ky_vong_ly_do 1 "chore đụng dependency mà không có lệnh nhóm sca → chặn" "…đúng lý do: thiếu SCA" 'nhóm "sca" chạy XANH' sh "$T/check-implement.sh" "$F"
-dung "…review cũng chặn đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'nhóm \"sca\" chạy XANH'"
+ky_vong_ly_do 1 "chore đụng dependency mà không có lệnh nhóm sca → chặn" "…đúng lý do: thiếu SCA" 'nhóm "sca" chạy GREEN' sh "$T/check-implement.sh" "$F"
+dung "…review cũng chặn đúng lý do" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'nhóm \"sca\" chạy GREEN'"
 printf 'TEST_CMD="true"\nSECURITY_CMDS="secret: true\nsast: true\nsca: echo CVE-2099-1; exit 1"\n' > "$CFG/config.sh"
 ky_vong 1 "chore đụng dependency mà SCA đỏ (CVE) → chặn" sh "$T/check-implement.sh" "$F"
 cp "$TMP/ch-chore.bak" "$CFG/config.sh"

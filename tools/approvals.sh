@@ -18,7 +18,7 @@
 # luật ask của Claude Code cho lệnh này (người bấm cho phép mỗi lần), aw guard
 # (tick ghi bằng Edit/Write vẫn bị bỏ), nhật ký. Lý do: docs/kien-truc.md.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
@@ -26,14 +26,14 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 if [ "${1:-}" = tick ]; then
   kq_khai approvals.sh \
-    "0=ĐÃ DUYỆT — đã tick và ghi approval hash" \
-    "1=KHÔNG TICK — mục không chờ duyệt, hoặc nội dung đổi so với bản người đã thấy; chạy lại aw approvals rồi hỏi lại người" \
-    "2=SAI THAM SỐ HOẶC THIẾU FILE"
+    "0=APPROVED — đã tick và ghi approval hash" \
+    "1=NOT TICKED — mục không chờ duyệt, hoặc nội dung đổi so với bản người đã thấy; chạy lại aw approvals rồi hỏi lại người" \
+    "2=BAD ARGS OR MISSING FILE"
 else
   kq_khai approvals.sh \
-    "0=KHÔNG CÒN Ô CHỜ DUYỆT" \
-    "1=CÓ Ô CHỜ DUYỆT — hỏi người từng mục; chỉ chạy lệnh tick sau khi người chọn duyệt mục đó" \
-    "2=SAI THAM SỐ"
+    "0=NONE PENDING" \
+    "1=PENDING — hỏi người từng mục; chỉ chạy lệnh tick sau khi người chọn duyệt mục đó" \
+    "2=BAD ARGS"
 fi
 . "$HERE/lib/md.sh"
 . "$HERE/lib/env.sh"
@@ -60,17 +60,17 @@ if [ "${1:-}" = tick ]; then
   case "$TT" in
     proposed|reopened|changed-after-approval) ;;
     approved) echo "$KHOA đã được duyệt sẵn — không làm gì."; exit 0 ;;
-    missing-box) echo "KHÔNG TICK: $KHOA thiếu approval checkbox — agent thêm ô (chưa tick) trước." >&2; exit 1 ;;
-    *) echo "KHÔNG TICK: không thấy approval checkbox của $KHOA trong $F." >&2; exit 1 ;;
+    missing-box) echo "NOT TICKED: $KHOA thiếu approval checkbox — agent thêm ô (chưa tick) trước." >&2; exit 1 ;;
+    *) echo "NOT TICKED: không thấy approval checkbox của $KHOA trong $F." >&2; exit 1 ;;
   esac
   HIEN=$(dy_hash "$F" "$LOAI" "$KHOA")
   if [ "$HIEN" != "$HASH" ]; then
-    echo "KHÔNG TICK: nội dung $KHOA đã đổi so với bản người đã thấy (hash $HASH, giờ là $HIEN)." >&2
+    echo "NOT TICKED: nội dung $KHOA đã đổi so với bản người đã thấy (hash $HASH, giờ là $HIEN)." >&2
     exit 1
   fi
-  dy_tick "$F" "$LOAI" "$KHOA" "$HASH" || { echo "KHÔNG TICK: không ghi được approval checkbox của $KHOA." >&2; exit 1; }
+  dy_tick "$F" "$LOAI" "$KHOA" "$HASH" || { echo "NOT TICKED: không ghi được approval checkbox của $KHOA." >&2; exit 1; }
   TT=$(dy_trang_thai "$F" "$LOAI" | awk -F'|' -v k="$KHOA" '$1 == "S" && $2 == k { print $3; exit }')
-  [ "$TT" = approved ] || { echo "KHÔNG TICK: sau khi ghi, $KHOA vẫn là \"$TT\"." >&2; exit 1; }
+  [ "$TT" = approved ] || { echo "NOT TICKED: sau khi ghi, $KHOA vẫn là \"$TT\"." >&2; exit 1; }
   # Nhật ký: lỗi ở đây không làm hỏng lệnh.
   if mkdir -p "$AW_CONFIG/journal" 2>/dev/null; then
     printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$(basename "$DIR")" "$KHOA" "$HASH" "aw approvals tick" "$(jv_version "$HERE")" \
@@ -82,7 +82,7 @@ if [ "${1:-}" = tick ]; then
   if ar_commit "$DIR" "chore(sdlc): $(basename "$DIR") approve $KHOA"; then
     [ -z "$AR_DA_COMMIT" ] || echo "Artifact: đã commit (chore(sdlc): $(basename "$DIR") approve $KHOA)"
   else
-    echo "CẢNH BÁO: không commit được artifact $DIR — xem thông báo của git phía trên." >&2
+    echo "WARN: không commit được artifact $DIR — xem thông báo của git phía trên." >&2
   fi
   exit 0
 fi

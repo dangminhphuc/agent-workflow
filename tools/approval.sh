@@ -10,14 +10,14 @@
 # xác nhận (xem bước "Cổng duyệt" trong lệnh phase); người tự tick trong file.
 # Ghi dấu duyệt cho ô người vừa tick, như aw check.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai approval.sh \
-  "0=ĐÃ DUYỆT — đi tiếp phase" \
-  "1=CHƯA DUYỆT — in nguyên văn phần trên cho người rồi hỏi bằng hộp xác nhận; không tick hộ" \
-  "2=SAI THAM SỐ HOẶC THIẾU FILE"
+  "0=APPROVED — đi tiếp phase" \
+  "1=NOT APPROVED — in nguyên văn phần trên cho người rồi hỏi bằng hộp xác nhận; không tick hộ" \
+  "2=BAD ARGS OR MISSING FILE"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/sha256.sh"
@@ -55,10 +55,10 @@ if [ "$CONG" = spec ]; then
   echo "Việc:        $VIEC"
   case "$TT" in
     approved)
-      echo "Trạng thái:  ✓ ĐÃ DUYỆT"
+      echo "Trạng thái:  ✓ APPROVED"
       exit 0 ;;
     proposed)
-      echo "Trạng thái:  ✗ CHƯA DUYỆT — ô \"$DY_NHAN_SPEC\" chưa tick"
+      echo "Trạng thái:  ✗ NOT APPROVED — ô \"$DY_NHAN_SPEC\" chưa tick"
       echo "Cách duyệt:  mở $F, dòng $DONG"
       echo "             đổi   - [ ] **$DY_NHAN_SPEC**"
       echo "             thành - [x] **$DY_NHAN_SPEC**" ;;
@@ -162,8 +162,8 @@ awk -v dtt="$DTT" -v dnr="$DNR" -v viec="$VIEC" -v f="$F" -v nhan="$DY_NHAN_D" "
     print "CỔNG DUYỆT — vào /aw-plan cần mọi quyết định DEC-xxx đã được bạn duyệt"
     print "Việc:        " viec
     if (n == 0) { print "Trạng thái:  ✓ KHÔNG CÓ QUYẾT ĐỊNH NÀO CẦN DUYỆT"; exit 0 }
-    if (cho == 0) { print "Trạng thái:  ✓ ĐÃ DUYỆT ĐỦ " n "/" n " quyết định"; exit 0 }
-    print "Trạng thái:  ✗ CÒN " cho "/" n " QUYẾT ĐỊNH CHƯA DUYỆT"
+    if (cho == 0) { print "Trạng thái:  ✓ APPROVED ĐỦ " n "/" n " quyết định"; exit 0 }
+    print "Trạng thái:  ✗ CÒN " cho "/" n " QUYẾT ĐỊNH NOT APPROVED"
     print "File:        " f
     print ""
     print "Chưa duyệt:"

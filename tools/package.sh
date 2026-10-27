@@ -12,16 +12,16 @@
 # không lọt vào bản phát hành. gzip -n: không ghi tên file và giờ vào gói.
 # <YYYY.M.N> đọc từ VERSION ở <ref>; wrapper bin/aw phải cùng version.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/tools/lib/result.sh"
 . "$ROOT/tools/lib/sha256.sh"
 . "$ROOT/tools/lib/version.sh"
 kq_khai package.sh \
-  "0=ĐÃ ĐÓNG GÓI" \
-  "2=SAI THAM SỐ HOẶC REF" \
-  "4=VERSION LỖI — VERSION sai dạng YYYY.M.N hoặc lệch với bin/aw"
+  "0=PACKAGED" \
+  "2=BAD ARGS OR REF" \
+  "4=VERSION ERROR — VERSION sai dạng YYYY.M.N hoặc lệch với bin/aw"
 
 OUT="${1:-}"; REF="${2:-HEAD}"
 [ -n "$OUT" ] || { echo "Dùng: sh tools/package.sh <thư-mục-ra> [ref]" >&2; exit 2; }

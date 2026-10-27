@@ -9,19 +9,19 @@
 # đều lấy từ artifact đã duyệt; không có tham số nào để agent tự chọn. Chạy lại an toàn:
 # khối của cùng việc + REQ được viết lại tại chỗ. Không commit gì.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 case "${1:-}" in
   promote) kq_khai rule.sh \
-    "0=ĐÃ NÂNG — khối luật đã ghi trong worktree, commit cùng việc" \
-    "1=TỪ CHỐI — REQ chưa đủ điều kiện, lý do phía trên; không viết luật bằng tay" \
-    "2=SAI THAM SỐ" ;;
+    "0=UPGRADED — khối luật đã ghi trong worktree, commit cùng việc" \
+    "1=REJECTED — REQ chưa đủ điều kiện, lý do phía trên; không viết luật bằng tay" \
+    "2=BAD ARGS" ;;
   *) kq_khai rule.sh \
-    "0=HỢP LỆ — đọc các dòng ! (nếu có)" \
-    "1=KHÔNG HỢP LỆ — sửa các dòng ✗" \
-    "2=SAI THAM SỐ" ;;
+    "0=VALID — đọc các dòng ! (nếu có)" \
+    "1=INVALID — sửa các dòng ✗" \
+    "2=BAD ARGS" ;;
 esac
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"

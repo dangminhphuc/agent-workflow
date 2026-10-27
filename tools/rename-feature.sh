@@ -14,13 +14,13 @@
 #
 # Không đụng remote: branch đã push thì tự push tên mới / xoá tên cũ / mở lại PR.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai rename-feature.sh \
-  "0=ĐÃ ĐỔI TÊN" \
-  "2=KHÔNG ĐỔI ĐƯỢC — tham số hoặc trạng thái không cho phép"
+  "0=RENAMED" \
+  "2=CANNOT RENAME — tham số hoặc trạng thái không cho phép"
 . "$HERE/lib/worktree.sh"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/env.sh"
@@ -69,7 +69,7 @@ fi
 if [ -d "$WT_MOI/$ART/$TM_MOI" ]; then
   set --; [ -z "$(git -C "$WT_MOI" ls-files -- "$ART/$TEN_CU")" ] || set -- "$ART/$TEN_CU"
   ar_commit "$WT_MOI/$ART/$TM_MOI" "chore(sdlc): rename $TEN_CU -> $TM_MOI" "$@" ||
-    echo "CẢNH BÁO: không commit được việc dời artifact — xem thông báo của git phía trên." >&2
+    echo "WARN: không commit được việc dời artifact — xem thông báo của git phía trên." >&2
 fi
 echo "Đổi  branch $CU → $MOI"
 echo "Dời  worktree $WT → $WT_MOI"

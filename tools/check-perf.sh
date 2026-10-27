@@ -9,15 +9,15 @@
 # Script chỉ GHI số; có đạt mục tiêu hay không thì người kết luận ở review —
 # số đo dao động nên máy chặn theo ngưỡng sẽ chặn nhầm.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai check-perf.sh \
-  "0=ĐÃ GHI SỐ ĐO" \
-  "1=KHÔNG HỢP LỆ — lý do in phía trên" \
-  "2=KHÔNG CHẠY ĐƯỢC — sai tham số, sai job type hoặc thiếu cấu hình"
+  "0=WRITTEN" \
+  "1=INVALID — lý do in phía trên" \
+  "2=CANNOT RUN — sai tham số, sai job type hoặc thiếu cấu hình"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 
@@ -43,13 +43,13 @@ if [ "$PHA" = "--before" ]; then
   ngoai=$(printf '%s\n' "$DOI" | while IFS="$(printf '\t')" read -r s p q; do
     [ -n "$p" ] && kc_khop_khoa "$DIR" production_code "${q:-$p}" && echo "  - ${q:-$p}"; done)
   if [ -n "$ngoai" ]; then
-    echo "KHÔNG HỢP LỆ — đo \"trước\" nhưng diff đã đụng code production:"
+    echo "INVALID — đo \"trước\" nhưng diff đã đụng code production:"
     echo "$ngoai"
     echo "Hoàn tác phần sửa (git stash), đo lại, rồi mới sửa."
     exit 1
   fi
 elif ! grep -q '^## Trước' "$OUT" 2>/dev/null; then
-  echo "KHÔNG HỢP LỆ — chưa có số đo trước. Số đo sau không có số đo trước thì không so được gì."
+  echo "INVALID — chưa có số đo trước. Số đo sau không có số đo trước thì không so được gì."
   exit 1
 fi
 
@@ -62,7 +62,7 @@ cat "$TMP"
 if [ "$ma" -ne 0 ] || [ -z "$kq" ]; then
   rm -f "$TMP"
   echo ""
-  echo "KHÔNG HỢP LỆ — lệnh đo trả mã $ma hoặc không in dòng \"RESULT: <số> <đơn vị>\". Không ghi gì."
+  echo "INVALID — lệnh đo trả mã $ma hoặc không in dòng \"RESULT: <số> <đơn vị>\". Không ghi gì."
   exit 1
 fi
 

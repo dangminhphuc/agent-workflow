@@ -34,7 +34,7 @@ vi_pham "Rule: của invariant có mã REQ- → chặn" "INV-001: \"Rule:\" ch�
 moi; awk '{ if (/^- Rule:/ && ++n == 1) $0 = $0 " Based on DEC-001."; print }' "$E/sdlc/stages/06-deploy.md" > "$E/s" && mv "$E/s" "$E/sdlc/stages/06-deploy.md"
 vi_pham "Rule: của capability có mã DEC- → chặn" "CAP-deploy-01: \"Rule:\" chứa cú pháp engine (DEC-)"
 moi; awk '/^### INV-001 / { on = 1 } /^### INV-002 / { on = 0 } { print; if (on && /^- Rule:/) print "- Engine: task line `Covers: REQ-NNN`" }' "$E/sdlc/invariants.md" > "$E/i" && mv "$E/i" "$E/sdlc/invariants.md"
-ky_vong 0 "\"- Engine:\" được dùng backtick và mã → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "\"- Engine:\" được dùng backtick và mã → PASS" sh "$SC" "$E"
 
 # ---------------------------------------------------------------- tập con YAML
 nhom "check-sdlc.sh: dòng YAML ngoài tập con bị chặn, kèm file + dòng"
@@ -59,7 +59,7 @@ vi_pham "frontmatter: dòng lạ → chặn" "sdlc/stages/00-plan.md: dòng $(so
 moi; thay "$E/workflow.yaml" '  - id: cursor' '  # chú thích thụt lề
 
   - id: cursor'
-ky_vong 0 "workflow.yaml: chú thích thụt lề, dòng trống trong danh sách → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "workflow.yaml: chú thích thụt lề, dòng trống trong danh sách → PASS" sh "$SC" "$E"
 moi; thay "$E/workflow/phases/03-plan.md" 'implements: breakdown' 'implements: [breakdown]'
 vi_pham "frontmatter: danh sách một mục [x] → chặn (fm_list đọc thành rỗng)" "workflow/phases/03-plan.md: dòng $(so_dong "$E/workflow/phases/03-plan.md" 'implements: [breakdown]'): dạng {…} hoặc danh sách [a, b] không được hỗ trợ"
 
@@ -73,7 +73,7 @@ vi_pham "# giữ: trỏ invariant không có → chặn" "tools/check-plan.sh: \
 moi; for f in "$E"/tools/*.sh "$E"/tools/lib/*.sh; do sed 's/CAP-plan-01//g' "$f" > "$f.x" && mv "$f.x" "$f"; done
 vi_pham "capability machine được nhận mà không luật nào khai → chặn" "CAP-plan-01: Judged by machine, phase intake nhận, nhưng không luật checker nào khai \"# giữ: CAP-plan-01\""
 moi; for f in "$E"/tools/*.sh "$E"/tools/lib/*.sh; do sed 's/CAP-deploy-01//g' "$f" > "$f.x" && mv "$f.x" "$f"; done
-ky_vong 0 "capability human (CAP-deploy-01) không cần # giữ: → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "capability human (CAP-deploy-01) không cần # giữ: → PASS" sh "$SC" "$E"
 
 # Đợt 2: luật mới phải gắn "# giữ:"; luật cũ chưa gắn được đếm trong tools/unclassified-rules.txt, chỉ được giảm
 nhom "check-sdlc.sh: luật checker chưa phân loại (tools/unclassified-rules.txt)"
@@ -82,7 +82,7 @@ moi; printf '\nloi "luật mới chưa gắn id"\n' >> "$E/tools/check-plan.sh"
 vi_pham "luật mới không gắn # giữ: → chặn" "tools/check-plan.sh: "
 dung "…nêu số chưa gắn và số cho phép" grep -q 'luật chưa gắn "# giữ:" (cho phép [0-9]* trong tools/unclassified-rules.txt)' "$TMP/ra"
 moi; printf '\n# giữ: CAP-breakdown-01\nloi "luật mới đã gắn id"\n' >> "$E/tools/check-plan.sh"
-ky_vong 0 "luật mới có # giữ: ngay trên → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "luật mới có # giữ: ngay trên → PASS" sh "$SC" "$E"
 # Số cho phép lớn hơn số còn chưa gắn (như vừa gắn thêm id mà quên hạ) — dòng đầu danh sách, không
 # phụ thuộc file nào còn luật chưa gắn (các đợt gắn id hạ dần danh sách).
 moi; DS_F=$(awk 'NR == 1 { print $1 }' "$DS")
@@ -94,24 +94,24 @@ moi; printf 'tools/check-khong-co.sh 3\n' >> "$DS"
 vi_pham "danh sách trỏ file không có → chặn" "tools/unclassified-rules.txt: tools/check-khong-co.sh không có"
 moi; printf 'tools/check-plan.sh nhieu\n' >> "$DS"
 vi_pham "dòng danh sách sai dạng → chặn" "tools/unclassified-rules.txt: dòng \"tools/check-plan.sh nhieu\" sai dạng"
-moi; printf '\necho "  [LỖI] luật mới dạng echo"\n' >> "$E/tools/check-plan.sh"
-vi_pham "luật mới dạng echo \"[LỖI]\" không gắn # giữ: → chặn" "tools/check-plan.sh: "
+moi; printf '\necho "  [ERROR] luật mới dạng echo"\n' >> "$E/tools/check-plan.sh"
+vi_pham "luật mới dạng echo \"[ERROR]\" không gắn # giữ: → chặn" "tools/check-plan.sh: "
 moi; printf '\ncanh_bao "luật mới dạng canh_bao"\n' >> "$E/tools/check-conventions.sh"
 vi_pham "luật mới dạng canh_bao không gắn # giữ: → chặn" "tools/check-conventions.sh: "
-moi; printf '\necho "TỪ CHỐI: luật mới của task.sh" >&2; exit 1\n' >> "$E/tools/task.sh"
-vi_pham "luật mới của task.sh (TỪ CHỐI:) không gắn # giữ: → chặn" "tools/task.sh: "
+moi; printf '\necho "REJECTED: luật mới của task.sh" >&2; exit 1\n' >> "$E/tools/task.sh"
+vi_pham "luật mới của task.sh (REJECTED:) không gắn # giữ: → chặn" "tools/task.sh: "
 moi; printf '\n# giữ: CAP-breakdown-01\nloi "luật một"\nloi "luật hai"\n' >> "$E/tools/check-plan.sh"
 vi_pham "một # giữ: chỉ phủ luật ngay dưới nó, không phủ luật thứ hai → chặn" "tools/check-plan.sh: "
-moi; printf '\ncanh_bao2() { echo "  [CẢNH BÁO] $1"; }\nfunction loi2(msg) { print "  [LỖI] " msg }\n' >> "$E/tools/check-plan.sh"
-vi_pham "định nghĩa hàm in [LỖI]/[CẢNH BÁO] tên lạ vẫn là chỗ luật → chặn" "tools/check-plan.sh: "
-moi; printf '\ncanh_bao() { echo "  [CẢNH BÁO] $1"; }\nfunction loi(msg) { n_loi++; print "  [LỖI] " msg }\n  BEGIN { n_loi = loi_truoc }\n' >> "$E/tools/check-plan.sh"
-ky_vong 0 "định nghĩa loi/canh_bao và BEGIN { n_loi = loi_truoc } không phải luật → ĐẠT" sh "$SC" "$E"
+moi; printf '\ncanh_bao2() { echo "  [WARN] $1"; }\nfunction loi2(msg) { print "  [ERROR] " msg }\n' >> "$E/tools/check-plan.sh"
+vi_pham "định nghĩa hàm in [ERROR]/[WARN] tên lạ vẫn là chỗ luật → chặn" "tools/check-plan.sh: "
+moi; printf '\ncanh_bao() { echo "  [WARN] $1"; }\nfunction loi(msg) { n_loi++; print "  [ERROR] " msg }\n  BEGIN { n_loi = loi_truoc }\n' >> "$E/tools/check-plan.sh"
+ky_vong 0 "định nghĩa loi/canh_bao và BEGIN { n_loi = loi_truoc } không phải luật → PASS" sh "$SC" "$E"
 moi; l=$(grep '^tools/check-plan.sh ' "$DS"); printf '%s\n' "$l" >> "$DS"
 vi_pham "danh sách có dòng trùng file → chặn" "tools/unclassified-rules.txt: tools/check-plan.sh lặp"
 moi; printf 'tools/check-release.sh 1\n' >> "$DS"
 vi_pham "danh sách trỏ file không được đếm → chặn" "tools/unclassified-rules.txt: tools/check-release.sh không phải file được đếm"
 moi; awk '$1 == "tools/check-plan.sh" { $0 = $1 "\t " $2 } { print }' "$DS" > "$E/x" && mv "$E/x" "$DS"
-ky_vong 0 "dòng danh sách cách bằng tab/nhiều dấu cách vẫn đọc được → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "dòng danh sách cách bằng tab/nhiều dấu cách vẫn đọc được → PASS" sh "$SC" "$E"
 moi
 dung "--dem-luat in danh sách đúng dạng, khớp file đang dùng" sh -c "sh '$SC' --dem-luat '$E' | diff - '$DS' >&2"
 

@@ -8,13 +8,13 @@
 # artifact bi bao loi thoi (hoac te hon, khong bao khi da loi thoi).
 # Chay lai la ghi de khoi based_on cu; cac khoa frontmatter khac giu nguyen.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai based-on.sh \
-  "0=ĐÃ GHI" \
-  "2=SAI THAM SỐ HOẶC THIẾU FILE"
+  "0=WRITTEN" \
+  "2=BAD ARGS OR MISSING FILE"
 . "$HERE/lib/md.sh"
 
 [ $# -ge 3 ] || { echo "Dùng: aw based-on <thư-mục-feature> <artifact> <đầu-vào>..." >&2; exit 2; }

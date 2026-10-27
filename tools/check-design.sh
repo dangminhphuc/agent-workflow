@@ -21,14 +21,14 @@
 # Checker LLM chỉ được CHẶN, không được DUYỆT: không có file phát hiện là
 # KHÔNG ĐẠT, không phải "không có gì để báo".
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai check-design.sh \
-  "0=ĐẠT — được sang phase sau" \
-  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
-  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
+  "0=PASS — được sang phase sau" \
+  "1=FAIL — có vi phạm, sửa trong phase này" \
+  "2=NO INPUT — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"
 . "$HERE/lib/cross-check.sh"
@@ -47,13 +47,13 @@ PH="$DIR/design-findings.md"
 
 if kc_bo_design "$DIR"; then
   if [ "$(kc_loai "$DIR")" = "chore" ]; then
-    echo "  [LỖI] Job type là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
+    echo "  [ERROR] Job type là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
   else
-    echo "  [LỖI] spec.md khai \"Design: skip\" — việc này KHÔNG có phase design. Đi thẳng /aw-plan."
+    echo "  [ERROR] spec.md khai \"Design: skip\" — việc này KHÔNG có phase design. Đi thẳng /aw-plan."
     echo "        Cần design thì đổi thành \"Design: required\" trong spec (người duyệt lại spec)."
   fi
   echo ""
-  echo "KHÔNG ĐẠT."
+  echo "FAIL."
   exit 1
 fi
 
@@ -65,50 +65,50 @@ n_loi=0
 # Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
 ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
 ma_spec=$?
-printf '%s\n' "$ra_spec" | grep -F '[CẢNH BÁO]'
+printf '%s\n' "$ra_spec" | grep -F '[WARN]'
 if [ "$ma_spec" -ne 0 ]; then
   n_loi=1
-  echo "  [LỖI] Đầu vào chưa đạt: spec.md/open-questions.md không qua aw check spec — chạy nó để xem chi tiết."
+  echo "  [ERROR] Đầu vào chưa đạt: spec.md/open-questions.md không qua aw check spec — chạy nó để xem chi tiết."
 fi
 cd_duyet=$(kc_spec_chua_duyet "$DIR")
 if [ -n "$cd_duyet" ]; then
   n_loi=$((n_loi + 1))
-  echo "  [LỖI] Đầu vào chưa đạt: $cd_duyet"
+  echo "  [ERROR] Đầu vào chưa đạt: $cd_duyet"
 fi
 # Điểm mù mức "blocking": thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
 dm=$(kc_diem_mu_mo "$DIR" "blocking")
 if [ -n "$dm" ]; then
   while IFS= read -r l; do
     [ -n "$l" ] || continue
-    n_loi=$((n_loi + 1)); echo "  [LỖI] $l"
+    n_loi=$((n_loi + 1)); echo "  [ERROR] $l"
   done <<EOF
 $dm
 EOF
 fi
 qtl=$(kc_quy_tac_loi "$DIR" design)
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $qtl
 EOF
 fmh=$(kc_fm_hong "$DIR")
 # giữ: INV-006
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $fmh
 EOF
 
 # Mục lục và link tới mục (tools/lib/toc.sh).
 tl=$(toc_loi "$DIR" tdd.md design-findings.md)
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $tl
 EOF
 
 # Ô duyệt từng DEC-xxx — trạng thái lấy từ thư viện chung, không tự đọc lại.
 kld=$(kc_loi_duyet "$TDD" tdd)
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $kld
 EOF
 # Trường người quyết trong DEC: Promote / Scope / Supersedes (ADR — tools/lib/adr.sh).
 alt=$(adr_loi_truong "$DIR")
-while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [LỖI] $l"; }; done <<EOF
+while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $alt
 EOF
 DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
@@ -117,7 +117,7 @@ PHF="$PH"; PH_THIEU=0
 [ -f "$PH" ] || { PH_THIEU=1; PHF=/dev/null; }
 
 awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
-  function loi(msg) { n_loi++; print "  [LỖI] " msg }
+  function loi(msg) { n_loi++; print "  [ERROR] " msg }
   function gia_tri(s) {
     sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
   }
@@ -234,7 +234,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
 
     # 8. checker LLM
     if (ph_thieu == 1) {
-      loi("Chưa có design-findings.md — LLM checker chưa chạy. Không có file phát hiện là KHÔNG ĐẠT, không phải \"không có gì để báo\".")
+      loi("Chưa có design-findings.md — LLM checker chưa chạy. Không có file phát hiện là FAIL, không phải \"không có gì để báo\".")
     } else {
       for (i = 1; i <= n_ph; i++) {
         p = ds_ph[i]
@@ -250,8 +250,8 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
     printf "Tổng: %d REQ, %d quyết định DEC-xxx, %d phát hiện LLM — Risk: %s\n", n_yc, n_d, n_ph, (rui_ro == "" ? "?" : rui_ro)
     for (i = 1; i <= n_d; i++) printf "  %-6s %s (Author: %s)\n", ds_d[i], d_tt[ds_d[i]], d_tg[ds_d[i]]
     print ""
-    if (n_loi > 0) { print "KHÔNG ĐẠT — " n_loi " vi phạm."; exit 1 }
-    print "ĐẠT — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện block chưa xử lý."
+    if (n_loi > 0) { print "FAIL — " n_loi " vi phạm."; exit 1 }
+    print "PASS — tdd.md đủ mục, quyết định hợp lệ, không còn phát hiện block chưa xử lý."
     print "Bước tiếp: NGƯỜI duyệt từng DEC-xxx (tick ô \"Approved by human\"). /aw-plan sẽ chặn nếu còn DEC chưa duyệt."
   }
 ' "$SPEC" "$TDD" "$PHF"
@@ -260,7 +260,7 @@ ma=$?
 cb=$( { kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; } )
 if [ -n "$cb" ]; then
   echo ""
-  echo "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  echo "$cb" | while IFS= read -r l; do echo "  [WARN] $l"; done
   echo "  (cảnh báo không chặn ở đây; review sẽ chặn nếu còn)"
 fi
 exit $ma

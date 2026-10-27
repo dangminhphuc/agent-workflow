@@ -68,7 +68,7 @@ PH_QUET='
 # ph_loi_chan <file> -> mỗi lỗi một dòng, không tiền tố. Thiếu file cũng là một dòng.
 ph_loi_chan() {
   if [ ! -f "$1" ]; then
-    echo "Chưa có ${1##*/} — LLM checker chưa chạy. Không có file phát hiện là KHÔNG ĐẠT, không phải \"không có gì để báo\"."
+    echo "Chưa có ${1##*/} — LLM checker chưa chạy. Không có file phát hiện là FAIL, không phải \"không có gì để báo\"."
     return 0
   fi
   awk "$PH_AWK$PH_QUET"'

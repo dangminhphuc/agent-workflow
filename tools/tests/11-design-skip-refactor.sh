@@ -31,7 +31,7 @@ thay "$F/spec.md" '- Source: `[JIRA]` ABC-1
   > Khách được hoàn tiền trong vòng 30 ngày.'
 duyet_lai "$F/spec.md"; printf 'Khách được hoàn tiền trong vòng 60 ngày.\n' > "$R/docs/brd.md"
 ky_vong 0 "Design: skip: nguồn đổi sau spec → plan không chặn" sh "$T/check-plan.sh" "$F"
-dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$T/check-plan.sh' '$F' | grep -qF '[CẢNH BÁO] REQ-001: câu trích không có trong docs/brd.md'"
+dung "…nhưng cảnh báo câu trích lệch" sh -c "sh '$T/check-plan.sh' '$F' | grep -qF '[WARN] REQ-001: câu trích không có trong docs/brd.md'"
 thay "$F/spec.md" '- Source: `[FILE]` docs/brd.md § Hoàn tiền
 - Quote:
   > Khách được hoàn tiền trong vòng 30 ngày.' '- Source: `[JIRA]` ABC-1
@@ -39,8 +39,8 @@ thay "$F/spec.md" '- Source: `[FILE]` docs/brd.md § Hoàn tiền
   > khách mở y thấy a'
 duyet_lai "$F/spec.md"; rm -f "$R/docs/brd.md"
 ky_vong_ly_do 1 "Design: skip: check-design chặn" "…đúng lý do: spec khai Design: skip" 'Design: skip' sh "$T/check-design.sh" "$F"
-ky_vong 2 "Design: skip: aw approval design → SAI THAM SỐ" sh "$T/approval.sh" design "$F"
-ky_vong 0 "Design: skip: aw approval plan hỏi duyệt SPEC, spec đã duyệt → ĐÃ DUYỆT" sh "$T/approval.sh" plan "$F"
+ky_vong 2 "Design: skip: aw approval design → BAD ARGS" sh "$T/approval.sh" design "$F"
+ky_vong 0 "Design: skip: aw approval plan hỏi duyệt SPEC, spec đã duyệt → APPROVED" sh "$T/approval.sh" plan "$F"
 thay "$F/spec.md" '- [x] **Approved by human** — đã đọc' '- [ ] **Approved by human** — đã đọc'
 ky_vong 1 "Design: skip: plan chặn khi người chưa duyệt spec" sh "$T/check-plan.sh" "$F"
 dung "…aw approval plan nêu Design: skip là điểm cần đọc kỹ" sh -c "sh '$T/approval.sh' plan '$F' 2>/dev/null | grep -q 'Design: skip — bỏ phase design'"
@@ -70,7 +70,7 @@ thay "$F/spec.md" '- **Design:** `skip`' '- **Design:** `bỏ`'; duyet_lai "$F/s
 ky_vong 1 "spec chặn Design khác required | skip" sh "$T/check-spec.sh" "$F"
 thay "$F/spec.md" '- **Design:** `bỏ`' '- **Design:** `required`'; duyet_lai "$F/spec.md"
 ky_vong 0 "bugfix Design: required → spec qua" sh "$T/check-spec.sh" "$F"
-ky_vong 2 "…nhưng plan đòi tdd.md (phải qua design) → THIẾU ĐẦU VÀO" sh "$T/check-plan.sh" "$F"
+ky_vong 2 "…nhưng plan đòi tdd.md (phải qua design) → NO INPUT" sh "$T/check-plan.sh" "$F"
 
 tao_fixture refactor refactor_nho
 bo_design
@@ -82,7 +82,7 @@ ky_vong 1 "refactor Design: skip chạy design thì bị chặn" sh "$T/check-de
 tao_fixture perf perf_nho
 bo_design
 ky_vong 1 "perf không được Design: skip" sh "$T/check-spec.sh" "$F"
-ky_vong 2 "…check-plan vẫn đòi tdd.md → THIẾU ĐẦU VÀO" sh "$T/check-plan.sh" "$F"
+ky_vong 2 "…check-plan vẫn đòi tdd.md → NO INPUT" sh "$T/check-plan.sh" "$F"
 
 tao_fixture feature feat_nho
 bo_design

@@ -81,7 +81,7 @@ viet_intake; viet_spec
 
 thay "$F/intake.md" '`feature`' '`chore`'
 ky_vong 0 "loại lệch tiền tố branch chỉ CẢNH BÁO ở /aw-intake" sh "$CHK" "$F"
-dung "…và có in cảnh báo lệch tiền tố" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*feat_'"
+dung "…và có in cảnh báo lệch tiền tố" sh -c "sh '$CHK' '$F' | grep -q 'WARN.*feat_'"
 viet_intake
 
 # Base: dong do worktree-new.sh in ra, checker phia sau so diff voi no
@@ -99,7 +99,7 @@ ky_vong 1 "chặn Base có sha không phải tổ tiên của HEAD" sh "$CHK" "$
 viet_intake
 thay "$F/intake.md" "\`main\` @" '`da-xoa` @'
 ky_vong 0 "ref của Base không còn nhưng sha đúng → chỉ cảnh báo" sh "$CHK" "$F"
-dung "…và có in cảnh báo ref không còn" sh -c "sh '$CHK' '$F' | grep -q 'CẢNH BÁO.*da-xoa.*không còn'"
+dung "…và có in cảnh báo ref không còn" sh -c "sh '$CHK' '$F' | grep -q 'WARN.*da-xoa.*không còn'"
 viet_intake
 
 # Base khac nhanh goc: so voi main thi commit cua nguoi khac bi tinh cho viec nay
@@ -112,9 +112,9 @@ thay "$F/intake.md" "\`main\` @ \`$SHA_MAIN\`" "\`moi-hon\` @ \`$SHA_MH\`"
 ghi_based_on
 sh "$T/check-implement.sh" "$F" >/dev/null 2>&1; ghi_tree_review
 ky_vong 0 "ghi đúng base → diff chỉ còn việc của mình, review cho qua" sh "$T/check-review.sh" "$F"
-dung "…nhưng base lạ (xếp chồng) thì review CẢNH BÁO" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'CẢNH BÁO.*Base \"moi-hon\"'"
+dung "…nhưng base lạ (xếp chồng) thì review WARN" sh -c "sh '$T/check-review.sh' '$F' | grep -q 'WARN.*Base \"moi-hon\"'"
 thay "$CFG/conventions.md" 'release_branches:' 'release_branches: moi-*'
-dung "base khớp release_branches → không cảnh báo" sh -c "! sh '$T/check-review.sh' '$F' | grep -q 'CẢNH BÁO.*Base'"
+dung "base khớp release_branches → không cảnh báo" sh -c "! sh '$T/check-review.sh' '$F' | grep -q 'WARN.*Base'"
 thay "$CFG/conventions.md" 'release_branches: moi-*' 'release_branches:'
 
 # ---------------------------------------------------------------- bugfix
@@ -146,13 +146,13 @@ viet_review
 cp "$F/repro.md" "$TMP/repro.bak"
 sed 's/^- Lệnh: .*/- Lệnh: `echo khac`/' "$F/repro.md" > "$TMP/repro.doi" && mv "$TMP/repro.doi" "$F/repro.md"
 dung "implement: lệnh tái hiện khác lệnh đang xanh thì chỉ cảnh báo" sh -c "sh '$T/check-implement.sh' '$F' | grep -q 'lệnh tái hiện trong repro.md khác lệnh đang xanh'"
-ky_vong 0 "…implement vẫn ĐẠT" sh "$T/check-implement.sh" "$F"
+ky_vong 0 "…implement vẫn PASS" sh "$T/check-implement.sh" "$F"
 ky_vong_ly_do 1 "review chặn khi lệnh xanh không phải lệnh đã đỏ" "…đúng lý do" 'lệnh tái hiện trong repro.md khác lệnh đang xanh' sh "$T/check-review.sh" "$F"
 mv "$TMP/repro.bak" "$F/repro.md"
 
 # test xanh tren code chua sua -> khong tai hien duoc
 g stash -q
 printf 'TEST_CMD="true"\n%s\n' "$BM_XANH" > "$CFG/config.sh"
-ky_vong_ly_do 1 "check-repro chặn khi test XANH trên code chưa sửa" "…đúng lý do: test xanh, không phải vì đã sửa code" 'XANH' sh "$T/check-repro.sh" "$F"
+ky_vong_ly_do 1 "check-repro chặn khi test GREEN trên code chưa sửa" "…đúng lý do: test xanh, không phải vì đã sửa code" 'GREEN' sh "$T/check-repro.sh" "$F"
 
 ket_thuc

@@ -27,15 +27,15 @@
 # Chỉ đọc, không sửa file nào. Không chấm đạt/không đạt: nhãn kết quả cho biết
 # có việc nào đang chặn phase kế tiếp hay không.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai pending.sh \
-  "0=KHÔNG CÒN VIỆC CHỜ NGƯỜI" \
-  "1=CÓ VIỆC ĐANG CHẶN — giải quyết theo thứ tự trên trước khi chạy phase kế tiếp" \
-  "3=CÒN VIỆC CHỜ NGƯỜI, CHƯA CHẶN phase kế tiếp" \
-  "2=THIẾU ĐẦU VÀO — chưa có file cần đọc"
+  "0=NOTHING WAITING" \
+  "1=BLOCKED — giải quyết theo thứ tự trên trước khi chạy phase kế tiếp" \
+  "3=WAITING, NOT BLOCKING the next phase" \
+  "2=NO INPUT — chưa có file cần đọc"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/cross-check.sh"
 . "$HERE/lib/findings.sh"
@@ -131,8 +131,8 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
   }
 
   END {
-    nhom[0] = "CHƯA PHÂN MỨC"; nhom[1] = "BLOCKING"; nhom[2] = "PHÁT HIỆN — CHẶN"
-    nhom[3] = "REVIEW-BLOCKING"; nhom[4] = "PHÁT HIỆN — CẢNH BÁO"; nhom[5] = "NON-BLOCKING"
+    nhom[0] = "UNRATED"; nhom[1] = "BLOCKING"; nhom[2] = "FOUND — BLOCKING"
+    nhom[3] = "REVIEW-BLOCKING"; nhom[4] = "FOUND — WARN"; nhom[5] = "NON-BLOCKING"
     mo_ta[0] = "open question thiếu hoặc sai \"Blocking\" — checker của spec chặn; NGƯỜI gán: blocking | review-blocking | non-blocking"
     mo_ta[1] = "open question: sai giả định thì cả thiết kế đổi hướng — chặn /" csp
     mo_ta[2] = "finding của LLM checker, NGƯỜI phân xử: đồng ý (sửa → fixed) hoặc bác bỏ (rejected: <lý do>)"
@@ -223,7 +223,7 @@ awk -v ke="$KE" -v csp="$CHAN_SAU_SPEC" "$PH_AWK"'
 
     if (n_ph_xong) {
       print ""
-      print "[ĐÃ XỬ LÝ] phát hiện đã đóng — người chưa chắc đã xem; nêu trong tổng kết"
+      print "[HANDLED] phát hiện đã đóng — người chưa chắc đã xem; nêu trong tổng kết"
       for (i = 1; i <= n_ph_xong; i++) { p = ph_dong[i]; printf "  - %s (%s) — %s: %s\n", ph_ma[p], ph_nguon[p], ph_ten[p], ph_xl[p] }
     }
 

@@ -15,15 +15,15 @@
 # Không sửa gì. aw doctor kiểm phần cài đặt (wrapper, engine, exclude); lệnh này
 # kiểm phần repo đích có chạy được quy trình hay không.
 #
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai ready.sh \
-  "0=SẴN SÀNG — làm theo dòng \"Bước tiếp\"" \
-  "1=CHƯA SẴN SÀNG — sửa các dòng ✗ trước khi làm tiếp" \
-  "2=SAI THAM SỐ"
+  "0=READY — làm theo dòng \"Bước tiếp\"" \
+  "1=NOT READY — sửa các dòng ✗ trước khi làm tiếp" \
+  "2=BAD ARGS"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"
 . "$HERE/lib/cross-check.sh"
@@ -77,7 +77,7 @@ fi
 echo "Test được"
 [ -n "$WORKTREE_SETUP_CMD" ] && tin "worktree mới cần chuẩn bị trước (không tự chạy): $WORKTREE_SETUP_CMD"
 if [ -z "$TEST_CMD" ]; then
-  khong "TEST_CMD chưa khai trong $CH — /aw-implement sẽ KHÔNG ĐẠT"
+  khong "TEST_CMD chưa khai trong $CH — /aw-implement sẽ FAIL"
 elif [ -z "$CHAY_TEST" ]; then
   tin "TEST_CMD đã khai, không chạy (--no-test): $TEST_CMD"
 else
@@ -86,9 +86,9 @@ else
   (cd "$GOC" && sh -c "$TEST_CMD") > "$TMP" 2>&1
   ma=$?
   if [ "$ma" -eq 0 ]; then
-    co "TEST_CMD XANH trên code hiện tại: $TEST_CMD"
+    co "TEST_CMD GREEN trên code hiện tại: $TEST_CMD"
   else
-    khong "TEST_CMD ĐỎ (mã $ma) trên code hiện tại — chưa bắt đầu sửa gì mà đã đỏ: thiếu chuẩn bị môi trường (WORKTREE_SETUP_CMD) hoặc base đang hỏng. Báo người; không sửa/tắt test có sẵn"
+    khong "TEST_CMD RED (mã $ma) trên code hiện tại — chưa bắt đầu sửa gì mà đã đỏ: thiếu chuẩn bị môi trường (WORKTREE_SETUP_CMD) hoặc base đang hỏng. Báo người; không sửa/tắt test có sẵn"
     echo "    ── 20 dòng cuối ──"
     tail -n 20 "$TMP" | sed 's/^/    /'
   fi
@@ -97,7 +97,7 @@ fi
 # ---- 3. Quét bảo mật ----
 echo "Quét bảo mật"
 if [ -z "$(kc_bm_dong "$SECURITY_CMDS")" ]; then
-  khong "SECURITY_CMDS chưa khai trong $CH — /aw-implement sẽ KHÔNG ĐẠT"
+  khong "SECURITY_CMDS chưa khai trong $CH — /aw-implement sẽ FAIL"
 else
   sai=$(kc_bm_dong "$SECURITY_CMDS" | awk -F'\t' '$1 == "!" { print $2 }')
   if [ -n "$sai" ]; then
@@ -136,7 +136,7 @@ echo "Bước tiếp: $buoc"
 
 echo ""
 if [ "$n_x" -gt 0 ]; then
-  echo "CHƯA SẴN SÀNG — $n_x mục ✗."
+  echo "NOT READY — $n_x mục ✗."
   exit 1
 fi
-echo "SẴN SÀNG."
+echo "READY."

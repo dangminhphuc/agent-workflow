@@ -24,13 +24,13 @@ vi_pham() {
 
 # ---------------------------------------------------------------- engine hiện tại
 nhom "check-sdlc.sh: engine hiện tại tuân thủ"
-ky_vong 0 "engine của repo này → ĐẠT" sh "$SC" "$ROOT"
-ky_vong 0 "không tham số → kiểm engine chứa script → ĐẠT" sh "$SC"
+ky_vong 0 "engine của repo này → PASS" sh "$SC" "$ROOT"
+ky_vong 0 "không tham số → kiểm engine chứa script → PASS" sh "$SC"
 moi
-ky_vong 0 "bản chép chưa sửa → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "bản chép chưa sửa → PASS" sh "$SC" "$E"
 dung "…in ánh xạ stage → phase" sh -c "sh '$SC' '$E' 2>/dev/null | grep -Eq '^  implement +implemented +implement$' && sh '$SC' '$E' 2>/dev/null | grep -Eq '^  breakdown +implemented +plan$'"
-ky_vong 2 "thư mục không phải engine → SAI THAM SỐ" sh "$SC" "$TMP/khong-co"
-ky_vong 2 "thừa tham số → SAI THAM SỐ" sh "$SC" "$E" "$E"
+ky_vong 2 "thư mục không phải engine → BAD ARGS" sh "$SC" "$TMP/khong-co"
+ky_vong 2 "thừa tham số → BAD ARGS" sh "$SC" "$E" "$E"
 dung "…bảng ánh xạ in trạng thái suy ra" sh -c "sh '$SC' '$ROOT' 2>/dev/null | grep -Eq '^  verify +partial +review'"
 sh "$SC" "$ROOT" > "$TMP/sdlc-ra" 2>/dev/null
 dung "…trạng thái suy ra đúng cả 8 stage" bang "$(awk '/^Stage → phase/ { p = 1; next } /^[^ ]/ { p = 0 } p { printf "%s=%s ", $1, $2 }' "$TMP/sdlc-ra")" \
@@ -106,7 +106,7 @@ thay "$E/workflow.yaml" '  - id: review
     required: true
   - id: review
 '
-ky_vong 0 "hai phase cùng nhận một capability → ĐẠT" sh "$SC" "$E"
+ky_vong 0 "hai phase cùng nhận một capability → PASS" sh "$SC" "$E"
 moi; thay "$E/workflow/clarify.md" 'id: clarify' 'id: clarify
 capabilities:
   - CAP-require-01'

@@ -32,15 +32,15 @@
 #        task kiem chung thu cong (aw task done --manual).
 #
 # Cau hinh: $AW_CONFIG/config.sh (xem lib/env.sh)
-# Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 . "$HERE/lib/config.sh"
 kq_khai check-implement.sh \
-  "0=ĐẠT — được sang phase sau" \
-  "1=KHÔNG ĐẠT — có vi phạm, sửa trong phase này" \
-  "2=THIẾU ĐẦU VÀO — chưa có file cần kiểm"
+  "0=PASS — được sang phase sau" \
+  "1=FAIL — có vi phạm, sửa trong phase này" \
+  "2=NO INPUT — chưa có file cần kiểm"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/commands.sh"
 . "$HERE/lib/cross-check.sh"
@@ -66,7 +66,7 @@ TEST_CMD=""
 ch_nap "$CAUHINH"
 
 n_loi=0
-loi() { n_loi=$((n_loi + 1)); echo "  [LỖI] $1"; }
+loi() { n_loi=$((n_loi + 1)); echo "  [ERROR] $1"; }
 
 # ---- 0. Dau vao ----
 if ! sh "$HERE/check-plan.sh" "$DIR" >/dev/null 2>&1; then
@@ -87,11 +87,11 @@ if [ -z "$TEST_CMD" ]; then
   echo ""
   loi "Chưa khai báo TEST_CMD trong $CAUHINH"
   echo ""
-  echo "  Không khai báo thì điều kiện ra này là KHÔNG ĐẠT, không phải \"bỏ qua\"."
+  echo "  Không khai báo thì điều kiện ra này là FAIL, không phải \"bỏ qua\"."
   echo "  Im lặng bỏ qua sẽ làm ràng buộc \"test xanh mới là xong\" mất tác dụng ở"
   echo "  đúng những repo cần nó nhất."
   echo ""
-  echo "KHÔNG ĐẠT."
+  echo "FAIL."
   exit 1
 fi
 
@@ -109,20 +109,20 @@ echo "────────────────────────�
 TMP="${TMPDIR:-/tmp}/kqkt.$$"
 sh -c "$TEST_CMD" > "$TMP" 2>&1
 ma_thoat=$?
-if [ "$ma_thoat" -eq 0 ]; then nhan_kt="XANH"; else nhan_kt="ĐỎ"; fi
+if [ "$ma_thoat" -eq 0 ]; then nhan_kt="GREEN"; else nhan_kt="RED"; fi
 cat "$TMP"
 echo "────────────────────────────────────────────────────"
 echo "Lệnh kiểm thử: $nhan_kt"
 
 # ---- 4. Ghi output THAT vao artifact ----
 {
-  echo "# Kết quả kiểm thử"
+  echo "# Test result"
   echo ""
   echo "> File này do \`check-implement.sh\` ghi tự động."
   echo "> Đây là output thật của lệnh, không phải mô tả lại bằng lời."
   echo ""
   echo "- Lệnh: \`$TEST_CMD\`"
-  echo "- Kết quả: **$nhan_kt**"
+  echo "- Result: **$nhan_kt**"
   echo "- Mã thoát: \`$ma_thoat\` (bằng chứng thô của lệnh)"
   kc_dong_moi "$DIR"
   echo ""
@@ -186,7 +186,7 @@ fi
 gct=$(kc_glob_chuyen_tiep "$DIR")
 if [ -n "$gct" ]; then
   echo ""
-  printf '%s\n' "$gct" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l (chỉ cảnh báo)"; done
+  printf '%s\n' "$gct" | while IFS= read -r l; do echo "  [WARN] $l (chỉ cảnh báo)"; done
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
@@ -195,7 +195,7 @@ n_cb=0
 if [ -n "$cb" ]; then
   echo ""
   n_cb=$(printf '%s\n' "$cb" | wc -l | tr -d ' ')
-  printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [WARN] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Mỗi cảnh báo đã ghi cách sửa — sửa luôn, đừng để tới review."
 fi
@@ -205,14 +205,14 @@ if [ -n "$ktw" ]; then
   echo ""
   n_cb=$((n_cb + $(printf '%s\n' "$ktw" | wc -l | tr -d ' ')))
   # giữ: CAP-verify-06
-  printf '%s\n' "$ktw" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  printf '%s\n' "$ktw" | while IFS= read -r l; do echo "  [WARN] $l"; done
 fi
 
 td=$(kc_tu_dich "$DIR")
 if [ -n "$td" ]; then
   echo ""
   n_cb=$((n_cb + $(printf '%s\n' "$td" | wc -l | tr -d ' ')))
-  printf '%s\n' "$td" | while IFS= read -r l; do echo "  [CẢNH BÁO] $l"; done
+  printf '%s\n' "$td" | while IFS= read -r l; do echo "  [WARN] $l"; done
   echo "  Từ dịch chỉ cảnh báo, cả ở /aw-review — sửa ngay ở artifact đang viết."
 fi
 
@@ -234,11 +234,11 @@ fi
 
 echo ""
 if [ "$n_loi" -gt 0 ]; then
-  echo "KHÔNG ĐẠT — $n_loi vi phạm."
+  echo "FAIL — $n_loi vi phạm."
   exit 1
 fi
 if [ "$n_cb" -gt 0 ]; then
-  echo "ĐẠT — test xanh, không còn task dở. Còn $n_cb cảnh báo chuyển cho review."
+  echo "PASS — test xanh, không còn task dở. Còn $n_cb cảnh báo chuyển cho review."
 else
-  echo "ĐẠT — test xanh, không còn task dở, không có cảnh báo."
+  echo "PASS — test xanh, không còn task dở, không có cảnh báo."
 fi
