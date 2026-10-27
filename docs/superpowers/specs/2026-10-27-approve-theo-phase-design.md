@@ -71,7 +71,7 @@ Adapter (`adapters/lib/common.sh`, `ad_sinh`) với mỗi phase có `approves:` 
 
 1. **Scope.** Phase = `<id>` (injected by the adapter). Run `aw approvals --phase <id>` (add `--global` when the
    arguments contain it). Ignore other arguments.
-2. **List result `[x]`.** `KHÔNG CÒN Ô CHỜ DUYỆT` → one line; say `/aw-approvals` covers the other phase; stop.
+2. **List result `[x]`.** `KHÔNG CÒN Ô CHỜ DUYỆT` → one line; not `--global` → add that `--global` checks every worktree; stop.
    `CÓ Ô CHỜ DUYỆT` → print stdout verbatim in a `text` block, then walk. `SAI THAM SỐ` → report, stop.
 3. **Show before asking** — built from files, never paraphrased: `spec` → `aw approval design <dir>` (or
    `aw approval plan <dir>` when no design phase); `DEC-NNN` → the whole `### DEC-NNN` section of `tdd.md`.
