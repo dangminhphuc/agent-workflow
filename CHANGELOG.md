@@ -11,6 +11,59 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.33]
+
+### Thêm
+- **`aw knowledge show <ref>…`.** Đọc đúng khối durable knowledge thay vì cả file. Ref là `<file>` hoặc
+  `<file>#<neo>`; neo là nguyên văn heading `##` hay ID `BR-…`. Tài liệu trong `knowledge_files` khai phạm
+  vi riêng cho từng mục bằng `- Scope: <glob>` là dòng không trống đầu tiên dưới heading `##`.
+- Heading `##` trùng trong file knowledge được cảnh báo; heading mục có `Scope` chứa `|` bị chặn.
+
+### Thay đổi
+- **`aw toc` sửa được link của mục vừa đổi tên, một lượt là xong.** Trước: đổi chữ một heading
+  (`### REQ-001 — Đăng nhập` → `### REQ-001 — Đăng nhập bằng OTP`) thì mọi link cũ tới nó thành
+  link chết và `aw toc` chỉ báo, người viết phải sửa tay từng link hoặc chạy `sed`, thường mất
+  3–4 lượt chạy. Nay `aw toc` mở rộng lại anchor theo mã (`req-001…`) nên một lần chạy phủ hết
+  thư mục là `ĐÃ KHỚP`. Mã ID không chỉ đúng một mục thì máy không đoán — vẫn báo và nói rõ có
+  mấy mục cùng mã để người sửa tự chọn.
+- **Lỗi dạng in kèm số dòng và dạng đúng.** Mỗi dòng `[LỖI]` của `aw toc` và checker giờ có
+  `(dòng N)` và một câu cho biết dạng đúng: `dạng đúng là mục #q-001--…`, `không có heading nào
+  mã Q-009`, `còn chỗ giữ chỗ: điền anchor mục thật`. Mọi lỗi in cùng một lượt, không dừng ở lỗi
+  đầu. Ai bị ảnh hưởng: agent mọi phase viết artifact; phía repo đích không phải đổi gì.
+- **Một lượt `aw toc`, không phải sau từng file.** `rules/general.md` §6 đổi từ "sau mỗi lần sửa
+  thì chạy `aw toc`" thành "chạy **một lần** khi viết xong artifact, trước `aw based-on`";
+  checker LLM của spec và design thôi tự chạy `aw toc` cho từng file (phase chạy một lần cho cả
+  thư mục).
+  Intent: bớt vòng chạy lại để tiết kiệm token.
+- **Lệnh `/aw-spec`… nêu đường dẫn template đầy đủ.** Dòng **Templates** trong lệnh sinh ra giờ là
+  `.agent-workflow/.engine/templates/spec.md` thay vì `templates/spec.md` — agent đọc được ngay,
+  không phải đoán chỗ cất.
+- **`aw knowledge spec|design|implement|review` in ref**, luật dạng `<file>#BR-…`. Ai parse đầu ra cũ cần đổi.
+- **Cột `File` của `## Durable knowledge` (review.md) nhận ref.** Verdict mức file không còn phủ ref có
+  neo: việc đang dở khi nâng cấp phải ghi lại verdict, kể cả dòng file luật trần.
+- **`updated` ở ref có neo đòi diff đổi dòng trong khối** (cảnh báo ở implement, chặn ở review); mục bị đổi
+  tên hay xoá cần verdict.
+- **`aw input` nhận thêm URL work item GitLab.** URL dạng `…/-/work_items/N` nay được gán nhãn
+  `[ISSUE]` như issue/PR/MR (cả GitLab tự host và nhóm con). Checker intake/spec chấp nhận cùng
+  dạng cho `[ISSUE]`. Bạn cần làm gì: không — URL cũ vẫn như trước.
+
+### Nội bộ
+- **Requirement "viết đúng dạng ngay lần đầu" đã làm đợt 1** (PR #109): spec
+  `docs/superpowers/specs/2026-10-26-spec-dung-dang-lan-dau-design.md` §6 đã chốt — interface là
+  **`INV-012`** (link giữa các artifact do máy giữ cho đúng), không thêm capability riêng cho
+  `require`; phase spec thêm bước "Shape first, one pass" (chép khung template trước khi viết);
+  roadmap SP35 trạng thái `một phần` (còn REQ-006: đo token bằng journal SP9). Test:
+  `tools/tests/01-fixture-engine-toc.sh` — 9 ca mới cho INV-012.
+- Spec SP26–SP30 § B (SP27, chunk durable knowledge theo mục): chốt thêm năm điểm trước khi viết plan —
+  heading trùng (cảnh báo, SP28 chặn), verdict cũ ở mức file không phủ ref có neo, tập ref gộp từ `Base:`
+  và cây làm việc, heading chứa `|` bị chặn, verdict `updated` ngoài khối cảnh báo ở implement / chặn ở
+  review.
+- Plan SP27: `docs/superpowers/plans/2026-10-25-sp27-knowledge-theo-muc.md` (5 task); roadmap SP27 → `đang làm`.
+- Roadmap: SP27 → `xong` (#107).
+- `tools/check-sdlc.sh`: gom việc đọc frontmatter các stage file và việc thu các dòng `# giữ:`
+  về một lượt awk mỗi loại thay vì chạy lại per-file — chạy nhanh hơn (~ 1,42s → ~ 1,18s), đầu ra
+  y hệt trước.
+
 ## [2026.10.32]
 
 ### Thêm
