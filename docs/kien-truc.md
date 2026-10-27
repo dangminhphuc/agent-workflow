@@ -793,6 +793,12 @@ hay "phase `plan`", không nói trống.
   backtick hay mã `REQ-`/`DEC-`… (máy chặn): implementation thứ hai phải tuân thủ được mà không chép cú
   pháp artifact của engine này. Cách engine này hiện thực nằm ở dòng `- Engine:` của invariant. Mọi
   invariant nêu ít nhất một **ca** test chặn, không chỉ file — trước đây INV-001…006 chỉ trỏ file.
+- **`check-sdlc.sh` viết theo lô.** Chi phí chính của script là fork process (awk/grep/subshell), không
+  phải đọc file — script chạy ở cuối mọi PR và được gọi lại nhiều lần khi làm interface. Nên gom vòng
+  lặp: một lượt awk cho mọi invariant, một lượt cho mọi file đếm luật `# giữ:`, một lượt dựng bảng
+  stage ↔ phase, `fm_all` (`tools/lib/md.sh`) đọc mọi khoá frontmatter của một file, và tra bảng bằng
+  chuỗi `case` trong shell thay `$(grep …)` (kết quả trả qua biến `_R`, không subshell). Hành vi và
+  output giữ nguyên — ảnh chụp ở § 6 `interface-sdlc.md` và test 20 là thứ chứng minh.
 - **Chỉ kiểm cấu trúc.** `tools/check-sdlc.sh` chặn những gì đọc được từ file: dạng capability, phase
   nhận capability có thật của đúng stage, note khớp trạng thái suy ra, `provides` của các phase phủ
   `provides` của stage, `exit` của stage có `exit_machine` /
