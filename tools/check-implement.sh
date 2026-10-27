@@ -174,7 +174,7 @@ $ktm
 EOF
 # Chỉ mục kiến thức chung: bảng và heading trùng phải khớp dựng lại (máy dựng, so chính xác nên CHẶN).
 kmc=$(kt_chi_muc_kiem "$(kc_top "$DIR")" "$(qu_hieu_luc "${AW_REPO:-$(kc_top "$DIR")}")" "$DIR")
-# giữ: CAP-implement-07, INV-013
+# giữ: INV-013
 while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $kmc
 EOF
