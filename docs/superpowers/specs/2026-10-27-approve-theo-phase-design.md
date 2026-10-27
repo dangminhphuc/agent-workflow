@@ -13,7 +13,7 @@ Người dùng muốn tách `/aw-approvals` thành lệnh riêng cho từng phas
 | Quyết định | Chốt |
 |---|---|
 | Dấu | `-`, không `:` — `:` hỏng tên file trên Windows, Claude Code đọc `/a:b` là lệnh plugin, adapter sẽ sinh khác nhau và phá test `AW_COMPARE=1` (SP31 §3.1) |
-| Phạm vi | Chỉ phase **có ô "Approved by human"**: `spec`, `design`. Phase không có ô (`intake`, `plan`, `implement`, `review`, `ship`) không có lệnh `-approve` |
+| Phạm vi | Phase có điểm chặn chờ người: `spec`, `design` (ô "Approved by human", máy tick) và `review` (dòng `Security reviewer`, người tự ghi tên — **chỉ hướng dẫn, không tick**, người chốt 2026-10-27). Phase không có điểm chặn (`intake`, `plan`, `implement`, `ship`) không có lệnh `-approve` |
 | `/aw-approvals` | **Bỏ hẳn** (người dùng chốt 2026-10-27). Lệnh CLI `aw approvals` **giữ** — hai lệnh mới gọi vào nó. Mất: màn duyệt gộp cả hai phase trong một lệnh; muốn duyệt cả hai thì chạy lần lượt `/aw-spec-approve` rồi `/aw-design-approve` |
 | Tên phase | Theo tên hiện tại (`spec`, `design`). SP31 đổi tên phase sau khi merge thì lệnh đổi theo (id sinh từ phase) |
 | Hướng B của SP31 §3.2 (`/aw-approvals <stage>`) | Thay bằng quyết định này; ghi vào `docs/kien-truc.md` |
@@ -34,12 +34,14 @@ Phase có ô duyệt khai một khoá mới:
 ```yaml
 approves: spec        # phase 01-spec.md  — loại artifact: spec.md, khoá mục: spec
 approves: tdd         # phase 02-design.md — loại artifact: tdd.md, khoá mục: DEC-NNN
+approves: review     # phase 05-review.md — chỉ hướng dẫn: không ô, không hash, không tick
 ```
 
 - Giá trị = `LOAI` mà `tools/lib/approval-tick.sh` (`dy_trang_thai`, `dy_quet`, `dy_hash`) đã hiểu. Giá trị ngoài
   tập đó → `aw adapter build` báo lỗi (như các khoá frontmatter khác).
 - Phase không có khoá này → không sinh `-approve`.
-- Một phase khai tối đa một loại (hai phase hiện tại đều một loại).
+- Một phase khai tối đa một loại.
+- `spec`, `tdd` là loại **tick được**; `review` là loại **chỉ hướng dẫn** (§1.4). Mỗi loại khai cách xử lý một chỗ trong `approvals.sh`.
 
 ### 1.2 Lệnh sinh ra
 
@@ -55,12 +57,21 @@ Adapter (`adapters/lib/common.sh`, `ad_sinh`) với mỗi phase có `approves:` 
 - `--global` vẫn dùng được ở mỗi lệnh (`/aw-spec-approve --global`): duyệt mọi worktree của clone.
 - `/aw-approvals` bị xoá: bỏ mục `approvals` khỏi `commands:` trong `workflow.yaml`, xoá `workflow/approvals.md`. `aw adapter build` lại xoá file lệnh cũ đã sinh (dấu "SINH TỰ ĐỘNG").
 
+### 1.4 Phase `review`: hướng dẫn, không tick
+
+`/aw-review-approve` không tick gì — luật "agent không tự xác nhận thay người rà bảo mật" (`tools/check-review.sh`) giữ nguyên.
+
+- `aw approvals --phase review` liệt kê điều đang chặn `review` của các việc: diff đụng `sensitive_code` mà `review.md` thiếu `- Security reviewer: <tên người>` (kèm danh sách file nhạy cảm và link `review.md:dòng`); các việc đã có `review.md` chờ người xác nhận verdict. **Không in dòng `duyệt:`**; chữ "chờ xác nhận verdict" lấy từ `review.md`, không đoán.
+- Máy dùng lại phần phát hiện của `check-review.sh` (không nhân bản luật); mục `exit_human` chỉ có trong hội thoại (base lạ) thì lệnh nhắc bằng chữ, không là mục máy.
+- Lệnh dẫn người đi từng mục: chỉ ra file, dòng, việc cần làm; câu hỏi chọn `Đã ghi` / `Bỏ qua` / `Dừng`. `Đã ghi` → agent chạy lại `aw check review` đọc kết quả; **không** sửa `review.md`, không ghi tên hộ. Người chọn `Chưa` → ghi lý do nguyên văn.
+- Thân dùng chung `approve.md` có hai nhánh: loại tick (§2) và loại chỉ-hướng-dẫn (bỏ bước tick).
+
 ### 1.3 Lọc ở máy: `aw approvals --phase <id>`
 
 `tools/approvals.sh` nhận thêm `--phase <id>` (kết hợp được với `--global`):
 
 - `id` phải là phase có `approves:`; ngoài ra → `SAI THAM SỐ` (nhãn có sẵn), in danh sách id hợp lệ.
-- Chỉ duyệt/lọc loại artifact của phase đó (`spec` → `spec.md`; `design` → `tdd.md`).
+- Chỉ duyệt/lọc loại artifact của phase đó (`spec` → `spec.md`; `design` → `tdd.md`; `review` → `review.md`, loại chỉ hướng dẫn, §1.4).
 - `aw approvals tick` **không đổi** (đối số `<dir> <key> <hash>`, kiểm hash, nhật ký) — tick đã tự suy ra loại từ
   khoá; thêm lọc phase vào `tick` chỉ tăng bề mặt lỗi.
 - Nhãn kết quả: không thêm nhãn mới. `KHÔNG CÒN Ô CHỜ DUYỆT` khi phase đó hết ô (dù phase kia còn).
@@ -91,7 +102,7 @@ chỉ thêm một dòng ở bảng đó + `approves:` ở phase.
 
 | File | Việc |
 |---|---|
-| `workflow/phases/01-spec.md`, `02-design.md` | Thêm `approves: spec` / `approves: tdd` vào frontmatter |
+| `workflow/phases/01-spec.md`, `02-design.md`, `05-review.md` | Thêm `approves: spec` / `tdd` / `review` vào frontmatter |
 | `workflow/approve.md` (mới, thay `workflow/approvals.md`) | Thân dùng chung của hai lệnh (§2); xoá `workflow/approvals.md` và mục `approvals` trong `commands:` |
 | `adapters/lib/common.sh` | Đọc `approves:`, sinh `<id>-approve`; kiểm giá trị; xoá lệnh cũ khi build lại (dấu "SINH TỰ ĐỘNG") |
 | `tools/approvals.sh` | `--phase <id>`; lọc theo loại; `kq_khai` giữ nguyên nhãn |
@@ -107,7 +118,8 @@ Thêm vào các part cùng chủ đề (`tools/tests/lib.sh` helpers); mỗi che
 - `approvals.sh`: `--phase spec` chỉ liệt kê ô spec, bỏ DEC; `--phase design` ngược lại; `--phase spec --global`;
   phase còn ô ở loại kia nhưng loại được hỏi hết → `KHÔNG CÒN Ô CHỜ DUYỆT`; `--phase intake` /
   `--phase` thiếu giá trị → `SAI THAM SỐ`; `tick` không đổi hành vi.
-- `08-adapters.sh`: build sinh đúng `aw-spec-approve` và `aw-design-approve`, không sinh `aw-plan-approve`;
+- `approvals.sh --phase review`: có `review.md` thiếu `Security reviewer` khi diff đụng code nhạy cảm → liệt kê, **không** in dòng `duyệt:`; hết chặn → `KHÔNG CÒN Ô CHỜ DUYỆT`; `aw approvals tick <dir> review …` → bị từ chối (khoá không hợp lệ).
+- `08-adapters.sh`: build sinh đúng `aw-spec-approve`, `aw-design-approve`, `aw-review-approve`, không sinh `aw-plan-approve`;
   `approves: foo` → build lỗi; bỏ `approves:` khỏi phase rồi build lại → xoá lệnh sinh cũ.
 - Compare (`AW_COMPARE=1`): output giống hệt giữa các adapter (không `:`).
 - Test chuỗi: luật "Never approve" trong rules/adapter nhắc đúng hai nơi được tick.
@@ -115,7 +127,7 @@ Thêm vào các part cùng chủ đề (`tools/tests/lib.sh` helpers); mỗi che
 
 ## 5. Ngoài phạm vi
 
-- Không thêm ô duyệt cho phase khác; không đổi `tick`, hash, nhật ký.
+- Không thêm ô duyệt hay tick cho `review` (không ghi tên hộ người); không thêm ô cho phase khác; không đổi `tick`, hash, nhật ký.
 - Không đổi tên phase (SP31 làm).
 - Không giữ lại màn duyệt gộp (đã chốt bỏ).
 - Không hỗ trợ `:`; muốn dùng sau này là dự án riêng (adapter sinh khác nhau).
