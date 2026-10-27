@@ -500,6 +500,9 @@ kt_chi_muc_kiem() {
   _kck="$1"; _kckv="$2"; _kckf3="$3"
   _kckpk=$(kt_chi_muc_khoa "$_kckv"); _kckd=${_kckpk%|*}; _kckt=${_kckpk#*|}
   [ "$_kckt" = "0" ] && [ -n "$_kckd" ] || return 0
+  # Chỉ kiểm khi file chỉ mục đã commit (khoá bật nhưng file chưa có trong git → repo chưa
+  # tham gia, không ép repo cũ) — kiểm này rẻ, làm trước để không dựng diff cho repo cũ.
+  git -C "$_kck" ls-tree -r --name-only HEAD 2>/dev/null | grep -qxF "$_kckd" || return 0
   if [ -n "$_kckf3" ]; then
     _kckdoi=$(kc_doi "$_kckf3" 2>/dev/null | awk -F'\t' '{ print (NF > 2 ? $3 : $2) }')
     [ -n "$_kckdoi" ] || return 0
@@ -521,9 +524,6 @@ kt_chi_muc_kiem() {
     fi
     [ -n "$_kcktc" ] || return 0
   fi
-  # Chỉ kiểm khi file chỉ mục đã commit (khoá bật nhưng file chưa có trong git → repo chưa
-  # tham gia, không ép repo cũ).
-  git -C "$_kck" ls-tree -r --name-only HEAD 2>/dev/null | grep -qxF "$_kckd" || return 0
   _kckfile="$_kck/$_kckd"
   if [ ! -f "$_kckfile" ]; then
     [ -n "$_kckf3" ] && echo "$_kckd: thiếu file chỉ mục — chạy aw knowledge index"

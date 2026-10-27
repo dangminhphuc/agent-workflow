@@ -39,6 +39,10 @@ cm_fixture() {
 
 - Status: accepted
 - Scope: `src/*`
+
+## Decision
+
+Lưu ở file.
 EOA
   cat > "$R/docs/product/rules/billing.md" <<'EOB'
 # Luật billing
@@ -46,12 +50,18 @@ EOA
 ### BR-BILLING-001: mở a
 - Rule: màn hình y phải hiện a. Phần sau nhìn từ chỗ khác.
 - Scope: `src/*`
+- Source: `[JIRA]` ABC-1 (version: updated 2026-10-01)
 - Status: active
+- Acceptance:
+  - mở y thấy a
 
 ### BR-BILLING-002: cũ
 - Rule: mở a | b khi không ra gì.
 - Scope: `src/pay/*`
+- Source: `[JIRA]` ABC-1 (version: updated 2026-10-01)
 - Status: superseded by BR-BILLING-001
+- Acceptance:
+  - mở y thấy a | b khi không ra gì
 EOB
   cat > "$R/src/ARCHITECTURE.md" <<'EOC'
 # Kiến trúc src
@@ -75,9 +85,8 @@ CF_FILE() { printf '%s/docs/knowledge-index.md\n' "$R"; }
 nhom "kt_chi_muc_khoa: đọc khoá knowledge_index"
 tao_fixture
 CONV="$R/.git/agent-workflow/conventions.md"
-dung "khoá không khai → mặc định" bang "$(kt_chi_muc_khoa "$CONV")" "docs/knowledge-index.md|0"
-thay "$CONV" 'uses_review:' 'uses_review:
-knowledge_index: docs/trang-tri.md'
+dung "khoá mẫu có sẵn → giá trị mặc định" bang "$(kt_chi_muc_khoa "$CONV")" "docs/knowledge-index.md|0"
+thay "$CONV" 'knowledge_index: docs/knowledge-index.md' 'knowledge_index: docs/trang-tri.md'
 dung "khoá khai giá trị → dùng giá trị" bang "$(kt_chi_muc_khoa "$CONV")" "docs/trang-tri.md|0"
 thay "$CONV" 'knowledge_index: docs/trang-tri.md' 'knowledge_index:'
 dung "khoá khai trống → tắt" bang "$(kt_chi_muc_khoa "$CONV")" "|1"
@@ -108,15 +117,13 @@ dung "kt_chi_muc_lai == aw knowledge index (cùng trạng thái, người viết
 
 nhom "aw knowledge index: khoá tắt"
 tao_fixture; cm_fixture
-thay "$CONV" 'uses_review:' 'uses_review:
-knowledge_index:'
+thay "$CONV" 'knowledge_index: docs/knowledge-index.md' 'knowledge_index:'
 ky_vong_ly_do 2 "index: khoá khai trống → SAI THAM SỐ" "index: khoá tắt → báo lý do" "SAI THAM SỐ" sh "$KT" index
 dung "index: khoá tắt → không tạo file" sh -c "! test -f '$CM_FILE'"
 
 nhom "aw knowledge index: khoá trỏ đường dẫn khác"
 tao_fixture; cm_fixture
-thay "$CONV" 'uses_review:' 'uses_review:
-knowledge_index: docs/trang-tri.md'
+thay "$CONV" 'knowledge_index: docs/knowledge-index.md' 'knowledge_index: docs/trang-tri.md'
 sh "$KT" index 2>/dev/null > "$TMP/cm.out"
 dung "index: in đường dẫn theo khoá" bang "$(cat "$TMP/cm.out")" "docs/trang-tri.md"
 dung "index: file được tạo theo khoá" test -f "$R/docs/trang-tri.md"
@@ -208,5 +215,56 @@ toc_f review.md; ghi_tree_review
 ky_vong 0 "check review: mỗi ref có verdict + chỉ mục đúng → ĐẠT" sh "$T/check-review.sh" "$F"
 thay "$CM_FILE" 'trả tiền qua vnpay' 'trả tiền qua momo'
 ky_vong_ly_do 1 "check review: bảng tay sửa lệch → KHÔNG ĐẠT" "check review: nêu lỗi chỉ mục" "lệch dựng lại" sh "$T/check-review.sh" "$F"
+
+nhom "aw adr promote / aw rule promote: dựng lại chỉ mục"
+tao_fixture; cm_fixture
+cm_dien_chimuc
+AD="$T/adr.sh"; RU="$T/rule.sh"
+sua_d() { thay "$F/tdd.md" "$1" "$2"; duyet_lai "$F/tdd.md"; ghi_based_on 2>/dev/null; }
+sua_d '- Choice: file' '- Choice: file
+- Promote: adr
+- Scope: `src/*`'
+ky_vong 0 "promote DEC-001: ĐÃ NÂNG" sh "$AD" promote "$F" DEC-001
+dung "promote DEC-001: chỉ mục có hàng ADR mới với Status, Scope, Summary" \
+  sh -c "grep -qxF '| docs/adr/0002-feat_x-dec-001.md | adr | src/* | accepted | lưu ở đâu |' '$CM_FILE'"
+ky_vong 0 "promote DEC-001: bảng khớp dựng lại ngay" sh "$KT" check
+sua_spec() { thay "$F/spec.md" "$1" "$2"; toc_f spec.md; duyet_lai "$F/spec.md"; ghi_based_on 2>/dev/null; }
+sua_spec '## Requirements' '## Sources
+
+| # | Type | Identifier | Version | Read on |
+|---|---|---|---|---|
+| 1 | Jira | ABC-1 | updated 2026-10-01 | 2026-10-02 |
+
+## Requirements'
+sua_spec '- Priority: `must`' '- Priority: `must`
+- Description: luôn mở được y
+- Promote: BR-BILLING-111'
+ky_vong 0 "promote REQ-001: ĐÃ NÂNG" sh "$RU" promote "$F" REQ-001
+dung "promote REQ-001: chỉ mục có hàng rule mới" \
+  sh -c "grep -q 'docs/product/rules/billing.md#BR-BILLING-111 | rule' '$CM_FILE'"
+ky_vong 0 "promote REQ-001: bảng khớp dựng lại ngay" sh "$KT" check
+
+nhom "promote: repo chưa có chỉ mục → không tạo file"
+tao_fixture
+AD="$T/adr.sh"
+sua_d2() { thay "$F/tdd.md" "$1" "$2"; duyet_lai "$F/tdd.md"; ghi_based_on 2>/dev/null; }
+sua_d2 '- Choice: file' '- Choice: file
+- Promote: adr
+- Scope: `src/*`'
+ky_vong 0 "promote DEC-001 (không có chỉ mục): ĐÃ NÂNG" sh "$AD" promote "$F" DEC-001
+dung "promote: không tạo file chỉ mục chung" sh -c "! test -f '$R/docs/knowledge-index.md'"
+dung "promote: vẫn có README ADR" test -f "$R/docs/adr/README.md"
+
+nhom "aw conventions check: khoá knowledge_index"
+tao_fixture
+CO="$T/check-conventions.sh"
+CONV="$R/.git/agent-workflow/conventions.md"
+ky_vong 0 "conventions: mẫu có knowledge_index đúng dạng → ĐẠT" sh "$CO"
+thay "$CONV" 'knowledge_index: docs/knowledge-index.md' 'knowledge_index: docs/knowledge-index'
+ky_vong_ly_do 1 "conventions: knowledge_index không kết thúc .md → KHÔNG ĐẠT" "conventions: nêu dạng đúng" "không kết thúc .md" sh "$CO"
+thay "$CONV" 'knowledge_index: docs/knowledge-index' 'knowledge_index: /docs/x.md'
+ky_vong 1 "conventions: knowledge_index tuyệt đối → KHÔNG ĐẠT" sh "$CO"
+thay "$CONV" 'knowledge_index: /docs/x.md' 'knowledge_index:'
+ky_vong 0 "conventions: knowledge_index khai trống (tắt) → ĐẠT" sh "$CO"
 
 ket_thuc
