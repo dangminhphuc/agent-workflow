@@ -3,6 +3,7 @@
 #
 #   aw knowledge spec|design|implement|review <thư-mục-feature>
 #   aw knowledge show <ref>…     (ref = <file> hoặc <file>#<neo>; chạy ở gốc repo)
+#   aw knowledge index           dựng lại file chỉ mục kiến thức chung (khoá knowledge_index)
 #
 # Mọi dòng in ra là ref: <file> hoặc <file>#<neo> (mục "##" khai Scope, hoặc ID luật BR-…).
 # spec: mọi luật nghiệp vụ active (BR-), mỗi luật một ref — spec đối chiếu yêu cầu mới với luật
@@ -24,6 +25,10 @@
 # show — in từng ref, mỗi khối mở bằng dòng "==> <ref> <==". <file>#<neo>: một mục "##" của tài liệu
 #   module (neo = heading) hoặc một luật (neo = ID BR-…). <file> của tài liệu có mục khai Scope: phần
 #   ngoài các mục đó. Ref sai → SAI THAM SỐ, chưa in gì.
+# index — dựng lại file chỉ mục kiến thức chung (khoá knowledge_index, mặc định
+#   docs/knowledge-index.md; khoá khai trống = tắt) từ ADR, luật BR- và mục khai Scope của tài liệu
+#   module: bảng "| Ref | Kind | Scope | Status | Summary |" do máy dựng, phần người viết phía trên
+#   bảng giữ nguyên. In ra đường dẫn file đã dựng. Khoá tắt → SAI THAM SỐ.
 # Đọc lúc chạy, không chép vào lệnh lúc build. Stdout là DỮ LIỆU; không in gì = không có.
 #
 # Kết quả: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
@@ -31,7 +36,7 @@
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$HERE/lib/result.sh"
 kq_khai knowledge.sh \
-  "0=ĐÃ LIỆT KÊ — đọc từng ref in ra bằng aw knowledge show (không in gì = repo chưa có durable knowledge liên quan)" \
+  "0=XONG — stdout là dữ liệu: ref đọc tiếp bằng aw knowledge show; aw knowledge index in đường dẫn file đã dựng" \
   "2=SAI THAM SỐ"
 . "$HERE/lib/md.sh"
 . "$HERE/lib/sha256.sh"
@@ -64,6 +69,13 @@ if [ "$PH" = show ]; then
       (*) if [ -n "$(kt_muc "$MT_REPO/$_f")" ]; then kt_phan_con "$MT_REPO/$_f"; else cat "$MT_REPO/$_f"; fi ;;
     esac
   done
+  exit 0
+fi
+if [ "$PH" = index ]; then
+  _cmk=$(kt_chi_muc_khoa "$MT_CONV"); _cmd=${_cmk%|*}; _cmt=${_cmk#*|}
+  [ "$_cmt" = "0" ] && [ -n "$_cmd" ] || { echo "LỖI: khoá knowledge_index khai trống — chỉ mục tắt" >&2; exit 2; }
+  kt_chi_muc_lai "$MT_REPO" "$MT_CONV" || { echo "LỖI: không dựng lại được chỉ mục" >&2; exit 2; }
+  printf '%s\n' "$_cmd"
   exit 0
 fi
 case " $BL_KIEN_THUC " in *" $PH "*) [ -n "$PH" ] && [ -n "$DIR" ] ;; *) false ;; esac ||

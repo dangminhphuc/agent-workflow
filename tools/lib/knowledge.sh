@@ -386,3 +386,106 @@ kt_loi_muc() {
     done
   done
 }
+
+# ------------------------------------------------------------------ chỉ mục kiến thức chung (SP28)
+KT_CM_MAC_DINH="docs/knowledge-index.md"
+
+# kt_chi_muc_khoa <conventions.md> -> "<đường>|<0|1>" — đường dẫn file chỉ mục; cột 2 = 1 khi khoá
+# khai trống (chỉ mục tắt). Khoá không khai → mặc định KT_CM_MAC_DINH. Khoá phải nằm trong khối
+# ```conventions; conventions.md không có → mặc định.
+kt_chi_muc_khoa() {
+  [ -f "$1" ] || { printf '%s|0\n' "$KT_CM_MAC_DINH"; return 0; }
+  KT_CMD="$KT_CM_MAC_DINH" awk '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+    { sub(/\r$/, "") }
+    inb == 0 && /^```conventions[ \t]*$/ { inb = 1; next }
+    inb == 1 && /^```/ { inb = 2 }
+    inb == 1 && $0 ~ /^knowledge_index:/ {
+      v = $0; sub(/^knowledge_index:[ \t]*/, "", v); v = trim(v)
+      print (v == "" ? "|1" : v "|0")
+      co = 1; exit
+    }
+    END { if (!co) print ENVIRON["KT_CMD"] "|0" }
+  ' "$1"
+}
+
+# kt_chi_muc_file <gốc repo> <conventions.md> -> đường dẫn file chỉ mục nếu khoá bật VÀ file đã
+# tracked ở HEAD (commit); khoá tắt hay file chưa có trong git → không in gì.
+kt_chi_muc_file() {
+  _kcfk=$(kt_chi_muc_khoa "$2"); _kcfd=${_kcfk%|*}; _kcft=${_kcfk#*|}
+  [ "$_kcft" = "0" ] && [ -n "$_kcfd" ] || return 0
+  git -C "$1" ls-tree -r --name-only HEAD 2>/dev/null | grep -qxF "$_kcfd" || return 0
+  printf '%s\n' "$_kcfd"
+}
+
+# kt_chi_muc_du <gốc repo> <conventions.md> -> bảng chỉ mục ra stdout (dòng bảng: tiêu đề + tâm + hàng).
+# Nguồn: file ADR (kind adr, Ref <file>), khối luật BR- (kind rule, Ref <file>#<ID>), mục khai
+# "- Scope:" của tài liệu module (kind module, Ref <file>#<neo>). Cột Summary: tiêu đề ADR; câu đầu
+# của "Rule:" (đến dấu chấm đầu); dòng "- Summary:" của mục, không thì heading. Hàng xếp theo Kind
+# (adr < module < rule), trong một Kind theo Ref. Cột Ref giữ nguyên văn; cột Scope/Status/Summary
+# thay | → ; (dấu | làm vỡ bảng). Cột Status: trường Status của ADR/luật, module hằng "active".
+kt_chi_muc_du() {
+  _kcdr="$1"; _kcdv="$2"
+  printf '| Ref | Kind | Scope | Status | Summary |\n|---|---|---|---|---|\n'
+  _kcdtm=$(adr_thu_muc "$_kcdv")
+  _kcdkf=$(conv_get "$_kcdv" knowledge_files); _kcdkf=${_kcdkf:-*/ARCHITECTURE.md}
+  {
+    adr_ds "$_kcdr/$_kcdtm" | while IFS= read -r _kcaf; do
+      _kcab=$(basename "$_kcaf")
+      _kcst=$(adr_truong "$_kcaf" Status)
+      _kcsc=$(adr_truong "$_kcaf" Scope)
+      _kcsm=$(awk 'NR == 1 { sub(/\r$/, ""); sub(/^# ADR-[0-9]+:[ \t]*/, ""); print; exit }' "$_kcaf")
+      printf 'adr\t%s\t%s\t%s\t%s\n' "$_kcdtm/$_kcab" "$_kcsc" "$_kcst" "$_kcsm"
+    done
+    git -C "$_kcdr" ls-files --cached --others --exclude-standard 2>/dev/null | while IFS= read -r _kcdl; do
+      tm_bo "$_kcdl" && continue
+      set -f
+      # shellcheck disable=SC2086
+      khop_glob "$_kcdl" $_kcdkf || { set +f; continue; }
+      set +f
+      [ -f "$_kcdr/$_kcdl" ] || continue
+      kt_muc "$_kcdr/$_kcdl" | while IFS='	' read -r _kcneo _kca _kcb _kcg; do
+        _kcsm=$(kt_khoi "$_kcdr/$_kcdl" "$_kcneo" | awk '
+          { sub(/\r$/, "") }
+          /^[-*][ \t]*Summary:/ {
+            v = $0; sub(/^[-*][ \t]*Summary:[ \t]*/, "", v); gsub(/`/, "", v)
+            sub(/^[ \t]+/, "", v); sub(/[ \t]+$/, "", v); print v; exit
+          }')
+        [ -n "$_kcsm" ] || _kcsm="$_kcneo"
+        printf 'module\t%s#%s\t%s\tactive\t%s\n' "$_kcdl" "$_kcneo" "$_kcg" "$_kcsm"
+      done
+    done
+    luat_ds "$_kcdr" "$_kcdv" | while IFS='|' read -r _kclf _kclid _kclst _kclsc; do
+      _kclsm=$(luat_khoi "$_kcdr/$_kclf" "$_kclid" | awk '
+        { sub(/\r$/, "") }
+        /^[-*][ \t]*Rule:/ {
+          v = $0; sub(/^[-*][ \t]*Rule:[ \t]*/, "", v); gsub(/`/, "", v)
+          i = index(v, "."); if (i > 0) v = substr(v, 1, i - 1)
+          sub(/^[ \t]+/, "", v); sub(/[ \t]+$/, "", v); print v; exit
+        }')
+      printf 'rule\t%s#%s\t%s\t%s\t%s\n' "$_kclf" "$_kclid" "$_kclsc" "$_kclst" "$_kclsm"
+    done
+  } | sort -u | awk -F'\t' '
+    $2 != "" {
+      s = $3; st = $4; su = $5
+      gsub(/\|/, ";", s); gsub(/\|/, ";", st); gsub(/\|/, ";", su)
+      printf "| %s | %s | %s | %s | %s |\n", $2, $1, s, st, su
+    }'
+}
+
+# kt_chi_muc_lai <gốc repo> <conventions.md> -> dựng lại file chỉ mục: giữ phần người viết phía trên
+# bảng (tới dòng bảng, giống adr_lam_chi_muc); file chưa có thì tạo với phần mở đầu. Khoá tắt →
+# không ghi gì, mã 1.
+kt_chi_muc_lai() {
+  _kclk=$(kt_chi_muc_khoa "$2"); _kcld=${_kclk%|*}; _kclt=${_kclk#*|}
+  [ "$_kclt" = "0" ] && [ -n "$_kcld" ] || return 1
+  _kclf="$1/$_kcld"
+  {
+    if [ -f "$_kclf" ]; then
+      awk '{ sub(/\r$/, "") } /^\| Ref \|/ { exit } { print }' "$_kclf"
+    else
+      printf '# Knowledge index\n\n> Bảng dưới do `aw knowledge index` dựng lại từ ADR, luật BR- và tài liệu module — sửa tài liệu, đừng sửa bảng tay.\n\n'
+    fi
+    kt_chi_muc_du "$1" "$2"
+  } > "$_kclf.tam.$$" && mv "$_kclf.tam.$$" "$_kclf"
+}
