@@ -1,0 +1,617 @@
+#!/usr/bin/env sh
+# Kiểm tra điều kiện ra của phase 01-spec — xem workflow/rules/source-tracing.md
+#
+#   aw check spec <thư-mục-feature>
+#   check-spec.sh <thư-mục-feature> --entry   # phase sau chạy lại spec (entry check)
+#
+# Chặn thêm: file khai ở rules_spec (conventions.md) không có hoặc chưa commit.
+#            REQ "Promote:" sai dạng ID, nguồn [INFERRED]/[OPEN-QUESTION], hay ID đã có ở việc khác.
+#            Nhãn `[FILE]` [open-questions.md § Q-NNN](open-questions.md#…) mà mục đó không có (hay chưa answered);
+#            mục `Q-NNN` còn open mà không REQ nào trỏ tới; mã câu hỏi trùng. Dạng cũ `### REQ-NNN`: cảnh báo.
+#            "Design:" khác required | skip; skip ngoài bugfix/refactor hoặc khi Risk khác normal;
+#            chore ghi required.
+#            REQ nguồn [CONFLUENCE] [JIRA] [ISSUE] [FILE] thiếu câu trích ("- Quote:" + dòng "> …").
+#            [FILE]: câu trích không có trong file nguồn (tools/lib/quote.sh) — với --entry chỉ
+#            cảnh báo: nguồn đổi sau khi viết spec không phải lỗi của phase sau.
+#            open-questions.md / refactor-requests.md: mục ở cấp cũ "## REQ-/RFR-" (phải "###");
+#            RFR sai dạng (không đúng 3 chữ số) hay trùng.
+#            [JIRA] không có mã khớp jira_key_regex; [ISSUE] không có URL issue / PR / MR / work item;
+#            [INFERRED] không ghi lý do.
+#            spec-findings.md thiếu, hoặc còn phát hiện Severity block chưa fixed / rejected: <lý do>.
+# Cảnh báo:  nguồn [JIRA]/[CONFLUENCE]/[ISSUE]/[FILE] không có trong "## Input" của intake.md;
+#            "Risk: normal" mà spec có từ khoá high_risk_keywords (conventions.md).
+#
+# Result: nhãn in cuối output — xem kq_khai bên dưới (mã thoát chỉ là chi tiết của máy).
+
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$HERE/lib/md.sh"
+. "$HERE/lib/commands.sh"
+. "$HERE/lib/cross-check.sh"
+. "$HERE/lib/sha256.sh"
+. "$HERE/lib/approval-tick.sh"
+. "$HERE/lib/adr.sh"
+. "$HERE/lib/quote.sh"
+. "$HERE/lib/rule.sh"
+. "$HERE/lib/toc.sh"
+. "$HERE/lib/findings.sh"
+. "$HERE/lib/result.sh"
+kq_khai check-spec.sh \
+  "0=PASS — được sang phase sau" \
+  "1=FAIL — có vi phạm, sửa trong phase này" \
+  "2=NO INPUT — chưa có file cần kiểm"
+
+DIR="${1:-.}"
+nho_san "$DIR"  # nhớ rev-parse + quy ước hiệu lực ở shell chính (tốc độ)
+CHE_DO=""; if [ "${2:-}" = "--entry" ]; then CHE_DO=entry; fi
+SPEC="$DIR/spec.md"
+OQ="$DIR/open-questions.md"
+
+if [ ! -f "$SPEC" ]; then
+  echo "LỖI: không tìm thấy $SPEC" >&2
+  exit 2
+fi
+if [ ! -f "$OQ" ]; then
+  echo "LỖI: không tìm thấy $OQ" >&2
+  echo "      File này bắt buộc tồn tại kể cả khi rỗng." >&2
+  echo "      Rỗng = đã rà và không thấy gì. Thiếu = chưa rà." >&2
+  exit 2
+fi
+
+# Entry check: input của spec là intake.md — phải qua checker của phase 00.
+n_truoc=0
+if ! sh "$HERE/check-intake.sh" "$DIR" >/dev/null 2>&1; then
+  n_truoc=1
+  # giữ: INV-005
+  echo "  [ERROR] Đầu vào chưa đạt: intake.md không qua aw check intake — chạy nó để xem chi tiết."
+fi
+qtl=$(kc_quy_tac_loi "$DIR" spec)
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
+$qtl
+EOF
+# Ô duyệt spec: dạng, vị trí, và nội dung có đổi sau khi người tick không.
+kld=$(kc_loi_duyet "$SPEC" spec)
+  # giữ: CAP-require-03,
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
+$kld
+EOF
+# Mục lục và link tới mục (tools/lib/toc.sh).
+tl=$(toc_loi "$DIR" spec.md open-questions.md spec-findings.md)
+  # giữ: INV-012
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
+$tl
+EOF
+# Checker LLM của spec: thiếu file, hoặc block chưa fixed / rejected có lý do (tools/lib/findings.sh).
+sfl=$(ph_loi_chan "$DIR/spec-findings.md")
+# giữ: CAP-require-01
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
+$sfl
+EOF
+# REQ người chọn nâng thành luật bền (Promote: BR-…) — tools/lib/rule.sh.
+lsl=$(luat_loi_spec "$DIR")
+  # giữ: CAP-require-01
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
+$lsl
+EOF
+# refactor-requests.md (/aw-refactor ghi ở phase nào cũng được — phase sau chạy lại spec nên vẫn bắt):
+# mã "### RFR-NNN" dưới "## Requests", đúng 3 chữ số, không trùng.
+if [ -f "$DIR/refactor-requests.md" ]; then
+  rl=$(awk '
+    { sub(/\r$/, "") }
+    /^###?[ \t]+RFR-[0-9]+/ {
+      match($0, /RFR-[0-9]+/); c = substr($0, RSTART, RLENGTH)
+      if ($0 ~ /^##[ \t]/) print "refactor-requests.md: \"## " c "\" là cấp heading cũ — đổi thành \"### " c "\" dưới \"## Requests\""
+      if (c !~ /^RFR-[0-9][0-9][0-9]$/) print "Mã " c " sai dạng trong refactor-requests.md: phải đúng 3 chữ số (RFR-001)"
+      if (c in gap) print "Mã " c " xuất hiện nhiều lần trong refactor-requests.md"
+      gap[c] = 1
+    }' "$DIR/refactor-requests.md")
+  # giữ: CAP-require-01
+  while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
+$rl
+EOF
+fi
+fmh=$(kc_fm_hong "$DIR")
+# giữ: INV-006
+while IFS= read -r l; do [ -n "$l" ] && { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $l"; }; done <<EOF
+$fmh
+EOF
+TT_SPEC=$(dy_trang_thai "$SPEC" spec | awk -F'|' '$1 == "S" { print $3; exit }')
+LOAI=$(kc_loai "$DIR")
+BV="${TMPDIR:-/tmp}/tv-bv.$$"
+: > "$BV"
+QT="${TMPDIR:-/tmp}/tv-qt.$$"
+: > "$QT"
+CONV=$(kc_conventions "$DIR")
+MJ=$(kc_mau_jira "$CONV")
+# Nguồn của REQ phải nằm trong "## Input" của intake.md — chỉ cảnh báo (link phụ, file trong repo hay báo nhầm).
+set -- "$OQ" "$SPEC"
+if [ -f "$DIR/intake.md" ]; then set -- "$@" "$DIR/intake.md"; fi
+
+# Từ khoá đi qua ENVIRON, không qua -v: -v diễn giải "\" trong chuỗi.
+TV_TU_KHOA=$(conv_get "$CONV" high_risk_keywords) \
+awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_spec="${TT_SPEC:-?}" -v mj="$MJ" '
+  function loi(msg) { n_loi++; print "  [ERROR] " msg }
+  function canh_bao(msg) { print "  [WARN] " msg }
+  BEGIN { n_loi = loi_truoc }
+  function bo_nhan(s) {          # phần Source sau nhãn "[X]", bỏ ` và khoảng trắng hai đầu
+    sub(/^`*\[[A-Z-]*\]`*/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
+  }
+  function dinh_danh(t, x,    p) {  # định danh tài liệu nguồn để so với "## Input" của intake
+    gsub(/`/, "", x)
+    if (t == "JIRA") {
+      if (!match(x, "(^|[^A-Za-z0-9])(" mj ")")) return ""
+      p = substr(x, RSTART, RLENGTH); sub(/^[^A-Za-z0-9]/, "", p); return p
+    }
+    if (t == "ISSUE") {          # URL issue / PR / MR, bỏ query/fragment — như khoá của input.sh
+      if (!match(x, /https?:\/\/[^ \t)>]+/)) return ""
+      p = substr(x, RSTART, RLENGTH); sub(/[?#].*$/, "", p); sub(/\/+$/, "", p); return p
+    }
+    if (t == "CONFLUENCE") {
+      if (!match(x, /https?:\/\/[^ \t)>]+/)) return ""
+      p = substr(x, RSTART, RLENGTH); sub(/#.*$/, "", p); return p
+    }
+    # FILE: chữ đầu, hoặc đích của link "[x § Mục](x#anchor)" — như tq_duong_dan (tools/lib/quote.sh)
+    if (x ~ /^\[[^]]*\]\(/) { sub(/^\[[^]]*\]\(/, "", x); sub(/[#)].*$/, "", x); return x }
+    split(x, w, /[ \t]+/); return w[1]
+  }
+  function co_trong_input(t, d,    s, i) {  # d có trong "## Input", mã/URL không dính chữ phía sau
+    if (t == "FILE") return index(dau_vao, d) > 0
+    s = dau_vao
+    while ((i = index(s, d)) > 0) {
+      s = substr(s, i + length(d))
+      if (s == "" || s ~ /^[^A-Za-z0-9]/) return 1
+    }
+    return 0
+  }
+  function gia_tri(s) {          # phần sau dấu ":" đầu tiên, bỏ * ` và khoảng trắng
+    sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); return s
+  }
+  function them_cau(c, s) {      # một câu trích của REQ c (dòng "> …"), bỏ chỗ giữ chỗ
+    gsub(/\t/, " ", s); sub(/[ \t]+$/, "", s)
+    if (s == "" || s ~ /^<.*>$/) return
+    cau[c, ++so_cau[c]] = s
+  }
+
+  { sub(/\r$/, "") }
+
+  # Theo tên file, không đếm FNR==1: file 0 byte không có dòng nào nên sẽ làm lệch thứ tự.
+  { idx = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : 3 }
+
+  # ---- File 3: intake.md — chỉ lấy chữ trong "## Input" ----
+  idx==3 {
+    if ($0 ~ /^##[ \t]/) { trong_input = ($0 ~ /^##[ \t]+Input[ \t]*$/); next }
+    if (trong_input) dau_vao = dau_vao "\n" $0
+    co_intake = 1
+    next
+  }
+
+  # ---- File 1: open-questions.md ----
+  idx==1 {
+    # Mục là "### Q-NNN" dưới "## Questions". Dạng cũ "### REQ-NNN" (mã câu hỏi = mã REQ) vẫn đọc;
+    # cấp cũ "## …" vẫn đọc để không kéo theo lỗi khác.
+    if ($0 ~ /^###?[ \t]+(Q|REQ)-[0-9]+/) {
+      match($0, /(Q|REQ)-[0-9]+/); cur_oq = substr($0, RSTART, RLENGTH)
+  # giữ: CAP-require-02
+      if ($0 ~ /^##[ \t]/) loi("open-questions.md: \"## " cur_oq "\" là cấp heading cũ — đổi thành \"### " cur_oq "\" dưới \"## Questions\", rồi chạy aw toc")
+  # giữ: CAP-require-02
+      if (cur_oq !~ /^(Q|REQ)-[0-9][0-9][0-9]$/) loi("Mã " cur_oq " sai dạng trong open-questions.md: phải đúng 3 chữ số (Q-001)")
+      # giữ: CAP-require-02
+      if (cur_oq in co_muc) loi("Mã " cur_oq " xuất hiện nhiều lần trong open-questions.md")
+      if (cur_oq ~ /^REQ-/) dang_cu = 1
+      co_muc[cur_oq] = 1; ds_oq[++n_oq] = cur_oq; tt_oq[cur_oq] = "open"
+    }
+    # giữ: CAP-require-02
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Assumption\**:/) co_gia_dinh[cur_oq] = 1
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Blocking\**:/) muc_ch[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*[*]*(Mức chặn|Mức ảnh hưởng)[^:]*:/) muc_cu[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Status\**:/) tt_oq[cur_oq] = gia_tri($0)
+    if (cur_oq != "" && $0 ~ /^[ \t]*-[ \t]*\**Answer\**:/) { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) tra_loi[cur_oq] = 1 }
+    next
+  }
+
+  # ---- File 2: spec.md ----
+  # Comment HTML nhiều dòng trong mẫu (khối refactor/perf, bugfix, Glossary) không phải
+  # nội dung: không bỏ qua thì "## Reproduction" hay "Target:" trong comment được tính.
+  trong_cmt { if ($0 ~ /-->/) trong_cmt = 0; next }
+  $0 ~ /^[ \t]*<!--/ && $0 !~ /-->/ { trong_cmt = 1; next }
+  $0 ~ /^[ \t]*<!--.*-->[ \t]*$/ { next }
+  # Chữ thật của spec (bỏ comment) để dò high_risk_keywords.
+  { s = $0; gsub(/<!--([^-]|-[^-]|--[^>])*-->/, "", s); van_ban = van_ban "\n" tolower(s) }
+
+  # Câu trích: "- Quote:" rồi các dòng "> …" ngay dưới — mỗi dòng một câu (tools/lib/quote.sh).
+  trong_qt && $0 ~ /^[ \t]*>/ { s = $0; sub(/^[ \t]*>[ \t]*/, "", s); them_cau(cur, s); next }
+  trong_qt { trong_qt = 0 }
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Quote\**:/ {
+    trong_qt = 1; s = $0; sub(/^[^:]*:[ \t]*/, "", s)
+    if (s ~ /^>/) { sub(/^>[ \t]*/, "", s); them_cau(cur, s) }
+    next
+  }
+
+  rui_ro == "" && $0 ~ /^[ \t]*-[ \t]*\**Risk\**:/ { rui_ro = gia_tri($0); co_rui_ro = 1 }
+  # "Design:" chỉ tính ở phần đầu (trước "## " đầu tiên) — cùng chỗ kc_design đọc.
+  $0 ~ /^##[ \t]/ { qua_dau = 1 }
+  !qua_dau && !co_tk && $0 ~ /^[ \t]*-[ \t]*\**Design\**:/ { thiet_ke = gia_tri($0); co_tk = 1 }
+
+  $0 ~ /^###[ \t]+REQ-[0-9]+/ {
+    match($0, /REQ-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+  # giữ: CAP-require-01
+    if (cur in da_gap) loi("Mã " cur " xuất hiện nhiều lần trong spec.md")
+  # giữ: CAP-require-01
+    if (cur !~ /^REQ-[0-9][0-9][0-9]$/) loi("Mã " cur " sai dạng trong spec.md: phải đúng 3 chữ số (REQ-001)")
+    da_gap[cur] = 1
+    thu_tu[++n] = cur
+    so_nguon[cur] = 0
+    next
+  }
+  # Heading "###" khác (vd "### Ghi chú") cũng đóng vùng REQ — nếu không, dòng Source
+  # nằm dưới nó bị tính cho REQ phía trên. "####" trở xuống vẫn thuộc REQ.
+  $0 ~ /^###[ \t]/ { cur = ""; next }
+  # Heading cấp 2 kết thúc vùng yêu cầu (ví dụ "## Out of scope")
+  $0 ~ /^##[ \t]/ {
+    cur = ""; sec = ""
+    if ($0 ~ /^##[ \t]+Reproduction/)      { sec = "th";  co_th = 1 }
+    if ($0 ~ /^##[ \t]+Out of scope/)      { sec = "npv"; co_npv = 1 }
+    if ($0 ~ /^##[ \t]+Constraints/)       { sec = "rb";  co_rb = 1 }
+    if ($0 ~ /^##[ \t]+Source conflicts/)  { sec = "mt";  co_mt_muc = 1 }
+    next
+  }
+
+  # "Out of scope", "Constraints": phải có nội dung thật — dòng chữ không phải chỗ giữ chỗ
+  # "<...>". Không có gì thì ghi thẳng "Không có …" — rỗng và chưa rà là hai chuyện khác nhau.
+  (sec == "npv" || sec == "rb") && $0 !~ /^[ \t]*$/ {
+    v = $0; sub(/^[ \t]*[-*][ \t]*/, "", v)
+    if (v !~ /^</) noi_dung[sec] = 1
+  }
+
+  # "Source conflicts": mỗi dòng bảng phải được xử lý bằng điểm mù hoặc nguồn đã chốt.
+  sec == "mt" && /Không phát hiện mâu thuẫn/ && $0 !~ /^[ \t]*</ { mt_khong = 1 }
+  sec == "mt" && $0 ~ /^[ \t]*\|/ {
+    if ($0 ~ /^[ \t]*\|[- :|]+$/) next                     # dòng kẻ
+    n_o = split($0, o, "|")
+    a = o[2]; b = o[3]; x = o[4]
+    gsub(/^[ \t]+|[ \t]+$/, "", a); gsub(/^[ \t]+|[ \t]+$/, "", b); gsub(/^[ \t]+|[ \t]+$/, "", x)
+    if (a == "Source A says") next                           # dòng tiêu đề
+    if (a == "" && b == "" && x == "") next                 # dòng mẫu trống
+    n_mt++
+    ten = (a == "" ? "dòng " n_mt : "\"" a "\"")
+    if (match(x, /(^|[^A-Za-z0-9])(Q|REQ)-[0-9]+/)) {
+      q = substr(x, RSTART, RLENGTH); sub(/^[^A-Z]/, "", q)
+  # giữ: CAP-require-02
+      if (!(q in co_muc)) loi("Mâu thuẫn " ten ": trỏ tới " q " nhưng open-questions.md không có mục \"### " q "\"")
+    } else if (x !~ /\[(CONFLUENCE|JIRA|ISSUE|FILE)\]/) {
+  # giữ: CAP-require-01
+      loi("Mâu thuẫn " ten ": cột \"Resolution\" phải trỏ tới open question ([open-questions.md § Q-NNN](open-questions.md#q-nnn)) hoặc nguồn đã chốt " \
+          "([CONFLUENCE] [JIRA] [ISSUE] [FILE]). Agent không tự phân xử mâu thuẫn nghiệp vụ.")
+    }
+    next
+  }
+
+  # bugfix: mục "## Reproduction"
+  sec == "th" && /^[ \t]*-[ \t]*\**Steps to reproduce\**:/ { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) th["cach"] = 1 }
+  sec == "th" && /^[ \t]*-[ \t]*\**Actual behavior\**:/   { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) th["sai"] = 1 }
+  sec == "th" && /^[ \t]*-[ \t]*\**Expected behavior\**:/ { v = gia_tri($0); if (v != "" && v !~ /^<.*>$/) th["dung"] = 1 }
+
+  # refactor/perf: loại REQ, test bảo vệ, mục tiêu hiệu năng
+  cur != "" && /^[ \t]*-[ \t]*\**Type\**:/ { loai_yc[cur] = gia_tri($0) }
+  cur != "" && /^[ \t]*-[ \t]*\**Protected by\**:/ {
+    s = $0; sub(/^[^:]*:/, "", s)
+    while (match(s, /`[^`]+`/)) { bv[cur]++; print cur "\t" substr(s, RSTART+1, RLENGTH-2) > ds_bv; s = substr(s, RSTART+RLENGTH) }
+  }
+  cur != "" && /^[ \t]*-[ \t]*\**Priority\**:/ { uu_tien[cur] = gia_tri($0) }
+  # Tiêu chí chấp nhận: checkbox "- [ ] …" có nội dung thật, không phải "<...>".
+  cur != "" && /^[ \t]*-[ \t]*\[[ xX]\][ \t]*/ {
+    v = $0; sub(/^[ \t]*-[ \t]*\[[ xX]\][ \t]*/, "", v)
+    if (v != "" && v !~ /^<.*>$/) so_tc[cur]++
+  }
+  cur != "" && /^[ \t]*-[ \t]*\**Target\**:/ { v = gia_tri($0); if (v ~ /[0-9]/) co_mt[cur] = 1 }
+
+  cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Source\**:/ {
+    so_nguon[cur]++
+    dong = $0
+    sub(/^[^:]*:[ \t]*/, "", dong)
+    nguon[cur] = dong
+    # Câu hỏi REQ đứng trên: link "open-questions.md § Q-NNN" (dạng cũ: § REQ-NNN). Quan hệ câu
+    # hỏi ↔ REQ chỉ khai ở đây; danh sách REQ của mỗi câu hỏi suy ngược ở END.
+    if (match(dong, /open-questions\.md[^)]*(Q|REQ)-[0-9]+/)) { p = substr(dong, RSTART, RLENGTH); sub(/^open-questions\.md/, "", p); match(p, /(Q|REQ)-[0-9]+/); tro_oq[cur] = substr(p, RSTART, RLENGTH) }
+    if (match(dong, /\[[^]]+\]/)) {
+      nhan[cur] = substr(dong, RSTART + 1, RLENGTH - 2)
+    } else {
+      nhan[cur] = ""
+    }
+  }
+
+  END {
+    hop_le["CONFLUENCE"]=1; hop_le["JIRA"]=1; hop_le["ISSUE"]=1; hop_le["FILE"]=1
+    hop_le["INFERRED"]=1;   hop_le["OPEN-QUESTION"]=1
+    mc_hop_le["blocking"]=1; mc_hop_le["review-blocking"]=1; mc_hop_le["non-blocking"]=1
+
+    if (!co_rui_ro)
+  # giữ: CAP-require-01
+      loi("spec.md thiếu dòng \"Risk:\" (high | normal). `design` cần nó để biết có phải chạy Mode 2.")
+    else if (rui_ro != "high" && rui_ro != "normal")
+  # giữ: CAP-require-01
+      loi("\"Risk: " rui_ro "\" không hợp lệ. Chỉ chấp nhận: high | normal")
+    else if (rui_ro == "normal") {
+      n_tk = split(ENVIRON["TV_TU_KHOA"], tk, ",")
+      for (i = 1; i <= n_tk; i++) {
+        k = tk[i]; gsub(/^[ \t]+|[ \t]+$/, "", k)
+        if (k != "" && index(van_ban, tolower(k))) ds_tk = ds_tk (ds_tk == "" ? "" : ", ") k
+      }
+      if (ds_tk != "")
+  # giữ: CAP-require-01
+        canh_bao("\"Risk: normal\" nhưng spec có từ khoá rủi ro cao (high_risk_keywords): " ds_tk \
+                 " — xem lại Risk; người duyệt quyết")
+    }
+
+    # Bỏ design: chỉ việc nhỏ có thể không có lựa chọn kỹ thuật — người duyệt cùng spec.
+    if (co_tk) {
+      if (thiet_ke != "required" && thiet_ke != "skip")
+  # giữ: CAP-require-01
+        loi("\"Design: " thiet_ke "\" không hợp lệ. Chỉ chấp nhận: required | skip")
+      else if (thiet_ke == "required" && loai == "chore")
+  # giữ: CAP-require-01
+        loi("chore không có phase design — bỏ dòng \"Design:\" hoặc ghi skip")
+      else if (thiet_ke == "skip" && loai != "chore" && loai != "bugfix" && loai != "refactor")
+  # giữ: CAP-require-01
+        loi("\"Design: skip\" chỉ dành cho bugfix/refactor nhỏ — " (loai == "" ? "job type chưa rõ" : loai) " phải qua design")
+      else if (thiet_ke == "skip" && loai != "chore" && rui_ro != "normal")
+  # giữ: CAP-require-01
+        loi("\"Design: skip\" cần \"Risk: normal\" — việc rủi ro cao phải qua design (Mode 2: người phác DEC-xxx trước)")
+    }
+
+  # giữ: CAP-require-01
+    if (n == 0) loi("spec.md không có yêu cầu nào (không thấy heading \"### REQ-NNN\")")
+
+    # Các mục bắt buộc ngoài REQ — thiếu mục thì không phân biệt được "không có" với "chưa rà".
+  # giữ: CAP-require-01
+    if (!co_npv)         loi("spec.md thiếu mục \"## Out of scope\"")
+    else if (!("npv" in noi_dung))
+  # giữ: CAP-require-01
+      loi("\"## Out of scope\" rỗng hoặc còn chỗ giữ chỗ. Không có gì thì ghi \"Không có.\"")
+  # giữ: CAP-require-01
+    if (!co_rb)          loi("spec.md thiếu mục \"## Constraints & dependencies\"")
+    else if (!("rb" in noi_dung))
+  # giữ: CAP-require-01
+      loi("\"## Constraints & dependencies\" rỗng hoặc còn chỗ giữ chỗ. Không có thì ghi \"Không có ràng buộc hay phụ thuộc ngoài.\"")
+  # giữ: CAP-require-01
+    if (!co_mt_muc)      loi("spec.md thiếu mục \"## Source conflicts\"")
+    else if (n_mt == 0 && !mt_khong)
+  # giữ: CAP-require-01
+      loi("\"## Source conflicts\" không có dòng nào. Không có thì ghi \"Không phát hiện mâu thuẫn.\"")
+
+    for (i = 1; i <= n; i++) {
+      c = thu_tu[i]
+      # giữ: CAP-require-01
+      if (so_nguon[c] == 0) {
+        loi(c ": thiếu dòng \"Source:\". Yêu cầu không có nhãn = fail.")
+        continue
+      }
+      if (so_nguon[c] > 1) {
+  # giữ: CAP-require-01
+        loi(c ": có " so_nguon[c] " dòng \"Source:\", phải đúng một.")
+        continue
+      }
+      if (!(c in so_tc))
+  # giữ: CAP-require-01
+        loi(c ": thiếu tiêu chí chấp nhận (dòng \"- [ ] …\" quan sát được từ bên ngoài). Không có thì review không kết luận được.")
+      if (!(c in uu_tien))
+  # giữ: CAP-require-01
+        loi(c ": thiếu dòng \"Priority:\" (must | should). Nguồn không nói thì ghi must.")
+      else if (uu_tien[c] != "must" && uu_tien[c] != "should")
+  # giữ: CAP-require-01
+        loi(c ": \"Priority: " uu_tien[c] "\" không hợp lệ. Chỉ chấp nhận: must | should")
+      t = nhan[c]
+      if (t == "") {
+  # giữ: CAP-require-01
+        loi(c ": dòng \"Source:\" không có nhãn trong ngoặc vuông.")
+        continue
+      }
+      if (!(t in hop_le)) {
+  # giữ: CAP-require-01
+        loi(c ": nhãn [" t "] không hợp lệ. Chỉ chấp nhận: " \
+            "[CONFLUENCE] [JIRA] [ISSUE] [FILE] [INFERRED] [OPEN-QUESTION]")
+        continue
+      }
+      x = bo_nhan(nguon[c])
+      if (t == "INFERRED" && (x == "" || x ~ /^<.*>$/))
+  # giữ: CAP-require-01
+        loi(c ": nguồn [INFERRED] không ghi lý do — ghi lý do kỹ thuật và REQ nó phục vụ (vd \"index cho REQ-002\").")
+      # giữ: CAP-require-01
+      if (t == "ISSUE" && x !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests|work_items)\/[0-9]+([^0-9A-Za-z]|$)/)
+        loi(c ": nguồn [ISSUE] không có URL issue / PR / MR / work item (…/issues/N, …/pull/N, …/-/merge_requests/N, …/-/work_items/N) — " x)
+      else if (t == "JIRA" && x !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)"))
+  # giữ: CAP-require-01
+        loi(c ": nguồn [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " x)
+      else if (co_intake && (t == "CONFLUENCE" || t == "JIRA" || t == "ISSUE" || t == "FILE")) {
+        d = dinh_danh(t, x)
+        if (d != "" && d != "intake.md" && d != "open-questions.md" && !co_trong_input(t, d))
+  # giữ: CAP-plan-01
+          canh_bao(c ": nguồn " d " không có trong \"## Input\" của intake.md — đúng là đầu vào thì thêm vào intake, không thì kiểm lại nguồn")
+      }
+      if (t == "CONFLUENCE" || t == "JIRA" || t == "ISSUE" || t == "FILE") {
+        if (!(c in so_cau))
+  # giữ: CAP-require-01
+          loi(c ": nguồn [" t "] thiếu câu trích — thêm \"- Quote:\" và chép nguyên văn câu nguồn vào các dòng \"> …\" ngay dưới. " \
+              "Người duyệt so REQ với câu gốc ngay trong spec.")
+        else if (t == "FILE") {
+          x = nguon[c]; sub(/^`*\[[A-Z-]*\]`*[ \t]*/, "", x)
+          for (k = 1; k <= so_cau[c]; k++) print c "\t" x "\t" cau[c, k] > ds_qt
+        }
+      }
+      if (t == "OPEN-QUESTION") {
+        # Câu hỏi của REQ: link § Q-NNN; dạng cũ không link thì mục cùng mã REQ.
+        q = (c in tro_oq) ? tro_oq[c] : c
+        if (!(q in co_muc)) {
+          # giữ: CAP-require-02
+          if (c in tro_oq)
+            loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng không có mục \"### " q "\".")
+          else
+  # giữ: CAP-require-02
+            loi(c ": gắn [OPEN-QUESTION] nhưng không trỏ tới câu hỏi nào — thêm [open-questions.md § Q-NNN](open-questions.md#q-nnn) " \
+                "vào dòng Source và mục \"### Q-NNN\" trong open-questions.md. Gắn nhãn mà không hỏi ai thì nhãn vô nghĩa.")
+        } else {
+          tro_mo[q] = tro_mo[q] ", " c
+          if (q in da_kiem) { dem_nhan[t]++; continue }
+          da_kiem[q] = 1
+          if (!(q in co_gia_dinh))
+  # giữ: CAP-require-02
+            loi(q ": mục trong open-questions.md thiếu dòng \"Assumption:\". " \
+                "Không có giả định tạm thì phase sau không đi tiếp được.")
+          else if (!(q in muc_ch) && (q in muc_cu))
+  # giữ: CAP-require-02
+            loi(q ": nhãn cũ (\"Mức chặn\" / \"Mức ảnh hưởng\") đã đổi thành \"Blocking: blocking | review-blocking | non-blocking\". " \
+                "chặn / toàn bộ thiết kế → blocking; chặn review → review-blocking; không chặn → non-blocking; cục bộ → NGƯỜI chọn.")
+          else if (!(q in muc_ch))
+  # giữ: CAP-require-02
+            loi(q ": mục trong open-questions.md thiếu dòng \"Blocking:\" " \
+                "(blocking | review-blocking | non-blocking).")
+          else if (!(muc_ch[q] in mc_hop_le))
+  # giữ: CAP-require-02
+            loi(q ": \"Blocking: " muc_ch[q] "\" không hợp lệ. Chỉ chấp nhận: blocking | review-blocking | non-blocking")
+        }
+      }
+      if (t == "FILE" && (c in tro_oq)) {
+        q = tro_oq[c]
+        if (!(q in co_muc))
+  # giữ: CAP-require-02
+          loi(c ": nguồn trỏ tới open-questions.md § " q " nhưng không có mục \"### " q "\". " \
+              "Câu trả lời của người phải được ghi ở đó (/aw-clarify).")
+        else tro_tl[q] = tro_tl[q] ", " c
+      }
+      dem_nhan[t]++
+    }
+
+    # ---- open-questions.md phải khớp spec.md (quan hệ suy từ dòng Source của REQ) ----
+    for (i = 1; i <= n_oq; i++) {
+      q = ds_oq[i]; s = tt_oq[q]
+      if (q ~ /^REQ-/ && !(q in da_gap)) {
+  # giữ: CAP-require-02
+        loi("open-questions.md có mục \"### " q "\" nhưng spec.md không có " q ". Xoá mục, hoặc sửa mã cho khớp.")
+        continue
+      }
+      if (s != "open" && s != "answered") {
+  # giữ: CAP-require-02
+        loi(q ": \"Status: " s "\" trong open-questions.md không hợp lệ. Chỉ chấp nhận: open | answered")
+        continue
+      }
+      if (s == "answered" && !(q in tra_loi))
+  # giữ: CAP-require-02
+        loi(q ": open question ghi \"answered\" nhưng dòng \"Answer:\" còn trống.")
+      else if (s == "answered" && (q in tro_mo))
+  # giữ: CAP-require-02
+        loi(q ": open question đã trả lời nhưng " substr(tro_mo[q], 3) " vẫn gắn [OPEN-QUESTION]. Đổi source label sang nơi chứa câu trả lời " \
+            "(vd `[FILE]` [open-questions.md § " q "](open-questions.md#" tolower(q) ") rồi chạy aw toc).")
+      else if (s == "open" && (q in tro_tl))
+  # giữ: CAP-require-02
+        loi(q ": " substr(tro_tl[q], 3) " đã gắn nguồn [FILE] trỏ tới câu trả lời nhưng open question vẫn \"open\". " \
+            "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")
+      else if (s == "open" && !(q in tro_mo)) {
+        # giữ: CAP-require-02
+        if (q ~ /^REQ-/ && so_nguon[q] == 1)
+          loi(q ": spec.md đã gắn nguồn [" nhan[q] "] nhưng open question trong open-questions.md vẫn \"open\". " \
+              "Hoặc ghi câu trả lời và đổi sang \"answered\", hoặc trả nhãn về [OPEN-QUESTION].")
+        else if (q !~ /^REQ-/)
+  # giữ: CAP-require-02
+          loi("open-questions.md: " q " còn \"open\" nhưng không REQ nào trong spec.md trỏ tới. Thêm " \
+              "[open-questions.md § " q "](open-questions.md#" tolower(q) ") vào dòng Source của REQ đứng trên giả định, hoặc xoá mục.")
+      }
+    }
+    # giữ: CAP-require-02
+    if (dang_cu)
+      canh_bao("open-questions.md còn mục dạng cũ \"### REQ-NNN\" — vẫn đọc được; câu hỏi mới dùng \"### Q-NNN\" (một câu hỏi phủ được nhiều REQ).")
+
+    # ---- luật theo loại việc ----
+    if (loai == "bugfix") {
+  # giữ: CAP-require-01
+      if (!co_th) loi("bugfix: spec thiếu mục \"## Reproduction\" (Steps to reproduce, Actual behavior, Expected behavior)")
+      else {
+  # giữ: CAP-require-01
+        if (!("cach" in th)) loi("bugfix: \"Reproduction\" thiếu \"Steps to reproduce:\"")
+  # giữ: CAP-require-01
+        if (!("sai" in th))  loi("bugfix: \"Reproduction\" thiếu \"Actual behavior:\"")
+  # giữ: CAP-require-01
+        if (!("dung" in th)) loi("bugfix: \"Reproduction\" thiếu \"Expected behavior:\"")
+      }
+    }
+    if (loai == "refactor" || loai == "perf") {
+      hl_yc["preserve"] = 1; hl_yc["structural"] = 1; ds = "preserve | structural"
+      if (loai == "perf") { hl_yc["performance"] = 1; ds = ds " | performance" }
+      for (i = 1; i <= n; i++) {
+        c = thu_tu[i]; lt = loai_yc[c]
+  # giữ: INV-008
+        if (lt == "")              { loi(c ": " loai " — thiếu \"Type:\" (" ds "). Không được có REQ hành vi mới."); continue }
+  # giữ: INV-008
+        if (!(lt in hl_yc))        { loi(c ": \"Type: " lt "\" không hợp lệ cho " loai " (" ds ")"); continue }
+        # giữ: INV-008
+        if (lt == "preserve" && !(c in bv)) loi(c ": REQ preserve phải có \"Protected by: `<file test>`\" — test có sẵn trên base của việc")
+  # giữ: INV-008
+        if (lt == "performance" && !(c in co_mt)) loi(c ": REQ performance phải có \"Target:\" kèm số liệu")
+        if (lt == "performance") n_hn++
+      }
+  # giữ: INV-008
+      if (loai == "perf" && n_hn == 0) loi("perf: cần ít nhất một REQ \"Type: performance\"")
+    }
+
+    print ""
+    print "Tổng: " n " yêu cầu — Job type: " (loai == "" ? "?" : loai) " — Risk: " (co_rui_ro ? rui_ro : "?") \
+          (thiet_ke == "skip" ? " — Design: skip (không có phase design)" : "") " — Duyệt: " tt_spec
+    for (t in dem_nhan) printf "  [%s] %d\n", t, dem_nhan[t]
+    if (n_loi > 0) exit 1
+  }
+' "$@"
+ma=$?
+
+# Test bảo vệ REQ preserve phải CÓ SẴN trên base của việc (điểm rẽ nhánh): test thêm trong chính việc
+# refactor không chứng minh được hành vi cũ.
+n_bv=0
+if [ -s "$BV" ]; then
+  MB=$(kc_mb "$DIR")
+  while IFS="$(printf '\t')" read -r yc f; do
+    if [ -z "$MB" ]; then
+  # giữ: INV-008
+      echo "  [ERROR] $yc: không xác định được base để kiểm \"$f\" (dòng Base: trong intake.md, hoặc base_branch trong conventions.md)"; n_bv=$((n_bv + 1))
+    elif ! git -C "$DIR" cat-file -e "$MB:$f" 2>/dev/null; then
+  # giữ: INV-008
+      echo "  [ERROR] $yc: \"$f\" không tồn tại trên base của việc — vùng này chưa có test bảo vệ. Viết test thành việc riêng trước, hoặc thu hẹp phạm vi."
+      n_bv=$((n_bv + 1))
+    fi
+  done < "$BV"
+fi
+rm -f "$BV"
+
+# Câu trích [FILE] phải có trong file nguồn. Phase sau chạy lại spec (--entry): nguồn đổi sau khi
+# viết spec thì chỉ cảnh báo — chặn ở đây làm tắc việc vì lỗi không thuộc phase đó.
+n_qt=0
+if [ -s "$QT" ]; then
+  GOC=$(git_top "$DIR") || GOC=${AW_REPO:-.}
+  thieu=""
+  while IFS="$(printf '\t')" read -r yc src cau; do
+    p=$(tq_duong_dan "$src")
+    case "$p" in
+      intake.md|open-questions.md) f="$DIR/$p" ;;
+      *) f="$GOC/$p" ;;
+    esac
+    if [ -z "$p" ] || [ ! -f "$f" ]; then
+      [ "$thieu" = "$yc" ] && continue
+      thieu=$yc; msg="$yc: không tìm thấy file nguồn ${p:-?} để kiểm câu trích"
+    elif ! tq_khop "$f" "$cau"; then
+      msg="$yc: câu trích không có trong $p: \"$cau\" — chép đúng từng chữ từ nguồn (khoảng trắng, xuống dòng không tính)"
+    else
+      continue
+    fi
+    if [ "$CHE_DO" = entry ]; then
+  # giữ: CAP-require-01
+      echo "  [WARN] $msg. Nguồn đổi sau khi viết spec? Xem lại REQ, sửa spec qua /aw-clarify nếu cần"
+    else
+  # giữ: CAP-require-01
+      echo "  [ERROR] $msg"; n_qt=$((n_qt + 1))
+    fi
+  done < "$QT"
+fi
+rm -f "$QT"
+
+echo ""
+if [ "$ma" -ne 0 ] || [ "$n_bv" -gt 0 ] || [ "$n_qt" -gt 0 ]; then
+  echo "FAIL."
+  exit 1
+fi
+echo "PASS — mọi yêu cầu đều truy được về nguồn."

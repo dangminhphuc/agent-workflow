@@ -5,5 +5,5 @@ tools/check-intake.sh 5
 tools/check-plan.sh 25
 tools/check-review.sh 37
 tools/check-ship.sh 3
-tools/check-spec.sh 60
+tools/check-spec.sh 1
 tools/task.sh 2
