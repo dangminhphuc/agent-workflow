@@ -14,7 +14,7 @@ Người dùng muốn tách `/aw-approvals` thành lệnh riêng cho từng phas
 |---|---|
 | Dấu | `-`, không `:` — `:` hỏng tên file trên Windows, Claude Code đọc `/a:b` là lệnh plugin, adapter sẽ sinh khác nhau và phá test `AW_COMPARE=1` (SP31 §3.1) |
 | Phạm vi | Chỉ phase **có ô "Approved by human"**: `spec`, `design`. Phase không có ô (`intake`, `plan`, `implement`, `review`, `ship`) không có lệnh `-approve` |
-| `/aw-approvals` | **Giữ** làm lệnh duyệt tổng (cả hai phase, `--global`) |
+| `/aw-approvals` | **Bỏ hẳn** (người dùng chốt 2026-10-27). Lệnh CLI `aw approvals` **giữ** — hai lệnh mới gọi vào nó. Mất: màn duyệt gộp cả hai phase trong một lệnh; muốn duyệt cả hai thì chạy lần lượt `/aw-spec-approve` rồi `/aw-design-approve` |
 | Tên phase | Theo tên hiện tại (`spec`, `design`). SP31 đổi tên phase sau khi merge thì lệnh đổi theo (id sinh từ phase) |
 | Hướng B của SP31 §3.2 (`/aw-approvals <stage>`) | Thay bằng quyết định này; ghi vào `docs/kien-truc.md` |
 
@@ -52,7 +52,8 @@ Adapter (`adapters/lib/common.sh`, `ad_sinh`) với mỗi phase có `approves:` 
   `feature_dir: none`, `choice_ui: true`, `argument_hint: [--global]` — giống `/aw-approvals`.
 - Là lệnh tiện ích: không `implements:`, không vào bảng phase/stage; `disable-model-invocation` như các lệnh
   tiện ích khác.
-- `/aw-approvals` giữ nguyên, tức `approves:` = cả hai loại.
+- `--global` vẫn dùng được ở mỗi lệnh (`/aw-spec-approve --global`): duyệt mọi worktree của clone.
+- `/aw-approvals` bị xoá: bỏ mục `approvals` khỏi `commands:` trong `workflow.yaml`, xoá `workflow/approvals.md`. `aw adapter build` lại xoá file lệnh cũ đã sinh (dấu "SINH TỰ ĐỘNG").
 
 ### 1.3 Lọc ở máy: `aw approvals --phase <id>`
 
@@ -91,12 +92,13 @@ chỉ thêm một dòng ở bảng đó + `approves:` ở phase.
 | File | Việc |
 |---|---|
 | `workflow/phases/01-spec.md`, `02-design.md` | Thêm `approves: spec` / `approves: tdd` vào frontmatter |
-| `workflow/approve.md` (mới) | Thân dùng chung (§2); `workflow/approvals.md` rút về dùng cùng nguồn hoặc trỏ tới, tránh hai bản |
+| `workflow/approve.md` (mới, thay `workflow/approvals.md`) | Thân dùng chung của hai lệnh (§2); xoá `workflow/approvals.md` và mục `approvals` trong `commands:` |
 | `adapters/lib/common.sh` | Đọc `approves:`, sinh `<id>-approve`; kiểm giá trị; xoá lệnh cũ khi build lại (dấu "SINH TỰ ĐỘNG") |
 | `tools/approvals.sh` | `--phase <id>`; lọc theo loại; `kq_khai` giữ nguyên nhãn |
 | `workflow.yaml`, `bin/aw`, `bin/aw-engine` | Chú thích/usage `--phase` (không thêm lệnh engine mới) |
-| `workflow/rules/general.md` | Câu "Only `/aw-approvals` runs `aw approvals tick`" → "only `/aw-approvals` and `/aw-<phase>-approve`" (cả `adapters/lib/common.sh:306`) |
-| Tài liệu | `README.md`, `docs/huong-dan.md` (bảng lệnh), `docs/kien-truc.md` (lý do `-`, thay hướng B, cơ chế `approves:`, § Định dạng file phase thêm khoá), `docs/thuat-ngu.md` nếu có thuật ngữ mới, roadmap, `changes/claude-serene-dijkstra-gh7r5n.md` (`Thêm`: hai lệnh; `Thay đổi`: `aw approvals --phase`; người dùng `aw adapter build` lại) |
+| `workflow/rules/general.md`, `adapters/lib/common.sh:306` | "Only `/aw-approvals` runs `aw approvals tick`" → "only `/aw-<phase>-approve` runs …" |
+| Chỗ nhắc `/aw-approvals` khác | `tools/approvals.sh` (chú thích), `bin/aw`, `bin/aw-engine`, `workflow.yaml`, `tools/lib/*.sh`, tests 08/12/14/27, `adapters/*/README.md`, README, `docs/huong-dan.md`, `docs/kien-truc.md` → đổi sang lệnh mới (grep `aw-approvals`) |
+| Tài liệu | `README.md`, `docs/huong-dan.md` (bảng lệnh), `docs/kien-truc.md` (lý do `-`, thay hướng B, cơ chế `approves:`, § Định dạng file phase thêm khoá), `docs/thuat-ngu.md` nếu có thuật ngữ mới, roadmap, `changes/claude-serene-dijkstra-gh7r5n.md` (`Thêm`: hai lệnh; `Thay đổi`: `aw approvals --phase`; **`Bỏ`: `/aw-approvals`** — dùng `/aw-spec-approve`/`/aw-design-approve`; người dùng `aw adapter build` lại) |
 
 ## 4. Kiểm thử (viết trước code)
 
@@ -115,11 +117,11 @@ Thêm vào các part cùng chủ đề (`tools/tests/lib.sh` helpers); mỗi che
 
 - Không thêm ô duyệt cho phase khác; không đổi `tick`, hash, nhật ký.
 - Không đổi tên phase (SP31 làm).
+- Không giữ lại màn duyệt gộp (đã chốt bỏ).
 - Không hỗ trợ `:`; muốn dùng sau này là dự án riêng (adapter sinh khác nhau).
 
 ## 6. Câu hỏi còn mở (cần người chốt khi duyệt spec)
 
 1. `approves:` có đủ, hay muốn khai thẳng khoá mục (`spec`, `DEC-NNN`) trong frontmatter? Đề xuất: chỉ khai `LOAI`
    (máy đã suy khoá).
-2. `workflow/approvals.md` có nên thành lệnh sinh từ cùng `approve.md` (không `--phase`) để chỉ còn một thân?
-   Đề xuất: có — hai lệnh khác nhau chỉ ở dòng đầu.
+2. Có cần giữ bí danh một bản phát hành (`/aw-approvals` in "đã bỏ, dùng `/aw-<phase>-approve`") không? Đề xuất: không — bỏ hẳn như yêu cầu, ghi ở `Bỏ`.
