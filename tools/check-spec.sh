@@ -416,8 +416,8 @@ awk -v loi_truoc="$n_truoc" -v loai="$LOAI" -v ds_bv="$BV" -v ds_qt="$QT" -v tt_
         # giữ: CAP-require-01
         loi(c ": nguồn [INFERRED] không ghi lý do — ghi lý do kỹ thuật và REQ nó phục vụ (vd \"index cho REQ-002\").")
       # giữ: CAP-require-01
-      if (t == "ISSUE" && x !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests|work_items)\/[0-9]+([^0-9A-Za-z]|$)/)
-        loi(c ": nguồn [ISSUE] không có URL issue / PR / MR / work item (…/issues/N, …/pull/N, …/-/merge_requests/N, …/-/work_items/N) — " x)
+      if (t == "ISSUE" && x !~ /https?:\/\/[^ \t)>]+\/(issues|pull|pulls|discussions|pull-requests|merge_requests|work_items)\/[0-9]+([^0-9A-Za-z]|$)/)
+        loi(c ": nguồn [ISSUE] không có URL issue / PR / MR / work item / discussion (…/issues/N, …/pull/N, …/-/merge_requests/N, …/-/work_items/N, …/discussions/N, …/pull-requests/N) — " x)
       else if (t == "JIRA" && x !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)"))
         # giữ: CAP-require-01
         loi(c ": nguồn [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " x)

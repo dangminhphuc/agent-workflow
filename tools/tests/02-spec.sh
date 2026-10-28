@@ -268,7 +268,14 @@ dung "…URL có trong Input (bỏ #comment) → không cảnh báo" sh -c "! sh
 viet_intake
 dung "[ISSUE] URL không có trong Input → cảnh báo" sh -c "sh '$CHK' '$F' | grep -qF 'nguồn https://github.com/o/r/issues/12 không có trong'"
 dung "[ISSUE] .../issues/1 không khớp nhầm .../issues/12 trong Input" sh -c "sed 's#issues/12#issues/1#' '$F/spec.md' > '$F/s1' && mv '$F/s1' '$F/spec.md' && printf '%s\n' '## Input' '- \`[ISSUE]\` https://github.com/o/r/issues/12' >> '$F/intake.md' && sh '$CHK' '$F' | grep -qF 'nguồn https://github.com/o/r/issues/1 không có trong'"
-viet_intake
+viet_intake; thay "$F/intake.md" '- `[JIRA]` ABC-1' '- `[ISSUE]` https://bitbucket.org/w/r/pull-requests/4'
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[ISSUE]` [#9](https://bitbucket.org/w/r/pull-requests/4)'
+ky_vong 0 "[ISSUE] PR Bitbucket Cloud → cho qua" sh "$CHK" "$F"
+viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[ISSUE]` [#9](https://github.com/o/r/discussions/9)'
+ky_vong 0 "[ISSUE] discussion GitHub (Input thiếu URL) → cảnh báo thôi, vẫn qua" sh "$CHK" "$F"
+viet_intake; thay "$F/intake.md" '- `[JIRA]` ABC-1' '- `[ISSUE]` https://github.com/o/r/discussions/9'
+thay "$F/spec.md" '- Source: `[ISSUE]` [#9](https://bitbucket.org/w/r/pull-requests/4)' '- Source: `[ISSUE]` [#9](https://github.com/o/r/discussions/9)'
+ky_vong 0 "[ISSUE] discussion GitHub (Input có URL) → cho qua" sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1' '- Source: `[ISSUE]` https://github.com/o/r'
 ky_vong_ly_do 1 "chặn [ISSUE] không có URL issue / PR / MR" "…đúng lý do" 'REQ-001: nguồn \[ISSUE\] không có URL issue' sh "$CHK" "$F"
 viet_spec; thay "$F/spec.md" '- Source: `[JIRA]` ABC-1

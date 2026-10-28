@@ -120,7 +120,7 @@ awk -v loai_hl="$LOAI_HOP_LE" -v mj="$MJ" -v n_base="$n_base" '
     # giữ: CAP-plan-01
     else if (t == "JIRA" && rest !~ ("(^|[^A-Za-z0-9])(" mj ")([^A-Za-z0-9]|$)")) loi("Input #" n_in ": [JIRA] không có mã issue khớp jira_key_regex (" mj ") — " rest)
     # giữ: CAP-plan-01
-    else if (t == "ISSUE" && rest !~ /https?:\/\/[^ \t)>]+\/(issues|pull|merge_requests|work_items)\/[0-9]+([^0-9A-Za-z]|$)/) loi("Input #" n_in ": [ISSUE] không có URL issue / PR / MR / work item (…/issues/N, …/pull/N, …/-/merge_requests/N, …/-/work_items/N) — " rest)
+    else if (t == "ISSUE" && rest !~ /https?:\/\/[^ \t)>]+\/(issues|pull|pulls|discussions|pull-requests|merge_requests|work_items)\/[0-9]+([^0-9A-Za-z]|$)/) loi("Input #" n_in ": [ISSUE] không có URL issue / PR / MR / work item / discussion (…/issues/N, …/pull/N, …/-/merge_requests/N, …/-/work_items/N, …/discussions/N, …/pull-requests/N) — " rest)
     dem[t]++
     next
   }
