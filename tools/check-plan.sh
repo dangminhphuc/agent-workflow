@@ -55,7 +55,9 @@ if kc_bo_design "$DIR"; then
   # Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
   ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
   ma_spec=$?
+# giữ: INV-006
   printf '%s\n' "$ra_spec" | grep -F '[WARN]'
+# giữ: INV-005
   if [ "$ma_spec" -ne 0 ]; then
     n_loi=1
     echo "  [ERROR] Đầu vào chưa đạt: spec.md không qua aw check spec — chạy nó để xem chi tiết."
@@ -64,11 +66,13 @@ if kc_bo_design "$DIR"; then
   cd_duyet=$(kc_spec_chua_duyet "$DIR")
   if [ -n "$cd_duyet" ]; then
     n_loi=$((n_loi + 1))
+    # giữ: CAP-require-03, INV-005
     echo "  [ERROR] Đầu vào chưa đạt: $cd_duyet"
   fi
   # Điểm mù mức "blocking" chặn phase ngay sau spec — khi bỏ design là phase này.
   dm=$(kc_diem_mu_mo "$DIR" "blocking")
   if [ -n "$dm" ]; then
+    # giữ: CAP-require-02
     while IFS= read -r l; do
       [ -n "$l" ] || continue
       n_loi=$((n_loi + 1)); echo "  [ERROR] $l"
@@ -80,6 +84,7 @@ else
   for f in "$SPEC" "$TDD" "$PLAN"; do
     [ -f "$f" ] || { echo "LỖI: không tìm thấy $f" >&2; exit 2; }
   done
+  # giữ: INV-005
   if ! sh "$HERE/check-design.sh" "$DIR" >/dev/null 2>&1; then
     n_loi=1
     echo "  [ERROR] Đầu vào chưa đạt: tdd.md không qua aw check design — chạy nó để xem chi tiết."
@@ -92,6 +97,7 @@ while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] 
 $llk
 EOF
 # Mục lục và link tới mục (tools/lib/toc.sh).
+# giữ: INV-012
 tl=$(toc_loi "$DIR" plan.md)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $tl
@@ -112,6 +118,7 @@ if [ "$TDD" != /dev/null ]; then
   dy_dong_dau "$TDD" tdd >/dev/null
   DTT=$(dy_trang_thai "$TDD" tdd | awk -F'|' '$1 == "S" { printf "%s=%s;", $2, $3 }')
   # DEC người quyết nâng thành ADR phải có task nâng (tools/lib/adr.sh).
+  # giữ: CAP-breakdown-02
   alk=$(adr_loi_ke_hoach "$DIR")
   while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $alk
@@ -163,7 +170,9 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
 
   $0 ~ /^###[ \t]+TSK-/ {
     match($0, /TSK-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+    # giữ: CAP-breakdown-01
     if (cur in co_task) loi("Mã task " cur " bị trùng")
+    # giữ: CAP-breakdown-01
     if (cur !~ /^TSK-[0-9][0-9][0-9]$/) loi("Mã " cur " sai dạng trong plan.md: phải đúng 3 chữ số (TSK-001)")
     co_task[cur] = 1; dsach_task[++n_task] = cur
     next
@@ -174,6 +183,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
     match($0, /REQ-[0-9]+/); c = substr($0, RSTART, RLENGTH)
     co_mat_hoan[c] = 1
     ly_do = trim(f[3])
+    # giữ: CAP-breakdown-01, INV-001
     if (ly_do == "" || ly_do ~ /^<.*>$/)
       loi(c ": nằm ở \"Deferred\" nhưng không ghi lý do")
     else
@@ -184,10 +194,12 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Covers\**:/ {
     thu_ma($0, "REQ-[0-9]+")
     if (n_tim == 0) {
+      # giữ: CAP-breakdown-01, INV-001
       loi(cur ": dòng \"Covers:\" không trỏ về mã REQ nào")
     } else {
       for (i = 1; i <= n_tim; i++) {
         c = ma_tim[i]
+        # giữ: CAP-breakdown-01, INV-001
         if (!(c in co_yc)) loi(cur ": trỏ về " c " nhưng spec.md không có mã này")
         else               duoc_phu[c] = duoc_phu[c] " " cur
       }
@@ -203,6 +215,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
       x = gt_fx[i]; if (x == "") continue
       if (x ~ /^RVW-[0-9]+$/) { fx[cur] = fx[cur] " " x; co_sua[cur] = 1 }
       else if (x ~ /^https?:\/\/./) co_sua[cur] = 1
+      # giữ: INV-001
       else loi(cur ": \"Fixes:\" \"" x "\" — chỉ nhận RVW-NNN hoặc URL bình luận MR (http(s)://…)")
     }
     next
@@ -231,13 +244,17 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
   cur != "" && $0 ~ /^[ \t]*-[ \t]*\**Verify\**:/ {
     v = $0; sub(/^[^:]*:[ \t]*/, "", v); v = trim(v)
     co_kc_dong[cur] = 1
+    # giữ: CAP-breakdown-02
     if (v == "")            loi(cur ": \"Verify\" để trống")
+    # giữ: CAP-breakdown-02
     else if (v ~ /<[^>]*>/) loi(cur ": \"Verify\" còn chỗ giữ chỗ chưa điền — " v)
     next
   }
 
   END {
+    # giữ: CAP-require-01
     if (n_yc == 0)   loi("spec.md không có mã REQ nào")
+    # giữ: CAP-breakdown-01
     if (n_task == 0) loi("plan.md không có task nào (không thấy heading \"### TSK-NNN\")")
 
     # DEC-xxx phải được người duyệt trước khi lập kế hoạch
@@ -254,13 +271,17 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
       # giữ: CAP-breakdown-01, INV-001
       if (!(t in co_phu) && !(t in co_sua)) loi(t ": thiếu \"Covers:\" hoặc \"Fixes:\" — task phải phủ một REQ hoặc sửa một finding review")
       # Fixes trên task chưa xong phải trỏ về finding của review.md hiện tại (task [x]: review đã ghi lại, lịch sử ở git)
+      # giữ: CAP-breakdown-01, INV-001
       if (!(t in xong)) { n_fx = split(fx[t], ds_fx, " "); for (j = 1; j <= n_fx; j++) if (ds_fx[j] != "" && index(rvw, " " ds_fx[j] " ") == 0) loi(t ": \"Fixes: " ds_fx[j] "\" nhưng review.md không có finding mã đó") }
+      # giữ: CAP-breakdown-02
       if (!(t in co_kc_dong))  loi(t ": thiếu dòng \"Verify:\"")
+      # giữ: CAP-breakdown-02
       if (!(t in co_fdk_dong)) loi(t ": thiếu dòng \"Expected files:\"")
     }
 
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
+      # giữ: CAP-breakdown-01, INV-001
       if (!(c in duoc_phu) && !(c in co_mat_hoan))
         loi(c ": không task nào phủ, cũng không nằm ở mục \"Deferred\"")
     }
@@ -274,6 +295,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
       else                 printf "  %s ← KHÔNG PHỦ\n", c
     }
     # Hoãn REQ "must" không sai cú pháp, nhưng nghĩa là giao thiếu: người phải thấy.
+    # giữ: CAP-breakdown-01, INV-001
     for (i = 1; i <= n_yc; i++) {
       c = dsach_yc[i]
       if ((c in hoan) && uu_tien[c] != "should")
@@ -287,6 +309,7 @@ awk -v loi_truoc="$n_loi" -v dtt="$DTT" -v rvw="$RVW " '
 ma=$?
 
 cb=$( { kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_glob_rong "$DIR"; } )
+# giữ: INV-006
 if [ -n "$cb" ]; then
   echo ""
   echo "$cb" | while IFS= read -r l; do echo "  [WARN] $l"; done

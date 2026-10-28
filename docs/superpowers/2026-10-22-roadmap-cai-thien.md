@@ -168,6 +168,8 @@ của `aw task`, tiêu đề MR (độ dài, mã Jira).
 
 **Đợt 19c:** gắn 59/60 chỗ của `check-spec.sh` (185 → 126, [#118](https://github.com/dangminhphuc/agent-workflow/pull/118); một chỗ `kc_quy_tac_loi` chờ người duyệt capability mới — file `rules_*`/`uses_*` khai ở conventions phải có, mẫu chung của mọi checker). `toc_loi` gắn được INV-012 (mục lục trong danh sách "chờ capability mới" của 19b nay hết cần — INV-012 có từ SP35/#109). INV-005 `Enforced by` thêm `check-spec.sh` (entry check).
 
+**Đợt 19d:** gắn 45/50 chỗ của `check-plan.sh` + `check-design.sh` (126 → 81; `check-plan` còn 2, `check-design` còn 3). Năm chỗ chờ người duyệt capability mới: `kc_quy_tac_loi` (đã nêu ở 19c, nay gặp ở hai file nữa), `luat_loi_ke_hoach` và `adr_loi_ke_hoach` (REQ/DEC `Promote:` phải có task nâng), `adr_loi_truong` (trường Promote/Scope/Supersedes của DEC), và luật Mode 2 (`Risk: high` đòi DEC `Author: human`) — không id nào trong `sdlc/` mô tả những việc này.
+
 ### SP24 — Hai nhánh tính năng chưa merge
 
 **Vấn đề.** Hai nhánh không có PR, tính năng chưa có trên `main`, rẽ từ `main` cũ (12–13/10):
@@ -232,10 +234,13 @@ cho phase design, plan (dự án con riêng khi có số liệu).
   frontmatter một lượt, tra bảng bằng chuỗi thay `$(grep …)`). Đo cặp trên cùng máy, 2026-10-28.
   Phần còn lại dàn trải: kiểm tập con YAML từng file, đọc frontmatter + capability từng file stage,
   quét `# giữ:` và khối `out_of_scope`.
-- Bộ test (đo 2026-10-24, `main` dac429d): 1963 ca, 5 phút 23 giây trên 4 luồng — vượt mục tiêu dưới 3 phút
-  (lần đo 2026-10-23: 1804 ca, 2 phút 41 giây, `main` 8824ded; hai lần có thể đo trên máy khác nhau nên không
-  so trực tiếp, cần đo lại trên CI). Phần dài nhất `05-review-quality` (69 giây). Theo dõi; tách phần khi
-  xuất hiện `CẢNH BÁO … nên tách`.
+- Bộ test: đo trên máy phát triển (2026-10-28, WSL2, `main` 624d005 và nhánh 19d): 2136 ca, 3 phút 44
+  giây trên 6 luồng — vẫn trên mục tiêu dưới 3 phút. Phần dài nhất `05-review-quality` (74 s),
+  `06-review-freshness` 69 s, `15-conventions-task` 61 s; `run-tests.sh` in `WARN … nên tách` cho phần
+  chậm nhất ngay cả khi phép đo bị nhiễu vì chạy song công việc khác (một lần đo chỉ 46 s cho
+  `28-knowledge-sections` vì CPU bị chiếm). Số liệu này là máy cục bộ, chưa phải CI — chờ chạy trên
+  GitHub Actions (xem số liệu ở PR gần nhất). (Lần đo 2026-10-24: 1963 ca, 5 phút 23 giây trên 4 luồng,
+  `main` dac429d.)
 
 - ~~`aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea~~ —
   work item GitLab xong trước đó; discussion GitHub, Gitea/Forgejo, Bitbucket Cloud và Data Center xong

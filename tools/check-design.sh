@@ -46,9 +46,11 @@ TDD="$DIR/tdd.md"
 PH="$DIR/design-findings.md"
 
 if kc_bo_design "$DIR"; then
+  # giữ: CAP-require-01
   if [ "$(kc_loai "$DIR")" = "chore" ]; then
     echo "  [ERROR] Job type là chore — chore KHÔNG có phase design. Đi thẳng /aw-plan."
   else
+    # giữ: CAP-require-01
     echo "  [ERROR] spec.md khai \"Design: skip\" — việc này KHÔNG có phase design. Đi thẳng /aw-plan."
     echo "        Cần design thì đổi thành \"Design: required\" trong spec (người duyệt lại spec)."
   fi
@@ -65,7 +67,9 @@ n_loi=0
 # Chạy lại spec ở chế độ entry: câu trích [FILE] lệch nguồn (nguồn đổi sau spec) chỉ cảnh báo.
 ra_spec=$(sh "$HERE/check-spec.sh" "$DIR" --entry 2>/dev/null)
 ma_spec=$?
+# giữ: INV-006
 printf '%s\n' "$ra_spec" | grep -F '[WARN]'
+# giữ: INV-005
 if [ "$ma_spec" -ne 0 ]; then
   n_loi=1
   echo "  [ERROR] Đầu vào chưa đạt: spec.md/open-questions.md không qua aw check spec — chạy nó để xem chi tiết."
@@ -73,11 +77,13 @@ fi
 cd_duyet=$(kc_spec_chua_duyet "$DIR")
 if [ -n "$cd_duyet" ]; then
   n_loi=$((n_loi + 1))
+  # giữ: CAP-require-03, INV-005
   echo "  [ERROR] Đầu vào chưa đạt: $cd_duyet"
 fi
 # Điểm mù mức "blocking": thiết kế trên một giả định sẽ lật cả hướng đi là phí công.
 dm=$(kc_diem_mu_mo "$DIR" "blocking")
 if [ -n "$dm" ]; then
+  # giữ: CAP-require-02
   while IFS= read -r l; do
     [ -n "$l" ] || continue
     n_loi=$((n_loi + 1)); echo "  [ERROR] $l"
@@ -96,12 +102,14 @@ $fmh
 EOF
 
 # Mục lục và link tới mục (tools/lib/toc.sh).
+# giữ: INV-012
 tl=$(toc_loi "$DIR" tdd.md design-findings.md)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $tl
 EOF
 
 # Ô duyệt từng DEC-xxx — trạng thái lấy từ thư viện chung, không tự đọc lại.
+# giữ: CAP-design-03, INV-005
 kld=$(kc_loi_duyet "$TDD" tdd)
 while IFS= read -r l; do [ -n "$l" ] && { n_loi=$((n_loi + 1)); echo "  [ERROR] $l"; }; done <<EOF
 $kld
@@ -165,7 +173,9 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
 
     if (sect == "Decisions" && $0 ~ /^###[ \t]+DEC-[0-9]+/) {
       match($0, /DEC-[0-9]+/); cur = substr($0, RSTART, RLENGTH)
+      # giữ: CAP-design-01
       if (cur in co_d) loi("Mã quyết định " cur " bị trùng")
+      # giữ: CAP-design-01
       if (cur !~ /^DEC-[0-9][0-9][0-9]$/) loi("Mã " cur " sai dạng trong tdd.md: phải đúng 3 chữ số (DEC-001)")
       co_d[cur] = 1; ds_d[++n_d] = cur
       co_nd[sect] = 1
@@ -179,6 +189,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
       co_nd[sect] = 1
       if ($0 ~ /Not applicable/) {
         v = $0; sub(/^.*Not applicable[^:]*:?/, "", v); gsub(/[*`]/, "", v); gsub(/^[ \t]+|[ \t]+$/, "", v)
+        # giữ: CAP-design-01
         if (v == "" || v ~ /^<.*>$/) loi("tdd.md § " sect ": ghi \"Not applicable\" nhưng không có lý do")
       }
     }
@@ -195,6 +206,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
   # ---- File 3: design-findings.md (có thể là /dev/null) ----
   idx==3 {
     if ($0 ~ /^###[ \t]+FND-[0-9]+/) { match($0, /FND-[0-9]+/); ph = substr($0, RSTART, RLENGTH); ds_ph[++n_ph] = ph; ph_muc[ph] = ""; ph_xl[ph] = ""
+      # giữ: CAP-design-02
       if (ph !~ /^FND-[0-9][0-9][0-9]$/) loi("Mã " ph " sai dạng trong design-findings.md: phải đúng 3 chữ số (FND-001)") }
     if (ph != "" && ph_truong($0) == "muc") ph_muc[ph] = ph_chuan_muc(gia_tri($0))
     if (ph != "" && ph_truong($0) == "xl") ph_xl[ph] = ph_chuan_xl(gia_tri($0))
@@ -203,10 +215,12 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
 
   END {
     # 3. mục bắt buộc
+    # giữ: CAP-design-01
     for (i = 1; i <= n_muc; i++) {
       m = muc[i]
       if (!(m in co_sect)) { loi("tdd.md thiếu mục \"## " m "\""); continue }
       if (m == "Decisions") continue           # mục DEC-xxx được phép rỗng
+      # giữ: CAP-design-01
       if (!(m in co_nd)) loi("tdd.md § " m ": để trống. Không áp dụng thì ghi \"Not applicable: <lý do>\".")
     }
 
@@ -216,15 +230,19 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
       d = ds_d[i]
       # giữ: CAP-design-01
       if (!(d in d_tg))                               loi(d ": thiếu dòng \"Author:\" (human | agent)")
+      # giữ: CAP-design-01
       else if (d_tg[d] != "human" && d_tg[d] != "agent") loi(d ": \"Author: " d_tg[d] "\" không hợp lệ. Chỉ chấp nhận: human | agent")
       if (d_tg[d] == "human") co_nguoi = 1
     }
 
     # 5. tham chiếu DEC
+    # giữ: CAP-design-01
     for (d in tham_chieu) if (!(d in co_d)) loi("tdd.md ghi \"Based on: " d "\" nhưng mục Decisions không có " d)
 
     # 6. ánh xạ REQ hai chiều
+    # giữ: CAP-design-01
     for (i = 1; i <= n_yc; i++) if (!(ds_yc[i] in anh_xa)) loi(ds_yc[i] ": chưa được ánh xạ tới mục nào trong \"REQ mapping\"")
+    # giữ: CAP-design-01
     for (c in anh_xa) if (!(c in co_yc)) loi("\"REQ mapping\" trỏ về " c " nhưng spec.md không có mã này")
 
     # 7. Mode 2 — chống neo
@@ -233,6 +251,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
           "Người phải phác quyết định trước (Mode 2); agent chỉ phản biện.")
 
     # 8. checker LLM
+    # giữ: CAP-design-02
     if (ph_thieu == 1) {
       loi("Chưa có design-findings.md — LLM checker chưa chạy. Không có file phát hiện là FAIL, không phải \"không có gì để báo\".")
     } else {
@@ -241,7 +260,9 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
         if (ph_muc[p] != "block") continue
         x = ph_xl[p]
         if (ph_xong(x)) continue
+        # giữ: CAP-design-02
         if (ph_bac_khong_ly_do(x)) { loi(p ": Severity block bị rejected mà không có lý do"); continue }
+        # giữ: CAP-design-02
         loi(p ": phát hiện Severity block chưa xử lý (Resolution: " (x == "" ? "trống" : x) ")")
       }
     }
@@ -258,6 +279,7 @@ awk -v loi_truoc="$n_loi" -v ph_thieu="$PH_THIEU" -v dtt="$DTT" "$PH_AWK"'
 ma=$?
 
 cb=$( { kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; } )
+# giữ: INV-006
 if [ -n "$cb" ]; then
   echo ""
   echo "$cb" | while IFS= read -r l; do echo "  [WARN] $l"; done
