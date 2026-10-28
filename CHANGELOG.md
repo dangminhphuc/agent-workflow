@@ -11,6 +11,61 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.35]
+
+### Thêm
+- **`aw input` nhận thêm URL issue/PR dạng mới vào `[ISSUE]`.** Trước đây các URL này rơi về
+  `[CONFLUENCE]`/`[HUMAN]`, phải sửa tay. Nay nhận thêm: discussion GitHub (`…/<o>/<r>/discussions/N`,
+  `github.com` hoặc host của `origin`), issue/PR Gitea/Forgejo (`…/pulls/N`, host của `origin`),
+  issue và PR Bitbucket Cloud (`bitbucket.org`, `…/<w>/<r>/issues/N`, `…/<w>/<r>/pull-requests/N`),
+  PR Bitbucket Data Center (host của `origin`, `…/projects/<P>/repos/<R>/pull-requests/N`). Checker
+  intake/spec cho qua cùng các dạng này; nhắc URL trong `00-intake.md`, `source-tracing.md`,
+  `docs/huong-dan.md` cập nhật theo.
+
+### Thay đổi
+- **Nhãn máy và heading của `aw` đổi sang tiếng Anh, ngắn.** Ví dụ `ĐẠT` / `KHÔNG ĐẠT` → `PASS` / `FAIL`,
+  `ĐÃ DUYỆT` / `CHƯA DUYỆT` → `APPROVED` / `NOT APPROVED`, `XANH` / `ĐỎ` → `GREEN` / `RED`,
+  `Kết quả` / `Cần bạn` / `Tiếp theo` → `Result` / `Needs you` / `Next`. Bảng đầy đủ trong
+  `docs/superpowers/specs/2026-10-27-nhan-tieng-anh-design.md` §3. Phần mô tả sau dấu ` — ` vẫn là tiếng Việt;
+  mã thoát không đổi.
+- **Artifact do máy ghi đổi dòng kết quả.** `security-results.md` ghi `- Result: **GREEN**` (trước:
+  `- Kết quả: **XANH**`). Job đang chạy dở: chạy lại `aw check security` (hoặc `aw check implement`) trước
+  khi `aw check review`, nếu không cổng review sẽ báo artifact cũ.
+- **Tag đánh dấu đổi:** `[LỖI]` → `[ERROR]`, `[CẢNH BÁO]` → `[WARN]`, `[ĐÃ XỬ LÝ]` → `[HANDLED]`,
+  nhóm heading của `aw pending` đổi sang tiếng Anh (`UNRATED`, `FOUND — BLOCKING`, `FOUND — WARN`).
+  Nếu bạn có script tự đọc output `aw` bằng các chữ cũ, cập nhật script theo bảng trong spec.
+
+### Nội bộ
+- Test mới `tools/tests/01-fixture-engine-toc.sh`: mọi nhãn `kq_khai` phải là chữ ASCII, chặn tái phát nhãn tiếng Việt.
+- Test và checker cũ cập nhật cùng lúc theo bảng ánh xạ; prompt sinh ra (`adapters/lib/common.sh`) và tài liệu cùng đổi.
+- SP19 đợt 19c: gắn `# giữ:` cho 59/60 chỗ luật của `tools/check-spec.sh` — `tools/unclassified-rules.txt`
+  `check-spec.sh` 60 → 1 (còn 1 chỗ `kc_quy_tac_loi`: file `rules_*` khai ở conventions không có / chưa
+  commit, `uses_*` không tìm thấy skill/subagent — không capability nào giữ điều này, chờ người duyệt
+  capability mới; các checker khác cùng mẫu này cũng đang chưa gắn). Mapping từng dòng ở plan
+  `docs/superpowers/plans/2026-10-27-sp19c-gan-id-check-spec.md`.
+- INV-005 (`Enforced by`) thêm `tools/check-spec.sh`: entry check của spec chặn khi intake.md không qua
+  `aw check intake`. Ca test mới ở `tools/tests/02-spec.sh`.
+- `toc_loi` trong `check-spec.sh` gắn INV-012 (SP35/#109 cho invariant này id; đề xuất "chờ capability mới"
+  của đợt 19b cho `toc_loi` nay hết cần).
+- `tools/check-sdlc.sh` bớt thời gian chạy (~1,3 s → ~0,9 s): kiểm invariant một lượt thay vì một awk
+  cho mỗi INV; đếm luật chưa gắn `# giữ:` của mọi file một lượt thay vì một awk mỗi file; frontmatter
+  của phase đọc một lượt thay vì `fm_scalar`/`fm_list` gọi 6 lần. Hành vi không đổi, ca lỗi giữ nguyên
+  chữ (tests 20–25).
+- **`tools/check-sdlc.sh` còn ~0,55 giây mỗi lượt** (bản trên `main` ~0,92 s, trước đó ~1,1 s — đo cặp
+  hai bản trên cùng máy, cùng lúc). PR #119 đã gộp ba vòng (kiểm invariant, đếm luật `# giữ:`, đọc
+  frontmatter phase); PR này gộp tiếp phần còn lại — chi phí chính của script là fork process, không
+  phải đọc file:
+  - một lượt awk dựng **toàn bộ bảng stage ↔ phase** (trạng thái suy ra, có note hay không, `provides`
+    chưa phase nào map, `exit_machine` / `exit_human` của phase) — trước: mỗi stage vài lần awk/grep;
+  - vòng **profile**: `tools/lib/md.sh` thêm `fm_all` đọc mọi khoá frontmatter một lượt (thay bảy lần
+    awk trên cùng file), và `kc_bo_design` vẫn được hỏi thật nhưng `tools/lib/cross-check.sh` chỉ
+    **source một lần** cho hết mọi cặp (job type × Design) thay vì mười;
+  - tra bảng bằng `case` trên chuỗi tính một lần, kết quả trả qua biến `_R` — bỏ subshell ở
+    `stage_so`, `ph_ten`, `kieu`, `co_note` và các `grep -qxF` trong vòng.
+  Output và luật chặn **không đổi**: `tools/tests/20-sdlc-conformance.sh` vẫn so ảnh chụp từng bảng với
+  output, `sh tools/check-sdlc.sh --dem-luat` vẫn in đúng danh sách trong
+  `tools/unclassified-rules.txt`. Người dùng `aw` không thấy gì — script chỉ chạy trên repo engine.
+
 ## [2026.10.34]
 
 ### Thêm
