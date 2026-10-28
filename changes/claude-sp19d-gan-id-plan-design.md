@@ -9,3 +9,5 @@
   `Promote:` phải có task nâng (`luat_loi_ke_hoach`, `adr_loi_ke_hoach`), trường ADR của DEC
   (`adr_loi_truong`), và Mode 2 — `Risk: high` đòi ít nhất một DEC do người viết. Danh sách chi tiết
   ở mô tả PR.
+- **Số đo bộ test trên CI** (roadmap § Việc nhỏ): 2136 ca, ALL PASS — Ubuntu 3 phút 42 giây, macOS
+  11 phút 35 giây. Thay số đo cũ (1963 ca, 5 phút 23 giây, chỉ đo máy cục bộ). Không đổi hành vi.

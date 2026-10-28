@@ -234,13 +234,13 @@ cho phase design, plan (dự án con riêng khi có số liệu).
   frontmatter một lượt, tra bảng bằng chuỗi thay `$(grep …)`). Đo cặp trên cùng máy, 2026-10-28.
   Phần còn lại dàn trải: kiểm tập con YAML từng file, đọc frontmatter + capability từng file stage,
   quét `# giữ:` và khối `out_of_scope`.
-- Bộ test: đo trên máy phát triển (2026-10-28, WSL2, `main` 624d005 và nhánh 19d): 2136 ca, 3 phút 44
-  giây trên 6 luồng — vẫn trên mục tiêu dưới 3 phút. Phần dài nhất `05-review-quality` (74 s),
-  `06-review-freshness` 69 s, `15-conventions-task` 61 s; `run-tests.sh` in `WARN … nên tách` cho phần
-  chậm nhất ngay cả khi phép đo bị nhiễu vì chạy song công việc khác (một lần đo chỉ 46 s cho
-  `28-knowledge-sections` vì CPU bị chiếm). Số liệu này là máy cục bộ, chưa phải CI — chờ chạy trên
-  GitHub Actions (xem số liệu ở PR gần nhất). (Lần đo 2026-10-24: 1963 ca, 5 phút 23 giây trên 4 luồng,
-  `main` dac429d.)
+- Bộ test (đo trên CI ở [#122](https://github.com/dangminhphuc/agent-workflow/pull/122), 2026-10-28):
+  2136 ca, ALL PASS trên cả hai hệ — Ubuntu 3 phút 42 giây (4 luồng), macOS 11 phút 35 giây (3 luồng).
+  Phần dài nhất trên macOS: `05-review-quality` 102 s, `06-review-freshness` 101 s,
+  `15-conventions-task` 100 s. Trên máy phát triển (WSL2, 6 luồng): 3 phút 44 giây. Mục tiêu dưới 3 phút
+  chỉ đạt trên Ubuntu; tách phần khi `run-tests.sh` in `WARN … nên tách` (cảnh báo này cũng bật khi máy
+  bị chiếm CPU, nên đo lúc máy nhàn — một lần đo `28-knowledge-sections` 108 s rồi 46 s trên cùng code).
+  (Lần đo cũ 2026-10-24: 1963 ca, 5 phút 23 giây trên 4 luồng, `main` dac429d.)
 
 - ~~`aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea~~ —
   work item GitLab xong trước đó; discussion GitHub, Gitea/Forgejo, Bitbucket Cloud và Data Center xong
