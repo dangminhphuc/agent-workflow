@@ -289,13 +289,21 @@ dung "cùng issue khác #comment / query → một dòng" bang "$(ra 'https://gi
 dung "trang repo GitHub (không phải issue) không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://github.com/o/r')"
 dung "github.com/o/r/issues (không số) không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://github.com/o/r/issues')"
 dung "miền giả github.com.evil.com không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://github.com.evil.com/o/r/issues/1')"
+dung "discussion GitHub → [ISSUE]" bang "$(ra 'https://github.com/o/r/discussions/9')" "- ${BT}[ISSUE]${BT} https://github.com/o/r/discussions/9"
+dung "issue Bitbucket Cloud → [ISSUE]" bang "$(ra 'https://bitbucket.org/w/r/issues/21')" "- ${BT}[ISSUE]${BT} https://bitbucket.org/w/r/issues/21"
+dung "PR Bitbucket Cloud → [ISSUE]" bang "$(ra 'https://bitbucket.org/w/r/pull-requests/4')" "- ${BT}[ISSUE]${BT} https://bitbucket.org/w/r/pull-requests/4"
+dung "trang discussion GitHub (không số) không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://github.com/o/r/discussions')"
 U9=$(git -C "$R9" remote get-url origin)
 git -C "$R9" remote set-url origin "git@ghe.cty.vn:o/r.git"
 dung "GitHub Enterprise: host trùng host của origin → [ISSUE]" bang "$(ra 'https://ghe.cty.vn/o/r/issues/4')" "- ${BT}[ISSUE]${BT} https://ghe.cty.vn/o/r/issues/4"
 git -C "$R9" remote set-url origin "https://ghe.cty.vn/o/r.git"
 dung "…origin dạng https cũng nhận" bang "$(ra 'https://ghe.cty.vn/o/r/pull/4')" "- ${BT}[ISSUE]${BT} https://ghe.cty.vn/o/r/pull/4"
+git -C "$R9" remote set-url origin "git@gitea.cty.vn:t/r.git"
+dung "Gitea: pulls host trùng origin → [ISSUE]" bang "$(ra 'https://gitea.cty.vn/o/r/pulls/6')" "- ${BT}[ISSUE]${BT} https://gitea.cty.vn/o/r/pulls/6"
+dung "Bitbucket Data Center: host trùng origin → [ISSUE]" bang "$(ra 'https://gitea.cty.vn/projects/p/repos/r/pull-requests/3')" "- ${BT}[ISSUE]${BT} https://gitea.cty.vn/projects/p/repos/r/pull-requests/3"
 git -C "$R9" remote set-url origin "$U9"
 dung "host lạ dạng /o/r/issues/N (không phải origin) không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://ghe.cty.vn/o/r/issues/4')"
+dung "Gitea host không phải origin, không phải màn GitHub/Bitbucket → không thành [ISSUE]" sh -c "! printf '%s' \"\$1\" | grep -q ISSUE" _ "$(ra 'https://gitea.cty.vn/o/r/pulls/6')"
 
 # --skip: chay lai /aw-intake = gop them
 cat > "$TMP/intake-cu.md" <<'HET'

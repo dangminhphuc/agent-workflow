@@ -225,17 +225,22 @@ cho phase design, plan (dự án con riêng khi có số liệu).
 
 Đụng phần nào thì làm phần đó, không cần spec:
 
-- **`check-sdlc.sh` còn ~0,5 giây** (trước ~1,1 giây, đo cặp trên cùng máy 2026-10-27 ở `perf/check-sdlc-speedup`).
-  Gộp xong: invariant, đếm luật `# giữ:`, bảng stage ↔ phase, frontmatter của phase và profile (`fm_all`),
-  tra bảng bằng chuỗi thay `$(grep …)`. Phần còn lại dàn trải: kiểm tập con YAML từng file, đọc
-  frontmatter + capability từng file stage, quét `# giữ:` và khối `out_of_scope`.
+- **`check-sdlc.sh` còn ~0,55 giây** (trước ~1,1 giây). `cap_co`, id invariant, phase theo stage,
+  `skippable: false` và requires của stage tra chuỗi tính một lần; #119 gộp kiểm invariant, đếm luật
+  chưa gắn và frontmatter phase (~0,9 s); PR này gộp tiếp bảng stage ↔ phase và vòng profile
+  (`kc_bo_design` source một lần cho mọi job type, `fm_all` trong `tools/lib/md.sh` đọc mọi khoá
+  frontmatter một lượt, tra bảng bằng chuỗi thay `$(grep …)`). Đo cặp trên cùng máy, 2026-10-28.
+  Phần còn lại dàn trải: kiểm tập con YAML từng file, đọc frontmatter + capability từng file stage,
+  quét `# giữ:` và khối `out_of_scope`.
 - Bộ test (đo 2026-10-24, `main` dac429d): 1963 ca, 5 phút 23 giây trên 4 luồng — vượt mục tiêu dưới 3 phút
   (lần đo 2026-10-23: 1804 ca, 2 phút 41 giây, `main` 8824ded; hai lần có thể đo trên máy khác nhau nên không
   so trực tiếp, cần đo lại trên CI). Phần dài nhất `05-review-quality` (69 giây). Theo dõi; tách phần khi
   xuất hiện `CẢNH BÁO … nên tách`.
 
-- `aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea —
-  các URL đó vẫn rơi về `[CONFLUENCE]`/`[HUMAN]`; thêm dạng vào `la_issue` (`tools/input.sh`) + checker khi cần.
+- ~~`aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea~~ —
+  work item GitLab xong trước đó; discussion GitHub, Gitea/Forgejo, Bitbucket Cloud và Data Center xong
+  2026-10-27 (PR hiện hành), kèm checker intake/spec và test.
+
 ## Không làm
 
 | Việc | Lý do | Xét lại khi |

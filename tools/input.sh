@@ -90,13 +90,18 @@ HOST_GOC=$(git -C "$TOP" remote get-url origin 2>/dev/null | awk '{
 
 # la_issue <url đã bỏ query/fragment, bỏ "/" cuối> -> 0 nếu là issue / PR / MR / work item:
 #   GitLab (mọi host, cả nhóm con): …/<nhóm>/<repo>/-/(issues|merge_requests|work_items)/N
-#   GitHub: github.com hoặc host của origin, /<o>/<r>/(issues|pull)/N
+#   GitHub: github.com hoặc host của origin, /<o>/<r>/(issues|pull)/N; discussion: …/discussions/N
+#   Gitea/Forgejo: host của origin, /<o>/<r>/(issues|pulls)/N
+#   Bitbucket: bitbucket.org, …/<w>/<r>/(issues|pull-requests)/N; Data Center (host của origin):
+#     …/projects/<P>/repos/<R>/pull-requests/N
 la_issue() {
   printf '%s\n' "$1" | awk -v hg="$HOST_GOC" '{
     if ($0 ~ /^https?:\/\/[^\/]+\/([^\/]+\/)+-\/(issues|merge_requests|work_items)\/[0-9]+$/) exit 0
-    if ($0 !~ /^https?:\/\/[^\/]+\/[^\/]+\/[^\/]+\/(issues|pull)\/[0-9]+$/) exit 1
+    dung = $0 ~ /^https?:\/\/[^\/]+\/[^\/]+\/[^\/]+\/(issues|pull|pulls|discussions|pull-requests)\/[0-9]+$/
+    if (!dung) dung = $0 ~ /^https?:\/\/[^\/]+\/projects\/[^\/]+\/repos\/[^\/]+\/pull-requests\/[0-9]+$/
+    if (!dung) exit 1
     h = $0; sub(/^https?:\/\//, "", h); sub(/\/.*$/, "", h); h = tolower(h)
-    exit !(h == "github.com" || (hg != "" && h == hg)) }'
+    exit !(h == "github.com" || h == "bitbucket.org" || (hg != "" && h == hg)) }'
 }
 
 # ma_browse <url> -> mã issue sau "/browse/" (rỗng nếu không có)
