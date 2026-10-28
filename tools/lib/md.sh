@@ -71,6 +71,32 @@ fm_list() {
   ' "$1"
 }
 
+# fm_all <file> -> in mọi khoá frontmatter một lượt: "k=v" (scalar, kể cả dòng "k:" rỗng -> "k=")
+# và "k~m" (mỗi mục "  - m" của danh sách mở ngay sau dòng "k:"). Cùng ngữ nghĩa
+# fm_scalar/fm_list (kể cả bỏ "[]"); chỉ khác: in mọi khoá thay vì một khoá, để checker
+# đọc file một lần thay vì gọi fm_* nhiều lần.
+fm_all() {
+  awk '
+    { sub(/\r$/, "") }
+    NR==1 && $0=="---" { fm=1; next }
+    fm==1 && $0=="---" { exit }
+    fm!=1 { next }
+    inlist==1 {
+      if ($0 ~ /^[ \t]+-[ \t]+/) { v=$0; sub(/^[ \t]+-[ \t]+/, "", v); sub(/[ \t]+$/, "", v); print lk "~" v; next }
+      inlist=0
+    }
+    $0 ~ /^[A-Za-z_][A-Za-z0-9_]*:/ {
+      k=$0; sub(/:.*/, "", k)
+      v=$0; sub(/^[^:]*:[ \t]*/, "", v)
+      gsub(/^[ \t]+|[ \t]+$/, "", v)
+      if (v=="[]" || v=="{}") v=""
+      print k "=" v
+      if ($0 ~ "^" k ":[ \t]*$") { lk=k; inlist=1 }
+      next
+    }
+  ' "$1"
+}
+
 # md_body <file> -> in phần markdown sau frontmatter
 md_body() {
   awk '

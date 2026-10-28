@@ -225,9 +225,13 @@ cho phase design, plan (dự án con riêng khi có số liệu).
 
 Đụng phần nào thì làm phần đó, không cần spec:
 
-- **`check-sdlc.sh` ~1,6 giây mỗi lần** (trước ~2 giây). `cap_co`, `cap_stage`, id invariant, phase theo
-  stage, `skippable: false` và requires của stage tra chuỗi tính một lần; quét `# giữ:`, đếm luật chưa
-  gắn và đọc frontmatter phase mỗi lần một awk → một lượt chung (2026-10-27, ~0,9 s trên máy test).
+- **`check-sdlc.sh` còn ~0,55 giây** (trước ~1,1 giây). `cap_co`, id invariant, phase theo stage,
+  `skippable: false` và requires của stage tra chuỗi tính một lần; #119 gộp kiểm invariant, đếm luật
+  chưa gắn và frontmatter phase (~0,9 s); PR này gộp tiếp bảng stage ↔ phase và vòng profile
+  (`kc_bo_design` source một lần cho mọi job type, `fm_all` trong `tools/lib/md.sh` đọc mọi khoá
+  frontmatter một lượt, tra bảng bằng chuỗi thay `$(grep …)`). Đo cặp trên cùng máy, 2026-10-28.
+  Phần còn lại dàn trải: kiểm tập con YAML từng file, đọc frontmatter + capability từng file stage,
+  quét `# giữ:` và khối `out_of_scope`.
 - Bộ test (đo 2026-10-24, `main` dac429d): 1963 ca, 5 phút 23 giây trên 4 luồng — vượt mục tiêu dưới 3 phút
   (lần đo 2026-10-23: 1804 ca, 2 phút 41 giây, `main` 8824ded; hai lần có thể đo trên máy khác nhau nên không
   so trực tiếp, cần đo lại trên CI). Phần dài nhất `05-review-quality` (69 giây). Theo dõi; tách phần khi

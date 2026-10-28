@@ -108,10 +108,19 @@ DS_LUAT="tools/unclassified-rules.txt"
 tep_luat() { for _tl in "$E"/tools/check-*.sh "$E"/tools/task.sh; do
   case "${_tl##*/}" in check-sdlc.sh|check-release.sh) continue ;; esac
   [ -f "$_tl" ] && printf '%s\n' "${_tl#"$E"/}"; done; }
-# dem_luat <file> -> số chỗ luật (loi/loi_truoc/canh_bao, dòng in [LỖI]/[CẢNH BÁO], TỪ CHỐI:/DỪNG:/CẢNH BÁO:)
-# chưa được "# giữ:" phủ. Một "# giữ:" phủ đúng một chỗ luật đầu tiên bên dưới, trước dòng trống kế tiếp.
-dem_luat() {
-  awk '{ sub(/\r$/, "") }
+# dem_luat_bulk <file…> -> "duong-dan count" mỗi file: số chỗ luật (loi/loi_truoc/canh_bao,
+# dòng in [ERROR]/[WARN], TỪ CHỐI:/DỪNG:/CẢNH BÁO:) chưa được "# giữ:" phủ. Đường dẫn in ra
+# là tương đối so với DEM_E. Một "# giữ:" phủ đúng một chỗ luật đầu tiên bên dưới,
+# trước dòng trống kế tiếp. Trước: một awk mỗi file (~36 process); nay một lượt awk.
+dem_luat_bulk() {
+  awk '
+    FNR == 1 {
+      if (NR > 1) print ten_n " " n + 0
+      pref = length(DEM_E) + 2; f = FILENAME
+      ten_n = (DEM_E != "" && index(f, DEM_E "/") == 1) ? substr(f, pref) : f
+      phu = 0; n = 0
+    }
+    { sub(/\r$/, "") }
     /^[ \t]*$/ { phu = 0; next }
     /^[ \t]*# giữ:/ { phu = 1; next }
     /^[ \t]*#/ { next }
@@ -119,12 +128,17 @@ dem_luat() {
     /BEGIN[ \t]*\{[ \t]*n_loi[ \t]*=[ \t]*loi_truoc/ { next }
     $0 ~ /(^|[^A-Za-z0-9_])(loi|loi_truoc|canh_bao)[ (]/ || index($0, "[ERROR]") || index($0, "[WARN]") ||
     /(REJECTED|STOP|WARN):/ { if (phu) phu = 0; else n++ }
-    END { print n + 0 }' "$1"
+    END { if (NR > 0) print ten_n " " n + 0 }' DEM_E="$E" "$@"
 }
 if [ -n "$DEM" ]; then
   # chỉ in danh sách (dùng để tạo / cập nhật tools/unclassified-rules.txt) — không in khối Result
   trap - EXIT
-  tep_luat | while IFS= read -r _f; do _n=$(dem_luat "$E/$_f"); if [ "$_n" -gt 0 ]; then printf '%s %s\n' "$_f" "$_n"; fi; done
+  set --
+  for _f in $(tep_luat); do set -- "$@" "$E/$_f"; done
+  [ $# -gt 0 ] || exit 0
+  dem_luat_bulk "$@" | while IFS=' ' read -r _f _n; do
+    if [ "$_n" -gt 0 ]; then printf '%s %s\n' "${_f#"$E"/}" "$_n"; fi
+  done
   exit 0
 fi
 W="${TMPDIR:-/tmp}/aw-check-sdlc.$$"
@@ -135,6 +149,8 @@ n_loi=0
 loi() { echo "  [ERROR] $*"; n_loi=$((n_loi + 1)); }
 # co <file> <dòng> -> 0 nếu file có đúng dòng đó
 co() { [ -f "$1" ] && grep -qxF -- "$2" "$1"; }
+# khoa_co <chuỗi> <khóa> -> 0 nếu chuỗi chứa khóa (tra không fork)
+khoa_co() { case "$1" in *"$2"*) return 0 ;; esac; return 1; }
 
 # ---- tập con YAML: dòng ngoài tập con fm_* / wf_* đọc được thì báo ngay, không để trả rỗng
 yaml_bao() { # <đường-dẫn tương đối trong engine> fm|wf
@@ -177,37 +193,64 @@ fi
 # id invariant tra ở shell (gọi nhiều lần — mỗi lần một awk thì chậm)
 INV_IDS=" $(awk -F'|' '$2 == "id" { printf "%s ", $1 }' "$W/inv")"
 inv_co() { case "$INV_IDS" in *" $1 "*) return 0 ;; esac; return 1; }
-# kiểm invariant một lượt (trước: mỗi INV một đợt awk — 13 INV × ~6 tiến trình thì chậm)
-: > "$W/invl"; : > "$W/invp"; : > "$W/invc"
-awk -F'|' -v fl="$W/invl" -v fp="$W/invp" -v fc="$W/invc" '
-  $2 == "id" { id[$1] = 1; next }
-  $2 == "enf" && $3 != "" { if (!($1 "/" $2 "/" $3 in p_seen)) { p_seen[$1 "/" $2 "/" $3]; enf[$1] = 1; print $1 "|enf|" $3 > fp } next }
-  $2 == "test" && $3 != "" { if (!($1 "/" $2 "/" $3 in p_seen)) { p_seen[$1 "/" $2 "/" $3]; test[$1] = 1; print $1 "|test|" $3 > fp } next }
-  $2 == "case" { if (!($1 "/" $3 "/" $4 in c_seen)) { c_seen[$1 "/" $3 "/" $4]; ca[$1] = 1; print $1 "|" $3 "|" $4 > fc } next }
-  $2 == "rule" && $3 != "" { print "L|" $1 ": \"Rule:\" chứa cú pháp engine (" $3 ") — viết trừu tượng, chuyển cú pháp sang \"- Engine:\"." > fl; next }
-  END {
-    for (inv in id) {
-      if (!(inv in enf)) print "L|" inv ": thiếu \"Enforced by:\" trỏ tới checker (tools/check-*.sh, tools/lib/*.sh)." > fl
-      if (!(inv in test)) print "L|" inv ": thiếu \"Tested by:\" trỏ tới test (tools/tests/*.sh)." > fl
-      if (!(inv in ca)) print "L|" inv ": \"Tested by:\" không nêu ca test nào — thêm tên ca (trong \"…\") sau đường dẫn file." > fl
+# kiểm mỗi invariant một lượt awk (trước: ~8 process/INV — fork là chi phí chính)
+awk -F'|' '
+  $2 == "id"   { if (NR > 1) ktra(); cur = $1; enf = 0; te = 0; ca = 0; ru = ""; next }
+  $2 == "enf"  { if ($3 != "") enf = 1; next }
+  $2 == "test" { if ($3 != "") te = 1; next }
+  $2 == "case" { ca = 1; next }
+  $2 == "rule" { ru = ru (ru == "" ? "" : ", ") $3; next }
+  END { if (cur != "") ktra() }
+  function ktra(   e1, l, a, m) {
+    e1 = ""
+    if (!enf) e1 = e1 cur ": thiếu \"Enforced by:\" trỏ tới checker (tools/check-*.sh, tools/lib/*.sh).\n"
+    if (!te)  e1 = e1 cur ": thiếu \"Tested by:\" trỏ tới test (tools/tests/*.sh).\n"
+    if (!ca)  e1 = e1 cur ": \"Tested by:\" không nêu ca test nào — thêm tên ca (trong \"…\") sau đường dẫn file.\n"
+    if (ru != "") e1 = e1 cur ": \"Rule:\" chứa cú pháp engine (" ru ") — viết trừu tượng, chuyển cú pháp sang \"- Engine:\".\n"
+    if (e1 != "") { sub(/\n$/, "", e1); print "E|" e1 cur }
+    while (getline l < F1 > 0) {
+      split(l, a, "|")
+      if (a[1] != cur) continue
+      if (a[2] == "enf") { m = "Enforced by:"; k = "enf" }
+      else if (a[2] == "test") { m = "Tested by:"; k = "test" }
+      else continue
+      if (a[3] != "") print "F|" cur "|" k "|" m "|" a[3]
     }
+    close(F1)
   }
-' "$W/inv"
-while IFS= read -r l; do loi "${l#L|}"; done < "$W/invl"
-while IFS='|' read -r inv k p; do
-  case "$k|$p" in
-    enf\|tools/check-*.sh|enf\|tools/lib/*.sh|test\|tools/tests/*.sh) ;;
-    enf\|*) loi "$inv: \"Enforced by:\" \`$p\` không phải tools/check-*.sh hay tools/lib/*.sh."; continue ;;
-    *) loi "$inv: \"Tested by:\" \`$p\` không phải tools/tests/*.sh."; continue ;;
+' F1="$W/inv" "$W/inv" > "$W/inv3"
+# đường dẫn chấp nhận của Enforced/Tested by: — pattern case không có khoảng trắng
+inv_dinh() {
+  case "$1|$2" in
+    enf\|tools/check-*.sh|enf\|tools/lib/*.sh|test\|tools/tests/*.sh) return 0 ;;
   esac
-  [ -f "$E/$p" ] || loi "$inv: \`$p\` không tồn tại."
-done < "$W/invp"
-while IFS='|' read -r inv p ca; do
-  [ ! -f "$E/$p" ] || grep -qF -- "\"$ca\"" "$E/$p" || loi "$inv: ca \"$ca\" không có trong $p."
-done < "$W/invc"
+  return 1
+}
+while IFS='|' read -r k i kk m p; do
+  case "$k" in
+    E) while IFS= read -r l; do loi "$l"; done <<EOF
+$i
+EOF
+     ;;
+    F) if ! inv_dinh "$kk" "$p"; then
+         case "$kk" in
+           enf) loi "$i: \"$m\" \`$p\` không phải tools/check-*.sh hay tools/lib/*.sh." ;;
+           *) loi "$i: \"$m\" \`$p\` không phải tools/tests/*.sh." ;;
+         esac
+         continue
+       fi
+       [ -f "$E/$p" ] || loi "$i: \`$p\` không tồn tại." ;;
+  esac
+done < "$W/inv3"
+# tên ca test: grep từng ca trong file của nó (số ca nhỏ)
+awk -F'|' '$2 == "case" && $3 != "" { print $1 "|" $3 "|" $4 }' "$W/inv" > "$W/inv1"
+while IFS='|' read -r i p ca; do
+  [ ! -f "$E/$p" ] || grep -qF -- "\"$ca\"" "$E/$p" || loi "$i: ca \"$ca\" không có trong $p."
+done < "$W/inv1"
 
 # ---- stage: theo thứ tự NN của tên file
 : > "$W/stages"; : > "$W/prov"; : > "$W/cap"; : > "$W/capart"; : > "$W/sreq"; i=0
+PROV_SO_FAR="|"   # các loại stage trước đã provides: "|t1|t2|" — tra requires không cần fork
 for f in "$E"/sdlc/stages/[0-9]*.md; do
   [ -f "$f" ] || continue
   i=$((i + 1)); ten=${f##*/}; ten=${ten%.md}; ten=${ten#*-}
@@ -256,12 +299,12 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
   while IFS= read -r t; do
     [ -n "$t" ] || continue
     echo "$id|$t" >> "$W/sreq"
-    awk -F'|' -v t="$t" '$2 == t' "$W/prov" | grep -q . \
+    khoa_co "$PROV_SO_FAR" "|$t|" \
       || loi "stage $id: requires \"$t\" — không stage nào trước nó provides."
   done < "$W/r"
   if [ -n "$provs" ]; then printf '%s\n' "$provs" > "$W/p"; else : > "$W/p"; fi
   [ -s "$W/p" ] || loi "stage $id: thiếu provides."
-  while IFS= read -r t; do if [ -n "$t" ]; then echo "$id|$t" >> "$W/prov"; fi; done < "$W/p"
+  while IFS= read -r t; do if [ -n "$t" ]; then echo "$id|$t" >> "$W/prov"; PROV_SO_FAR="$PROV_SO_FAR|$t|"; fi; done < "$W/p"
   for inv in $invs; do
     inv_co "$inv" \
       || loi "stage $id: invariant $inv không có trong sdlc/invariants.md."
@@ -335,26 +378,23 @@ for f in "$E"/sdlc/stages/[0-9]*.md; do
   done < "$W/c1"
 done
 # mỗi loại provides của stage có ít nhất một capability khai Artifact loại đó (adds_provides của profile: không)
+CAPART_KEYS="|$(tr '\n' '|' < "$W/capart")|"
 while IFS='|' read -r s t; do
   [ -n "$t" ] || continue
-  grep -qxF "$s|$t" "$W/capart" \
+  khoa_co "$CAPART_KEYS" "$s|$t|" \
     || loi "stage $s: provides \"$t\" — không capability nào khai \"Artifact: $t\"; thêm hoặc gắn một capability."
 done < "$W/prov"
 SO_STAGE=" $(awk -F'|' '{ printf "%s=%s ", $2, $1 }' "$W/stages")"  # stage_so tra ở shell chính, không awk mỗi lần
 stage_co() { case "$SO_STAGE" in *" $1="*) return 0 ;; esac; return 1; }
-# stage_so <stage> -> số thứ tự; tra chuỗi trong shell (gọi ~100 lần — mỗi lần một awk thì chậm)
+# stage_so <stage> -> số thứ tự vào _R (tham chiếu chuỗi, không fork subshell)
 stage_so() {
   [ -n "${SO_STAGE:-}" ] || SO_STAGE=" $(awk -F'|' '{ printf "%s=%s ", $2, $1 }' "$W/stages")"  # dự phòng; thường đã tính sẵn ở shell chính
-  case "$SO_STAGE" in *" $1="*) _so=${SO_STAGE#*" $1="}; printf '%s\n' "${_so%% *}" ;; esac
+  _R=""; case "$SO_STAGE" in *" $1="*) _R=${SO_STAGE#*" $1="}; _R=${_R%% *} ;; esac
 }
-# cap_co <CAP-id> -> 0 nếu capability có trong sdlc/stages/; cap_stage <CAP-id> -> stage của nó.
-# Tra chuỗi tính một lần ($W/cap đã đủ): " id ", ";id=stage;".
+# cap_co <CAP-id> -> 0 nếu capability có trong sdlc/stages/; "cap_stage" tra qua CAP_ST (";id=stage;").
 CAP_IDS=" $(awk -F'|' '{ printf "%s ", $2 }' "$W/cap")"
 CAP_ST="$(awk -F'|' '{ printf ";%s=%s", $2, $1 }' "$W/cap");"
 cap_co() { case "$CAP_IDS" in *" $1 "*) return 0 ;; esac; return 1; }
-cap_stage() {
-  case "$CAP_ST" in *";$1="*) _cs=${CAP_ST#*";$1="}; printf '%s\n' "${_cs%%;*}" ;; esac
-}
 
 # ---- loại artifact profile thêm (adds_provides của sdlc/profiles/*.md): phase được map chúng ra file
 : > "$W/padd"
@@ -377,94 +417,74 @@ while IFS='|' read -r s _st _note; do
 done < "$W/khai"
 # note_cua <stage> -> note của stage trong khối sdlc: (nguyên văn, kể cả dấu |)
 note_cua() { awk -v s="$1" 'index($0, s "|") == 1 { sub(/^[^|]*\|[^|]*\|/, ""); print; exit }' "$W/khai"; }
-# co_note <stage> -> 0 nếu khối sdlc: có note cho stage đó
-co_note() { [ -n "$(note_cua "$1")" ]; }
+# co_note dùng ở § stage ↔ phase, tra chuỗi ST_NOTE (không fork)
 
 # ---- phase: implements + provides, theo thứ tự trong workflow.yaml
 : > "$W/phases"; : > "$W/pprov"; : > "$W/nhan"; truoc=""; truoc_so=0
 wf_phases "$E/workflow.yaml" > "$W/wf"
+# chuỗi tra "stage|loai": tính một lần, thay grep mỗi dòng (nghĩa co "$W/prov" không đổi)
+PROV_KEYS="|$(tr '\n' '|' < "$W/prov")|"
+PADD_KEYS="|$(tr '\n' '|' < "$W/padd")|"
 while IFS='|' read -r pid pfile preq _when; do
   [ -n "$pid" ] || continue
   src="$E/$pfile"
   if [ ! -f "$src" ]; then loi "phase $pid: không có file $pfile."; continue; fi
-# frontmatter của phase đọc một lượt (trước: fm_scalar + fm_list × 5 — 6 awk mỗi phase thì chậm)
-awk '
-  { sub(/\r$/, "") }
-  FNR == 1 { fm = ($0 == "---") ? 1 : 0; next }
-  fm != 1 { next }
-  fm == 1 && $0 == "---" { exit }
-  intz != "" {
-    if ($0 ~ /^[ \t]+-[ \t]+/) { v = $0; sub(/^[ \t]+-[ \t]+/, "", v); sub(/[ \t]+$/, "", v); print intz "=" v; next }
-    intz = ""
-  }
-  {
-    if ($0 ~ /^implements:/ && !imp_done) {
-      v = $0; sub(/^[A-Za-z_][A-Za-z0-9_]*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v)
-      if (v == "[]" || v == "{}") v = ""; print "imp=" v; imp_done = 1; next
-    }
-    k = $0; sub(/:.*/, "", k)
-    if (k == "exit_machine" || k == "exit_human" || k == "outputs" || k == "provides" || k == "capabilities") {
-      if ($0 ~ "^" k ":[ \t]*$") { intz = k }
-    }
-  }
-' "$src" > "$W/fmk"
-imp=""; _em=""; _eh=""; outs=""; pp=""; caps=""
-while IFS= read -r l; do
-  k=${l%%=*}; v=${l#*=}
-  case "$k" in
-    imp) imp=$v ;;
-    exit_machine) _em=1 ;;
-    exit_human) _eh=1 ;;
-    outputs) outs="${outs:+$outs
-}$v" ;;
-    provides) pp="${pp:+$pp
-}$v" ;;
-    capabilities) caps="${caps:+$caps
-}$v" ;;
-  esac
-done < "$W/fmk"
-s=$imp
+  fm_all "$src" > "$W/fma"
+  # tách các khoá bằng lệnh nội bộ của shell — mỗi khoá một awk là một process trên cùng file
+  s=""; em=""; eh=""; nhan_co=""
+  : > "$W/out"; : > "$W/pp"; : > "$W/capb"
+  while IFS= read -r _l; do
+    _k=${_l%%[=~]*}; _v=${_l#*[=~]}
+    case "$_k" in
+      implements) s=$_v ;;
+      exit_machine) [ -n "$_v" ] && em=1 ;;   # chỉ tính khi có mục; dòng "exit_machine:" rỗng = không có
+      exit_human) [ -n "$_v" ] && eh=1 ;;
+      outputs) [ -n "$_v" ] && printf '%s\n' "${_v%% (*}" >> "$W/out" ;;
+      provides) [ -n "$_v" ] && printf '%s\n' "$_v" >> "$W/pp" ;;
+      capabilities) [ -n "$_v" ] && printf '%s\n' "$_v" >> "$W/capb" ;;
+    esac
+  done < "$W/fma"
   if [ -z "$s" ]; then loi "phase $pid: thiếu implements (stage SDLC phase này implement)."; continue; fi
   if ! stage_co "$s"; then loi "phase $pid: implements \"$s\" — không có stage đó trong sdlc/stages/."; continue; fi
-  so=$(stage_so "$s")
+  stage_so "$s"; so=$_R
   if [ "$so" -lt "$truoc_so" ]; then
     loi "phase $pid (stage $s) đứng sau phase $truoc — thứ tự phase lệch thứ tự stage."
   fi
   truoc_so=$so; truoc="$pid (stage $s)"
-  em=$_em; eh=$_eh
-  echo "$pid|$s|${_em:+1}|${_eh:+1}|$preq" >> "$W/phases"
-  printf '%s' "$outs" | sed 's/ (.*$//' > "$W/out"
-  printf '%s\n' "$pp" > "$W/pp"
+  echo "$pid|$s|$em|$eh|$preq" >> "$W/phases"
+  OUT="|$(tr '\n' '|' < "$W/out")|"
   while IFS= read -r m; do
     [ -n "$m" ] || continue
     case "$m" in
       *": "*) t=${m%%: *}; fo=${m#*: } ;;
       *) loi "phase $pid: provides \"$m\" — cần dạng <loại>: <file>."; continue ;;
     esac
-    co "$W/out" "$fo" || loi "phase $pid: provides \"$m\" — $fo không nằm trong outputs."
-    co "$W/prov" "$s|$t" || co "$W/padd" "$s|$t" \
-      || loi "phase $pid: provides \"$t\" — stage $s không khai loại đó, không profile nào thêm."
+    khoa_co "$OUT" "|$fo|" || loi "phase $pid: provides \"$m\" — $fo không nằm trong outputs."
+    if ! khoa_co "$PROV_KEYS" "|${s}|${t}|" && ! khoa_co "$PADD_KEYS" "|${s}|${t}|"; then
+      loi "phase $pid: provides \"$t\" — stage $s không khai loại đó, không profile nào thêm."
+    fi
     echo "$s|$t" >> "$W/pprov"
   done < "$W/pp"
-  for c in $caps; do
+  while IFS= read -r c; do
+    [ -n "$c" ] || continue
     if ! cap_co "$c"; then
       loi "phase $pid: capabilities \"$c\" — không có capability đó; sửa id hoặc thêm vào sdlc/stages/."; continue
     fi
-    cs=$(cap_stage "$c")
+    cs=""; case "$CAP_ST" in *";$c="*) cs=${CAP_ST#*";$c="}; cs=${cs%%;*} ;; esac
     if [ "$cs" != "$s" ]; then
       loi "phase $pid: capabilities \"$c\" thuộc stage $cs, phase implements $s — chuyển id sang phase của stage $cs."; continue
     fi
-    echo "$pid|$s|$c" >> "$W/nhan"
-  done
-  awk -F'|' -v p="$pid" '$1 == p' "$W/nhan" | grep -q . \
+    echo "$pid|$s|$c" >> "$W/nhan"; nhan_co=1
+  done < "$W/capb"
+  [ -n "$nhan_co" ] \
     || loi "phase $pid: implements $s nhưng không nhận capability nào — thêm id vào capabilities: (xem sdlc/stages/)."
 done < "$W/wf"
 # Phase theo stage, tính một lần: ";stage=pid1, pid2;" (thứ tự workflow.yaml) và ";stage;" nếu có phase required khác false.
 PH_DS=$(awk -F'|' '{ if ($2 in ten) ten[$2] = ten[$2] ", " $1; else ten[$2] = $1 }
   END { printf ";"; for (s in ten) printf "%s=%s;", s, ten[s] }' "$W/phases")
 PH_CHAY=$(awk -F'|' '$5 != "false" { c[$2] = 1 } END { printf ";"; for (s in c) printf "%s;", s }' "$W/phases")
-# ph_ten <stage> -> "pid1, pid2"; rỗng nếu stage không có phase. ph_chay -> 0 nếu có phase required khác false.
-ph_ten() { case "$PH_DS" in *";$1="*) _pt=${PH_DS#*";$1="}; printf '%s\n' "${_pt%%;*}" ;; esac; }
+# ph_ten <stage> -> "pid1, pid2" vào _R (rỗng nếu stage không có phase); không fork subshell
+ph_ten() { _R=""; case "$PH_DS" in *";$1="*) _R=${PH_DS#*";$1="}; _R=${_R%%;*} ;; esac; }
 ph_chay() { case "$PH_CHAY" in *";$1;"*) return 0 ;; esac; return 1; }
 
 # ---- out_of_scope: capability engine quyết không làm (khoá cấp cao của workflow.yaml, "- CAP-id: lý do").
@@ -514,8 +534,17 @@ done < "$W/may"
 # ---- luật chưa phân loại: số chỗ luật chưa "# giữ:" của mỗi file phải đúng bằng số trong $DS_LUAT —
 # nhiều hơn = luật mới không gắn id; ít hơn = đã gắn thêm mà chưa hạ danh sách (danh sách chỉ được giảm).
 : > "$W/dsl"
-tep_luat > "$W/tepl"
+tep_luat > "$W/tepl"          # đường dẫn tương đối so với $E
+if [ -s "$W/tepl" ]; then
+  set --
+  while IFS= read -r _f; do set -- "$@" "$E/$_f"; done < "$W/tepl"
+  dem_luat_bulk "$@" > "$W/dmb"
+else
+  : > "$W/dmb"
+fi
 if [ -f "$E/$DS_LUAT" ]; then
+  TEPL=" $(tr '\n' ' ' < "$W/tepl")"
+  DSL_DA=""
   while IFS= read -r l; do
     l=$(printf '%s' "$l" | tr -d '\r')
     case "$l" in ""|"#"*) continue ;; esac
@@ -523,73 +552,79 @@ if [ -f "$E/$DS_LUAT" ]; then
     f=$1; so=$2; [ $# -eq 2 ] || so=""
     case "$so" in ""|*[!0-9]*) loi "$DS_LUAT: dòng \"$l\" sai dạng — cần \"<file> <số>\"."; continue ;; esac
     [ -f "$E/$f" ] || { loi "$DS_LUAT: $f không có."; continue; }
-    grep -qxF "$f" "$W/tepl" || { loi "$DS_LUAT: $f không phải file được đếm (tools/check-*.sh trừ check-sdlc/check-release, tools/task.sh)."; continue; }
-    awk -v f="$f" '$1 == f { c = 1 } END { exit !c }' "$W/dsl" && { loi "$DS_LUAT: $f lặp — mỗi file một dòng."; continue; }
+    case "$TEPL" in *" $f "*) ;; *) loi "$DS_LUAT: $f không phải file được đếm (tools/check-*.sh trừ check-sdlc/check-release, tools/task.sh)."; continue ;; esac
+    case "$DSL_DA" in *" $f "*) loi "$DS_LUAT: $f lặp — mỗi file một dòng."; continue ;; esac
+    DSL_DA="$DSL_DA$f "
     echo "$f $so" >> "$W/dsl"
   done < "$E/$DS_LUAT"
 fi
-DSL_DS=" $(awk '{ printf "%s=%s ", $1, $2 }' "$W/dsl") "
-# đếm chỗ luật chưa gắn "# giữ:" của mọi file một lượt (trước: một awk mỗi file — chậm)
-DS_FILES=""
-for _f in "$E"/tools/check-*.sh "$E"/tools/task.sh; do
-  case "${_f##*/}" in check-sdlc.sh|check-release.sh) continue ;; esac
-  [ -f "$_f" ] && DS_FILES="$DS_FILES $_f"
-done
-DEM_DS=" $(awk -v e="$E" '
-  { sub(/\r$/, "") }
-  FNR == 1 { if (f != "" && n + 0 > 0) { p = f; if (index(p, e "/") == 1) p = substr(p, length(e) + 2); printf "%s=%s ", p, n }
-             f = FILENAME; n = 0; phu = 0 }
-  /^[ \t]*$/ { phu = 0; next }
-  /^[ \t]*# giữ:/ { phu = 1; next }
-  /^[ \t]*#/ { next }
-  /^[ \t]*(function[ \t]+)?(loi|loi_truoc|canh_bao)[ \t]*\(/ && /\{/ && !/(loi|loi_truoc|canh_bao)[ \t]*\([^)]*"/ { next }
-  /BEGIN[ \t]*\{[ \t]*n_loi[ \t]*=[ \t]*loi_truoc/ { next }
-  $0 ~ /(^|[^A-Za-z0-9_])(loi|loi_truoc|canh_bao)[ (]/ || index($0, "[ERROR]") || index($0, "[WARN]") ||
-  /(REJECTED|STOP|WARN):/ { if (phu) phu = 0; else n++ }
-  END { if (f != "" && n + 0 > 0) { p = f; if (index(p, e "/") == 1) p = substr(p, length(e) + 2); printf "%s=%s ", p, n } }
-' $DS_FILES)"
-while IFS= read -r f; do
-  case "$DEM_DS" in *" $f="*) _dn=${DEM_DS#*" $f="}; _dn=${_dn%% *} ;; *) _dn=0 ;; esac
-  case "$DSL_DS" in *" $f="*) m=${DSL_DS#*" $f="}; m=${m%% *} ;; *) m=0 ;; esac
-  if [ "$_dn" -gt "$m" ]; then
-    loi "$f: $_dn luật chưa gắn \"# giữ:\" (cho phép $m trong $DS_LUAT) — gắn CAP-…/INV-… cho luật mới; không id nào hợp thì thêm capability / invariant."
-  elif [ "$_dn" -lt "$m" ]; then
-    loi "$DS_LUAT: $f cho phép $m nhưng chỉ còn $_dn luật chưa gắn — hạ xuống $_dn (chạy sh tools/check-sdlc.sh --dem-luat)."
+# so sánh "file count" (dem_luat_bulk) với "file cho-phep" ($W/dsl) — một awk, không fork mỗi file
+# dsl có thể rỗng → chèn dòng chú thích (awk bỏ qua và vẫn tính là file đã đọc, ARGV đúng thứ tự)
+[ -s "$W/dsl" ] || echo "# trống" > "$W/dsl"
+awk 'FILENAME == ARGV[1] { if ($1 !~ /^#/) m[$1] = $2; next }
+  { printf "%s %s %d\n", $1, $2, ($1 in m) ? m[$1] : 0 }' "$W/dsl" "$W/dmb" > "$W/dso"
+while IFS= read -r l; do
+  set -f; set -- $l; set +f
+  f=$1; n=$2; m=$3
+  if [ "$n" -gt "$m" ]; then
+    loi "$f: $n luật chưa gắn \"# giữ:\" (cho phép $m trong $DS_LUAT) — gắn CAP-…/INV-… cho luật mới; không id nào hợp thì thêm capability / invariant."
+  elif [ "$n" -lt "$m" ]; then
+    loi "$DS_LUAT: $f cho phép $m nhưng chỉ còn $n luật chưa gắn — hạ xuống $n (chạy sh tools/check-sdlc.sh --dem-luat)."
   fi
-done < "$W/tepl"
-
-# trang_thai <stage> -> implemented | partial | gap, suy ra: capability của stage được phase nhận hết / một phần / không
-trang_thai() {
-  awk -F'|' -v s="$1" 'FILENAME == ARGV[1] { if ($1 == s) n++; next }
-    $2 == s && !($3 in da) { da[$3] = 1; m++ }
-    END { print (m + 0 == 0) ? "gap" : (m == n) ? "implemented" : "partial" }' "$W/cap" "$W/nhan"
-}
+done < "$W/dso"
 
 # ---- stage ↔ phase
+# Một lượt awk cho mọi stage, thay awk/grep mỗi mục: trạng thái, có note hay không,
+# provides chưa phase nào map, exit_machine/exit_human của phase.
+awk -F'|' '
+  FILENAME == ARGV[1] { idx[$2] = ++c; st_name[c] = $2; n_cap[c] = 0; next }
+  FILENAME == ARGV[2] { if ($1 in idx) n_cap[idx[$1]]++; next }
+  FILENAME == ARGV[3] { if ($2 in idx) { i = idx[$2]; kk = i "|" $3; if (!(kk in seen)) { seen[kk] = 1; n_nhan[i]++ } } next }
+  FILENAME == ARGV[4] { if ($3 != "") note_co[$1] = 1; next }
+  FILENAME == ARGV[5] { pv[$1 "|" $2] = 1; if ($1 in idx) pv_i[idx[$1]] = pv_i[idx[$1]] " " $2; next }
+  FILENAME == ARGV[6] { ppv[$1 "|" $2] = 1; next }
+  FILENAME == ARGV[7] { if ($4 == 1) co_h[$2] = 1; if ($3 == 1) co_m[$2] = 1; next }
+  END {
+    for (i = 1; i <= c; i++) {
+      s = st_name[i]
+      st = (n_nhan[i] + 0 == 0) ? "gap" : (n_nhan[i] == n_cap[i]) ? "implemented" : "partial"
+      printf "%s|%s|%s|%s|%s|%s\n", s, st,
+        (note_co[s] ? "1" : ""), pv_i[i], (co_h[s] ? "1" : ""), (co_m[s] ? "1" : "")
+    }
+  }
+' "$W/stages" "$W/cap" "$W/nhan" "$W/khai" "$W/prov" "$W/pprov" "$W/phases" > "$W/bang"
+ST_THAI=";$(awk -F'|' '{ printf "%s=%s;", $1, $2 }' "$W/bang")"
+ST_NOTE=";$(awk -F'|' '$3 != "" { printf "%s=1;", $1 }' "$W/bang")"
+ST_PV=";$(awk -F'|' '{ printf "%s=%s;", $1, $4 }' "$W/bang")"
+ST_H=";$(awk -F'|' '$5 != "" { printf "%s=1;", $1 }' "$W/bang")"
+ST_M=";$(awk -F'|' '$6 != "" { printf "%s=1;", $1 }' "$W/bang")"
+PPV="|$(tr '\n' '|' < "$W/pprov")|"
+st_cua() { _R=""; case "$ST_THAI" in *";$1="*) _R=${ST_THAI#*";$1="}; _R=${_R%%;*} ;; esac; }
+co_note() { case "$ST_NOTE" in *";$1=1;"*) return 0 ;; esac; return 1; }
 echo "Stage → phase (trạng thái suy ra từ capabilities: của phase):"
 : > "$W/thieu"
 while IFS='|' read -r _so s ex _sk; do
-  st=$(trang_thai "$s")
-  ph=$(ph_ten "$s")
+  st_cua "$s"; st=$_R
+  ph_ten "$s"; ph=$_R
   printf '  %-10s %-12s %s\n' "$s" "$st" "${ph:-—}"
   if [ "$st" = implemented ]; then
-    ! co_note "$s" || loi "stage $s: suy ra implemented nhưng khối sdlc: còn note — xoá mục stage $s khỏi khối sdlc:."
+    co_note "$s" && loi "stage $s: suy ra implemented nhưng khối sdlc: còn note — xoá mục stage $s khỏi khối sdlc:."
   else
     co_note "$s" || loi "stage $s: suy ra $st nhưng khối sdlc: không có note — thêm note nói phần thiếu và lý do."
     echo "$s|$st" >> "$W/thieu"
   fi
   [ "$st" != gap ] || continue
-  awk -F'|' -v s="$s" '$1 == s { print $2 }' "$W/prov" > "$W/sp"
-  while IFS= read -r t; do
-    co "$W/pprov" "$s|$t" || loi "stage $s: không phase nào provides \"$t\"."
-  done < "$W/sp"
+  _pv=""; case "$ST_PV" in *";$s="*) _pv=${ST_PV#*";$s="}; _pv=${_pv%%;*} ;; esac
+  for t in $_pv; do
+    case "$PPV" in *"|$s|$t|"*) ;; *) loi "stage $s: không phase nào provides \"$t\"." ;; esac
+  done
+  _h=""; case "$ST_H" in *";$s="*) _h=1 ;; esac
+  _m=""; case "$ST_M" in *";$s="*) _m=1 ;; esac
   case "$ex" in
-    human|both) awk -F'|' -v s="$s" '$2 == s && $4 == 1' "$W/phases" | grep -q . \
-      || loi "stage $s: exit $ex nhưng không phase nào có exit_human." ;;
+    human|both) [ -n "$_h" ] || loi "stage $s: exit $ex nhưng không phase nào có exit_human." ;;
   esac
   case "$ex" in
-    machine|both) awk -F'|' -v s="$s" '$2 == s && $3 == 1' "$W/phases" | grep -q . \
-      || loi "stage $s: exit $ex nhưng không phase nào có exit_machine." ;;
+    machine|both) [ -n "$_m" ] || loi "stage $s: exit $ex nhưng không phase nào có exit_machine." ;;
   esac
 done < "$W/stages"
 if [ -s "$W/thieu" ]; then
@@ -627,14 +662,25 @@ done
 grep -q '^kc_bo_design()' "$E/tools/lib/cross-check.sh" 2>/dev/null \
   || loi "không thấy kc_bo_design trong tools/lib/cross-check.sh — không biết engine bỏ design với job type nào."
 # bo_design <job type> <Design:> -> 0 nếu engine không chạy phase design với việc đó (hỏi thẳng engine)
-bo_design() {
-  mkdir -p "$W/thu"
-  printf -- '- **Type:** %s\n' "$1" > "$W/thu/intake.md"
-  printf -- '- **Design:** %s\n' "$2" > "$W/thu/spec.md"
-  ( AW_CONFIG="$W"; . "$E/tools/lib/md.sh"; . "$E/tools/lib/cross-check.sh"; kc_bo_design "$W/thu" ) > /dev/null 2>&1
-}
+# Hỏi engine bằng kc_bo_design thật, nhưng source tools/lib/cross-check.sh MỘT lần rồi thử hết mọi
+# cặp (job type × Design) — mỗi lần source lại file ~1.000 dòng tốn thêm một lượt đọc.
+BD=" "
+bo_design() { case "$BD" in *" $1|$2=1 "*) return 0 ;; esac; return 1; }
+if [ -n "$LOAI" ]; then
+  for _t in $LOAI; do for _d in required skip; do
+    mkdir -p "$W/t-$_t-$_d"
+    printf -- '- **Type:** %s\n' "$_t" > "$W/t-$_t-$_d/intake.md"
+    printf -- '- **Design:** %s\n' "$_d" > "$W/t-$_t-$_d/spec.md"
+  done; done
+  ( AW_CONFIG="$W"; . "$E/tools/lib/md.sh"; . "$E/tools/lib/cross-check.sh"
+    for _t in $LOAI; do for _d in required skip; do
+      if kc_bo_design "$W/t-$_t-$_d" >/dev/null 2>&1; then _r=1; else _r=0; fi
+      printf '%s|%s|%s\n' "$_t" "$_d" "$_r"
+    done; done ) > "$W/bd" 2>/dev/null
+  while IFS='|' read -r _t _d _r; do BD="$BD$_t|$_d=$_r "; done < "$W/bd"
+fi
 # kieu <stage> -> tuy | bo | rỗng (luôn chạy) theo profile đang xét ($PK: " <stage>=<kiểu> …")
-kieu() { case "$PK" in *" $1=tuy "*) echo tuy ;; *" $1=bo "*) echo bo ;; esac; }
+kieu() { _R=""; case "$PK" in *" $1=tuy "*) _R=tuy ;; *" $1=bo "*) _R=bo ;; esac; }
 # la_gap <stage> -> 0 nếu stage suy ra gap (không phase nào implement nó)
 GAP=" $(awk -F"|" '$2 == "gap" { printf "%s ", $1 }' "$W/thieu")"
 la_gap() { case "$GAP" in *" $1 "*) return 0 ;; esac; return 1; }
@@ -644,7 +690,8 @@ SK_FALSE=" $(awk -F'|' '$4 == "false" { printf "%s ", $2 }' "$W/stages")"
 # loại đó ($W/pq: provides của stage + adds_provides của profile; $W/luon: "số|stage" luôn chạy)
 luon_co() {
   case "$LUON_MIN" in
-    *" $2="*) _lm=${LUON_MIN#*" $2="}; _lm=${_lm%% *}; [ "$_lm" -lt "$(stage_so "$1")" ] ;;
+    *" $2="*) _lm=${LUON_MIN#*" $2="}; _lm=${_lm%% *}
+      stage_so "$1"; [ "$_lm" -lt "$_R" ] ;;
     *) return 1 ;;
   esac
 }
@@ -652,7 +699,23 @@ luon_co() {
 for f in "$E"/sdlc/profiles/*.md; do
   [ -f "$f" ] || continue
   ten=${f##*/}; ten=${ten%.md}
-  id=$(fm_scalar "$f" id)
+  # đọc frontmatter của profile MỘT lượt (fm_all) rồi tách bằng lệnh nội bộ của shell —
+  # fm_scalar/fm_list cho bảy khoá nghĩa là bảy lần fork awk trên cùng một file
+  fm_all "$f" > "$W/pf"
+  id=""; purpose=""; PSK=""; PSD=""; PINV=""
+  : > "$W/ap"; : > "$W/ar"
+  while IFS= read -r _l; do
+    _k=${_l%%[=~]*}; _v=${_l#*[=~]}
+    case "$_k" in
+      id) id=$_v ;;
+      purpose) purpose=$_v ;;
+      skippable) [ -n "$_v" ] && PSK="$PSK$_v " ;;
+      skipped) [ -n "$_v" ] && PSD="$PSD$_v " ;;
+      adds_invariants) [ -n "$_v" ] && PINV="$PINV$_v " ;;
+      adds_provides) [ -n "$_v" ] && printf '%s\n' "$_v" >> "$W/ap" ;;
+      adds_requires) [ -n "$_v" ] && printf '%s\n' "$_v" >> "$W/ar" ;;
+    esac
+  done < "$W/pf"
   if [ "$id" != "$ten" ]; then
     loi "sdlc/profiles/${f##*/}: id \"$id\" lệch tên file (cần \"$ten\")."; id=$ten
   fi
@@ -662,14 +725,14 @@ for f in "$E"/sdlc/profiles/*.md; do
       *) loi "profile $id: không phải job type engine hỗ trợ (LOAI_HOP_LE: $LOAI)."; continue ;;
     esac
   fi
-  [ -n "$(fm_scalar "$f" purpose)" ] || loi "profile $id: thiếu purpose."
+  [ -n "$purpose" ] || loi "profile $id: thiếu purpose."
   # stage bỏ được / luôn bỏ: phải có, được phép bỏ, không là gap
   PK=" "
   for k in skippable skipped; do
-    if [ "$k" = skippable ]; then kk=tuy; else kk=bo; fi
-    for s in $(fm_list "$f" "$k"); do
+    if [ "$k" = skippable ]; then kk=tuy; dsach=$PSK; else kk=bo; dsach=$PSD; fi
+    for s in $dsach; do
       if ! stage_co "$s"; then loi "profile $id: $k \"$s\" — không có stage đó."; continue; fi
-      if [ -n "$(kieu "$s")" ]; then loi "profile $id: stage $s vừa skippable vừa skipped."; continue; fi
+      kieu "$s"; [ -z "$_R" ] || { loi "profile $id: stage $s vừa skippable vừa skipped."; continue; }
       case "$SK_FALSE" in *" $s "*) loi "profile $id: stage $s không được bỏ (skippable: false trong sdlc/stages/)." ;; esac
       ! la_gap "$s" \
         || loi "profile $id: stage $s là gap — engine không chạy nó với job type nào."
@@ -679,12 +742,12 @@ for f in "$E"/sdlc/profiles/*.md; do
   # khớp hành vi engine: phase required: false ⇒ skippable; design ⇔ kc_bo_design; còn lại luôn chạy
   hang=""; : > "$W/luon"
   while IFS='|' read -r _so s _ex _sk; do
-    k=$(kieu "$s")
+    kieu "$s"; k=$_R
     case "$k" in tuy) kn=skippable; o="tuỳ" ;; bo) kn=skipped; o="bỏ" ;; *) kn=""; o="chạy" ;; esac
     if la_gap "$s"; then hang="$hang|gap"; continue; fi
     hang="$hang|$o"
     if [ -z "$k" ]; then echo "$_so|$s" >> "$W/luon"; fi
-    ph=$(ph_ten "$s")
+    ph_ten "$s"; ph=$_R
     [ -n "$ph" ] || continue
     if ! ph_chay "$s"; then
       case "$k" in
@@ -709,7 +772,6 @@ for f in "$E"/sdlc/profiles/*.md; do
   echo "$id$hang" >> "$W/mtran"
   # loại artifact thêm: do stage luôn chạy cung cấp, phase của stage đó map ra file
   : > "$W/pt"
-  fm_list "$f" adds_provides > "$W/l"
   while IFS= read -r m; do
     [ -n "$m" ] || continue
     case "$m" in
@@ -717,17 +779,16 @@ for f in "$E"/sdlc/profiles/*.md; do
       *) loi "profile $id: adds_provides \"$m\" — cần dạng <stage>: <loại>."; continue ;;
     esac
     if ! stage_co "$s"; then loi "profile $id: adds_provides \"$m\" — không có stage $s."; continue; fi
-    case "$(kieu "$s")" in
+    kieu "$s"; case "$_R" in
       tuy) loi "profile $id: adds_provides \"$m\" — stage $s có thể không chạy với $id." ;;
       bo) loi "profile $id: adds_provides \"$m\" — stage $s không chạy với $id." ;;
       *) echo "$s|$t" >> "$W/pt" ;;
     esac
     co "$W/pprov" "$s|$t" || loi "profile $id: adds_provides \"$m\" — không phase nào của stage $s map loại đó ra file."
-  done < "$W/l"
+  done < "$W/ap"
   cat "$W/prov" "$W/pt" > "$W/pq"
   # luon_co tra chuỗi: mỗi loại → thứ tự nhỏ nhất của stage luôn chạy (với profile này) cung cấp nó; tính một lần
   LUON_MIN=" $(awk -F'|' 'FILENAME == ARGV[1] { so[$2] = $1; next } ($1 in so) { if (!($2 in m) || so[$1] + 0 < m[$2]) m[$2] = so[$1] + 0 } END { for (t in m) printf "%s=%s ", t, m[t] }' "$W/luon" "$W/pq")"
-  fm_list "$f" adds_requires > "$W/l"
   while IFS= read -r m; do
     [ -n "$m" ] || continue
     case "$m" in
@@ -735,19 +796,20 @@ for f in "$E"/sdlc/profiles/*.md; do
       *) loi "profile $id: adds_requires \"$m\" — cần dạng <stage>: <loại>."; continue ;;
     esac
     if ! stage_co "$s"; then loi "profile $id: adds_requires \"$m\" — không có stage $s."; continue; fi
-    if [ "$(kieu "$s")" = bo ]; then loi "profile $id: adds_requires \"$m\" — stage $s không chạy với $id."; continue; fi
+    kieu "$s"; if [ "$_R" = bo ]; then loi "profile $id: adds_requires \"$m\" — stage $s không chạy với $id."; continue; fi
     luon_co "$s" "$t" || loi "profile $id: adds_requires \"$m\" — không stage nào trước $s luôn chạy và provides loại đó."
-  done < "$W/l"
+  done < "$W/ar"
   # requires của stage còn chạy mà mọi stage cung cấp đều bỏ được / bị bỏ: có thể vắng (khai qua skippable / skipped)
   vang=""
   while IFS='|' read -r s t; do
     [ -n "$s" ] || continue
-    [ "$(kieu "$s")" != bo ] && ! la_gap "$s" || continue
+    kieu "$s"; [ "$_R" != bo ] || continue
+    la_gap "$s" && continue
     luon_co "$s" "$t" && continue
     case " $vang " in *" $t "*) ;; *) vang="${vang:+$vang }$t" ;; esac
   done < "$W/sreq"
   if [ -n "$vang" ]; then echo "  $id: có thể vắng: $(echo "$vang" | sed 's/ /, /g')" >> "$W/vang"; fi
-  for inv in $(fm_list "$f" adds_invariants); do
+  for inv in $PINV; do
     inv_co "$inv" \
       || loi "profile $id: invariant $inv không có trong sdlc/invariants.md."
   done
