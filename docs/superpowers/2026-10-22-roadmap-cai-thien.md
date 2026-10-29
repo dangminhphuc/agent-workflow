@@ -170,7 +170,9 @@ của `aw task`, tiêu đề MR (độ dài, mã Jira).
 
 **Đợt 19d:** gắn 45/50 chỗ của `check-plan.sh` + `check-design.sh` (126 → 81; `check-plan` còn 2, `check-design` còn 3, [#122](https://github.com/dangminhphuc/agent-workflow/pull/122)). Năm chỗ chờ người duyệt capability mới: `kc_quy_tac_loi` (đã nêu ở 19c, nay gặp ở hai file nữa), `luat_loi_ke_hoach` (REQ `Promote:` phải có task nâng), `adr_loi_truong` (trường Promote/Scope/Supersedes của DEC), và luật Mode 2 (`Risk: high` đòi DEC `Author: human`) — không id nào trong `sdlc/` mô tả những việc này. `adr_loi_ke_hoach` (DEC `Promote: adr` phải có task nâng ở plan) không phải chờ: nó gắn được CAP-breakdown-02, bản sửa 2026-10-29.
 
-**Đợt 19e:** gắn 31/52 chỗ của `check-implement.sh` + `check-review.sh` (81 → 58; `check-implement` còn 5, `check-review` còn 16). Ba chỗ mang list id: chỗ in gộp output của nhiều helper (`cb` ở cả hai checker) và chỗ gọi helper phân theo loại việc (`kc_chan_theo_loai`). Chín luật chưa gắn chờ capability mới: `kc_dau_xung_dot` (dấu xung đột merge còn trong file thay đổi), `adr_loi_viec` + `luat_loi_viec` (ADR và file luật phải khớp nội dung DEC/REQ đã duyệt), `kc_tu_dich`, `kc_quy_tac_loi` (gặp ở hai file nữa), bảng "## Repo rules", bảng Lens 4 — Security, cấu trúc finding Lens 3, `kc_base_la`.
+**Đợt 19e:** gắn 31/52 chỗ của `check-implement.sh` + `check-review.sh` (81 → 58; `check-implement` còn 5, `check-review` còn 16). Ba chỗ mang list id: chỗ in gộp output của nhiều helper (`cb` ở cả hai checker) và chỗ gọi helper phân theo loại việc (`kc_chan_theo_loai`). `kt_canh_bao` phải tách khỏi khối gộp của `check-implement.sh`: `check-sdlc.sh`
+đếm id theo chuỗi nên để nó trong list gộp thì CAP-verify-06 vẫn được khai dù chú thích riêng đã bị
+test gỡ bỏ. Chín luật chưa gắn chờ capability mới: `kc_dau_xung_dot` (dấu xung đột merge còn trong file thay đổi), `adr_loi_viec` + `luat_loi_viec` (ADR và file luật phải khớp nội dung DEC/REQ đã duyệt), `kc_tu_dich`, `kc_quy_tac_loi` (gặp ở hai file nữa), bảng "## Repo rules", bảng Lens 4 — Security, cấu trúc finding Lens 3, `kc_base_la`.
 
 ### SP24 — Hai nhánh tính năng chưa merge
 

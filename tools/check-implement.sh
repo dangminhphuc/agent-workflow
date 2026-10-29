@@ -205,9 +205,9 @@ if [ -n "$gct" ]; then
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-# giữ: INV-003, INV-006, INV-007, INV-009, CAP-implement-02, CAP-implement-04, CAP-require-02, CAP-verify-06
-# Một dòng in gộp chín helper: mỗi id ở dòng trên là của một helper trong cb.
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
+# giữ: INV-003, INV-006, INV-007, INV-009, CAP-implement-02, CAP-implement-04, CAP-require-02
+# Một dòng in gộp tám helper: mỗi id ở dòng trên là của một helper trong cb.
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_luat_chua_test "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""
@@ -215,6 +215,14 @@ if [ -n "$cb" ]; then
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [WARN] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Mỗi cảnh báo đã ghi cách sửa — sửa luôn, đừng để tới review."
+fi
+# Tài liệu tri thức bền bị diff đụng mà không đổi: cập nhật, hoặc để review ghi verdict.
+kcb=$(kt_canh_bao "$DIR")
+if [ -n "$kcb" ]; then
+  echo ""
+  n_cb=$((n_cb + $(printf '%s\n' "$kcb" | wc -l | tr -d ' ')))
+  # giữ: CAP-verify-06
+  printf '%s\n' "$kcb" | while IFS= read -r l; do echo "  [WARN] $l"; done
 fi
 # Heading trùng trong tài liệu kiến thức: ref chỉ trỏ mục đầu.
 ktw=$(kt_canh_bao_muc "$DIR")
