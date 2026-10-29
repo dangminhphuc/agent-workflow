@@ -69,10 +69,12 @@ n_loi=0
 loi() { n_loi=$((n_loi + 1)); echo "  [ERROR] $1"; }
 
 # ---- 0. Dau vao ----
+# giữ: INV-005
 if ! sh "$HERE/check-plan.sh" "$DIR" >/dev/null 2>&1; then
   loi "Đầu vào chưa đạt: plan.md không qua aw check plan — chạy nó để xem chi tiết."
 fi
 # Mục lục và link tới mục của plan.md — implement ghi tiếp vào đó ("Unplanned") (tools/lib/toc.sh).
+# giữ: INV-012
 tl=$(toc_loi "$DIR" plan.md)
 while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $tl
@@ -83,6 +85,7 @@ $qtl
 EOF
 
 # ---- 1. Phai khai bao lenh kiem thu ----
+# giữ: CAP-implement-02
 if [ -z "$TEST_CMD" ]; then
   echo ""
   loi "Chưa khai báo TEST_CMD trong $CAUHINH"
@@ -96,6 +99,7 @@ if [ -z "$TEST_CMD" ]; then
 fi
 
 # ---- 2. Moi task da xong, va xong bang may (aw task done) ----
+# giữ: CAP-implement-06
 tt=$( { tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; } )
 while IFS= read -r l; do [ -n "$l" ] && loi "$l"; done <<EOF
 $tt
@@ -134,6 +138,7 @@ rm -f "$TMP"
 echo ""
 echo "Đã ghi output thật vào $KQ"
 
+# giữ: CAP-implement-02
 [ "$ma_thoat" -ne 0 ] && loi "Lệnh kiểm thử trả về mã $ma_thoat — chưa xanh thì chưa xong"
 
 # ---- 4b. Quet bao mat — cung lenh, cung nguong voi CI ----
@@ -142,7 +147,9 @@ echo "Đã ghi output thật vào $KQ"
 sh "$HERE/check-security.sh" "$DIR" 2>/dev/null
 case $? in
   0) ;;
+  # giữ: CAP-implement-03
   1) loi "Quét bảo mật chưa đạt — xem output phía trên, security-results.md" ;;
+  # giữ: CAP-implement-03
   *) loi "Không chạy được quét bảo mật (aw check security $DIR để xem lý do)" ;;
 esac
 
@@ -180,6 +187,7 @@ $kmc
 EOF
 
 # ---- 5a. Luat theo loai viec — chinh xac nen CHAN ----
+# giữ: INV-007, INV-009, INV-010, INV-011
 chan=$(kc_chan_theo_loai "$DIR")
 if [ -n "$chan" ]; then
   echo ""
@@ -189,6 +197,7 @@ EOF
 fi
 
 # Glob plan.md giai đoạn chuyển tiếp (* sắp không qua /): chỉ cảnh báo, kể cả ở review.
+# giữ: CAP-implement-05
 gct=$(kc_glob_chuyen_tiep "$DIR")
 if [ -n "$gct" ]; then
   echo ""
@@ -196,7 +205,9 @@ if [ -n "$gct" ]; then
 fi
 
 # ---- 5b. Kiem cheo — chi canh bao ----
-cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_canh_bao "$DIR"; kt_luat_chua_test "$DIR"; } )
+# giữ: INV-003, INV-006, INV-007, INV-009, CAP-implement-02, CAP-implement-04, CAP-require-02
+# Một dòng in gộp tám helper: mỗi id ở dòng trên là của một helper trong cb.
+cb=$( { kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; kc_test_bo_qua "$DIR"; kt_luat_chua_test "$DIR"; } )
 n_cb=0
 if [ -n "$cb" ]; then
   echo ""
@@ -204,6 +215,14 @@ if [ -n "$cb" ]; then
   printf '%s\n' "$cb" | while IFS= read -r l; do echo "  [WARN] $l"; done
   echo "  Cảnh báo không chặn implement, nhưng /aw-review sẽ CHẶN nếu còn."
   echo "  Mỗi cảnh báo đã ghi cách sửa — sửa luôn, đừng để tới review."
+fi
+# Tài liệu tri thức bền bị diff đụng mà không đổi: cập nhật, hoặc để review ghi verdict.
+kcb=$(kt_canh_bao "$DIR")
+if [ -n "$kcb" ]; then
+  echo ""
+  n_cb=$((n_cb + $(printf '%s\n' "$kcb" | wc -l | tr -d ' ')))
+  # giữ: CAP-verify-06
+  printf '%s\n' "$kcb" | while IFS= read -r l; do echo "  [WARN] $l"; done
 fi
 # Heading trùng trong tài liệu kiến thức: ref chỉ trỏ mục đầu.
 ktw=$(kt_canh_bao_muc "$DIR")

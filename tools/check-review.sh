@@ -78,21 +78,27 @@ KQBM="$DIR/security-results.md"
 n_truoc=0
 loi_truoc() { n_truoc=$((n_truoc + 1)); echo "  [ERROR] $1"; }
 
+# giữ: INV-005
 if ! sh "$HERE/check-plan.sh" "$DIR" >/dev/null 2>&1; then
   loi_truoc "Đầu vào chưa đạt: plan.md/tdd.md/spec.md không qua aw check plan — chạy nó để xem chi tiết."
 fi
 
+# giữ: CAP-implement-02
 if [ ! -f "$KQ" ]; then
   loi_truoc "Không có test-results.md — /aw-implement chưa chạy aw check implement."
+# giữ: CAP-implement-02
 elif ! grep -q 'Mã thoát: `0`' "$KQ"; then
   loi_truoc "test-results.md ghi mã thoát khác 0 — test chưa xanh."
 fi
+# giữ: CAP-implement-03
 if [ ! -f "$KQBM" ]; then
   loi_truoc "Không có security-results.md — chưa quét bảo mật (aw check implement, hoặc aw check security)."
+# giữ: CAP-implement-03
 elif ! grep -q '^- Result: \*\*GREEN\*\*' "$KQBM"; then
   loi_truoc "security-results.md không GREEN — còn lệnh quét bảo mật đỏ; CI sẽ chặn đúng chỗ này."
 fi
 # Độ mới: bằng chứng phải chạy trên đúng nội dung code đang review.
+# giữ: INV-006
 moi=$( { kc_ket_qua_cu "$DIR" "$KQ" "aw check implement $DIR"; kc_ket_qua_cu "$DIR" "$KQBM" "aw check security $DIR (hoặc aw check implement)"; } )
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<MOI
 $moi
@@ -126,18 +132,22 @@ KM
 
 # Cảnh báo phạm vi theo task (aw task done ghi "Scope warning") phải được giải trình ở Lens 2.
 for t in $(tk_pham_vi_chua_giai_trinh "$DIR" "$REVIEW"); do
+  # giữ: CAP-implement-04
   loi_truoc "Lens 2: $t có cảnh báo phạm vi trong task-results.md — giải trình ở \"Task scope warnings\" (lý do chấp nhận, hoặc đã khai Unplanned)"
 done
 
 cb=$( { kc_chan_theo_loai "$DIR"; tk_dang_do "$DIR"; tk_chua_xong "$DIR"; tk_thieu_bang_chung "$DIR"; kc_dau_xung_dot "$DIR"; kc_test_bo_qua "$DIR"; kc_test_yc "$DIR"; kc_pham_vi "$DIR"; kc_loi_thoi "$DIR"; kc_based_on_thieu "$DIR"; kc_canh_bao_theo_loai "$DIR"; kc_diem_mu_mo "$DIR" "blocking" "review-blocking"; } )
 
 # bugfix: người rà soát phải nói rõ test tái hiện đỏ vì đâu — máy chỉ biết nó đã đỏ.
+# giữ: INV-007
 if [ "$(kc_loai "$DIR")" = "bugfix" ]; then
   v=$(awk '{ sub(/\r$/, "") } /^[ \t]*-[ \t]*\**Repro test fails because\**:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/[*`]/, "", s); gsub(/^[ \t]+|[ \t]+$/, "", s); print s; exit }' "$REVIEW")
   case "$v" in ""|"<"*">") loi_truoc "bugfix: review.md thiếu \"Repro test fails because: <trích output repro.md>\"" ;; esac
 fi
 if [ -n "$cb" ]; then
   # vòng lặp ở shell chính (không pipe) để đếm được
+  # giữ: INV-003, INV-006, INV-007, INV-009, INV-010, INV-011, CAP-implement-04, CAP-implement-06, CAP-require-02
+  # cb gộp mười hai helper: mỗi id trên là của một helper trong cb.
   while IFS= read -r l; do
     [ -n "$l" ] && loi_truoc "Cảnh báo chưa xử lý — $l"
   done <<CB
@@ -159,6 +169,7 @@ TD
 
 # Mục lục và link của MỌI artifact: link sang artifact khác có thể gãy khi file đích đổi heading sau đó.
 tl=$(toc_loi "$DIR" $TOC_ART)
+# giữ: INV-012
 while IFS= read -r l; do [ -n "$l" ] && loi_truoc "$l"; done <<TOC
 $tl
 TOC
@@ -317,11 +328,17 @@ L3
 rt=$(awk '{ sub(/\r$/, "") } /^[ \t]*-[ \t]*\**Reviewed tree\**:/ { s = $0; sub(/^[^:]*:/, "", s); gsub(/<!--.*-->/, "", s); gsub(/[` \t]/, "", s); print s; exit }' "$REVIEW")
 vt=$(kc_van_tay "$DIR")
 case "$rt" in
+  # giữ: INV-006
   "") loi_truoc "review.md thiếu dòng \"- Reviewed tree: \`<sha>\`\" — chép dòng Tree của test-results.md${vt:+ (hiện tại: $vt)}" ;;
+  # giữ: INV-006
   "<"*">") loi_truoc "review.md: \"Reviewed tree\" còn chữ giữ chỗ — chép dòng Tree của test-results.md${vt:+ (hiện tại: $vt)}" ;;
   *)
-    if [ -z "$vt" ]; then loi_truoc "Không tính được dấu vân tay code hiện tại (git) — không xác nhận được review còn đúng"
-    elif [ "$rt" != "$vt" ]; then loi_truoc "review.md đã rà Tree $rt nhưng code hiện tại là $vt — code đổi sau khi rà soát; chạy lại aw check implement rồi /aw-review"
+    if [ -z "$vt" ]; then
+      # giữ: INV-006
+      loi_truoc "Không tính được dấu vân tay code hiện tại (git) — không xác nhận được review còn đúng"
+    elif [ "$rt" != "$vt" ]; then
+      # giữ: INV-006
+      loi_truoc "review.md đã rà Tree $rt nhưng code hiện tại là $vt — code đổi sau khi rà soát; chạy lại aw check implement rồi /aw-review"
     fi ;;
 esac
 
@@ -333,9 +350,12 @@ if [ -n "$nc" ]; then
   ds_nc=$(printf '%s\n' "$nc" | head -5 | tr '\n' ' ' | sed 's/ $//')
   [ "$(printf '%s\n' "$nc" | wc -l | tr -d ' ')" -gt 5 ] && ds_nc="$ds_nc …"
   case "$(printf '%s' "$srv" | tr 'A-Z' 'a-z')" in
+    # giữ: CAP-verify-02
     "") loi_truoc "Diff đụng code nhạy cảm (sensitive_code: $ds_nc) — review.md cần dòng \"- Security reviewer: <tên người>\": một NGƯỜI rà bảo mật đọc Lens 4 và diff rồi tự ghi tên" ;;
+    # giữ: CAP-verify-02
     "<"*">") loi_truoc "Diff đụng code nhạy cảm ($ds_nc) — \"Security reviewer\" còn chữ giữ chỗ; người rà bảo mật tự ghi tên" ;;
     claude|claude\ code|agent|ai|assistant|subagent|cursor|copilot|codex|none|n/a|-)
+      # giữ: CAP-verify-02
       loi_truoc "Diff đụng code nhạy cảm ($ds_nc) — \"Security reviewer: $srv\" không phải một người. Agent không tự xác nhận thay người rà bảo mật" ;;
   esac
 fi
@@ -344,6 +364,7 @@ fi
 cb_base=$(kc_base_la "$DIR")
 [ -z "$cb_base" ] || echo "  [WARN] $cb_base"
 # Glob plan.md giai đoạn chuyển tiếp (* sắp không qua /): chỉ cảnh báo, không chặn.
+# giữ: CAP-implement-05
 kc_glob_chuyen_tiep "$DIR" | while IFS= read -r l; do echo "  [WARN] $l (chỉ cảnh báo)"; done
 
 awk -v loi_truoc="$n_truoc" '
@@ -382,6 +403,7 @@ awk -v loi_truoc="$n_truoc" '
     hop_le["fail"] = 1
     hop_le["pending"] = 1
 
+    # giữ: CAP-require-01
     if (n_yc == 0) loi("spec.md không có mã REQ nào")
 
     for (i = 1; i <= n_yc; i++) {
@@ -393,11 +415,13 @@ awk -v loi_truoc="$n_truoc" '
         continue
       }
       kl = ket_luan[c]
+      # giữ: INV-004
       if (!(kl in hop_le)) {
         loi(c ": kết luận \"" kl "\" không hợp lệ. Chỉ chấp nhận: " \
             "pass / partial / fail / pending")
         continue
       }
+      # giữ: CAP-require-02
       if ((c in can_hoi) && kl == "pass") {
         loi(c ": gắn [OPEN-QUESTION] trong spec nhưng verdict \"pass\". " \
             "Giả định tạm chưa ai xác nhận thì phải là \"pending\".")
