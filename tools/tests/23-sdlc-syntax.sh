@@ -115,4 +115,30 @@ ky_vong 0 "dòng danh sách cách bằng tab/nhiều dấu cách vẫn đọc đ
 moi
 dung "--dem-luat in danh sách đúng dạng, khớp file đang dùng" sh -c "sh '$SC' --dem-luat '$E' | diff - '$DS' >&2"
 
+# Đợt 19g: hàm thư viện (tools/lib/) trả finding cũng là chỗ luật — mỗi định nghĩa hàm phải có
+# "# giữ:" trong khối chú thích liền trên; số chưa gắn đếm như các file check-*.
+nhom "check-sdlc.sh: hàm thư viện (tools/lib/) phải gắn # giữ:"
+moi; printf '\nkc_x_moi() { echo loi; }\n' >> "$E/tools/lib/cross-check.sh"
+vi_pham "hàm thư viện mới không có # giữ: → chặn" "tools/lib/cross-check.sh: "
+moi; printf '\n# giữ: INV-006\nkc_x_moi() { echo loi; }\n' >> "$E/tools/lib/cross-check.sh"
+ky_vong 0 "hàm thư viện mới có # giữ: ngay trên → PASS" sh "$SC" "$E"
+moi; printf '\nqu_x_moi() { echo loi; }\nkhop_x_moi() { echo loi; }\n' >> "$E/tools/lib/cross-check.sh"
+ky_vong 0 "tên hàm khác (qu_*, khop_*) không bị đếm → PASS" sh "$SC" "$E"
+moi; dung "--dem-luat in dòng của file thư viện" sh -c "sh '$SC' --dem-luat '$E' | grep -q '^tools/lib/'"
+
+# Đợt 19f: bảng "Look for" của checker LLM khai cột "Serves" — id capability/invariant dòng finding
+# phục vụ; checker lúc chạy không đọc cột này, chỉ người và máy truy vết.
+nhom "check-sdlc.sh: cột Serves của bảng Look for (workflow/checkers/)"
+moi; thay "$E/workflow/checkers/spec.md" '| `Severity` | `Serves` |' '| `Severity` |'
+vi_pham "bảng Look for thiếu cột Serves → chặn" 'bảng "Look for" thiếu cột `Serves`'
+moi; awk '/^## Do not/ && !f { print "| `thieu-serves` | x | `warn` | |"; f = 1 } { print }' "$E/workflow/checkers/spec.md" > "$E/x" && mv "$E/x" "$E/workflow/checkers/spec.md"
+vi_pham "dòng bảng thiếu Serves → chặn" '`thieu-serves` thiếu `Serves`'
+moi; thay "$E/workflow/checkers/spec.md" 'CAP-require-01' 'CAP-require-99'
+vi_pham "Serves trỏ id không có → chặn" '`Serves CAP-require-99` — không có capability / invariant đó'
+moi; thay "$E/workflow/checkers/spec.md" 'CAP-require-01' 'CAP-design-01'
+vi_pham "Serves thuộc stage khác stage phase dùng checker → chặn" 'thuộc stage design'
+moi; thay "$E/workflow/checkers/design.md" 'CAP-design-02' 'CAP-require-02'
+vi_pham "checker design khai capability của require → chặn" 'thuộc stage require'
+moi; ky_vong 0 "bảng Look for có Serves đúng stage → PASS" sh "$SC" "$E"
+
 ket_thuc

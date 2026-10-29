@@ -138,7 +138,12 @@ Sau đó theo đúng công thức dưới đây. Mỗi công thức kết thúc 
    hoặc `REJECTED:` / `STOP:` / `WARN:` (`tools/task.sh`). Luật mới không gắn thì chặn
    (số luật chưa gắn của file vượt `tools/unclassified-rules.txt`); gắn id cho luật cũ thì hạ số trong danh
    sách (`sh tools/check-sdlc.sh --dem-luat` in số đúng). `sh tools/check-sdlc.sh --suy <file>…` in
-   các id `# giữ:` đã có trong những file đó (id đụng bởi diff) — không tự gắn id mới.
+   các id `# giữ:` đã có trong những file đó (id đụng bởi diff) — không tự gắn id mới. Hàm thư viện
+   trả finding (`kc_*`, `tk_*`, `kt_*`, `adr_loi*`, `toc_loi` trong `tools/lib/`) là chỗ luật kiểu khác:
+   mỗi định nghĩa hàm là một chỗ, `# giữ:` nằm trong khối chú thích liền trên, số chưa gắn đếm chung
+   danh sách. Checker LLM (`workflow/checkers/*.md`) khai thêm cột `Serves` trong bảng "Look for": id
+   capability / invariant mỗi dòng finding phục vụ, phải thuộc stage của phase khai `llm_checker:`;
+   cột chỉ để truy vết, checker lúc chạy không đọc.
 4. Luật là invariant → `Enforced by:` / `Tested by:` trong `sdlc/invariants.md` trỏ đúng file và **ít nhất một ca** test
    chặn; `Rule:` viết trừu tượng (không backtick, không mã `REQ-`/`DEC-`…), cú pháp engine ghi ở `- Engine:`.
 5. `changes/<branch>.md`: mục `Thêm` / `Thay đổi` (người dùng `aw` thấy luật mới), nêu id.
@@ -207,6 +212,10 @@ Lỗi liên quan capability và trạng thái, và cách sửa:
 | `…: "Rule:" chứa cú pháp engine` | `Rule:` của capability / invariant có backtick hoặc mã `REQ-`, `DEC-`, `TSK-`, `RVW-`, `FND-`, `RFR-`, `BR-` | Viết điều phải đúng bằng lời; cú pháp engine chuyển sang `- Engine:` (invariant) |
 | `INV-…: "Tested by:" không nêu ca test nào` | Invariant chỉ trỏ file test | Thêm tên ca chặn (trong `"…"`) sau đường dẫn file |
 | `…: "# giữ: X" — không có capability / invariant đó` | Chú thích trong `tools/` trỏ id gõ sai hoặc đã bỏ | Sửa id hoặc xoá chú thích |
+| ``…: bảng "Look for" thiếu cột `Serves``` | Checker LLM chưa khai id dòng finding phục vụ | Thêm cột `Serves` vào tiêu đề bảng và id cho từng dòng |
+| ``…: dòng N: `cat` thiếu `Serves` `` | Dòng bảng để trống cột | Ghi `CAP-…`/`INV-…`; không id nào hợp → thêm capability / invariant |
+| ``…: dòng N: `Serves X` — không có capability / invariant đó`` | Id gõ sai hoặc đã bỏ | Sửa id |
+| ``…: dòng N: `Serves X` thuộc stage A — checker dùng ở phase … (stage B)`` | Id của stage khác stage phase dùng checker | Gắn capability / invariant của stage B |
 | `CAP-…: Judged by machine, phase … nhận, nhưng không luật checker nào khai` | Capability máy phán mà không chỗ code nào nói mình giữ nó | Thêm `# giữ: CAP-…` ngay trên khối chặn / cảnh báo giữ nó |
 | `<file>: N luật chưa gắn "# giữ:" (cho phép M …)` | Có luật chặn / cảnh báo mới không mang id | Gắn `# giữ: CAP-…/INV-…` ngay trên (không id nào hợp → thêm capability / invariant) |
 | `tools/unclassified-rules.txt: <file> cho phép M nhưng chỉ còn N` | Đã gắn id cho luật cũ mà chưa hạ danh sách | Hạ số xuống N |

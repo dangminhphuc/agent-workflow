@@ -20,16 +20,16 @@ You review `tdd.md` **with a clean context** — you never saw the reasoning beh
 
 ## Look for
 
-| `Category` | Meaning | `Severity` |
-|---|---|---|
-| `deviates-from-decision` | A section says `Based on: DEC-xxx` but contradicts it, or follows an option the DEC rejected | `block` |
-| `hidden-decision` | A choice someone could make differently (especially hard to reverse: schema, external contract, library, data migration, a rollout step that cannot be rolled back) buried in prose, not a DEC-xxx | `block` |
-| `undesigned-requirement` | REQ is in the mapping but the section it points to does not say how it is met | `block` |
-| `internal-contradiction` | Two sections of `tdd.md` disagree (e.g. ERD vs contract) | `block` |
-| `new-requirement` | Behaviour not in `spec.md` | `block` |
-| `violates-repo-rule` | Breaks a file from `aw rules design` with no DEC-xxx stating and justifying it | `block` |
-| `violates-adr` | Contradicts an `accepted` ADR from `aw knowledge design <dir>` without a DEC that says so and has `Supersedes: ADR-NNNN` | `block` |
-| `ambiguous` | Section present but `implement` would have to guess | `warn` |
+| `Category` | Meaning | `Severity` | `Serves` |
+|---|---|---|---|
+| `deviates-from-decision` | A section says `Based on: DEC-xxx` but contradicts it, or follows an option the DEC rejected | `block` | CAP-design-02 |
+| `hidden-decision` | A choice someone could make differently (especially hard to reverse: schema, external contract, library, data migration, a rollout step that cannot be rolled back) buried in prose, not a DEC-xxx | `block` | CAP-design-02 |
+| `undesigned-requirement` | REQ is in the mapping but the section it points to does not say how it is met | `block` | CAP-design-01 |
+| `internal-contradiction` | Two sections of `tdd.md` disagree (e.g. ERD vs contract) | `block` | CAP-design-01 |
+| `new-requirement` | Behaviour not in `spec.md` | `block` | CAP-design-01 |
+| `violates-repo-rule` | Breaks a file from `aw rules design` with no DEC-xxx stating and justifying it | `block` | CAP-design-01 |
+| `violates-adr` | Contradicts an `accepted` ADR from `aw knowledge design <dir>` without a DEC that says so and has `Supersedes: ADR-NNNN` | `block` | CAP-design-04 |
+| `ambiguous` | Section present but `implement` would have to guess | `warn` | CAP-design-02 |
 
 - Mode 2 (`Author: human`): **do not** block the human's DEC because you prefer another option — that is critique, `warn`. Block only where the agent-written part deviates from the human's DEC.
 - Breaks a repo rule but a DEC-xxx **already** weighs it → `warn`. Name the rule file and the passage.
