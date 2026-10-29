@@ -51,7 +51,7 @@
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | một phần | — | Nhãn `[INCIDENT]` xong; capability vẫn human vì stage operate | | | [#86](https://github.com/dangminhphuc/agent-workflow/pull/86) |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
-| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87), [#97](https://github.com/dangminhphuc/agent-workflow/pull/97) (đợt 19b), [#122](https://github.com/dangminhphuc/agent-workflow/pull/122) (đợt 19d), [#123](https://github.com/dangminhphuc/agent-workflow/pull/123) (đợt 19e); phần còn lại: [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md) |
+| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87), [#97](https://github.com/dangminhphuc/agent-workflow/pull/97) (đợt 19b), [#122](https://github.com/dangminhphuc/agent-workflow/pull/122) (đợt 19d), [#123](https://github.com/dangminhphuc/agent-workflow/pull/123) (đợt 19e), [#124](https://github.com/dangminhphuc/agent-workflow/pull/124) (đợt 19f–19g, [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md)); còn 21 chỗ chờ capability mới |
 | SP20 | Kiểm frontmatter `based_on` của artifact (INV-006) | 6 | xong | — | Sai dạng chặn mọi nơi; thiếu: cảnh báo trước review, chặn ở review | [spec](specs/2026-10-23-sp20-frontmatter-artifact-design.md) | | | [#94](https://github.com/dangminhphuc/agent-workflow/pull/94) |
 | SP21 | CI chạy test trên macOS (BSD awk/sed) | 6 | xong | — | Còn: người bật job macOS thành check bắt buộc (cài đặt GitHub, máy không kiểm được) | [spec](specs/2026-10-23-sp21-ci-macos-design.md) | | | [#96](https://github.com/dangminhphuc/agent-workflow/pull/96), [#99](https://github.com/dangminhphuc/agent-workflow/pull/99) |
 | SP22 | Số ADR không trùng khi hai việc song song | 6 | xong | — | `aw ship create` chặn khi trùng số | [spec](specs/2026-10-23-sp22-so-adr-song-song-design.md) | | | [#95](https://github.com/dangminhphuc/agent-workflow/pull/95) |
@@ -173,6 +173,13 @@ của `aw task`, tiêu đề MR (độ dài, mã Jira).
 **Đợt 19e:** gắn 31/52 chỗ của `check-implement.sh` + `check-review.sh` (81 → 58; `check-implement` còn 5, `check-review` còn 16, [#123](https://github.com/dangminhphuc/agent-workflow/pull/123)). Ba chỗ mang list id: chỗ in gộp output của nhiều helper (`cb` ở cả hai checker) và chỗ gọi helper phân theo loại việc (`kc_chan_theo_loai`). `kt_canh_bao` phải tách khỏi khối gộp của `check-implement.sh`: `check-sdlc.sh`
 đếm id theo chuỗi nên để nó trong list gộp thì CAP-verify-06 vẫn được khai dù chú thích riêng đã bị
 test gỡ bỏ. Chín luật chưa gắn chờ capability mới: `kc_dau_xung_dot` (dấu xung đột merge còn trong file thay đổi), `adr_loi_viec` + `luat_loi_viec` (ADR và file luật phải khớp nội dung DEC/REQ đã duyệt), `kc_tu_dich`, `kc_quy_tac_loi` (gặp ở hai file nữa), bảng "## Repo rules", bảng Lens 4 — Security, cấu trúc finding Lens 3, `kc_base_la`.
+
+**Đợt 19f–19g:** cột `Serves` (CAP/INV) cho từng dòng bảng "Look for" của checker LLM, `check-sdlc.sh`
+chặn thiếu cột / dòng trống / id lạ / id của stage khác stage phase khai `llm_checker:`; `--dem-luat`
+đếm hàm thư viện trả finding (`kc_*`, `tk_*`, `kt_*`, `adr_loi*`, `toc_loi` trong `tools/lib/`) chưa có
+`# giữ:` ở khối chú thích liền trên. `tools/unclassified-rules.txt` nay đếm cả bốn file `tools/lib/`
+(87 hàm chưa gắn); phần `check-*`/`task.sh` còn 50 chỗ, 21 trong số đó thuộc chín luật nêu ở 19e chờ
+người duyệt capability mới. SP19 giữ `một phần` cho tới khi phần chờ duyệt đó xong.
 
 ### SP24 — Hai nhánh tính năng chưa merge
 

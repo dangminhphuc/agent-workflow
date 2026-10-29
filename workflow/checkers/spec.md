@@ -22,18 +22,18 @@ Compare each requirement's description and acceptance criteria **only** against 
 
 ## Look for
 
-| `Category` | Meaning | `Severity` |
-|---|---|---|
-| `quote-misread` | Description or acceptance criteria contradict the `Quote`, or add a fact the quote does not state | `block` |
-| `added-scope` | A requirement, behaviour, or constraint that is not in any `Quote` and not in `[HUMAN]` text | `block` |
-| `dropped-condition` | The `Quote` states a condition (who, when, limit, exception) that the requirement drops | `block` |
-| `unflagged-ambiguity` | The `Quote` or `[HUMAN]` text can be read two ways, and neither an open question nor the requirement says which reading was taken | `block` |
-| `unsourced-priority` | `Priority` is not `must`/`should` from the source, or a priority the source never stated | `block` |
-| `inferred-business-decision` | A business choice (who may, what counts, a number, a policy) marked as known when the source does not decide it | `block` |
-| `merged-requirements` | Two quotes with different conditions folded into one requirement | `warn` |
-| `unobservable-criterion` | Acceptance criteria an observer cannot check (no input, no visible result) | `warn` |
-| `nfr-unasked` | The change touches a non-functional group (audit, performance, sensitive data, compatibility, failure) and neither a requirement nor an open question covers it | `warn` |
-| `risk-understated` | `Risk: normal` while the spec touches money, a new integration, core schema, or a hard-to-reverse change | `warn` |
+| `Category` | Meaning | `Severity` | `Serves` |
+|---|---|---|---|
+| `quote-misread` | Description or acceptance criteria contradict the `Quote`, or add a fact the quote does not state | `block` | CAP-require-01 |
+| `added-scope` | A requirement, behaviour, or constraint that is not in any `Quote` and not in `[HUMAN]` text | `block` | CAP-require-01 |
+| `dropped-condition` | The `Quote` states a condition (who, when, limit, exception) that the requirement drops | `block` | CAP-require-01 |
+| `unflagged-ambiguity` | The `Quote` or `[HUMAN]` text can be read two ways, and neither an open question nor the requirement says which reading was taken | `block` | CAP-require-02 |
+| `unsourced-priority` | `Priority` is not `must`/`should` from the source, or a priority the source never stated | `block` | CAP-require-01 |
+| `inferred-business-decision` | A business choice (who may, what counts, a number, a policy) marked as known when the source does not decide it | `block` | CAP-require-02 |
+| `merged-requirements` | Two quotes with different conditions folded into one requirement | `warn` | CAP-require-01 |
+| `unobservable-criterion` | Acceptance criteria an observer cannot check (no input, no visible result) | `warn` | CAP-require-01 |
+| `nfr-unasked` | The change touches a non-functional group (audit, performance, sensitive data, compatibility, failure) and neither a requirement nor an open question covers it | `warn` | CAP-require-02 |
+| `risk-understated` | `Risk: normal` while the spec touches money, a new integration, core schema, or a hard-to-reverse change | `warn` | CAP-require-01 |
 
 ## Do not
 

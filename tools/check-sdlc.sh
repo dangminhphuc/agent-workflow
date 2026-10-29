@@ -29,10 +29,14 @@
 #   - "# giữ: CAP-…/INV-…" (tools/check-*.sh, tools/lib/*.sh, tools/task.sh) trỏ id không có; capability
 #     Judged by machine được phase nhận mà không luật nào khai "# giữ:" nó.
 #   - Luật chưa phân loại: số chỗ loi / loi_truoc / [CẢNH BÁO] chưa "# giữ:" phủ của mỗi tools/check-*.sh
-#     (trừ check-sdlc, check-release) và tools/task.sh phải bằng số trong tools/unclassified-rules.txt.
+#     (trừ check-sdlc, check-release) và tools/task.sh, cộng số định nghĩa hàm trả finding (kc_*, tk_*,
+#     kt_*, adr_loi*, toc_loi) chưa "# giữ:" của tools/lib/*.sh, phải bằng số trong tools/unclassified-rules.txt.
 #     --dem-luat: in danh sách đó (không kiểm gì khác).
 #     --suy <file>…: in CAP/INV mà các dòng "# giữ:" trong những file đó khai (id từ diff),
 #     một id một dòng. Id không có → KHÔNG ĐẠT. Không tự gắn id.
+#   - Checker LLM (workflow/checkers/*.md): bảng "Look for" có cột `Serves`, mỗi dòng một hay nhiều
+#     CAP-…/INV-… id phục vụ (chỉ để truy vết — checker lúc chạy không đọc cột); id không có, không phải
+#     CAP/INV, hoặc là capability của stage khác stage phase khai llm_checker: → chặn.
 #   - Profile (sdlc/profiles/<job-type>.md): tập profile khác tập job type engine nhận (LOAI_HOP_LE,
 #     nguồn check-intake.sh kiểm); id lệch tên file; thiếu purpose.
 #     skippable / skipped: stage không có, có cả hai, skippable: false, là gap; lệch hành vi engine —
@@ -103,24 +107,39 @@ fi
 
 # ---- luật checker chưa phân loại (bước A, đợt 2). Chỗ luật: dòng gọi loi / loi_truoc hoặc in [CẢNH BÁO]
 # trong tools/check-*.sh (trừ check-sdlc.sh, check-release.sh — kiểm chính engine) và tools/task.sh.
-# Một dòng "# giữ: …" phủ các chỗ luật sau nó tới dòng trống kế tiếp. Hàm thư viện (tools/lib/): đợt 3.
+# Một dòng "# giữ: …" phủ các chỗ luật sau nó tới dòng trống kế tiếp.
+# tools/lib/*.sh (đợt 3): mỗi định nghĩa hàm trả finding (kc_*, tk_*, kt_*, adr_loi*, toc_loi) là một chỗ;
+# "# giữ: …" phải nằm trong khối chú thích liền trên định nghĩa.
 DS_LUAT="tools/unclassified-rules.txt"
-tep_luat() { for _tl in "$E"/tools/check-*.sh "$E"/tools/task.sh; do
+tep_luat() { for _tl in "$E"/tools/check-*.sh "$E"/tools/task.sh "$E"/tools/lib/*.sh; do
   case "${_tl##*/}" in check-sdlc.sh|check-release.sh) continue ;; esac
   [ -f "$_tl" ] && printf '%s\n' "${_tl#"$E"/}"; done; }
 # dem_luat_bulk <file…> -> "duong-dan count" mỗi file: số chỗ luật (loi/loi_truoc/canh_bao,
 # dòng in [ERROR]/[WARN], TỪ CHỐI:/DỪNG:/CẢNH BÁO:) chưa được "# giữ:" phủ. Đường dẫn in ra
 # là tương đối so với DEM_E. Một "# giữ:" phủ đúng một chỗ luật đầu tiên bên dưới,
-# trước dòng trống kế tiếp. Trước: một awk mỗi file (~36 process); nay một lượt awk.
+# trước dòng trống kế tiếp. File trong tools/lib/: chỗ luật là định nghĩa hàm trả finding,
+# "# giữ:" phủ khi nằm trong khối chú thích liền trên (dòng trống hoặc dòng code kết thúc khối).
+# Trước: một awk mỗi file (~36 process); nay một lượt awk.
 dem_luat_bulk() {
   awk '
     FNR == 1 {
       if (NR > 1) print ten_n " " n + 0
       pref = length(DEM_E) + 2; f = FILENAME
       ten_n = (DEM_E != "" && index(f, DEM_E "/") == 1) ? substr(f, pref) : f
+      lib = (index(f, "/tools/lib/") > 0) ? 1 : 0
       phu = 0; n = 0
     }
     { sub(/\r$/, "") }
+    lib {
+      if (/^[ \t]*# giữ:/) { phu = 1; next }
+      if (/^[ \t]*#/) next
+      if (/^[ \t]*$/) { phu = 0; next }
+      if (/^(function[ \t]+)?(kc_|tk_|kt_|adr_loi|toc_loi)[A-Za-z0-9_]*[ \t]*\(\)/) {
+        if (phu) phu = 0; else n++
+      }
+      phu = 0
+      next
+    }
     /^[ \t]*$/ { phu = 0; next }
     /^[ \t]*# giữ:/ { phu = 1; next }
     /^[ \t]*#/ { next }
@@ -420,7 +439,7 @@ note_cua() { awk -v s="$1" 'index($0, s "|") == 1 { sub(/^[^|]*\|[^|]*\|/, ""); 
 # co_note dùng ở § stage ↔ phase, tra chuỗi ST_NOTE (không fork)
 
 # ---- phase: implements + provides, theo thứ tự trong workflow.yaml
-: > "$W/phases"; : > "$W/pprov"; : > "$W/nhan"; truoc=""; truoc_so=0
+: > "$W/phases"; : > "$W/pprov"; : > "$W/nhan"; : > "$W/llm"; truoc=""; truoc_so=0
 wf_phases "$E/workflow.yaml" > "$W/wf"
 # chuỗi tra "stage|loai": tính một lần, thay grep mỗi dòng (nghĩa co "$W/prov" không đổi)
 PROV_KEYS="|$(tr '\n' '|' < "$W/prov")|"
@@ -431,12 +450,13 @@ while IFS='|' read -r pid pfile preq _when; do
   if [ ! -f "$src" ]; then loi "phase $pid: không có file $pfile."; continue; fi
   fm_all "$src" > "$W/fma"
   # tách các khoá bằng lệnh nội bộ của shell — mỗi khoá một awk là một process trên cùng file
-  s=""; em=""; eh=""; nhan_co=""
+  s=""; em=""; eh=""; lc=""; nhan_co=""
   : > "$W/out"; : > "$W/pp"; : > "$W/capb"
   while IFS= read -r _l; do
     _k=${_l%%[=~]*}; _v=${_l#*[=~]}
     case "$_k" in
       implements) s=$_v ;;
+      llm_checker) [ -n "$_v" ] && lc=$_v ;;
       exit_machine) [ -n "$_v" ] && em=1 ;;   # chỉ tính khi có mục; dòng "exit_machine:" rỗng = không có
       exit_human) [ -n "$_v" ] && eh=1 ;;
       outputs) [ -n "$_v" ] && printf '%s\n' "${_v%% (*}" >> "$W/out" ;;
@@ -446,6 +466,7 @@ while IFS='|' read -r pid pfile preq _when; do
   done < "$W/fma"
   if [ -z "$s" ]; then loi "phase $pid: thiếu implements (stage SDLC phase này implement)."; continue; fi
   if ! stage_co "$s"; then loi "phase $pid: implements \"$s\" — không có stage đó trong sdlc/stages/."; continue; fi
+  if [ -n "$lc" ]; then printf '%s|%s|%s\n' "$lc" "$s" "$pid" >> "$W/llm"; fi
   stage_so "$s"; so=$_R
   if [ "$so" -lt "$truoc_so" ]; then
     loi "phase $pid (stage $s) đứng sau phase $truoc — thứ tự phase lệch thứ tự stage."
@@ -531,6 +552,70 @@ while IFS= read -r c; do
     loi "$c: Judged by machine, phase $ph nhận, nhưng không luật checker nào khai \"# giữ: $c\" — thêm chú thích ngay trên khối chặn / cảnh báo giữ nó."
 done < "$W/may"
 
+# ---- checker LLM (workflow/checkers/*.md): bảng "Look for" khai cột `Serves` — mỗi dòng finding mang
+# một hay nhiều CAP-…/INV-… mà nó phục vụ. Checker lúc chạy không đọc cột này; nó để người và máy truy
+# vết. Checker được phase khai llm_checker: dùng; capability của stage khác stage phase đó → chặn.
+# stage + phase dùng checker: tra $W/llm (một dòng mỗi phase: file|stage|phase).
+llm_phase() { # <file> -> _R_ph (tên phase), _R_st (stage)
+  _R_ph=""; _R_st=""
+  while IFS='|' read -r _lf _ls _lp; do
+    [ "$_lf" = "$1" ] || continue
+    _R_ph="${_R_ph:+$_R_ph, }$_lp"
+    case ", $_R_st, " in *", $_ls,"*) ;; *) _R_st="${_R_st:+$_R_st, }$_ls" ;; esac
+  done < "$W/llm"
+}
+: > "$W/serves"
+for _ck in "$E"/workflow/checkers/*.md; do
+  [ -f "$_ck" ] || continue
+  awk -v f="${_ck#"$E"/}" '
+    function cat(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+    FNR == 1 { trong = 0; cot = 0 }
+    { sub(/\r$/, "") }
+    /^##[ \t]+Look for[ \t]*$/ { trong = 1; cot = 0; next }
+    /^##[ \t]/ { trong = 0; next }
+    !trong || $0 !~ /^[ \t]*\|/ { next }
+    {
+      n = split($0, a, "|")
+      dau = cat(a[2])
+      if (dau == "`Category`") {   # dòng tiêu đề: cột Serves ở đâu
+        cot = 0
+        for (i = 2; i < n; i++) if (cat(a[i]) == "`Serves`") cot = i
+        if (cot == 0) print "H|" f "|" FNR
+        next
+      }
+      if (dau !~ /^`[^`]+`$/ || cot == 0) next
+      print "R|" f "|" FNR "|" dau "|" cat(a[cot])
+    }
+  ' "$_ck" >> "$W/serves"
+done
+while IFS='|' read -r _k _f _ln _cat _sv; do
+  case "$_k" in
+    H) loi "$_f: bảng \"Look for\" thiếu cột \`Serves\` — thêm cột id capability / invariant mỗi dòng finding phục vụ." ;;
+    R)
+      if [ -z "$_sv" ]; then
+        loi "$_f: dòng $_ln: $_cat thiếu \`Serves\` — ghi CAP-…/INV-… mà dòng finding này giữ."
+        continue
+      fi
+      llm_phase "$_f"
+      set -f; _ids=$(printf '%s' "$_sv" | tr ',' ' '); set +f
+      for _id in $_ids; do
+        _cs=""
+        case "$_id" in
+          CAP-*)
+            cap_co "$_id" || { loi "$_f: dòng $_ln: \`Serves $_id\` — không có capability / invariant đó."; continue; }
+            case "$CAP_ST" in *";$_id="*) _cs=${CAP_ST#*";$_id="}; _cs=${_cs%%;*} ;; esac ;;
+          *)
+            inv_co "$_id" || { loi "$_f: dòng $_ln: \`Serves $_id\` — không có capability / invariant đó."; continue; } ;;
+        esac
+        [ -n "$_cs" ] || continue
+        [ -n "$_R_st" ] || continue
+        case ", $_R_st, " in *", $_cs,"*) ;; *)
+          loi "$_f: dòng $_ln: \`Serves $_id\` thuộc stage $_cs — checker dùng ở phase $_R_ph (stage $_R_st); gắn capability/invariant của stage $_R_st." ;;
+        esac
+      done ;;
+  esac
+done < "$W/serves"
+
 # ---- luật chưa phân loại: số chỗ luật chưa "# giữ:" của mỗi file phải đúng bằng số trong $DS_LUAT —
 # nhiều hơn = luật mới không gắn id; ít hơn = đã gắn thêm mà chưa hạ danh sách (danh sách chỉ được giảm).
 : > "$W/dsl"
@@ -552,7 +637,7 @@ if [ -f "$E/$DS_LUAT" ]; then
     f=$1; so=$2; [ $# -eq 2 ] || so=""
     case "$so" in ""|*[!0-9]*) loi "$DS_LUAT: dòng \"$l\" sai dạng — cần \"<file> <số>\"."; continue ;; esac
     [ -f "$E/$f" ] || { loi "$DS_LUAT: $f không có."; continue; }
-    case "$TEPL" in *" $f "*) ;; *) loi "$DS_LUAT: $f không phải file được đếm (tools/check-*.sh trừ check-sdlc/check-release, tools/task.sh)."; continue ;; esac
+    case "$TEPL" in *" $f "*) ;; *) loi "$DS_LUAT: $f không phải file được đếm (tools/check-*.sh trừ check-sdlc/check-release, tools/task.sh, tools/lib/*.sh)."; continue ;; esac
     case "$DSL_DA" in *" $f "*) loi "$DS_LUAT: $f lặp — mỗi file một dòng."; continue ;; esac
     DSL_DA="$DSL_DA$f "
     echo "$f $so" >> "$W/dsl"

@@ -7,3 +7,7 @@ tools/check-review.sh 16
 tools/check-ship.sh 3
 tools/check-spec.sh 1
 tools/task.sh 2
+tools/lib/adr.sh 4
+tools/lib/cross-check.sh 51
+tools/lib/knowledge.sh 21
+tools/lib/task.sh 11

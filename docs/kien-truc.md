@@ -1033,7 +1033,9 @@ riêng của từng agent (`AD_LENH_FM`, `AD_*_KHOA`) nằm trong `build.sh` c�
     có phase, loại artifact có file, invariant có checker + test, capability có phase nhận. Nó không
     biết phase làm capability đó tốt không, `note` của `partial` có nói đủ phần thiếu không, hay
     `Tested by:` có thật sự thử invariant đó. Nhận một capability mà làm hời hợt vẫn PASS — người đọc
-    lời khai, không phải máy (bước A gắn luật checker vào capability mới thu hẹp được chỗ này).
+    lời khai, không phải máy (bước A đã phủ hết luật: mọi chỗ chặn / cảnh báo mang `# giữ:` CAP/INV,
+    hàm thư viện trả finding được đếm, mỗi dòng bảng "Look for" của checker LLM khai `Serves`; các id
+    đó vẫn chỉ trỏ tới lời khai, không chứng minh chất lượng).
     Profile cũng vậy: checker biết engine *cho phép* bỏ design với bugfix, không biết
     việc bỏ đó có hợp lý không; invariant theo loại chỉ ghi phần máy giữ ("test đỏ"), phần người
     phán ("đỏ vì đúng bug", "không đổi assertion") vẫn chỉ nằm ở review.
