@@ -51,7 +51,7 @@
 | SP16 | `CAP-operate-02`: sự cố → việc mới | 5 | một phần | — | Nhãn `[INCIDENT]` xong; capability vẫn human vì stage operate | | | [#86](https://github.com/dangminhphuc/agent-workflow/pull/86) |
 | SP17 | Refactor/perf: không đổi assertion test cũ | sau | chặn | số liệu SP9 | Có đáng làm không | | | |
 | SP18 | Glob bước 2: `*` của `plan.md` không qua `/` | sau | chặn | SP8 đã phát hành | Luật `BR-` cũ: cảnh báo hay chuyển đổi | | | |
-| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87), [#97](https://github.com/dangminhphuc/agent-workflow/pull/97) (đợt 19b); phần còn lại: [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md) |
+| SP19 | Bước A đợt 2 — luật mồ côi, suy CAP/INV từ diff | sau | một phần | — | `--suy` xong; không gắn hàng loạt (id có sẵn vẫn qua máy dù gắn nhầm) | [spec](specs/2026-10-22-dot-2-design.md) § A | [plan](plans/2026-10-22-dot-2.md) | [#81](https://github.com/dangminhphuc/agent-workflow/pull/81), [#87](https://github.com/dangminhphuc/agent-workflow/pull/87), [#97](https://github.com/dangminhphuc/agent-workflow/pull/97) (đợt 19b), [#122](https://github.com/dangminhphuc/agent-workflow/pull/122) (đợt 19d); phần còn lại: [spec](specs/2026-10-23-sp19-gan-id-con-lai-design.md) |
 | SP20 | Kiểm frontmatter `based_on` của artifact (INV-006) | 6 | xong | — | Sai dạng chặn mọi nơi; thiếu: cảnh báo trước review, chặn ở review | [spec](specs/2026-10-23-sp20-frontmatter-artifact-design.md) | | | [#94](https://github.com/dangminhphuc/agent-workflow/pull/94) |
 | SP21 | CI chạy test trên macOS (BSD awk/sed) | 6 | xong | — | Còn: người bật job macOS thành check bắt buộc (cài đặt GitHub, máy không kiểm được) | [spec](specs/2026-10-23-sp21-ci-macos-design.md) | | | [#96](https://github.com/dangminhphuc/agent-workflow/pull/96), [#99](https://github.com/dangminhphuc/agent-workflow/pull/99) |
 | SP22 | Số ADR không trùng khi hai việc song song | 6 | xong | — | `aw ship create` chặn khi trùng số | [spec](specs/2026-10-23-sp22-so-adr-song-song-design.md) | | | [#95](https://github.com/dangminhphuc/agent-workflow/pull/95) |
@@ -168,6 +168,8 @@ của `aw task`, tiêu đề MR (độ dài, mã Jira).
 
 **Đợt 19c:** gắn 59/60 chỗ của `check-spec.sh` (185 → 126, [#118](https://github.com/dangminhphuc/agent-workflow/pull/118); một chỗ `kc_quy_tac_loi` chờ người duyệt capability mới — file `rules_*`/`uses_*` khai ở conventions phải có, mẫu chung của mọi checker). `toc_loi` gắn được INV-012 (mục lục trong danh sách "chờ capability mới" của 19b nay hết cần — INV-012 có từ SP35/#109). INV-005 `Enforced by` thêm `check-spec.sh` (entry check).
 
+**Đợt 19d:** gắn 45/50 chỗ của `check-plan.sh` + `check-design.sh` (126 → 81; `check-plan` còn 2, `check-design` còn 3, [#122](https://github.com/dangminhphuc/agent-workflow/pull/122)). Năm chỗ chờ người duyệt capability mới: `kc_quy_tac_loi` (đã nêu ở 19c, nay gặp ở hai file nữa), `luat_loi_ke_hoach` và `adr_loi_ke_hoach` (REQ/DEC `Promote:` phải có task nâng), `adr_loi_truong` (trường Promote/Scope/Supersedes của DEC), và luật Mode 2 (`Risk: high` đòi DEC `Author: human`) — không id nào trong `sdlc/` mô tả những việc này.
+
 ### SP24 — Hai nhánh tính năng chưa merge
 
 **Vấn đề.** Hai nhánh không có PR, tính năng chưa có trên `main`, rẽ từ `main` cũ (12–13/10):
@@ -232,10 +234,13 @@ cho phase design, plan (dự án con riêng khi có số liệu).
   frontmatter một lượt, tra bảng bằng chuỗi thay `$(grep …)`). Đo cặp trên cùng máy, 2026-10-28.
   Phần còn lại dàn trải: kiểm tập con YAML từng file, đọc frontmatter + capability từng file stage,
   quét `# giữ:` và khối `out_of_scope`.
-- Bộ test (đo 2026-10-24, `main` dac429d): 1963 ca, 5 phút 23 giây trên 4 luồng — vượt mục tiêu dưới 3 phút
-  (lần đo 2026-10-23: 1804 ca, 2 phút 41 giây, `main` 8824ded; hai lần có thể đo trên máy khác nhau nên không
-  so trực tiếp, cần đo lại trên CI). Phần dài nhất `05-review-quality` (69 giây). Theo dõi; tách phần khi
-  xuất hiện `CẢNH BÁO … nên tách`.
+- Bộ test (đo trên CI ở [#122](https://github.com/dangminhphuc/agent-workflow/pull/122), 2026-10-28):
+  2136 ca, ALL PASS trên cả hai hệ — Ubuntu 3 phút 42 giây (4 luồng), macOS 11 phút 35 giây (3 luồng).
+  Phần dài nhất trên macOS: `05-review-quality` 102 s, `06-review-freshness` 101 s,
+  `15-conventions-task` 100 s. Trên máy phát triển (WSL2, 6 luồng): 3 phút 44 giây. Mục tiêu dưới 3 phút
+  chỉ đạt trên Ubuntu; tách phần khi `run-tests.sh` in `WARN … nên tách` (cảnh báo này cũng bật khi máy
+  bị chiếm CPU, nên đo lúc máy nhàn — một lần đo `28-knowledge-sections` 108 s rồi 46 s trên cùng code).
+  (Lần đo cũ 2026-10-24: 1963 ca, 5 phút 23 giây trên 4 luồng, `main` dac429d.)
 
 - ~~`aw input` chưa nhận `[ISSUE]` cho work item GitLab (`…/-/work_items/N`), discussion GitHub, Bitbucket, Gitea~~ —
   work item GitLab xong trước đó; discussion GitHub, Gitea/Forgejo, Bitbucket Cloud và Data Center xong
