@@ -11,6 +11,61 @@ README, mục "Nâng cấp"); một việc đã bắt đầu thì chạy hết b
 So version theo luật **khớp chính xác `YYYY.M.N`** — không có "tương thích ngược"
 ngầm giữa các bản.
 
+## [2026.10.36]
+
+### Nội bộ
+- **Gắn id cho 45 luật của checker `plan` và `design` (SP19 đợt 19d).** Mỗi chỗ chặn/cảnh báo
+  trong `tools/check-plan.sh` và `tools/check-design.sh` nay có chú thích `# giữ: CAP-…/INV-…` ngay
+  trên, để người review PR truy được một luật engine phục vụ capability / invariant nào của
+  interface SDLC. Số luật chưa gắn của hai file giảm 25 → 2 và 25 → 3 (cả repo: 126 → 81).
+  Người dùng `aw` không thấy khác.
+- **Bốn chỗ còn lại chờ người duyệt capability mới** (không gắn id "gần đúng", theo spec SP19 § 3):
+  file luật khai ở `conventions.md` phải tồn tại và đã commit (`kc_quy_tac_loi`), REQ `Promote:` phải
+  có task nâng (`luat_loi_ke_hoach`), trường Promote/Scope/Supersedes của DEC
+  (`adr_loi_truong`), và Mode 2 — `Risk: high` đòi ít nhất một DEC do người viết. Danh sách chi tiết
+  ở mô tả PR. (`adr_loi_ke_hoach` nêu ở bản đầu thực ra gắn được CAP-breakdown-02 — sửa 2026-10-29.)
+- **Số đo bộ test trên CI** (roadmap § Việc nhỏ): 2136 ca, ALL PASS — Ubuntu 3 phút 42 giây, macOS
+  11 phút 35 giây. Thay số đo cũ (1963 ca, 5 phút 23 giây, chỉ đo máy cục bộ). Không đổi hành vi.
+- **Gắn id cho 31 chỗ luật của checker `implement` và `review` (SP19 đợt 19e).** Mỗi chỗ chặn/cảnh báo
+  trong `tools/check-implement.sh` và `tools/check-review.sh` nay có chú thích `# giữ: CAP-…/INV-…`
+  ngay trên, để người review PR truy được một luật engine phục vụ capability / invariant nào của
+  interface SDLC. Số chỗ chưa gắn của hai file giảm 15 → 5 và 37 → 16 (cả repo: 81 → 58).
+  Người dùng `aw` không thấy khác — không đổi luật, không đổi lời lỗi, chỉ có thứ tự in một nhóm
+  cảnh báo thay đổi (nêu ở mục dưới).
+- **Ba chỗ mang list id.** Hai chỗ in gộp output của nhiều helper (`cb` ở cả `check-implement.sh`
+  mục "Kiem cheo" và `check-review.sh`), một chỗ gọi helper phân theo loại việc
+  (`kc_chan_theo_loai`): dòng `# giữ:` liệt kê id của từng helper hoặc từng loại việc, kèm chú thích
+  nêu cách đọc. Mỗi id vẫn ứng với đúng một luật, chỉ là luật ấy nằm trong helper chứ không tự in lời
+  lỗi tại chỗ gọi. Một trường hợp phải tách: `kt_canh_bao` (tài liệu tri thức bền bị diff đụng mà
+  không đổi) ra khỏi khối `cb` của `check-implement.sh`, vì `check-sdlc.sh` đếm id theo chuỗi — để nó
+  trong list gộp thì capability CAP-verify-06 còn được khai dù đã bỏ chú thích riêng, và test
+  "CAP-verify-06 machine mà luật không gắn # giữ → chặn" mất tác dụng. Cảnh báo này nay in thành
+  khối riêng ngay sau các cảnh báo khác của `cb`; nội dung từng dòng không đổi.
+- **21 chỗ chưa gắn của hai file, thuộc chín luật** chờ người duyệt capability mới (không gắn id "gần
+  đúng", theo spec SP19 § 3): dấu xung đột merge còn trong file thay đổi (`kc_dau_xung_dot`), ADR và
+  file luật phải khớp nội dung DEC / REQ đã duyệt (`adr_loi_viec`, `luat_loi_viec`), từ dịch lẫn trong
+  artifact (`kc_tu_dich`), file quy tắc khai ở `conventions.md` phải tồn tại và đã commit
+  (`kc_quy_tac_loi`), bảng kết luận cho quy tắc riêng của repo ("## Repo rules"), bảng bảy hạng mục
+  Lens 4 — Security và cấu trúc finding của Lens 3, base xếp chồng (`kc_base_la`). Danh sách chi tiết
+  ở mô tả PR đợt 19e.
+- **Sửa hai chỗ nói sai ở đợt 19d** (`changes/claude-sp19d-gan-id-plan-design.md` và roadmap):
+  `adr_loi_ke_hoach` được kể là chờ capability mới, kỳ thực nó gắn được CAP-breakdown-02 (task nâng
+  ADR phải có trong plan). Không ảnh hưởng số đếm.
+- **Checker LLM khai `Serves` cho từng dòng finding (SP19 đợt 19f).** Bảng "Look for" của
+  `workflow/checkers/spec.md` và `design.md` thêm cột `Serves`: một hoặc nhiều `CAP-…`/`INV-…` mà dòng
+  finding đó phục vụ. Cột chỉ để người và máy truy vết — checker lúc chạy không đọc. `check-sdlc.sh`
+  chặn khi bảng thiếu cột, một dòng để trống `Serves`, id không có, hoặc id là capability của stage
+  khác stage mà phase khai `llm_checker:` implements. Người dùng `aw` không thấy khác. Một chỗ không
+  có capability riêng: `risk-understated` gắn CAP-require-01, cùng cách `check-spec.sh` đã gắn luật
+  "Risk: normal mà có từ khoá rủi ro cao" — luật Risk nằm chung một capability.
+- **Đếm hàm thư viện trả finding (SP19 đợt 19g).** `check-sdlc.sh --dem-luat` đếm thêm mỗi định nghĩa
+  hàm `kc_*`, `tk_*`, `kt_*`, `adr_loi*`, `toc_loi` trong `tools/lib/` chưa có `# giữ:` trong khối chú
+  thích liền trên; hàm mới không gắn id làm số chưa gắn của file vượt mức cho phép nên bị chặn.
+  `tools/unclassified-rules.txt` thêm bốn dòng `tools/lib/*.sh` (87 hàm chưa gắn) — hạ dần như các file
+  `check-*`. Người dùng `aw` không thấy khác.
+- **`check-sdlc.sh` chặn thêm hai kiểu lỗi** (Serves nêu trên, hàm thư viện mới chưa gắn); mọi thông
+  điệp lỗi mới có trong `docs/interface-sdlc.md` § 5.
+
 ## [2026.10.35]
 
 ### Thêm
