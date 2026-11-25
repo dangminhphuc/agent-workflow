@@ -5,14 +5,14 @@
 ## Bước tiếp theo
 
 SP1 brainstorm — người duyệt trang thử `interface/stages/01-require.md` cùng `interface/overview.md` và
-`interface/invariants.md` (vòng 2 phép thử đọc lạnh; vòng 1 đã xong sau 4 lần đọc). Xem `docs/decisions.md`
+`interface/invariants.md` (vòng 2 của cold read; vòng 1 đã xong sau 4 lần đọc). Xem `docs/decisions.md`
 § Đang mở. Duyệt xong thì viết spec SP1.
 
 ## Dự án con
 
 | SP  | Tên                              | Trạng thái   | Spec | Plan |
 |-----|----------------------------------|--------------|------|------|
-| SP1 | Định nghĩa interface SDLC        | brainstorm   | —    | —    |
+| SP1 | Định nghĩa interface SDLC        | spec chờ duyệt | `docs/specs/SP1-interface.md` | — |
 | SP7 | Chọn lại tính năng của v1        | chưa bắt đầu | —    | —    |
 | SP2 | Trình biên dịch interface        | chưa bắt đầu | —    | —    |
 | SP3 | Mô hình làm việc của agent       | chưa bắt đầu | —    | —    |

@@ -162,7 +162,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   (ở CI). Cảnh báo: vượt giới hạn độ dài. Tự suy: stage bị bỏ / tuỳ chọn với một job type → input
   `Required: yes` lấy từ stage đó được phép vắng với job type đó.
 - **Phía engine (SP4)**: mỗi `Fail example` phải có một test; máy chặn ví dụ không có test.
-- **Phép thử đọc lạnh** — một trang chỉ xong khi qua: chỉ với trang đó + `overview.md`, trả lời được
+- **Cold read** — một trang chỉ xong khi qua: chỉ với trang đó + `overview.md`, trả lời được
   (1) là gì, vì sao cần; (2) nhận gì; (3) trả gì; (4) khi nào xong, ai cho phép; (5) một ví dụ làm sai
   cụ thể. Vòng 1: agent ở phiên trắng trả lời. Vòng 2: người đọc trang + câu trả lời, duyệt hoặc chỉ
   chỗ gây hiểu sai.
@@ -175,9 +175,9 @@ tham chiếu, không phải thứ v2 phải tương thích.
   người đọc (`interface/generated/`), mở đầu bằng dòng báo "sinh tự động — đừng sửa tay"; CI chặn khi lệch.
 - Vì sao: không có bản commit thì không thể lệch; người đóng góp không phải nhớ chạy build.
 
-### D-014 — Chỉnh khuôn sau đọc lạnh lần 1 trang `require` (2026-11-25)
+### D-014 — Chỉnh khuôn sau cold read lần 1 trang `require` (2026-11-25)
 - Thay một phần: D-012.
-- Bối cảnh: agent đọc lạnh (chỉ trang `require`) tìm ra: Exit ghi `Judged by: both` nhưng mọi capability
+- Bối cảnh: agent làm cold read (chỉ trang `require`) tìm ra: Exit ghi `Judged by: both` nhưng mọi capability
   là `machine` (hai nguồn lệch nhau); luật "chữ trong backtick phải tồn tại" chặn nhầm giá trị như
   `blocking`; tiền tố "Bỏ:" khó hiểu; không rõ máy và người ai trước, lúc nào xong.
 - Chọn:
@@ -189,8 +189,8 @@ tham chiếu, không phải thứ v2 phải tương thích.
     đạt; stage xong khi mọi capability đạt. Trang stage không nhắc lại.
   - `overview.md` nói rõ: interface không quy định định dạng file, nơi lưu, hay dạng dấu duyệt (thuộc SP3).
 
-### D-015 — Chỉnh sau đọc lạnh lần 2 trang `require` (2026-11-25)
-- Bối cảnh: đọc lạnh lần 2 (trang + `overview.md`) thấy quy tắc "máy trước, người sau" mâu thuẫn với
+### D-015 — Chỉnh sau cold read lần 2 trang `require` (2026-11-25)
+- Bối cảnh: cold read lần 2 (trang + `overview.md`) thấy quy tắc "máy trước, người sau" mâu thuẫn với
   `CAP-require-03` (máy kiểm dấu duyệt, mà dấu duyệt chỉ có sau khi người duyệt); `CAP-require-01` gộp
   phần máy kiểm chính xác được với phần máy không phán được ("phải nhanh").
 - Chọn:
@@ -207,9 +207,9 @@ tham chiếu, không phải thứ v2 phải tương thích.
     "engine" khỏi overview; liệt kê tên trường của capability; tên thư mục và tên trường không viết trong
     backtick; ô bảng chứa tên artifact/stage không cần backtick.
 
-### D-016 — Chỉnh sau đọc lạnh lần 3 trang `require` (2026-11-25)
+### D-016 — Chỉnh sau cold read lần 3 trang `require` (2026-11-25)
 - Thay một phần: D-012 (bỏ `## Exit`, thêm cột `Approval`), D-015 (artifact cần duyệt khai rõ, không suy ra).
-- Bối cảnh: đọc lạnh lần 3 (overview + invariants + require) ra 4 MAJOR — đều là quyết định nội dung trang
+- Bối cảnh: cold read lần 3 (overview + invariants + require) ra 4 MAJOR — đều là quyết định nội dung trang
   chưa nói ra: `open-questions` có cần dấu duyệt không; `INV-001` thiếu stage kiểm; "một nguồn" là đúng
   một hay ít nhất một; ranh giới "rút từ nguồn" / "tự trả lời" / "thêm phạm vi".
 - Chọn:
@@ -226,11 +226,11 @@ tham chiếu, không phải thứ v2 phải tương thích.
   - M4: ranh giới ba trường hợp ghi ở `Not in this stage`; thêm khái niệm "phạm vi" ở overview.
   - Sửa chữ: "bước gác" → "bước kiểm cuối"; định nghĩa nhánh chính, phiên làm việc mới, ticket; lời người
     = lời người duyệt được ghi lại; mẫu mã không viết trong backtick; thêm lý do loại hai mức chặn.
-- Tiêu chí dừng đọc lạnh: lần 4 là lần cuối của vòng 1. MAJOR còn lại thuộc trang khác hoặc SP3 → ghi vào
+- Tiêu chí dừng cold read: lần 4 là lần cuối của vòng 1. MAJOR còn lại thuộc trang khác hoặc SP3 → ghi vào
   § Đang mở, chuyển trang cho người duyệt; không lặp tiếp.
 
 ### D-017 — Agent rà trang `require` một lượt trước khi người duyệt (2026-11-25)
-- Bối cảnh: người yêu cầu rà thêm một lượt sau 4 lần đọc lạnh. Agent đối chiếu ba file với D-011…D-016 và
+- Bối cảnh: người yêu cầu rà thêm một lượt sau 4 lần cold read. Agent đối chiếu ba file với D-011…D-016 và
   "Lý do chung" của overview; kiểm máy (backtick, giới hạn độ dài) đều đạt.
 - Sửa (hệ quả trực tiếp của nguyên tắc đã chốt):
   - **R1** — "điều máy kiểm được thì máy phải kiểm": "mọi câu `blocking` đã có câu trả lời" chuyển từ
@@ -249,6 +249,13 @@ tham chiếu, không phải thứ v2 phải tương thích.
   - **R7** — giá trị trong dòng trường không viết trong backtick (`Checked at: all`, như `Judged by: machine`).
   - **R8** — `INV-001` áp cho "mọi artifact đã có"; sửa câu chữ: "Yêu cầu" trong khái niệm, "người duyệt duyệt".
 
+### D-018 — Người duyệt trang thử `require` (2026-11-25)
+- Duyệt: `interface/stages/01-require.md`, `interface/invariants.md` (`INV-001`, `INV-002`), và
+  `interface/overview.md` — phần khái niệm, "Khi nào một stage xong", bảng Giá trị, cách đọc trang, lý do chung.
+- Còn là nháp trong `overview.md` (duyệt sau): câu một dòng của các stage khác `require` trong bảng Luồng
+  (duyệt khi viết trang của stage đó); kịch bản xuyên suốt (viết khi đủ 8 trang); nghĩa của `agent` (chờ SP3).
+- Khuôn sau trang thử là bản hiện hành, gom lại ở `docs/specs/SP1-interface.md`.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
@@ -258,13 +265,13 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ### Trang thử `require`
 - `interface/stages/01-require.md` viết theo D-012, chuyển nội dung từ `sdlc/stages/01-require.md` của v1.
-- Bước: phép thử đọc lạnh vòng 1 (agent phiên trắng) → người duyệt (vòng 2) → chỉnh khuôn nếu cần →
+- Bước: cold read vòng 1 (agent phiên trắng) → người duyệt (vòng 2) → chỉnh khuôn nếu cần →
   mới viết spec SP1 và các trang còn lại.
-- Đọc lạnh lần 1 (chỉ trang): ra D-014 và 6 sửa trang — nguồn là các nguồn trong work item; thêm
+- Cold read lần 1 (chỉ trang): ra D-014 và 6 sửa trang — nguồn là các nguồn trong work item; thêm
   `CAP-require-04` (người trả lời câu hỏi `blocking` và duyệt); câu trả lời của người là phần duyệt cho
   câu hỏi đó; "tự trả lời … mà không ghi lại"; viết lại câu ba mức chặn.
-- Đọc lạnh lần 2 (trang + overview): ra D-015. Lần 3 (+ invariants): ra D-016.
-- Đọc lạnh lần 4 (lần cuối vòng 1): trả lời đủ 5 câu; 1 MAJOR, phần lớn nằm ngoài trang (xem "Chuyển
+- Cold read lần 2 (trang + overview): ra D-015. Lần 3 (+ invariants): ra D-016.
+- Cold read lần 4 (lần cuối vòng 1): trả lời đủ 5 câu; 1 MAJOR, phần lớn nằm ngoài trang (xem "Chuyển
   cho SP3"); phần trong trang và các MINOR đã sửa: `CAP-require-05` áp dù câu trả lời đến ở stage nào;
   `CAP-require-04` nói rõ thứ tự (trả lời câu `blocking` → sửa yêu cầu → duyệt); nguồn của yêu cầu gồm
   giả định của câu hỏi mở; nghĩa của Approval `no`; câu trả lời ghi cạnh câu hỏi; liệt kê trường của invariant.
@@ -278,7 +285,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   v1 đặt PR + merge ở deploy (`CAP-deploy-01` cũ). `INV-002` đang giả định merge xảy ra sau `verify`.
 - `job-types.md`: chưa viết; khi viết, kiểm `blocking` ("trước khi `require` xong") vẫn đúng với job type bỏ `design`.
 
-### Chuyển cho SP3 (thấy khi đọc lạnh trang `require`)
+### Chuyển cho SP3 (thấy khi cold read trang `require`)
 - Câu trả lời đến **sau khi** `require` đã xong (câu `review-blocking`, `non-blocking`) mà khác giả định:
   ai sửa `requirements`, ở stage nào, có chạy lại `require` không; sau khi duyệt lại thì artifact của các
   stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.
