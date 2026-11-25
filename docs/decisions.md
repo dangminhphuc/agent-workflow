@@ -189,6 +189,24 @@ tham chiếu, không phải thứ v2 phải tương thích.
     đạt; stage xong khi mọi capability đạt. Trang stage không nhắc lại.
   - `overview.md` nói rõ: interface không quy định định dạng file, nơi lưu, hay dạng dấu duyệt (thuộc SP3).
 
+### D-015 — Chỉnh sau đọc lạnh lần 2 trang `require` (2026-11-25)
+- Bối cảnh: đọc lạnh lần 2 (trang + `overview.md`) thấy quy tắc "máy trước, người sau" mâu thuẫn với
+  `CAP-require-03` (máy kiểm dấu duyệt, mà dấu duyệt chỉ có sau khi người duyệt); `CAP-require-01` gộp
+  phần máy kiểm chính xác được với phần máy không phán được ("phải nhanh").
+- Chọn:
+  - **P1** — "dấu duyệt gắn với nội dung" là invariant, không phải capability: `INV-001` trong
+    `interface/invariants.md`, áp cho mọi artifact mà một capability `human` nhận phán. Artifact cần
+    duyệt suy ra từ capability `human`, không khai riêng. `Checked at` hiện là `require`, `design`; thêm
+    stage khi viết trang của nó.
+  - **P2** — thứ tự kết thúc: máy + agent kiểm nội dung → người duyệt (nếu stage có capability `human`)
+    → máy xác nhận dấu duyệt khớp và kiểm invariant. Nội dung đổi sau khi duyệt → quay lại đầu. Bước
+    gác cuối luôn là máy.
+  - **B** — tách capability theo người phán được: máy kiểm "có nguồn trong work item, có tiêu chí";
+    agent kiểm "tiêu chí quan sát được".
+  - Sửa chữ: thêm khái niệm yêu cầu, tiêu chí chấp nhận, câu hỏi mở, task, agent, người duyệt; bỏ chữ
+    "engine" khỏi overview; liệt kê tên trường của capability; tên thư mục và tên trường không viết trong
+    backtick; ô bảng chứa tên artifact/stage không cần backtick.
+
 ## Đang mở
 
 ### Trang thử `require`
