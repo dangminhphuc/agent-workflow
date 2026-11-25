@@ -229,6 +229,26 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Tiêu chí dừng đọc lạnh: lần 4 là lần cuối của vòng 1. MAJOR còn lại thuộc trang khác hoặc SP3 → ghi vào
   § Đang mở, chuyển trang cho người duyệt; không lặp tiếp.
 
+### D-017 — Agent rà trang `require` một lượt trước khi người duyệt (2026-11-25)
+- Bối cảnh: người yêu cầu rà thêm một lượt sau 4 lần đọc lạnh. Agent đối chiếu ba file với D-011…D-016 và
+  "Lý do chung" của overview; kiểm máy (backtick, giới hạn độ dài) đều đạt.
+- Sửa (hệ quả trực tiếp của nguyên tắc đã chốt):
+  - **R1** — "điều máy kiểm được thì máy phải kiểm": "mọi câu `blocking` đã có câu trả lời" chuyển từ
+    capability `human` sang `CAP-require-03` (machine). `CAP-require-04` giữ phần chỉ người làm được; ví
+    dụ sai mới: agent tự điền câu trả lời thay người duyệt.
+  - **R2** — `CAP-require-05` bỏ "dù lúc đó đang ở stage nào": capability của `require` mà áp ở mọi stage
+    là luật xuyên stage, trái overview ("luật xuyên stage cần agent phán → capability của `verify`"). Câu
+    trả lời đến muộn: SP3 + một capability của `verify` (ghi chú bên dưới). Bỏ luôn vế "phải duyệt lại
+    (`INV-001`)" — `INV-001` đã giữ, không nhắc lại.
+  - **R3** — mức `review-blocking` không có luật nào buộc → thêm `INV-002` (Checked at: verify).
+  - **R4** — `blocking` = "trả lời trước khi `require` xong" thay cho "trước khi `design` bắt đầu": đúng cả
+    với job type bỏ `design`.
+  - **R5** — overview: quay lại bước 1 khi nội dung đổi **sau bước 1** (không chỉ sau khi duyệt), vì
+    `CAP-require-05` sửa yêu cầu giữa lúc người trả lời và lúc người duyệt.
+  - **R6** — mô tả `open-questions` bỏ "ghi ngay cạnh câu hỏi" (là chuyện định dạng, ngoài interface).
+  - **R7** — giá trị trong dòng trường không viết trong backtick (`Checked at: all`, như `Judged by: machine`).
+  - **R8** — `INV-001` áp cho "mọi artifact đã có"; sửa câu chữ: "Yêu cầu" trong khái niệm, "người duyệt duyệt".
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
@@ -248,13 +268,23 @@ tham chiếu, không phải thứ v2 phải tương thích.
   cho SP3"); phần trong trang và các MINOR đã sửa: `CAP-require-05` áp dù câu trả lời đến ở stage nào;
   `CAP-require-04` nói rõ thứ tự (trả lời câu `blocking` → sửa yêu cầu → duyệt); nguồn của yêu cầu gồm
   giả định của câu hỏi mở; nghĩa của Approval `no`; câu trả lời ghi cạnh câu hỏi; liệt kê trường của invariant.
-- **Vòng 1 xong. Bước tiếp: người duyệt trang (vòng 2).**
+- **Vòng 1 xong.** Người yêu cầu thêm một lượt rà trước khi duyệt → D-017.
+- **Bước tiếp: người duyệt trang (vòng 2).**
+
+### Ghi chú cho các trang chưa viết
+- `verify`: cần một capability (agent) "mọi yêu cầu khớp với câu trả lời của câu hỏi mở nó trỏ tới" — bắt
+  câu trả lời đến sau khi `require` đã xong (D-017 R2).
+- `verify` / `deploy`: merge nằm ở stage nào. Overview hiện chỉ nói `deploy` "đưa thay đổi đã merge";
+  v1 đặt PR + merge ở deploy (`CAP-deploy-01` cũ). `INV-002` đang giả định merge xảy ra sau `verify`.
+- `job-types.md`: chưa viết; khi viết, kiểm `blocking` ("trước khi `require` xong") vẫn đúng với job type bỏ `design`.
 
 ### Chuyển cho SP3 (thấy khi đọc lạnh trang `require`)
 - Câu trả lời đến **sau khi** `require` đã xong (câu `review-blocking`, `non-blocking`) mà khác giả định:
   ai sửa `requirements`, ở stage nào, có chạy lại `require` không; sau khi duyệt lại thì artifact của các
   stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.
 - Ai tuyên bố một stage xong, và ai khởi động stage tiếp theo.
+- Invariant chỉ được kiểm khi **kết thúc** stage: input chưa duyệt chỉ bị bắt ở cuối stage dùng nó, sau khi
+  đã tốn công chạy. Kiểm thêm lúc **bắt đầu** stage là tối ưu của engine, không đổi interface.
 - `overview.md` hiện là bản tối thiểu cho phép thử: một câu mỗi stage trong bảng Luồng là nháp từ v1,
   duyệt khi viết từng trang; kịch bản xuyên suốt viết khi đủ 8 trang; nghĩa của `agent` (một agent khác
   với agent đang làm việc) chờ SP3 chốt.

@@ -15,7 +15,7 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Artifact   | Thứ một stage tạo ra để stage sau dùng, ví dụ danh sách yêu cầu, thiết kế, kế hoạch. Tên viết thường, nối bằng gạch ngang, ví dụ `work-item`. |
 | Work item  | Một việc đã được nhận vào quy trình, kèm các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt được ghi lại. Là artifact đầu tiên, do `plan` tạo. |
 | Phạm vi    | Những gì work item mô tả là việc cần làm. Việc nằm ngoài đó là thêm phạm vi. |
-| Yêu cầu    | Một điều thay đổi phải làm được, rút từ nguồn trong work item, hoặc từ giả định của một câu hỏi mở. |
+| Yêu cầu    | Một điều mà thay đổi sắp làm phải đạt được, rút từ nguồn trong work item, hoặc từ giả định của một câu hỏi mở. |
 | Tiêu chí chấp nhận | Điều quan sát được cho biết một yêu cầu đã đạt hay chưa. |
 | Câu hỏi mở | Điều các nguồn không nói mà việc cần biết; ghi kèm giả định tạm dùng và mức chặn. |
 | Task       | Một phần việc nhỏ của kế hoạch, do `breakdown` tạo. |
@@ -39,7 +39,7 @@ plan ─▶ require ─▶ design ─▶ breakdown ─▶ implement ─▶ verif
 |-------------|---------|
 | `plan`      | Nhận một việc vào quy trình thành work item. |
 | `require`   | Biến work item thành yêu cầu kiểm chứng được và câu hỏi mở. |
-| `design`    | Chọn cách làm; mỗi lựa chọn là một quyết định người duyệt duyệt. |
+| `design`    | Chọn cách làm; mỗi lựa chọn là một quyết định được người duyệt duyệt. |
 | `breakdown` | Chia thiết kế thành các task nhỏ có thứ tự. |
 | `implement` | Làm từng task; task xong khi test đạt. |
 | `verify`    | Kiểm tra độc lập thay đổi so với yêu cầu, thiết kế, kế hoạch. |
@@ -55,8 +55,8 @@ Một stage xong khi mọi capability của nó đạt và mọi invariant phả
 3. Máy xác nhận dấu duyệt của mọi artifact cần duyệt khớp với nội dung (`INV-001`) và kiểm các
    invariant còn lại.
 
-Artifact cần duyệt là artifact ghi Approval `yes` ở bảng Output. Nội dung một artifact cần duyệt đổi sau
-khi duyệt, kể cả sửa theo câu trả lời của người duyệt, thì quay lại bước 1. Bước kiểm cuối cùng luôn do máy.
+Artifact cần duyệt là artifact ghi Approval `yes` ở bảng Output. Nội dung artifact đổi sau bước 1, kể cả
+sửa theo câu trả lời của người duyệt, thì quay lại bước 1. Bước kiểm cuối cùng luôn do máy.
 
 ## Giá trị
 
@@ -68,8 +68,8 @@ khi duyệt, kể cả sửa theo câu trả lời của người duyệt, thì 
 | `yes` / `no`      | Required (Input)    | Input bắt buộc hay không. |
 | `yes` / `no`      | Approval (Output)   | Artifact có được người duyệt duyệt cả khối, kèm dấu duyệt, hay không. `no` không có nghĩa người duyệt không đụng tới: một capability `human` có thể đòi người duyệt từng phần (ví dụ trả lời từng câu hỏi mở). |
 | `all`             | Checked at (invariant) | Luật phải đúng khi kết thúc mọi stage. |
-| `blocking`        | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi `design` bắt đầu. |
-| `review-blocking` | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi merge. |
+| `blocking`        | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi `require` xong. |
+| `review-blocking` | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi `verify` xong, tức trước khi merge (`INV-002`). |
 | `non-blocking`    | Mức chặn câu hỏi mở | Việc được làm tiếp và merge trên giả định đã ghi; trả lời lúc nào cũng được. |
 
 ## Cách đọc một trang stage

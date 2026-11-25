@@ -13,7 +13,7 @@ Thiếu stage này thì thiết kế và code dựa trên điều chưa ai xác 
 | Artifact       | Approval | Description                                                                         |
 |----------------|----------|-------------------------------------------------------------------------------------|
 | requirements   | yes      | danh sách yêu cầu; mỗi yêu cầu chỉ ra nguồn, và có tiêu chí chấp nhận quan sát được |
-| open-questions | no       | những điều các nguồn không nói; mỗi điều có giả định tạm dùng và mức chặn; người duyệt trả lời từng câu, vào lúc mức chặn của câu đó đòi hỏi; câu trả lời ghi ngay cạnh câu hỏi |
+| open-questions | no       | những điều các nguồn không nói; mỗi điều có giả định tạm dùng, mức chặn, và câu trả lời của người duyệt khi đã có; người duyệt trả lời từng câu, vào lúc mức chặn của câu đó đòi hỏi |
 
 ## Capabilities
 
@@ -30,20 +30,20 @@ Thiếu stage này thì thiết kế và code dựa trên điều chưa ai xác 
 - Fail example: "Trang đăng nhập phải nhanh" — "nhanh" không có con số nào để kiểm.
 - Pass example: "Đăng nhập trả kết quả trong 2 giây với 100 người cùng lúc."
 
-### CAP-require-03 — Mỗi câu hỏi mở có giả định tạm và mức chặn
-- Rule: mọi câu hỏi mở ghi giả định đang tạm dùng, và một mức chặn: `blocking`, `review-blocking` hoặc `non-blocking`.
+### CAP-require-03 — Mỗi câu hỏi mở có giả định tạm và mức chặn; câu chặn đã được trả lời
+- Rule: mọi câu hỏi mở ghi giả định đang tạm dùng, và một mức chặn: `blocking`, `review-blocking` hoặc `non-blocking`; mọi câu mức `blocking` đã có câu trả lời của người duyệt.
 - Judged by: machine
 - Artifact: open-questions
 - Fail example: "Có cần hỗ trợ đăng nhập bằng Google không?" — không có giả định tạm, không có mức chặn.
 
 ### CAP-require-04 — Người duyệt trả lời câu hỏi chặn và duyệt yêu cầu
-- Rule: người duyệt trả lời mọi câu hỏi mở mức `blocking` trước — câu trả lời chính là việc duyệt câu hỏi đó, câu hỏi không cần dấu duyệt riêng — rồi, sau khi yêu cầu đã được sửa theo câu trả lời (`CAP-require-05`), đọc và duyệt danh sách yêu cầu.
+- Rule: chính người duyệt trả lời mọi câu hỏi mở mức `blocking` — câu trả lời là việc duyệt câu hỏi đó, câu hỏi không cần dấu duyệt riêng — rồi, sau khi yêu cầu đã được sửa theo câu trả lời (`CAP-require-05`), đọc và duyệt danh sách yêu cầu.
 - Judged by: human
 - Artifact: requirements, open-questions
-- Fail example: câu hỏi "giữ phiên đăng nhập bao lâu?" mức `blocking` chưa ai trả lời, nhưng danh sách yêu cầu đã được đánh dấu duyệt.
+- Fail example: agent tự điền câu trả lời cho câu hỏi `blocking` "giữ phiên đăng nhập bao lâu?" rồi coi như người duyệt đã trả lời.
 
 ### CAP-require-05 — Câu trả lời khác giả định thì yêu cầu được sửa theo
-- Rule: khi người duyệt trả lời một câu hỏi mở khác với giả định tạm — dù lúc đó đang ở stage nào — mọi yêu cầu trỏ tới câu hỏi đó được sửa theo câu trả lời, và danh sách yêu cầu phải được duyệt lại (`INV-001`).
+- Rule: khi người duyệt trả lời một câu hỏi mở khác với giả định tạm, mọi yêu cầu trỏ tới câu hỏi đó được sửa theo câu trả lời.
 - Judged by: agent
 - Artifact: requirements
 - Fail example: giả định "giữ phiên 30 ngày", người duyệt trả lời "1 ngày", nhưng yêu cầu vẫn ghi 30 ngày.
