@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 — người duyệt plan `docs/plans/SP1-interface.md` và chọn cách thực thi. Duyệt xong thì bắt đầu Task 1 (trang `plan`).
+SP1 Task 1 — người duyệt trang `interface/stages/00-plan.md` (xem `docs/decisions.md` § Đang mở, 4 câu hỏi). Sau đó Task 2 (trang `design`).
 
 ## Dự án con
 

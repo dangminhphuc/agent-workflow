@@ -13,7 +13,8 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 |------------|-------|
 | Stage      | Một bước của quy trình. Có 8 stage, chạy theo thứ tự ở mục Luồng. |
 | Artifact   | Thứ một stage tạo ra để stage sau dùng, ví dụ danh sách yêu cầu, thiết kế, kế hoạch. Tên viết thường, nối bằng gạch ngang, ví dụ `work-item`. |
-| Work item  | Một việc đã được nhận vào quy trình, kèm các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt được ghi lại. Là artifact đầu tiên, do `plan` tạo. |
+| Work item  | Một việc đã được nhận vào quy trình, kèm các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt chép nguyên văn. Là artifact đầu tiên, do `plan` tạo. |
+| Điểm xuất phát | Phiên bản mã nguồn mà thay đổi bắt đầu từ đó; thay đổi được so với nó. Dự án mới chưa có mã thì điểm xuất phát là "chưa có mã". |
 | Phạm vi    | Những gì work item mô tả là việc cần làm. Việc nằm ngoài đó là thêm phạm vi. |
 | Yêu cầu    | Một điều mà thay đổi sắp làm phải đạt được, rút từ nguồn trong work item, hoặc từ giả định của một câu hỏi mở. |
 | Tiêu chí chấp nhận | Điều quan sát được cho biết một yêu cầu đã đạt hay chưa. |
@@ -25,7 +26,7 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Merge      | Người duyệt đưa thay đổi đã duyệt vào nhánh chính — nhánh mã nguồn mà sản phẩm được xây từ đó. Agent không bao giờ merge. |
 | Capability | Một điều phải đúng để coi một stage là làm đủ. Mã dạng CAP-<stage>-NN, ví dụ `CAP-require-01`. |
 | Invariant  | Một luật nối nhiều stage, luôn do máy kiểm, để chuỗi artifact từ yêu cầu tới thay đổi không đứt (ví dụ: mọi yêu cầu đều có test). Mã dạng INV-NNN, ví dụ `INV-001`. Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`. |
-| Job type   | Loại việc (tính năng mới, sửa lỗi…). Quyết định đi qua stage nào và cần bảo đảm thêm gì. |
+| Job type   | Loại việc (tính năng mới, sửa lỗi…). Quyết định đi qua stage nào và cần bảo đảm thêm gì. Danh sách các loại và luật của từng loại nằm ở file job-types (chưa viết). |
 
 ## Luồng
 
@@ -86,8 +87,8 @@ Mỗi trang có 6 mục theo thứ tự:
 
 Stage xong khi nào thì đọc ở mục "Khi nào một stage xong" phía trên: mỗi capability đã ghi ai phán nó.
 
-Chữ trong backtick luôn là tên stage, tên artifact, mã, hoặc một giá trị ở bảng trên. Trong bảng, ô chứa
-tên artifact hay tên stage không cần backtick.
+Chữ trong backtick luôn là tên stage, tên artifact, mã, hoặc một giá trị ở bảng trên. Trong bảng, tên artifact
+hay tên stage có thể có hoặc không có backtick.
 
 ## Lý do chung
 

@@ -258,6 +258,10 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ## Đang mở
 
+### Task 1 — trang `plan` chờ người duyệt
+- `interface/stages/00-plan.md` đã qua 2 lần đọc lạnh. Lần 1: 4 MAJOR (danh sách job type, điểm xuất phát, ai khởi động stage kế → SP3, cách `plan` nhận việc) — sửa trong trang. Lần 2: 1 MAJOR trong trang (điểm xuất phát với dự án mới) — đã sửa; "ai cho phép kết thúc" không ghi một dòng ở trang là có chủ ý (D-016 D4: ghi ở overview).
+- Câu hỏi cho người: (1) `CAP-plan-02` (nguồn chỉ là tham chiếu hoặc lời người nguyên văn, agent phán) là mới so với v1 — giữ? (2) ưu tiên và ước lượng (v1 `CAP-plan-03/04`) ghi ở `Not in this stage`; (3) `operational-feedback` là Input không bắt buộc của `plan`; (4) "vào ở phase nào cũng được" của v1 chuyển SP3.
+
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
 - "Đúng một nguồn" cho mỗi yêu cầu như v1 (tránh trạng thái lửng khi yêu cầu dựa trên hai câu hỏi, một
