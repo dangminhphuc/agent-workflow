@@ -117,17 +117,38 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ## Đang mở
 
-### SP1-3 — Khuôn trang invariant và trang job type
-- Agent đề xuất (chờ người duyệt), cùng nguyên tắc D-011:
-  - `interface/invariants.md`, mỗi luật: `### INV-NNN — <tên>` + `- Rule:` + `- Stages:` (stage phải
-    giữ) + `- Judged by:` + `- Fail example:` + `- Rationale:`.
-  - Bỏ `Enforced by:` / `Tested by:` của v1 khỏi interface: chúng trỏ tới file engine, phá ranh giới
-    "interface không biết engine". Ánh xạ luật → checker → test chuyển sang phía engine (SP4); máy vẫn
-    chặn invariant không có checker.
-  - `Stages:` ở invariant và `## Invariants` ở trang stage là hai nguồn của cùng một quan hệ → chỉ giữ
-    một: `Stages:` ở invariant; trang stage hiển thị danh sách do máy sinh (bỏ mục `## Invariants`
-    khỏi khuôn D-011).
-  - `interface/job-types/<id>.md`: `# Job type: <id>` + `## Definition` + `## Stages` (bảng: Stage ·
-    Run `always` \| `optional` \| `skip` · Why) + `## Adds` (artifact, invariant thêm) + `## Rationale`.
-  - Danh sách job type tạm theo v1: `feature`, `bugfix`, `refactor`, `perf`, `chore`; nội dung duyệt khi
-    viết trang.
+### SP1-3 — Khuôn trang invariant và trang job type (bản đơn giản, chờ người duyệt)
+- Vai trò (đã giải thích với người): stage = việc của một bước; capability = "làm đủ bước đó"; invariant =
+  luật máy kiểm nối nhiều stage, để chuỗi không đứt; job type = loại việc chọn đường đi và bảo đảm thêm,
+  để độ chặt tỉ lệ với rủi ro.
+- Nguyên tắc: mỗi quan hệ ghi đúng một chỗ; trường nào có mặc định thì được bỏ dòng.
+- `interface/invariants.md`, mỗi luật 4–5 dòng:
+  ```
+  ### INV-NNN — <tên>
+  - Rule:          điều phải đúng
+  - Checked at:    stage mà khi kết thúc luật phải đúng
+  - Only for:      job type (bỏ dòng = mọi loại việc)
+  - Fail example:  một vi phạm cụ thể
+  - Why:           một câu
+  ```
+  - Không `Judged by`: invariant luôn do máy kiểm — luật cần agent/người phán là capability.
+  - Không `Engine` / `Enforced by` / `Tested by` của v1: trỏ tới engine, thuộc SP4.
+  - Cảnh báo sớm ở stage trước (`implement` cảnh báo, `verify` chặn) là chính sách engine (SP4).
+- `interface/job-types.md`, một file: một bảng thấy hết + mỗi loại một câu lý do:
+  ```
+  | Job type | Definition                   | Optional | Skipped | Added artifacts                          |
+  |----------|------------------------------|----------|---------|------------------------------------------|
+  | feature  | thêm hành vi mới             | —        | —       | —                                        |
+  | bugfix   | hành vi hiện tại sai         | design   | —       | reproduction-evidence: implement → verify |
+
+  ## Why
+  - bugfix: ...
+  ```
+  - `Definition` viết theo kiểu phân biệt với loại gần nó; trình biên dịch đưa vào hợp đồng máy (agent
+    cần để phân loại việc ở `plan`).
+- Hệ quả cho D-011: trang stage bỏ `## Invariants` và dòng `Skippable` (stage bỏ hay không chỉ ghi ở
+  `job-types.md`); còn 7 mục: Definition, Input, Output, Exit (`Judged by` + văn xuôi), Capabilities,
+  Not in this stage, Rationale. Danh sách invariant và job type của từng stage do máy sinh.
+- `interface/overview.md` mở đầu bằng bảng 5 khái niệm (stage, artifact, capability, invariant, job type),
+  mỗi cái một câu.
+- Thêm một invariant (nội dung duyệt sau): stage `optional` bị bỏ phải có người duyệt việc bỏ.
