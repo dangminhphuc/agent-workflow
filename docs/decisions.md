@@ -79,32 +79,55 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Mang theo khi duyệt từng trang: `plan` của v1 thực chất là tiếp nhận việc (intake); `implement` tạo 4
   loại artifact, `security-evidence` nằm ở đó thay vì `verify` mà lý do không hiển nhiên.
 
+### D-011 — SP1-2: khuôn trang stage, mỗi thông tin một nguồn (2026-11-25)
+- Lựa chọn: (A) khuôn 11 mục (Definition, Purpose, Input có cột From stage, Output, Exit, Capabilities
+  có ví dụ đạt + không đạt, Invariants, Example riêng từng trang, Not in this stage, Rationale);
+  (B) bản tối ưu ~8 mục + trang tổng quan.
+- Chọn: B.
+- Người đọc trang stage: người duyệt interface, trình biên dịch (SP2), người viết checker/test (SP4).
+  Agent lúc chạy **không** đọc trang này — nó đọc hợp đồng máy đã biên dịch + hướng dẫn của SP3.
+- Trang stage `interface/stages/NN-<id>.md`, mục theo thứ tự cố định:
+
+  | Mục | Nội dung | Trình biên dịch |
+  |---|---|---|
+  | `# Stage: <id>` | Tên stage | đọc |
+  | `## Definition` | Hai câu: stage là gì, vì sao cần (bỏ đi thì hỏng gì) | kiểm có, không rỗng |
+  | `## Input` | Bảng: Artifact · Required (`yes`/`no`) · Used for | đọc |
+  | `## Output` | Bảng: Artifact · Description | đọc |
+  | `## Exit` | `- Judged by: machine \| human \| both`, `- Skippable: yes \| no`, rồi văn xuôi: máy kiểm gì, người duyệt gì | đọc 2 dòng đầu |
+  | `## Capabilities` | `### CAP-<id>-NN — <tên>` + `- Rule:` + `- Judged by:` + `- Artifact:` + `- Fail example:` (bắt buộc) + `- Pass example:` (tuỳ chọn) | đọc |
+  | `## Invariants` | Danh sách `INV-NNN` stage phải giữ | đọc |
+  | `## Not in this stage` | Ranh giới: việc dễ tưởng thuộc stage này nhưng không | kiểm có, không rỗng |
+  | `## Rationale` | Lý do thiết kế, lựa chọn đã bỏ | kiểm có, không rỗng |
+
+- Trang tổng quan, hai phần tách file:
+  - Người viết `interface/overview.md`: giới thiệu + **kịch bản xuyên suốt** một việc đi qua cả 8 stage
+    (output stage trước là input stage sau).
+  - Máy sinh: sơ đồ luồng + ma trận stage × artifact, suy từ Input/Output các trang. Không ai sửa tay;
+    đường dẫn chốt ở SP2.
+- Bỏ so với (A) và vì sao:
+  - `Definition` + `Purpose` gộp — viết riêng hay lặp ý.
+  - Cột `From stage` — suy ra được từ Output của stage khác; giữ lại là hai nguồn.
+  - `Example` từng trang — thay bằng kịch bản xuyên suốt, ít chữ hơn và thấy được luồng.
+  - `Pass example` thành tuỳ chọn — `Rule` đã tả trường hợp đạt; ví dụ không đạt mới chỉ ra ranh giới.
+- Ngôn ngữ: heading, tên trường, id, tên loại artifact, giá trị enum bằng tiếng Anh (từ khoá ổn định
+  cho trình biên dịch). Mọi chữ người viết — kể cả `Rule:` — bằng tiếng Việt.
+- Văn xuôi không bị biên dịch nhưng trình biên dịch chặn mục rỗng: trang không thể đủ khuôn mà thiếu
+  phần giải thích cho người.
+
 ## Đang mở
 
-### SP1-2 — Khuôn của một trang stage
-- Câu hỏi: một trang stage gồm những mục nào, mục nào trình biên dịch đọc, mục nào là văn xuôi tự do,
-  viết bằng ngôn ngữ nào.
-- Agent đề xuất (chờ người duyệt):
-  - Một file mỗi stage: `interface/stages/NN-<id>.md`.
-  - Mục theo thứ tự cố định (heading tiếng Anh, là từ khoá trình biên dịch tìm):
-
-    | Mục | Nội dung | Trình biên dịch |
-    |---|---|---|
-    | `# Stage: <id>` | Tên stage | đọc `id` |
-    | `## Definition` | Một–hai câu: stage này là gì | chỉ kiểm có, không rỗng |
-    | `## Purpose` | Vì sao cần; bỏ đi thì hỏng gì | chỉ kiểm có, không rỗng |
-    | `## Input` | Bảng: Artifact · Required (`yes`/`no`) · From stage · Used for | đọc |
-    | `## Output` | Bảng: Artifact · Description | đọc |
-    | `## Exit` | `- Judged by: machine \| human \| both`, `- Skippable: yes \| no`, rồi văn xuôi: máy kiểm gì, người duyệt gì | đọc 2 dòng đầu |
-    | `## Capabilities` | Mỗi cái: `### CAP-<id>-NN — <tên>` + `- Rule:` + `- Judged by:` + `- Artifact:` + `- Pass example:` + `- Fail example:` | đọc tất cả |
-    | `## Invariants` | Danh sách `INV-NNN` stage phải giữ | đọc |
-    | `## Example` | Ví dụ vào/ra cụ thể, trọn một lượt | chỉ kiểm có, không rỗng |
-    | `## Not in this stage` | Ranh giới: việc dễ tưởng thuộc stage này nhưng không | chỉ kiểm có, không rỗng |
-    | `## Rationale` | Lý do thiết kế, lựa chọn đã bỏ | chỉ kiểm có, không rỗng |
-
-  - Ngôn ngữ: heading, tên trường, id, tên loại artifact, giá trị enum bằng tiếng Anh (từ khoá ổn định
-    cho trình biên dịch). Mọi chữ người viết — kể cả `Rule:` — bằng tiếng Việt.
-  - Mới so với v1: ví dụ đạt/không đạt cho từng capability (giúp người hiểu, và là mầm test case cho
-    SP4); bảng Input ghi stage nguồn và dùng để làm gì; mục ranh giới và lý do nằm ngay trong trang.
-  - Văn xuôi bắt buộc có nhưng không bị biên dịch: trình biên dịch chặn mục rỗng, nên trang không thể
-    "đủ khuôn" mà thiếu phần giải thích cho người.
+### SP1-3 — Khuôn trang invariant và trang job type
+- Agent đề xuất (chờ người duyệt), cùng nguyên tắc D-011:
+  - `interface/invariants.md`, mỗi luật: `### INV-NNN — <tên>` + `- Rule:` + `- Stages:` (stage phải
+    giữ) + `- Judged by:` + `- Fail example:` + `- Rationale:`.
+  - Bỏ `Enforced by:` / `Tested by:` của v1 khỏi interface: chúng trỏ tới file engine, phá ranh giới
+    "interface không biết engine". Ánh xạ luật → checker → test chuyển sang phía engine (SP4); máy vẫn
+    chặn invariant không có checker.
+  - `Stages:` ở invariant và `## Invariants` ở trang stage là hai nguồn của cùng một quan hệ → chỉ giữ
+    một: `Stages:` ở invariant; trang stage hiển thị danh sách do máy sinh (bỏ mục `## Invariants`
+    khỏi khuôn D-011).
+  - `interface/job-types/<id>.md`: `# Job type: <id>` + `## Definition` + `## Stages` (bảng: Stage ·
+    Run `always` \| `optional` \| `skip` · Why) + `## Adds` (artifact, invariant thêm) + `## Rationale`.
+  - Danh sách job type tạm theo v1: `feature`, `bugfix`, `refactor`, `perf`, `chore`; nội dung duyệt khi
+    viết trang.
