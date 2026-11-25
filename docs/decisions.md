@@ -37,6 +37,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   quả hay bỏ qua kiểm tra.
 
 ### D-005 — Interface: file cho người là nguồn, biên dịch sang file máy (2026-11-25)
+- *Bị thay một phần bởi D-013 (không commit hợp đồng máy).*
 - Lựa chọn: (A) Markdown + frontmatter như v1; (B) schema là nguồn, sinh tài liệu người; (C) hai lớp
   có liên kết.
 - Chọn: C, biến thể: người chỉ đọc và sửa file cho người; file máy là sản phẩm biên dịch, không ai
@@ -80,6 +81,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   loại artifact, `security-evidence` nằm ở đó thay vì `verify` mà lý do không hiển nhiên.
 
 ### D-011 — SP1-2: khuôn trang stage, mỗi thông tin một nguồn (2026-11-25)
+- *Bị thay một phần bởi D-012 (trang stage còn 7 mục, bỏ `## Invariants` và `Skippable`, thêm giới hạn độ dài).*
 - Lựa chọn: (A) khuôn 11 mục (Definition, Purpose, Input có cột From stage, Output, Exit, Capabilities
   có ví dụ đạt + không đạt, Invariants, Example riêng từng trang, Not in this stage, Rationale);
   (B) bản tối ưu ~8 mục + trang tổng quan.
@@ -115,40 +117,70 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Văn xuôi không bị biên dịch nhưng trình biên dịch chặn mục rỗng: trang không thể đủ khuôn mà thiếu
   phần giải thích cho người.
 
+### D-012 — SP1-3: khuôn đầy đủ của interface (2026-11-25)
+- Thay một phần: D-011.
+- Vai trò các khái niệm: stage = việc của một bước; artifact = thứ stage tạo ra cho stage sau; capability
+  = "làm đủ bước đó"; invariant = luật máy kiểm nối nhiều stage, để chuỗi không đứt; job type = loại việc
+  chọn đường đi và bảo đảm thêm, để độ chặt tỉ lệ với rủi ro.
+- Nguyên tắc: mỗi quan hệ ghi đúng một chỗ; trường có mặc định thì được bỏ dòng; ô bảng chỉ là một id,
+  danh sách id cách dấu phẩy, `—`, hoặc văn xuôi (chỉ ở cột quy định là văn xuôi).
+- Cấu trúc:
+  ```
+  interface/
+  ├── overview.md          người viết: bảng 5 khái niệm · kịch bản xuyên suốt · lý do chung
+  ├── stages/NN-<id>.md    người viết: 7 mục
+  ├── invariants.md        người viết
+  ├── job-types.md         người viết: 2 bảng + Why
+  └── generated/overview.md  máy sinh, commit, CI kiểm không lệch: sơ đồ luồng, ma trận stage × artifact,
+                             ma trận job type × stage, invariant theo stage
+  ```
+- **Trang stage**, 7 mục theo thứ tự (trình biên dịch đọc / kiểm):
+  - `# Stage: <id>`
+  - `## Definition` — tối đa 2 câu: là gì, vì sao cần.
+  - `## Input` — bảng Artifact · Required (`yes`/`no`) · Used for.
+  - `## Output` — bảng Artifact · Description.
+  - `## Exit` — `- Judged by: machine | human | both` + văn xuôi: máy kiểm gì, người duyệt gì.
+  - `## Capabilities` — `### CAP-<id>-NN — <tên>` + `- Rule:` + `- Judged by: machine | agent | human` +
+    `- Artifact:` + `- Fail example:` (bắt buộc, 1 dòng) + `- Pass example:` (tuỳ chọn, 1 dòng).
+  - `## Not in this stage` — tối đa 5 gạch.
+  - `## Rationale` — tối đa 5 gạch, chỉ ghi lựa chọn đã bỏ và vì sao.
+  - Bỏ so với D-011: `## Invariants` (quan hệ ghi ở `invariants.md`), dòng `Skippable` (ghi ở `job-types.md`).
+- **Invariant** (`invariants.md`), mỗi luật:
+  `### INV-NNN — <tên>` + `- Rule:` + `- Checked at:` (stage mà khi kết thúc luật phải đúng) +
+  `- Warned from:` (tuỳ chọn, stage báo sớm, phải đứng trước `Checked at`) + `- Only for:` (tuỳ chọn, job
+  type; bỏ dòng = mọi loại) + `- Fail example:` + `- Why:` (một câu).
+  - Không `Judged by`: invariant luôn do máy kiểm; luật xuyên stage cần người/agent phán là capability của `verify`.
+  - Không `Engine` / `Enforced by` / `Tested by` như v1: chúng trỏ tới engine, thuộc SP4.
+- **Job type** (`job-types.md`): bảng `Job type · Definition · Optional · Skipped`; bảng `Added artifacts`:
+  `Job type · Artifact · Produced by · Consumed by · Description`; `## Why` mỗi loại một gạch.
+  `Definition` viết kiểu phân biệt với loại gần nó; trình biên dịch đưa nó vào hợp đồng máy (agent cần để
+  phân loại việc ở `plan`).
+- **`overview.md`**: bảng 5 khái niệm; kịch bản xuyên suốt một việc qua 8 stage; lý do chung (không lặp ở từng trang).
+- **Trình biên dịch** — chặn: thiếu mục / sai thứ tự; văn xuôi bắt buộc rỗng; giá trị enum sai; ô bảng sai
+  dạng; id trùng; tham chiếu trong backtick (stage, artifact, `CAP-…`, `INV-…`) không tồn tại; artifact
+  được đọc mà không stage/job type nào tạo; `Warned from` không đứng trước `Checked at`; `generated/` lệch
+  (ở CI). Cảnh báo: vượt giới hạn độ dài. Tự suy: stage bị bỏ / tuỳ chọn với một job type → input
+  `Required: yes` lấy từ stage đó được phép vắng với job type đó.
+- **Phía engine (SP4)**: mỗi `Fail example` phải có một test; máy chặn ví dụ không có test.
+- **Phép thử đọc lạnh** — một trang chỉ xong khi qua: chỉ với trang đó + `overview.md`, trả lời được
+  (1) là gì, vì sao cần; (2) nhận gì; (3) trả gì; (4) khi nào xong, ai cho phép; (5) một ví dụ làm sai
+  cụ thể. Vòng 1: agent ở phiên trắng trả lời. Vòng 2: người đọc trang + câu trả lời, duyệt hoặc chỉ
+  chỗ gây hiểu sai.
+- Đánh đổi đã chấp nhận: `Rule` và văn xuôi bằng tiếng Việt; cần quốc tế hoá thì xem lại.
+- Còn phải viết (nội dung duyệt sau): invariant "stage `optional` bị bỏ phải có người duyệt việc bỏ".
+
+### D-013 — Không commit hợp đồng máy (2026-11-25)
+- Thay một phần: D-005 ("máy kiểm file máy đã commit khớp kết quả biên dịch").
+- Chọn: hợp đồng máy chỉ sinh lúc chạy test và lúc phát hành (đóng vào `.pyz`). Chỉ commit phần sinh cho
+  người đọc (`interface/generated/`), mở đầu bằng dòng báo "sinh tự động — đừng sửa tay"; CI chặn khi lệch.
+- Vì sao: không có bản commit thì không thể lệch; người đóng góp không phải nhớ chạy build.
+
 ## Đang mở
 
-### SP1-3 — Khuôn trang invariant và trang job type (bản đơn giản, chờ người duyệt)
-- Vai trò (đã giải thích với người): stage = việc của một bước; capability = "làm đủ bước đó"; invariant =
-  luật máy kiểm nối nhiều stage, để chuỗi không đứt; job type = loại việc chọn đường đi và bảo đảm thêm,
-  để độ chặt tỉ lệ với rủi ro.
-- Nguyên tắc: mỗi quan hệ ghi đúng một chỗ; trường nào có mặc định thì được bỏ dòng.
-- `interface/invariants.md`, mỗi luật 4–5 dòng:
-  ```
-  ### INV-NNN — <tên>
-  - Rule:          điều phải đúng
-  - Checked at:    stage mà khi kết thúc luật phải đúng
-  - Only for:      job type (bỏ dòng = mọi loại việc)
-  - Fail example:  một vi phạm cụ thể
-  - Why:           một câu
-  ```
-  - Không `Judged by`: invariant luôn do máy kiểm — luật cần agent/người phán là capability.
-  - Không `Engine` / `Enforced by` / `Tested by` của v1: trỏ tới engine, thuộc SP4.
-  - Cảnh báo sớm ở stage trước (`implement` cảnh báo, `verify` chặn) là chính sách engine (SP4).
-- `interface/job-types.md`, một file: một bảng thấy hết + mỗi loại một câu lý do:
-  ```
-  | Job type | Definition                   | Optional | Skipped | Added artifacts                          |
-  |----------|------------------------------|----------|---------|------------------------------------------|
-  | feature  | thêm hành vi mới             | —        | —       | —                                        |
-  | bugfix   | hành vi hiện tại sai         | design   | —       | reproduction-evidence: implement → verify |
-
-  ## Why
-  - bugfix: ...
-  ```
-  - `Definition` viết theo kiểu phân biệt với loại gần nó; trình biên dịch đưa vào hợp đồng máy (agent
-    cần để phân loại việc ở `plan`).
-- Hệ quả cho D-011: trang stage bỏ `## Invariants` và dòng `Skippable` (stage bỏ hay không chỉ ghi ở
-  `job-types.md`); còn 7 mục: Definition, Input, Output, Exit (`Judged by` + văn xuôi), Capabilities,
-  Not in this stage, Rationale. Danh sách invariant và job type của từng stage do máy sinh.
-- `interface/overview.md` mở đầu bằng bảng 5 khái niệm (stage, artifact, capability, invariant, job type),
-  mỗi cái một câu.
-- Thêm một invariant (nội dung duyệt sau): stage `optional` bị bỏ phải có người duyệt việc bỏ.
+### Trang thử `require`
+- `interface/stages/01-require.md` viết theo D-012, chuyển nội dung từ `sdlc/stages/01-require.md` của v1.
+- Bước: phép thử đọc lạnh vòng 1 (agent phiên trắng) → người duyệt (vòng 2) → chỉnh khuôn nếu cần →
+  mới viết spec SP1 và các trang còn lại.
+- Chưa có `overview.md` nên vòng 1 lần này chỉ dùng trang `require`.
+- Ứng viên cho SP7 thấy khi viết trang (không đưa vào trang thử): câu trích nguyên văn của nguồn
+  (`Quote`), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).

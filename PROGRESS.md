@@ -4,7 +4,8 @@
 
 ## Bước tiếp theo
 
-SP1 brainstorm — chốt câu **SP1-3** (khuôn trang invariant và trang job type), xem `docs/decisions.md` § Đang mở.
+SP1 brainstorm — người duyệt trang thử `interface/stages/01-require.md` (vòng 2 phép thử đọc lạnh), kèm
+kết quả vòng 1; xem `docs/decisions.md` § Đang mở. Sau đó chỉnh khuôn nếu cần, rồi viết spec SP1.
 
 ## Dự án con
 
