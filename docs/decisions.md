@@ -243,7 +243,18 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Đọc lạnh lần 1 (chỉ trang): ra D-014 và 6 sửa trang — nguồn là các nguồn trong work item; thêm
   `CAP-require-04` (người trả lời câu hỏi `blocking` và duyệt); câu trả lời của người là phần duyệt cho
   câu hỏi đó; "tự trả lời … mà không ghi lại"; viết lại câu ba mức chặn.
-- Đọc lạnh lần 2 (trang + overview): ra D-015. Lần 3 (+ invariants): ra D-016. Lần 4: lần cuối vòng 1.
+- Đọc lạnh lần 2 (trang + overview): ra D-015. Lần 3 (+ invariants): ra D-016.
+- Đọc lạnh lần 4 (lần cuối vòng 1): trả lời đủ 5 câu; 1 MAJOR, phần lớn nằm ngoài trang (xem "Chuyển
+  cho SP3"); phần trong trang và các MINOR đã sửa: `CAP-require-05` áp dù câu trả lời đến ở stage nào;
+  `CAP-require-04` nói rõ thứ tự (trả lời câu `blocking` → sửa yêu cầu → duyệt); nguồn của yêu cầu gồm
+  giả định của câu hỏi mở; nghĩa của Approval `no`; câu trả lời ghi cạnh câu hỏi; liệt kê trường của invariant.
+- **Vòng 1 xong. Bước tiếp: người duyệt trang (vòng 2).**
+
+### Chuyển cho SP3 (thấy khi đọc lạnh trang `require`)
+- Câu trả lời đến **sau khi** `require` đã xong (câu `review-blocking`, `non-blocking`) mà khác giả định:
+  ai sửa `requirements`, ở stage nào, có chạy lại `require` không; sau khi duyệt lại thì artifact của các
+  stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.
+- Ai tuyên bố một stage xong, và ai khởi động stage tiếp theo.
 - `overview.md` hiện là bản tối thiểu cho phép thử: một câu mỗi stage trong bảng Luồng là nháp từ v1,
   duyệt khi viết từng trang; kịch bản xuyên suốt viết khi đủ 8 trang; nghĩa của `agent` (một agent khác
   với agent đang làm việc) chờ SP3 chốt.

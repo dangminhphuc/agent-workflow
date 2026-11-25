@@ -1,7 +1,13 @@
 # Invariants
 
-Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật: điều phải đúng, phải đúng khi kết thúc stage nào, áp
-cho loại việc nào (không ghi = mọi loại), một ví dụ vi phạm, và vì sao cần.
+Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật có các trường:
+
+- **Rule** — điều phải đúng.
+- **Checked at** — phải đúng khi kết thúc stage nào.
+- **Warned from** — không bắt buộc: stage bắt đầu báo sớm.
+- **Only for** — không bắt buộc: chỉ áp cho job type nào. Không có trường này = áp cho mọi loại việc.
+- **Fail example** — một ví dụ vi phạm.
+- **Why** — vì sao cần.
 
 ### INV-001 — Chỉ dùng artifact đã duyệt và chưa bị sửa sau khi duyệt
 - Rule: mọi artifact ghi Approval `yes` ở bảng Output của stage tạo ra nó phải có dấu duyệt khớp với nội dung hiện tại.

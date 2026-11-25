@@ -4,8 +4,9 @@
 
 ## Bước tiếp theo
 
-SP1 brainstorm — người duyệt trang thử `interface/stages/01-require.md` (vòng 2 phép thử đọc lạnh), kèm
-kết quả vòng 1; xem `docs/decisions.md` § Đang mở. Sau đó chỉnh khuôn nếu cần, rồi viết spec SP1.
+SP1 brainstorm — người duyệt trang thử `interface/stages/01-require.md` cùng `interface/overview.md` và
+`interface/invariants.md` (vòng 2 phép thử đọc lạnh; vòng 1 đã xong sau 4 lần đọc). Xem `docs/decisions.md`
+§ Đang mở. Duyệt xong thì viết spec SP1.
 
 ## Dự án con
 

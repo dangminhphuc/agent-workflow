@@ -7,13 +7,13 @@ Thiếu stage này thì thiết kế và code dựa trên điều chưa ai xác 
 ## Input
 | Artifact  | Required | Used for                                                                          |
 |-----------|----------|-----------------------------------------------------------------------------------|
-| work-item | yes      | việc cần làm và các nguồn của nó (ticket, tài liệu, lời người duyệt); yêu cầu chỉ được rút từ các nguồn này |
+| work-item | yes      | việc cần làm và các nguồn của nó (ticket, tài liệu, lời người duyệt); yêu cầu chỉ được rút từ các nguồn này, hoặc từ giả định của một câu hỏi mở |
 
 ## Output
 | Artifact       | Approval | Description                                                                         |
 |----------------|----------|-------------------------------------------------------------------------------------|
 | requirements   | yes      | danh sách yêu cầu; mỗi yêu cầu chỉ ra nguồn, và có tiêu chí chấp nhận quan sát được |
-| open-questions | no       | những điều các nguồn không nói; mỗi điều có giả định tạm dùng và mức chặn; người duyệt trả lời từng câu |
+| open-questions | no       | những điều các nguồn không nói; mỗi điều có giả định tạm dùng và mức chặn; người duyệt trả lời từng câu, vào lúc mức chặn của câu đó đòi hỏi; câu trả lời ghi ngay cạnh câu hỏi |
 
 ## Capabilities
 
@@ -24,7 +24,7 @@ Thiếu stage này thì thiết kế và code dựa trên điều chưa ai xác 
 - Fail example: yêu cầu ghi nguồn là "ticket PROJ-99", nhưng work item chỉ có ticket PROJ-42.
 
 ### CAP-require-02 — Tiêu chí chấp nhận quan sát được
-- Rule: mỗi tiêu chí chấp nhận nói rõ cái gì xảy ra hay đo được bao nhiêu, để một người quan sát kết luận được đạt hay không; không dùng từ mơ hồ như "nhanh", "dễ dùng" mà không có con số hay hành vi cụ thể.
+- Rule: mỗi tiêu chí chấp nhận nói rõ cái gì xảy ra hay đo được bao nhiêu, để bất kỳ ai quan sát cũng kết luận được đạt hay không; không dùng từ mơ hồ như "nhanh", "dễ dùng" mà không có con số hay hành vi cụ thể.
 - Judged by: agent
 - Artifact: requirements
 - Fail example: "Trang đăng nhập phải nhanh" — "nhanh" không có con số nào để kiểm.
@@ -37,13 +37,13 @@ Thiếu stage này thì thiết kế và code dựa trên điều chưa ai xác 
 - Fail example: "Có cần hỗ trợ đăng nhập bằng Google không?" — không có giả định tạm, không có mức chặn.
 
 ### CAP-require-04 — Người duyệt trả lời câu hỏi chặn và duyệt yêu cầu
-- Rule: người duyệt trả lời mọi câu hỏi mở mức `blocking` — câu trả lời đó là phần duyệt cho câu hỏi — rồi đọc và duyệt danh sách yêu cầu.
+- Rule: người duyệt trả lời mọi câu hỏi mở mức `blocking` trước — câu trả lời chính là việc duyệt câu hỏi đó, câu hỏi không cần dấu duyệt riêng — rồi, sau khi yêu cầu đã được sửa theo câu trả lời (`CAP-require-05`), đọc và duyệt danh sách yêu cầu.
 - Judged by: human
 - Artifact: requirements, open-questions
 - Fail example: câu hỏi "giữ phiên đăng nhập bao lâu?" mức `blocking` chưa ai trả lời, nhưng danh sách yêu cầu đã được đánh dấu duyệt.
 
 ### CAP-require-05 — Câu trả lời khác giả định thì yêu cầu được sửa theo
-- Rule: khi người duyệt trả lời một câu hỏi mở khác với giả định tạm, mọi yêu cầu trỏ tới câu hỏi đó được sửa theo câu trả lời.
+- Rule: khi người duyệt trả lời một câu hỏi mở khác với giả định tạm — dù lúc đó đang ở stage nào — mọi yêu cầu trỏ tới câu hỏi đó được sửa theo câu trả lời, và danh sách yêu cầu phải được duyệt lại (`INV-001`).
 - Judged by: agent
 - Artifact: requirements
 - Fail example: giả định "giữ phiên 30 ngày", người duyệt trả lời "1 ngày", nhưng yêu cầu vẫn ghi 30 ngày.
@@ -60,4 +60,4 @@ Thiếu stage này thì thiết kế và code dựa trên điều chưa ai xác 
 - Đã loại: để agent tự quyết điều nguồn không nói — agent sẽ đoán mà không ai thấy; ghi thành câu hỏi mở có giả định thì điều đoán thành thứ người duyệt được.
 - Đã loại: một, hai, hay nhiều hơn ba mức chặn — một mức thì câu hỏi nhỏ cũng chặn cả việc; hai mức (chặn / không chặn) không tách được câu phải biết trước khi thiết kế với câu chỉ cần biết trước khi merge; nhiều hơn ba thì không ai phân biệt được ranh giới. Mỗi mức ứng với lúc muộn nhất mà sửa một giả định sai còn rẻ.
 - Đã loại: một capability gộp "có tiêu chí" với "tiêu chí quan sát được" — máy kiểm chính xác được cái đầu, không phán được cái sau; gộp lại thì hoặc máy báo nhầm, hoặc lỗi "nhanh" lọt qua.
-- Đã loại: duyệt `open-questions` như một khối — câu `non-blocking` được trả lời bất cứ lúc nào, nên mỗi câu trả lời sẽ làm mất dấu duyệt của cả khối; duyệt từng câu bằng câu trả lời thì không.
+- Đã loại: duyệt `open-questions` như một khối — câu `non-blocking` được trả lời bất cứ lúc nào, nên mỗi câu trả lời sẽ làm mất dấu duyệt của cả khối. Duyệt từng câu thì chỉ câu trả lời khác giả định mới kéo theo duyệt lại, và chỉ duyệt lại `requirements`.

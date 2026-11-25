@@ -15,7 +15,7 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Artifact   | Thứ một stage tạo ra để stage sau dùng, ví dụ danh sách yêu cầu, thiết kế, kế hoạch. Tên viết thường, nối bằng gạch ngang, ví dụ `work-item`. |
 | Work item  | Một việc đã được nhận vào quy trình, kèm các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt được ghi lại. Là artifact đầu tiên, do `plan` tạo. |
 | Phạm vi    | Những gì work item mô tả là việc cần làm. Việc nằm ngoài đó là thêm phạm vi. |
-| Yêu cầu    | Một điều thay đổi phải làm được, rút từ nguồn trong work item. |
+| Yêu cầu    | Một điều thay đổi phải làm được, rút từ nguồn trong work item, hoặc từ giả định của một câu hỏi mở. |
 | Tiêu chí chấp nhận | Điều quan sát được cho biết một yêu cầu đã đạt hay chưa. |
 | Câu hỏi mở | Điều các nguồn không nói mà việc cần biết; ghi kèm giả định tạm dùng và mức chặn. |
 | Task       | Một phần việc nhỏ của kế hoạch, do `breakdown` tạo. |
@@ -24,7 +24,7 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Dấu duyệt  | Bằng chứng người duyệt đã duyệt một artifact, gắn với nội dung lúc duyệt: nội dung đổi thì dấu duyệt mất hiệu lực. |
 | Merge      | Người duyệt đưa thay đổi đã duyệt vào nhánh chính — nhánh mã nguồn mà sản phẩm được xây từ đó. Agent không bao giờ merge. |
 | Capability | Một điều phải đúng để coi một stage là làm đủ. Mã dạng CAP-<stage>-NN, ví dụ `CAP-require-01`. |
-| Invariant  | Một luật nối nhiều stage, luôn do máy kiểm, để chuỗi không đứt. Mã dạng INV-NNN, ví dụ `INV-001`. Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`. |
+| Invariant  | Một luật nối nhiều stage, luôn do máy kiểm, để chuỗi artifact từ yêu cầu tới thay đổi không đứt (ví dụ: mọi yêu cầu đều có test). Mã dạng INV-NNN, ví dụ `INV-001`. Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`. |
 | Job type   | Loại việc (tính năng mới, sửa lỗi…). Quyết định đi qua stage nào và cần bảo đảm thêm gì. |
 
 ## Luồng
@@ -66,7 +66,7 @@ khi duyệt, kể cả sửa theo câu trả lời của người duyệt, thì 
 | `agent`           | Judged by           | Một agent khác với agent đang làm việc phán. |
 | `human`           | Judged by           | Người duyệt phán. |
 | `yes` / `no`      | Required (Input)    | Input bắt buộc hay không. |
-| `yes` / `no`      | Approval (Output)   | Artifact có cần người duyệt duyệt cả khối, kèm dấu duyệt, hay không. |
+| `yes` / `no`      | Approval (Output)   | Artifact có được người duyệt duyệt cả khối, kèm dấu duyệt, hay không. `no` không có nghĩa người duyệt không đụng tới: một capability `human` có thể đòi người duyệt từng phần (ví dụ trả lời từng câu hỏi mở). |
 | `all`             | Checked at (invariant) | Luật phải đúng khi kết thúc mọi stage. |
 | `blocking`        | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi `design` bắt đầu. |
 | `review-blocking` | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi merge. |
