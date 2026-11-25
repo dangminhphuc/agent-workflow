@@ -4,9 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 brainstorm — người duyệt trang thử `interface/stages/01-require.md` cùng `interface/overview.md` và
-`interface/invariants.md` (vòng 2 của cold read; vòng 1 đã xong sau 4 lần đọc). Xem `docs/decisions.md`
-§ Đang mở. Duyệt xong thì viết spec SP1.
+SP1 — người duyệt spec `docs/specs/SP1-interface.md`. Duyệt xong thì viết plan SP1 (`docs/plans/SP1-interface.md`).
 
 ## Dự án con
 
@@ -56,6 +54,7 @@ Trạng thái: `chưa bắt đầu` → `brainstorm` → `spec chờ duyệt` �
 ## Tài liệu
 
 - `docs/decisions.md` — quyết định đã chốt và câu hỏi đang mở.
-- `docs/specs/SPn-<tên>.md` — spec từng dự án con (chưa có).
-- `docs/plans/SPn-<tên>.md` — plan từng dự án con (chưa có).
+- `docs/specs/SPn-<tên>.md` — spec từng dự án con.
+- `docs/plans/SPn-<tên>.md` — plan từng dự án con.
+- `interface/` — interface SDLC (SP1 đang viết).
 - v1 (tham chiếu): nhánh `main`, `/home/dangminhphuc/github/agent-workflow`.
