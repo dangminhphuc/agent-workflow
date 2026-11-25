@@ -70,15 +70,41 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Chọn: `PROGRESS.md` là điểm vào duy nhất; quyết định ở file này; spec ở `docs/specs/`, plan ở
   `docs/plans/`. Quy tắc dừng/tiếp tục: `PROGRESS.md` § Cách dừng và tiếp tục.
 
+### D-010 — SP1-1: giữ 8 stage của v1 làm khung (2026-11-25)
+- Lựa chọn: (A) giữ nguyên 8 stage, duyệt lại nội dung từng stage trong SP1; (B) đổi tên và ranh giới
+  ngay từ đầu; (C) bắt đầu từ mô hình SDLC chuẩn (ISO/IEC 12207) rồi chọn lọc.
+- Chọn: A — `plan`, `require`, `design`, `breakdown`, `implement`, `verify`, `deploy`, `operate`.
+- Vì sao: khung phủ đủ vòng đời và đã qua thực tế; điểm cần sửa nằm ở ranh giới và tên, duyệt từng
+  trang sẽ bắt được kèm lý do cụ thể.
+- Mang theo khi duyệt từng trang: `plan` của v1 thực chất là tiếp nhận việc (intake); `implement` tạo 4
+  loại artifact, `security-evidence` nằm ở đó thay vì `verify` mà lý do không hiển nhiên.
+
 ## Đang mở
 
-### SP1-1 — Danh sách stage của interface
-- (A) Giữ nguyên 8 stage của v1 (`plan`, `require`, `design`, `breakdown`, `implement`, `verify`,
-  `deploy`, `operate`); duyệt lại nội dung từng stage trong SP1.
-- (B) Giữ 8 bước nhưng đổi tên và ranh giới ngay từ đầu (ví dụ `plan` → `intake`, chuyển
-  `security-evidence` từ `implement` sang `verify`).
-- (C) Bắt đầu từ một mô hình SDLC chuẩn (ví dụ ISO/IEC 12207) rồi chọn lọc.
-- Agent đề xuất: A — khung 8 stage phủ đủ vòng đời và đã qua thực tế; điểm cần sửa nằm ở ranh giới và
-  tên, duyệt từng trang sẽ bắt được kèm lý do cụ thể.
-- Hai điểm đã thấy ở v1: `plan` thực chất là tiếp nhận việc (intake); `implement` tạo 4 loại artifact,
-  `security-evidence` nằm ở đó thay vì `verify` mà lý do không hiển nhiên.
+### SP1-2 — Khuôn của một trang stage
+- Câu hỏi: một trang stage gồm những mục nào, mục nào trình biên dịch đọc, mục nào là văn xuôi tự do,
+  viết bằng ngôn ngữ nào.
+- Agent đề xuất (chờ người duyệt):
+  - Một file mỗi stage: `interface/stages/NN-<id>.md`.
+  - Mục theo thứ tự cố định (heading tiếng Anh, là từ khoá trình biên dịch tìm):
+
+    | Mục | Nội dung | Trình biên dịch |
+    |---|---|---|
+    | `# Stage: <id>` | Tên stage | đọc `id` |
+    | `## Definition` | Một–hai câu: stage này là gì | chỉ kiểm có, không rỗng |
+    | `## Purpose` | Vì sao cần; bỏ đi thì hỏng gì | chỉ kiểm có, không rỗng |
+    | `## Input` | Bảng: Artifact · Required (`yes`/`no`) · From stage · Used for | đọc |
+    | `## Output` | Bảng: Artifact · Description | đọc |
+    | `## Exit` | `- Judged by: machine \| human \| both`, `- Skippable: yes \| no`, rồi văn xuôi: máy kiểm gì, người duyệt gì | đọc 2 dòng đầu |
+    | `## Capabilities` | Mỗi cái: `### CAP-<id>-NN — <tên>` + `- Rule:` + `- Judged by:` + `- Artifact:` + `- Pass example:` + `- Fail example:` | đọc tất cả |
+    | `## Invariants` | Danh sách `INV-NNN` stage phải giữ | đọc |
+    | `## Example` | Ví dụ vào/ra cụ thể, trọn một lượt | chỉ kiểm có, không rỗng |
+    | `## Not in this stage` | Ranh giới: việc dễ tưởng thuộc stage này nhưng không | chỉ kiểm có, không rỗng |
+    | `## Rationale` | Lý do thiết kế, lựa chọn đã bỏ | chỉ kiểm có, không rỗng |
+
+  - Ngôn ngữ: heading, tên trường, id, tên loại artifact, giá trị enum bằng tiếng Anh (từ khoá ổn định
+    cho trình biên dịch). Mọi chữ người viết — kể cả `Rule:` — bằng tiếng Việt.
+  - Mới so với v1: ví dụ đạt/không đạt cho từng capability (giúp người hiểu, và là mầm test case cho
+    SP4); bảng Input ghi stage nguồn và dùng để làm gì; mục ranh giới và lý do nằm ngay trong trang.
+  - Văn xuôi bắt buộc có nhưng không bị biên dịch: trình biên dịch chặn mục rỗng, nên trang không thể
+    "đủ khuôn" mà thiếu phần giải thích cho người.

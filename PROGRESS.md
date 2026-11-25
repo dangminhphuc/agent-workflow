@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 brainstorm — chốt câu **SP1-1** (danh sách stage: A/B/C), xem `docs/decisions.md` § Đang mở.
+SP1 brainstorm — chốt câu **SP1-2** (khuôn của một trang stage), xem `docs/decisions.md` § Đang mở.
 
 ## Dự án con
 
