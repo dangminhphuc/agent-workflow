@@ -175,12 +175,32 @@ tham chiếu, không phải thứ v2 phải tương thích.
   người đọc (`interface/generated/`), mở đầu bằng dòng báo "sinh tự động — đừng sửa tay"; CI chặn khi lệch.
 - Vì sao: không có bản commit thì không thể lệch; người đóng góp không phải nhớ chạy build.
 
+### D-014 — Chỉnh khuôn sau đọc lạnh lần 1 trang `require` (2026-11-25)
+- Thay một phần: D-012.
+- Bối cảnh: agent đọc lạnh (chỉ trang `require`) tìm ra: Exit ghi `Judged by: both` nhưng mọi capability
+  là `machine` (hai nguồn lệch nhau); luật "chữ trong backtick phải tồn tại" chặn nhầm giá trị như
+  `blocking`; tiền tố "Bỏ:" khó hiểu; không rõ máy và người ai trước, lúc nào xong.
+- Chọn:
+  - **K1** — bỏ dòng `Judged by` ở `## Exit`; máy suy ra từ `Judged by` của các capability. Exit chỉ còn văn xuôi.
+  - **K2** — `overview.md` có bảng **Giá trị** (giá trị · dùng ở đâu · nghĩa). Mọi chữ trong backtick phải
+    là tên stage, artifact, mã, hoặc giá trị trong bảng này; trình biên dịch chặn chữ lạ.
+  - **K3** — gạch đầu dòng trong `## Rationale` mở bằng "Đã loại:".
+  - **K4** — thứ tự kết thúc chung, ghi một lần ở `overview.md`: máy kiểm trước, người duyệt sau khi máy
+    đạt; stage xong khi mọi capability đạt. Trang stage không nhắc lại.
+  - `overview.md` nói rõ: interface không quy định định dạng file, nơi lưu, hay dạng dấu duyệt (thuộc SP3).
+
 ## Đang mở
 
 ### Trang thử `require`
 - `interface/stages/01-require.md` viết theo D-012, chuyển nội dung từ `sdlc/stages/01-require.md` của v1.
 - Bước: phép thử đọc lạnh vòng 1 (agent phiên trắng) → người duyệt (vòng 2) → chỉnh khuôn nếu cần →
   mới viết spec SP1 và các trang còn lại.
-- Chưa có `overview.md` nên vòng 1 lần này chỉ dùng trang `require`.
+- Đọc lạnh lần 1 (chỉ trang): ra D-014 và 6 sửa trang — nguồn là các nguồn trong work item; thêm
+  `CAP-require-04` (người trả lời câu hỏi `blocking` và duyệt); câu trả lời của người là phần duyệt cho
+  câu hỏi đó; "tự trả lời … mà không ghi lại"; viết lại câu ba mức chặn.
+- Đọc lạnh lần 2: trang đã sửa + `overview.md` tối thiểu.
+- `overview.md` hiện là bản tối thiểu cho phép thử: một câu mỗi stage trong bảng Luồng là nháp từ v1,
+  duyệt khi viết từng trang; kịch bản xuyên suốt viết khi đủ 8 trang; nghĩa của `agent` (một agent khác
+  với agent đang làm việc) chờ SP3 chốt.
 - Ứng viên cho SP7 thấy khi viết trang (không đưa vào trang thử): câu trích nguyên văn của nguồn
   (`Quote`), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
