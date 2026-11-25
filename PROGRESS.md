@@ -4,13 +4,13 @@
 
 ## Bước tiếp theo
 
-SP1 — người duyệt spec `docs/specs/SP1-interface.md`. Duyệt xong thì viết plan SP1 (`docs/plans/SP1-interface.md`).
+SP1 — người duyệt plan `docs/plans/SP1-interface.md` và chọn cách thực thi. Duyệt xong thì bắt đầu Task 1 (trang `plan`).
 
 ## Dự án con
 
 | SP  | Tên                              | Trạng thái   | Spec | Plan |
 |-----|----------------------------------|--------------|------|------|
-| SP1 | Định nghĩa interface SDLC        | spec chờ duyệt | `docs/specs/SP1-interface.md` | — |
+| SP1 | Định nghĩa interface SDLC        | plan chờ duyệt | `docs/specs/SP1-interface.md` | `docs/plans/SP1-interface.md` |
 | SP7 | Chọn lại tính năng của v1        | chưa bắt đầu | —    | —    |
 | SP2 | Trình biên dịch interface        | chưa bắt đầu | —    | —    |
 | SP3 | Mô hình làm việc của agent       | chưa bắt đầu | —    | —    |

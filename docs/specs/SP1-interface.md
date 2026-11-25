@@ -1,6 +1,6 @@
 # SP1 — Định nghĩa interface SDLC
 
-- Trạng thái: chờ người duyệt
+- Trạng thái: đã duyệt (2026-11-25)
 - Ngày: 2026-11-25
 - Quyết định liên quan: D-001…D-018 trong `docs/decisions.md` (lịch sử và lý do). File này là **bản hiện
   hành**: chỗ nào khác với một quyết định cũ thì file này đúng, và quyết định mới hơn đã ghi lý do.
