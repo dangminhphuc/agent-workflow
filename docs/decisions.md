@@ -207,7 +207,34 @@ tham chiếu, không phải thứ v2 phải tương thích.
     "engine" khỏi overview; liệt kê tên trường của capability; tên thư mục và tên trường không viết trong
     backtick; ô bảng chứa tên artifact/stage không cần backtick.
 
+### D-016 — Chỉnh sau đọc lạnh lần 3 trang `require` (2026-11-25)
+- Thay một phần: D-012 (bỏ `## Exit`, thêm cột `Approval`), D-015 (artifact cần duyệt khai rõ, không suy ra).
+- Bối cảnh: đọc lạnh lần 3 (overview + invariants + require) ra 4 MAJOR — đều là quyết định nội dung trang
+  chưa nói ra: `open-questions` có cần dấu duyệt không; `INV-001` thiếu stage kiểm; "một nguồn" là đúng
+  một hay ít nhất một; ranh giới "rút từ nguồn" / "tự trả lời" / "thêm phạm vi".
+- Chọn:
+  - **D1** — bảng Output có cột `Approval` (`yes`/`no`): artifact cần người duyệt duyệt cả khối, kèm dấu
+    duyệt. `INV-001` dùng cột này, không suy từ capability `human` nữa. `open-questions` = `no`: duyệt
+    từng câu bằng câu trả lời. Thêm `CAP-require-05` (agent): câu trả lời khác giả định → yêu cầu trỏ
+    tới câu hỏi đó được sửa (khi đó `INV-001` buộc duyệt lại `requirements`).
+  - **D2** — giá trị `all` cho `Checked at`; `INV-001` kiểm ở mọi stage.
+  - **D3** — mỗi yêu cầu chỉ ra **ít nhất một** nguồn; nguồn là một mục trong work item hoặc một câu hỏi
+    mở (yêu cầu dựa trên giả định).
+  - **D4** — bỏ mục `## Exit`: sau D-014/D-015 nó chỉ chép lại capability bằng lời khác rồi lệch. Trang
+    stage còn **6 mục**: Definition, Input, Output, Capabilities, Not in this stage, Rationale. Máy sinh
+    phần "xong khi nào" của từng stage vào `generated/overview.md`.
+  - M4: ranh giới ba trường hợp ghi ở `Not in this stage`; thêm khái niệm "phạm vi" ở overview.
+  - Sửa chữ: "bước gác" → "bước kiểm cuối"; định nghĩa nhánh chính, phiên làm việc mới, ticket; lời người
+    = lời người duyệt được ghi lại; mẫu mã không viết trong backtick; thêm lý do loại hai mức chặn.
+- Tiêu chí dừng đọc lạnh: lần 4 là lần cuối của vòng 1. MAJOR còn lại thuộc trang khác hoặc SP3 → ghi vào
+  § Đang mở, chuyển trang cho người duyệt; không lặp tiếp.
+
 ## Đang mở
+
+### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
+- Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
+- "Đúng một nguồn" cho mỗi yêu cầu như v1 (tránh trạng thái lửng khi yêu cầu dựa trên hai câu hỏi, một
+  đã trả lời một chưa) — v2 đang chọn "ít nhất một" (D-016 D3).
 
 ### Trang thử `require`
 - `interface/stages/01-require.md` viết theo D-012, chuyển nội dung từ `sdlc/stages/01-require.md` của v1.
@@ -216,9 +243,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Đọc lạnh lần 1 (chỉ trang): ra D-014 và 6 sửa trang — nguồn là các nguồn trong work item; thêm
   `CAP-require-04` (người trả lời câu hỏi `blocking` và duyệt); câu trả lời của người là phần duyệt cho
   câu hỏi đó; "tự trả lời … mà không ghi lại"; viết lại câu ba mức chặn.
-- Đọc lạnh lần 2: trang đã sửa + `overview.md` tối thiểu.
+- Đọc lạnh lần 2 (trang + overview): ra D-015. Lần 3 (+ invariants): ra D-016. Lần 4: lần cuối vòng 1.
 - `overview.md` hiện là bản tối thiểu cho phép thử: một câu mỗi stage trong bảng Luồng là nháp từ v1,
   duyệt khi viết từng trang; kịch bản xuyên suốt viết khi đủ 8 trang; nghĩa của `agent` (một agent khác
   với agent đang làm việc) chờ SP3 chốt.
-- Ứng viên cho SP7 thấy khi viết trang (không đưa vào trang thử): câu trích nguyên văn của nguồn
-  (`Quote`), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).

@@ -13,7 +13,8 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 |------------|-------|
 | Stage      | Một bước của quy trình. Có 8 stage, chạy theo thứ tự ở mục Luồng. |
 | Artifact   | Thứ một stage tạo ra để stage sau dùng, ví dụ danh sách yêu cầu, thiết kế, kế hoạch. Tên viết thường, nối bằng gạch ngang, ví dụ `work-item`. |
-| Work item  | Một việc đã được nhận vào quy trình, kèm các nguồn mô tả nó (ticket, tài liệu, lời người). Là artifact đầu tiên, do `plan` tạo. |
+| Work item  | Một việc đã được nhận vào quy trình, kèm các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt được ghi lại. Là artifact đầu tiên, do `plan` tạo. |
+| Phạm vi    | Những gì work item mô tả là việc cần làm. Việc nằm ngoài đó là thêm phạm vi. |
 | Yêu cầu    | Một điều thay đổi phải làm được, rút từ nguồn trong work item. |
 | Tiêu chí chấp nhận | Điều quan sát được cho biết một yêu cầu đã đạt hay chưa. |
 | Câu hỏi mở | Điều các nguồn không nói mà việc cần biết; ghi kèm giả định tạm dùng và mức chặn. |
@@ -21,9 +22,9 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Agent      | Trợ lý AI thực hiện các stage. |
 | Người duyệt | Người chịu trách nhiệm về việc: trả lời câu hỏi mở, duyệt artifact, merge. |
 | Dấu duyệt  | Bằng chứng người duyệt đã duyệt một artifact, gắn với nội dung lúc duyệt: nội dung đổi thì dấu duyệt mất hiệu lực. |
-| Merge      | Người duyệt đưa thay đổi đã duyệt vào nhánh chính. Agent không bao giờ merge. |
-| Capability | Một điều phải đúng để coi một stage là làm đủ. Mã `CAP-<stage>-NN`, ví dụ `CAP-require-01`. |
-| Invariant  | Một luật nối nhiều stage, luôn do máy kiểm, để chuỗi không đứt. Mã `INV-NNN`, ví dụ `INV-001`. Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`. |
+| Merge      | Người duyệt đưa thay đổi đã duyệt vào nhánh chính — nhánh mã nguồn mà sản phẩm được xây từ đó. Agent không bao giờ merge. |
+| Capability | Một điều phải đúng để coi một stage là làm đủ. Mã dạng CAP-<stage>-NN, ví dụ `CAP-require-01`. |
+| Invariant  | Một luật nối nhiều stage, luôn do máy kiểm, để chuỗi không đứt. Mã dạng INV-NNN, ví dụ `INV-001`. Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`. |
 | Job type   | Loại việc (tính năng mới, sửa lỗi…). Quyết định đi qua stage nào và cần bảo đảm thêm gì. |
 
 ## Luồng
@@ -51,10 +52,11 @@ Một stage xong khi mọi capability của nó đạt và mọi invariant phả
 
 1. Máy và agent kiểm nội dung artifact.
 2. Người duyệt đọc, trả lời câu hỏi, duyệt — chỉ khi stage có capability `human`.
-3. Máy xác nhận dấu duyệt khớp với nội dung (`INV-001`) và kiểm các invariant còn lại.
+3. Máy xác nhận dấu duyệt của mọi artifact cần duyệt khớp với nội dung (`INV-001`) và kiểm các
+   invariant còn lại.
 
-Nội dung đổi sau khi duyệt, kể cả sửa theo câu trả lời của người duyệt, thì quay lại bước 1. Bước gác
-cuối luôn là máy.
+Artifact cần duyệt là artifact ghi Approval `yes` ở bảng Output. Nội dung một artifact cần duyệt đổi sau
+khi duyệt, kể cả sửa theo câu trả lời của người duyệt, thì quay lại bước 1. Bước kiểm cuối cùng luôn do máy.
 
 ## Giá trị
 
@@ -64,29 +66,33 @@ cuối luôn là máy.
 | `agent`           | Judged by           | Một agent khác với agent đang làm việc phán. |
 | `human`           | Judged by           | Người duyệt phán. |
 | `yes` / `no`      | Required (Input)    | Input bắt buộc hay không. |
+| `yes` / `no`      | Approval (Output)   | Artifact có cần người duyệt duyệt cả khối, kèm dấu duyệt, hay không. |
+| `all`             | Checked at (invariant) | Luật phải đúng khi kết thúc mọi stage. |
 | `blocking`        | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi `design` bắt đầu. |
 | `review-blocking` | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi merge. |
 | `non-blocking`    | Mức chặn câu hỏi mở | Việc được làm tiếp và merge trên giả định đã ghi; trả lời lúc nào cũng được. |
 
 ## Cách đọc một trang stage
 
-Mỗi trang có 7 mục theo thứ tự:
+Mỗi trang có 6 mục theo thứ tự:
 
 - **Definition** — là gì, vì sao cần.
 - **Input** — bảng: artifact, bắt buộc hay không (Required), dùng để làm gì (Used for).
-- **Output** — bảng: artifact, mô tả.
-- **Exit** — xong khi nào: máy, agent, người duyệt mỗi bên kiểm gì.
+- **Output** — bảng: artifact, có cần duyệt không (Approval), mô tả.
 - **Capabilities** — mỗi capability có: **Rule** (điều phải đúng), **Judged by** (ai phán), **Artifact**
   (artifact nó bảo đảm), **Fail example** (một ví dụ làm sai), **Pass example** (ví dụ làm đúng, không bắt buộc).
 - **Not in this stage** — việc dễ tưởng thuộc stage này nhưng không phải.
 - **Rationale** — các lựa chọn đã loại và vì sao.
+
+Stage xong khi nào thì đọc ở mục "Khi nào một stage xong" phía trên: mỗi capability đã ghi ai phán nó.
 
 Chữ trong backtick luôn là tên stage, tên artifact, mã, hoặc một giá trị ở bảng trên. Trong bảng, ô chứa
 tên artifact hay tên stage không cần backtick.
 
 ## Lý do chung
 
-- Các stage chỉ nối nhau qua artifact, nên mỗi stage chạy được từ một phiên làm việc mới, bởi bất kỳ agent nào.
+- Các stage chỉ nối nhau qua artifact, nên mỗi stage chạy được từ một phiên làm việc mới — một lần chạy
+  agent không mang theo trí nhớ của lần chạy trước — bởi bất kỳ agent nào.
 - Điều máy kiểm được thì máy phải kiểm; người duyệt chỉ quyết những điều máy không quyết được.
 - Lõi quy trình đi tới lúc người duyệt merge; `deploy` và `operate` chỉ là điểm nối với hệ thống bên ngoài.
 
