@@ -95,7 +95,7 @@ Rate each finding MAJOR (reader would act wrongly or cannot answer one of the 5)
 | change, test-evidence, task-evidence, security-evidence | implement | no | |
 | review-report | verify | yes | đã duyệt (D-023) |
 | delivery | deploy | no | đã duyệt (D-025) |
-| operational-feedback | operate | no | vào lại `plan` |
+| operational-feedback | operate | no | vào lại `plan`; đã duyệt (D-026) |
 | reproduction-evidence | implement (bugfix) | no | thêm bởi job type, `verify` đọc |
 | performance-evidence | implement (perf) | no | thêm bởi job type, `verify` đọc |
 

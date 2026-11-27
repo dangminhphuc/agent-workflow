@@ -356,6 +356,19 @@ tham chiếu, không phải thứ v2 phải tương thích.
   người làm; bước 2 thêm việc chỉ người được làm (như merge); bước 3 kiểm kết quả việc người làm; chỉ nội dung do agent
   viết mới làm quay lại bước 1.
 
+### D-026 — Người duyệt trang `operate` (2026-11-27)
+- Duyệt: `interface/stages/07-operate.md` (3 lần đọc lạnh; các sửa sau mỗi lần là chữ hoặc hệ quả của D-025).
+- Chọn:
+  1. Output `operational-feedback` (khớp Input của `plan`), Approval `no`: người duyệt quyết từng mục ngay khi mục được ghi.
+  2. Quan sát production là `CAP-operate-01` (machine): tín hiệu do hệ thống giám sát bên ngoài báo về, máy ghi.
+  3. Người duyệt quyết mỗi mục thành việc mới hay không, kèm lý do (`CAP-operate-03`, v1 `CAP-operate-02`); quyết cả
+     hoàn tác khi sự cố xảy ra với bản đang chạy. Lỗi đã gây hoàn tác luôn thành việc mới.
+  4. Hậu kiểm sự cố (postmortem) không vào interface.
+  5. Mới: khoảng theo dõi — tính từ lúc phát hành, độ dài người duyệt đặt, kết thúc khi hết thời gian hoặc khi hoàn tác —
+     để stage có điểm kết thúc; không phát hành thì stage xong ngay.
+  6. Mới: `CAP-operate-02` (agent) — agent không làm ra thay đổi ghi mọi điều bất thường thành mục, không tự bỏ.
+- Không trang đã duyệt nào bị sửa chữ theo.
+
 ## Đang mở
 
 ### Còn lại từ trang `verify` (để Task 9/10)
