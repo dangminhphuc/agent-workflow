@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 5 — người duyệt trang `interface/stages/05-verify.md` và `INV-007` (xem `docs/decisions.md` § Đang mở, 6 câu hỏi). Sau đó Task 6 (trang `deploy`).
+SP1 Task 6 — soạn trang `interface/stages/06-deploy.md` theo `docs/plans/SP1-interface.md` § Task 6 (Task 1–5 đã duyệt).
 
 ## Dự án con
 

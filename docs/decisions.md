@@ -313,15 +313,27 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Stage chỉ có capability `machine`: việc cần phán thuộc `verify`.
 - Không trang đã duyệt nào bị sửa chữ theo.
 
+### D-023 — Người duyệt trang `verify` và `INV-007` (2026-11-27)
+- Duyệt: `interface/stages/05-verify.md` + `INV-007` (3 lần đọc lạnh; lần 3 còn 4 MAJOR: 3 sửa chữ đã sửa, 1 hỏi
+  người ở mục 6). Người đồng ý cả 6 đề xuất; trang giữ nguyên.
+- Chọn:
+  1. Merge ở `deploy`: `verify` kết thúc bằng phán quyết merge được người duyệt xác nhận, người duyệt merge ở
+     `deploy`. `INV-002` giữ `Checked at: verify`.
+  2. `CAP-verify-03` (agent): đối chiếu yêu cầu với câu trả lời của câu hỏi mở nó trỏ tới (bắt câu trả lời đến
+     muộn, D-017 R2).
+  3. `INV-007` (`Checked at: verify`): mọi yêu cầu có phán quyết trong báo cáo rà (v1 INV-004).
+  4. Kiểm thử đầu-cuối, đo tải, UAT là `CAP-verify-04`, `-05`, `-07`: mô tả trạng thái đích, bắt buộc dù engine
+     chưa làm được.
+  5. Giữ `CAP-verify-06` (người đọc mã nhạy cảm, v1 `CAP-verify-02`); tri thức bền vững (v1 `CAP-verify-06`) → SP7.
+  6. Judged by `agent` ở `verify`: người đồng ý, nhưng lời đề xuất không được ghi vào repo. Ghi theo trang hiện
+     hành: agent phán là agent phiên trắng, không phải agent đã làm thay đổi (`CAP-verify-01`). Bảng Giá trị ghi
+     "khác với agent đang làm việc"; nghĩa đầy đủ vẫn chờ SP3 (D-018).
+- `overview.md` câu `deploy` đã khớp mục 1, không đổi. Không trang đã duyệt nào bị sửa chữ theo.
+
 ## Đang mở
 
-### Task 5 — trang `verify` chờ người duyệt
-- `interface/stages/05-verify.md` + `INV-007` qua 3 lần đọc lạnh (lần 1, 2: mỗi lần 4 MAJOR, đã sửa). Lần 3: 4 MAJOR —
-  3 sửa chữ (phần mã nhạy cảm do người duyệt khai; phát hiện nào quay lại `breakdown`; `CAP-verify-02` bỏ điều kiện
-  `review-blocking` vì `INV-002` đã chặn stage); 1 hỏi người (nghĩa của Judged by `agent` ở `verify`).
-- Câu hỏi cho người: (1) merge ở `deploy`; (2) `CAP-verify-03` khớp câu trả lời; (3) `INV-007`; (4) e2e/tải/UAT là
-  `CAP-verify-04/05/07`; (5) giữ `CAP-verify-06`, tri thức bền vững → SP7; (6) Judged by `agent` ở `verify`.
-- Còn MINOR (để Task 9/10): các giá trị phán quyết ("đạt", "nên merge", mức "chặn"/"nên sửa") chưa ở bảng Giá trị;
+### Còn lại từ trang `verify` (để Task 9/10)
+- MINOR: các giá trị phán quyết ("đạt", "nên merge", mức "chặn"/"nên sửa") chưa ở bảng Giá trị;
   `reproduction-evidence`, `performance-evidence` chờ `job-types.md` (Task 8) để C1 đạt.
 
 ### Ghi từ đọc lạnh trang `verify` (chờ)
@@ -329,6 +341,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
+- Ghi lại tri thức bền vững sau khi rà (v1 `CAP-verify-06`).
 - Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task
   đầu tiên, tính từ phần mã trong kế hoạch (v1 `CAP-implement-07`); chỉ mục tri thức do máy dựng (v1 INV-013);
   con trỏ tới mục của tài liệu khác do máy giữ đúng (v1 INV-012).
@@ -353,10 +366,6 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - **Bước tiếp: người duyệt trang (vòng 2).**
 
 ### Ghi chú cho các trang chưa viết
-- `verify`: cần một capability (agent) "mọi yêu cầu khớp với câu trả lời của câu hỏi mở nó trỏ tới" — bắt
-  câu trả lời đến sau khi `require` đã xong (D-017 R2).
-- `verify` / `deploy`: merge nằm ở stage nào. Overview hiện chỉ nói `deploy` "đưa thay đổi đã merge";
-  v1 đặt PR + merge ở deploy (`CAP-deploy-01` cũ). `INV-002` đang giả định merge xảy ra sau `verify`.
 - `job-types.md`: chưa viết; khi viết, kiểm `blocking` ("trước khi `require` xong") vẫn đúng với job type bỏ `design`.
 - `job-types.md`: stage bị bỏ thì artifact của nó vắng, mà Input của stage sau ghi Required `yes` (ví dụ `design` ở
   `breakdown`, `implement`) — nói rõ luật này. Refactor/perf: không xoá test có sẵn (v1 INV-009), chặt hơn `CAP-implement-04`.
