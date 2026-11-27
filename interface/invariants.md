@@ -16,7 +16,7 @@ Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật có các trườn
 - Why: người duyệt một nội dung thì stage sau phải dùng đúng nội dung đó, không phải một bản đã đổi mà không ai thấy.
 
 ### INV-002 — Câu hỏi chặn review đã được trả lời trước khi merge
-- Rule: mọi câu hỏi mở mức `review-blocking` đã có câu trả lời của người duyệt.
+- Rule: khi `review-report` cho phán quyết "nên merge", mọi câu hỏi mở mức `review-blocking` đã có câu trả lời của người duyệt. Lượt rà cho "không nên merge" không cần, vì nó không dẫn tới merge.
 - Checked at: verify
 - Fail example: câu hỏi "có cần ghi log mỗi lần đăng nhập thất bại không?" mức `review-blocking` chưa ai trả lời, nhưng `verify` đã xong và thay đổi chờ merge.
 - Why: mức `review-blocking` chỉ có nghĩa nếu có luật buộc câu trả lời trước merge; không có luật thì nó không khác `non-blocking`.
@@ -34,7 +34,7 @@ Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật có các trườn
 - Why: task dựa vào quyết định không có trong thiết kế là lựa chọn kỹ thuật lọt vào mà người duyệt chưa thấy.
 
 ### INV-005 — Artifact được dựng từ bản hiện hành của input
-- Rule: mỗi artifact ghi nó được dựng từ phiên bản nào của từng input, và các phiên bản đó trùng với nội dung hiện tại của input.
+- Rule: mỗi artifact ghi nó được dựng từ phiên bản nào của từng input, và các phiên bản đó trùng với nội dung hiện tại của input. Không tính hai input: `open-questions` — câu trả lời khác giả định đã buộc sửa `requirements` (`CAP-require-05`, `CAP-verify-03`), còn câu khớp giả định không làm gì cũ; và `review-report` khi kiểm ở `verify` — kế hoạch chỉ cần dựng từ báo cáo của lượt rà trước.
 - Checked at: verify
 - Warned from: design
 - Fail example: người duyệt trả lời một câu hỏi mở làm danh sách yêu cầu đổi và được duyệt lại, nhưng thiết kế và kế hoạch vẫn dựng từ danh sách cũ.

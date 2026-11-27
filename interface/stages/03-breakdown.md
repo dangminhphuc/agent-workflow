@@ -9,7 +9,7 @@ Thiếu stage này thì `implement` tự chọn thứ tự và phạm vi, không
 |---------------|----------|----------------------------------------------------------------------------------------------|
 | requirements  | yes      | mỗi task phục vụ một hay nhiều yêu cầu; mọi yêu cầu phải có task. Yêu cầu hay thiết kế đổi sau khi kế hoạch đã có thì kế hoạch được dựng lại từ bản mới (`INV-005`) |
 | design        | yes      | task làm theo các quyết định và phần mô tả của thiết kế đã duyệt; không thêm lựa chọn kỹ thuật mới |
-| review-report | no       | phát hiện của lượt `verify` trước mà chưa có task sửa; phát hiện không đụng tới quyết định hay yêu cầu thành task mới, **nối thêm** vào cuối kế hoạch đã có — task cũ giữ nguyên, không sửa, không đổi thứ tự |
+| review-report | no       | phát hiện của lượt `verify` trước mà chưa có task sửa; phát hiện không đụng tới quyết định hay yêu cầu thành task mới, **nối thêm** vào cuối kế hoạch đã có — task cũ giữ nguyên, không sửa, không đổi thứ tự. Phát hiện đã đi qua `require` hay `design` thì kế hoạch dựng lại từ yêu cầu hay thiết kế mới, như dòng trên |
 
 ## Output
 | Artifact  | Approval | Description                                                                                       |

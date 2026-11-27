@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 10 — đọc lạnh toàn bộ `interface/`, rà, người duyệt cả bộ (`docs/plans/SP1-interface.md` § Task 10).
+SP1 Task 10 — người duyệt cả bộ `interface/` (3 lần đọc lạnh toàn bộ xong; xem `docs/decisions.md` § Ghi chú cho Task 10). Duyệt → ghi D "SP1 xong", sang SP7.
 
 ## Dự án con
 

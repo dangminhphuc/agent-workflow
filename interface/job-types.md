@@ -23,7 +23,7 @@ Luật riêng của từng loại là invariant có trường Only for trong inv
 | `chore`    | Không đụng mã production: công cụ, tài liệu, mã test, nâng phiên bản thư viện mà không phải sửa mã production (khai báo phiên bản thư viện không tính là mã production). Khác `refactor`: đổi cấu trúc mã test hay công cụ là `chore`; nâng thư viện mà phải sửa mã production thì là `refactor` (hành vi không đổi), hoặc `feature`/`bugfix`. | — | design |
 
 ## Added artifacts
-Artifact thêm của job type đều do máy ghi, Approval `no`.
+Artifact thêm của job type đều do máy ghi, Approval `no`. Chúng không ghi ở bảng Output của stage tạo ra nó, và được bảo đảm bằng invariant Only for, không bằng capability — mỗi quan hệ ghi một chỗ.
 
 | Job type | Artifact              | Produced by | Consumed by | Description |
 |----------|-----------------------|-------------|-------------|-------------|

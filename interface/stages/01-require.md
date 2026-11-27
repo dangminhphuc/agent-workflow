@@ -12,7 +12,7 @@ Thiếu stage này thì thiết kế và code dựa trên điều chưa ai xác 
 ## Output
 | Artifact       | Approval | Description                                                                         |
 |----------------|----------|-------------------------------------------------------------------------------------|
-| requirements   | yes      | danh sách yêu cầu; mỗi yêu cầu chỉ ra nguồn, và có tiêu chí chấp nhận quan sát được |
+| requirements   | yes      | danh sách yêu cầu; mỗi yêu cầu chỉ ra nguồn, và có tiêu chí chấp nhận quan sát được; stage tuỳ chọn mà việc này bỏ, kèm lý do (`INV-013`) |
 | open-questions | no       | những điều các nguồn không nói; mỗi điều có giả định tạm dùng, mức chặn, và câu trả lời của người duyệt khi đã có; người duyệt trả lời từng câu, vào lúc mức chặn của câu đó đòi hỏi |
 
 ## Capabilities

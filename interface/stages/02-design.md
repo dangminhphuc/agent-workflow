@@ -47,7 +47,7 @@ Thiếu stage này thì lựa chọn kỹ thuật nằm lẫn trong văn xuôi h
 - Thêm yêu cầu mới — phải quay lại `require`.
 - Chia việc thành các task — thuộc `breakdown`.
 - Trả lời câu hỏi mở thay người duyệt — chỉ người duyệt trả lời; thiết kế dùng giả định đã ghi.
-- Quyết định việc nhỏ có được bỏ stage này hay không — do job type quyết.
+- Quyết định việc nhỏ có được bỏ stage này hay không — job type cho phép, người duyệt duyệt việc bỏ (`INV-013`).
 
 ## Rationale
 - Đã loại: thiết kế là văn xuôi dài để người duyệt đọc soát — người lướt văn xuôi và không thấy đâu là lựa chọn thật; tách thành quyết định thì người quyết thay vì đọc soát.

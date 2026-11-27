@@ -15,7 +15,7 @@ Thiếu stage này thì "đã xong" và "test đạt" chỉ là lời agent kể
 ## Output
 | Artifact          | Approval | Description                                                                                  |
 |-------------------|----------|----------------------------------------------------------------------------------------------|
-| change            | no       | thay đổi mã so với điểm xuất phát; test nào kiểm một yêu cầu thì ghi yêu cầu đó; kèm lời khai: file ngoài kế hoạch và lý do, test có sẵn bị sửa hay xoá và lý do |
+| change            | no       | thay đổi mã so với điểm xuất phát; test nào kiểm một yêu cầu thì ghi yêu cầu đó; kèm lời khai: file ngoài kế hoạch và lý do, test có sẵn bị sửa hay xoá và lý do, và luật riêng của job type đòi khai (như thư viện đổi phiên bản, `INV-012`) |
 | test-evidence     | no       | kết quả chạy toàn bộ test do máy ghi: một lần trên điểm xuất phát (nếu đã có mã), và trên phiên bản hiện tại của thay đổi |
 | task-evidence     | no       | với mỗi task: kết quả cách chứng minh xong do máy chạy, hoặc bản ghi kiểm tay nói ai kiểm, kiểm gì, thấy gì và vì sao không viết test được |
 | security-evidence | no       | kết quả quét bảo mật do máy chạy trên phiên bản hiện tại của thay đổi                        |

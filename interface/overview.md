@@ -21,11 +21,11 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Tiêu chí chấp nhận | Điều quan sát được cho biết một yêu cầu đã đạt hay chưa. |
 | Câu hỏi mở | Điều các nguồn không nói mà việc cần biết; ghi kèm giả định tạm dùng và mức chặn. Danh sách câu hỏi mở là artifact `open-questions`. |
 | Quyết định | Một lựa chọn trong thiết kế mà người có hiểu biết có thể chọn khác và đổi về sau thì tốn (xem trang `design`), ghi kèm vấn đề, các phương án, đánh đổi, phương án được chọn và yêu cầu nó phục vụ. Người duyệt duyệt từng quyết định. Ngoài nghĩa này, "người duyệt quyết" ở các trang dùng theo nghĩa thường. |
-| Phát hiện  | Điều `verify` thấy sai hay thiếu trong thay đổi, ghi trong artifact `review-report`. Phát hiện cần sửa thành task ở `breakdown` — trực tiếp, hoặc sau khi `design` hay `require` sửa nếu nó đụng quyết định hay yêu cầu. |
+| Phát hiện  | Điều `verify` thấy sai hay thiếu trong thay đổi, ghi trong artifact `review-report`. Phát hiện cần sửa thành task ở `breakdown` — trực tiếp khi chỉ mã sai, hoặc sau khi `design` hay `require` sửa nếu sửa nó cần đổi một quyết định hay một yêu cầu. |
 | Phán quyết | Kết luận của agent rà ở `verify`, ghi trong `review-report`. Phán quyết hợp lệ cho một yêu cầu là "đạt", "đạt một phần", "không đạt", hoặc "chưa quyết" (kèm câu hỏi mở đang chờ); phán quyết merge cho cả thay đổi là "nên merge" hoặc "không nên merge". Mỗi phát hiện có mức "chặn" (phải sửa trước khi merge) hoặc "nên sửa" (người duyệt quyết sửa hay không). |
 | Phiên bản (artifact) | Nội dung của một artifact tại một lúc; nội dung đổi là phiên bản mới. |
 | Task       | Một phần việc nhỏ của kế hoạch, do `breakdown` tạo. Kế hoạch — danh sách task có thứ tự — là artifact `task-plan`. Mỗi task có cách chứng minh xong: thường là test máy chạy, hoặc kiểm tay khi kế hoạch ghi vậy. |
-| Bằng chứng | Kết quả do máy chạy và ghi, không do agent kể: `test-evidence` (chạy test), `task-evidence` (từng task xong, bản ghi kiểm tay), `security-evidence` (quét bảo mật), và theo job type `reproduction-evidence`, `performance-evidence`. Do `implement` tạo, `verify` đọc. |
+| Bằng chứng | Kết quả do máy chạy và ghi, không do agent kể (riêng bản ghi kiểm tay do người hay agent đã kiểm ghi): `test-evidence` (chạy test), `task-evidence` (từng task xong, bản ghi kiểm tay), `security-evidence` (quét bảo mật), và theo job type `reproduction-evidence`, `performance-evidence`. Do `implement` tạo, `verify` đọc. |
 | Agent      | Trợ lý AI thực hiện các stage. |
 | Người duyệt | Người chịu trách nhiệm về việc: trả lời câu hỏi mở, duyệt artifact, merge. |
 | Dấu duyệt  | Bằng chứng người duyệt đã duyệt một artifact, gắn với nội dung lúc duyệt: nội dung đổi thì dấu duyệt mất hiệu lực. Người duyệt "xác nhận" một điều cụ thể (phán quyết, đường lui) là duyệt điều đó; với artifact Approval `yes`, xác nhận cũng là duyệt cả khối. |
@@ -53,7 +53,7 @@ plan ─▶ require ─▶ design ─▶ breakdown ─▶ implement ─▶ verif
 | `breakdown` | Chia thiết kế đã duyệt thành các task nhỏ có thứ tự, mỗi task truy về một yêu cầu hay một phát hiện. |
 | `implement` | Làm lần lượt từng task; task xong khi cách chứng minh xong của nó đạt; máy chạy test, quét bảo mật và ghi bằng chứng. |
 | `verify`    | Một agent không làm ra thay đổi rà nó so với yêu cầu, thiết kế, kế hoạch, cho phán quyết; người duyệt xác nhận. |
-| `deploy`    | Người duyệt merge đúng phiên bản đã rà; nếu phát hành, xác nhận đường lui trước, rồi hệ thống triển khai bên ngoài đưa nó tới môi trường chạy. |
+| `deploy`    | Người duyệt merge đúng phiên bản đã rà; quyết có phát hành không — nếu có, xác nhận đường lui trước, rồi hệ thống triển khai bên ngoài đưa nó tới môi trường chạy. |
 | `operate`   | Trong khoảng theo dõi, tín hiệu từ hệ thống giám sát bên ngoài thành các mục; người duyệt quyết mục nào thành việc mới. |
 
 ## Khi nào một stage xong
@@ -81,7 +81,7 @@ quả phát hành) không làm quay lại. Bước kiểm cuối cùng luôn do 
 | `yes` / `no`      | Approval (Output)   | Artifact có được người duyệt duyệt cả khối, kèm dấu duyệt, hay không. `no` không có nghĩa người duyệt không đụng tới: một capability `human` có thể đòi người duyệt từng phần (ví dụ trả lời từng câu hỏi mở). |
 | `all`             | Checked at (invariant) | Luật phải đúng khi kết thúc mọi stage. |
 | `blocking`        | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi `require` xong. |
-| `review-blocking` | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi `verify` xong, tức trước khi merge (`INV-002`). |
+| `review-blocking` | Mức chặn câu hỏi mở | Người duyệt phải trả lời trước khi lượt `verify` cho "nên merge" xong, tức trước khi merge (`INV-002`). |
 | `non-blocking`    | Mức chặn câu hỏi mở | Việc được làm tiếp và merge trên giả định đã ghi; trả lời lúc nào cũng được. |
 
 ## Cách đọc một trang stage
@@ -116,10 +116,10 @@ Một việc `feature` nhỏ: "khoá tài khoản sau 5 lần đăng nhập sai"
 | Stage | Nhận | Trả | Người duyệt làm gì | Nội dung ví dụ |
 |---|---|---|---|---|
 | `plan` | ticket từ bên ngoài | `work-item` | xác nhận loại việc, nguồn, điểm xuất phát | loại `feature`; nguồn: ticket PROJ-77; điểm xuất phát: phiên bản hiện tại của nhánh chính |
-| `require` | `work-item` | `requirements`, `open-questions` | trả lời câu `blocking`, duyệt danh sách yêu cầu | yêu cầu: (1) sau 5 lần sai liên tiếp, tài khoản bị khoá; (2) khoá có thời hạn rồi tự mở; (3) người bị khoá thấy thông báo "tài khoản tạm khoá". Câu hỏi `blocking` "khoá bao lâu?", giả định 15 phút; người duyệt trả lời "30 phút", yêu cầu (2) được sửa theo rồi mới duyệt. Câu `non-blocking` "có gửi email báo khoá không?", giả định không |
+| `require` | `work-item` | `requirements`, `open-questions` | trả lời câu `blocking`, duyệt danh sách yêu cầu | yêu cầu: (1) sau 5 lần sai liên tiếp, tài khoản bị khoá; (2) khoá có thời hạn rồi tự mở; (3) người bị khoá thấy thông báo "tài khoản tạm khoá"; (4) đăng nhập vẫn trả kết quả trong 1 giây (ticket nêu). Câu hỏi `blocking` "khoá bao lâu?", giả định 15 phút; người duyệt trả lời "30 phút", yêu cầu (2) được sửa theo rồi mới duyệt. Câu `non-blocking` "có gửi email báo khoá không?", giả định không |
 | `design` | `work-item`, `requirements`, `open-questions` | `design` | duyệt từng quyết định | quyết định: lưu số lần sai trong bảng người dùng (giữ được qua lần khởi động lại) thay vì bộ nhớ đệm (nhanh hơn, mất khi khởi động lại) |
-| `breakdown` | `requirements`, `design` | `task-plan` | — | task 1 đếm lần sai (yêu cầu 1); task 2 khoá và tự mở sau 30 phút (yêu cầu 2); task 3 thông báo (yêu cầu 3); mỗi task ghi phần mã được đụng và test chứng minh xong |
+| `breakdown` | `requirements`, `design` | `task-plan` | — | task 1 đếm lần sai, giữ đăng nhập trong 1 giây (yêu cầu 1, 4); task 2 khoá và tự mở sau 30 phút (yêu cầu 2); task 3 thông báo (yêu cầu 3); mỗi task ghi phần mã được đụng và test chứng minh xong |
 | `implement` | `work-item`, `requirements`, `design`, `task-plan` | `change`, `test-evidence`, `task-evidence`, `security-evidence` | — | máy chạy test trên điểm xuất phát, rồi sau từng task; mỗi yêu cầu có test ghi là kiểm nó; quét bảo mật đạt |
-| `verify` | `requirements`, `open-questions`, `design`, `task-plan`, `change`, `test-evidence`, `task-evidence`, `security-evidence` | `review-report` | xác nhận phán quyết | lượt 1: 3 yêu cầu "đạt"; một phát hiện "nên sửa": thông báo cho biết tài khoản có tồn tại. Người duyệt chọn sửa → `breakdown` nhận `review-report`, nối task 4 → `implement` → `verify` lượt 2: "nên merge", người duyệt xác nhận |
-| `deploy` | `change`, `review-report` | `delivery` | xác nhận đường lui, merge | đường lui: quay về bản trước; cột số lần sai thêm vào bảng được giữ, bản trước không đọc nó. Hệ thống triển khai báo phát hành đạt |
-| `operate` | `delivery`, `requirements` | `operational-feedback` | quyết từng mục | khoảng theo dõi 7 ngày; số tài khoản bị khoá tăng gấp mười ở một khách hàng dùng công cụ tự động đăng nhập → mục; người duyệt quyết thành việc mới → `plan` |
+| `verify` | `requirements`, `open-questions`, `design`, `task-plan`, `change`, `test-evidence`, `task-evidence`, `security-evidence` | `review-report` | lượt 1: xác nhận báo cáo; lượt 2: một người đọc mô-đun xác thực (khai là nhạy cảm), người đặt ticket chấp nhận, người duyệt xác nhận | lượt 1: kiểm thử đầu-cuối do máy chạy; yêu cầu (1) "đạt một phần" kèm phát hiện "chặn": bộ đếm không về 0 sau một lần đăng nhập đúng, nên 5 lần sai không liên tiếp cũng bị khoá — mã sai, yêu cầu không phải đổi. `breakdown` nhận `review-report`, nối task 4 → `implement` → `verify` lượt 2: 4 yêu cầu "đạt" — yêu cầu (4) có số đo của máy —, "nên merge"; người đặt ticket chấp nhận thay đổi, người duyệt xác nhận |
+| `deploy` | `change`, `review-report` | `delivery` | quyết phát hành, xác nhận đường lui, merge | đường lui: quay về bản trước; cột số lần sai thêm vào bảng được giữ, bản trước không đọc nó. Hệ thống triển khai báo phát hành đạt |
+| `operate` | `delivery`, `requirements` | `operational-feedback` | đặt khoảng theo dõi, quyết từng mục | khoảng theo dõi 7 ngày; số tài khoản bị khoá tăng gấp mười ở một khách hàng dùng công cụ tự động đăng nhập → mục; người duyệt quyết thành việc mới → `plan` |
