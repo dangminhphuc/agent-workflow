@@ -256,11 +256,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
   (duyệt khi viết trang của stage đó); kịch bản xuyên suốt (viết khi đủ 8 trang); nghĩa của `agent` (chờ SP3).
 - Khuôn sau trang thử là bản hiện hành, gom lại ở `docs/specs/SP1-interface.md`.
 
-## Đang mở
+### D-019 — Người duyệt trang `plan` (2026-11-27)
+- Duyệt: `interface/stages/00-plan.md` (qua 2 lần đọc lạnh); trong `overview.md` thêm khái niệm "điểm xuất phát"
+  (dự án mới = "chưa có mã") và con trỏ tới danh sách job type.
+- Chọn (theo đề xuất của agent):
+  1. Giữ `CAP-plan-02` (agent): nguồn chỉ là tham chiếu có định danh hoặc lời người duyệt chép nguyên văn —
+     mới so với v1 (v1 chỉ là quy tắc trong hướng dẫn phase). Vì: gốc của chuỗi truy vết; máy không phân biệt
+     được lời người thật với câu agent gắn nhãn "lời người duyệt".
+  2. Ưu tiên và ước lượng (v1 `CAP-plan-03/04`) ghi ở `Not in this stage`: quyết định giữa nhiều việc, quy trình
+     đi theo một việc. Cần đo ước lượng sau này → thêm capability bằng D mới.
+  3. `operational-feedback` là Input `Required: no` của `plan` (khớp vòng operate → plan); yêu cầu từ ngoài không
+     làm artifact giả.
+  4. "Vào ở phase nào cũng được" của v1 → SP3; `INV-001` đã buộc artifact nhập từ ngoài qua người duyệt.
+- Không ghi dòng "ai cho phép kết thúc" ở trang: có chủ ý (D-016 D4).
 
-### Task 1 — trang `plan` chờ người duyệt
-- `interface/stages/00-plan.md` đã qua 2 lần đọc lạnh. Lần 1: 4 MAJOR (danh sách job type, điểm xuất phát, ai khởi động stage kế → SP3, cách `plan` nhận việc) — sửa trong trang. Lần 2: 1 MAJOR trong trang (điểm xuất phát với dự án mới) — đã sửa; "ai cho phép kết thúc" không ghi một dòng ở trang là có chủ ý (D-016 D4: ghi ở overview).
-- Câu hỏi cho người: (1) `CAP-plan-02` (nguồn chỉ là tham chiếu hoặc lời người nguyên văn, agent phán) là mới so với v1 — giữ? (2) ưu tiên và ước lượng (v1 `CAP-plan-03/04`) ghi ở `Not in this stage`; (3) `operational-feedback` là Input không bắt buộc của `plan`; (4) "vào ở phase nào cũng được" của v1 chuyển SP3.
+## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
@@ -294,6 +304,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   ai sửa `requirements`, ở stage nào, có chạy lại `require` không; sau khi duyệt lại thì artifact của các
   stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.
 - Ai tuyên bố một stage xong, và ai khởi động stage tiếp theo.
+- "Vào ở phase nào cũng được" của v1: bắt đầu từ stage bất kỳ với artifact làm bằng công cụ khác (D-019).
 - Invariant chỉ được kiểm khi **kết thúc** stage: input chưa duyệt chỉ bị bắt ở cuối stage dùng nó, sau khi
   đã tốn công chạy. Kiểm thêm lúc **bắt đầu** stage là tối ưu của engine, không đổi interface.
 - `overview.md` hiện là bản tối thiểu cho phép thử: một câu mỗi stage trong bảng Luồng là nháp từ v1,
