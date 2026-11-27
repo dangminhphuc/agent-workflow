@@ -297,17 +297,23 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Trang đã duyệt bị sửa chữ theo: `overview.md` (Artifact ghi phiên bản input; Phát hiện; Phiên bản; Task; câu `implement`;
   sơ đồ có vòng `verify` → `breakdown`); `invariants.md` (nghĩa của Warned from).
 
-## Đang mở
+### D-022 — Người duyệt trang `implement` và `INV-006` (2026-11-27)
+- Duyệt: `interface/stages/04-implement.md` + `INV-006` (3 lần đọc lạnh, lần cuối không MAJOR). Người đồng ý cả 5
+  đề xuất; trang giữ nguyên.
+- Chọn:
+  1. `INV-006` (mọi yêu cầu có test hoặc kiểm tay có lý do) chặn ở `implement`, không đợi `verify`: `verify` không
+     sửa mã, chặn muộn chỉ làm vòng sửa dài hơn.
+  2. Kiểm tay: kế hoạch quyết task nào kiểm tay; người kiểm là người duyệt hoặc agent khác agent đang làm; máy kiểm
+     bản ghi đủ ý (ai, gì, thấy gì, vì sao không test được); `verify` phán nội dung.
+  3. File ngoài kế hoạch chặn ở `implement` (v1 cảnh báo, chặn ở review); v1 `CAP-implement-04/05` gộp thành
+     `CAP-implement-03`.
+  4. Mới so với v1: chạy test trên điểm xuất phát (`CAP-implement-02`); khai test có sẵn bị sửa/xoá cho mọi loại việc
+     (`CAP-implement-04`); task làm lần lượt.
+  5. `security-evidence` ở `implement`, `verify` đọc; v1 `CAP-implement-07`, INV-012, INV-013 → SP7.
+- Stage chỉ có capability `machine`: việc cần phán thuộc `verify`.
+- Không trang đã duyệt nào bị sửa chữ theo.
 
-### Task 4 — trang `implement` chờ người duyệt
-- `interface/stages/04-implement.md` + `INV-006` qua 3 lần đọc lạnh. Lần 1: 2 MAJOR (kiểm tay trái với "máy chạy";
-  không chỗ nào bắt ghi test kiểm yêu cầu nào) — sửa. Lần 2: 1 MAJOR (ai quyết kiểm tay, ai kiểm) — sửa theo đề xuất,
-  chờ người chốt. Lần 3: không MAJOR; sửa vài MINOR.
-- Câu hỏi cho người: (1) `INV-006` chặn ở `implement` (plan đề xuất báo ở `implement`, chặn ở `verify`); (2) kiểm tay:
-  kế hoạch quyết, người kiểm là người duyệt hoặc agent khác, máy kiểm bản ghi đủ ý, `verify` phán nội dung;
-  (3) file ngoài kế hoạch chặn ở `implement` (v1 cảnh báo, chặn ở review); (4) mới so với v1: chạy test trên điểm xuất
-  phát (`CAP-implement-02`, từ `aw ready` v1), khai test có sẵn bị sửa/xoá cho mọi loại việc (`CAP-implement-04`),
-  task làm lần lượt; (5) `security-evidence` ở `implement`; v1 `CAP-implement-07` → SP7.
+## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.

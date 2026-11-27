@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 4 — người duyệt trang `interface/stages/04-implement.md` và `INV-006` (xem `docs/decisions.md` § Đang mở, 5 câu hỏi). Sau đó Task 5 (trang `verify`).
+SP1 Task 5 — bắt đầu soạn trang `interface/stages/05-verify.md` theo `docs/plans/SP1-interface.md` (Task 5 + Chu trình trang); đọc cả `docs/decisions.md` § Ghi chú cho các trang chưa viết (merge nằm ở đâu, capability "yêu cầu khớp câu trả lời").
 
 ## Dự án con
 
