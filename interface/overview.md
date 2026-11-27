@@ -68,7 +68,7 @@ sửa theo câu trả lời của người duyệt, thì quay lại bước 1. B
 | Giá trị           | Dùng ở              | Nghĩa |
 |-------------------|---------------------|-------|
 | `machine`         | Judged by           | Một lệnh kiểm tra tự động phán đạt hay không. |
-| `agent`           | Judged by           | Một agent khác với agent đang làm việc phán. |
+| `agent`           | Judged by           | Một agent khác với agent đang làm việc phán. Ở `verify`, đó là chính agent rà, vì nó không làm ra thay đổi. |
 | `human`           | Judged by           | Người duyệt phán. |
 | `yes` / `no`      | Required (Input)    | Input bắt buộc hay không. |
 | `yes` / `no`      | Approval (Output)   | Artifact có được người duyệt duyệt cả khối, kèm dấu duyệt, hay không. `no` không có nghĩa người duyệt không đụng tới: một capability `human` có thể đòi người duyệt từng phần (ví dụ trả lời từng câu hỏi mở). |

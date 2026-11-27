@@ -330,6 +330,15 @@ tham chiếu, không phải thứ v2 phải tương thích.
      "khác với agent đang làm việc"; nghĩa đầy đủ vẫn chờ SP3 (D-018).
 - `overview.md` câu `deploy` đã khớp mục 1, không đổi. Không trang đã duyệt nào bị sửa chữ theo.
 
+### D-024 — Judged by `agent` ở `verify` là chính agent rà (2026-11-27)
+- Làm rõ: D-023 mục 6.
+- Lựa chọn: (A) "agent đang làm việc" là agent đã làm ra thay đổi: agent rà phiên trắng là agent phán, người duyệt
+  xác nhận (`CAP-verify-08`); (B) là agent đang viết báo cáo rà: cần thêm một agent chấm báo cáo.
+- Chọn: A — trang `verify` đã viết theo A; báo cáo đã có máy kiểm tính khớp (`CAP-verify-02`, `INV-007`) và người
+  xác nhận; B thêm chi phí mà vẫn còn câu hỏi ai chấm agent thêm vào. Đánh đổi: agent rà phán sai "đạt" thì chỉ
+  người duyệt bắt được.
+- Trang đã duyệt bị sửa chữ theo: `overview.md`, dòng `agent` của bảng Giá trị. Nghĩa đầy đủ của `agent` vẫn chờ SP3.
+
 ## Đang mở
 
 ### Còn lại từ trang `verify` (để Task 9/10)
