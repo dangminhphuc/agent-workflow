@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 7 — soạn trang `interface/stages/07-operate.md` theo `docs/plans/SP1-interface.md` § Task 7 (Task 1–6 đã duyệt).
+SP1 Task 7 — người duyệt trang `interface/stages/07-operate.md` (3 lần đọc lạnh). Sau đó Task 8 (`job-types.md`).
 
 ## Dự án con
 

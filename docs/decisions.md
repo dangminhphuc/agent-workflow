@@ -394,6 +394,8 @@ tham chiếu, không phải thứ v2 phải tương thích.
 ### Ghi chú cho các trang chưa viết
 - `job-types.md`: `deploy` không bao giờ bị bỏ (merge nằm ở đó); chỉ phần phát hành được vắng, ghi "không phát hành"
   kèm lý do, người duyệt xác nhận (Task 6). v1 ghi `deploy` tuỳ chọn ở cả 5 loại — không theo.
+- `overview.md` (Task 9), từ đọc lạnh trang `operate`: "quyết định" chỉ nghĩa lựa chọn thiết kế, trang khác nói "người
+  duyệt quyết" theo nghĩa thường; hoàn tác, bản phát hành, đường lui chưa ở bảng Khái niệm.
 - `overview.md` (Task 9), từ đọc lạnh trang `deploy`: định nghĩa artifact `change` ("phiên bản thay đổi"); "xác nhận"
   khác "duyệt" thế nào (báo cáo rà, đường lui); dùng một từ giữa "phát hành" và "triển khai"; môi trường chạy, hệ
   thống triển khai. `delivery` có thuộc `INV-005` không (hiện chỉ `CAP-deploy-01` giữ phiên bản) → Task 10.
