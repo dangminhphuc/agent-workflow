@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 4 — soạn trang `interface/stages/04-implement.md` theo `docs/plans/SP1-interface.md` (Chu trình trang), rồi chờ người duyệt.
+SP1 Task 4 — người duyệt trang `interface/stages/04-implement.md` và `INV-006` (xem `docs/decisions.md` § Đang mở, 5 câu hỏi). Sau đó Task 5 (trang `verify`).
 
 ## Dự án con
 

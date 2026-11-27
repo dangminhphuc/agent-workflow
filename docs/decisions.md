@@ -299,9 +299,22 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ## Đang mở
 
+### Task 4 — trang `implement` chờ người duyệt
+- `interface/stages/04-implement.md` + `INV-006` qua 3 lần đọc lạnh. Lần 1: 2 MAJOR (kiểm tay trái với "máy chạy";
+  không chỗ nào bắt ghi test kiểm yêu cầu nào) — sửa. Lần 2: 1 MAJOR (ai quyết kiểm tay, ai kiểm) — sửa theo đề xuất,
+  chờ người chốt. Lần 3: không MAJOR; sửa vài MINOR.
+- Câu hỏi cho người: (1) `INV-006` chặn ở `implement` (plan đề xuất báo ở `implement`, chặn ở `verify`); (2) kiểm tay:
+  kế hoạch quyết, người kiểm là người duyệt hoặc agent khác, máy kiểm bản ghi đủ ý, `verify` phán nội dung;
+  (3) file ngoài kế hoạch chặn ở `implement` (v1 cảnh báo, chặn ở review); (4) mới so với v1: chạy test trên điểm xuất
+  phát (`CAP-implement-02`, từ `aw ready` v1), khai test có sẵn bị sửa/xoá cho mọi loại việc (`CAP-implement-04`),
+  task làm lần lượt; (5) `security-evidence` ở `implement`; v1 `CAP-implement-07` → SP7.
+
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
-- Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`).
+- Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task
+  đầu tiên, tính từ phần mã trong kế hoạch (v1 `CAP-implement-07`); chỉ mục tri thức do máy dựng (v1 INV-013);
+  con trỏ tới mục của tài liệu khác do máy giữ đúng (v1 INV-012).
+- Mẫu phần mã của task quá rộng so với việc thì bị báo (vế sau của v1 `CAP-implement-05`).
 - Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
 - "Đúng một nguồn" cho mỗi yêu cầu như v1 (tránh trạng thái lửng khi yêu cầu dựa trên hai câu hỏi, một
   đã trả lời một chưa) — v2 đang chọn "ít nhất một" (D-016 D3).
@@ -327,12 +340,16 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - `verify` / `deploy`: merge nằm ở stage nào. Overview hiện chỉ nói `deploy` "đưa thay đổi đã merge";
   v1 đặt PR + merge ở deploy (`CAP-deploy-01` cũ). `INV-002` đang giả định merge xảy ra sau `verify`.
 - `job-types.md`: chưa viết; khi viết, kiểm `blocking` ("trước khi `require` xong") vẫn đúng với job type bỏ `design`.
+- `job-types.md`: stage bị bỏ thì artifact của nó vắng, mà Input của stage sau ghi Required `yes` (ví dụ `design` ở
+  `breakdown`, `implement`) — nói rõ luật này. Refactor/perf: không xoá test có sẵn (v1 INV-009), chặt hơn `CAP-implement-04`.
 
 ### Chuyển cho SP3 (thấy khi cold read trang `require`)
 - Câu trả lời đến **sau khi** `require` đã xong (câu `review-blocking`, `non-blocking`) mà khác giả định:
   ai sửa `requirements`, ở stage nào, có chạy lại `require` không; sau khi duyệt lại thì artifact của các
   stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.
 - Ai tuyên bố một stage xong, và ai khởi động stage tiếp theo.
+- `implement`: ngưỡng quét bảo mật (mức nào tính là không đạt); trần số lần chạy đỏ liên tiếp (v1 `MAX_RED_RUNS`);
+  quét theo từng task hay một lần cuối; vòng `verify` → `implement` có chạy lại test trên điểm xuất phát không.
 - "Vào ở phase nào cũng được" của v1: bắt đầu từ stage bất kỳ với artifact làm bằng công cụ khác (D-019).
 - Yêu cầu hay thiết kế đổi sau khi kế hoạch đã có: kế hoạch dựng lại — giữ trạng thái task đã làm thế nào (v1: `aw task reopen`).
 - Một quyết định của `design` bị sửa: duyệt lại cả thiết kế hay chỉ quyết định đó (dấu duyệt theo từng quyết định là chi tiết engine; interface chỉ đòi dấu duyệt khớp nội dung, `INV-001`).

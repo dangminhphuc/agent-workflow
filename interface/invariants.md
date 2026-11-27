@@ -39,3 +39,9 @@ Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật có các trườn
 - Warned from: design
 - Fail example: người duyệt trả lời một câu hỏi mở làm danh sách yêu cầu đổi và được duyệt lại, nhưng thiết kế và kế hoạch vẫn dựng từ danh sách cũ.
 - Why: dấu duyệt chỉ bảo đảm một artifact không đổi sau khi duyệt; nó không bảo đảm artifact đó còn khớp với input đã đổi.
+
+### INV-006 — Mọi yêu cầu có test, hoặc được kiểm tay có lý do
+- Rule: mỗi yêu cầu có ít nhất một test ghi là kiểm nó, hoặc có một task phục vụ nó mà kế hoạch ghi cách chứng minh là kiểm tay và `task-evidence` có bản ghi kiểm tay của task đó, kèm lý do vì sao không viết test được.
+- Checked at: implement
+- Fail example: yêu cầu "khoá tài khoản sau 5 lần đăng nhập sai" không có test nào ghi là kiểm nó; mọi task vẫn xong vì test của từng task chỉ kiểm hàm đếm số lần sai.
+- Why: task xong không có nghĩa yêu cầu đạt; liên kết yêu cầu → test là thứ `verify` dựa vào để phán từng yêu cầu.
