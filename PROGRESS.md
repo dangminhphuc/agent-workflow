@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 9 — hoàn thiện `interface/overview.md` theo `docs/plans/SP1-interface.md` § Task 9; gom các mục "(Task 9)" trong `docs/decisions.md` § Đang mở. Người chọn kịch bản xuyên suốt trước khi viết.
+SP1 Task 9 — người duyệt `interface/overview.md` đã hoàn thiện (Khái niệm, Luồng, Lý do chung, Kịch bản xuyên suốt). Sau đó Task 10 (đọc lạnh toàn bộ).
 
 ## Dự án con
 
