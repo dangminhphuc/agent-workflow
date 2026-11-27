@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 9 — người duyệt `interface/overview.md` đã hoàn thiện (Khái niệm, Luồng, Lý do chung, Kịch bản xuyên suốt). Sau đó Task 10 (đọc lạnh toàn bộ).
+SP1 Task 10 — đọc lạnh toàn bộ `interface/`, rà, người duyệt cả bộ (`docs/plans/SP1-interface.md` § Task 10).
 
 ## Dự án con
 

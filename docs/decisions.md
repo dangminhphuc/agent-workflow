@@ -386,14 +386,16 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Trang đã duyệt bị sửa chữ theo: `overview.md` (backtick được chứa tên job type; dòng Job type trỏ tới `job-types.md` và
   invariant có Only for).
 
+### D-028 — Người duyệt `overview.md` đã hoàn thiện (2026-11-27)
+- Duyệt: Khái niệm (thêm Thay đổi, Phán quyết, Bằng chứng, Phát hành, Đường lui; sửa Stage, Quyết định, Dấu duyệt —
+  "xác nhận" là duyệt một điều cụ thể —, Invariant, Task), bảng Luồng khớp 8 trang, Lý do chung (merge là điểm cuối của
+  lõi; phần phát hành của `deploy` và `operate` là điểm nối), Kịch bản xuyên suốt.
+- Kịch bản: người chọn `feature` "khoá tài khoản sau 5 lần đăng nhập sai" (có `design`) thay cho `bugfix` đề xuất.
+- Giá trị phán quyết ("đạt", "nên merge", mức "chặn"/"nên sửa") định nghĩa bằng văn xuôi ở Khái niệm, không vào bảng
+  Giá trị: các trang viết chúng trong ngoặc kép, không trong backtick.
+- Giữ: nghĩa đầy đủ của `agent` chờ SP3.
+
 ## Đang mở
-
-### Còn lại từ trang `verify` (để Task 9/10)
-- MINOR: các giá trị phán quyết ("đạt", "nên merge", mức "chặn"/"nên sửa") chưa ở bảng Giá trị;
-  `reproduction-evidence`, `performance-evidence` chờ `job-types.md` (Task 8) để C1 đạt.
-
-### Ghi từ đọc lạnh trang `verify` (chờ)
-- `overview.md`: câu "Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`" đọc được hai cách (mọi luật như vậy nằm ở `verify`, hay chỉ một số); làm rõ ở Task 9.
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
@@ -424,20 +426,8 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - **Bước tiếp: người duyệt trang (vòng 2).**
 
 ### Ghi chú cho các trang chưa viết
-- `job-types.md`: `deploy` không bao giờ bị bỏ (merge nằm ở đó); chỉ phần phát hành được vắng, ghi "không phát hành"
-  kèm lý do, người duyệt xác nhận (Task 6). v1 ghi `deploy` tuỳ chọn ở cả 5 loại — không theo.
-- `overview.md` (Task 9), từ đọc lạnh `job-types.md`: "8 stage chạy theo thứ tự" chưa nhắc stage có thể bị bỏ; Checked at
-  nghĩa là chặn; "thay đổi" có phiên bản chưa ở Khái niệm; "yêu cầu có thật", "phán quyết hợp lệ", "cách chứng minh".
-- `overview.md` (Task 9), từ đọc lạnh trang `operate`: "quyết định" chỉ nghĩa lựa chọn thiết kế, trang khác nói "người
-  duyệt quyết" theo nghĩa thường; hoàn tác, bản phát hành, đường lui chưa ở bảng Khái niệm.
-- `overview.md` (Task 9), từ đọc lạnh trang `deploy`: định nghĩa artifact `change` ("phiên bản thay đổi"); "xác nhận"
-  khác "duyệt" thế nào (báo cáo rà, đường lui); dùng một từ giữa "phát hành" và "triển khai"; môi trường chạy, hệ
-  thống triển khai. `delivery` có thuộc `INV-005` không (hiện chỉ `CAP-deploy-01` giữ phiên bản) → Task 10.
-- `overview.md` (Task 9): Lý do chung "`deploy` và `operate` chỉ là điểm nối" lệch với merge ở `deploy`; sửa thành
-  phần phát hành của `deploy` và `operate` là điểm nối.
-- `job-types.md`: chưa viết; khi viết, kiểm `blocking` ("trước khi `require` xong") vẫn đúng với job type bỏ `design`.
-- `job-types.md`: stage bị bỏ thì artifact của nó vắng, mà Input của stage sau ghi Required `yes` (ví dụ `design` ở
-  `breakdown`, `implement`) — nói rõ luật này. Refactor/perf: không xoá test có sẵn (v1 INV-009), chặt hơn `CAP-implement-04`.
+- Task 10: `delivery` có thuộc `INV-005` không (hiện chỉ `CAP-deploy-01` giữ phiên bản).
+- Task 10: `delivery` có thuộc `INV-005` không (hiện chỉ `CAP-deploy-01` giữ phiên bản).
 
 ### Chuyển cho SP3 (thấy khi cold read trang `require`)
 - Việc đã bỏ `design` mà `verify` có phát hiện đụng tới lựa chọn kỹ thuật: chạy `design` lúc đó, việc bỏ ghi trong
