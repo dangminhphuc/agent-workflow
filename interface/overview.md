@@ -48,7 +48,7 @@ plan ─▶ require ─▶ design ─▶ breakdown ─▶ implement ─▶ verif
 | `breakdown` | Chia thiết kế thành các task nhỏ có thứ tự. |
 | `implement` | Làm từng task; task xong khi cách chứng minh xong của nó đạt (thường là test). |
 | `verify`    | Kiểm tra độc lập thay đổi so với yêu cầu, thiết kế, kế hoạch. |
-| `deploy`    | Đưa thay đổi đã merge tới nơi chạy (điểm nối với hệ thống triển khai bên ngoài). |
+| `deploy`    | Người duyệt merge thay đổi đã qua `verify`, rồi đưa nó tới nơi chạy (điểm nối với hệ thống triển khai bên ngoài). |
 | `operate`   | Vận hành và đưa phản hồi về thành việc mới (điểm nối với hệ thống giám sát bên ngoài). |
 
 ## Khi nào một stage xong

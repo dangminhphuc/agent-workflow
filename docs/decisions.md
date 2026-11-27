@@ -315,6 +315,18 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ## Đang mở
 
+### Task 5 — trang `verify` chờ người duyệt
+- `interface/stages/05-verify.md` + `INV-007` qua 3 lần đọc lạnh (lần 1, 2: mỗi lần 4 MAJOR, đã sửa). Lần 3: 4 MAJOR —
+  3 sửa chữ (phần mã nhạy cảm do người duyệt khai; phát hiện nào quay lại `breakdown`; `CAP-verify-02` bỏ điều kiện
+  `review-blocking` vì `INV-002` đã chặn stage); 1 hỏi người (nghĩa của Judged by `agent` ở `verify`).
+- Câu hỏi cho người: (1) merge ở `deploy`; (2) `CAP-verify-03` khớp câu trả lời; (3) `INV-007`; (4) e2e/tải/UAT là
+  `CAP-verify-04/05/07`; (5) giữ `CAP-verify-06`, tri thức bền vững → SP7; (6) Judged by `agent` ở `verify`.
+- Còn MINOR (để Task 9/10): các giá trị phán quyết ("đạt", "nên merge", mức "chặn"/"nên sửa") chưa ở bảng Giá trị;
+  `reproduction-evidence`, `performance-evidence` chờ `job-types.md` (Task 8) để C1 đạt.
+
+### Ghi từ đọc lạnh trang `verify` (chờ)
+- `overview.md`: câu "Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`" đọc được hai cách (mọi luật như vậy nằm ở `verify`, hay chỉ một số); làm rõ ở Task 9.
+
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
 - Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task

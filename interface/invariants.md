@@ -45,3 +45,9 @@ Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật có các trườn
 - Checked at: implement
 - Fail example: yêu cầu "khoá tài khoản sau 5 lần đăng nhập sai" không có test nào ghi là kiểm nó; mọi task vẫn xong vì test của từng task chỉ kiểm hàm đếm số lần sai.
 - Why: task xong không có nghĩa yêu cầu đạt; liên kết yêu cầu → test là thứ `verify` dựa vào để phán từng yêu cầu.
+
+### INV-007 — Mọi yêu cầu có phán quyết trong báo cáo rà
+- Rule: mọi yêu cầu có thật có một phán quyết hợp lệ trong `review-report` hiện tại.
+- Checked at: verify
+- Fail example: danh sách có 6 yêu cầu, báo cáo rà phán quyết 5; yêu cầu thứ 6 không ai nhìn mà báo cáo vẫn được xác nhận.
+- Why: báo cáo chỉ phủ một phần yêu cầu thì "nên merge" chỉ đúng với phần đó; người duyệt xác nhận mà không biết có chỗ chưa ai nhìn.
