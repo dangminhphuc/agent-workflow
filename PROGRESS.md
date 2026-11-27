@@ -4,13 +4,13 @@
 
 ## Bước tiếp theo
 
-SP1 Task 3 — người duyệt trang `interface/stages/03-breakdown.md` và `INV-003..005` (xem `docs/decisions.md` § Đang mở, 5 câu hỏi). Sau đó Task 4 (trang `implement`).
+SP1 Task 4 — soạn trang `interface/stages/04-implement.md` theo `docs/plans/SP1-interface.md` (Chu trình trang), rồi chờ người duyệt.
 
 ## Dự án con
 
 | SP  | Tên                              | Trạng thái   | Spec | Plan |
 |-----|----------------------------------|--------------|------|------|
-| SP1 | Định nghĩa interface SDLC        | plan chờ duyệt | `docs/specs/SP1-interface.md` | `docs/plans/SP1-interface.md` |
+| SP1 | Định nghĩa interface SDLC        | đang làm     | `docs/specs/SP1-interface.md` | `docs/plans/SP1-interface.md` |
 | SP7 | Chọn lại tính năng của v1        | chưa bắt đầu | —    | —    |
 | SP2 | Trình biên dịch interface        | chưa bắt đầu | —    | —    |
 | SP3 | Mô hình làm việc của agent       | chưa bắt đầu | —    | —    |

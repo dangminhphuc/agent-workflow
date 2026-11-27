@@ -283,16 +283,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Trang đã duyệt bị sửa chữ theo: `INV-001` (ví dụ "stage `design`"); `overview.md` (Work item, Yêu cầu, Câu hỏi mở,
   Quyết định, câu `design`).
 
-## Đang mở
-
-### Task 3 — trang `breakdown` chờ người duyệt
-- `interface/stages/03-breakdown.md` + `INV-003`, `INV-004`, `INV-005` qua 2 lần đọc lạnh. Lần 1: 1 MAJOR (sau `verify`
-  kế hoạch viết lại hay nối thêm — sửa: nối thêm, task cũ giữ nguyên). Lần 2: 2 MAJOR (phát hiện đi qua `design`/`require`
-  mâu thuẫn `INV-003`; `task-plan` không nói ghi phiên bản input) — sửa chữ.
-- Câu hỏi cho người: (1) thêm `INV-003`/`INV-004`/`INV-005`; (2) không hoãn yêu cầu trong kế hoạch; (3) `review-report` là
-  Input không bắt buộc, nối thêm task; (4) `task-plan` Approval `no` như v1; (5) `CAP-breakdown-02`, `-03` (agent) mới so với v1.
+### D-021 — Người duyệt trang `breakdown` và `INV-003..005` (2026-11-27)
+- Duyệt: `interface/stages/03-breakdown.md` + `INV-003`, `INV-004`, `INV-005` trong `invariants.md` (2 lần đọc lạnh).
+  Người đồng ý cả 5 đề xuất; trang giữ nguyên.
+- Chọn:
+  1. Thêm `INV-003` (truy vết task ↔ yêu cầu/phát hiện), `INV-004` (task chỉ dựa quyết định có trong thiết kế),
+     `INV-005` (artifact dựng từ bản hiện hành của input; báo từ `design`, chặn ở `verify`) — từ INV-001/002/006 của v1.
+     `INV-005` bắt chỗ `INV-001` không bắt: artifact không đổi nhưng input của nó đã đổi.
+  2. Không hoãn yêu cầu trong kế hoạch (v1 cho): hoãn là đổi phạm vi → quay lại `require`, người duyệt duyệt lại.
+  3. `review-report` là Input không bắt buộc; task sửa phát hiện nối thêm vào cuối, task cũ giữ nguyên (như v1).
+  4. `task-plan` Approval `no` (như v1): máy kiểm truy vết, agent kiểm không thêm lựa chọn mới.
+  5. `CAP-breakdown-02` (task đủ nhỏ, thứ tự làm được) và `-03` (không lựa chọn ngoài thiết kế), đều agent — mới so với v1.
 - Trang đã duyệt bị sửa chữ theo: `overview.md` (Artifact ghi phiên bản input; Phát hiện; Phiên bản; Task; câu `implement`;
   sơ đồ có vòng `verify` → `breakdown`); `invariants.md` (nghĩa của Warned from).
+
+## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
