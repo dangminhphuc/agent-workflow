@@ -375,6 +375,13 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - **Bước tiếp: người duyệt trang (vòng 2).**
 
 ### Ghi chú cho các trang chưa viết
+- `job-types.md`: `deploy` không bao giờ bị bỏ (merge nằm ở đó); chỉ phần phát hành được vắng, ghi "không phát hành"
+  kèm lý do, người duyệt xác nhận (Task 6). v1 ghi `deploy` tuỳ chọn ở cả 5 loại — không theo.
+- `overview.md` (Task 9), từ đọc lạnh trang `deploy`: định nghĩa artifact `change` ("phiên bản thay đổi"); "xác nhận"
+  khác "duyệt" thế nào (báo cáo rà, đường lui); dùng một từ giữa "phát hành" và "triển khai"; môi trường chạy, hệ
+  thống triển khai. `delivery` có thuộc `INV-005` không (hiện chỉ `CAP-deploy-01` giữ phiên bản) → Task 10.
+- `overview.md` (Task 9): Lý do chung "`deploy` và `operate` chỉ là điểm nối" lệch với merge ở `deploy`; sửa thành
+  phần phát hành của `deploy` và `operate` là điểm nối.
 - `job-types.md`: chưa viết; khi viết, kiểm `blocking` ("trước khi `require` xong") vẫn đúng với job type bỏ `design`.
 - `job-types.md`: stage bị bỏ thì artifact của nó vắng, mà Input của stage sau ghi Required `yes` (ví dụ `design` ở
   `breakdown`, `implement`) — nói rõ luật này. Refactor/perf: không xoá test có sẵn (v1 INV-009), chặt hơn `CAP-implement-04`.

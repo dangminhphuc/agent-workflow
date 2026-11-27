@@ -55,13 +55,15 @@ plan ─▶ require ─▶ design ─▶ breakdown ─▶ implement ─▶ verif
 
 Một stage xong khi mọi capability của nó đạt và mọi invariant phải đúng ở stage đó đều đúng. Thứ tự:
 
-1. Máy và agent kiểm nội dung artifact.
-2. Người duyệt đọc, trả lời câu hỏi, duyệt — chỉ khi stage có capability `human`.
-3. Máy xác nhận dấu duyệt của mọi artifact cần duyệt khớp với nội dung (`INV-001`) và kiểm các
-   invariant còn lại.
+1. Máy và agent kiểm nội dung artifact, và những điều phải đúng trước việc người làm ở bước 2 (ví dụ phiên bản sắp
+   merge là phiên bản đã rà).
+2. Người duyệt đọc, trả lời câu hỏi, duyệt, hoặc làm việc chỉ người được làm (như merge) — chỉ khi stage có capability `human`.
+3. Máy xác nhận dấu duyệt của mọi artifact cần duyệt khớp với nội dung (`INV-001`), kiểm các capability
+   `machine` về kết quả việc người làm ở bước 2, và kiểm các invariant còn lại.
 
-Artifact cần duyệt là artifact ghi Approval `yes` ở bảng Output. Nội dung artifact đổi sau bước 1, kể cả
-sửa theo câu trả lời của người duyệt, thì quay lại bước 1. Bước kiểm cuối cùng luôn do máy.
+Artifact cần duyệt là artifact ghi Approval `yes` ở bảng Output. Nội dung do agent viết đổi sau bước 1, kể
+cả sửa theo câu trả lời của người duyệt, thì quay lại bước 1; kết quả máy ghi từ hệ thống bên ngoài (như kết
+quả phát hành) không làm quay lại. Bước kiểm cuối cùng luôn do máy.
 
 ## Giá trị
 

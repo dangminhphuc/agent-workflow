@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 6 — soạn trang `interface/stages/06-deploy.md` theo `docs/plans/SP1-interface.md` § Task 6 (Task 1–5 đã duyệt).
+SP1 Task 6 — người duyệt trang `interface/stages/06-deploy.md` (3 lần đọc lạnh; đã sửa `overview.md` mục "Khi nào một stage xong"). Sau đó Task 7 (trang `operate`).
 
 ## Dự án con
 
