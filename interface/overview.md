@@ -29,7 +29,7 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Merge      | Người duyệt đưa thay đổi đã duyệt vào nhánh chính — nhánh mã nguồn mà sản phẩm được xây từ đó. Agent không bao giờ merge. |
 | Capability | Một điều phải đúng để coi một stage là làm đủ. Mã dạng CAP-<stage>-NN, ví dụ `CAP-require-01`. |
 | Invariant  | Một luật nối nhiều stage, luôn do máy kiểm, để chuỗi artifact từ yêu cầu tới thay đổi không đứt (ví dụ: mọi yêu cầu đều có test). Mã dạng INV-NNN, ví dụ `INV-001`. Luật xuyên stage cần người hay agent phán thì viết thành capability của `verify`. |
-| Job type   | Loại việc (tính năng mới, sửa lỗi…). Quyết định đi qua stage nào và cần bảo đảm thêm gì. Danh sách các loại và luật của từng loại nằm ở file job-types (chưa viết). |
+| Job type   | Loại việc (tính năng mới, sửa lỗi…). Quyết định đi qua stage nào và cần bảo đảm thêm gì. Danh sách các loại nằm ở job-types.md; luật riêng của từng loại là invariant có trường Only for. |
 
 ## Luồng
 
@@ -93,7 +93,7 @@ Mỗi trang có 6 mục theo thứ tự:
 
 Stage xong khi nào thì đọc ở mục "Khi nào một stage xong" phía trên: mỗi capability đã ghi ai phán nó.
 
-Chữ trong backtick luôn là tên stage, tên artifact, mã, hoặc một giá trị ở bảng trên. Trong bảng, tên artifact
+Chữ trong backtick luôn là tên stage, tên artifact, tên job type, mã, hoặc một giá trị ở bảng trên. Trong bảng, tên artifact
 hay tên stage có thể có hoặc không có backtick.
 
 ## Lý do chung

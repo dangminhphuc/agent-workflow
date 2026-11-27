@@ -381,6 +381,8 @@ tham chiếu, không phải thứ v2 phải tương thích.
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
 - Ghi lại tri thức bền vững sau khi rà (v1 `CAP-verify-06`).
+- `bugfix` không thêm hành vi mới: capability `agent` ở `verify` (máy không phân biệt được sửa với thêm) — Task 8.
+- `chore` không nâng phiên bản lớn của thư viện (v1 INV-011) — phụ thuộc cách đánh số của từng hệ sinh thái — Task 8.
 - Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task
   đầu tiên, tính từ phần mã trong kế hoạch (v1 `CAP-implement-07`); chỉ mục tri thức do máy dựng (v1 INV-013);
   con trỏ tới mục của tài liệu khác do máy giữ đúng (v1 INV-012).
@@ -407,6 +409,8 @@ tham chiếu, không phải thứ v2 phải tương thích.
 ### Ghi chú cho các trang chưa viết
 - `job-types.md`: `deploy` không bao giờ bị bỏ (merge nằm ở đó); chỉ phần phát hành được vắng, ghi "không phát hành"
   kèm lý do, người duyệt xác nhận (Task 6). v1 ghi `deploy` tuỳ chọn ở cả 5 loại — không theo.
+- `overview.md` (Task 9), từ đọc lạnh `job-types.md`: "8 stage chạy theo thứ tự" chưa nhắc stage có thể bị bỏ; Checked at
+  nghĩa là chặn; "thay đổi" có phiên bản chưa ở Khái niệm; "yêu cầu có thật", "phán quyết hợp lệ", "cách chứng minh".
 - `overview.md` (Task 9), từ đọc lạnh trang `operate`: "quyết định" chỉ nghĩa lựa chọn thiết kế, trang khác nói "người
   duyệt quyết" theo nghĩa thường; hoàn tác, bản phát hành, đường lui chưa ở bảng Khái niệm.
 - `overview.md` (Task 9), từ đọc lạnh trang `deploy`: định nghĩa artifact `change` ("phiên bản thay đổi"); "xác nhận"
@@ -419,6 +423,8 @@ tham chiếu, không phải thứ v2 phải tương thích.
   `breakdown`, `implement`) — nói rõ luật này. Refactor/perf: không xoá test có sẵn (v1 INV-009), chặt hơn `CAP-implement-04`.
 
 ### Chuyển cho SP3 (thấy khi cold read trang `require`)
+- Việc đã bỏ `design` mà `verify` có phát hiện đụng tới lựa chọn kỹ thuật: chạy `design` lúc đó, việc bỏ ghi trong
+  `requirements` hết hiệu lực (duyệt lại) — từ đọc lạnh `job-types.md`.
 - Câu trả lời đến **sau khi** `require` đã xong (câu `review-blocking`, `non-blocking`) mà khác giả định:
   ai sửa `requirements`, ở stage nào, có chạy lại `require` không; sau khi duyệt lại thì artifact của các
   stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.

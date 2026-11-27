@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 8 — soạn `interface/job-types.md` theo `docs/plans/SP1-interface.md` § Task 8 (8 trang stage đã duyệt; xem § Ghi chú cho các trang chưa viết).
+SP1 Task 8 — người duyệt `interface/job-types.md` + `INV-008`…`INV-013` (3 lần đọc lạnh). Sau đó Task 9 (hoàn thiện `overview.md`).
 
 ## Dự án con
 

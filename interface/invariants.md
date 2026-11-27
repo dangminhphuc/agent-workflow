@@ -51,3 +51,45 @@ Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật có các trườn
 - Checked at: verify
 - Fail example: danh sách có 6 yêu cầu, báo cáo rà phán quyết 5; yêu cầu thứ 6 không ai nhìn mà báo cáo vẫn được xác nhận.
 - Why: báo cáo chỉ phủ một phần yêu cầu thì "nên merge" chỉ đúng với phần đó; người duyệt xác nhận mà không biết có chỗ chưa ai nhìn.
+
+### INV-008 — Test tái hiện lỗi đỏ trên mã chưa sửa, xanh sau khi sửa
+- Rule: `reproduction-evidence` ghi một test mà máy đã chạy trên mã chưa sửa — điểm xuất phát, chỉ thêm chính test đó — và không đạt; và cùng test đó máy chạy trên phiên bản hiện tại của thay đổi và đạt.
+- Checked at: implement
+- Only for: bugfix
+- Fail example: test tái hiện được viết sau khi đã sửa mã, nên chưa từng được máy chạy trên mã chưa sửa.
+- Why: một test chưa từng đỏ trên lỗi thì không chứng minh nó bắt được lỗi đó.
+
+### INV-009 — Yêu cầu không thêm hành vi
+- Rule: mỗi yêu cầu ghi một loại: giữ hành vi, tái cấu trúc, hoặc — chỉ với `perf` — mục tiêu hiệu năng bằng số; mỗi yêu cầu giữ hành vi có ít nhất một test có ở điểm xuất phát ghi là kiểm nó.
+- Checked at: implement
+- Warned from: require
+- Only for: refactor, perf
+- Fail example: việc refactor có yêu cầu "hiện thông báo lỗi mới khi đăng nhập sai", không ghi loại nào.
+- Why: loại việc không thêm hành vi được làm nhẹ hơn; yêu cầu thêm hành vi lọt vào thì đi đường nhẹ mà không ai duyệt như một tính năng.
+
+### INV-010 — Không xoá test có sẵn
+- Rule: không test nào có ở điểm xuất phát bị thay đổi xoá; đổi tên hay chuyển chỗ một test là sửa, phải khai như mọi test bị sửa.
+- Checked at: implement
+- Only for: refactor, perf
+- Fail example: refactor mô-đun phiên xoá test "phiên hết hạn sau 30 phút" vì nó gọi hàm đã đổi tên, dù đã khai lý do.
+- Why: với việc không đổi hành vi, test có sẵn là bằng chứng hành vi cũ còn đúng; xoá nó là bỏ bằng chứng.
+
+### INV-011 — Số đo trước và sau do máy ghi
+- Rule: `performance-evidence` có số đo trên điểm xuất phát và trên phiên bản hiện tại của thay đổi, cùng một cách đo, do máy chạy và ghi.
+- Checked at: implement
+- Only for: perf
+- Fail example: agent ghi "nhanh hơn 40%" nhưng chỉ có số đo sau khi thay đổi.
+- Why: không có số đo trước do máy ghi thì mục tiêu hiệu năng chỉ là lời agent kể.
+
+### INV-012 — Không đụng mã production, thư viện đổi được khai
+- Rule: không file nào của thay đổi là mã production (nghĩa ở job-types.md); mỗi thư viện đổi phiên bản được khai trong lời khai của thay đổi (như file ngoài kế hoạch), kèm phiên bản cũ và mới.
+- Checked at: implement
+- Only for: chore
+- Fail example: việc "cập nhật tài liệu" sửa thêm một dòng trong mô-đun thanh toán.
+- Why: `chore` không chạy `design`; không chặn mã production thì nó thành lối tắt cho mọi thay đổi.
+
+### INV-013 — Stage tuỳ chọn bị bỏ có người duyệt việc bỏ
+- Rule: với loại việc của work item, mỗi stage ghi Optional mà việc này không chạy thì phải được ghi là bỏ trong `requirements`, kèm lý do; dấu duyệt của `requirements` phủ việc bỏ đó (`INV-001`).
+- Checked at: breakdown
+- Fail example: việc `bugfix` đi thẳng từ `require` sang `breakdown`, `requirements` không ghi bỏ `design`.
+- Why: bỏ một stage là bỏ một lớp bảo đảm; người duyệt phải thấy và đồng ý, không để agent tự chọn đường nhẹ.
