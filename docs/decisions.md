@@ -369,6 +369,23 @@ tham chiếu, không phải thứ v2 phải tương thích.
   6. Mới: `CAP-operate-02` (agent) — agent không làm ra thay đổi ghi mọi điều bất thường thành mục, không tự bỏ.
 - Không trang đã duyệt nào bị sửa chữ theo.
 
+### D-027 — Người duyệt `job-types.md` và `INV-008`…`INV-013` (2026-11-27)
+- Duyệt: `interface/job-types.md` + `INV-008`…`INV-013` trong `invariants.md` (3 lần đọc lạnh, lần cuối không MAJOR).
+  Người đồng ý 5 đề xuất sau lần 1; sửa sau lần 2, 3 là chữ.
+- Chọn:
+  1. 5 loại như v1; `Definition` mỗi loại nói khác loại gần nó ở đâu. `design` Optional ở `bugfix`, `refactor`; Skipped ở
+     `chore`. Không loại nào bỏ `deploy` (D-025). Khái niệm "mã production" (người duyệt khai) ở `job-types.md`.
+  2. Luật riêng thành invariant Only for (từ v1 INV-007…011), đều chặn ở `implement`: `INV-008` test tái hiện đỏ rồi xanh;
+     `INV-009` yêu cầu ghi loại, yêu cầu giữ hành vi có test có sẵn (báo từ `require`); `INV-010` không xoá test có sẵn,
+     kể cả đã khai; `INV-011` số đo trước/sau do máy ghi; `INV-012` không đụng mã production, thư viện đổi được khai.
+  3. `INV-013`: bỏ stage tuỳ chọn ghi trong `requirements` kèm lý do, duyệt cùng danh sách yêu cầu; Checked at `breakdown`.
+     Không ghi ở `work-item`: quyết muộn sẽ làm `work-item` đổi, phải chạy lại `require`.
+  4. → SP7: `bugfix` không thêm hành vi mới; `chore` không nâng phiên bản lớn. Bỏ: hai việc agent phán ở `verify` của v1
+     (vì sao test tái hiện đỏ; sửa test không đổi khẳng định) — đã có `INV-008`, `CAP-verify-01`, `CAP-implement-04`.
+  5. Ranh giới chặt: lỗi "hiển nhiên" chưa ghi ở tài liệu, yêu cầu hay phiên bản trước là `feature`.
+- Trang đã duyệt bị sửa chữ theo: `overview.md` (backtick được chứa tên job type; dòng Job type trỏ tới `job-types.md` và
+  invariant có Only for).
+
 ## Đang mở
 
 ### Còn lại từ trang `verify` (để Task 9/10)

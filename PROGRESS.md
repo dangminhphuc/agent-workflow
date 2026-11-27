@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 8 — người duyệt `interface/job-types.md` + `INV-008`…`INV-013` (3 lần đọc lạnh). Sau đó Task 9 (hoàn thiện `overview.md`).
+SP1 Task 9 — hoàn thiện `interface/overview.md` theo `docs/plans/SP1-interface.md` § Task 9; gom các mục "(Task 9)" trong `docs/decisions.md` § Đang mở. Người chọn kịch bản xuyên suốt trước khi viết.
 
 ## Dự án con
 
