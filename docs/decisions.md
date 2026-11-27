@@ -339,6 +339,23 @@ tham chiếu, không phải thứ v2 phải tương thích.
   người duyệt bắt được.
 - Trang đã duyệt bị sửa chữ theo: `overview.md`, dòng `agent` của bảng Giá trị. Nghĩa đầy đủ của `agent` vẫn chờ SP3.
 
+### D-025 — Người duyệt trang `deploy` (2026-11-27)
+- Duyệt: `interface/stages/06-deploy.md` (3 lần đọc lạnh). Người đồng ý 4 đề xuất sau lần 1; các sửa sau lần 2, 3 là chữ.
+- Chọn:
+  1. `delivery` Approval `no`: kết quả phát hành ghi sau khi người xác nhận đường lui, duyệt cả khối sẽ mất hiệu lực
+     mỗi lần hệ thống triển khai báo về; người duyệt xác nhận từng phần (merge, đường lui hoặc "không phát hành").
+  2. `deploy` không bao giờ bị bỏ (merge nằm ở đó); chỉ phần phát hành được vắng, ghi lý do, người duyệt xác nhận
+     trước khi merge. v1 cho bỏ `deploy` ở cả 5 loại việc — không theo (Task 8 phải khớp).
+  3. Merge chỉ khi phiên bản sắp merge trùng phiên bản đã rà và phán quyết là "nên merge" (`CAP-deploy-01`, máy kiểm
+     trước merge); không đồng ý phán quyết thì sửa báo cáo ở `verify`.
+  4. Phát hành không đạt: người duyệt quyết hoàn tác hoặc phát hành lại; chưa có một trong hai thì stage chưa xong; lỗi
+     đã gây hoàn tác đi qua `operate` thành việc mới, không quay lại `implement` (thay đổi đã merge).
+  5. Triển khai thật là việc của hệ thống bên ngoài; `CAP-deploy-04` chỉ đòi kết quả do hệ thống đó báo về, máy ghi.
+  6. `CAP-deploy-02` giữ `Judged by: human` như `CAP-verify-06` (người làm và chịu trách nhiệm).
+- Trang đã duyệt bị sửa chữ theo: `overview.md` mục "Khi nào một stage xong" — bước 1 kiểm cả điều phải đúng trước việc
+  người làm; bước 2 thêm việc chỉ người được làm (như merge); bước 3 kiểm kết quả việc người làm; chỉ nội dung do agent
+  viết mới làm quay lại bước 1.
+
 ## Đang mở
 
 ### Còn lại từ trang `verify` (để Task 9/10)

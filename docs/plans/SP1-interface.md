@@ -94,7 +94,7 @@ Rate each finding MAJOR (reader would act wrongly or cannot answer one of the 5)
 | task-plan | breakdown | no (quyết ở Task 3) | |
 | change, test-evidence, task-evidence, security-evidence | implement | no | |
 | review-report | verify | yes | đã duyệt (D-023) |
-| delivery | deploy | quyết ở Task 6 | |
+| delivery | deploy | no | đã duyệt (D-025) |
 | operational-feedback | operate | no | vào lại `plan` |
 | reproduction-evidence | implement (bugfix) | no | thêm bởi job type, `verify` đọc |
 | performance-evidence | implement (perf) | no | thêm bởi job type, `verify` đọc |
