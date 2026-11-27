@@ -4,14 +4,14 @@
 
 ## Bước tiếp theo
 
-SP1 Task 10 — người duyệt cả bộ `interface/` (3 lần đọc lạnh toàn bộ xong; xem `docs/decisions.md` § Ghi chú cho Task 10). Duyệt → ghi D "SP1 xong", sang SP7.
+SP7 — brainstorm: xét từng tính năng v1 (ADR, luật nghiệp vụ `BR-`, `conventions.md`, bootstrap, trạng thái task, ship, cross-check stale…) và các mục `docs/decisions.md` § Ứng viên SP7: đưa vào interface, bỏ có lý do, hay để sau. Viết spec `docs/specs/SP7-*.md` cho người duyệt.
 
 ## Dự án con
 
 | SP  | Tên                              | Trạng thái   | Spec | Plan |
 |-----|----------------------------------|--------------|------|------|
-| SP1 | Định nghĩa interface SDLC        | đang làm     | `docs/specs/SP1-interface.md` | `docs/plans/SP1-interface.md` |
-| SP7 | Chọn lại tính năng của v1        | chưa bắt đầu | —    | —    |
+| SP1 | Định nghĩa interface SDLC        | xong         | `docs/specs/SP1-interface.md` | `docs/plans/SP1-interface.md` |
+| SP7 | Chọn lại tính năng của v1        | brainstorm   | —    | —    |
 | SP2 | Trình biên dịch interface        | chưa bắt đầu | —    | —    |
 | SP3 | Mô hình làm việc của agent       | chưa bắt đầu | —    | —    |
 | SP4 | Runtime engine                   | chưa bắt đầu | —    | —    |
@@ -56,5 +56,5 @@ Trạng thái: `chưa bắt đầu` → `brainstorm` → `spec chờ duyệt` �
 - `docs/decisions.md` — quyết định đã chốt và câu hỏi đang mở.
 - `docs/specs/SPn-<tên>.md` — spec từng dự án con.
 - `docs/plans/SPn-<tên>.md` — plan từng dự án con.
-- `interface/` — interface SDLC (SP1 đang viết).
+- `interface/` — interface SDLC (SP1 xong, D-029).
 - v1 (tham chiếu): nhánh `main`, `/home/dangminhphuc/github/agent-workflow`.

@@ -395,6 +395,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
   Giá trị: các trang viết chúng trong ngoặc kép, không trong backtick.
 - Giữ: nghĩa đầy đủ của `agent` chờ SP3.
 
+### D-029 — SP1 xong: người duyệt cả bộ `interface/` (2026-11-27)
+- Duyệt: `overview.md`, `invariants.md` (`INV-001`…`INV-013`), `job-types.md`, 8 trang stage — sau kiểm chéo (luật chặn §5 của
+  spec đạt trên cả bộ) và 3 lần đọc lạnh toàn bộ (8, 4, 2 MAJOR; lần 3 chỉ còn sửa chữ).
+- Chọn trong lúc đọc lạnh toàn bộ:
+  1. `INV-005` không tính `open-questions` (câu trả lời khác giả định đã buộc sửa `requirements`), và không tính
+     `review-report` khi kiểm ở `verify` (để vòng sửa khép được).
+  2. `CAP-verify-05`: yêu cầu không nêu mục tiêu tải hay độ trễ → agent rà ghi phát hiện chặn, quay lại `require`.
+  3. Lượt `verify` cho "không nên merge" xong khi người duyệt xác nhận báo cáo; `CAP-verify-04`, `-05`, `-07` và `INV-002`
+     chỉ bắt buộc ở lượt cho "nên merge".
+- Sửa nhất quán (trang đã duyệt đổi chữ theo): `review-report` ghi lựa chọn của người duyệt với phát hiện nên sửa;
+  `requirements` ghi stage bị bỏ (`INV-013`); `breakdown` dựng lại kế hoạch khi phát hiện qua `require`/`design`; lời khai
+  của `change` gồm điều job type đòi khai; người duyệt đặt khoảng theo dõi (`CAP-operate-03`); kịch bản xuyên suốt.
+- MINOR còn lại giữ ở § Đang mở, sửa ở lần chỉnh interface sau (SP2 sẽ bắt một phần bằng máy).
+- Tiếp: SP7 — chọn lại tính năng của v1.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
@@ -425,19 +440,13 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - **Vòng 1 xong.** Người yêu cầu thêm một lượt rà trước khi duyệt → D-017.
 - **Bước tiếp: người duyệt trang (vòng 2).**
 
-### MINOR còn lại sau đọc lạnh toàn bộ (chưa sửa, để lần sửa interface sau hay SP2/SP3)
+### MINOR còn lại của SP1 (sửa ở lần chỉnh interface sau)
 - Thuật ngữ chưa ở Khái niệm: kiểm thử đầu-cuối / hệ thống đã ghép, UAT, người yêu cầu, lượt rà, lời khai, loại yêu cầu
   "tái cấu trúc" (`INV-009`), "có thật" (`INV-003`, `INV-007`).
 - `INV-005` Warned from `design`: việc bỏ `design` thì báo từ stage nào.
 - `INV-009`: ghi thêm yêu cầu vào một test có sẵn có tính là sửa test (phải khai) không.
 - `CAP-plan-01` ghi "danh sách job type (xem overview)": danh sách nằm ở job-types.md.
 - `delivery` có thuộc `INV-005` không (hiện chỉ `CAP-deploy-01` giữ phiên bản).
-
-### Ghi chú cho Task 10
-- Đọc lạnh toàn bộ lần 1: 8 MAJOR; 5 sửa chữ/nhất quán; người đồng ý 3 đề xuất (`INV-005` không tính `open-questions`, và
-  `review-report` khi kiểm ở `verify`; `CAP-verify-05` không có mục tiêu → phát hiện chặn, quay lại `require`). Ghi vào D khi duyệt cả bộ.
-- Lần 2: 4 MAJOR; 3 sửa chữ; người đồng ý lượt "không nên merge" không cần `CAP-verify-04/05/07`, `INV-002`.
-- Lần 3: 2 MAJOR, sửa chữ theo quyết định lần 2 (`CAP-verify-02`, bảng Giá trị; task cho yêu cầu (4) trong kịch bản).
 
 ### Chuyển cho SP3 (thấy khi cold read trang `require`)
 - Việc đã bỏ `design` mà `verify` có phát hiện đụng tới lựa chọn kỹ thuật: chạy `design` lúc đó, việc bỏ ghi trong
