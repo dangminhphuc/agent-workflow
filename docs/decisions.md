@@ -272,7 +272,19 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ## Đang mở
 
+### Task 2 — trang `design` chờ người duyệt
+- `interface/stages/02-design.md` qua 2 lần đọc lạnh. Lần 1: 3 MAJOR (chiều liên kết yêu cầu ↔ thiết kế — sửa: thiết
+  kế ghi yêu cầu nó phục vụ, không sửa `requirements` đã duyệt; ngưỡng tạo quyết định; thiếu mã hiện có). Lần 2: 1
+  MAJOR ("phần" có tính quyết định không) — sửa: "phần mô tả", không tính quyết định.
+- Câu hỏi cho người: (1) ngưỡng tạo quyết định; (2) `work-item` là Input của `design` (mã ở điểm xuất phát), máy kiểm
+  thiết kế có nêu mã bị đụng; (3) Approval `yes` cả khối + người duyệt từng quyết định; (4) Mode 2 chống neo → SP7;
+  (5) v1 `CAP-design-04` (tri thức bền vững) → SP7.
+- Trang đã duyệt bị sửa chữ theo: `invariants.md` (`INV-001` ví dụ: "stage `design`"); `overview.md` (Work item,
+  Yêu cầu, Câu hỏi mở, Quyết định, câu `design` ở bảng Luồng).
+
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
+- Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
+- Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`).
 - Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
 - "Đúng một nguồn" cho mỗi yêu cầu như v1 (tránh trạng thái lửng khi yêu cầu dựa trên hai câu hỏi, một
   đã trả lời một chưa) — v2 đang chọn "ít nhất một" (D-016 D3).
@@ -305,6 +317,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.
 - Ai tuyên bố một stage xong, và ai khởi động stage tiếp theo.
 - "Vào ở phase nào cũng được" của v1: bắt đầu từ stage bất kỳ với artifact làm bằng công cụ khác (D-019).
+- Một quyết định của `design` bị sửa: duyệt lại cả thiết kế hay chỉ quyết định đó (dấu duyệt theo từng quyết định là chi tiết engine; interface chỉ đòi dấu duyệt khớp nội dung, `INV-001`).
 - Invariant chỉ được kiểm khi **kết thúc** stage: input chưa duyệt chỉ bị bắt ở cuối stage dùng nó, sau khi
   đã tốn công chạy. Kiểm thêm lúc **bắt đầu** stage là tối ưu của engine, không đổi interface.
 - `overview.md` hiện là bản tối thiểu cho phép thử: một câu mỗi stage trong bảng Luồng là nháp từ v1,

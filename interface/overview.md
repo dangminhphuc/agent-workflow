@@ -13,12 +13,13 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 |------------|-------|
 | Stage      | Một bước của quy trình. Có 8 stage, chạy theo thứ tự ở mục Luồng. |
 | Artifact   | Thứ một stage tạo ra để stage sau dùng, ví dụ danh sách yêu cầu, thiết kế, kế hoạch. Tên viết thường, nối bằng gạch ngang, ví dụ `work-item`. |
-| Work item  | Một việc đã được nhận vào quy trình, kèm các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt chép nguyên văn. Là artifact đầu tiên, do `plan` tạo. |
+| Work item  | Một việc đã được nhận vào quy trình, kèm loại việc, điểm xuất phát và các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt chép nguyên văn. Là artifact đầu tiên, do `plan` tạo. |
 | Điểm xuất phát | Phiên bản mã nguồn mà thay đổi bắt đầu từ đó; thay đổi được so với nó. Dự án mới chưa có mã thì điểm xuất phát là "chưa có mã". |
 | Phạm vi    | Những gì work item mô tả là việc cần làm. Việc nằm ngoài đó là thêm phạm vi. |
-| Yêu cầu    | Một điều mà thay đổi sắp làm phải đạt được, rút từ nguồn trong work item, hoặc từ giả định của một câu hỏi mở. |
+| Yêu cầu    | Một điều mà thay đổi sắp làm phải đạt được, rút từ nguồn trong work item, hoặc từ giả định của một câu hỏi mở. Danh sách yêu cầu là artifact `requirements`. |
 | Tiêu chí chấp nhận | Điều quan sát được cho biết một yêu cầu đã đạt hay chưa. |
-| Câu hỏi mở | Điều các nguồn không nói mà việc cần biết; ghi kèm giả định tạm dùng và mức chặn. |
+| Câu hỏi mở | Điều các nguồn không nói mà việc cần biết; ghi kèm giả định tạm dùng và mức chặn. Danh sách câu hỏi mở là artifact `open-questions`. |
+| Quyết định | Một lựa chọn trong thiết kế mà người có hiểu biết có thể chọn khác và đổi về sau thì tốn (xem trang `design`), ghi kèm vấn đề, các phương án, đánh đổi, phương án được chọn và yêu cầu nó phục vụ. Người duyệt duyệt từng quyết định. |
 | Task       | Một phần việc nhỏ của kế hoạch, do `breakdown` tạo. |
 | Agent      | Trợ lý AI thực hiện các stage. |
 | Người duyệt | Người chịu trách nhiệm về việc: trả lời câu hỏi mở, duyệt artifact, merge. |
@@ -40,7 +41,7 @@ plan ─▶ require ─▶ design ─▶ breakdown ─▶ implement ─▶ verif
 |-------------|---------|
 | `plan`      | Nhận một việc vào quy trình thành work item. |
 | `require`   | Biến work item thành yêu cầu kiểm chứng được và câu hỏi mở. |
-| `design`    | Chọn cách làm; mỗi lựa chọn là một quyết định được người duyệt duyệt. |
+| `design`    | Chọn cách làm; mỗi lựa chọn đáng kể là một quyết định được người duyệt duyệt. |
 | `breakdown` | Chia thiết kế thành các task nhỏ có thứ tự. |
 | `implement` | Làm từng task; task xong khi test đạt. |
 | `verify`    | Kiểm tra độc lập thay đổi so với yêu cầu, thiết kế, kế hoạch. |

@@ -12,7 +12,7 @@ Luật nối nhiều stage, luôn do máy kiểm. Mỗi luật có các trườn
 ### INV-001 — Chỉ dùng artifact đã duyệt và chưa bị sửa sau khi duyệt
 - Rule: mọi artifact đã có, ghi Approval `yes` ở bảng Output của stage tạo ra nó, phải có dấu duyệt khớp với nội dung hiện tại.
 - Checked at: all
-- Fail example: người duyệt danh sách 5 yêu cầu; agent thêm yêu cầu thứ 6 rồi chạy `design` trên danh sách mới mà không ai duyệt lại.
+- Fail example: người duyệt danh sách 5 yêu cầu; agent thêm yêu cầu thứ 6 rồi chạy stage `design` trên danh sách mới mà không ai duyệt lại.
 - Why: người duyệt một nội dung thì stage sau phải dùng đúng nội dung đó, không phải một bản đã đổi mà không ai thấy.
 
 ### INV-002 — Câu hỏi chặn review đã được trả lời trước khi merge
