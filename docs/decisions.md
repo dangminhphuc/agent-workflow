@@ -285,6 +285,15 @@ tham chiếu, không phải thứ v2 phải tương thích.
 
 ## Đang mở
 
+### Task 3 — trang `breakdown` chờ người duyệt
+- `interface/stages/03-breakdown.md` + `INV-003`, `INV-004`, `INV-005` qua 2 lần đọc lạnh. Lần 1: 1 MAJOR (sau `verify`
+  kế hoạch viết lại hay nối thêm — sửa: nối thêm, task cũ giữ nguyên). Lần 2: 2 MAJOR (phát hiện đi qua `design`/`require`
+  mâu thuẫn `INV-003`; `task-plan` không nói ghi phiên bản input) — sửa chữ.
+- Câu hỏi cho người: (1) thêm `INV-003`/`INV-004`/`INV-005`; (2) không hoãn yêu cầu trong kế hoạch; (3) `review-report` là
+  Input không bắt buộc, nối thêm task; (4) `task-plan` Approval `no` như v1; (5) `CAP-breakdown-02`, `-03` (agent) mới so với v1.
+- Trang đã duyệt bị sửa chữ theo: `overview.md` (Artifact ghi phiên bản input; Phát hiện; Phiên bản; Task; câu `implement`;
+  sơ đồ có vòng `verify` → `breakdown`); `invariants.md` (nghĩa của Warned from).
+
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
 - Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`).
@@ -320,6 +329,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   stage đã chạy (thiết kế, kế hoạch…) xử lý thế nào.
 - Ai tuyên bố một stage xong, và ai khởi động stage tiếp theo.
 - "Vào ở phase nào cũng được" của v1: bắt đầu từ stage bất kỳ với artifact làm bằng công cụ khác (D-019).
+- Yêu cầu hay thiết kế đổi sau khi kế hoạch đã có: kế hoạch dựng lại — giữ trạng thái task đã làm thế nào (v1: `aw task reopen`).
 - Một quyết định của `design` bị sửa: duyệt lại cả thiết kế hay chỉ quyết định đó (dấu duyệt theo từng quyết định là chi tiết engine; interface chỉ đòi dấu duyệt khớp nội dung, `INV-001`).
 - Invariant chỉ được kiểm khi **kết thúc** stage: input chưa duyệt chỉ bị bắt ở cuối stage dùng nó, sau khi
   đã tốn công chạy. Kiểm thêm lúc **bắt đầu** stage là tối ưu của engine, không đổi interface.

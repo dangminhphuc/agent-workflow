@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP1 Task 3 — soạn trang `breakdown` (`docs/plans/SP1-interface.md` Task 3), theo Chu trình trang.
+SP1 Task 3 — người duyệt trang `interface/stages/03-breakdown.md` và `INV-003..005` (xem `docs/decisions.md` § Đang mở, 5 câu hỏi). Sau đó Task 4 (trang `implement`).
 
 ## Dự án con
 

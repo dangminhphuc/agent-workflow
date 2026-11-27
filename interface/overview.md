@@ -12,7 +12,7 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Khái niệm  | Nghĩa |
 |------------|-------|
 | Stage      | Một bước của quy trình. Có 8 stage, chạy theo thứ tự ở mục Luồng. |
-| Artifact   | Thứ một stage tạo ra để stage sau dùng, ví dụ danh sách yêu cầu, thiết kế, kế hoạch. Tên viết thường, nối bằng gạch ngang, ví dụ `work-item`. |
+| Artifact   | Thứ một stage tạo ra để stage sau dùng, ví dụ danh sách yêu cầu, thiết kế, kế hoạch. Tên viết thường, nối bằng gạch ngang, ví dụ `work-item`. Mỗi artifact ghi phiên bản của các input nó được dựng từ (`INV-005`). |
 | Work item  | Một việc đã được nhận vào quy trình, kèm loại việc, điểm xuất phát và các nguồn mô tả nó: ticket (một mục trong hệ thống theo dõi công việc), tài liệu, lời người duyệt chép nguyên văn. Là artifact đầu tiên, do `plan` tạo. |
 | Điểm xuất phát | Phiên bản mã nguồn mà thay đổi bắt đầu từ đó; thay đổi được so với nó. Dự án mới chưa có mã thì điểm xuất phát là "chưa có mã". |
 | Phạm vi    | Những gì work item mô tả là việc cần làm. Việc nằm ngoài đó là thêm phạm vi. |
@@ -20,7 +20,9 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 | Tiêu chí chấp nhận | Điều quan sát được cho biết một yêu cầu đã đạt hay chưa. |
 | Câu hỏi mở | Điều các nguồn không nói mà việc cần biết; ghi kèm giả định tạm dùng và mức chặn. Danh sách câu hỏi mở là artifact `open-questions`. |
 | Quyết định | Một lựa chọn trong thiết kế mà người có hiểu biết có thể chọn khác và đổi về sau thì tốn (xem trang `design`), ghi kèm vấn đề, các phương án, đánh đổi, phương án được chọn và yêu cầu nó phục vụ. Người duyệt duyệt từng quyết định. |
-| Task       | Một phần việc nhỏ của kế hoạch, do `breakdown` tạo. |
+| Phát hiện  | Điều `verify` thấy sai hay thiếu trong thay đổi, ghi trong artifact `review-report`. Phát hiện cần sửa thành task ở `breakdown` — trực tiếp, hoặc sau khi `design` hay `require` sửa nếu nó đụng quyết định hay yêu cầu. |
+| Phiên bản (artifact) | Nội dung của một artifact tại một lúc; nội dung đổi là phiên bản mới. |
+| Task       | Một phần việc nhỏ của kế hoạch, do `breakdown` tạo. Kế hoạch — danh sách task có thứ tự — là artifact `task-plan`. |
 | Agent      | Trợ lý AI thực hiện các stage. |
 | Người duyệt | Người chịu trách nhiệm về việc: trả lời câu hỏi mở, duyệt artifact, merge. |
 | Dấu duyệt  | Bằng chứng người duyệt đã duyệt một artifact, gắn với nội dung lúc duyệt: nội dung đổi thì dấu duyệt mất hiệu lực. |
@@ -33,8 +35,9 @@ trông ra sao. Những thứ đó thuộc cách agent làm việc, được đ�
 
 ```
 plan ─▶ require ─▶ design ─▶ breakdown ─▶ implement ─▶ verify ─▶ deploy ─▶ operate
-                                                                              │
-         ◀──────────────── sự cố, phản hồi thành work item mới ◀──────────────┘
+                                ▲                            │                  │
+                                └── phát hiện cần sửa ◀──────┘                  │
+         ◀──────────────── sự cố, phản hồi thành work item mới ◀────────────────┘
 ```
 
 | Stage       | Một câu |
@@ -43,7 +46,7 @@ plan ─▶ require ─▶ design ─▶ breakdown ─▶ implement ─▶ verif
 | `require`   | Biến work item thành yêu cầu kiểm chứng được và câu hỏi mở. |
 | `design`    | Chọn cách làm; mỗi lựa chọn đáng kể là một quyết định được người duyệt duyệt. |
 | `breakdown` | Chia thiết kế thành các task nhỏ có thứ tự. |
-| `implement` | Làm từng task; task xong khi test đạt. |
+| `implement` | Làm từng task; task xong khi cách chứng minh xong của nó đạt (thường là test). |
 | `verify`    | Kiểm tra độc lập thay đổi so với yêu cầu, thiết kế, kế hoạch. |
 | `deploy`    | Đưa thay đổi đã merge tới nơi chạy (điểm nối với hệ thống triển khai bên ngoài). |
 | `operate`   | Vận hành và đưa phản hồi về thành việc mới (điểm nối với hệ thống giám sát bên ngoài). |
