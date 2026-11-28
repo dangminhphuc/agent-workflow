@@ -615,6 +615,18 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Lý do: C bắt thứ người không nhìn ra; A phán "có đáng thêm không", thứ máy không phán được.
 - Chuyển cho SP3: các ngưỡng N, nguồn dữ liệu danh tiếng, cách đọc file khai phụ thuộc từng hệ sinh thái.
 
+### D-043 — SP7 vấn đề 8, H3: luật máy của repo (2026-11-28)
+- Bài toán: nhiều lỗi bảo mật chặn được bằng cấu trúc mã (không ghép chuỗi SQL, route qua middleware phân quyền, không
+  `pickle.loads`, module A không import B). D-036 điểm 4 để agent phán quy ước, không chặn — lỏng và phí với phần máy kiểm được.
+- Phương án: **A. luật máy của repo, chung cho bảo mật và kiến trúc**; B. gộp vào `sast` (luật kiến trúc sai chỗ; tắt `sast`
+  là mất luật); C. coi là lint, ngoài interface (không bảo đảm chạy, không có mốc vi phạm mới).
+- Chọn **A**, mặc định bật (rỗng khi repo chưa khai luật nào):
+  - Mỗi luật trong lời khai có kèm cách máy kiểm được máy chạy ở `implement`; chỉ vi phạm mới so với điểm xuất phát mới chặn
+    (mốc D-041); luật chạy bằng bản ở điểm xuất phát (D-040).
+  - Quy ước không có cách máy kiểm vẫn theo D-036: agent phán, phát hiện không chặn.
+- Nối D-036, D-040, D-041: quy ước máy kiểm được thì chặn, không thì agent phán và không chặn.
+- Để vấn đề 9: agent rà gặp phát hiện viết được thành luật máy thì gợi ý thêm vào lời khai.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
