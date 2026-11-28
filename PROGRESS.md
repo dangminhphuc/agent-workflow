@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP7 — brainstorm: xét từng tính năng v1 (ADR, luật nghiệp vụ `BR-`, `conventions.md`, bootstrap, trạng thái task, ship, cross-check stale…) và các mục `docs/decisions.md` § Ứng viên SP7: đưa vào interface, bỏ có lý do, hay để sau. Viết spec `docs/specs/SP7-*.md` cho người duyệt.
+SP7 — brainstorm từng vấn đề với người duyệt, mỗi vấn đề chốt thành một mục `D-0xx`. Đã chốt: 1 (D-030). Còn: 2. Mode 2 chống neo và mức rủi ro; 3. truy vết nguồn (Quote, nhãn nguồn, `Q-NNN`, đúng một hay ít nhất một nguồn); 4. agent phán: chỉ được chặn?; 5. luật job type treo (`bugfix` không thêm hành vi, `chore` không nâng bản lớn); 6. phạm vi task quá rộng; 7. quy ước của repo (`conventions.md`, rules/uses theo phase, khai mã nhạy cảm/production); 8. bảo mật (quét secret/sast/sca, 7 hạng mục); 9. học từ lỗi lọt (journal, retro); 10. bảng chuyển giao cơ chế v1 cho SP3/SP4/SP5. Đủ hết thì viết spec `docs/specs/SP7-*.md`: bảng phủ mọi tính năng v1, mỗi dòng một phán quyết (vào interface / chuyển cho SPn / bỏ / để sau) kèm lý do.
 
 ## Dự án con
 

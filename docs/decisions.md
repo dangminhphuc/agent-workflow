@@ -410,14 +410,30 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - MINOR còn lại giữ ở § Đang mở, sửa ở lần chỉnh interface sau (SP2 sẽ bắt một phần bằng máy).
 - Tiếp: SP7 — chọn lại tính năng của v1.
 
+### D-030 — SP7 vấn đề 1: tri thức bền vững — lõi nhỏ ở interface, cơ chế cho SP3/SP4 (2026-11-28)
+- Bài toán: phiên agent mới chỉ có repo phải biết vì sao mã như vậy (D-004); tài liệu lệch mã tệ hơn không có. v1 giải bằng
+  ADR máy dựng lại so byte, luật `BR-`, phạm vi tài liệu, verdict stale, chỉ mục máy giữ — điểm yếu 18–21 của v1 đều nằm ở
+  cơ chế này (trùng số ADR, phạm vi thô nên quen tay `pass`, nguồn đổi sau khi nâng).
+- Phương án: A. đưa đầy đủ như v1 vào interface (chặt nhất, kéo ADR/`BR-`/chỉ mục vào interface, trái D-014);
+  **B. lõi nhỏ ở interface, cơ chế cho SP3/SP4**; C. để sau (nhẹ nhất, trái D-004).
+- Chọn **B**. Interface đòi ba điều:
+  1. `design` đọc tri thức có sẵn của phần mã bị đụng; thiết kế ghi đã dựa vào hay đi ngược tri thức nào.
+  2. Người duyệt đánh dấu quyết định hoặc yêu cầu cần lưu bền; khi đó thay đổi phải chứa tài liệu tương ứng (máy kiểm là có).
+  3. `verify` phán tài liệu bị thay đổi ảnh hưởng còn đúng không (agent rà phán, người duyệt xác nhận).
+- Chuyển cho SP3/SP4: định dạng ADR, đánh số, chỉ mục, phạm vi tài liệu, máy dựng lại để so, con trỏ tới mục (v1 INV-012,
+  INV-013). `/aw-bootstrap` thành tiện ích của SP3/SP5 (dựng tri thức ban đầu cho repo có sẵn), không phải khái niệm interface.
+- `implement` đọc tri thức (v1 `CAP-implement-07`) không thành capability riêng: `implement` theo thiết kế đã ghi tri thức
+  dùng tới; nạp gì vào ngữ cảnh agent là việc của SP3.
+- Lý do: ba điều trên là phần v1 chứng minh là cần; phần gây đau ở v1 nằm ở cơ chế, không ở nhu cầu.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
-- Ghi lại tri thức bền vững sau khi rà (v1 `CAP-verify-06`).
+- (→ D-030) Ghi lại tri thức bền vững sau khi rà (v1 `CAP-verify-06`).
 - `bugfix` không thêm hành vi mới: capability `agent` ở `verify` (máy không phân biệt được sửa với thêm) — Task 8.
 - `chore` không nâng phiên bản lớn của thư viện (v1 INV-011) — phụ thuộc cách đánh số của từng hệ sinh thái — Task 8.
-- Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task
+- (→ D-030) Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task
   đầu tiên, tính từ phần mã trong kế hoạch (v1 `CAP-implement-07`); chỉ mục tri thức do máy dựng (v1 INV-013);
   con trỏ tới mục của tài liệu khác do máy giữ đúng (v1 INV-012).
 - Mẫu phần mã của task quá rộng so với việc thì bị báo (vế sau của v1 `CAP-implement-05`).
