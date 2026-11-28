@@ -478,13 +478,26 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Lý do: giữ ý v1 ("đạt" không rẻ) mà vẫn giữ người xác nhận; dùng lại con trỏ D-032, không thêm khái niệm. Đánh đổi:
   báo cáo dài hơn; bằng chứng thật vẫn có thể bị hiểu sai, người duyệt là chốt cuối.
 
+### D-034 — SP7 vấn đề 5: luật treo của `bugfix` và `chore` (2026-11-28)
+- 5a — `bugfix` không thêm hành vi mới (máy không phân biệt sửa với thêm). Phương án: **A. capability agent ở `verify`,
+  chỉ `bugfix`**; B. chuyển lên `require`: mỗi yêu cầu `bugfix` trỏ (D-032) tới chỗ hành vi đúng đã định nghĩa, cộng vế
+  chung "không thêm hành vi ngoài yêu cầu" ở `verify`; C. bỏ.
+  - Chọn **A** (người duyệt chọn khác đề xuất B của agent): agent rà liệt kê mọi thay đổi hành vi quan sát được trong
+    diff; mỗi thay đổi trỏ tới chỗ hành vi đúng đã được định nghĩa (tài liệu, yêu cầu đã duyệt, phiên bản trước), bằng
+    chứng theo D-033; thiếu thì phát hiện chặn. Đánh đổi: bắt sau khi đã code.
+- 5b — `chore` không nâng phiên bản lớn (v1 INV-011). Phương án: A. cấm nâng bản lớn theo semver (trói interface vào cách
+  đánh số từng hệ sinh thái, trái D-014); B. bỏ, dựa test và kiểm thử đầu-cuối; **C. phá vỡ theo lời chính thư viện**.
+  - Chọn **C**: thư viện được nâng mà ghi chú phát hành có thay đổi phá vỡ thì việc không phải `chore` mà là `refactor`
+    (`INV-009` giữ hành vi bằng test có sẵn). Agent rà phán ở `verify`, bằng chứng là con trỏ tới ghi chú phát hành
+    (D-033). Đánh đổi: ghi chú phát hành kém thì agent phán sai.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
 - (→ D-031) Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
 - (→ D-030) Ghi lại tri thức bền vững sau khi rà (v1 `CAP-verify-06`).
-- `bugfix` không thêm hành vi mới: capability `agent` ở `verify` (máy không phân biệt được sửa với thêm) — Task 8.
-- `chore` không nâng phiên bản lớn của thư viện (v1 INV-011) — phụ thuộc cách đánh số của từng hệ sinh thái — Task 8.
+- (→ D-034) `bugfix` không thêm hành vi mới: capability `agent` ở `verify` (máy không phân biệt được sửa với thêm) — Task 8.
+- (→ D-034) `chore` không nâng phiên bản lớn của thư viện (v1 INV-011) — phụ thuộc cách đánh số của từng hệ sinh thái — Task 8.
 - (→ D-030) Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task
   đầu tiên, tính từ phần mã trong kế hoạch (v1 `CAP-implement-07`); chỉ mục tri thức do máy dựng (v1 INV-013);
   con trỏ tới mục của tài liệu khác do máy giữ đúng (v1 INV-012).
