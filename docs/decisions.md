@@ -599,6 +599,22 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Chuyển cho SP3: công cụ, ngưỡng mức, cách nhận ra repo có IaC/container, cách so khớp phát hiện giữa hai lần quét (kể
   cả DAST).
 
+### D-042 — SP7 vấn đề 8, H8: phụ thuộc mới do agent đưa vào (2026-11-28)
+- Bài toán: agent hay giải bằng thêm thư viện; rủi ro `sca` không bắt: tên bịa (slopsquatting), gói mạo danh, gói vừa bị
+  chiếm quyền, gói không đáng thêm. Thêm thư viện chưa là quyết định; `bugfix`/`chore` bỏ `design`; `implement` thêm được
+  thư viện thiết kế không nhắc.
+- Phương án: **A. phụ thuộc trực tiếp mới là một quyết định**; B. danh sách cho phép trong lời khai (luôn thiếu với hệ sinh
+  thái mở); **C. máy kiểm danh tiếng gói**.
+- Chọn **A + C**, mặc định bật:
+  - A: máy tìm mọi phụ thuộc trực tiếp mới trong diff (file khai phụ thuộc, không tính lockfile); mỗi cái trỏ tới một quyết
+    định trong `design` có phương án (thư viện X / Y / tự viết) đã duyệt; không có `design` hoặc thêm ngoài thiết kế thì người
+    duyệt duyệt riêng.
+  - C: mỗi phụ thuộc mới — có thật trên registry, tồn tại quá N ngày, bản chọn không vừa phát hành, không bị đánh dấu độc
+    hại (nhóm "gói độc hại" từ D-041), lockfile ghim theo hash; trượt thì chặn.
+  - Phụ thuộc gián tiếp: để `sca` và kiểm gói độc hại, không duyệt từng cái.
+- Lý do: C bắt thứ người không nhìn ra; A phán "có đáng thêm không", thứ máy không phán được.
+- Chuyển cho SP3: các ngưỡng N, nguồn dữ liệu danh tiếng, cách đọc file khai phụ thuộc từng hệ sinh thái.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
