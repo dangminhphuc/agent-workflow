@@ -4,14 +4,14 @@
 
 ## Bước tiếp theo
 
-SP7 — viết plan `docs/plans/SP7-v1-features.md` từ spec đã duyệt (D-049) bằng `superpowers:writing-plans`, rồi đưa người duyệt.
+SP7 — người duyệt đọc plan `docs/plans/SP7-v1-features.md` và chọn cách chạy (subagent hay tự làm trong phiên). Duyệt → làm Task 1 (`overview.md`).
 
 ## Dự án con
 
 | SP  | Tên                              | Trạng thái   | Spec | Plan |
 |-----|----------------------------------|--------------|------|------|
 | SP1 | Định nghĩa interface SDLC        | xong         | `docs/specs/SP1-interface.md` | `docs/plans/SP1-interface.md` |
-| SP7 | Chọn lại tính năng của v1        | plan chờ duyệt | `docs/specs/SP7-v1-features.md` | —    |
+| SP7 | Chọn lại tính năng của v1        | plan chờ duyệt | `docs/specs/SP7-v1-features.md` | `docs/plans/SP7-v1-features.md` |
 | SP2 | Trình biên dịch interface        | chưa bắt đầu | —    | —    |
 | SP3 | Mô hình làm việc của agent       | chưa bắt đầu | —    | —    |
 | SP4 | Runtime engine                   | chưa bắt đầu | —    | —    |
