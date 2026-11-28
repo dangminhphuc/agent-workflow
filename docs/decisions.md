@@ -426,10 +426,26 @@ tham chiếu, không phải thứ v2 phải tương thích.
   dùng tới; nạp gì vào ngữ cảnh agent là việc của SP3.
 - Lý do: ba điều trên là phần v1 chứng minh là cần; phần gây đau ở v1 nằm ở cơ chế, không ở nhu cầu.
 
+### D-031 — SP7 vấn đề 2: mức rủi ro và chống neo bản nhẹ (2026-11-28)
+- Bài toán: agent đề xuất thì người duyệt dễ gật theo (neo); với việc khó đảo ngược (tiền, schema lõi, tích hợp mới) duyệt
+  cho qua rất đắt. v1: `Risk: high|normal` ở spec, `high` → Mode 2 (người viết quyết định trước, agent chỉ phản biện);
+  Mode 2 phải chữa hai lần (người bị bỏ trơ → hỏi dẫn; hỏi từng quyết định → gom một lượt).
+- Phương án: A. giữ Mode 2 như v1 (mạnh nhất, nặng — người phải tự nghĩ phương án); **B. mức rủi ro ở interface, chống neo
+  bản nhẹ**; C. bỏ, dựa `CAP-design-01`/`-04` (gọn, không bảo đảm gì cho việc rủi ro cao).
+- Chọn **B**:
+  - Mức rủi ro chốt ở `require`, agent đề xuất kèm lý do, người duyệt chốt.
+  - Rủi ro cao → mỗi quyết định ở `design`: agent liệt kê phương án và đánh đổi, không đề xuất, không xếp hạng; người duyệt
+    chọn và ghi lý do bằng lời mình; sau đó agent mới phản biện.
+  - Máy kiểm: có mức rủi ro; rủi ro cao thì mỗi quyết định có lý do do người ghi. Agent rà ở `verify` phán "agent không gợi ý".
+- Chốt theo đề xuất của agent (người duyệt chọn B, không sửa hai điểm phụ): hai bậc cao/thường như v1; thay đổi đụng mã
+  đã khai nhạy cảm (`CAP-verify-06`) thì mặc định rủi ro cao.
+- Lý do: thứ chống neo là người chọn trước khi nghe ý agent; bắt người tự nghĩ phương án thêm ít mà là chỗ v1 đau. Gắn với
+  mã nhạy cảm để không khai hai lần.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
-- Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
+- (→ D-031) Mode 2 chống neo của v1 (rủi ro cao → người duyệt phác quyết định trước, agent chỉ phản biện); cần thêm khái niệm mức rủi ro.
 - (→ D-030) Ghi lại tri thức bền vững sau khi rà (v1 `CAP-verify-06`).
 - `bugfix` không thêm hành vi mới: capability `agent` ở `verify` (máy không phân biệt được sửa với thêm) — Task 8.
 - `chore` không nâng phiên bản lớn của thư viện (v1 INV-011) — phụ thuộc cách đánh số của từng hệ sinh thái — Task 8.
