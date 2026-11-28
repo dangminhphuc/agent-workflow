@@ -664,7 +664,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
   - Thực thi thuộc SP3/SP4 bằng quyền của harness; chỗ harness không chặn trước được thì ghi nhật ký lệnh, máy đối chiếu
     với danh sách cho phép, sai thì chặn.
 - H5 — không thêm vào interface: `operate` đã có theo dõi và đường lùi; tín hiệu bảo mật là tín hiệu theo dõi repo khai;
-  đổi secret là vận hành (D-039 đã báo). Chuyển cho SP3/SP5 như gợi ý tín hiệu mặc định.
+  đổi secret là vận hành (D-039 đã báo). Chuyển cho SP6 (điểm nối observability) như gợi ý tín hiệu mặc định.
 - Người duyệt chốt theo đề xuất của agent. Vấn đề 8 xong (D-037…D-046).
 
 ### D-047 — SP7 vấn đề 9: học từ lỗi lọt, gắn vào `bugfix` (2026-11-28)
@@ -680,8 +680,9 @@ tham chiếu, không phải thứ v2 phải tương thích.
     duyệt cùng `requirements`.
   - Đề xuất không tự áp dụng; luật và lời khai đi đường duyệt D-036.
   - Agent rà gặp phát hiện viết được thành luật máy thì gợi ý luật, mức không chặn (treo từ D-043).
-  - Gom qua nhiều việc, xu hướng, retro, số liệu (gồm số liệu D-035 C) chuyển cho SP5.
+  - Gom qua nhiều việc, xu hướng, retro, số liệu (gồm số liệu D-035 C) chuyển cho SP4 (engine ghi nhật ký).
 - Đánh đổi: lỗi lọt sửa lẫn trong `feature` không được ghi.
+- Sửa sau khi ghi: D-047 và D-046 (H5) ban đầu giao nhầm cho SP5 (SP5 là Adapter) — nay SP4 và SP6.
 
 ## Đang mở
 
