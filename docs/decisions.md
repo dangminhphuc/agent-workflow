@@ -696,6 +696,11 @@ tham chiếu, không phải thứ v2 phải tương thích.
   profile → SP4 + SP3 (profile thành lời khai mặc định); `aw journal` gom tay → SP4, gom tự động.
 - Người duyệt chốt theo đề xuất của agent. Vấn đề 10 xong; đủ 10 vấn đề → viết spec SP7.
 
+### D-049 — Người duyệt spec SP7 (2026-11-28)
+- Duyệt `docs/specs/SP7-v1-features.md` nguyên văn, gồm 5 quyết định agent tự đặt ở §10.
+- Builder check do agent tự đọc (phiên không chạy thêm agent khi người không yêu cầu); không còn câu hỏi cho người.
+- Tiếp: plan SP7 (`docs/plans/SP7-v1-features.md`).
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)

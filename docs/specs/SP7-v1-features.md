@@ -1,6 +1,6 @@
 # SP7 — Chọn lại tính năng của v1
 
-- Trạng thái: chờ người duyệt
+- Trạng thái: đã duyệt (2026-11-28, D-049)
 - Ngày: 2026-11-28
 - Quyết định liên quan: D-030…D-048 trong `docs/decisions.md` (bài toán, phương án, lý do của từng lựa chọn). File
   này là **bản hiện hành**: chỗ nào khác với một quyết định thì file này đúng, và chỗ khác phải có lý do ghi ở đây.
