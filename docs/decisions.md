@@ -550,6 +550,22 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Nguyên tắc "lệnh agent chạy chỉ là lệnh stage cho phép" (lấy từ C) để bàn ở H7.
 - Chuyển cho SP3: cách giữ nguyên tắc (sandbox, tách ngữ cảnh), định dạng nhãn tin cậy.
 
+### D-039 — SP7 vấn đề 8, H9: secret và dữ liệu cá nhân trong artifact (2026-11-28)
+- Bài toán: quy trình lưu bền nhiều chữ (bản chữ nguồn theo D-032, yêu cầu, thiết kế, báo cáo, bằng chứng test, có thể cả
+  nhật ký phiên); secret và dữ liệu cá nhân lọt vào theo đường bình thường (log dán vào ticket, bug report có dữ liệu thật,
+  output in biến môi trường); đã lưu bền thì không thu hồi được. Nghịch với D-032: bản chữ nguồn không được sửa.
+- Phương án: A. chỉ chặn secret; **B. A + che dữ liệu cá nhân lúc ghi lại nguồn**; C. không lưu bền bản chữ nguồn (con
+  trỏ hết hạn, trái D-004).
+- Chọn **B**:
+  - Luôn áp dụng: mọi thứ quy trình lưu bền qua máy quét secret trước khi lưu; thấy thì chặn. Bản chữ nguồn quét ngay lúc
+    ghi lại; đoạn bỏ thay bằng dấu che có lý do, con trỏ D-032 vẫn trỏ được.
+  - Mặc định bật (tắt bằng lời khai có duyệt, D-036): lúc ghi bản chữ nguồn, máy che theo mẫu repo khai, agent đánh dấu
+    thêm chỗ mẫu không bắt; lưu bản đã che, bản gốc không vào kho; người duyệt duyệt phần che cùng lúc duyệt nguồn.
+  - Che xảy ra trước khi ghi nên không trái D-032 (bản đã ghi vẫn không sửa).
+- Chốt theo đề xuất của agent (người duyệt không trả lời điểm phụ): secret thấy trong nguồn được báo cho người duyệt bằng
+  phát hiện mức không chặn để cân nhắc đổi secret; việc đổi thuộc vận hành, ngoài việc đang làm.
+- Chuyển cho SP3: mẫu che mặc định, dạng dấu che, máy quét secret dùng gì.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
