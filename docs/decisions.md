@@ -491,6 +491,20 @@ tham chiếu, không phải thứ v2 phải tương thích.
     (`INV-009` giữ hành vi bằng test có sẵn). Agent rà phán ở `verify`, bằng chứng là con trỏ tới ghi chú phát hành
     (D-033). Đánh đổi: ghi chú phát hành kém thì agent phán sai.
 
+### D-035 — SP7 vấn đề 6: phần mã của task quá rộng — chặn trước bằng ngưỡng, đo sau bằng thực tế (2026-11-28)
+- Bài toán: `CAP-implement-03` chỉ chặt bằng phần mã đã khai; task khai `src/**` thì luật luôn đạt. `task-plan` Approval
+  `no` nên không người nào duyệt độ rộng. v1: vế sau `CAP-implement-05` báo mẫu quá rộng.
+- Phương án: **A. máy kiểm ngưỡng ở `breakdown`**; B. agent phán ở `breakdown` (mơ hồ, dễ cho qua); **C. máy đo sau ở
+  `verify`** (khai so với đụng thật); D. bỏ (lỗ `src/**` còn nguyên).
+- Chọn **A + C**:
+  - A: máy đếm số file phần mã mỗi task khớp trên điểm xuất phát; vượt ngưỡng repo khai thì chặn, trừ khi task ghi lý do
+    và người duyệt duyệt riêng lý do đó.
+  - C: ở `verify`, máy so phần mã đã khai với file thực sự đổi; khai rộng hơn nhiều thì ghi phát hiện **mức không chặn**
+    (mã đã viết, thu hẹp lúc này không sửa được gì); task đã được duyệt vượt ngưỡng ở A thì C không báo.
+- Chuyển cho SP3: nơi khai và mặc định của ngưỡng số file (A) và tỉ lệ khai/đụng (C).
+- Lý do: A chặn trước vì không ai duyệt `task-plan`; C bắt phần mã dưới ngưỡng mà vẫn quá rộng và cho số liệu để chỉnh
+  ngưỡng (nối vấn đề 9). Đánh đổi: hai con số đoán; C có thể nhiễu — giữ ở mức không chặn để không thành "quen tay pass".
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
@@ -501,7 +515,7 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - (→ D-030) Tri thức bền vững (ADR, tài liệu module) mà `design` phải đọc (v1 `CAP-design-04`), và `implement` đọc trước task
   đầu tiên, tính từ phần mã trong kế hoạch (v1 `CAP-implement-07`); chỉ mục tri thức do máy dựng (v1 INV-013);
   con trỏ tới mục của tài liệu khác do máy giữ đúng (v1 INV-012).
-- Mẫu phần mã của task quá rộng so với việc thì bị báo (vế sau của v1 `CAP-implement-05`).
+- (→ D-035) Mẫu phần mã của task quá rộng so với việc thì bị báo (vế sau của v1 `CAP-implement-05`).
 - (→ D-032) Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
 - (→ D-032) "Đúng một nguồn" cho mỗi yêu cầu như v1 (tránh trạng thái lửng khi yêu cầu dựa trên hai câu hỏi, một
   đã trả lời một chưa) — v2 đang chọn "ít nhất một" (D-016 D3).
