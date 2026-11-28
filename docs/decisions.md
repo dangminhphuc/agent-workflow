@@ -566,6 +566,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
   phát hiện mức không chặn để cân nhắc đổi secret; việc đổi thuộc vận hành, ngoài việc đang làm.
 - Chuyển cho SP3: mẫu che mặc định, dạng dấu che, máy quét secret dùng gì.
 
+### D-040 — SP7 vấn đề 8, H10: agent làm yếu hàng rào (2026-11-28)
+- Bài toán: luật máy chỉ chắc khi chính luật không bị thay đổi sửa. Đã che: lời khai (D-036), test (`INV-010`,
+  `CAP-implement-04`). Chưa che: cấu hình kiểm (bộ quét, coverage, CI, bộ chạy test), tắt tại chỗ (`nosec`,
+  `eslint-disable`, `skip`, `ts-ignore`…), script kiểm trong repo.
+- Phương án: A. mở rộng D-036 cho mọi file hàng rào; **B. A + khai cách tắt tại chỗ**; C. chỉ agent rà phán (máy tìm được
+  mà lại dựa phán đoán).
+- Chọn **B**, luôn áp dụng:
+  - Lời khai liệt kê file hàng rào (cấu hình CI, bộ quét, test, lint, kiểu, script kiểm). Thay đổi đụng file hàng rào thì
+    phần đụng được người duyệt duyệt riêng. Mọi bước kiểm chạy bằng file hàng rào ở điểm xuất phát. Đánh đổi: luật kiểm mới
+    chỉ áp từ việc sau khi merge.
+  - Lời khai liệt kê mẫu tắt tại chỗ; máy tìm mọi chỗ tắt thay đổi thêm vào; mỗi chỗ khai trong thay đổi kèm lý do (như
+    `CAP-implement-04`); agent rà ở `verify` phán lý do, bằng chứng theo D-033.
+- Engine chạy từ `.pyz` ghim phiên bản nằm ngoài repo — cơ chế SP3/SP4.
+- Chuyển cho SP3: mẫu tắt tại chỗ mặc định theo hệ sinh thái; cách chạy kiểm bằng bản ở điểm xuất phát.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
