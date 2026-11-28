@@ -701,6 +701,24 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Builder check do agent tự đọc (phiên không chạy thêm agent khi người không yêu cầu); không còn câu hỏi cho người.
 - Tiếp: plan SP7 (`docs/plans/SP7-v1-features.md`).
 
+### D-050 — SP7 Task 1: người duyệt `overview.md` (2026-11-28)
+- Sửa `interface/overview.md`: thêm khái niệm bản chữ nguồn, đoạn, nhãn tin cậy, mức rủi ro, tri thức bền vững, con trỏ,
+  lời khai của repo, file hàng rào, tắt tại chỗ, luật máy của repo; "Dấu duyệt" phủ thêm lời khai; "đạt" của `agent`
+  kèm con trỏ; mục "Nội dung không tin cậy", "Quyền theo stage"; giá trị `high`, `normal`, `trusted`, `untrusted`.
+  Không thêm hay đổi mã nào.
+- Quyết trong lúc sửa (bổ sung, chỉnh D-046):
+  - `implement` được ghi file ngoài phần mã của task khi khai theo `CAP-implement-03`.
+  - Mạng: `verify` chỉ tới hệ thống đã ghép, `deploy` chỉ tới hệ thống triển khai, `operate` tới hệ thống giám sát và tới
+    nơi một hành động trong runbook đã duyệt cần tới.
+  - `operate` được thay đổi production chỉ bằng hành động trong runbook đã duyệt; chỉ `deploy` được phát hành. "Lệnh phát
+    hành" là agent kích hoạt hệ thống triển khai bên ngoài.
+  - Runbook và "nguồn khai thêm" thuộc lời khai của repo (spec §3 đã cập nhật).
+  - Thuật ngữ nhập vào bảng "Khái niệm", không tách mục riêng; chấp nhận văn xuôi trong ô bảng quyền; không thêm bốn mức
+    bật bảo mật (spec §5.1 "nếu cần").
+- Để lại: Task 8 — `verify` không có mạng tới ghi chú phát hành, và con trỏ tới ghi chú phát hành (D-034) chưa thuộc
+  định nghĩa "con trỏ". Task 9 — trang `deploy` (ai kích hoạt hoàn tác, merge tự kích hoạt phát hành, Rationale "tự triển
+  khai") và `operate` (hoàn tác "chỉ do hệ thống ngoài") phải khớp bảng quyền.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)

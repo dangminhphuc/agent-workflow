@@ -35,10 +35,13 @@ SP7 chỉ sinh tài liệu. Không có code.
 | bản chữ nguồn, đoạn | chữ của mọi nguồn được ghi vào work item, chia thành đoạn trỏ tới được; đã ghi thì không sửa, nguồn đổi thì thêm bản mới | D-032 |
 | con trỏ | chỉ tới một đoạn nguồn, một chỗ trong mã, test hay mục artifact; máy giải được (kiểm có thật) | D-032, D-033 |
 | nhãn tin cậy | nguồn tin cậy (người duyệt, tài liệu nội bộ đã duyệt) hay không (ticket người ngoài tạo, comment công khai, web) | D-038 |
-| lời khai của repo | những gì repo khai và luật dựa vào: mã production, mã nhạy cảm, ngưỡng, quy ước, luật máy, file hàng rào, mẫu tắt tại chỗ, nhóm quét tắt, danh mục bảo mật, danh sách lệnh, mẫu che dữ liệu cá nhân; có dấu duyệt của người | D-036 |
+| lời khai của repo | những gì repo khai và luật dựa vào: mã production, mã nhạy cảm, ngưỡng, quy ước, luật máy, file hàng rào, mẫu tắt tại chỗ, nhóm quét tắt, danh mục bảo mật, danh sách lệnh, mẫu che dữ liệu cá nhân, nguồn khai thêm (ngoài các nguồn ghi trong work item), runbook; có dấu duyệt của người | D-036, D-046 |
 | file hàng rào | file định nghĩa bước kiểm: cấu hình CI, bộ quét, test, lint, kiểu, script kiểm | D-040 |
 | tắt tại chỗ | chú thích tắt một bước kiểm ngay trong mã (`nosec`, `eslint-disable`, `skip`…) | D-040 |
 | luật máy của repo | luật trong lời khai có kèm cách máy kiểm (bảo mật hay kiến trúc) | D-043 |
+
+"Nguồn khai thêm" và "runbook" trong lời khai của repo được quyết khi viết Task 1 của plan (người duyệt đồng ý): bảng
+quyền theo stage (D-046) dựa vào "nguồn đã khai" và "runbook đã duyệt" mà chưa nói khai ở đâu, duyệt thế nào.
 
 Mức phát hiện: các quyết định viết "mức không chặn" — trong interface đó là mức **nên sửa** đã có ở `review-report`.
 Không thêm mức mới.

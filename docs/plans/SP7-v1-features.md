@@ -65,11 +65,11 @@ Tối đa 2 lần mỗi file (spec §7).
 
 | # | Spec | Nội dung | File | Mã |
 |---|---|---|---|---|
-| 1 | §5.1 | thuật ngữ §3 | overview | — |
-| 2 | §5.1 | giá trị `high`/`normal`, nhãn tin cậy | overview | — |
-| 3 | §5.1 | nghĩa `agent`: đạt có con trỏ | overview | — |
-| 4 | §5.1 | nguyên tắc nội dung không tin cậy | overview | — |
-| 5 | §5.1 | bảng quyền theo stage | overview | — |
+| 1 | §5.1 | thuật ngữ §3 | overview | overview § Khái niệm |
+| 2 | §5.1 | giá trị `high`/`normal`, nhãn tin cậy | overview | overview § Giá trị |
+| 3 | §5.1 | nghĩa `agent`: đạt có con trỏ | overview | overview § Giá trị (dòng `agent`) |
+| 4 | §5.1 | nguyên tắc nội dung không tin cậy | overview | overview § Nội dung không tin cậy |
+| 5 | §5.1 | bảng quyền theo stage | overview | overview § Quyền theo stage |
 | 6 | §5.2 | lời khai, file hàng rào đọc ở điểm xuất phát, đụng thì duyệt riêng | invariants | — |
 | 7 | §5.2 | không secret trong thứ lưu bền | invariants | — |
 | 8 | §5.2 | đạt của agent có con trỏ giải được | invariants | — |
@@ -117,7 +117,7 @@ Tối đa 2 lần mỗi file (spec §7).
 **Interfaces:**
 - Produces: thuật ngữ spec §3 (tên dùng nguyên văn ở mọi task sau: tri thức bền vững, mức rủi ro, bản chữ nguồn, đoạn, con trỏ, nhãn tin cậy, lời khai của repo, file hàng rào, tắt tại chỗ, luật máy của repo); giá trị `high`, `normal` và hai giá trị nhãn tin cậy; bảng quyền theo stage (cột Stage · Ghi · Chạy lệnh · Mạng · Production, nội dung D-046).
 
-- [ ] **Bước 1–6** theo Chu trình sửa, Bảng phủ dòng 1–5. Kịch bản xuyên suốt: chỉ sửa ở Task 10 khi mọi trang đã đổi.
+- [x] **Bước 1–6** theo Chu trình sửa, Bảng phủ dòng 1–5. Kịch bản xuyên suốt: chỉ sửa ở Task 10 khi mọi trang đã đổi.
 - Hỏi người ở lượt đọc lạnh đầu: tên hai giá trị nhãn tin cậy (đề xuất `trusted` / `untrusted`); thuật ngữ đặt thành một mục riêng "Thuật ngữ" hay nhập vào mục định nghĩa hiện có.
 
 ### Task 2: `invariants.md`
