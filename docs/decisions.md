@@ -463,6 +463,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
   lời khác giả định → `INV-005` buộc sửa `requirements`. "Đúng một" bắt tách giả tạo.
 - Chuyển cho SP3: định dạng bản chữ nguồn, cách chia đoạn, dạng con trỏ, hiển thị cạnh nhau.
 
+### D-033 — SP7 vấn đề 4: agent phán "đạt" phải có bằng chứng (2026-11-28)
+- Bài toán: capability `Judged by agent` (quyết định ngầm, lệch quyết định, mã làm đúng yêu cầu…) — agent được kết luận
+  tới đâu. v1: LLM checker không bao giờ nói "đạt", chỉ ghi phát hiện chặn (thực chất "đạt ngầm" khi không có phát hiện);
+  v2 D-024: agent rà phán đạt/không, người duyệt xác nhận — agent phán nhầm "đạt" chỉ người duyệt bắt.
+- Phương án: A. giữ D-024 ("đạt" trông như đã kiểm xong, dễ xác nhận cho qua); B. về v1, chỉ được chặn (người nhẹ nhất,
+  agent bỏ sót thì không ai thấy agent đã nhìn gì); **C. bất đối xứng, "đạt" phải có bằng chứng**.
+- Chọn **C**:
+  - "Không đạt" của agent đủ để chặn.
+  - "Đạt" kèm bằng chứng trỏ tới chỗ cụ thể (đoạn mã, test, mục artifact), cùng loại con trỏ máy giải được như D-032;
+    "đạt" không bằng chứng hoặc con trỏ hỏng thì máy coi là chưa phán.
+  - Người duyệt xác nhận báo cáo, bằng chứng hiện cạnh từng mục (giữ D-024).
+  - Áp cho mọi capability `Judged by agent` ở mọi stage, không chỉ `verify`.
+- Lý do: giữ ý v1 ("đạt" không rẻ) mà vẫn giữ người xác nhận; dùng lại con trỏ D-032, không thêm khái niệm. Đánh đổi:
+  báo cáo dài hơn; bằng chứng thật vẫn có thể bị hiểu sai, người duyệt là chốt cuối.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
