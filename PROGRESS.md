@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP7 — brainstorm từng vấn đề với người duyệt, mỗi vấn đề chốt thành một mục `D-0xx`. Đã chốt: 1 (D-030), 2 (D-031), 3 (D-032), 4 (D-033), 5 (D-034), 6 (D-035), 7 (D-036). Đang làm: 8. bảo mật — khung ở D-037, H6 (D-038), H9 (D-039), H10 (D-040), H4 quét (D-041), H8 (D-042), H3 (D-043) xong, đi sâu tiếp (H1, H2, H4 agent). Còn: 9. học từ lỗi lọt (journal, retro); 10. bảng chuyển giao cơ chế v1 cho SP3/SP4/SP5. Đủ hết thì viết spec `docs/specs/SP7-*.md`: bảng phủ mọi tính năng v1, mỗi dòng một phán quyết (vào interface / chuyển cho SPn / bỏ / để sau) kèm lý do.
+SP7 — brainstorm từng vấn đề với người duyệt, mỗi vấn đề chốt thành một mục `D-0xx`. Đã chốt: 1 (D-030), 2 (D-031), 3 (D-032), 4 (D-033), 5 (D-034), 6 (D-035), 7 (D-036). Đang làm: 8. bảo mật — khung ở D-037, H6 (D-038), H9 (D-039), H10 (D-040), H4 quét (D-041), H8 (D-042), H3 (D-043), H1+H2 (D-044) xong, đi sâu tiếp (H4 agent, H7 nguyên tắc lệnh theo stage, H5). Còn: 9. học từ lỗi lọt (journal, retro); 10. bảng chuyển giao cơ chế v1 cho SP3/SP4/SP5. Đủ hết thì viết spec `docs/specs/SP7-*.md`: bảng phủ mọi tính năng v1, mỗi dòng một phán quyết (vào interface / chuyển cho SPn / bỏ / để sau) kèm lý do.
 
 ## Dự án con
 

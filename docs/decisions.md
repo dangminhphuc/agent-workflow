@@ -627,6 +627,19 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Nối D-036, D-040, D-041: quy ước máy kiểm được thì chặn, không thì agent phán và không chặn.
 - Để vấn đề 9: agent rà gặp phát hiện viết được thành luật máy thì gợi ý thêm vào lời khai.
 
+### D-044 — SP7 vấn đề 8, H1 + H2: tình huống lạm dụng và ranh giới tin cậy khi rủi ro cao (2026-11-28)
+- H1 — bảo mật thành yêu cầu. Bài toán: yêu cầu tả điều được làm; ticket hiếm khi ghi điều không được làm, agent không tự
+  thêm được (D-032). Phương án: **A. rủi ro cao thì có tình huống lạm dụng**; B. mọi việc (thành thói quen ghi "không có");
+  C. không thêm. Chọn **A**: agent liệt kê tình huống lạm dụng, mỗi cái là một câu hỏi mở có giả định "từ chối"; câu trả lời
+  của người duyệt thành nguồn của yêu cầu có tiêu chí chấp nhận (giữ D-032); `verify` phán như mọi yêu cầu. Không thêm artifact.
+- H2 — mô hình mối đe doạ. Phương án: **A. rủi ro cao thì thiết kế có phần ranh giới tin cậy**; B. dựa ngưỡng
+  `CAP-design-02` (không liệt kê thì không biết sót gì); C. không thêm. Chọn **A**: thiết kế liệt kê điểm vào của dữ liệu
+  không tin cậy, điểm kiểm quyền, đường đi dữ liệu nhạy cảm; mỗi chỗ vượt ranh giới ghi cách xử lý, có lựa chọn thì thành
+  quyết định (`CAP-design-01`); agent không viết thiết kế phán còn chỗ vượt ranh giới bị sót không, bằng chứng theo D-033.
+- Kèm H2: việc rủi ro cao không được bỏ `design`, kể cả `bugfix` và `refactor` (hiện được bỏ) — sửa `job-types.md` và
+  `INV-013` ở lần chỉnh interface.
+- Người duyệt chốt theo đề xuất của agent.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
