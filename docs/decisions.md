@@ -640,6 +640,18 @@ tham chiếu, không phải thứ v2 phải tương thích.
   `INV-013` ở lần chỉnh interface.
 - Người duyệt chốt theo đề xuất của agent.
 
+### D-045 — SP7 vấn đề 8, H4 (agent): đọc diff theo ý đồ, hai tầng (2026-11-28)
+- Bài toán: máy quét (D-041) và luật máy (D-043) bắt mẫu; lỗi theo ý đồ (quên kiểm quyền sở hữu, log in token, đường dẫn
+  ghép từ tham số) cần người đọc. Agent rà ở `verify` vốn đọc cả diff (`CAP-verify-01`) nên thêm bảo mật không tốn lượt agent.
+- Phương án: A. chỉ theo rủi ro (lọt lỗi ở mã chưa khai nhạy cảm); B. mặc định bật, đủ danh mục cho mọi thay đổi (bảng
+  "không áp dụng" thành thói quen gõ cho qua); **C. hai tầng**.
+- Chọn **C**:
+  - Mọi thay đổi đụng mã production (mặc định bật): agent rà đọc diff góc bảo mật, ghi phát hiện và những điểm đã xem (điểm
+    vào mới, chỗ đọc input, ghi log, kiểm quyền) — danh sách đó là bằng chứng theo D-033.
+  - Rủi ro cao: đi qua đủ danh mục bảo mật trong lời khai; mỗi hạng mục đạt có bằng chứng / không áp dụng kèm lý do /
+    phát hiện chặn. Repo thêm được hạng mục; SP3 cung cấp mặc định.
+  - Phát hiện bảo mật ở cả hai tầng đều chặn.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
