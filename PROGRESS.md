@@ -4,7 +4,7 @@
 
 ## Bước tiếp theo
 
-SP7 — brainstorm từng vấn đề với người duyệt, mỗi vấn đề chốt thành một mục `D-0xx`. Đã chốt: 1 (D-030), 2 (D-031), 3 (D-032), 4 (D-033), 5 (D-034), 6 (D-035), 7 (D-036), 8 (D-037…D-046). Còn: 9. học từ lỗi lọt (journal, retro); 10. bảng chuyển giao cơ chế v1 cho SP3/SP4/SP5. Đủ hết thì viết spec `docs/specs/SP7-*.md`: bảng phủ mọi tính năng v1, mỗi dòng một phán quyết (vào interface / chuyển cho SPn / bỏ / để sau) kèm lý do.
+SP7 — brainstorm từng vấn đề với người duyệt, mỗi vấn đề chốt thành một mục `D-0xx`. Đã chốt: 1 (D-030), 2 (D-031), 3 (D-032), 4 (D-033), 5 (D-034), 6 (D-035), 7 (D-036), 8 (D-037…D-046), 9 (D-047). Còn: 10. bảng chuyển giao cơ chế v1 cho SP3/SP4/SP5. Đủ hết thì viết spec `docs/specs/SP7-*.md`: bảng phủ mọi tính năng v1, mỗi dòng một phán quyết (vào interface / chuyển cho SPn / bỏ / để sau) kèm lý do.
 
 ## Dự án con
 

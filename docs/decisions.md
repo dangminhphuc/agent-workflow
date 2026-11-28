@@ -667,6 +667,22 @@ tham chiếu, không phải thứ v2 phải tương thích.
   đổi secret là vận hành (D-039 đã báo). Chuyển cho SP3/SP5 như gợi ý tín hiệu mặc định.
 - Người duyệt chốt theo đề xuất của agent. Vấn đề 8 xong (D-037…D-046).
 
+### D-047 — SP7 vấn đề 9: học từ lỗi lọt, gắn vào `bugfix` (2026-11-28)
+- Bài toán: lớp kiểm nào cũng có lúc để lọt; không ghi lọt qua đâu thì lọt lại, ngưỡng đoán (D-035) không được chỉnh.
+  v1: nhật ký harness từng máy (`checks`/`failures`/`findings.tsv`), loại lặp ≥ 2 việc → gợi ý luật máy (máy không tự
+  thêm), `aw journal retro` cho phần người khai — yếu: chỉ ở từng máy, người hay quên hoặc khai lệch. v2: `operate` loại hậu
+  kiểm sự cố, chưa chỗ nào ghi "lẽ ra bắt ở đâu".
+- Phương án: A. đủ vòng học trong interface (gom, gợi ý, retro — chỗ v1 lệch); B. ngoài interface, SP5 (không gì buộc
+  ghi); **C. gắn vào `bugfix`**.
+- Chọn **C**:
+  - `bugfix` sửa lỗi do một thay đổi trước gây ra thì yêu cầu kèm ghi chép lỗi lọt: thay đổi gây ra; stage/capability lẽ ra
+    bắt; vì sao không bắt; đề xuất (luật máy D-043, sửa lời khai, sửa interface, hoặc chấp nhận). Agent viết, người duyệt
+    duyệt cùng `requirements`.
+  - Đề xuất không tự áp dụng; luật và lời khai đi đường duyệt D-036.
+  - Agent rà gặp phát hiện viết được thành luật máy thì gợi ý luật, mức không chặn (treo từ D-043).
+  - Gom qua nhiều việc, xu hướng, retro, số liệu (gồm số liệu D-035 C) chuyển cho SP5.
+- Đánh đổi: lỗi lọt sửa lẫn trong `feature` không được ghi.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
