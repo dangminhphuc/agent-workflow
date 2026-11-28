@@ -520,6 +520,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Chuyển cho SP3: nơi giữ và định dạng lời khai; `rules_<phase>`/`uses_<phase>` (nạp gì vào ngữ cảnh, gọi skill nào).
 - Lý do: điểm 3 chặn thay đổi tự nới luật cho chính nó — cùng ý v1 "bản clone không ghi đè khoá luật".
 
+### D-037 — SP7 vấn đề 8: bảo mật — khung chọn hướng, không theo v1 (2026-11-28)
+- Người duyệt yêu cầu tiếp cận lại, không dùng lại v1 (v1 dồn hết vào phát hiện trong mã: nhóm quét + Lens 4 7 hạng mục).
+- Hai loại rủi ro: sản phẩm có lỗ hổng; chính quy trình có agent bị lợi dụng (agent có quyền, đọc nội dung không tin cậy).
+- Mười hướng: H1 bảo mật thành yêu cầu (tình huống lạm dụng ở `require`); H2 mô hình mối đe doạ ở `design`; H3 luật cấu
+  trúc repo khai, máy kiểm; H4 phát hiện trong mã (máy quét, agent đọc ý đồ, người đọc mã nhạy cảm); H5 lúc chạy; H6 nguồn
+  là nội dung không tin cậy (prompt injection); H7 quyền tối thiểu theo stage; H8 phụ thuộc mới do agent đưa vào; H9 secret
+  và dữ liệu nhạy cảm trong artifact; H10 agent làm yếu hàng rào (cấu hình quét, CI).
+- Không hướng nào tự bắt buộc. Xếp mỗi hướng vào một mức — luôn áp dụng / mặc định bật, tắt bằng lời khai có duyệt (D-036) /
+  theo rủi ro (D-031) / ngoài interface — theo ba câu hỏi: lọt có đảo ngược được không; lớp khác có bắt không; phòng rẻ
+  không, máy làm được không.
+- Xếp (người duyệt đồng ý, còn chỉnh khi đi sâu): luôn áp dụng H6, H9, H10; mặc định bật H4 máy quét, H8, H3; theo rủi ro
+  H1, H2, H4 agent đọc ý đồ (còn cân nhắc mặc định bật); đã có H4 người đọc mã nhạy cảm (`CAP-verify-06`); ngoài interface
+  H5 (phần lớn), H7 (cơ chế; interface có thể ghi nguyên tắc).
+- Đi sâu theo thứ tự: luôn áp dụng → mặc định bật → theo rủi ro. Mỗi hướng chốt thành mục riêng.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
