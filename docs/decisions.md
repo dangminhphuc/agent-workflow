@@ -535,6 +535,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
   H5 (phần lớn), H7 (cơ chế; interface có thể ghi nguyên tắc).
 - Đi sâu theo thứ tự: luôn áp dụng → mặc định bật → theo rủi ro. Mỗi hướng chốt thành mục riêng.
 
+### D-038 — SP7 vấn đề 8, H6: nguồn không tin cậy — nguyên tắc và nhãn tin cậy (2026-11-28)
+- Bài toán: nguồn có thể chứa lệnh cài cắm (prompt injection). Hai đường: đi vào yêu cầu (phần lớn đã che bởi D-032 — đoạn
+  nguồn nào cũng hiện trước người duyệt, nhưng người duyệt không biết đoạn đến từ ai); thành hành động của agent (chạy
+  lệnh, sửa file khi đọc — kể cả nội dung không tin cậy ở stage sau: mã bên thứ ba, README thư viện, web, output lệnh).
+- Phương án: A. chỉ nguyên tắc (invariant); **B. A + nhãn tin cậy cho nguồn**; C. cách ly hẳn: agent đọc nội dung không
+  tin cậy không có quyền ghi/chạy/mạng (gần như không làm được ở `implement`; là cơ chế SP3).
+- Chọn **B**:
+  - Invariant, luôn áp dụng: nội dung không tin cậy chỉ là dữ liệu; mọi hành động của agent truy được về artifact đã duyệt
+    hoặc capability của stage đang chạy.
+  - Work item ghi mỗi nguồn tin cậy (người duyệt, tài liệu nội bộ đã duyệt) hay không (ticket người ngoài tạo, comment công
+    khai, web). Khi duyệt `require`, đoạn từ nguồn không tin cậy được đánh dấu cạnh yêu cầu trỏ tới nó.
+  - Agent rà riêng, không có công cụ, đọc các đoạn không tin cậy chỉ để tìm câu nhắm vào agent; thấy thì phát hiện chặn.
+- Nguyên tắc "lệnh agent chạy chỉ là lệnh stage cho phép" (lấy từ C) để bàn ở H7.
+- Chuyển cho SP3: cách giữ nguyên tắc (sandbox, tách ngữ cảnh), định dạng nhãn tin cậy.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
