@@ -442,6 +442,27 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Lý do: thứ chống neo là người chọn trước khi nghe ý agent; bắt người tự nghĩ phương án thêm ít mà là chỗ v1 đau. Gắn với
   mã nhạy cảm để không khai hai lần.
 
+### D-032 — SP7 vấn đề 3: truy vết nguồn — con trỏ tới đoạn và phủ chiều ngược (2026-11-28)
+- Bài toán: `CAP-require-01` buộc chỉ ra nguồn nhưng còn hai lỗ — nói sai nguồn (diễn giải lệch, trỏ nhầm mục) và bỏ sót
+  nguồn (nguồn nói mà không yêu cầu nào nhận).
+- Phương án đã xét: A. câu trích nguyên văn, máy kiểm có trong nguồn; B. không trích, agent rà ở `verify`; **C. con trỏ
+  chính xác tới đoạn, máy giải con trỏ**; D. agent rà phiên trắng ở `require`; **E. phủ chiều ngược nguồn → yêu cầu**;
+  F. độ chặt theo rủi ro.
+- 3a — chọn **C + E**:
+  - Work item giữ bản chữ của nguồn, chia đoạn trỏ được (lời người duyệt nói miệng cũng ghi thành chữ ở đây); bản đã ghi
+    không sửa, nguồn đổi thì thêm bản mới.
+  - Mỗi yêu cầu trỏ tới đoạn cụ thể nó dựa vào; máy kiểm mọi con trỏ tới đoạn có thật. Khi duyệt `require`, công cụ hiện
+    đoạn nguồn cạnh từng yêu cầu; người duyệt phán khớp.
+  - Mỗi đoạn nguồn được ít nhất một yêu cầu trỏ tới, hoặc ghi "ngoài phạm vi" kèm lý do (người duyệt duyệt cùng
+    `requirements`); máy kiểm không đoạn nào bị bỏ.
+  - Loại A (chép chữ thêm, C kiểm tương đương), B (bắt quá muộn), D (thêm lượt agent mà vẫn có thể sai), F (thêm nhánh
+    luật; C+E đủ nhẹ cho mọi việc).
+- 3b — nhãn nguồn (`[JIRA]`, `[FILE]`…) và mã `Q-NNN` chuyển cho SP3 (định dạng); interface chỉ đòi nguồn và câu hỏi mở
+  trỏ tới được.
+- 3c — giữ "ít nhất một nguồn" (D-016 D3): yêu cầu còn là giả định chừng nào còn câu hỏi nó dựa vào chưa trả lời; câu trả
+  lời khác giả định → `INV-005` buộc sửa `requirements`. "Đúng một" bắt tách giả tạo.
+- Chuyển cho SP3: định dạng bản chữ nguồn, cách chia đoạn, dạng con trỏ, hiển thị cạnh nhau.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
@@ -453,8 +474,8 @@ tham chiếu, không phải thứ v2 phải tương thích.
   đầu tiên, tính từ phần mã trong kế hoạch (v1 `CAP-implement-07`); chỉ mục tri thức do máy dựng (v1 INV-013);
   con trỏ tới mục của tài liệu khác do máy giữ đúng (v1 INV-012).
 - Mẫu phần mã của task quá rộng so với việc thì bị báo (vế sau của v1 `CAP-implement-05`).
-- Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
-- "Đúng một nguồn" cho mỗi yêu cầu như v1 (tránh trạng thái lửng khi yêu cầu dựa trên hai câu hỏi, một
+- (→ D-032) Câu trích nguyên văn của nguồn (`Quote` ở v1), nhãn nguồn (`[JIRA]`, `[FILE]`…), mã riêng cho câu hỏi mở (`Q-NNN`).
+- (→ D-032) "Đúng một nguồn" cho mỗi yêu cầu như v1 (tránh trạng thái lửng khi yêu cầu dựa trên hai câu hỏi, một
   đã trả lời một chưa) — v2 đang chọn "ít nhất một" (D-016 D3).
 
 ### Trang thử `require`
