@@ -581,6 +581,24 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Engine chạy từ `.pyz` ghim phiên bản nằm ngoài repo — cơ chế SP3/SP4.
 - Chuyển cho SP3: mẫu tắt tại chỗ mặc định theo hệ sinh thái; cách chạy kiểm bằng bản ở điểm xuất phát.
 
+### D-041 — SP7 vấn đề 8, H4 (máy quét): nhóm quét và chỉ chặn phát hiện mới (2026-11-28)
+- Bài toán: `CAP-implement-05` không nói quét gì, mức nào thì không đạt; repo có sẵn gần như luôn có sẵn phát hiện.
+- H4a — nhóm quét: interface nêu tên 6 nhóm, mỗi nhóm ghi bắt gì và mức nào:
+  - Bắt buộc, tắt được bằng lời khai có duyệt (D-036): **secret, sast, sca** (người duyệt chọn để secret cùng mức, không
+    tuyệt đối như agent đề xuất; secret trong artifact theo D-039 vẫn không tắt được — artifact do quy trình sinh, còn mã có
+    thể có lý do riêng như khoá giả trong fixture).
+  - Bắt buộc có điều kiện, tự bật khi repo có loại mã tương ứng, tắt phải khai: **IaC**, **container**.
+  - Theo rủi ro (D-031): **DAST**, ở `verify` trên hệ thống đã ghép.
+  - Optional hoàn toàn, interface không nêu tên: fuzzing và nhóm khác — repo khai thì chạy và chặn như mọi nhóm.
+  - Gói độc hại chuyển sang H8.
+- H4b — chặn: phương án A. mọi phát hiện từ mức X (phát hiện có sẵn cũng chặn); **B. chỉ phát hiện mới**; C. B + tổng không
+  tăng (thêm phức tạp, gần trùng B). Chọn **B**: máy quét điểm xuất phát và thay đổi; chỉ phát hiện có ở thay đổi mà
+  không có ở điểm xuất phát, từ mức X (lời khai) trở lên, mới chặn; phát hiện có sẵn ghi mức không chặn; riêng secret có sẵn
+  vẫn chặn khi thay đổi đụng đúng file chứa nó. Nhất quán với điểm xuất phát làm mốc (`CAP-implement-02`, D-040). Sửa
+  phát hiện có sẵn là việc riêng.
+- Chuyển cho SP3: công cụ, ngưỡng mức, cách nhận ra repo có IaC/container, cách so khớp phát hiện giữa hai lần quét (kể
+  cả DAST).
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
