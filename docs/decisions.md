@@ -652,6 +652,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
     phát hiện chặn. Repo thêm được hạng mục; SP3 cung cấp mặc định.
   - Phát hiện bảo mật ở cả hai tầng đều chặn.
 
+### D-046 — SP7 vấn đề 8, H7 + H5: quyền theo stage; lúc chạy ngoài interface — vấn đề 8 xong (2026-11-28)
+- H7 — phương án: **A. bảng quyền theo stage ở mức nguyên tắc**; B. chỉ một nguyên tắc (stage đầu, nơi đọc nhiều nội dung
+  không tin cậy nhất, không có giới hạn); C. ngoài interface (lỗ của D-038 không được đòi vá). Chọn **A**:
+  - `plan`/`require`/`design`/`breakdown`: chỉ ghi artifact của stage, không chạy lệnh, mạng chỉ tới nguồn đã khai.
+  - `implement`: ghi mã trong phần mã của task và artifact; lệnh trong danh sách của lời khai; mạng tới registry gói.
+  - `verify`: ghi báo cáo; chạy test và hệ thống đã ghép.
+  - `deploy`: lệnh phát hành; là stage duy nhất chạm production để thay đổi.
+  - `operate`: đọc tín hiệu production; hành động theo runbook đã duyệt.
+  - Nguyên tắc (treo từ D-038): lệnh agent chạy chỉ là lệnh stage cho phép.
+  - Thực thi thuộc SP3/SP4 bằng quyền của harness; chỗ harness không chặn trước được thì ghi nhật ký lệnh, máy đối chiếu
+    với danh sách cho phép, sai thì chặn.
+- H5 — không thêm vào interface: `operate` đã có theo dõi và đường lùi; tín hiệu bảo mật là tín hiệu theo dõi repo khai;
+  đổi secret là vận hành (D-039 đã báo). Chuyển cho SP3/SP5 như gợi ý tín hiệu mặc định.
+- Người duyệt chốt theo đề xuất của agent. Vấn đề 8 xong (D-037…D-046).
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
