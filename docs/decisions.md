@@ -505,6 +505,21 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Lý do: A chặn trước vì không ai duyệt `task-plan`; C bắt phần mã dưới ngưỡng mà vẫn quá rộng và cho số liệu để chỉnh
   ngưỡng (nối vấn đề 9). Đánh đổi: hai con số đoán; C có thể nhiễu — giữ ở mức không chặn để không thành "quen tay pass".
 
+### D-036 — SP7 vấn đề 7: lời khai của repo là thứ được duyệt, luật đọc bản ở điểm xuất phát (2026-11-28)
+- Bài toán: nhiều luật dựa vào điều repo khai (mã production, mã nhạy cảm `CAP-verify-06`/D-031, ngưỡng phần mã D-035,
+  quy ước); interface chỉ ghi "khai ở đâu ngoài interface" → không gì cấm agent sửa chính lời khai để tự nới luật.
+  v1: `conventions.md` trong git, `rules_<phase>`/`uses_<phase>`, bản clone chỉ ghi đè khoá máy.
+- Phương án: **A. khái niệm "lời khai của repo" ở interface, nội dung/định dạng cho SP3**; B. giữ hiện tại, để SP3 (lỗ tự
+  nới luật không được interface đòi vá); C. như v1, `conventions.md` + rules/uses vào interface (trái D-014).
+- Chọn **A**:
+  1. Lời khai có dấu duyệt của người.
+  2. Thay đổi đụng lời khai thì phần đụng đó được người duyệt duyệt riêng (máy kiểm).
+  3. Luật dùng lời khai đọc bản ở điểm xuất phát, không đọc bản thay đổi vừa sửa.
+  4. Quy ước của repo (cách viết mã, kiến trúc) là một phần lời khai; agent rà ở `verify` phán mã theo quy ước, bằng
+     chứng theo D-033; vi phạm ghi phát hiện **mức không chặn** (người duyệt chọn — vi phạm quy ước thường nhỏ).
+- Chuyển cho SP3: nơi giữ và định dạng lời khai; `rules_<phase>`/`uses_<phase>` (nạp gì vào ngữ cảnh, gọi skill nào).
+- Lý do: điểm 3 chặn thay đổi tự nới luật cho chính nó — cùng ý v1 "bản clone không ghi đè khoá luật".
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
