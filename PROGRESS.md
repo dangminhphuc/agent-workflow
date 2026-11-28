@@ -4,14 +4,14 @@
 
 ## Bước tiếp theo
 
-SP7 — brainstorm từng vấn đề với người duyệt, mỗi vấn đề chốt thành một mục `D-0xx`. Đã chốt: 1 (D-030), 2 (D-031), 3 (D-032), 4 (D-033), 5 (D-034), 6 (D-035), 7 (D-036), 8 (D-037…D-046), 9 (D-047). Còn: 10. bảng chuyển giao cơ chế v1 cho SP3/SP4/SP5. Đủ hết thì viết spec `docs/specs/SP7-*.md`: bảng phủ mọi tính năng v1, mỗi dòng một phán quyết (vào interface / chuyển cho SPn / bỏ / để sau) kèm lý do.
+SP7 — người duyệt đọc spec `docs/specs/SP7-v1-features.md` (đủ 10 vấn đề, D-030…D-048; §10 là các quyết định agent tự đặt khi viết). Duyệt → ghi D-049, rồi `superpowers:writing-plans` viết `docs/plans/SP7-v1-features.md`.
 
 ## Dự án con
 
 | SP  | Tên                              | Trạng thái   | Spec | Plan |
 |-----|----------------------------------|--------------|------|------|
 | SP1 | Định nghĩa interface SDLC        | xong         | `docs/specs/SP1-interface.md` | `docs/plans/SP1-interface.md` |
-| SP7 | Chọn lại tính năng của v1        | brainstorm   | —    | —    |
+| SP7 | Chọn lại tính năng của v1        | spec chờ duyệt | `docs/specs/SP7-v1-features.md` | —    |
 | SP2 | Trình biên dịch interface        | chưa bắt đầu | —    | —    |
 | SP3 | Mô hình làm việc của agent       | chưa bắt đầu | —    | —    |
 | SP4 | Runtime engine                   | chưa bắt đầu | —    | —    |

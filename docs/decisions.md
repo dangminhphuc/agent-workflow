@@ -684,6 +684,18 @@ tham chiếu, không phải thứ v2 phải tương thích.
 - Đánh đổi: lỗi lọt sửa lẫn trong `feature` không được ghi.
 - Sửa sau khi ghi: D-047 và D-046 (H5) ban đầu giao nhầm cho SP5 (SP5 là Adapter) — nay SP4 và SP6.
 
+### D-048 — SP7 vấn đề 10: bảng chuyển giao tính năng v1 (2026-11-28)
+- Bỏ: "cảnh báo ở phase, review chặn" (v2 có mức chặn/không chặn của từng phát hiện); `/aw-refactor` dạng lệnh riêng
+  (job type `refactor` đã có, một lệnh chung theo job type); tiền tố branch gợi ý job type (job type một nguồn ở `work-item`).
+- SP3 quyết, SP7 không đặt hướng: ship gỡ artifact trước PR (phụ thuộc artifact sống trong hay ngoài repo); `aw toc`
+  mục lục/anchor có cần không (con trỏ D-032 có thể thay; cần thì SP4 làm); liên kết test ↔ yêu cầu (`covers:`) chỉ là
+  định dạng, không nâng thành capability.
+- Chuyển, không có lựa chọn: worktree → SP3; ghim phiên bản engine, sha256 → SP4; approval hash, `aw guard` → SP3 (dạng) +
+  SP4 (kiểm) + SP5 (hook); `/aw-approvals` → SP5; `MAX_RED_RUNS` → SP3; trạng thái sạch, dấu xung đột → SP4;
+  `/aw-bootstrap` → SP4 + SP5 (chỉnh D-030, vốn ghi SP3/SP5); `/aw-clarify` → SP3; `/aw-import` → SP3 + SP5; `aw init`,
+  profile → SP4 + SP3 (profile thành lời khai mặc định); `aw journal` gom tay → SP4, gom tự động.
+- Người duyệt chốt theo đề xuất của agent. Vấn đề 10 xong; đủ 10 vấn đề → viết spec SP7.
+
 ## Đang mở
 
 ### Ứng viên SP7 (ghi khi viết trang, chưa quyết)
